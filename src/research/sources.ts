@@ -17,7 +17,8 @@ import type { Address, Hex } from '../safe/types.ts';
 /**
  * Which log of `token` marks a transaction of the operation: an ERC-20 `Transfer`, `mint` (from the zero address, such
  * as vault shares on a deposit), `burn` (to the zero address, such as shares on a withdrawal) or `any` (a plain
- * transfer), or with `event` another event the contract `token` names logs, such as CoW's `PreSignature`.
+ * transfer), or with `event` another event the contract `token` names logs, such as CoW's `PreSignature`, or any
+ * contract logs when `token` is absent, such as a Safe's own `AddedOwner`.
  */
 export type AnchorKind = 'mint' | 'burn' | 'any' | 'event';
 export const ANCHOR_KINDS: readonly AnchorKind[] = ['mint', 'burn', 'any', 'event'];
@@ -30,7 +31,8 @@ export type AnchorEvent = { readonly signature: string; readonly topic: Hex };
  * only transfers into one, such as Morpho Blue receiving a market's loan token on a supply.
  */
 export type Anchor = {
-  readonly token: Address;
+  /** Absent only with `event`, for an event each Safe logs about itself. */
+  readonly token?: Address;
   readonly kind: AnchorKind;
   readonly fromBlock: bigint;
   readonly toBlock: bigint;
@@ -62,8 +64,11 @@ export type SourceRequest =
 
 export type Ask = (request: SourceRequest) => Promise<unknown>;
 
-/** One anchor transfer a source reported. */
-export type Hit = { readonly hash: Hex; readonly from: Address; readonly to: Address };
+/**
+ * One anchor transfer or log a source reported. `block` is absent in a recording made before it was kept; `emitter`, the
+ * contract that logged it, only an Etherscan search of an event by its topic alone keeps.
+ */
+export type Hit = { readonly hash: Hex; readonly from: Address; readonly to: Address; readonly block?: bigint; readonly emitter?: Address };
 
 export type Hits = Readonly<Record<SourceName, readonly Hit[]>>;
 
@@ -87,9 +92,16 @@ const ZERO_WORD = `0x${'00'.repeat(32)}`;
 const hex = (n: bigint): string => `0x${n.toString(16)}`;
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
-function hitOf(source: SourceName, hash: unknown, from: unknown, to: unknown): Hit {
+function hitOf(source: SourceName, hash: unknown, from: unknown, to: unknown, block: unknown, emitter: unknown): Hit {
   try {
-    return { hash: parseHex('hash', hash), from: parseAddress('from', from), to: parseAddress('to', to) };
+    if (block !== undefined && (typeof block !== 'string' || !/^0x[0-9a-fA-F]+$/.test(block))) throw new SafeTxParseError('block', 'not a hex number');
+    return {
+      hash: parseHex('hash', hash),
+      from: parseAddress('from', from),
+      to: parseAddress('to', to),
+      ...(block === undefined ? {} : { block: BigInt(block) }),
+      ...(emitter === undefined ? {} : { emitter: parseAddress('address', emitter) }),
+    };
   } catch (error) {
     if (error instanceof SafeTxParseError) throw new ResearchError(`${source} sent a malformed transfer (${error.message})`);
     throw error;
@@ -97,6 +109,7 @@ function hitOf(source: SourceName, hash: unknown, from: unknown, to: unknown): H
 }
 
 async function searchAlchemy(anchor: Anchor, ask: Ask): Promise<Hit[]> {
+  if (anchor.token === undefined) throw new ResearchError('alchemy searches the transfers of one token only');
   const base = {
     fromBlock: hex(anchor.fromBlock),
     toBlock: hex(anchor.toBlock),
@@ -116,7 +129,7 @@ async function searchAlchemy(anchor: Anchor, ask: Ask): Promise<Hit[]> {
   if (typeof answer.pageKey === 'string') throw new TooManyTransfers('alchemy');
   return (answer.transfers as unknown[]).map((t) => {
     if (!isRecord(t)) throw new ResearchError('alchemy sent a malformed transfer');
-    return hitOf('alchemy', t.hash, t.from, t.to);
+    return hitOf('alchemy', t.hash, t.from, t.to, t.blockNum, undefined);
   });
 }
 
@@ -125,7 +138,7 @@ async function searchEtherscan(anchor: Anchor, ask: Ask): Promise<Hit[]> {
     chainid: '1',
     module: 'logs',
     action: 'getLogs',
-    address: anchor.token,
+    ...(anchor.token === undefined ? {} : { address: anchor.token }),
     fromBlock: anchor.fromBlock.toString(),
     toBlock: anchor.toBlock.toString(),
     topic0: anchor.event?.topic ?? TRANSFER,
@@ -147,7 +160,7 @@ async function searchEtherscan(anchor: Anchor, ask: Ask): Promise<Hit[]> {
     if (!isRecord(log) || !Array.isArray(log.topics)) throw new ResearchError('etherscan sent a malformed log');
     const [, from, to] = log.topics as unknown[];
     const address = (word: unknown) => (typeof word === 'string' ? `0x${word.slice(-40)}` : word === undefined ? ZERO : word);
-    return hitOf('etherscan', log.transactionHash, address(from), address(to));
+    return hitOf('etherscan', log.transactionHash, address(from), address(to), log.blockNumber, anchor.token === undefined ? log.address : undefined);
   });
 }
 
@@ -164,18 +177,26 @@ export type SourceExchange = { readonly request: SourceRequest; readonly answer:
  * answer over one page keeps only its length (Etherscan) or its page key (Alchemy): a halved window never reads its
  * transfers, and a busy token's windows halve many times.
  */
-function readFields(source: SourceName, answer: unknown): unknown {
+function readFields(request: SourceRequest, answer: unknown): unknown {
+  const { source } = request;
   if (!isRecord(answer)) return answer;
   if (source === 'alchemy') {
     if (!Array.isArray(answer.transfers)) return answer;
     const { transfers, pageKey } = answer;
     if (typeof pageKey === 'string') return { transfers: [], pageKey };
-    return { transfers: transfers.map((t: unknown) => (isRecord(t) ? { hash: t.hash, from: t.from, to: t.to } : t)) };
+    return { transfers: transfers.map((t: unknown) => (isRecord(t) ? { hash: t.hash, from: t.from, to: t.to, blockNum: t.blockNum } : t)) };
   }
   if (answer.status !== '1' || !Array.isArray(answer.result)) return answer;
   const { status, message, result } = answer;
   if (result.length >= PAGE) return { status, message, result: result.map(() => ({})) };
-  return { status, message, result: result.map((log: unknown) => (isRecord(log) ? { transactionHash: log.transactionHash, topics: log.topics } : log)) };
+  const emitter = request.source === 'etherscan' && request.query.address === undefined;
+  return {
+    status,
+    message,
+    result: result.map((log: unknown) =>
+      isRecord(log) ? { transactionHash: log.transactionHash, topics: log.topics, blockNumber: log.blockNumber, ...(emitter ? { address: log.address } : {}) } : log,
+    ),
+  };
 }
 
 /** Passes every request through and keeps each answer, cut to what the search reads. */
@@ -184,7 +205,7 @@ export function recordingAsk(inner: Ask): { ask: Ask; exchanges: () => SourceExc
   return {
     ask: async (req) => {
       const answer = await inner(req);
-      exchanges.push({ request: req, answer: readFields(req.source, answer) });
+      exchanges.push({ request: req, answer: readFields(req, answer) });
       return answer;
     },
     exchanges: () => [...exchanges],

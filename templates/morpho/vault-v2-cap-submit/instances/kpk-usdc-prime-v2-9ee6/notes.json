@@ -6,6 +6,10 @@
       "zh-TW": "可以用。KPK 文件、CoinGecko 和工廠都確認這個 vault。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "2 submissions of this shape name markets outside the registry. Misfits batch several caps in one multicall or MultiSend, or submit other settings; each gives MISMATCH.",
+    "zh-TW": "有 2 筆這個形狀的提交，市場不在 registry 裡。不合的是在一個 multicall 或 MultiSend 裡放好幾個上限，或提交其他設定；都會是 MISMATCH。"
+  },
   "judgments": [
     {
       "text": {

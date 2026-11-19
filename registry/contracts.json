@@ -120,6 +120,28 @@
       "from": 17446292
     }
   },
+  "multisend-1.5.0": {
+    "address": "0x218543288004CD07832472D464648173c77D7eB7",
+    "kind": "multisend",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.5.0/multi_send.json",
+    "sourceLabel": "canonical",
+    "defillama": "safe",
+    "code": {
+      "hash": "0xca1147a12963172a93910c5cb2bfa5ad0e941c7f03fc7eb017dd06a8ea4e5604",
+      "from": 22774982
+    }
+  },
+  "multisend-call-only-1.5.0": {
+    "address": "0xA83c336B20401Af773B6219BA5027174338D1836",
+    "kind": "multisend",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.5.0/multi_send_call_only.json",
+    "sourceLabel": "canonical",
+    "defillama": "safe",
+    "code": {
+      "hash": "0xcdbdcec38d2f1c7d961b0029ff8416b7e86e9974d6f0e9c9580c7d17fcfb6663",
+      "from": 22774983
+    }
+  },
   "bundler3": {
     "address": "0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245",
     "kind": "router",

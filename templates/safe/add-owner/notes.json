@@ -14,6 +14,10 @@
       "zh-TW": "不動任何資產，但改的是誰能動這個 Safe：新簽署人的地址要從聊天以外的來源核對。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "Misfits change several owners in one MultiSend, one of them with enableModule; kiss-sign refuses such a batch, so each change is its own transaction.",
+    "zh-TW": "不合的是在一個 MultiSend 裡改好幾個 owner，其中一筆還加了 enableModule；kiss-sign 不接受這種批次，每個變更要各自一筆交易。"
+  },
   "flow": [],
   "protocols": {},
   "judgments": [

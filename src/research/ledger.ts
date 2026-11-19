@@ -142,10 +142,8 @@ export type Finding =
   | { readonly kind: 'not-called' }
   /** A selector-routed proxy: its calls run in the implementations its routes reach, so no proof of one contract covers it. */
   | { readonly kind: 'routed-proxy' }
-  /** A `flow` line the call traces saw in none of the past transactions that make its call. */
-  | { readonly kind: 'line-not-seen'; readonly of: number }
-  /** A `flow` line the call traces saw in some of the past transactions that make its call, not all. */
-  | { readonly kind: 'line-partly-seen'; readonly seen: number; readonly of: number }
+  /** A `flow` line the call traces saw in fewer than all the past transactions that make its call, which a line must hold on. */
+  | { readonly kind: 'line-not-every'; readonly seen: number; readonly of: number }
   /** A call in the traces that moves money, which no call the template binds and no seen `flow` line covers. */
   | { readonly kind: 'money-uncovered'; readonly transactions: number };
 export type FindingKind = Finding['kind'];
@@ -196,8 +194,7 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'no-abi-case': 'warn',
   'not-called': 'na',
   'routed-proxy': 'na',
-  'line-not-seen': 'bad',
-  'line-partly-seen': 'warn',
+  'line-not-every': 'bad',
   'money-uncovered': 'warn',
 };
 
@@ -247,8 +244,7 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'no-abi-case': undefined,
   'not-called': undefined,
   'routed-proxy': undefined,
-  'line-not-seen': undefined,
-  'line-partly-seen': undefined,
+  'line-not-every': undefined,
   'money-uncovered': undefined,
 };
 
@@ -672,7 +668,7 @@ export function flowResults(comparison: FlowComparison): Result[] {
   const result = (id: string, about: Result['about'], finding: Finding): Result => ({ id, line: 'trace', about, source: undefined, link: undefined, finding });
   const lines = comparison.lines.flatMap(({ seen, of }, i): Result[] => {
     if (of === 0) return [];
-    const finding: Finding = seen === of ? { kind: 'agrees' } : seen === 0 ? { kind: 'line-not-seen', of } : { kind: 'line-partly-seen', seen, of };
+    const finding: Finding = seen === of ? { kind: 'agrees' } : { kind: 'line-not-every', seen, of };
     return [result(`flow.${i + 1}`, { kind: 'flow', line: i + 1 }, finding)];
   });
   const money = comparison.uncovered.map((u) => result(`trace.${u.call}.${u.from}.${u.to}.${u.kind}`, { kind: 'money', uncovered: u }, { kind: 'money-uncovered', transactions: u.transactions }));

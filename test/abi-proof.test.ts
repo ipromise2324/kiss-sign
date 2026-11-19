@@ -233,6 +233,26 @@ const CASES = [
     immutables: 0,
     uses: ['approve(address _spender,uint256 _value)', 'transfer(address _to,uint256 _value)'],
   },
+  {
+    name: 'multisend-1-5-0',
+    proxy: 'none',
+    proven: '0x218543288004cd07832472d464648173c77d7eb7',
+    contract: 'contracts/libraries/MultiSend.sol:MultiSend',
+    compiler: '0.7.6+commit.7338295f',
+    functions: 1,
+    immutables: 1,
+    uses: ['multiSend(bytes transactions)'],
+  },
+  {
+    name: 'multisend-call-only-1-5-0',
+    proxy: 'none',
+    proven: '0xa83c336b20401af773b6219ba5027174338d1836',
+    contract: 'contracts/libraries/MultiSendCallOnly.sol:MultiSendCallOnly',
+    compiler: '0.7.6+commit.7338295f',
+    functions: 1,
+    immutables: 0,
+    uses: ['multiSend(bytes transactions)'],
+  },
 ] as const;
 
 /** Etherscan's source for these compiles to the code on chain except the metadata hash. */

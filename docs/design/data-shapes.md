@@ -7,15 +7,20 @@ Part of [the kiss-sign design](../design.md).
 A template describes one operation for one protocol, for example `morpho/vault-deposit`.
 It is data, not code.
 
-- `contracts`.
-  Each contract is named from the contract registry, which holds its address, the source that names it, and its code pin.
+A template's keys are `id`, `card`, `calls` and `effects`, and, optionally, `nonce`, `same`, `facts` and `instanceField`; template load refuses any other.
+A contract is never written as an address: a rule names it from the contract registry, which holds its address, the source that names it, and its code pin.
+
+- `id`.
+  `<protocol>/<operation>`, the template's folder under `templates/`.
+- `card`.
+  The card fields, by name, each `{"kind": ...}` of one kind: `contract` (with `registryKind`, and optionally `defillama` or `marketPart`; see [Intent card](#intent-card)), `amount` (with `of`, `eth` or the token field it counts, and optionally `computed` or `max`, never both), `percent`, `address`, `recipient`, `nonce`, `owner`, `threshold` or `market`.
 - `calls`.
   The call tree the Safe makes, with MultiSend unwrapped.
-  Each call names its target contract and its function signature, or says its data is empty, as a plain ETH transfer or a cancellation sends.
+  Each call is `{ "to", "value", "function", "args" }`, with an optional `trailer` (see [Engine checks that every template gets](engine-and-chain.md#engine-checks-that-every-template-gets)), or `{ "to", "value", "data": "empty" }`, as a plain ETH transfer or a cancellation sends; `to` and `value` take rules as arguments do.
   The last call may say, with a reason, that it `merge`s: the card's operations then share it, as the Morpho app puts several vaults' withdrawals into one `multicall`, or the Merkl app several reward tokens into one `claim`'s parallel arrays.
   Each merged call is made once, after every other call, with each operation's items in card order.
-- `fields`.
-  A rule for every argument.
+- Each call's `args`.
+  A rule for every argument, by parameter name; a tuple's parts take theirs under `fields`, and an array's items under `items`.
   One of:
   - equals a card value (`amount`, `vault`), or a part of one, such as a vault's `asset` or a market's `loanToken`.
     A Morpho `MarketParams` tuple, exactly `(address,address,address,address,uint256)`, may be bound to a whole card market (`{"card": "market"}`): each of its five parts must equal the market's loan token, collateral token, oracle, interest rate model and lltv, and the mutation check changes each part.
@@ -35,8 +40,8 @@ It is data, not code.
     The lint goes by declared type: a free or constant `uint160`, `uint256` or `bytes32` that a contract reads as an address is not caught by type, and is left to review and the perturbation test (see [Engine checks that every template gets](engine-and-chain.md#engine-checks-that-every-template-gets)), except a `bytes32` named as a recipient (below);
   - equals the number the transaction holds at an earlier template path (`equals`), as a migration's share transfer must equal its approval;
   - a share price bound, at least as strict as the price a card amount per a card amount or an earlier field gives, scaled by a power of ten the template declares (`maxSharePrice`, `minSharePrice`; see [Intent card](#intent-card));
-  - at least a card amount (`atLeast`), on a number, such as the fewest tokens a swap or an order may buy;
-  - at most a card amount (`atMost`), on a number, such as the most tokens an exact-output swap may spend (`amountInMaximum`);
+  - at least a card amount (`atLeast`), on a `uintN`, such as the fewest tokens a swap or an order may buy;
+  - at most a card amount (`atMost`), on a `uintN`, such as the most tokens an exact-output swap may spend (`amountInMaximum`);
   - a time at most a number of seconds after the time of the block the transaction is judged on (`{"withinSeconds": <seconds>}`), on a `uintN` or `intN` that counts seconds since 1970 as a block's timestamp does, such as a CoW order's `validTo` or a swap's deadline.
     The block is the latest block `verify` reads for a transaction to sign, the one it simulates on, and the block an executed transaction ran in; its timestamp is read through both providers, so it is in the verdict file's exchanges and `replay` counts from the same time.
     A later value is `MISMATCH`, naming the field, its value, the block and its time, and the seconds; a block time the providers do not agree on is `UNVERIFIABLE`.
@@ -44,7 +49,7 @@ It is data, not code.
     An earlier value, an order already expired, is left alone: it can only fail.
     It is a bound the program checks, like `atMost`, not a claim it takes on trust, so it carries no reason; the evidence for the number is the spread `pnpm past-txs` prints for it (see Free numbers under Study past transactions, step 4 of [the flow](flow.md#first-time-an-operation-is-done-build-its-template)), and the AI cites it in the field's note.
     It exists because a pre-signed order or approval that stays valid far longer than normal use needs keeps a door open after the signer stops watching, as in the Drift exploit of April 2026; a CoW order's `validTo` left free lets an order that expires in a year match.
-    The mutation check sets it to one second past the bound.
+    The mutation check sets it to one second past the bound, from the block time it read; when that time was not read or the value does not fit the type, it changes the value by one instead (see [Engine checks that every template gets](engine-and-chain.md#engine-checks-that-every-template-gets)).
     The perturbation test (`pnpm perturb`, replayed by `pnpm test` and the report) changes only free fields, so it never changes this one; it counts the bound, as the mutation check of a recorded test transaction does, from the time of the block the transaction ran in, read through both providers, so a recorded transaction later than its bound is not perturbed, since its fields give `MISMATCH`;
   - encoded parameters (`encoded`), on `bytes`: `{ "as": "<NAME>(<params>)", "args" }`, the bytes are those parameters ABI-encoded with no selector before them, as a command router takes each command's input, such as Uniswap's Universal Router in `execute(commands, inputs, deadline)`.
     The name is only the protocol's name for them, such as `V4_SWAP`.
@@ -73,7 +78,7 @@ It is data, not code.
   - `bytes`, a string or an array of those leaves may be free only with a claim the template's tests check: `{"free": {"proof": "<why>"}}` when the contract reverts unless it verifies the value against what it already holds, such as a Merkle proof against a root or a CCTP message against Circle's attesters, or `{"free": {"unread": "<why>"}}` when the contract never reads it, such as the permit data of a VaultBundles deposit whose permit kind is bound to none.
     Free bytes could carry a whole call or an address, so they need one of these two claims, and the claim is what the perturbation test checks.
 - Reasons.
-  Every text the template's author writes for the signer, a free field's reason (`free`, or its `proof`, `unread` or `route`), a trailer's, a `max`'s, a computed field's `margin` `why` and an effect's `tolerance` `why`, a merged call's `merge` and a fact's `reason`, is an object keyed by language like the notes: `{ "en": ... }` or `{ "zh-TW": ... }` in the author's configured language, or `{ "en": ..., "zh-TW": ... }`.
+  Every text the template's author writes for the signer, a free field's reason (`free`, or its `time`, `proof`, `unread` or `route`), a trailer's, a `max`'s, a computed field's `margin` `why` and an effect's `tolerance` `why`, a merged call's `merge` and a fact's `reason`, is an object keyed by language like the notes: `{ "en": ... }` or `{ "zh-TW": ... }` in the author's configured language, or `{ "en": ..., "zh-TW": ... }`.
   Every reason of one template holds the same languages, and the program refuses a template whose reasons differ.
   The reasons stay in `template.json`, since they are part of what the signer approves and what its fingerprint covers.
   `card new` and `verify`'s page show a reason in the configured language, and in the language the template holds when it lacks that one, refusing nothing; `report.generated.md` prints each reason in every language the template holds, so the signer reviews every text the program may show.
@@ -138,6 +143,7 @@ It is data, not code.
   Optional: the contract card field the template is reported per (see One report, one operation, in [Report](flow.md#first-time-an-operation-is-done-build-its-template)), such as a pool field.
   Template load refuses a name that is not a contract card field.
   Without it, the card's one contract field of registry kind `vault` is the instance field.
+  The program uses only the field's registry kind: a template whose card has two contract fields of that kind has no per-instance report yet, so every card for it is refused, the named field included.
 
 ### Standing allowances
 
@@ -212,11 +218,11 @@ The market itself has no source page: its parts are checked as registry entries,
 `registry/attributes.json` declares every attribute a registry entry may carry and the kind of entry it must name, such as `{"asset": "token", "factory": "factory", "adapter": "adapter"}`.
 An entry of any kind may carry any declared attribute, as `"attributes": {"asset": "usdc", "factory": "vault-v2-factory"}`, and registry load refuses an attribute the table does not declare and one that names no registry entry of its kind.
 An attribute is a claim research makes about an entry, such as a vault's asset, a Vault V2's market adapter or a Uniswap pool's `token0`; a new protocol's attribute is a new line of the table, never code.
-A card reference reads one (`vault.asset`); template load refuses it when no entry its field accepts carries it, and a card naming an entry that lacks it is refused (`the registry has no adapter for <vault>`).
+A card reference reads one (`vault.asset`); template load refuses it when no entry its field accepts carries it, and `card new`, `card seal` and `verify` refuse a card naming an entry that lacks it before any check (`the registry has no adapter for <vault>, which <template> reads as vault.adapter`).
 A missing table, as in a verdict file from before it, declares the three attributes the program knew then: `asset` naming a `token`, `factory` a `factory` and `adapter` an `adapter`.
 
 An entry whose `factory` attribute names a registry factory is an instance of that factory.
-The factory's `instanceCheck` names the views that admit its instances: one view, or a list of views that must all pass.
+Every registry `factory` entry declares an `instanceCheck`, and registry load refuses one without it; it names the views that admit its instances: one view, or a list of views that must all pass.
 Each view is one party vouching for the instance, written as:
 
 - `ask`: the contract asked, `"factory"` (the default), `"instance"`, `{"attribute": <name>}` for the entry an attribute of the instance names, or `{"namedBy": <name>}` for each registry entry whose attribute of that name names the instance, each asked on its own.
@@ -287,7 +293,7 @@ Template load refuses a slug no registry entry of that kind belongs to, by the s
 A contract field may also name a part of the markets table, `{"kind": "contract", "registryKind": "token", "marketPart": "collateralToken"}`, so that it accepts only registry entries of its kind that are that part of some market in `registry/markets.json`: a Vault V2 collateral's cap names a token a registered market takes as collateral, never a token such as MORPHO that no market of the table lends against.
 Template load refuses a part that is not a contract part of a market (`lending`, `loanToken`, `collateralToken`, `oracle`, `irm`), a part whose entries are of another kind than `registryKind`, and a scope no registry entry fills.
 `card new` lists only those entries, `pnpm report` states the rule and lists only those, and `card seal` and `verify` refuse a card naming any other (`morpho is not the collateralToken of any market in registry/markets.json`).
-An instance field of a template reported per instance narrows further, to the instances with a report for that template (see [Report](flow.md#first-time-an-operation-is-done-build-its-template), step 6): `card new` lists only those, and `card seal` and `verify` refuse any other.
+An instance field of a template reported per instance narrows further, to the instances with a report for that template, and so does every other field that can name an entry of the instance field's kind, an `address` field included (see [Report](flow.md#first-time-an-operation-is-done-build-its-template), step 6): `card new` lists only those, and `card seal` and `verify` refuse any other.
 
 Card values per operation, covering the operations in the Safe's history:
 
@@ -361,7 +367,7 @@ Card values per operation, covering the operations in the Safe's history:
   A template names the whole market or one part: `market.lending`, `market.loanToken`, `market.collateralToken`, `market.oracle` and `market.irm` are registry addresses, `market.lltv` is a number, and `market.id` is a bytes32.
   An amount of `market.loanToken` is typed in that token's decimals, as for any registry token.
 - A card `percent` field takes a percent in plain digits with at most 16 decimals, such as `100` or `35.5`, at most 100, and the card holds it in WAD base units, 100% being 10^18, as Vault V2 counts a relative cap.
-- An amount field may declare `"max": { "value": "<base units>", "why" }`: the signer may type `max` for that number, which `card new` prints with the reason, such as a Vault V2 absolute cap of 2^128-1, which the curator app sets for no limit and which no one types in whole tokens.
+- An amount field may declare `"max": { "value": "<base units>", "why" }`: the signer may type `max` for that number, which `card new` prints with the reason, such as a Vault V2 absolute cap of 2^128-1, which the curator app sets for no limit and which no one types in whole tokens; a computed field is never typed, so template load refuses one with a `max`.
 - An `owner` card field takes an address-book name, never `safe` or a registry contract, and a `threshold` field a whole number from 1, typed as it is.
   An owner to remove or replace must be in the address book too, although the chain lists the Safe's owners: a card holds names the signer confirmed, never an address read at signing.
   `card new` lists the book; picking someone who is not an owner gives `MISMATCH` at `verify`.
@@ -373,7 +379,7 @@ In the basic tier an AI on the same computer can write there; see [Two tiers](..
 
 ### Verdict file
 
-Every input the verdict used, so `replay` can recompute it offline: the Safe transaction as given, the sealed card's text and hash, each template's text with its approved hash, the contract registry, the markets table and the attributes table when the commit has them, and the address-book entries the card names, all read at the origin/main commit the self-check passed on, and every request sent to the two providers with each one's answer, each code answer by its keccak256 in the file's `bytecode` table (see Recordings), and each signed message's `lookup` answer (see [Signed messages](#signed-messages)).
+Every input the verdict used, so `replay` can recompute it offline: the Safe transaction as given, the sealed card's text and hash, each template's text with its approved hash, the contract registry, the markets table and the attributes table when the commit has them, and the address-book entries the card names, the templates and the tables read at the origin/main commit the self-check passed on and the card and the address book from `$KISS_SIGN_HOME`, and every request sent to the two providers with each one's answer, each code answer by its keccak256 in the file's `bytecode` table (see Recordings), and each signed message's `lookup` answer (see [Signed messages](#signed-messages)).
 A file without the markets table, such as one from before markets, has no markets, and one without the attributes table has the three attributes the program knew before it.
 `replay` runs the same checks on these alone and reports whether the verdict, and the list of calls that move no asset, are the ones recorded.
 It exits 0 when they are, whatever the verdict, and 1 when they differ or the file cannot be replayed.

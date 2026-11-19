@@ -5,7 +5,7 @@ The exact shape and every limit are in step 6 of [First time an operation is don
 
 ## Write and render
 
-1. Write `templates/<protocol>/<operation>/notes.json` (an older template has `report.md` instead).
+1. Write `templates/<protocol>/<operation>/notes.json`.
    Its `entries.<name>.sources` already hold what you saw at each address before any check ([addresses.md](addresses.md)); complete the rest around them, and write `reviews` only after `--record`, against the printed results.
 2. Run `pnpm report <protocol>/<operation> --render`, with `--instance-of <instance>` for a per-instance report.
    It writes the signer's report from the recordings and your notes, `report.generated.en.html`, `report.generated.zh-TW.html` or both, one for each language the notes hold.
@@ -23,8 +23,10 @@ The exact shape and every limit are in step 6 of [First time an operation is don
 - `verdict`: `{ "status": "safe" | "caution", "text" }`, one line of at most 100: your research advice on the operation's risk, despite the key's name.
   It is not a transaction's verdict, which only `verify` gives, and it never moves a program result; the Advice (建議) line's icon is the program's worst result, not your status.
 - `flow`: at most four lines of what happens inside a call, each `{ "after": <call number>, "from": <registry name>, "to": <registry name>, "function": <canonical signature>, "text", "sources" }`, between two contracts the calls or the effects' views target, the entries those name in `dependsOn`, or the tokens the effects move.
-  `function` is the function `from` calls on `to`, canonical, such as `deposit(uint256,address)`; the program compares each line with the call traces `pnpm past-txs --record` keeps and draws it solid only when every traced transaction shows it.
-  Before you write a line, find that call in a past transaction's internal calls (Etherscan's trace of one transaction `pnpm past-txs` found) and in the contract's source; `sources` holds both, the source pinned to a commit and the transaction's Etherscan page.
+  `function` is the function `from` calls on `to`, canonical, such as `deposit(uint256,address)`; the program compares each line with the call traces `pnpm past-txs --record` keeps, in the traced transactions that make the template call it follows (`after`), and draws it solid only when every one of them shows it; with no such trace the line is not compared and gives no result.
+  A line must hold on every traced transaction: one that some show and others do not is red, as one none show.
+  A path that depends on state or on a choice, such as a call one vault makes and another does not, is not one line: split it by what the card asks, a card field the signer chooses, or into a template of its own, so the signer always knows which path they sign; when you cannot tell which path the signer means, ask them which operation it is.
+  Before you write a line, find that call in a past transaction's internal calls (Etherscan's trace of one transaction `pnpm past-txs` found) and in the contract's source; `sources` holds both, the source pinned to a commit first, since a confirmed line links the first source, then the transaction's Etherscan page; the program checks only that `sources` is a list of https URLs, not empty.
   Name no call the template binds itself, such as a Bundler3 bundle item: the diagram draws those from the template, and the program refuses the line.
   Spend the four lines on the steps that move money inside the call: every `transfer`, `transferFrom`, `approve` or ETH transfer that is not a call the template binds or a line names, nor made directly by one, is a result for the signer that you review.
 - `protocols`, by DefiLlama slug, one for every protocol the generated report's protocol facts cover: `intro`, one line; `audits`, a note citing the audit reports; `incidents`, one note per DefiLlama hack in date order, its cause with the post-mortem as a source, exactly as many as the facts list.
@@ -32,7 +34,7 @@ The exact shape and every limit are in step 6 of [First time an operation is don
 - `reviews`: below.
 - `pastTxsConclusion`, optional: one line of at most 200 on what the past transactions with other shapes teach.
 - `entries`, by registry name: `role`, one line, and `sources`, each source you checked by hand as `{ "text", "url", "result": "pass" | "attention" | "fail" }`.
-- `fields`: a text for every argument and every tuple part by the HTML report's field key, such as `1.approve.spender` or `2.blueBundlesV1Supply.marketParams.oracle`.
+- `fields`: a text for every argument, tuple part, array item, nested call's argument, packed part and signed-message member, by the HTML report's field key, such as `1.approve.spender` or `2.blueBundlesV1Supply.marketParams.oracle`.
 - A note is `{ "text", "sources"? }` with https URLs.
 
 ## What to write
@@ -54,13 +56,13 @@ Write no claim the program already checks: the page prints the facts, values and
 
 ## Reviews
 
-The HTML page lists every red or amber program result under To review (待確認); the generated Markdown keeps every result with its raw output.
+The HTML page lists every red or amber program result under To review (待確認); the generated Markdown keeps every result with its raw output but the call traces' `flow.<n>` and `trace.*`, which come from your `flow` lines and are on the HTML page only.
 `--render` refuses notes that leave one of those without a review or review any other result.
 Your own observations went into `entries` before the checks ([addresses.md](addresses.md)); write each review after them, against the program's result as it printed it.
 The result stays as it is, your review sits under it, and a `FINDING` stays visible even when you confirmed the source another way.
 
 - Key: `reviews["<registry name>/<check key>"]`, or `reviews["fixture.<name>"]`; a documentation page's key names its function by selector, such as `doc.0x095ea7b3.page`.
-- The call traces give `flow.<n>`, a line not seen in every traced transaction, and `trace.<call>.<from>.<to>.<kind>`, a money call no line covers; in a per-instance report they go in the instance's `notes.json`. Review an uncovered money call by naming each address outside the registry the page lists and what it is, from its source or Etherscan, or add the line that explains it.
+- The call traces give `flow.<n>`, a line not seen in every traced transaction that makes the template call it follows, `<n>` counting the template's lines first and then the instance's, from 1, and `trace.<call>.<from>.<to>.<kind>`, a money call no line covers, where `<from>` and `<to>` are `safe`, a registry name or `other` for an address outside the registry, and `<kind>` is `transfer`, `transferFrom`, `approve` or `eth`; in a per-instance report they go in the instance's `notes.json`. Review an uncovered money call by naming each address outside the registry the page lists and what it is, from its source or Etherscan, or add the line that explains it.
 - Value: `{ "status": "confirmed" | "concern", "text", "recommendation" }`.
 - `text`, at most 300 characters, says only what you actually checked and what you saw, with full addresses, such as "Opened the page in a browser; the oracle address is 0x… (in full)." or "用瀏覽器打開頁面，oracle 地址就是 0x…（完整地址）。".
   If you could not check the thing the result names, say so and name the other evidence you have.
@@ -72,9 +74,9 @@ The result stays as it is, your review sits under it, and a `FINDING` stays visi
 
 A per-instance report reads two files.
 
-- The template's `notes.json` holds what every instance's report shares: `title`, `summary`, `protocols`, `fields`, the `flow` lines that name no instance or asset, and the shared contracts' `entries`, `judgments` and `reviews`, among them every entry each instance with a report depends on or names as the same attribute, such as Fluid's Liquidity and LendingFactory, written once.
+- The template's `notes.json` holds what every instance's report shares: `title`, `summary`, `protocols`, `fields`, the `flow` lines that name no entry the instance owns (the instance, the entries its attributes name and those it depends on), and the shared contracts' `entries`, `judgments` and `reviews`, among them every entry each instance with a report depends on or names as the same attribute, such as Fluid's Liquidity and LendingFactory, written once.
 - The instance's own `notes.json`, in `templates/<protocol>/<operation>/instances/<instance>/`, holds only `verdict`, `flow`, `judgments`, `reviews`, `entries` and `pastTxsConclusion` about that instance, the entries only it names as attributes or depends on included, such as its asset.
-  A `flow` line that names the instance or its asset goes here, since another instance's report cannot name it.
+  A `flow` line that names the instance, an entry its attributes name, such as its asset or its factory, or one it depends on, such as Fluid's Liquidity, goes here, since another instance's report cannot name it; the program refuses such a line in the template's file, even for an entry such as Liquidity whose `entries` and `reviews` are shared and written once in the template's file.
 - Its `docs.json` sits beside it, written before `--record`, when a function's page is specific to this report, such as one that names the instance, its asset or another contract only this report covers.
 - The program refuses a `reviews` key or `entries` name for any other contract, or for a test transaction, and a key or name both files define; the `flow` lines and the judgments of both each count toward four.
 - Write the instance's notes in the signer's language even when the template's hold both, and leave every existing text as it is; the report is written in the languages both files hold, and `--render` refuses an instance's notes that share no language with the template's.

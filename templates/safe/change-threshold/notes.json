@@ -14,6 +14,10 @@
       "zh-TW": "不動任何資產，但門檻決定幾把鑰匙就能動這個 Safe。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "Every misfit batches the threshold with owner changes, some with enableModule calls, which kiss-sign refuses.",
+    "zh-TW": "不合的都是把門檻和 owner 變更一起送，有的還加 enableModule，kiss-sign 不接受。"
+  },
   "flow": [],
   "protocols": {},
   "judgments": [
