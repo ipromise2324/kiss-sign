@@ -98,7 +98,7 @@ Each place has rules the parser or `pnpm check-sources` enforces:
 
 Run each for the new entries, and paste none of their output anywhere: `pnpm report` puts every result into the generated report.
 
-- `pnpm prove-abi <address>` proves the code and prints the proxy kind, the implementation, the compiler and the code hash ([Establish the ABI](build-template.md#establish-the-abi)).
+- `pnpm prove-abi <address>` proves the code and prints the proxy kind, the implementation, the compiler and the code hash ([Establish the ABI](build-template.md#establish-the-abi)); it refuses a selector-routed entry, whose routes `pin-code` pins.
 - `pnpm pin-code <name>...` pins each entry's code hash and the blocks it ran from.
 - `pnpm prove-instance <name>` for each entry with a `factory`, and `pnpm instance-evidence <name>` for each instance.
 - `pnpm check-sources <name>...` reads the places each entry's registry fields record, Immunefi and CoinGecko, and with both API keys each creation, and prints each check as `agrees`, `FINDING`, `UNVERIFIABLE` or `not listed`, then the sites each protocol's sources use.
