@@ -22,6 +22,9 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 ## Contents
 
 - [Why](#why)
+- [Install](#install)
+  - [Your computer: kiss-sign](#your-computer-kiss-sign)
+  - [A clean computer: kiss-sign-check](#a-clean-computer-kiss-sign-check)
 - [How it works](#how-it-works)
   - [1. Tell your AI what you want](#1-tell-your-ai-what-you-want)
   - [2. Review the report and merge](#2-review-the-report-and-merge)
@@ -56,14 +59,14 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 
   It names the call "Bundler3 Multicall" and hands each action to the descriptor of the contract that action calls. Both actions here, `erc20TransferFrom` and `erc4626Deposit`, call GeneralAdapter1, which has no descriptor, so the two steps that move your USDC into the vault have nothing to show them by. MultiSend, which wraps the whole batch, has none either. The screen can look reasonable while the parts that move your money are not shown. kiss-sign needs no descriptor: your wallet only has to show the hashes.
 
-## How it works
+## Install
 
 > [!CAUTION]
 > kiss-sign is provided as is, with no warranty. It can be wrong, and you alone are responsible for what you sign. See [Disclaimer](#disclaimer).
 
-The pictures below come from one real run: another Safe's deposit of 1,000,611.448606 USDC into a Morpho vault, the Hyperithm USDC Apex vault. One address crop is from another vault's report, as marked.
+### Your computer: kiss-sign
 
-**Set up once.** Fork this repository and clone your fork. Your fork's `main` is the program `verify` trusts. You merge each template and registry pull request into it, and merging is your confirmation; program changes your AI merges itself, behind a gate (see [Your AI](#your-ai)).
+Fork this repository and clone your fork. Your fork's `main` is the program `verify` trusts. You merge each template and registry pull request into it, and merging is your confirmation; program changes your AI merges itself, behind a gate (see [Your AI](#your-ai)).
 
 ```sh
 git clone https://github.com/<you>/kiss-sign.git && cd kiss-sign
@@ -79,9 +82,26 @@ You need:
 - Node 22.21 or later and pnpm.
 - Free [Alchemy](https://dashboard.alchemy.com/) and [Etherscan](https://etherscan.io/myapikey) keys. A GitHub token is optional: a fine-grained, read-only one for public repositories raises GitHub's hourly limit when you build or review templates.
 - A hardware wallet that shows a Safe transaction's domain hash and message hash, or its safeTxHash.
-- For the hardened tier, a second computer with [kiss-sign-check](https://github.com/ipromise2324/kiss-sign-check), its `LANGUAGE` set to the language you gave `init`. It runs no AI and no kiss-sign, so malware or an AI on your computer cannot also change what you compare. Without it you are on the basic tier, kiss-sign alone. See [Two tiers](docs/design.md#two-tiers).
 
 **Language.** English (`en`, the default) or Traditional Chinese (`zh-TW`). Change it later with `pnpm kiss-sign init --language zh-TW`. It sets which HTML report your AI gives you, the terminal text, `verify`'s page and `pnpm history`; addresses, hashes and verdict words stay the same, and so do verdicts. Set `LANGUAGE` in `check.sh`'s `config` to the same language, or the comparison rows differ.
+
+### A clean computer: kiss-sign-check
+
+For the hardened tier, set up a second computer that runs no AI and no kiss-sign, so malware or an AI on your computer cannot also change what you compare. Without it you are on the basic tier, kiss-sign alone. See [Two tiers](docs/design.md#two-tiers).
+
+On it, install Foundry for `cast` and `jq` 1.7 or later, then:
+
+```sh
+git clone https://github.com/ipromise2324/kiss-sign-check.git && cd kiss-sign-check
+less check.sh             # read it in full, once, and write down the commit you read
+cp config.example config  # set SAFE, SAFE_VERSION and LANGUAGE, the same language you gave init
+```
+
+Then write `known-addresses.txt` by hand from each protocol's official docs, never from your computer. The [kiss-sign-check README](https://github.com/ipromise2324/kiss-sign-check#set-up-the-second-computer-once) has every step.
+
+## How it works
+
+The pictures below come from one real run: another Safe's deposit of 1,000,611.448606 USDC into a Morpho vault, the Hyperithm USDC Apex vault.
 
 ### 1. Tell your AI what you want
 
