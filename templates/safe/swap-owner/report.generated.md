@@ -126,11 +126,11 @@ senders, of 227 transactions studied:
     47 calls no function the template calls (called 0x765e827f in 23, 0x1fad948c in 15, 0x8f5c3522 in 3, 0x8d80ff0a in 2, …)
 call traces, from drpc, of the transactions exactly the template: 50 transactions, 50 checked against the receipt both providers agree on
 by proven Safes, the whole template in one transaction:
-another operation, making none of the template's calls: 107 transactions from 106 Safes; not counted below
+another operation, making none of the template's calls: 109 transactions from 108 Safes; not counted below
   e.g. 0x29e2360fe5973a799dcf0bcfcfb24e5825c8c19bb47ca3a2e68530445c60a08b: calls 0xbDB8DDa0FB7E5698CBe49Cc266cA38C1536440De.0x0d582f13, 0xbDB8DDa0FB7E5698CBe49Cc266cA38C1536440De.0x0d582f13
   e.g. 0x310ed21db9bfc2f3dbe4818b538bdf7bafb687b02f348040474607a89ebae0a7: calls 0xB2B5568aA9b7d815a046C550e28D13796Ea7201b.0x0d582f13
   e.g. 0x1934e1bc306e2b4ac405b85e3e73aa945b4b6a6f44580aa3c5650cd86154f65b: calls 0x4D732B231942aD768eD4216fc8a60c8330c85711.0x0d582f13, 0x4D732B231942aD768eD4216fc8a60c8330c85711.0x0d582f13, 0x4D732B231942aD768eD4216fc8a60c8330c85711.0x0d582f13, 0x4D732B231942aD768eD4216fc8a60c8330c85711.0x0d582f13
-fit the template's shape: 50 transactions from 50 Safes; misfits: 22 from 22 Safes
+fit the template's shape: 50 transactions from 50 Safes; misfits: 20 from 20 Safes
 fields, over the 50 fitting transactions:
   call.to  [the Safe]
     equalled the Safe in 50 of 50 (50 Safes); values: the Safe in 50
@@ -143,8 +143,6 @@ fields, over the 50 fitting transactions:
   call.swapOwner.newOwner  [card new-owner]
     same as the other leaves bound to card new-owner in 50 of 50; values: another address in 50 (35 distinct other addresses)
 misfits, by reason:
-  3 from 3 Safes: a delegatecall to a contract that is not an official MultiSend
-    e.g. 0x4e419afe999a91cc12b59ccc72c98bfc3d5b86ebb98348eb4b920937f9544655, 0xab09ebbf88e59724a1cdf4bdcfb104201633f4ef62c90854401dd6469cdf6918, 0x2666fc4361a43b6d5527c2a47eb37fa224bdeaf07850f64294f21d5532a75c59
   1 from 1 Safe: calls 0x1b07d2B31bE2c6ee7639A06Dcf66281C3bd58714.swapOwner, 0x1b07d2B31bE2c6ee7639A06Dcf66281C3bd58714.0x0d582f13
     e.g. 0x288246c38164bd09de39600567266fdcf60449589927d3031d80aff7f7090b63
   1 from 1 Safe: calls 0x2BeeC0742E11c6C95bB1341C8eD30FAE112c6ce3.swapOwner, 0x2BeeC0742E11c6C95bB1341C8eD30FAE112c6ce3.0x0d582f13
@@ -181,6 +179,8 @@ misfits, by reason:
     e.g. 0xcd44a3cac161d50d4bef0bb45c445d42611ded25eb4ff01b6a4dfa1513771c02
   1 from 1 Safe: calls 0x661ABAa32A46054433537E464011176D2a4C4955.swapOwner, 0x661ABAa32A46054433537E464011176D2a4C4955.0x694e80c3
     e.g. 0x4a4220fab4264f3eaae177157efdd5266d698bee815dc699b6285cd695ce6775
+  1 from 1 Safe: calls 0x3afDE2fAb39a5aE59C81FD8095C89022b0cb6077.swapOwner, 0x3afDE2fAb39a5aE59C81FD8095C89022b0cb6077.0x0d582f13, 0x3afDE2fAb39a5aE59C81FD8095C89022b0cb6077.0x0d582f13, 0x3afDE2fAb39a5aE59C81FD8095C89022b0cb6077.0x0d582f13, 0x3afDE2fAb39a5aE59C81FD8095C89022b0cb6077.0x0d582f13, 0x3afDE2fAb39a5aE59C81FD8095C89022b0cb6077.0x0d582f13, 0x3afDE2fAb39a5aE59C81FD8095C89022b0cb6077.0x0d582f13, 0x3afDE2fAb39a5aE59C81FD8095C89022b0cb6077.0x610b5925
+    e.g. 0xab09ebbf88e59724a1cdf4bdcfb104201633f4ef62c90854401dd6469cdf6918
   1 from 1 Safe: calls 0x7A36852A428513221555aeC720a09eCd83818310.swapOwner, 0x7A36852A428513221555aeC720a09eCd83818310.0xf8dc5dd9
     e.g. 0xc220c915d4e817c3774f5a59403dc75c671db671459b51baa6627a055585e0a8
 examples that fit: 0x3326c7e512563a6a686bc9349a96de0b6451275457888b021b2913d4b2a1c12c, 0x4742f3291cdfbadd2d58ec76c5859d4459b6b4987ce50fbb55cd28ffaaacfcd7, 0x6f84e2b359f8e766cf0320025d487d7709c8b0c559e9e4ac21ac0e9dff0804a7

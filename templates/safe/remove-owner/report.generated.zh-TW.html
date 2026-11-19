@@ -395,7 +395,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>過去交易</h2>
-  <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">72</span> 筆：Safe <span class="num">72</span> 筆（69 個 Safe）、EOA <span class="num">0</span> 筆；形狀一樣、但有地址不在 registry 裡的有 <span class="num">0</span> 筆；形狀不同的有 <span class="num">31</span> 筆，列在其他做法。這些交易全部成功執行：它們是從 Safe RemovedOwner時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0xf749df198c1ea48225ac50e31b63d4b83db56af1402540da3e613def8d2c1dab">0xf749df19…</a>、<a href="https://etherscan.io/tx/0x3eb3472e6ef95810584e2fca82fc1ddf2d870113770f90d6620e486b4279732b">0x3eb3472e…</a>、<a href="https://etherscan.io/tx/0x84828e10411689d00609feaae5dcc0c143347c7be049130926250ec723efd814">0x84828e10…</a>。</p>
+  <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">79</span> 筆：Safe <span class="num">79</span> 筆（76 個 Safe）、EOA <span class="num">0</span> 筆；形狀一樣、但有地址不在 registry 裡的有 <span class="num">0</span> 筆；形狀不同的有 <span class="num">22</span> 筆，列在其他做法。這些交易全部成功執行：它們是從 Safe RemovedOwner時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0xf749df198c1ea48225ac50e31b63d4b83db56af1402540da3e613def8d2c1dab">0xf749df19…</a>、<a href="https://etherscan.io/tx/0x3eb3472e6ef95810584e2fca82fc1ddf2d870113770f90d6620e486b4279732b">0x3eb3472e…</a>、<a href="https://etherscan.io/tx/0x84828e10411689d00609feaae5dcc0c143347c7be049130926250ec723efd814">0x84828e10…</a>。</p>
   <p class="intro"><span class="aiw" data-ai><span>不合的都是一次改好幾個 owner，有的還加 enableModule，kiss-sign 不接受。透過 MultiSend 1.5.0 只移除一個 owner 的交易符合模板。</span><span class="byai">AI 研究</span></span></p>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
@@ -403,9 +403,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h3>搜尋 Safe 的RemovedOwner，找到 600 筆，研究 223 筆</h3>
   <p class="lead">記錄在 <code>testdata/research/safe-remove-owner.json</code>。只有 Etherscan 搜尋事件，找到 <span class="num">600</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
   <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">103</span> 筆用了這個操作的呼叫（99 個 Safe），<span class="num">72</span> 筆跟模板一模一樣。</span></div>
-    <div class="pg"><span class="pc num">11 筆</span><div><div>delegatecall 到不是官方 MultiSend 的合約<span class="f3">，來自 11 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x8338ba23c2efd56f077735528fc8fdf736a586a0180f182fcd5886ece8792ced">0x8338ba23…</a>、<a href="https://etherscan.io/tx/0x93f176fbb6898017bc56307158ab43d1eeedcf32e8fb427b9368cf7fad2eb49a">0x93f176fb…</a>、<a href="https://etherscan.io/tx/0x34481bfc42009cb63165b581dbede99eadd10c545a10350d6f8d7ef840b6bafd">0x34481bfc…</a></div></div></div>
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">101</span> 筆用了這個操作的呼叫（97 個 Safe），<span class="num">79</span> 筆跟模板一模一樣。</span></div>
     <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>0x45bD83458b8B6bfd83b4704441d4975E734a81Cc.removeOwner → 0x45bD83458b8B6bfd83b4704441d4975E734a81Cc.removeOwner</code></div><div>呼叫跟模板不同，模板是 <code>removeOwner</code><span class="f3">，來自 1 個地址</span></div>
       <div class="pex">例：<a href="https://etherscan.io/tx/0x24237ba752e4d95630369dec39492b48aeee9e3d3e83306c5cbc36b7c80ba121">0x24237ba7…</a></div></div></div>
     <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>0x4A622197312Cff5Dd66Ff53A67b0Bd47030518F1.enableModule → 0xaC8A77be2Ae8B931062A9Bc83462F97EEc0eC05D.enableModule → 0x4A622197312Cff5Dd66Ff53A67b0Bd47030518F1.removeOwner</code></div><div>呼叫跟模板不同，模板是 <code>removeOwner</code><span class="f3">，來自 1 個地址</span></div>
@@ -442,12 +440,16 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="pex">例：<a href="https://etherscan.io/tx/0xba948077d6a1e66cc6d5a6977e7d89e305261c1263548cd34cc0a4c64914904d">0xba948077…</a></div></div></div>
     <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>0xD80c9C4489034aff0061e45f994dDd3d538c1a6b.removeOwner → 0xD80c9C4489034aff0061e45f994dDd3d538c1a6b.removeOwner → 0xD80c9C4489034aff0061e45f994dDd3d538c1a6b.removeOwner</code></div><div>呼叫跟模板不同，模板是 <code>removeOwner</code><span class="f3">，來自 1 個地址</span></div>
       <div class="pex">例：<a href="https://etherscan.io/tx/0xc8d4f5f7b097ec106023e71c446fbbb10b4c35ff7288f125e6ef6ab111341f87">0xc8d4f5f7…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>0x06D6d5A2C3C7161491b6864a66C82aC933cb3D5d.addOwnerWithThreshold → 0x06D6d5A2C3C7161491b6864a66C82aC933cb3D5d.addOwnerWithThreshold → 0x06D6d5A2C3C7161491b6864a66C82aC933cb3D5d.removeOwner → 0x06D6d5A2C3C7161491b6864a66C82aC933cb3D5d.removeOwner → 0x06D6d5A2C3C7161491b6864a66C82aC933cb3D5d.removeOwner</code></div><div>呼叫跟模板不同，模板是 <code>removeOwner</code><span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xabb4903a66bc91521f67afc1ed60669dc951d74478e5917af792c15429d11f3f">0xabb4903a…</a></div></div></div>
     <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>0xCDEd9d57FE29Ddc63233dc6a9ad67DD22AB31D6f.removeOwner → 0xCDEd9d57FE29Ddc63233dc6a9ad67DD22AB31D6f.removeOwner</code></div><div>呼叫跟模板不同，模板是 <code>removeOwner</code><span class="f3">，來自 1 個地址</span></div>
       <div class="pex">例：<a href="https://etherscan.io/tx/0xf0bde0216b733843b27314c1ef67851fbc2b72e89de4432d8e82d7f2f8554c91">0xf0bde021…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>0xBFc4037257e5e5560Ebb6ecEaD770ff331402851.swapOwner → 0xBFc4037257e5e5560Ebb6ecEaD770ff331402851.removeOwner</code></div><div>呼叫跟模板不同，模板是 <code>removeOwner</code><span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xaa8e97492fa79281b40b605464339d2626444db6be70ab205ba8e3018af822d9">0xaa8e9749…</a></div></div></div>
     <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>0x16F94a7719994303125bc7cEB2Dac0Cca2e9b787.removeOwner → 0x16F94a7719994303125bc7cEB2Dac0Cca2e9b787.removeOwner</code></div><div>呼叫跟模板不同，模板是 <code>removeOwner</code><span class="f3">，來自 1 個地址</span></div>
       <div class="pex">例：<a href="https://etherscan.io/tx/0x71d0d493499fb03543cb873e9bf0c0c1947ae988ae35e7c443ea2206ddbadbaa">0x71d0d493…</a></div></div></div>
   </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 116 筆是別的操作，不列入：<code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 7 筆、<code>0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789.0x1fad948c</code> 5 筆、<code>0x00000000005aD9ce1f5035FD62CA96CEf16AdAAF.0x8f5c3522</code> 4 筆、<code>0x000000000004598D17aaD017bF0734a364c5588b.0x00000000</code> 2 筆，還有別的。</span></div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 118 筆是別的操作，不列入：<code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 7 筆、<code>0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789.0x1fad948c</code> 5 筆、<code>0x00000000005aD9ce1f5035FD62CA96CEf16AdAAF.0x8f5c3522</code> 4 筆、<code>0x000000000004598D17aaD017bF0734a364c5588b.0x00000000</code> 2 筆，還有別的。</span></div>
   <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 4 筆來自不是 Safe 的合約、執行失敗或讀不到，不列入。</span></div>
   </details>
 </section>
