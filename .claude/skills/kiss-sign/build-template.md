@@ -113,7 +113,7 @@ Cite a URL for every claim; it goes into `protocols` in `notes.json`.
 2. In `test/`, require `MATCH` for each with its implied card, and require the mutation check to catch every bound field; `test/canaries/template.canary.ts` and `test/canaries/mutation.canary.ts` show both.
 3. For a template with a free field, record the perturbation test of one transaction with `pnpm perturb <name> --card '<card json>' --record <name>`; `test/canaries/perturb.canary.ts` replays every recording.
    A failing field must be bound, not explained.
-4. Run `pnpm report <protocol>/<operation> --render` again, with `--instance-of <instance>` for a per-instance report: the report judges each perturbation recording and takes its example transaction from the first, so a recording added after the last render changes it, and `pnpm test` fails until you do.
+4. Run `pnpm report <protocol>/<operation> --render` again for every report of the template, each instance's with `--instance-of <instance>`: the report judges each perturbation recording and takes its example transaction from the first, so a recording added after the last render changes it, and `pnpm test` fails until you do.
 
 ## Open the pull request
 
