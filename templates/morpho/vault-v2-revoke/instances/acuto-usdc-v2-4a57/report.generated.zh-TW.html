@@ -608,6 +608,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </dl>
   <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>你的 Safe 是 proxy：Ledger 透過 Ledger 自己的伺服器把它解析成 safe-1.3.0 或 safe-1.4.1，才用得上這些描述檔；不解析 proxy 的錢包只顯示原始資料。</span></div>
   <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>SafeTx：錢包不顯示 <code>safeTxGas</code>、<code>nonce</code>，只有 hash 涵蓋它們。</span></div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>Safe 交易也可以把這一個呼叫包進官方 MultiSend（Delegate Call（1）），verify 一樣接受：這時 to 是官方 MultiSend、value 是 0，呼叫只顯示原始資料。</span></div>
   <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>用 Ledger 簽的話，先在 Ethereum app 的設定打開「Transaction hash」：套用描述檔時，要打開它裝置才會顯示 domain hash 和 message hash。比對這兩個 hash 才是 kiss-sign 靠的檢查，解讀看起來再對也要比。</span></div>
 </section>
 

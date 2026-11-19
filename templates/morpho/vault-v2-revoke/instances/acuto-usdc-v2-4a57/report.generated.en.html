@@ -608,6 +608,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </dl>
   <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>your Safe is a proxy: a Ledger resolves it to safe-1.3.0 or safe-1.4.1 through Ledger&#39;s own server to use these descriptors; a wallet that does not resolve proxies shows only raw data.</span></div>
   <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>SafeTx: the wallet does not show <code>safeTxGas</code>, <code>nonce</code>; only the hashes cover them.</span></div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>The Safe transaction may also wrap this one call in the official MultiSend (Delegate Call (1)), which verify accepts too: then to is the official MultiSend, value is 0, and the call shows only as raw data.</span></div>
   <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>On a Ledger, first turn on &#34;Transaction hash&#34; in the Ethereum app&#39;s settings: with a descriptor applied, the device shows the domain hash and the message hash only when it is on. Comparing those hashes is the check kiss-sign relies on, however right the decoded fields look.</span></div>
 </section>
 

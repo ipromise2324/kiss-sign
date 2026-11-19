@@ -72,6 +72,7 @@ Part of [the kiss-sign design](../design.md).
   Trezor, Keystone and GridPlus do not document ERC-7730 proxy matching for a Safe, so the report claims nothing for them.
   No descriptor decodes a Safe MultiSend batch, and the `SafeTx` descriptor hides the nonce and `safeTxGas`.
   The hashes cover all of it, and a Ledger shows them beside a decoded `SafeTx` only with its "Transaction hash" setting on; in the hardened tier the independent check decodes the transaction on a second computer.
+  That setting's name and effect were read in the Ethereum app's source (`LedgerHQ/app-ethereum` at `e5b6dbff`, `src/features/sign_message_eip712/eip712_v1_ui_logic.c` and `src/nbgl/ui_home.c`), not tried on a device.
 - A template is only as good as its review.
   The mutation check and the simulation are the backstops.
 - The v1 templates were written and merged by the AI without human review.

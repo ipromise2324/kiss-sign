@@ -336,6 +336,7 @@ const ZH = {
   multisendData: 'MultiSend 打包的呼叫，只顯示原始資料',
   emptyData: '空',
   safeTxHides: (paths: readonly Span[]): Span[] => ['SafeTx：錢包不顯示 ', ...paths.flatMap((p, i): Span[] => [...(i === 0 ? [] : ['、']), p]), '，只有 hash 涵蓋它們。'],
+  safeTxWrapped: 'Safe 交易也可以把這一個呼叫包進官方 MultiSend（Delegate Call（1）），verify 一樣接受：這時 to 是官方 MultiSend、value 是 0，呼叫只顯示原始資料。',
   safeTxDescriptorsOf: (described: readonly string[], without: readonly string[]): string =>
     `SafeTx：列的是 ${described.join('、')} 的描述檔；${without.join('、')} 沒有，跑在它上面的 Safe 錢包只顯示原始資料。`,
   throughProxy: (proxy: string, implementations: readonly string[]): string =>
@@ -952,7 +953,9 @@ const EN: Words = {
   multisendData: 'the calls MultiSend packs, shown only as raw data',
   emptyData: 'empty',
   safeTxHides: (paths) => ['SafeTx: the wallet does not show ', ...paths.flatMap((p, i): Span[] => [...(i === 0 ? [] : [', ']), p]), '; only the hashes cover them.'],
-  safeTxDescriptorsOf: (described, without) => `SafeTx: these are the descriptors of ${described.join(', ')}; ${without.join(', ')} has none, so a Safe running it shows only raw data.`,
+  safeTxWrapped:
+    'The Safe transaction may also wrap this one call in the official MultiSend (Delegate Call (1)), which verify accepts too: then to is the official MultiSend, value is 0, and the call shows only as raw data.',
+  safeTxDescriptorsOf: (described, without) => `SafeTx: these are the descriptors of ${described.join(', ')}; ${without.join(', ')} has none, so a wallet signing for a Safe that runs it shows only raw data.`,
   throughProxy: (proxy, implementations) =>
     `${proxy} is a proxy: a Ledger resolves it to ${implementations.join(' or ')} through Ledger's own server to use these descriptors; a wallet that does not resolve proxies shows only raw data.`,
   ledgerHash:
