@@ -7,8 +7,8 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "Over the whole year 2 decreases fit. Misfits decrease an adapter cap, or two markets in one multicall.",
-    "zh-TW": "一整年有 2 筆降低符合。不合的是降低轉接合約的上限，或在一個 multicall 裡降低兩個市場。"
+    "en": "Misfits decrease a cap of another kind, or a collateral cap and a market cap in one multicall; each gives MISMATCH.",
+    "zh-TW": "不合的是降低別種上限，或在一個 multicall 裡同時降低抵押品和市場的上限；都會是 MISMATCH。"
   },
   "judgments": [
     {

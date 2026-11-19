@@ -7,8 +7,8 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "Over the whole year 2 acceptances fit. Misfits accept adapter caps, only the absolute cap, or several markets in one multicall.",
-    "zh-TW": "一整年有 2 筆接受符合。不合的是接受轉接合約的上限、只接受絕對上限，或在一個 multicall 裡接受好幾個市場。"
+    "en": "Misfits accept a cap of another kind, only the absolute cap, or a collateral cap and a market cap in one multicall; each gives MISMATCH.",
+    "zh-TW": "不合的是接受別種上限、只接受絕對上限，或在一個 multicall 裡同時接受抵押品和市場的上限；都會是 MISMATCH。"
   },
   "judgments": [
     {

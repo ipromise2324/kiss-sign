@@ -7,8 +7,8 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "Over the whole year 4 submissions fit. Misfits submit and execute in one multicall, put several markets in one multicall, or change other settings.",
-    "zh-TW": "一整年有 4 筆提交符合。不合的是在一個 multicall 裡提交後馬上執行、把好幾個市場放進一個 multicall，或改其他設定。"
+    "en": "3 submissions of this shape name markets outside the registry. Misfits submit and execute in one multicall, batch several caps, or change other settings.",
+    "zh-TW": "有 3 筆這個形狀的提交，市場不在 registry 裡。不合的是在一個 multicall 裡提交後馬上執行、一次放好幾個上限，或改其他設定。"
   },
   "judgments": [
     {

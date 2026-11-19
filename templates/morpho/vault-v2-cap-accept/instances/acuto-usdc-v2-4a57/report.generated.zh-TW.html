@@ -700,7 +700,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>過去交易</h2>
   <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">2</span> 筆：Safe <span class="num">2</span> 筆（1 個 Safe）、EOA <span class="num">0</span> 筆；形狀一樣、但有地址不在 registry 裡的有 <span class="num">0</span> 筆；形狀不同的有 <span class="num">7</span> 筆，列在其他做法。這些交易全部成功執行：它們是從 acuto-usdc-v2-4a57 IncreaseAbsoluteCap時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 2 筆：<a href="https://etherscan.io/tx/0x613fe0df476a0f03fa644fe282e1fc6417efb8781f5530bc80c70d925acd9700">0x613fe0df…</a>、<a href="https://etherscan.io/tx/0x1fcd820cd61b8b0092ac3bde11ad7b1307836a26dc3d9e3119107bda69363926">0x1fcd820c…</a>。</p>
-  <p class="intro"><span class="aiw" data-ai><span>一整年有 2 筆接受符合。不合的是接受轉接合約的上限、只接受絕對上限，或在一個 multicall 裡接受好幾個市場。</span><span class="byai">AI 研究</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>不合的是接受別種上限、只接受絕對上限，或在一個 multicall 裡同時接受抵押品和市場的上限；都會是 MISMATCH。</span><span class="byai">AI 研究</span></span></p>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
