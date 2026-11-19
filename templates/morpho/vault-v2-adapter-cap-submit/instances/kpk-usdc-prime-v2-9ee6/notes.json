@@ -6,6 +6,10 @@
       "zh-TW": "可以用。KPK 文件、CoinGecko 和工廠都確認這個 vault。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "Misfits submit market or collateral caps, several caps in one transaction, or other settings; each gives MISMATCH.",
+    "zh-TW": "不合的是提交市場或抵押品的上限、一筆交易提交好幾個上限，或提交其他設定；都會是 MISMATCH。"
+  },
   "judgments": [
     {
       "text": {

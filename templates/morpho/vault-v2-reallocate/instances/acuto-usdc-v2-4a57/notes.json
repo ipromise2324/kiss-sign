@@ -6,6 +6,10 @@
       "zh-TW": "可以用，但這是沒上架的小 vault，持有人集中；地址只有工廠確認，見待確認。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "The windows held no allocator transaction: 11 redeems or withdrawals, 2 forceDeallocate calls, a separate operation, and 4 calls through other contracts.",
+    "zh-TW": "取樣窗口裡沒有 allocator 的交易：11 筆贖回或提領、2 筆 forceDeallocate（另一種操作），和 4 筆透過其他合約的呼叫。"
+  },
   "judgments": [
     {
       "text": {

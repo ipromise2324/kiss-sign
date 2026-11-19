@@ -6,6 +6,10 @@
       "zh-TW": "可以用，但這是沒上架的小 vault，持有人集中；地址只有工廠確認，見待確認。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "Misfits accept a cap of another kind, only the absolute cap, or a collateral cap and a market cap in one multicall; each gives MISMATCH.",
+    "zh-TW": "不合的是接受別種上限、只接受絕對上限，或在一個 multicall 裡同時接受抵押品和市場的上限；都會是 MISMATCH。"
+  },
   "judgments": [
     {
       "text": {
