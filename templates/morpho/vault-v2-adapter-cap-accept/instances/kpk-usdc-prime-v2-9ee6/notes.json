@@ -6,6 +6,10 @@
       "zh-TW": "可以用。KPK 文件、CoinGecko 和工廠都確認這個 vault。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "Over the whole year 1 acceptance fits. The other one accepted 36 caps at once, and EOAs accepted two cap ids together; anyone may accept once the timelock ends.",
+    "zh-TW": "一整年有 1 筆接受符合。另一筆一次接受 36 個上限，EOA 也會一次接受兩個上限 id；timelock 結束後任何人都能接受。"
+  },
   "judgments": [
     {
       "text": {

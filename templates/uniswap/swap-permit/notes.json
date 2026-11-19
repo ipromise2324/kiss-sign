@@ -14,6 +14,10 @@
       "zh-TW": "兌換本身有綁住；但 Permit2 授權是事先另外簽的訊息，kiss-sign 不檢查那一步。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "No Safe swap was found. 141 of 240 swaps went to an older router, 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af; the 6 to this router add commands or encode the swap otherwise.",
+    "zh-TW": "沒找到 Safe 的兌換。240 筆裡有 141 筆送到舊版 router 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af；送到這個 router 的 6 筆多了指令或編碼不同。"
+  },
   "flow": [],
   "protocols": {
     "uniswap-v4": {

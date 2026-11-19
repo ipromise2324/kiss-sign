@@ -6,6 +6,10 @@
       "zh-TW": "可以用。KPK 文件、CoinGecko 和工廠都確認這個 vault。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "Over the whole year this vault's curator Safe sent 3 market cap submissions of this shape. It also put several markets in one multicall or MultiSend; each gives MISMATCH.",
+    "zh-TW": "這個 vault 的 curator Safe 一整年送了 3 筆這個形狀的市場上限提交。它也會把好幾個市場放進一個 multicall 或 MultiSend；這些都會是 MISMATCH。"
+  },
   "judgments": [
     {
       "text": {

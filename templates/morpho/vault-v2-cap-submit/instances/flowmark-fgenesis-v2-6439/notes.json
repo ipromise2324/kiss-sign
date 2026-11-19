@@ -6,6 +6,10 @@
       "zh-TW": "可以用。Flowmark 的網站打不開，vault 很新、持有人集中，先看待確認。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "Over the whole year 4 submissions fit. Misfits submit and execute in one multicall, put several markets in one multicall, or change other settings.",
+    "zh-TW": "一整年有 4 筆提交符合。不合的是在一個 multicall 裡提交後馬上執行、把好幾個市場放進一個 multicall，或改其他設定。"
+  },
   "judgments": [
     {
       "text": {

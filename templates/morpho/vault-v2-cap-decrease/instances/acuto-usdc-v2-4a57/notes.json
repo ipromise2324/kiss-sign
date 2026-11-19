@@ -6,6 +6,10 @@
       "zh-TW": "可以用，但這是沒上架的小 vault，持有人集中；地址只有工廠確認，見待確認。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "Over the whole year 2 decreases fit. Misfits decrease an adapter cap, or two markets in one multicall.",
+    "zh-TW": "一整年有 2 筆降低符合。不合的是降低轉接合約的上限，或在一個 multicall 裡降低兩個市場。"
+  },
   "judgments": [
     {
       "text": {
