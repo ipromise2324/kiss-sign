@@ -94,6 +94,6 @@ export function unwrapSafeTx(tx: Pick<SafeTx, 'to' | 'value' | 'data' | 'operati
   if ('kind' in calls) return calls;
   // MultiSend 1.5.0 sends a call whose `to` is zero to the Safe itself, which every check here reads as the zero address.
   const zeroTo = deployment.version === '1.5.0' ? calls.find((call) => call.to === ZERO_ADDRESS) : undefined;
-  if (zeroTo?.fields !== undefined) return { kind: 'malformed', at: zeroTo.fields.to[0], problem: 'a MultiSend 1.5.0 call to the zero address, which it sends to the Safe itself' };
+  if (zeroTo !== undefined) return { kind: 'malformed', at: zeroTo.span[0] + 1, problem: 'a MultiSend 1.5.0 call to the zero address, which it sends to the Safe itself' };
   return { kind: 'multisend', deployment, outer, calls };
 }
