@@ -21,8 +21,11 @@
   h1 { font-size: 36px; line-height: 1; letter-spacing: -0.5px; }
   h1 em { font-size: 22px; color: var(--signer); font-weight: 700; margin-left: 12px; letter-spacing: 0; }
   header p { color: var(--muted); margin-top: 8px; font-size: 17px; }
-  .legend { display: flex; gap: 10px; margin: 0 0 16px; color: var(--muted); font-size: 15px; align-items: center; }
+  .legend { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 0 0 16px; }
+  .legend div { border: 2px solid var(--c); background: var(--cb); border-radius: 10px; padding: 8px 12px; font-size: 14.5px; }
+  .legend b { color: var(--c); text-transform: uppercase; letter-spacing: 0.6px; font-size: 13px; display: block; }
   section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px 22px; }
+  section + section { margin-top: 16px; }
   h2 { font-size: 21px; margin-bottom: 14px; }
   h2 small { font-size: 15px; font-weight: 400; color: var(--muted); margin-left: 8px; }
   .grid { display: grid; grid-template-columns: 1fr 34px 1fr 34px 1fr; row-gap: 20px; align-items: stretch; }
@@ -34,11 +37,17 @@
   .head { display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: var(--c); }
   .head span:last-child { color: var(--muted); font-weight: 500; letter-spacing: 0; text-transform: none; }
   .box h3 { font-size: 18px; margin: 2px 0 6px; }
-  .box h3 i { font-style: normal; display: inline-block; min-width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; background: var(--c); color: #fff; font-size: 13px; margin-right: 7px; vertical-align: 2px; }
-  .box ul { list-style: none; }
+  .box h3 i { font-style: normal; display: inline-block; min-width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; background: var(--c); color: #fff; font-size: 13px; margin-right: 7px; vertical-align: 2px; padding: 0 4px; }
+  .box ul, .box ol { list-style: none; }
   .box li { position: relative; padding: 2px 0 2px 14px; font-size: 15px; }
-  .box li::before { content: ""; position: absolute; left: 1px; top: 10px; width: 6px; height: 6px; border-radius: 2px; background: var(--c); }
+  .box ul > li::before { content: ""; position: absolute; left: 1px; top: 10px; width: 6px; height: 6px; border-radius: 2px; background: var(--c); }
+  .box ol { counter-reset: n; }
+  .box ol > li { padding-left: 22px; counter-increment: n; }
+  .box ol > li::before { content: counter(n); position: absolute; left: 0; top: 4px; width: 16px; height: 16px; line-height: 16px; border-radius: 50%; border: 1.5px solid var(--c); color: var(--c); font-size: 10.5px; font-weight: 700; text-align: center; }
+  .box ol.from7 { counter-reset: n 6; }
   .box p { font-size: 15px; }
+  .why { margin-top: 7px; padding-top: 6px; border-top: 1px dashed var(--c); font-size: 14.5px; color: #3d444d; }
+  .why b { color: var(--c); }
   .chips { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px; }
   .chip { font-size: 12.5px; color: #24292f; border: 1px solid var(--line); border-radius: 999px; padding: 0 8px; background: #fff; white-space: nowrap; }
   .store { border: 2px solid #57606a; background: #fff; border-radius: 12px; padding: 12px 14px; }
@@ -50,9 +59,21 @@
   .between { color: var(--program); font-weight: 600; font-size: 15px; margin: 12px 0 12px 8px; }
   .verdict { font: 700 15px ui-monospace, "SF Mono", Menlo, monospace; margin: 2px 0 4px; }
   .m { color: var(--program); } .x { color: var(--mismatch); } .u { color: var(--ai); }
-  .trust { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 16px; }
-  .trust div { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font-size: 15px; }
-  .trust b { display: block; font-size: 15.5px; margin-bottom: 2px; }
+  table.src { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  table.src th { text-align: left; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); padding: 0 10px 6px 0; border-bottom: 1px solid var(--line); }
+  table.src td { vertical-align: top; padding: 6px 10px 6px 0; border-bottom: 1px solid #eaeef2; }
+  table.src td:first-child { font-weight: 700; white-space: nowrap; width: 170px; }
+  table.src td:nth-child(2) { width: 560px; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 700; border-radius: 6px; padding: 0 6px; margin: 1px 3px 1px 0; border: 1.5px solid var(--c); color: var(--c); background: var(--cb); white-space: nowrap; }
+  .tag.ai { border-style: dashed; }
+  .note { font-size: 14.5px; color: #3d444d; margin-top: 10px; }
+  .strip { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .strip > div { border-radius: 10px; padding: 10px 14px; font-size: 15px; background: #fff; border: 1px solid var(--line); }
+  .strip b { display: block; font-size: 15.5px; margin-bottom: 2px; }
+  .store.merge li { padding: 3px 0; }
+  .store.merge .sg { color: var(--signer); }
+  .store.merge .pg { color: var(--ai); }
+  .trust { margin-top: 16px; }
 </style>
 </head>
 <body>
@@ -60,13 +81,13 @@
   <svg viewBox="0 0 256 256" aria-hidden="true"><g fill="#1b1f27"><path d="M57.98 58.02 L173.98 174.02 L198.02 149.98 L82.02 33.98 Z"/><path d="M173.98 33.98 L57.98 149.98 L82.02 174.02 L198.02 58.02 Z"/><rect x="40" y="194" width="176" height="22"/></g></svg>
   <div>
     <h1>kiss-sign<em>Keep it simple, stupid, and sign.</em></h1>
-    <p>Who acts at each step, what it checks, which services it reads, and what it trusts. The AI researches and writes templates; the program checks the addresses, code and evidence for you to judge, and alone decides the verdict at signing.</p>
+    <p>Who acts at each step, what it checks, which services it reads, and why the step exists. The AI researches and writes data; the program checks that data and writes the report, and in research decides nothing; at signing the program alone decides the verdict.</p>
   </div>
 </header>
-<div class="legend">Who acts:
-  <span class="head signer" style="font-size:13px">Signer</span> ·
-  <span class="head ai" style="font-size:13px">AI agent</span> ·
-  <span class="head program" style="font-size:13px">Program</span>
+<div class="legend">
+  <div class="signer"><b>Signer</b>States the intent, reads the report, merges templates and the registry, fills and seals the card, signs.</div>
+  <div class="ai"><b>AI agent</b>Writes data and text: registry entries, the template, <code>docs.json</code>, <code>notes.json</code>. Its text is tagged and never moves a result, a colour or a confidence.</div>
+  <div class="program"><b>Program</b>Checks what the AI wrote against the chain and outside sources, records the answers, writes the report, and alone gives the verdict.</div>
 </div>
 
 <section>
@@ -74,168 +95,235 @@
   <div class="grid">
     <div class="box signer"><div class="head"><span>Signer</span><span>step 1</span></div>
       <h3><i>1</i>State the intent</h3>
-      <p>In plain words, such as “deposit USDC into the Morpho Apex vault”. The AI researches first and asks only for a preference no evidence can settle.</p></div>
+      <p>In plain words, such as “deposit USDC into the Morpho Apex vault”. The AI researches first and asks only for a preference no evidence can settle, once, with the report.</p></div>
     <div class="arrow">→</div>
-    <div class="box ai"><div class="head"><span>AI agent</span><span>steps 2, 5</span></div>
-      <h3><i>2</i>Research</h3>
+    <div class="box ai"><div class="head"><span>AI agent</span><span>step 2</span></div>
+      <h3><i>2</i>Find the addresses</h3>
       <ul>
-        <li>Contract addresses on the official site and GitHub, cross-checked; the protocol's own API when it has one</li>
-        <li>Each address's verified contract name, creator and creation transaction</li>
-        <li>Protocol health: hacks, audits, upgrades, admin changes, paused contracts</li>
+        <li>Always looks in the official places first: the protocol's docs, app, GitHub and API</li>
+        <li>Then searches further (deployment files, SDKs, audits, explorers, forums) for leads, each followed back to an official place; only official places count</li>
+        <li>Writes each registry entry as data: <code>source</code> and its <code>sourceLabel</code>, more pages, <code>apiSource</code>, <code>sdk</code>, <code>immunefi</code>, <code>coingecko</code>, the DefiLlama slug</li>
+        <li>Reads each address's Etherscan name, creator and creation transaction</li>
       </ul>
-      <div class="chips"><span class="chip">Official site</span><span class="chip">GitHub</span><span class="chip">Protocol API</span><span class="chip">Etherscan</span><span class="chip">DefiLlama hacks</span></div></div>
+      <div class="chips"><span class="chip">Official site</span><span class="chip">GitHub</span><span class="chip">Protocol API</span><span class="chip">Etherscan</span></div></div>
     <div class="arrow">→</div>
     <div class="box program"><div class="head"><span>Program · check-sources</span><span>step 2</span></div>
       <h3><i>3</i>Check the sources</h3>
       <ul>
-        <li>Source domain or GitHub org against DefiLlama's listing of the protocol</li>
-        <li>CoinGecko lists the named coin at each token's address</li>
-        <li>The address stands next to its label on the page as served, without scripts</li>
-        <li>A GitHub source is pinned to a commit on the default branch</li>
-        <li>The deployer, proved on chain through both providers</li>
+        <li>Each official page as served, without scripts: the address next to its label; a GitHub page pinned to a commit on the default branch</li>
+        <li>Other places that may hold the address: the protocol API's answer, the SDK on npm (with build provenance), CoinGecko's coin, Immunefi's bounty scope, the factory's answer, the deployer proved on chain</li>
+        <li>Site listings (DefiLlama, CoinGecko, Immunefi, GitHub's verified domain) say which sites are the protocol's; they confirm a site, never an address</li>
+        <li><b>Each address needs 2 places</b>, counted by owner: one domain counts once</li>
       </ul>
-      <div class="chips"><span class="chip">DefiLlama</span><span class="chip">CoinGecko</span><span class="chip">Immunefi</span><span class="chip">Public Suffix List</span><span class="chip">Source page</span><span class="chip">Protocol API</span><span class="chip">GitHub API</span><span class="chip">npm</span><span class="chip">Etherscan</span><span class="chip">Alchemy</span><span class="chip">drpc</span></div></div>
+      <div class="chips"><span class="chip">DefiLlama</span><span class="chip">CoinGecko</span><span class="chip">Immunefi</span><span class="chip">Public Suffix List</span><span class="chip">Source page</span><span class="chip">Protocol API</span><span class="chip">GitHub API</span><span class="chip">npm</span><span class="chip">Etherscan</span><span class="chip">Alchemy</span><span class="chip">drpc</span></div>
+      <div class="why"><b>Decides nothing:</b> each PASS or FINDING goes into the report, and the signer judges it.</div></div>
 
     <div class="box program"><div class="head"><span>Program</span><span>steps 2, 3</span></div>
-      <h3><i>4</i>Prove on chain</h3>
+      <h3><i>4</i>Prove the code</h3>
       <ul>
-        <li>Each address has code; a proxy's implementation; the factory that created it</li>
-        <li><code>pin-code</code>: code hash and implementation, with the first block each code ran</li>
-        <li><code>prove-abi</code>: Etherscan source compiled with a pinned solc equals the bytecode, but for the positions it masks</li>
+        <li>Each address has code; a proxy's implementation; the factory that created an instance</li>
+        <li><code>prove-abi</code>: Etherscan's source compiled with a pinned solc equals the code on chain, but for masked positions; the ABI is solc's; a proxy that hands calls to an unknown contract is refused</li>
+        <li><code>pin-code</code>: the code hash and implementation, each span of code with its first block</li>
+        <li>A contract reached only inside another, such as Fluid's Liquidity, is pinned through <code>dependsOn</code></li>
       </ul>
       <div class="chips"><span class="chip">Alchemy</span><span class="chip">drpc</span><span class="chip">Etherscan</span><span class="chip">pinned solc</span></div></div>
     <div class="arrow">→</div>
-    <div class="box program"><div class="head"><span>Program</span><span>steps 2, 4</span></div>
-      <h3><i>5</i>Gather evidence</h3>
+    <div class="box program"><div class="head"><span>Program</span><span>step 2</span></div>
+      <h3><i>5</i>Read the instance and the wallet descriptors</h3>
       <ul>
-        <li><code>instance-evidence</code>: factory admits the vault; monthly assets; holder count and top 10 share</li>
-        <li><code>past-txs</code>: finds past transactions and counts, per field, who held the rule, evidence of normal use, not of safety; traces each one that is exactly the template (who calls whom) to test the AI's flow lines; <code>--record</code> keeps the traces</li>
-        <li><code>erc7730</code>: descriptors from a pinned archive, ERC-8176 attestations, no descriptor text</li>
+        <li><code>instance-evidence</code>: the factory must admit the vault first; its <code>totalAssets()</code> every month for 12 months; its holder count and the top 10's share, never an address</li>
+        <li><code>erc7730</code>: descriptors from a pinned archive, their ERC-8176 attestations checked on chain; no descriptor text is printed</li>
+        <li>The AI judges a young or concentrated vault in its notes</li>
       </ul>
-      <div class="chips"><span class="chip">Alchemy</span><span class="chip">drpc</span><span class="chip">Alchemy Transfers</span><span class="chip">Multicall3</span><span class="chip">Etherscan</span><span class="chip">drpc trace</span><span class="chip">ERC-7730 registry</span><span class="chip">EAS</span></div></div>
+      <div class="chips"><span class="chip">Alchemy</span><span class="chip">drpc</span><span class="chip">Alchemy Transfers</span><span class="chip">Multicall3</span><span class="chip">ERC-7730 registry</span><span class="chip">EAS</span></div></div>
     <div class="arrow">→</div>
-    <div class="box program"><div class="head"><span>Program · report</span><span>step 6</span></div>
-      <h3><i>6</i>Write the report</h3>
+    <div class="box program"><div class="head"><span>Program · past-txs</span><span>step 4</span></div>
+      <h3><i>6</i>Study past transactions</h3>
       <ul>
-        <li><code>--record</code> keeps the live answers the checks read, or writes nothing if a read got none</li>
-        <li><code>report.generated.md</code> from the recordings alone</li>
-        <li><code>report.generated.en.html</code> or <code>report.generated.zh-TW.html</code>, one per language <code>notes.json</code> holds, from the recordings and the notes: a confidence level per address, high, medium or low</li>
-        <li><code>pnpm test</code> computes both again</li>
-      </ul></div>
+        <li><b>Find:</b> a token <code>Transfer</code> (Alchemy Transfers and Etherscan) or an event (Etherscan alone); a Safe's own event counts only when the sending Safe logged it</li>
+        <li><b>When:</b> the whole last year first; if an answer is over one page, 12 one-day windows a month apart; at most 240 studied</li>
+        <li><b>Match:</b> the sender's own calls and arguments against the template's rules; card values are not judged. Exactly the template, its shape outside the registry, or a misfit; proven Safe or EOA</li>
+        <li><b>Trace:</b> each one exactly the template, through drpc: who calls whom inside, to test the AI's flow lines</li>
+        <li>Amounts against balances, for tolerances; the spread of each free number</li>
+        <li>Your Safe is left out and its address removed from recordings</li>
+      </ul>
+      <div class="chips"><span class="chip">Alchemy Transfers</span><span class="chip">Etherscan</span><span class="chip">Alchemy</span><span class="chip">drpc</span><span class="chip">drpc trace</span></div>
+      <div class="why"><b>Why:</b> evidence of normal use that teaches the AI, not of safety; fake transactions are cheap.</div></div>
 
-    <div class="box ai"><div class="head"><span>AI agent</span><span>steps 6, 7</span></div>
-      <h3><i>7</i>Open a pull request</h3>
+    <div class="box ai"><div class="head"><span>AI agent</span><span>steps 5, 6, 7</span></div>
+      <h3><i>7</i>Write the template and the notes</h3>
       <ul>
-        <li>The template: a rule for every argument, the effects, any views</li>
-        <li>Test transactions; the program's <code>perturb</code> recording for each free field</li>
-        <li>Registry entries and markets, with their code pins</li>
+        <li>Protocol health: hacks, audits, upgrades, admin changes, each with its source</li>
+        <li><code>template.json</code>: a rule for every argument, the effects, any views, computed fields with their slippage, each choice with a reason</li>
         <li><code>docs.json</code>: one official page per function</li>
-        <li><code>notes.json</code>: the AI's text, labelled as AI research</li>
-        <li>The report</li>
+        <li><code>notes.json</code>: title, verdict, each contract's role, each argument's meaning, up to 4 flow lines (from, to, function, sources), a review of every result the signer must look at</li>
+        <li>Test transactions, from other Safes</li>
+      </ul>
+      <div class="why"><b>Why data, not code:</b> the AI picks from the program's vocabulary; it never writes code that becomes a check.</div></div>
+    <div class="arrow">→</div>
+    <div class="box program"><div class="head"><span>Program · perturb, report</span><span>steps 6, 7</span></div>
+      <h3><i>8</i>Record and write the report</h3>
+      <ul>
+        <li><code>perturb</code>: changes each free field of each test transaction and simulates every copy; each must revert, be refused, or change nothing</li>
+        <li><code>report --record</code> keeps only the live answers the checks read, or writes nothing if a read got none</li>
+        <li>Writes <code>report.generated.md</code>, and the HTML report in each language <code>notes.json</code> holds, from the recordings and the notes; compares each flow line with the traces</li>
+        <li>Refuses notes with a result left unreviewed, an unknown name, or a flow line outside the template</li>
+        <li><code>pnpm test</code> computes every report again from the recordings, offline</li>
+      </ul>
+      <div class="why"><b>Why record:</b> CI has no keys, so it replays the answers. A recording shows what the report was computed from, not that it is true; step 10 checks that.</div></div>
+    <div class="arrow">→</div>
+    <div class="box ai"><div class="head"><span>AI agent</span><span>step 7</span></div>
+      <h3><i>9</i>Open a pull request</h3>
+      <ul>
+        <li>The template, its test transactions and <code>perturb</code> recordings</li>
+        <li>Registry entries and markets, with their code pins</li>
+        <li><code>docs.json</code>, <code>notes.json</code>, the report and its recordings</li>
+        <li>One report per operation and vault, in <code>instances/&lt;vault&gt;/</code>; no report, no signing</li>
+        <li>A program change it needs goes first, in a pull request of its own</li>
         <li>Never merges a template, registry or program gate pull request</li>
       </ul></div>
-    <div class="arrow">→</div>
+
     <div class="box signer"><div class="head"><span>Signer</span><span>step 8</span></div>
-      <h3><i>8</i>Review and merge</h3>
+      <h3><i>10</i>Review and merge</h3>
       <ul>
-        <li>Read the report and the template's rules</li>
-        <li>From main: <code>pnpm report … --compare --data origin/&lt;branch&gt;</code> reads the facts again live (the search and signed-message answers stay recorded), needs the HTML byte for byte, prints <code>PROGRAM CHANGE</code> and <code>AI TEXT</code></li>
-        <li>Approve and merge; branch protection on <code>main</code> is recommended, not required</li>
+        <li>Read the report (below) and the template's rules</li>
+        <li>From <code>main</code>: <code>pnpm report … --compare --data origin/&lt;branch&gt;</code>, with <code>--instance-of &lt;vault&gt;</code> per instance report</li>
+        <li>It reads the facts again live, past transactions and their traces included (the search and signed messages stay recorded), and needs the HTML byte for byte</li>
+        <li>It refuses a branch that also changes the verdict core, and prints <code>PROGRAM CHANGE</code> and <code>AI TEXT</code></li>
+        <li>Merging is your approval; branch protection on <code>main</code> is recommended</li>
       </ul>
+      <div class="why"><b>Why <code>--compare</code>:</b> the recordings come from the AI's computer; main's code reads them again, so a pull request cannot weaken its own check.</div>
       <div class="chips"><span class="chip">GitHub</span></div></div>
     <div class="arrow">→</div>
     <div class="store repo"><h3>Your fork's <code>main</code> on GitHub</h3>
       <ul><li>Templates and reports</li><li>Test transactions and recordings</li><li>Contract registry with code pins</li><li>Markets table</li></ul>
       <div class="foot">CI reruns every test, with no secrets.<br>Never the Safe's address or a key (pre-push check).</div></div>
+    <div class="arrow"></div>
+    <div class="store merge"><h3>Who merges what</h3>
+      <ul>
+        <li><b class="sg">Template or registry:</b> the signer, after the report and <code>--compare</code></li>
+        <li><b class="pg">Program:</b> the AI, once <code>pnpm program-gate</code>, run from main's code, prints <code>ELIGIBLE</code> (canaries pass, no test dropped) and a fresh reviewer finds no regression</li>
+        <li><b class="sg">Program gate</b> (the canaries, their list, the code that enforces these rules): the signer, never the AI</li>
+      </ul>
+      <div class="foot">A branch changing the verdict core beside <code>templates/</code>, <code>registry/</code> or the gate is refused by <code>check-push</code>, CI, <code>--compare</code> and <code>program-gate</code> until it is split.</div></div>
   </div>
+</section>
+
+<section>
+  <h2>The report you read in step 10<small>what each part shows, and who made it</small></h2>
+  <table class="src">
+    <tr><th>Part</th><th>What it shows</th><th>Where it comes from</th></tr>
+    <tr><td>Header</td><td>Title, summary, and a one-line verdict marked as advice</td><td><span class="tag ai">AI notes</span></td></tr>
+    <tr><td>Check strip</td><td>Address sources · Source verified · Code unchanged · Parameter checks · Call traces · Two providers, each with its count</td><td><span class="tag program">check-sources</span><span class="tag program">prove-abi</span><span class="tag program">pin-code</span><span class="tag program">mutation, perturb</span><span class="tag program">traces</span></td></tr>
+    <tr><td>Flow (流程)</td><td>Solid numbered arrows: the template's calls. One lifeline per contract a call or view targets. Up to 4 AI flow lines: solid and “confirmed” when the traces saw it in every transaction, dashed otherwise. Green arrows back to the Safe: what the effects say it gets. Per argument: who decides it (you type, you pick, the program computes, fixed, the app fills) and an example value.</td><td><span class="tag program">template</span><span class="tag program">traces</span><span class="tag program">perturb recording</span><span class="tag ai">AI flow lines, field meanings</span></td></tr>
+    <tr><td>Protocol</td><td>TVL, listing date, whether the contract is a proxy, hacks with date and amount; what the protocol is, audits, each hack's cause</td><td><span class="tag program">DefiLlama</span><span class="tag program">code pin</span><span class="tag ai">AI intro, audits, causes</span></td></tr>
+    <tr><td>Instance (實例)</td><td>The factory's answer, monthly <code>totalAssets()</code> as a bar chart, holder count, the top 10's share</td><td><span class="tag program">instance-evidence</span></td></tr>
+    <tr><td>To review (待確認)</td><td>Every result you must look at, important (重要) before reference (參考), red before amber, each with the AI's review under it; then the AI's judgments</td><td><span class="tag program">results</span><span class="tag ai">AI reviews, judgments</span></td></tr>
+    <tr><td>Wallet display</td><td>What the hardware wallet shows for one call, from its ERC-7730 descriptor; for a MultiSend, compare the safeTxHash</td><td><span class="tag program">erc7730</span></td></tr>
+    <tr><td>Addresses (地址)</td><td>Per entry: its full address, each source with its result, how many places confirmed it, its confidence</td><td><span class="tag program">check-sources</span><span class="tag ai">AI role, sources checked by hand</span></td></tr>
+    <tr><td>Past transactions</td><td>How many were exactly the template, had its shape outside the registry, or another shape; amounts against tolerances; free-number spreads</td><td><span class="tag program">past-txs recordings</span><span class="tag ai">AI conclusion</span></td></tr>
+    <tr><td>Next steps</td><td>The commands for approve, <code>book add</code>, <code>card new</code>, <code>verify</code>, <code>check.sh</code> and signing</td><td><span class="tag program">template</span></td></tr>
+  </table>
+  <p class="note"><b>Colours are the program's only:</b> green passed, amber needs a look, red a real disagreement, grey nothing to compare. AI text has a dashed AI tag and no colour. <b>Confidence per address:</b> low when any result needs you; high when none does, an official page is among its confirmations and a code-span check passed; medium otherwise.</p>
 </section>
 
 <div class="between">↓ <code>git pull</code> in your clone: <code>verify</code> trusts only your fork's <code>main</code></div>
 
 <section>
-  <h2>Every signing<small>in your own terminal; the AI may run on the same computer</small></h2>
+  <h2>Every signing<small>in your own terminal; the AI fills nothing and decides nothing here</small></h2>
   <div class="grid">
     <div class="box signer"><div class="head"><span>Signer · once</span><span>setup</span></div>
-      <h3><i>9</i>Set up the clone</h3>
+      <h3><i>11</i>Set up the clone</h3>
       <ul>
         <li>Clone your fork, <code>pnpm install</code></li>
-        <li><code>init --safe 0x…</code> records your fork as the repository to trust</li>
-        <li>Keys go in <code>$KISS_SIGN_HOME/.env</code>, never in the chat</li>
+        <li><code>init --safe 0x… [--language en|zh-TW]</code> records your fork as the repository to trust</li>
+        <li>Keys through <code>key add</code> or <code>$KISS_SIGN_HOME/.env</code>, never in the chat</li>
+        <li><code>book add</code> for each recipient, the address from a source outside the chat, checked character by character</li>
       </ul></div>
     <div class="arrow">→</div>
     <div class="box signer"><div class="head"><span>Signer · first use, and on change</span><span>step 8</span></div>
-      <h3><i>10</i>Approve the template</h3>
+      <h3><i>12</i>Approve the template</h3>
       <ul>
         <li><code>template approve</code> fetches your fork's main</li>
-        <li>Shows the template, its commit and its hash</li>
+        <li>Shows the template, its commit and its keccak256</li>
         <li>Records the hash once you confirm</li>
-      </ul></div>
+      </ul>
+      <div class="why"><b>Why:</b> <code>verify</code> accepts only the exact template you reviewed: one never approved is <code>UNVERIFIABLE</code>, one changed since is <code>MISMATCH</code>.</div></div>
     <div class="arrow">→</div>
     <div class="box signer"><div class="head"><span>Signer</span><span>steps 9, 13</span></div>
-      <h3><i>11</i>Fill the card</h3>
+      <h3><i>13</i>Fill the card</h3>
       <ul>
-        <li><code>card new</code>: pick vaults, markets and recipients by number, each with its full address</li>
-        <li>Amounts in whole tokens; the program reads <code>decimals()</code> through both providers</li>
-        <li>First use of a template or vault: start with a small amount, as the report advises; nothing enforces it</li>
+        <li><code>card new</code> stops first unless <code>templates/</code> and <code>registry/</code> equal GitHub's main</li>
+        <li>Pick vaults, markets and recipients by number, each with its full address; only vaults with a report are listed</li>
+        <li>Amounts in whole tokens; <code>decimals()</code> read through both providers</li>
+        <li>A computed field, such as the fewest shares, is read on chain with the template's slippage, not typed</li>
+        <li>First use of a template or vault: a small amount first, as the report advises; nothing enforces it</li>
       </ul>
       <div class="chips"><span class="chip">Alchemy</span><span class="chip">drpc</span></div></div>
 
     <div class="box signer"><div class="head"><span>Signer</span><span>step 10</span></div>
-      <h3><i>12</i>Seal the card</h3>
-      <p>The program prints the card with every full address; on your yes it hashes and stores it, before you see the transaction.</p></div>
+      <h3><i>14</i>Seal the card</h3>
+      <p>The program prints the card with every full address and each amount in whole tokens and base units; on your yes it hashes and stores it.</p>
+      <div class="why"><b>Why:</b> your intent is fixed before you see the transaction, so the proposed transaction cannot shape it.</div></div>
     <div class="arrow">→</div>
     <div class="box signer"><div class="head"><span>Signer</span><span>step 11</span></div>
-      <h3><i>13</i>Propose on Safe</h3>
-      <p>kiss-sign reads the transaction back, or from a JSON file you save (<code>--tx</code>), and recomputes every hash itself.</p>
+      <h3><i>15</i>Propose on Safe</h3>
+      <p>Run <code>verify --card &lt;card hash&gt; --safe-tx-hash &lt;hash&gt;</code>: kiss-sign reads the transaction back, or from a JSON file you save (<code>--tx</code>), and recomputes every hash itself.</p>
       <div class="chips"><span class="chip">Safe Transaction Service</span></div></div>
     <div class="arrow">→</div>
     <div class="box program"><div class="head"><span>Program · verify</span><span>self-check</span></div>
-      <h3><i>14</i>Check itself first</h3>
+      <h3><i>16</i>Check itself first</h3>
       <ul>
+        <li>Installed packages equal their pins, before any loads</li>
         <li>Every <code>origin</code> URL is your fork; fetch its main</li>
         <li>Every object hashes to its name</li>
         <li>The clone is exactly that commit, or nothing is verified</li>
-      </ul></div>
+        <li>Refuses a card naming a vault with no report, or an entry without an attribute the template reads</li>
+      </ul>
+      <div class="why"><b>Why:</b> the checks that run are the ones on your <code>main</code>.</div></div>
 
     <div class="box program"><div class="head"><span>Program · verify</span><span>step 12</span></div>
-      <h3><i>15</i>Check the transaction</h3>
-      <ul>
+      <h3><i>17</i>Check the transaction</h3>
+      <ol>
         <li>The template's hash is the one you approved</li>
-        <li>Decode, re-encode byte for byte</li>
-        <li>Floors: no <code>delegatecall</code> except to the official MultiSend; no unlimited approval except a registry standing allowance; no Safe setting change except a declared owner or threshold change; zero fee fields</li>
-        <li>Every field against the template and the card</li>
+        <li>Floors: no <code>delegatecall</code> but to the official MultiSend; no unlimited approval but a registry standing allowance; no Safe setting change but a declared owner or threshold change; zero fee fields</li>
+        <li>Fields: decode, re-encode byte for byte, every field against the template and the card; a signed message fetched by its digest must hash to it</li>
         <li>Each vault's <code>asset()</code> is its registry token</li>
-        <li>Every registry contract runs its pinned code</li>
-        <li>Mutations: each changed copy must give <code>MISMATCH</code>, or the verdict is <code>UNVERIFIABLE</code></li>
-      </ul>
-      <div class="chips"><span class="chip">Alchemy</span><span class="chip">drpc</span><span class="chip">Signed-message API, e.g. CoW: must hash to the digest</span></div></div>
+        <li>Code: every registry contract the transaction or card names, inside packed calls and signed messages too, runs its pinned code</li>
+        <li>Mutations: each bound field changed must give <code>MISMATCH</code>, or the verdict is <code>UNVERIFIABLE</code></li>
+      </ol>
+      <div class="chips"><span class="chip">Alchemy</span><span class="chip">drpc</span><span class="chip">Order API, e.g. CoW</span></div>
+      <div class="why"><b>Why mutations:</b> they prove the template would catch a change to this very transaction.</div></div>
     <div class="arrow">→</div>
     <div class="box program"><div class="head"><span>Program · verify</span><span>step 12</span></div>
-      <h3><i>16</i>Simulate</h3>
-      <ul>
-        <li>Through the Safe's <code>execTransaction</code> with <code>eth_simulateV1</code>; an executed transaction's effects come from its receipt</li>
-        <li>Balance and allowance changes must be what the effects explain</li>
-        <li>Views read before and after, through a <code>STATICCALL</code></li>
-        <li>Calls that move no asset of the Safe are listed, as information, not a check</li>
-      </ul>
+      <h3><i>18</i>Simulate</h3>
+      <ol class="from7">
+        <li>Run it through the Safe's <code>execTransaction</code> with <code>eth_simulateV1</code>; an executed transaction's effects come from its receipt</li>
+        <li>Floors on the result: the Safe's settings end as they started or as declared; no allowance, Permit2's included, left unlimited but a standing one</li>
+        <li>Effects: every balance change is one the effects explain; no allowance ends higher than the card allows; views read before and after, through a <code>STATICCALL</code></li>
+      </ol>
+      <ul><li>Calls that move no asset of the Safe are listed, as information, not a check</li></ul>
       <div class="chips"><span class="chip">Alchemy</span><span class="chip">drpc</span></div></div>
     <div class="arrow">→</div>
     <div class="box program"><div class="head"><span>Program</span><span>verdict</span></div>
-      <h3><i>17</i>Verdict</h3>
+      <h3><i>19</i>Verdict</h3>
       <div class="verdict"><span class="m">MATCH</span> · <span class="x">MISMATCH</span> · <span class="u">UNVERIFIABLE</span></div>
       <ul>
-        <li>The hashes print only on <code>MATCH</code></li>
+        <li>Any failed check: <code>MISMATCH</code></li>
+        <li>Else any check unfinished or not run: <code>UNVERIFIABLE</code></li>
+        <li><code>MATCH</code> only when every check passed or is not needed for this card</li>
+        <li>The hashes and the 比對清單 show only on <code>MATCH</code>, on the terminal and an HTML page</li>
         <li>A verdict file; <code>replay</code> recomputes it offline</li>
       </ul></div>
 
     <div class="box signer"><div class="head"><span>Signer · hardened tier</span><span>step 14</span></div>
-      <h3><i>18</i>Independent check</h3>
+      <h3><i>20</i>Independent check</h3>
       <p>On a second computer with no AI and no kiss-sign, <code>check.sh &lt;nonce&gt;</code>, with any <code>--hints</code>, as <code>verify</code> prints it, fetches the transaction, computes its hashes, decodes each call with Sourcify's ABI and names addresses from your own <code>known-addresses.txt</code>. Compare its hashes with the wallet, its 比對清單 row by row with <code>verify</code>'s page, and the calls with what you meant.</p>
       <div class="chips"><span class="chip">Safe Transaction Service</span><span class="chip">Sourcify</span><span class="chip">cast</span></div></div>
     <div class="arrow">→</div>
     <div class="box signer"><div class="head"><span>Signer</span><span>step 14</span></div>
-      <h3><i>19</i>Sign on the wallet</h3>
-      <p>Only on <code>MATCH</code>: compare the domain hash and the message hash on the device's screen, every character, then sign.</p>
+      <h3><i>21</i>Sign on the wallet</h3>
+      <p>Only on <code>MATCH</code>: compare the domain hash and the message hash on the device's screen with <code>verify</code>'s page, every character, then sign.</p>
       <div class="chips"><span class="chip">Hardware wallet</span></div></div>
     <div class="arrow"></div>
     <div class="store local"><h3>Local only, never pushed: <code>$KISS_SIGN_HOME</code></h3>
@@ -243,10 +331,10 @@
   </div>
 </section>
 
-<div class="trust">
-  <div><b>Two providers</b>Every chain read goes to Alchemy and drpc; if they disagree, the result is <code>UNVERIFIABLE</code>. Past transactions are found through Alchemy Transfers and Etherscan (an event search, Etherscan alone); their call traces come from drpc alone.</div>
-  <div><b>Pinned downloads</b>solc, the Public Suffix List and the ERC-7730 archive load on first use, refused unless the sha256 is pinned. Signing reads none.</div>
-  <div><b>Doubt fails closed</b>An AI fooled during signing can at worst cause <code>MISMATCH</code> or <code>UNVERIFIABLE</code>, while the program is your <code>main</code>. A program rewritten on your computer, a template wrong when you merged it, or an AI-merged program change no canary catches is not caught by kiss-sign's own checks; in the hardened tier the independent check still shows what is signed.</div>
+<div class="strip trust">
+  <div><b>Two providers</b>Every state, code, receipt and simulation read goes to Alchemy and drpc; if they disagree, the result is <code>UNVERIFIABLE</code>. Three research reads have one source and reach no verdict: the past-transaction search (Alchemy Transfers and Etherscan, an event Etherscan alone), call traces (drpc alone, checked against the transaction and receipt both providers give), and holder candidates (Alchemy Transfers). A signed message comes from one API and must hash to the digest the transaction holds.</div>
+  <div><b>Pinned downloads</b>solc, the Public Suffix List and the ERC-7730 archive load on first use, refused unless the sha256 is pinned. Signing reads none of them, and checks every installed package it loads against its pin.</div>
+  <div><b>Doubt fails closed</b>An AI fooled during signing can at worst cause <code>MISMATCH</code> or <code>UNVERIFIABLE</code>, while the program is your <code>main</code>. The basic tier stops attacks from outside kiss-sign, such as a tampered Safe web app. A program rewritten on your computer, a template wrong when you merged it, or an AI-merged program change no canary catches is not caught; in the hardened tier the independent check still shows what is signed.</div>
 </div>
 <script>document.body.dataset.height = Math.ceil(document.documentElement.getBoundingClientRect().height);</script>
 </body>
