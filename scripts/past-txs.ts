@@ -50,7 +50,8 @@ Otherwise it searches 12 windows of up to 7200 blocks spread over the year, and 
 than one page of a source is halved until they fit, and the report names the blocks left out.
 --same-windows-as places the year and the windows by the head block
 testdata/research/<recording>.json keeps instead of today's, and asks the whole year first only
-when that recording did, so a run again searches the same blocks. --from-block and --to-block replace the year and the windows with one range.
+when that recording did, so a run again searches the same blocks. --from-block and --to-block
+replace the year and the windows with one range.
 Both Alchemy (alchemy_getAssetTransfers) and Etherscan (logs) search each window for a Transfer;
 each transaction says which found it. Only Etherscan searches an event: Alchemy's eth_getLogs
 reads at most 10 blocks at a time on the free plan.
