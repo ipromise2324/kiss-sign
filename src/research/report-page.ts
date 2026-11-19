@@ -12,6 +12,7 @@ import { say } from '../language.ts';
 import type { Language } from '../language.ts';
 import { MARKET_PARAMS, parseHttpsUrl, sizeOf } from '../registry.ts';
 import type { HttpsUrl, Market, Registry, RegistryEntry } from '../registry.ts';
+import { SAFE_TX_TYPEHASH } from '../safe/hash.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { decodeTemplateCall } from '../template/check.ts';
@@ -192,13 +193,18 @@ export type ReviewRow = {
 };
 export type Judgment = { readonly text: AiText; readonly recommendation: AiText };
 
-export type WalletCall = { readonly n: number; readonly title: Inline; readonly rows: readonly { readonly label: Inline; readonly value: Inline }[] | 'no-descriptor' };
+export type WalletRows = readonly { readonly label: Inline; readonly value: Inline }[] | 'no-descriptor';
+export type WalletCall = { readonly n: number; readonly title: Inline; readonly rows: WalletRows };
 
-/** A template of two or more calls goes through MultiSend, which no hardware wallet decodes, so it has no per-call view. */
-export type WalletView =
+/**
+ * Every Safe transaction is first a `SafeTx` message, shown by its own descriptor. A template of two or more calls goes
+ * through MultiSend, which no descriptor decodes, so it has no per-call view.
+ */
+export type WalletView = { readonly safeTx: WalletRows; readonly lines: readonly Inline[] } & (
   | { readonly kind: 'multisend'; readonly calls: number }
   | { readonly kind: 'no-data' }
-  | { readonly kind: 'calls'; readonly calls: readonly WalletCall[]; readonly lines: readonly Inline[] };
+  | { readonly kind: 'calls'; readonly calls: readonly WalletCall[] }
+);
 
 /** A result on an address row: its state, and the words a result that did not pass adds to its icon. */
 export type RowResult = { readonly state: State; readonly phrase: Phrase | undefined };
@@ -1389,29 +1395,99 @@ function ruleWords(rule: Rule, context: Context): Inline {
   }
 }
 
-function walletSection(context: Context): Section {
+/** The `SafeTx` struct's fields, in its type string's order. */
+const SAFE_TX_FIELDS = ['to', 'value', 'data', 'operation', 'safeTxGas', 'baseGas', 'gasPrice', 'gasToken', 'refundReceiver', 'nonce'] as const;
+const SAFE_TX_TYPE = `0x${bytesToHex(SAFE_TX_TYPEHASH)}`;
+
+/** The registry entries a call to `name` runs as their implementation: the Safe runs a singleton, a proxy the entry its code pin names. */
+function implementationsOf(name: string, registry: Registry): string[] {
+  if (name === 'safe') return [...registry.entries.values()].filter((entry) => entry.kind === 'singleton').map((entry) => entry.name);
+  const implementation = registry.entries.get(name)?.code?.current.pin.implementation?.address;
+  const entry = implementation === undefined ? undefined : registry.byAddress.get(implementation);
+  return entry === undefined ? [] : [entry.name];
+}
+
+const flatFields = (facts: readonly FieldFact[], prefix = ''): { path: string; format: string; visible: string }[] =>
+  facts.flatMap((f) => (f.kind === 'group' ? flatFields(f.fields, `${prefix}${f.path}.`) : [{ path: `${prefix}${f.path}`, format: f.format, visible: f.visible }]));
+const isShown = (f: { format: string; visible: string }): boolean => f.visible !== 'never' && f.format !== 'none';
+
+function safeTxRows(context: Context, lines: Inline[]): WalletRows {
   const { template, registry, inputs, w } = context;
-  const section = (view: WalletView): Section => ({ anchor: anchor('wallet'), label: w.wallet, count: undefined, body: { kind: 'wallet', view } });
-  if (template.calls.length > 1) return section({ kind: 'multisend', calls: template.calls.length });
-  if (template.calls.every((call) => call.data === 'empty')) return section({ kind: 'no-data' });
-  const reports = inputs.erc7730.reports;
+  const singletons = implementationsOf('safe', registry);
+  const described = inputs.erc7730.reports
+    .filter((r) => singletons.includes(r.entry.name))
+    .flatMap((r) => r.descriptors.flatMap((d) => d.messages).filter((m) => m.typeHash === SAFE_TX_TYPE).map((message) => ({ entry: r.entry.name, message })));
+  const first = described[0];
+  if (first === undefined) return 'no-descriptor';
+  const describedNames = [...new Set(described.map((d) => d.entry))];
+  const without = singletons.filter((name) => !describedNames.includes(name));
+  if (without.length > 0) lines.push([w.safeTxDescriptorsOf(describedNames, without)]);
+  lines.push([w.throughProxy(w.safe, singletons)]);
+  const one = template.calls.length === 1 ? (template.calls[0] as TemplateCall) : undefined;
+  const value = (path: string): Inline => {
+    switch (path) {
+      case 'to':
+        return one === undefined ? [w.officialMultiSend] : ruleWords(one.to, context);
+      case 'value':
+        return one === undefined ? [{ mono: '0' }] : ruleWords(one.value, context);
+      case 'operation':
+        return [one === undefined ? w.safeTxDelegate : w.safeTxCall];
+      case 'data':
+        return [one === undefined ? w.multisendData : one.data === 'empty' ? w.emptyData : w.innerCall];
+      case 'safeTxGas':
+      case 'baseGas':
+      case 'gasPrice':
+        return [{ mono: '0' }];
+      case 'gasToken':
+      case 'refundReceiver':
+        return [w.zeroAddress];
+      default:
+        return [w.noValue];
+    }
+  };
+  const fields = flatFields(first.message.fields);
+  const shown = fields.filter(isShown);
+  const hidden = SAFE_TX_FIELDS.filter((name) => !shown.some((f) => f.path === name));
+  if (hidden.length > 0) lines.push(w.safeTxHides(hidden.map((h): Span => ({ code: h }))));
+  return shown.map((f) => ((SAFE_TX_FIELDS as readonly string[]).includes(f.path) ? { label: [{ code: f.path }], value: value(f.path) } : { label: [w.notAnArgument], value: [w.noValue] }));
+}
+
+function walletSection(context: Context): Section {
+  const { template, inputs, registry, w } = context;
   const lines: Inline[] = [];
+  const safeTx = safeTxRows(context, lines);
+  const section = (view: WalletView): Section => {
+    const shown = [...new Map([...view.lines, ...(view.safeTx === 'no-descriptor' ? [] : [[w.ledgerHash]])].map((line) => [JSON.stringify(line), line])).values()];
+    return { anchor: anchor('wallet'), label: w.wallet, count: undefined, body: { kind: 'wallet', view: { ...view, lines: shown } } };
+  };
+  if (template.calls.length > 1) return section({ kind: 'multisend', calls: template.calls.length, safeTx, lines });
+  if (template.calls.every((call) => call.data === 'empty')) return section({ kind: 'no-data', safeTx, lines });
+  const reports = inputs.erc7730.reports;
+  const functionsOf = (name: string, selector: Hex) =>
+    reports
+      .filter((r) => r.entry.name === name)
+      .flatMap((r) => r.descriptors.flatMap((d) => d.functions).filter((f) => f.selector === selector).map((fn) => ({ entry: name, fn })));
   const calls = argumentTree(template).map(({ n, node, args }): WalletCall => {
     const call = template.calls[n - 1] as TemplateCall;
     const target = targetOf(call.to, context);
     const title: Inline = [`${n} ${target.label}.${node.fn.name}`];
-    const described = reports
-      .filter((r) => target.names.includes(r.entry.name) || registry.entries.get(target.label)?.address === r.entry.address)
-      .flatMap((r) => r.descriptors.flatMap((d) => d.functions).filter((f) => f.selector === node.fn.selector).map((fn) => ({ entry: r.entry.name, fn })));
+    const proxies: { readonly name: string; readonly implementations: readonly string[] }[] = [];
+    const described = target.names.flatMap((name) => {
+      const own = functionsOf(name, node.fn.selector);
+      if (own.length > 0) return own;
+      const implementations = implementationsOf(name, registry);
+      const through = implementations.flatMap((implementation) => functionsOf(implementation, node.fn.selector)).map((d) => ({ ...d, entry: name }));
+      if (through.length > 0) proxies.push({ name, implementations });
+      return through;
+    });
     const first = described[0];
     if (first === undefined) return { n, title, rows: 'no-descriptor' };
+    for (const proxy of proxies) lines.push([w.throughProxy(proxy.name === 'safe' ? w.safe : proxy.name, proxy.implementations)]);
     const fn = first.fn;
     const describedNames = new Set(described.map((d) => d.entry));
     const without = target.names.filter((name) => !describedNames.has(name));
     if (without.length > 0) lines.push([w.descriptorsOf(n, [...describedNames], without)]);
-    const flat = (facts: readonly FieldFact[], prefix = ''): { path: string; format: string; visible: string }[] =>
-      facts.flatMap((f) => (f.kind === 'group' ? flat(f.fields, `${prefix}${f.path}.`) : [{ path: `${prefix}${f.path}`, format: f.format, visible: f.visible }]));
-    const shown = flat(fn.fields).filter((f) => f.visible !== 'never' && f.format !== 'none');
+    const shown = flatFields(fn.fields).filter(isShown);
     // A descriptor names arguments as its contract's ABI does, and a template call to a card token is decoded with one
     // token's ABI, so USDT's `_spender` is the `spender` of USDC's: names compare without leading underscores.
     const same = (a: string, b: string): boolean => a.replace(/^_+/, '') === b.replace(/^_+/, '');
@@ -1449,7 +1525,7 @@ function walletSection(context: Context): Section {
     if (blind) lines.push([w.sameTokens(n)]);
     return { n, title, rows };
   });
-  return section({ kind: 'calls', calls, lines });
+  return section({ kind: 'calls', calls, safeTx, lines });
 }
 
 function codeLines(ledger: Ledger, entry: RegistryEntry, signed: ReadonlySet<string>, w: Words): Inline[] {
@@ -1851,25 +1927,25 @@ function nextSection(context: Context): Section {
   const y: Span = { code: 'y' };
   const book = (say: string, recipient: boolean): NextStep => ({
     say: [say],
-    command: 'bin/kiss-sign book add <name> <address>',
+    command: 'pnpm kiss-sign book add <name> <address>',
     then: [w.bookThen({ code: 'Add this entry? [y/N]' }, y, recipient)],
     hashes: false,
   });
   const steps: NextStep[] = [
-    { say: [w.approveSay], command: `bin/kiss-sign template approve ${template.id}`, then: [w.approveThen(y)], hashes: false },
+    { say: [w.approveSay], command: `pnpm kiss-sign template approve ${template.id}`, then: [w.approveThen(y)], hashes: false },
     ...(fields.some(([, f]) => f.kind === 'owner') ? [book(w.ownerBook, false)] : []),
     ...(fields.some(([, f]) => f.kind === 'recipient') ? [book(w.recipientBook, true)] : []),
-    { say: [w.makeCard], command: `bin/kiss-sign card new ${template.id}`, then: [w.cardNewStops({ code: 'templates/' }, { code: 'registry/' }, { code: 'git pull' })], hashes: false },
+    { say: [w.makeCard], command: `pnpm kiss-sign card new ${template.id}`, then: [w.cardNewStops({ code: 'templates/' }, { code: 'registry/' }, { code: 'git pull' })], hashes: false },
     ...prompts,
     { say: w.sealSay({ code: 'Is this what you mean to do? [y/N]' }, y), command: undefined, then: [w.sealThen({ code: 'Sealed card 0x…' })], hashes: false },
     {
       say: [w.propose(trial)],
-      command: 'bin/kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>',
+      command: 'pnpm kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>',
       then: [w.onMatch({ code: 'MATCH' }), w.onMismatch({ code: 'MISMATCH' }, { code: 'UNVERIFIABLE' }, { href: anchor('review'), label: w.review })],
       hashes: false,
     },
     { say: [w.hardened], command: './check.sh <nonce>', then: [w.hardenedThen({ code: 'verify' })], hashes: false },
-    { say: w.compareHashes({ code: 'verify' }), command: undefined, then: [], hashes: true },
+    { say: w.compareHashes({ code: 'verify' }), command: undefined, then: [[w.ledgerHash]], hashes: true },
   ];
   const tokenName = (token: EffectToken) => effectTokenName(token, context);
   const field = (name: string): string => fieldWord(template, name, w);

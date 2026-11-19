@@ -334,10 +334,10 @@ test('下一步 ends every signer report, each command alone in its own block wi
     const section = nextSteps(html);
     assert.ok(html.lastIndexOf('<section') < html.indexOf('id="next"'), `${id}: 下一步 is the last section`);
     assert.deepEqual(commands(section), [
-      `bin/kiss-sign template approve ${target.template}`,
-      ...(recipient ? ['bin/kiss-sign book add <name> <address>'] : []),
-      `bin/kiss-sign card new ${target.template}`,
-      'bin/kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>',
+      `pnpm kiss-sign template approve ${target.template}`,
+      ...(recipient ? ['pnpm kiss-sign book add <name> <address>'] : []),
+      `pnpm kiss-sign card new ${target.template}`,
+      'pnpm kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>',
       './check.sh <nonce>',
     ]);
     for (const command of commands(section)) assert.doesNotMatch(command, /[^\x20-\x7e]/, `${id}: ${command}`);

@@ -6,7 +6,7 @@ import { firstRecordedTx } from '../template/perturb.ts';
 import type { State } from './ledger.ts';
 import { NOTES_FILE, codeSpans, notesLanguages, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
-import type { AddressRow, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, NewestResult, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, VaultBlock } from './report-page.ts';
+import type { AddressRow, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, NewestResult, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, VaultBlock, WalletRows } from './report-page.ts';
 import { CSS, Html, SYMBOLS, escape, h, icon } from '../html.ts';
 import { WORDS } from './report-words.ts';
 import type { Words } from './report-words.ts';
@@ -372,28 +372,26 @@ function reviewBody(body: Extract<Body, { kind: 'review' }>, r: R): Html {
 }
 
 function walletBody({ view }: Extract<Body, { kind: 'wallet' }>, r: R): Html {
-  if (view.kind === 'multisend') {
-    return h`
-  <p class="lead">${around(r.w.multisendLead(view.calls), 'verify')}</p>`;
-  }
-  if (view.kind === 'no-data') {
-    return h`
-  <p class="lead">${r.w.noDataLead}</p>`;
-  }
-  const described = view.calls.some((call) => call.rows !== 'no-descriptor');
-  return h`
-  <p class="lead">${r.w.walletLead}${described ? r.w.walletRules : ''}</p>
-  <dl class="props two">${view.calls.map(
-    (call) => h`
-    <div><dt>${text(call.title)}</dt>${
-      call.rows === 'no-descriptor'
+  const row = (title: Html, rows: WalletRows) => h`
+    <div><dt>${title}</dt>${
+      rows === 'no-descriptor'
         ? h`<dd class="f3">${r.w.noDescriptor}</dd>`
         : h`<dd>
-      <dl class="nest flat">${call.rows.map((row) => h`
-        <div><dt>${text(row.label)}</dt><dd>${text(row.value)}</dd></div>`)}
+      <dl class="nest flat">${rows.map((one) => h`
+        <div><dt>${text(one.label)}</dt><dd>${text(one.value)}</dd></div>`)}
       </dl></dd>`
-    }</div>`,
-  )}
+    }</div>`;
+  const calls = view.kind === 'calls' ? view.calls : [];
+  const described = [view.safeTx, ...calls.map((call) => call.rows)].some((rows) => rows !== 'no-descriptor');
+  const lead =
+    view.kind === 'multisend'
+      ? h`${around(r.w.multisendLead(view.calls), 'verify')}`
+      : view.kind === 'no-data'
+        ? h`${r.w.noDataLead}`
+        : h`${r.w.walletLead}${described ? r.w.walletRules : ''}`;
+  return h`
+  <p class="lead">${lead}</p>
+  <dl class="props two">${row(h`${r.w.safeTxTitle}`, view.safeTx)}${calls.map((call) => row(text(call.title), call.rows))}
   </dl>${view.lines.map((line) => h`
   <div class="warnline">${decor('info')}<span>${text(line)}</span></div>`)}`;
 }
@@ -522,9 +520,7 @@ function nextBody(body: Extract<Body, { kind: 'next' }>, r: R): Html {
 function section(s: Section, r: R): Html {
   const count =
     s.body.kind === 'wallet'
-      ? s.body.view.kind === 'calls'
-        ? r.w.descriptors
-        : undefined
+      ? r.w.descriptors
       : s.count === undefined
         ? undefined
         : s.count.kind === 'states'

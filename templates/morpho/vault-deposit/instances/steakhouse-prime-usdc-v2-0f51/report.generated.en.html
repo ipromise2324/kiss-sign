@@ -509,8 +509,24 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="wallet">
-  <h2>Wallet display</h2>
-  <p class="lead">This Safe transaction packs 2 calls with MultiSend, which a hardware wallet cannot decode, so compare the hash on the device with the safeTxHash <code>verify</code> prints.</p>
+  <h2>Wallet display <span class="c">ERC-7730 descriptors</span></h2>
+  <p class="lead">This Safe transaction packs 2 calls with MultiSend, which no descriptor decodes, so compare the hash on the device with the safeTxHash <code>verify</code> prints.</p>
+  <dl class="props two">
+    <div><dt>The Safe transaction (SafeTx)</dt><dd>
+      <dl class="nest flat">
+        <div><dt><code>to</code></dt><dd>the official MultiSend</dd></div>
+        <div><dt><code>value</code></dt><dd><span class="addr">0</span></dd></div>
+        <div><dt><code>operation</code></dt><dd>Delegate Call (1), to the official MultiSend</dd></div>
+        <div><dt><code>data</code></dt><dd>the calls MultiSend packs, shown only as raw data</dd></div>
+        <div><dt><code>baseGas</code></dt><dd><span class="addr">0</span></dd></div>
+        <div><dt><code>gasPrice</code></dt><dd><span class="addr">0</span></dd></div>
+        <div><dt><code>gasToken</code></dt><dd>none (zero address)</dd></div>
+        <div><dt><code>refundReceiver</code></dt><dd>none (zero address)</dd></div>
+      </dl></dd></div>
+  </dl>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>your Safe is a proxy: a Ledger resolves it to safe-1.3.0 or safe-1.4.1 through Ledger&#39;s own server to use these descriptors; a wallet that does not resolve proxies shows only raw data.</span></div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>SafeTx: the wallet does not show <code>safeTxGas</code>, <code>nonce</code>; only the hashes cover them.</span></div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>On a Ledger, first turn on &#34;Transaction hash&#34; in the Ethereum app&#39;s settings: with a descriptor applied, the device shows the domain hash and the message hash only when it is on. Comparing those hashes is the check kiss-sign relies on, however right the decoded fields look.</span></div>
 </section>
 
 <section id="addresses">
@@ -602,9 +618,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="next">
   <h2>Next steps</h2>
   <ol class="steps">
-    <li><div>The first time you use this template, or after it changes, approve it<pre class="cmd"><code>bin/kiss-sign template approve morpho/vault-deposit</code></pre>
+    <li><div>The first time you use this template, or after it changes, approve it<pre class="cmd"><code>pnpm kiss-sign template approve morpho/vault-deposit</code></pre>
       <p class="then">It prints the template, the commit of main on GitHub and the template&#39;s keccak256. Answer <code>y</code> only if it is the one you reviewed.</p></div></li>
-    <li><div>Make the card<pre class="cmd"><code>bin/kiss-sign card new morpho/vault-deposit</code></pre>
+    <li><div>Make the card<pre class="cmd"><code>pnpm kiss-sign card new morpho/vault-deposit</code></pre>
       <p class="then">When <code>templates/</code> or <code>registry/</code> in your clone differs from main on GitHub, it stops before asking anything and tells you to run <code>git pull</code> first.</p></div></li>
     <li><div><code>vault</code>: it lists the contracts you can pick, each with its full address. Pick <a href="#a-steakhouse-prime-usdc-v2-0f51">steakhouse-prime-usdc-v2-0f51</a>, address <span class="addr">0xbeef088055857739C12CD3765F20b7679Def0f51</span>
       <p class="then">The numbers in the list may differ from someone else&#39;s, so pick by name; you can also type the name <code>steakhouse-prime-usdc-v2-0f51</code>.</p></div></li>
@@ -615,12 +631,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <p class="then">Source of the default: <a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/blue-sdk/src/constants.ts#L24">github.com/morpho-org/sdks</a>. Check that the expected amount and the final number it prints are reasonable.</p></div></li>
     <li><div>It prints the whole card, each name with its full address, and asks <code>Is this what you mean to do? [y/N]</code>. Type <code>y</code> only if all of it is what you want.
       <p class="then">It prints <code>Sealed card 0x…</code>, the card&#39;s hash, which the next step uses.</p></div></li>
-    <li><div>Propose the transaction in the Safe web app (the first time you use this template or this contract, start with a small amount), copy its safeTxHash, then run<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
+    <li><div>Propose the transaction in the Safe web app (the first time you use this template or this contract, start with a small amount), copy its safeTxHash, then run<pre class="cmd"><code>pnpm kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
       <p class="then"><code>MATCH</code>: it prints the safeTxHash and the path of a page with the domain hash, the message hash and the checklist. Go on.</p>
       <p class="then"><code>MISMATCH</code> or <code>UNVERIFIABLE</code>: do not sign. Read the checks it lists, then the AI judgment under &#34;<a href="#review">To review</a>&#34; in this report, which may explain why.</p></div></li>
     <li><div>Hardened tier: on an independent computer, run<pre class="cmd"><code>./check.sh &#60;nonce&#62;</code></pre>
       <p class="then">Compare the hashes it computes with the hardware wallet, and its page&#39;s checklist row by row with the <code>verify</code> page.</p></div></li>
     <li><div>Compare the domain hash and the message hash on the hardware wallet character by character with the <code>verify</code> page. Sign only if they are the same.
+      <p class="then">On a Ledger, first turn on &#34;Transaction hash&#34; in the Ethereum app&#39;s settings: with a descriptor applied, the device shows the domain hash and the message hash only when it is on. Comparing those hashes is the check kiss-sign relies on, however right the decoded fields look.</p>
       <div class="hash"><span>Compare</span><span class="f2">the domain hash and the message hash, each 0x followed by 64 characters</span></div></div></li>
   </ol>
   <div class="auto"><h3>What the program does at each signing</h3>
