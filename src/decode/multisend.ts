@@ -42,6 +42,7 @@ export type Unwrapped =
   | { readonly kind: 'foreign-delegatecall'; readonly to: Address };
 
 const HEADER = 1 + 20 + 32 + 32;
+const ZERO_ADDRESS = `0x${'0'.repeat(40)}` as Address;
 
 function packEntry(call: InnerCall): Uint8Array {
   const data = regionBytes(call.data);
@@ -90,5 +91,9 @@ export function unwrapSafeTx(tx: Pick<SafeTx, 'to' | 'value' | 'data' | 'operati
   const transactions = outer.args[0];
   if (transactions?.kind !== 'bytes') throw new Error('multiSend(bytes) decoded without its bytes');
   const calls = decodeMultiSendTransactions({ root: data.root, start: transactions.span[0], end: transactions.span[1] });
-  return 'kind' in calls ? calls : { kind: 'multisend', deployment, outer, calls };
+  if ('kind' in calls) return calls;
+  // MultiSend 1.5.0 sends a call whose `to` is zero to the Safe itself, which every check here reads as the zero address.
+  const zeroTo = deployment.version === '1.5.0' ? calls.find((call) => call.to === ZERO_ADDRESS) : undefined;
+  if (zeroTo?.fields !== undefined) return { kind: 'malformed', at: zeroTo.fields.to[0], problem: 'a MultiSend 1.5.0 call to the zero address, which it sends to the Safe itself' };
+  return { kind: 'multisend', deployment, outer, calls };
 }

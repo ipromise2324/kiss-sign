@@ -132,6 +132,20 @@ test('a MultiSend entry whose operation is neither call nor delegatecall is malf
   assert.deepEqual(unwrapSafeTx(withData(bytes)), { kind: 'malformed', at: approve!.span[0], problem: 'a MultiSend operation that is neither 0 nor 1' });
 });
 
+test('a zero `to` inside MultiSend 1.5.0, which calls the Safe itself, is malformed; older MultiSends call the zero address', () => {
+  const [approve] = unwrapped(unwrapSafeTx(deposit));
+  const bytes = depositBytes();
+  bytes.fill(0, approve!.span[0] + 1, approve!.span[0] + 21);
+  const zeroTo = withData(bytes);
+  assert.deepEqual(unwrapSafeTx({ ...zeroTo, to: '0xa83c336b20401af773b6219ba5027174338d1836' as Address }), {
+    kind: 'malformed',
+    at: approve!.span[0] + 1,
+    problem: 'a MultiSend 1.5.0 call to the zero address, which it sends to the Safe itself',
+  });
+  assert.equal(unwrapped(unwrapSafeTx(zeroTo))[0]!.to, `0x${'0'.repeat(40)}`);
+  assert.equal(unwrapped(unwrapSafeTx({ ...deposit, to: '0xa83c336b20401af773b6219ba5027174338d1836' as Address })).length, 2);
+});
+
 test('only an official MultiSend is unwrapped; a direct call is one call', () => {
   const foreign = '0x1111111111111111111111111111111111111111' as Address;
   assert.deepEqual(unwrapSafeTx({ ...deposit, to: foreign }), { kind: 'foreign-delegatecall', to: foreign });
