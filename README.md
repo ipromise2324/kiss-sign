@@ -93,7 +93,6 @@ On it, install Foundry for `cast` and `jq` 1.7 or later, then:
 
 ```sh
 git clone https://github.com/ipromise2324/kiss-sign-check.git && cd kiss-sign-check
-less check.sh             # read it once: about 1,000 lines of Bash
 cp config.example config  # set SAFE, SAFE_VERSION and LANGUAGE, the same language you gave init
 ```
 
