@@ -82,7 +82,8 @@ Options:
   --event '<signature>'          With --anchor event: the event signature.
   --max-txs <n>                  Transactions to study, 240 unless given, at least 12 across the
                                  windows, at least 1 with --from-block and --to-block.
-  --from-block, --to-block <n>   Search one block range in place of the windows.
+  --from-block, --to-block <n>   Search one block range in place of the windows, for debugging
+                                 the search; a template's research never passes them.
   --same-windows-as <recording>  Search the windows of testdata/research/<recording>.json again.
   --record <name>                Write testdata/research/<name>.json; nothing is written when a
                                  read got no answer.
