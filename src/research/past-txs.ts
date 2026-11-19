@@ -17,15 +17,16 @@ import type { TraceSource, TracedTx } from './trace.ts';
 export type BlockRange = { readonly fromBlock: bigint; readonly toBlock: bigint };
 
 /**
- * `spread`: `count` windows of up to `blocks` blocks each, evenly spaced over the last year and placed by the head
- * block alone. A window whose transfers do not fit one page of a source is halved until they do. `range`: one window
- * the caller chose, refused when it holds more than a page.
+ * `spread`: with `wholeYear`, the last year in one request to each source first, searched instead of the windows when
+ * every answer fits one page; then `count` windows of up to `blocks` blocks each, evenly spaced over the last year and
+ * placed by the head block alone. A window whose transfers do not fit one page of a source is halved until they do.
+ * `range`: one window the caller chose, refused when it holds more than a page.
  */
 export type Sampling =
-  | { readonly kind: 'spread'; readonly count: number; readonly blocks: bigint; readonly head?: bigint }
+  | { readonly kind: 'spread'; readonly count: number; readonly blocks: bigint; readonly head?: bigint; readonly wholeYear: boolean }
   | { readonly kind: 'range'; readonly range: BlockRange };
 
-export const DEFAULT_SPREAD: Extract<Sampling, { readonly kind: 'spread' }> = { kind: 'spread', count: 12, blocks: 7200n };
+export const DEFAULT_SPREAD: Extract<Sampling, { readonly kind: 'spread' }> = { kind: 'spread', count: 12, blocks: 7200n, wholeYear: true };
 
 const YEAR = (365n * 24n * 60n * 60n) / 12n;
 const FINALITY = 64n;
@@ -51,16 +52,26 @@ export type PastTxsDeps = {
   readonly maxTxs: number;
   /** Each transaction's call trace; without it, nothing is traced. */
   readonly traces?: TraceSource;
+  /** A recording's transactions left out because they touch the configured Safe, whose address the recording does not hold. */
+  readonly excludedByRecording?: ExcludedHashes;
 };
+
+/** The transactions left out because they touch the configured Safe: `found` before sampling, `sampled` after. */
+export type ExcludedHashes = { readonly found: ReadonlySet<Hex>; readonly sampled: ReadonlySet<Hex> };
 
 type Kept = Exclude<TxStudy, { kind: 'excluded' }>;
 
 /** One window as searched, `asked` before any halving: `found` transactions after exclusion, of which `studied` were read. */
 export type WindowRun = { readonly asked: BlockRange; readonly range: BlockRange; readonly found: number; readonly studied: number };
 
+/** The whole-year request a spread run asks first: `covered` when every source's answer fit one page, so it replaced the windows. */
+export type YearSearch = { readonly range: BlockRange; readonly covered: boolean };
+
 export type PastTxs = {
   readonly query: PastTxsQuery;
   readonly head: bigint | undefined;
+  /** Absent for a block range, and for a recording made before the whole year was asked first. */
+  readonly year: YearSearch | undefined;
   readonly windows: readonly WindowRun[];
   readonly perWindow: number;
   /** Each kept transaction with the sources that found it. */
@@ -68,7 +79,9 @@ export type PastTxs = {
   readonly studies: readonly Kept[];
   readonly shapes: ReturnType<typeof shapesOf>;
   /** Transactions left out because they touch the configured Safe. Never printed. */
-  readonly excluded: ReadonlySet<Hex>;
+  readonly excluded: ExcludedHashes;
+  /** With an event any contract may log, transactions whose sender did not log it itself, left out of `studies`. */
+  readonly otherEmitter: readonly Hex[];
   /** The template's effects that state an amount, and for each fitting transaction stating one, how its balances differed. */
   readonly effects: readonly StatedEffect[];
   readonly measurements: ReadonlyMap<Hex, Measurement>;
@@ -78,12 +91,12 @@ export type PastTxs = {
 
 const ZERO = `0x${'00'.repeat(20)}`;
 
-function hashesBySource(hits: Hits, exclude: Address | undefined): { found: Map<Hex, SourceName[]>; excluded: Set<Hex> } {
+function hashesBySource(hits: Hits, exclude: Address | undefined, excludedHashes: ReadonlySet<Hex>): { found: Map<Hex, SourceName[]>; excluded: Set<Hex> } {
   const found = new Map<Hex, SourceName[]>();
   const excluded = new Set<Hex>();
   for (const source of SOURCES) {
     for (const hit of hits[source]) {
-      if (exclude !== undefined && (hit.from === exclude || hit.to === exclude)) excluded.add(hit.hash);
+      if (excludedHashes.has(hit.hash) || (exclude !== undefined && (hit.from === exclude || hit.to === exclude || hit.emitter === exclude))) excluded.add(hit.hash);
       const sources = found.get(hit.hash) ?? [];
       if (!sources.includes(source)) sources.push(source);
       found.set(hit.hash, sources);
@@ -106,6 +119,25 @@ async function inPool<T, R>(items: readonly T[], width: number, run: (item: T) =
   return results;
 }
 
+async function searchYear(anchor: PastTxsQuery['anchor'], range: BlockRange, ask: Ask): Promise<Hits | undefined> {
+  try {
+    return await searchBoth({ ...anchor, ...range }, ask);
+  } catch (error) {
+    if (error instanceof TooManyTransfers) return undefined;
+    throw error;
+  }
+}
+
+function byBlock(hashes: readonly Hex[], hits: Hits): Hex[] {
+  const first = new Map<Hex, bigint>();
+  for (const hit of SOURCES.flatMap((source) => hits[source])) {
+    const seen = first.get(hit.hash);
+    if (hit.block !== undefined && (seen === undefined || hit.block < seen)) first.set(hit.hash, hit.block);
+  }
+  const at = (hash: Hex) => first.get(hash) ?? 0n;
+  return [...hashes].sort((a, b) => (at(a) < at(b) ? -1 : at(a) > at(b) ? 1 : 0));
+}
+
 async function searchWindow(anchor: PastTxsQuery['anchor'], range: BlockRange, sampling: Sampling['kind'], ask: Ask): Promise<{ range: BlockRange; hits: Hits }> {
   for (;;) {
     try {
@@ -125,31 +157,50 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
   const { sampling } = query;
   let ranges: BlockRange[];
   let head: bigint | undefined;
+  let year: YearSearch | undefined;
+  let yearHits: Hits | undefined;
   if (sampling.kind === 'range') ranges = [sampling.range];
   else {
     head = sampling.head ?? (await chainHead(deps.reader));
     ranges = spreadWindows(head, sampling.count, sampling.blocks);
+    if (sampling.wholeYear) {
+      const top = (ranges.at(-1) as BlockRange).toBlock;
+      const range = { fromBlock: top - YEAR + 1n, toBlock: top };
+      yearHits = await searchYear(query.anchor, range, deps.ask);
+      year = { range, covered: yearHits !== undefined };
+      if (yearHits !== undefined) ranges = [range];
+    }
   }
   const perWindow = Math.floor(deps.maxTxs / ranges.length);
   const found = new Map<Hex, SourceName[]>();
-  const excluded = new Set<Hex>();
+  const excludedFound = new Set<Hex>();
+  const excludedSampled = new Set<Hex>();
+  const emitters = new Map<Hex, Set<Address>>();
   const searched: { asked: BlockRange; range: BlockRange; found: Hex[]; sample: Hex[] }[] = [];
   for (const asked of ranges) {
-    const { range, hits } = await searchWindow(query.anchor, asked, sampling.kind, deps.ask);
-    const window = hashesBySource(hits, deps.exclude);
-    for (const hash of window.excluded) excluded.add(hash);
+    const { range, hits } = yearHits === undefined ? await searchWindow(query.anchor, asked, sampling.kind, deps.ask) : { range: asked, hits: yearHits };
+    const window = hashesBySource(hits, deps.exclude, deps.excludedByRecording?.found ?? new Set());
+    for (const hash of window.excluded) excludedFound.add(hash);
     for (const [hash, sources] of window.found) found.set(hash, sources);
-    searched.push({ asked, range, found: [...window.found.keys()], sample: spacedSample([...window.found.keys()], perWindow) });
+    for (const hit of hits.etherscan) if (hit.emitter !== undefined) emitters.set(hit.hash, (emitters.get(hit.hash) ?? new Set()).add(hit.emitter));
+    const hashes = yearHits === undefined ? [...window.found.keys()] : byBlock([...window.found.keys()], hits);
+    searched.push({ asked, range, found: hashes, sample: spacedSample(hashes, perWindow) });
   }
   const shapes = shapesOf(query.template);
-  const context = { shapes, registry: deps.registry, readMessage: deps.readMessage, exclude: deps.exclude, anchor: { kind: query.anchor.kind, token: query.anchor.token.toLowerCase() as Address } };
-  const all = await inPool(searched.flatMap((w) => w.sample), 4, (hash) => studyTx(deps.reader, hash, context).then((study) => ({ hash, study })));
+  const token = query.anchor.token?.toLowerCase() as Address | undefined;
+  const context = { shapes, registry: deps.registry, readMessage: deps.readMessage, exclude: deps.exclude, anchor: { kind: query.anchor.kind, ...(token === undefined ? {} : { token }) } };
+  const all = await inPool(searched.flatMap((w) => w.sample), 4, async (hash) => ({
+    hash,
+    study: deps.excludedByRecording?.sampled.has(hash) === true ? ({ kind: 'excluded' } as const) : await studyTx(deps.reader, hash, context),
+  }));
   const studies: Kept[] = [];
+  const otherEmitter: Hex[] = [];
   for (const { hash, study } of all) {
     if (study.kind === 'excluded') {
-      excluded.add(hash);
+      excludedSampled.add(hash);
       found.delete(hash);
-    } else studies.push(study);
+    } else if (query.anchor.token === undefined && 'sender' in study && !(emitters.get(hash)?.has(study.sender.address) ?? false)) otherEmitter.push(hash);
+    else studies.push(study);
   }
   const effects = statedEffects(query.template);
   const fits = studies.filter((s): s is Fit => s.kind === 'fit');
@@ -157,9 +208,10 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
   const measured = await inPool(fits, 4, (fit) => measure(deps.reader, { hash: fit.hash, sender: fit.sender, rules: rulesOf(fit), values: fit.values }, effects, deps.registry));
   const measurements = new Map(fits.flatMap((fit, i) => (measured[i] === undefined ? [] : [[fit.hash, measured[i]] as const])));
   const traces = deps.traces === undefined ? [] : await traceExact(query.template, fits, deps.traces, deps.reader, deps.registry);
-  const kept = (hashes: readonly Hex[]) => hashes.filter((hash) => !excluded.has(hash)).length;
-  const windows = searched.map(({ asked, range, found, sample }) => ({ asked, range, found: kept(found), studied: kept(sample) }));
-  return { query, head, windows, perWindow, found, studies, shapes, excluded, effects, measurements, traces };
+  const kept = (hashes: readonly Hex[]) => hashes.filter((hash) => !excludedFound.has(hash) && !excludedSampled.has(hash)).length;
+  const windows = searched.map(({ asked, range, found, sample }) => ({ asked, range, found: kept(found), studied: kept(sample.filter((hash) => !otherEmitter.includes(hash))) }));
+  const excluded = { found: excludedFound, sampled: excludedSampled };
+  return { query, head, year, windows, perWindow, found, studies, shapes, excluded, otherEmitter, effects, measurements, traces };
 }
 
 /**
@@ -252,7 +304,7 @@ function describeRule(rule: LeafRule, sender: string): string {
 export type Fit = Extract<Kept, { kind: 'fit' }>;
 type Misfit = Extract<Kept, { kind: 'misfit' }>;
 
-function label(value: string, type: AbiType, fit: Fit, registry: Registry, anchorToken: Address, sender: string): string | undefined {
+function label(value: string, type: AbiType, fit: Fit, registry: Registry, anchorToken: Address | undefined, sender: string): string | undefined {
   if (type.kind !== 'address') return undefined;
   if (value === fit.sender.address) return sender;
   const named = registry.byAddress.get(value as Address)?.name;
@@ -437,14 +489,17 @@ function renderTraces(lines: string[], run: PastTxs): void {
 export function renderPastTxs(run: PastTxs, registry: Registry): string {
   const { anchor, template, sampling } = run.query;
   const lines: string[] = [];
-  const tokenName = registry.byAddress.get(anchor.token)?.name;
   const named = (address: Address): string => registry.byAddress.get(address)?.name ?? checksumAddress(address);
   const moved = `moved${anchor.from === undefined ? '' : ` out of ${named(anchor.from)}`}${anchor.to === undefined ? '' : ` into ${named(anchor.to)}`}`;
-  const of = `${tokenName === undefined ? '' : `${tokenName} `}${checksumAddress(anchor.token)}`;
+  const of = anchor.token === undefined ? 'any contract, studied only where the sender logged it itself' : `${registry.byAddress.get(anchor.token)?.name ?? ''} ${checksumAddress(anchor.token)}`.trim();
   lines.push(`past transactions for ${template.id}`);
   if (anchor.kind === 'event') lines.push(`anchor: ${anchor.event?.signature} logged by ${of}`);
   else lines.push(`anchor: Transfer of ${of} ${{ mint: 'minted (from the zero address)', burn: 'burned (to the zero address)', any: moved }[anchor.kind]}`);
-  if (sampling.kind === 'spread') {
+  const { year } = run;
+  if (year?.covered === true) {
+    lines.push(`whole year: blocks ${year.range.fromBlock} to ${year.range.toBlock}, every source's answer in one page, so the search covers the year with no gap; at most ${run.perWindow} studied, taken evenly in block order`);
+  } else if (sampling.kind === 'spread') {
+    if (year !== undefined) lines.push(`whole year: blocks ${year.range.fromBlock} to ${year.range.toBlock} hold more than one page of a source, so the windows are searched`);
     lines.push(`windows: ${sampling.count} of up to ${sampling.blocks} blocks, one every ${YEAR / BigInt(sampling.count)} blocks over the last year; at most ${run.perWindow} studied per window`);
   } else lines.push('windows: one block range given by hand');
   for (const { asked, range, found, studied } of run.windows) {
@@ -463,6 +518,7 @@ export function renderPastTxs(run: PastTxs, registry: Registry): string {
       if (hashes.length > 0) lines.push(`  only ${source}: ${hashes.join(', ')}`);
     }
   } else lines.push(`sources: etherscan found ${bySource('etherscan')}; alchemy does not search an event (its eth_getLogs reads at most 10 blocks at a time on the free plan)`);
+  if (run.otherEmitter.length > 0) lines.push(`not studied, the event logged only by another contract than the sender: ${run.otherEmitter.length}, e.g. ${examples(run.otherEmitter)}`);
   const mark = (hash: Hex): string => {
     const sources = run.found.get(hash) ?? [];
     return sources.length === searched.length ? hash : `${hash} [only ${sources[0]}]`;

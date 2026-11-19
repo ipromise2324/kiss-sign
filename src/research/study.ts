@@ -491,7 +491,7 @@ function boundEntry(
   const names = targetNames(rule, template, registry);
   const holds = (address: Address) => names?.some((name) => registry.entries.get(name)?.address === address) ?? false;
   if (names === undefined || holds(value)) return undefined;
-  if (rule.kind !== 'card' || (holds(anchor.token) && !anchorHeld)) return { kind: 'entry', at, expected: names, actual: value };
+  if (rule.kind !== 'card' || (anchor.token !== undefined && holds(anchor.token) && !anchorHeld)) return { kind: 'entry', at, expected: names, actual: value };
   if (value !== anchor.token) return { at, kind: 'address' };
   const kinds = new Set(names.map((name) => registry.entries.get(name)?.kind));
   if (kinds.size === 1 && kinds.has('token')) return { at, kind: 'token' };
@@ -573,12 +573,25 @@ async function studyDirectCall(reader: Reader, tx: Transaction & { readonly to: 
   return studies.find((study) => study.kind === 'fit' && study.outside.length === 0) ?? studies.find((study) => study.kind === 'fit') ?? (studies[0] as TxStudy);
 }
 
+const names = (value: unknown, address: Address): boolean =>
+  JSON.stringify(value, (_, v: unknown) => (typeof v === 'bigint' ? v.toString(16) : v)).toLowerCase().includes(address.slice(2).toLowerCase());
+
+/**
+ * Whether the configured Safe sent the transaction or is named in its input or in a log of the receipt both providers
+ * give: its reads would hold the Safe's address, which a recording drops, so it is left out of the study.
+ */
+async function touches(reader: Reader, tx: Transaction, safe: Address): Promise<boolean> {
+  if (tx.to === safe || tx.from === safe || names(tx.input, safe)) return true;
+  const receipt = await reader.getTransactionReceipt(tx.hash);
+  return receipt.kind === 'agreed' && receipt.value !== null && names(receipt.value.logs, safe);
+}
+
 export async function studyTx(reader: Reader, hash: Hex, context: StudyContext): Promise<TxStudy> {
   const read = await reader.getTransaction(hash);
   if (read.kind === 'unverifiable') return { kind: 'unreadable', hash, reason: read.reason };
   const tx = read.value;
   if (tx === null) return { kind: 'unreadable', hash, reason: 'neither provider knows the transaction' };
-  if (context.exclude !== undefined && (tx.to === context.exclude || tx.from === context.exclude)) return { kind: 'excluded' };
+  if (context.exclude !== undefined && (await touches(reader, tx, context.exclude))) return { kind: 'excluded' };
   const { to, blockNumber } = tx;
   if (to === null) return { kind: 'not-studied', hash, why: 'calls no function the template calls', to: undefined, selector: 'contract creation' };
   if (blockNumber === null) return { kind: 'unreadable', hash, reason: 'the transaction is pending' };
