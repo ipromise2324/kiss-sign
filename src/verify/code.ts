@@ -8,28 +8,21 @@ import type { Proxy } from '../contracts/proxy.ts';
 import { MARKET_ENTRY_PARTS, pinAt } from '../registry.ts';
 import type { CodePin, Registry, RegistryEntry, Route } from '../registry.ts';
 import type { SafeTx } from '../safe/types.ts';
-import { cardRefs, namedEffectTokens } from '../template/template.ts';
-import type { Rule, Template } from '../template/template.ts';
+import { callRules, cardRefs, namedEffectTokens, rulesUnder } from '../template/template.ts';
+import type { Template } from '../template/template.ts';
 import type { ChainCheck } from './verdict.ts';
 
 /**
  * Every registry contract the transaction or the card names: the Safe transaction's target, each contract a template
- * rule names, each registry address on the card, each entry a card reference's attribute names, such as a vault's asset,
- * each entry a market on the card names, the contract of each view a template reads, and each entry any of these
- * names in `dependsOn`.
+ * rule names, inside packed bytes and signed messages too, the verifyingContract of each message the template signs,
+ * each registry address on the card, each entry a card reference's attribute names, such as a vault's asset, each
+ * entry a market on the card names, the contract of each view a template reads, and each entry any of these names in
+ * `dependsOn`.
  */
 export function codeClaims(tx: SafeTx, card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): RegistryEntry[] {
   const touched = new Map<string, RegistryEntry>();
   const add = (entry: RegistryEntry | undefined): void => {
     if (entry !== undefined) touched.set(entry.name, entry);
-  };
-  const visit = (rule: Rule | undefined): void => {
-    if (rule?.kind === 'contract') add(registry.entries.get(rule.name));
-    else if (rule?.kind === 'address-word') visit(rule.rule);
-    else if (rule?.kind === 'const' && rule.value.kind === 'address') add(registry.byAddress.get(rule.value.value));
-    else if (rule?.kind === 'call' || rule?.kind === 'keccak') rule.call.args.forEach(visit);
-    else if (rule?.kind === 'items') rule.items.forEach(visit);
-    else if (rule?.kind === 'fields') rule.fields.forEach(visit);
   };
   add(registry.byAddress.get(tx.to));
   for (const op of card.operations) {
@@ -48,16 +41,12 @@ export function codeClaims(tx: SafeTx, card: ResolvedCard, templates: ReadonlyMa
       const target = attribute === undefined ? undefined : named(field)?.attributes[attribute];
       add(target === undefined ? undefined : registry.entries.get(target));
     }
-    visit(template.nonce);
-    for (const call of template.calls) {
-      visit(call.to);
-      visit(call.value);
-      if (call.data !== 'empty') call.data.args.forEach(visit);
+    for (const rule of [...callRules(template), ...template.effects.views.flatMap((view) => view.args.flatMap(rulesUnder))]) {
+      if (rule.kind === 'contract') add(registry.entries.get(rule.name));
+      else if (rule.kind === 'const' && rule.value.kind === 'address') add(registry.byAddress.get(rule.value.value));
+      else if (rule.kind === 'eip712') add(registry.entries.get(rule.message.domain.verifyingContract));
     }
-    for (const view of template.effects.views) {
-      if (view.to.kind === 'contract') add(registry.entries.get(view.to.name));
-      view.args.forEach(visit);
-    }
+    for (const view of template.effects.views) if (view.to.kind === 'contract') add(registry.entries.get(view.to.name));
     for (const name of namedEffectTokens(template.effects)) add(registry.entries.get(name));
     for (const kept of template.effects.approves) add(registry.entries.get(kept.spender));
   }
