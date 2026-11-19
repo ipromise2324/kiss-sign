@@ -126,25 +126,23 @@ senders, of 223 transactions studied:
     22 calls no function the template calls (called 0x765e827f in 8, 0x1fad948c in 5, 0x8f5c3522 in 4, 0x00000000 in 2, …)
 call traces, from drpc, of the transactions exactly the template: 72 transactions, 72 checked against the receipt both providers agree on
 by proven Safes, the whole template in one transaction:
-another operation, making none of the template's calls: 94 transactions from 94 Safes; not counted below
+another operation, making none of the template's calls: 96 transactions from 96 Safes; not counted below
   e.g. 0x527517b57bf4e89b3a7544a7511584ed8881e0c4fe2bded9577b31d83e872b7c: calls 0x3F68cf99817a7a3A1E3424b2895241fCfF0E8135.0xe318b52b
   e.g. 0xa1ded917edd8e34b7855a8537fa6a517c232aff55d194cec5196deeb721b39c8: calls 0x5e41066D55ED832f9E3d9e747DaF352Cf29391Ef.0xe318b52b
   e.g. 0x4742f3291cdfbadd2d58ec76c5859d4459b6b4987ce50fbb55cd28ffaaacfcd7: calls 0x7FEa69d107A77B5817379d1254cc80D9671E171b.0xe318b52b
-fit the template's shape: 72 transactions from 69 Safes; misfits: 31 from 31 Safes
-fields, over the 72 fitting transactions:
+fit the template's shape: 79 transactions from 76 Safes; misfits: 22 from 22 Safes
+fields, over the 79 fitting transactions:
   call.to  [the Safe]
-    equalled the Safe in 72 of 72 (69 Safes); values: the Safe in 72
+    equalled the Safe in 79 of 79 (76 Safes); values: the Safe in 79
   call.value  [const 0]
-    equalled const 0 in 72 of 72 (69 Safes); values: 0 in 72
+    equalled const 0 in 79 of 79 (76 Safes); values: 0 in 79
   call.removeOwner.prevOwner  [the owner before card owner]
-    equalled the owner before card owner in 72 of 72 (69 Safes); values: another address in 72 (50 distinct other addresses)
+    equalled the owner before card owner in 79 of 79 (76 Safes); values: another address in 79 (57 distinct other addresses)
   call.removeOwner.owner  [card owner]
-    same as the other leaves bound to card owner in 72 of 72; values: another address in 72 (63 distinct other addresses)
+    same as the other leaves bound to card owner in 79 of 79; values: another address in 79 (64 distinct other addresses)
   call.removeOwner._threshold  [card threshold]
-    same as the other leaves bound to card threshold in 72 of 72; values: 5 distinct values
+    same as the other leaves bound to card threshold in 79 of 79; values: 5 distinct values
 misfits, by reason:
-  11 from 11 Safes: a delegatecall to a contract that is not an official MultiSend
-    e.g. 0x8338ba23c2efd56f077735528fc8fdf736a586a0180f182fcd5886ece8792ced, 0x93f176fbb6898017bc56307158ab43d1eeedcf32e8fb427b9368cf7fad2eb49a, 0x34481bfc42009cb63165b581dbede99eadd10c545a10350d6f8d7ef840b6bafd
   1 from 1 Safe: calls 0x45bD83458b8B6bfd83b4704441d4975E734a81Cc.removeOwner, 0x45bD83458b8B6bfd83b4704441d4975E734a81Cc.removeOwner
     e.g. 0x24237ba752e4d95630369dec39492b48aeee9e3d3e83306c5cbc36b7c80ba121
   1 from 1 Safe: calls 0x4A622197312Cff5Dd66Ff53A67b0Bd47030518F1.0x610b5925, 0xaC8A77be2Ae8B931062A9Bc83462F97EEc0eC05D.0x610b5925, 0x4A622197312Cff5Dd66Ff53A67b0Bd47030518F1.removeOwner
@@ -181,8 +179,12 @@ misfits, by reason:
     e.g. 0xba948077d6a1e66cc6d5a6977e7d89e305261c1263548cd34cc0a4c64914904d
   1 from 1 Safe: calls 0xD80c9C4489034aff0061e45f994dDd3d538c1a6b.removeOwner, 0xD80c9C4489034aff0061e45f994dDd3d538c1a6b.removeOwner, 0xD80c9C4489034aff0061e45f994dDd3d538c1a6b.removeOwner
     e.g. 0xc8d4f5f7b097ec106023e71c446fbbb10b4c35ff7288f125e6ef6ab111341f87
+  1 from 1 Safe: calls 0x06D6d5A2C3C7161491b6864a66C82aC933cb3D5d.0x0d582f13, 0x06D6d5A2C3C7161491b6864a66C82aC933cb3D5d.0x0d582f13, 0x06D6d5A2C3C7161491b6864a66C82aC933cb3D5d.removeOwner, 0x06D6d5A2C3C7161491b6864a66C82aC933cb3D5d.removeOwner, 0x06D6d5A2C3C7161491b6864a66C82aC933cb3D5d.removeOwner
+    e.g. 0xabb4903a66bc91521f67afc1ed60669dc951d74478e5917af792c15429d11f3f
   1 from 1 Safe: calls 0xCDEd9d57FE29Ddc63233dc6a9ad67DD22AB31D6f.removeOwner, 0xCDEd9d57FE29Ddc63233dc6a9ad67DD22AB31D6f.removeOwner
     e.g. 0xf0bde0216b733843b27314c1ef67851fbc2b72e89de4432d8e82d7f2f8554c91
+  1 from 1 Safe: calls 0xBFc4037257e5e5560Ebb6ecEaD770ff331402851.0xe318b52b, 0xBFc4037257e5e5560Ebb6ecEaD770ff331402851.removeOwner
+    e.g. 0xaa8e97492fa79281b40b605464339d2626444db6be70ab205ba8e3018af822d9
   1 from 1 Safe: calls 0x16F94a7719994303125bc7cEB2Dac0Cca2e9b787.removeOwner, 0x16F94a7719994303125bc7cEB2Dac0Cca2e9b787.removeOwner
     e.g. 0x71d0d493499fb03543cb873e9bf0c0c1947ae988ae35e7c443ea2206ddbadbaa
 examples that fit: 0xe7fca01ee4f1ba6256b22124ead4fc201b9a94984974dd8cdc5f251955ee3ecb, 0x2728a6ff9f95fa23df72cf6f7e682e998f226056d2df49dbcebe9e557d8b26c7, 0x5407d8c51b584746c88beefd2b60ef8bbe5b3b7a80df2f7f55cbc95f8a4453a8

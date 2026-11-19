@@ -123,11 +123,11 @@ senders, of 212 transactions studied:
     19 calls no function the template calls (called 0x765e827f in 9, 0x1fad948c in 3, 0x7a9a1628 in 2, 0xee072baf in 1, …)
 call traces, from drpc, of the transactions exactly the template: 77 transactions, 77 checked against the receipt both providers agree on
 by proven Safes, the whole template in one transaction:
-another operation, making none of the template's calls: 89 transactions from 86 Safes; not counted below
+another operation, making none of the template's calls: 101 transactions from 98 Safes; not counted below
   e.g. 0x1ffd4b30104ed86bdb52d873d9b90574c492bc74486eef318399f06c7b775fdc: calls 0xF99C2A4889E04Aa2DE211cB5E85547C3aC02d9D6.0xf8dc5dd9
   e.g. 0x047d9e60120abd8634433c4a08440a0eaa632ad40d85e95ff7ba3f3e7ed0c9e6: calls 0xddb6326Eb3496505184b25A53FFa72E652aD8e53.0x610b5925, 0x326705BBb3Bdb62D170F6421Fb7E0EF6D20BBA4c.0x610b5925, 0xddb6326Eb3496505184b25A53FFa72E652aD8e53.0xf8dc5dd9
   e.g. 0x50aa79ccb95f01036a6e9bea25e84198da15c118c5df629f2f3c5009758087fa: calls 0xD993780D3B187EC801eCED332915179eb578B1e4.0x610b5925, 0x96dE09e424d7264f91854445A8D6Fa43293E8ADb.0x610b5925, 0xD993780D3B187EC801eCED332915179eb578B1e4.0xf8dc5dd9
-fit the template's shape: 77 transactions from 68 Safes; misfits: 26 from 26 Safes
+fit the template's shape: 77 transactions from 68 Safes; misfits: 14 from 14 Safes
 fields, over the 77 fitting transactions:
   call.to  [the Safe]
     equalled the Safe in 77 of 77 (68 Safes); values: the Safe in 77
@@ -136,8 +136,6 @@ fields, over the 77 fitting transactions:
   call.changeThreshold._threshold  [card threshold]
     same as the other leaves bound to card threshold in 77 of 77; values: 4 distinct values
 misfits, by reason:
-  17 from 17 Safes: a delegatecall to a contract that is not an official MultiSend
-    e.g. 0x8338ba23c2efd56f077735528fc8fdf736a586a0180f182fcd5886ece8792ced, 0x552f04c002514d3bf9082f017e9aca2a9047fe1a936ff1a806cc23b76272db74, 0x651236355d230e294885124784305fc9200619eb2df857480a0814d975c519a2
   1 from 1 Safe: calls 0x1fbE3FC54100e161a61613eE9C3C992cc196463a.0xe318b52b, 0x1fbE3FC54100e161a61613eE9C3C992cc196463a.0xe318b52b, 0x1fbE3FC54100e161a61613eE9C3C992cc196463a.changeThreshold
     e.g. 0x1bbd289cfbcc1415d7bf5b25626be3b70c10e76ad18416f833d3182f8d78bd75
   1 from 1 Safe: calls 0xF2a97a2CB44220baCCddD31A2A338de822ee45c7.0x610b5925, 0xB6e77C23a643E850D5c509CE36d2a15C8baB22A7.0x610b5925, 0xF2a97a2CB44220baCCddD31A2A338de822ee45c7.0xe318b52b, 0xF2a97a2CB44220baCCddD31A2A338de822ee45c7.changeThreshold
@@ -148,6 +146,16 @@ misfits, by reason:
     e.g. 0x8728af2fd36a56f4771038331a98bc4aab611d6ec28943b1b8be85771f232f81
   1 from 1 Safe: calls 0x2D5dda6ef352745a8A7a723B37E218b26aB3b531.0x610b5925, 0x6E9283B3eC2a8dCf01Cd6e3C5f776e3308ccf75D.0x610b5925, 0x2D5dda6ef352745a8A7a723B37E218b26aB3b531.0xe318b52b, 0x2D5dda6ef352745a8A7a723B37E218b26aB3b531.changeThreshold
     e.g. 0xcefb1c3e61ebfdc8198637149f1a3876a9b9622dfed49cf8ef2db48413f9e090
+  1 from 1 Safe: calls 0x6BAD23112a9495babea74544400662d4EfBe23b3.0x0d582f13, 0x6BAD23112a9495babea74544400662d4EfBe23b3.0x0d582f13, 0x6BAD23112a9495babea74544400662d4EfBe23b3.0xf8dc5dd9, 0x6BAD23112a9495babea74544400662d4EfBe23b3.changeThreshold
+    e.g. 0x58adf1b5f4b9583a782e703b6554873bff958cf268f7720db03f1c9de27b6ba6
+  1 from 1 Safe: calls 0x689f1278469c6146d835CB99BbfF818fB62989FE.0x0d582f13, 0x689f1278469c6146d835CB99BbfF818fB62989FE.0x0d582f13, 0x689f1278469c6146d835CB99BbfF818fB62989FE.0xf8dc5dd9, 0x689f1278469c6146d835CB99BbfF818fB62989FE.changeThreshold
+    e.g. 0xc5929910aea63201db597631c4ec50d1e8f2471e338d35dbeb5a92b32242c032
+  1 from 1 Safe: calls 0x98a51C0bb1E2d1dCD2c7E1CA71c7807277A68721.0x0d582f13, 0x98a51C0bb1E2d1dCD2c7E1CA71c7807277A68721.0x0d582f13, 0x98a51C0bb1E2d1dCD2c7E1CA71c7807277A68721.0xf8dc5dd9, 0x98a51C0bb1E2d1dCD2c7E1CA71c7807277A68721.0xf8dc5dd9, 0x98a51C0bb1E2d1dCD2c7E1CA71c7807277A68721.changeThreshold
+    e.g. 0xc1ebbfd8c6806b7511b7f2857f63f183e5e8af6f5bcfc86756732fe2fc78a555
+  1 from 1 Safe: calls 0xA5e30d467514edA4F6EF8Cd82e751640aF77b2fB.0x0d582f13, 0xA5e30d467514edA4F6EF8Cd82e751640aF77b2fB.0x0d582f13, 0xA5e30d467514edA4F6EF8Cd82e751640aF77b2fB.0xf8dc5dd9, 0xA5e30d467514edA4F6EF8Cd82e751640aF77b2fB.changeThreshold
+    e.g. 0xab283204af4ffcbb2804e24533f40e21033de84a3b73776c6affbeb85e723c14
+  1 from 1 Safe: calls 0xc781143d40aEB032c0079F9078292a4b1546A027.0x0d582f13, 0xc781143d40aEB032c0079F9078292a4b1546A027.0x0d582f13, 0xc781143d40aEB032c0079F9078292a4b1546A027.0xf8dc5dd9, 0xc781143d40aEB032c0079F9078292a4b1546A027.changeThreshold
+    e.g. 0x873aa875a811af8b965b6cce0cee00dc8ddd44ad1ba6b401d05aa8f2bea845ec
   1 from 1 Safe: calls 0x96Ab02Ec8e9942633fc1DF786E72adc11dDA831a.0x610b5925, 0xD25afc4951eafA7b03A769526eDad8af3a72Eb3D.0x610b5925, 0x96Ab02Ec8e9942633fc1DF786E72adc11dDA831a.0xe318b52b, 0x96Ab02Ec8e9942633fc1DF786E72adc11dDA831a.changeThreshold
     e.g. 0xac82b1f5e5f2f1983011f798d4ea650669726f900fd1ff92c84ca4dae09b6ebb
   1 from 1 Safe: calls 0x661ABAa32A46054433537E464011176D2a4C4955.0xe318b52b, 0x661ABAa32A46054433537E464011176D2a4C4955.changeThreshold

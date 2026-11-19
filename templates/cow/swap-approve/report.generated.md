@@ -234,19 +234,20 @@ windows: 12 of up to 7200 blocks, one every 219000 blocks over the last year; at
   blocks 26431201 to 26438400: 171 found, 40 studied
 sources: etherscan found 1351; alchemy does not search an event (its eth_getLogs reads at most 10 blocks at a time on the free plan)
 senders, of 473 transactions studied:
-  proven Safe: 330, from 252 Safes
+  proven Safe: 327, from 249 Safes
   contract, not a proven Safe: 1, from 1 contract
     1 its code is not a known Safe proxy: 0xaf97cd1a13b32519d45b5d45bc9710ccc40952a7d333a58b07acfc2b14266374
   EOA calling a function of the template directly: 7, from 7 EOAs
   neither: 135
     131 calls no function the template calls (called 0xe9ae5c53 in 35, 0x3f965e56 in 26, 0x8d80ff0a in 20, 0x765e827f in 11, …)
     4 execTransaction calldata does not decode (called 0x6a761202 in 4)
+  3 unreadable, no Order read from api.cow.fi: not recorded: 0xd455fc6ee6ec7acb0bf508d122b39eab791b91265ab6d9b9bb791f6974ab5dba, 0xd9a0529eefdf989a308f502dfa23ff023a24259912671bc4da2d7b870f9f2714, 0x551ca118930e4ace73880e1176ccbe5916a2b3fa4b11289d7a66e55085763e88
 by proven Safes, the whole template in one transaction:
 another operation, making none of the template's calls: 17 transactions from 10 Safes; not counted below
   e.g. 0x86a01a2062ce40c2ff094b0271389f7671dee2e7e14330827079aa291ba1ccee: calls 0x1cb790068c9a08392BeA1E47Ca53396fA7811BB6.0x908e9ee0
   e.g. 0x12c3aa94b88c837bb5c9b0fefa94dde5c171b01b4459a55fa1bc688bcc25f518: calls 0x2e2b73616e67c1C3660111baE981483a126e8F7a.0xa6df3a8d, 0x2e2b73616e67c1C3660111baE981483a126e8F7a.0xa6df3a8d, 0x2e2b73616e67c1C3660111baE981483a126e8F7a.0xa6df3a8d, 0x2e2b73616e67c1C3660111baE981483a126e8F7a.0xa6df3a8d, 0x1cb790068c9a08392BeA1E47Ca53396fA7811BB6.0x44a14e94, 0x1cb790068c9a08392BeA1E47Ca53396fA7811BB6.0x908e9ee0
   e.g. 0x84617e0e387991b260826f35b7d52777dbd417ee9c3f622459551d93bbb67ddf: calls 0x9938A09FeA37bA681A1Bd53D33ddDE2dEBEc1dA0.0xa6df3a8d, 0x9938A09FeA37bA681A1Bd53D33ddDE2dEBEc1dA0.0xa6df3a8d, 0xc95b806aC073Df930014ac476d26c8ad918f14e0.0x908e9ee0
-fit the template's shape: 19 transactions from 19 Safes; misfits: 294 from 223 Safes
+fit the template's shape: 19 transactions from 19 Safes; misfits: 291 from 220 Safes
   exactly the template: 1 from 1 Safe; outside the registry: 18 from 18 Safes (an address outside the registry at multiSend[1].setPreSignature.orderUid.digest.buyToken in 12, an address outside the registry at multiSend[0].to in 11, an address outside the registry at multiSend[1].setPreSignature.orderUid.digest.sellToken in 11)
 fields, over the 19 fitting transactions:
   multiSend[0].to  [card sell-token]
@@ -300,8 +301,6 @@ misfits, by reason:
     e.g. 0x158bcdf184c9bb22a259d8995c6e60821d8478bc01f30ec6e14151f1e1dac96b, 0xd3bda8db15a38baec7f3b467726dbdcd832843701081c0f965be98b24145c4f9, 0x1759a5058082a76dcd47b843cbfdb34d17ce7eef0da029a0ec90a502f4292e33
   10 from 10 Safes: calls 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2.0xd0e30db0, 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2.approve, gpv2-settlement.setPreSignature
     e.g. 0x82ff24c62aba98cff4c108a2d6090262d31831be747b9ad46f7efc91e30e26ea, 0xaa9865c075fe9ec89744fd5a90b59fef110f352170d516b8a82c0577aba538b2, 0x4f91ffe26ae497fc22fd1bcaa765bf49f3486a0251331c0f0d5460abdf993f31
-  3 from 3 Safes: a delegatecall to a contract that is not an official MultiSend
-    e.g. 0xd455fc6ee6ec7acb0bf508d122b39eab791b91265ab6d9b9bb791f6974ab5dba, 0xd9a0529eefdf989a308f502dfa23ff023a24259912671bc4da2d7b870f9f2714, 0x551ca118930e4ace73880e1176ccbe5916a2b3fa4b11289d7a66e55085763e88
   2 from 1 Safe: calls gpv2-settlement.setPreSignature, gpv2-settlement.setPreSignature
     e.g. 0x4e300874e5818b114464d35d0d85d62c6fb826c7c2cbb77a1b4ce311e69b7f18, 0x5b02f7b029f5af0394aa33518cac54f9ab7d5d09086f932e14bd72318cd6949d
   1 from 1 Safe: calls 0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae.0x71ee95c0, gpv2-settlement.setPreSignature
