@@ -48,7 +48,7 @@
   .lg.plain { padding-left: 8px; }
   :root.dark .lg img.mono-logo { filter: invert(1); background: transparent; }
 
-  .chain .steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 28px; margin-top: 6px; }
+  .chain .steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 46px; margin-top: 6px; }
   .step { display: flex; flex-direction: column; gap: 22px; }
   .step .t { font-size: 21px; line-height: 1.2; min-height: 52px; }
   .step .n { color: var(--muted); margin-right: 6px; }
@@ -114,7 +114,7 @@
     </div>
   </div>
 
-  <div class="legend"><span class="you"><i></i>you: decide</span><span class="ai"><i></i>your AI: researches, judges</span><span class="prog"><i></i>kiss-sign: fixed code, your computer</span><span class="ind"><i></i>check.sh: fixed code, second computer</span></div>
+  <div class="legend"><span class="you"><i></i>you: decide</span><span class="ai"><i></i>your AI: researches, judges</span><span class="prog"><i></i>kiss-sign: fixed code, your computer</span><span class="ind"><i></i>check.sh: fixed code, clean computer</span></div>
 
   <h2>The first time: a template <b>once per operation</b></h2>
   <div class="chain" id="chain">
@@ -152,7 +152,7 @@
         <div class="sk base"></div>
       </div>
       <div class="pc ind" id="pc2">
-        <div class="sk scr"><div class="who">A second computer, no AI: check.sh<span class="verdict">same rows</span></div>
+        <div class="sk scr"><div class="who">A clean computer, no AI: check.sh<span class="verdict">same rows</span></div>
           <div class="line"><span class="note">fetches it from</span><span class="lg"><img src="logos/safe.jpg" alt="">Safe's API</span><span class="note">and decodes it with</span><span class="lg"><img src="logos/sourcify.jpg" alt="">Sourcify's ABI</span><span class="note">and</span><span class="lg"><img src="logos/foundry.png" alt="">Foundry's cast</span></div></div>
         <div class="sk base"></div>
       </div>
@@ -189,7 +189,7 @@ Promise.all([document.fonts.ready, new Promise((ok) => (document.readyState === 
     for (const width of [1.9, 1.1])
       draw([stroke(x, y, x + w, y), stroke(x + w, y, x + w, y + h), stroke(x + w, y + h, x, y + h), stroke(x, y + h, x, y)].join(' '), c, width);
   });
-  const ink = root.getPropertyValue('--muted').trim();
+  const ink = root.getPropertyValue('--line').trim();
   {
     const b = document.getElementById('bubble').getBoundingClientRect(), c = colorOf(document.getElementById('bubble'));
     const x = b.left + scrollX, y = b.top + scrollY + b.height / 2;
@@ -198,29 +198,29 @@ Promise.all([document.fonts.ready, new Promise((ok) => (document.readyState === 
   }
   const arrow = (a, b) => {
     const ra = document.getElementById(a).getBoundingClientRect(), rb = document.getElementById(b).getBoundingClientRect();
-    const [x1, y1, x2, y2] = [ra.right + 8, ra.top + ra.height / 2 + scrollY, rb.left - 8, rb.top + rb.height / 2 + scrollY];
+    const [x1, y1, x2, y2] = [ra.right + 6 + scrollX, ra.top + ra.height / 2 + scrollY, rb.left - 6 + scrollX, rb.top + rb.height / 2 + scrollY];
     const cx = (x1 + x2) / 2;
-    draw(`M${x1} ${y1} C${cx + rnd() * 6} ${y1 + rnd() * 3}, ${cx + rnd() * 6} ${y2 + rnd() * 3}, ${x2} ${y2}`, ink, 1.9);
-    const dy = (y2 - y1) * 0.08, s = 11;
-    draw(`M${x2 - s} ${y2 - s * 0.6 - dy + rnd()} L${x2} ${y2} L${x2 - s} ${y2 + s * 0.6 - dy + rnd()}`, ink, 1.9);
+    draw(`M${x1} ${y1} C${cx + rnd() * 6} ${y1 + rnd() * 3}, ${cx + rnd() * 6} ${y2 + rnd() * 3}, ${x2} ${y2}`, ink, 2.6);
+    const dy = (y2 - y1) * 0.08, s = 15;
+    draw(`M${x2 - s} ${y2 - s * 0.6 - dy + rnd()} L${x2} ${y2} L${x2 - s} ${y2 + s * 0.6 - dy + rnd()}`, ink, 2.6);
   };
   document.querySelectorAll('.step').forEach((st) => {
     const ps = [...st.querySelectorAll('.part')];
     for (let i = 1; i < ps.length; i++) {
       const a = ps[i - 1].getBoundingClientRect(), b = ps[i].getBoundingClientRect();
       const x = a.left + a.width / 2 + scrollX, y1 = a.bottom + 4 + scrollY, y2 = b.top - 4 + scrollY;
-      draw(`M${x + rnd()} ${y1} L${x + rnd()} ${y2}`, ink, 1.9);
-      draw(`M${x - 6} ${y2 - 8 + rnd()} L${x} ${y2} L${x + 6} ${y2 - 8 + rnd()}`, ink, 1.9);
+      draw(`M${x + rnd()} ${y1} L${x + rnd()} ${y2}`, ink, 2.6);
+      draw(`M${x - 8} ${y2 - 11 + rnd()} L${x} ${y2} L${x + 8} ${y2 - 11 + rnd()}`, ink, 2.6);
     }
   });
   [['s1', 's2'], ['s2', 's3'], ['s3', 's4'], ['s4', 's5'], ['s5', 's6'], ['report', 'merge']].forEach(([a, b]) => arrow(a, b));
   {
     const steps = document.querySelector('.steps').getBoundingClientRect(), rb = document.getElementById('report').getBoundingClientRect();
     const y = steps.bottom + 14 + scrollY, l = steps.left + 24 + scrollX, r = steps.right - 24 + scrollX, mid = (l + r) / 2;
-    draw(`M${l} ${y - 8} Q${l} ${y} ${l + 10} ${y} L${mid - 10} ${y + rnd()} Q${mid} ${y} ${mid} ${y + 8} Q${mid} ${y} ${mid + 10} ${y} L${r - 10} ${y + rnd()} Q${r} ${y} ${r} ${y - 8}`, ink, 1.9);
+    draw(`M${l} ${y - 8} Q${l} ${y} ${l + 10} ${y} L${mid - 10} ${y + rnd()} Q${mid} ${y} ${mid} ${y + 8} Q${mid} ${y} ${mid + 10} ${y} L${r - 10} ${y + rnd()} Q${r} ${y} ${r} ${y - 8}`, ink, 2.6);
     const x2 = rb.left + rb.width / 2 + scrollX, y2 = rb.top - 6 + scrollY;
-    draw(`M${mid} ${y + 10} C${mid} ${y + 30}, ${x2} ${y2 - 24}, ${x2} ${y2}`, ink, 1.9);
-    draw(`M${x2 - 7} ${y2 - 10 + rnd()} L${x2} ${y2} L${x2 + 7} ${y2 - 10 + rnd()}`, ink, 1.9);
+    draw(`M${mid} ${y + 10} C${mid} ${y + 30}, ${x2} ${y2 - 24}, ${x2} ${y2}`, ink, 2.6);
+    draw(`M${x2 - 9} ${y2 - 13 + rnd()} L${x2} ${y2} L${x2 + 9} ${y2 - 13 + rnd()}`, ink, 2.6);
   }
   [ ['card', 'pc1'], ['card', 'pc2'], ['pc1', 'wallet'], ['pc2', 'wallet']].forEach(([a, b]) => arrow(a, b));
   document.body.dataset.height = Math.ceil(document.body.scrollHeight);
