@@ -15,8 +15,8 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "Misfits batch several owner changes, some with enableModule, which kiss-sign refuses. 7 removed one owner through MultiSend 1.5.0, 0x218543288004CD07832472D464648173c77D7eB7, which kiss-sign does not yet accept as an official MultiSend.",
-    "zh-TW": "不合的是一次改好幾個 owner，有的還加 enableModule，kiss-sign 不接受。有 7 筆只移除一個 owner，但用的是 MultiSend 1.5.0（0x218543288004CD07832472D464648173c77D7eB7），kiss-sign 還不把它當作官方的 MultiSend。"
+    "en": "Every misfit batches several owner changes, some with enableModule, which kiss-sign refuses. A removal of one owner through MultiSend 1.5.0 fits.",
+    "zh-TW": "不合的都是一次改好幾個 owner，有的還加 enableModule，kiss-sign 不接受。透過 MultiSend 1.5.0 只移除一個 owner 的交易符合模板。"
   },
   "flow": [],
   "protocols": {},
