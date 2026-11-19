@@ -94,7 +94,7 @@ On it, with macOS or Linux (on Windows, use WSL):
 ```sh
 curl -L https://foundry.paradigm.xyz | bash   # installs foundryup; open a new terminal after it
 foundryup                                     # installs Foundry, for cast
-sudo apt install jq                           # Linux only (Ubuntu 24.04, Debian 13 or newer); macOS already has it
+sudo apt install jq                           # Linux only, needs jq 1.7 or later; macOS already has it
 git clone https://github.com/ipromise2324/kiss-sign-check.git && cd kiss-sign-check
 ./check.sh init --safe 0x… --safe-version 1.4.1 --language en   # the same language you gave kiss-sign
 ```
