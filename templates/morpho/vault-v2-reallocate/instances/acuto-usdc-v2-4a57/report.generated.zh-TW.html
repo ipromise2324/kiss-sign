@@ -697,7 +697,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>過去交易</h2>
   <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">0</span> 筆；形狀一樣、但有地址不在 registry 裡的有 <span class="num">0</span> 筆；形狀不同的有 <span class="num">0</span> 筆。</p>
-  <p class="intro"><span class="aiw" data-ai><span>每次提領都會記錄 Deallocate，一整年太多筆，所以改查取樣窗口；窗口裡只有 17 筆提領，沒有 allocator 的交易。</span><span class="byai">AI 研究</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>取樣窗口裡沒有 allocator 的交易：11 筆贖回或提領、2 筆 forceDeallocate（另一種操作），和 4 筆透過其他合約的呼叫。</span><span class="byai">AI 研究</span></span></p>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>

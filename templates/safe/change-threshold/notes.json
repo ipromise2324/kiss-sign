@@ -15,8 +15,8 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "17 misfits sent the change through a MultiSend contract outside the registry. The others change owners and the threshold in one MultiSend, which kiss-sign refuses.",
-    "zh-TW": "有 17 筆不合，是透過不在登記表裡的 MultiSend 合約送出。其他的在一個 MultiSend 裡同時改 owner 和門檻，kiss-sign 不接受。"
+    "en": "Misfits batch the threshold with owner changes, some with enableModule calls, which kiss-sign refuses. 9 removed one owner through MultiSend 0x218543288004CD07832472D464648173c77D7eB7, outside the registry.",
+    "zh-TW": "不合的是把門檻和 owner 變更一起送，有的還加 enableModule，kiss-sign 不接受。有 9 筆是透過不在 registry 裡的 MultiSend 0x218543288004CD07832472D464648173c77D7eB7 移除一個 owner。"
   },
   "flow": [],
   "protocols": {},

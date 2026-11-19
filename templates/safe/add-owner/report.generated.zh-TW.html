@@ -390,7 +390,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>過去交易</h2>
   <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">82</span> 筆：Safe <span class="num">82</span> 筆（81 個 Safe）、EOA <span class="num">0</span> 筆；形狀一樣、但有地址不在 registry 裡的有 <span class="num">0</span> 筆；形狀不同的有 <span class="num">33</span> 筆，列在其他做法。這些交易全部成功執行：它們是從 Safe AddedOwner時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0xa9d7bee5ce0e21df25f4c1f5cdd5fb4cf8e4aa2ded5e6518eb7e7f35d96bda7d">0xa9d7bee5…</a>、<a href="https://etherscan.io/tx/0xc12b3865edda44fff6498373a310a445e08d9ca06322a8036dbbc908cad5771e">0xc12b3865…</a>、<a href="https://etherscan.io/tx/0x49c21e05deabf1a09ecdb5dc353a0fd0e1f31a2fd3fd6af234a0d0fba06e12d5">0x49c21e05…</a>。</p>
-  <p class="intro"><span class="aiw" data-ai><span>不合的多半是在一個 MultiSend 裡改好幾個 owner，kiss-sign 不接受。有 3 筆用的 MultiSendCallOnly 不在登記表裡：0xA83c336B20401Af773B6219BA5027174338D1836。</span><span class="byai">AI 研究</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>不合的是在一個 MultiSend 裡改好幾個 owner，其中一筆還加了 enableModule；kiss-sign 不接受這種批次，每個變更要各自一筆交易。</span><span class="byai">AI 研究</span></span></p>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>

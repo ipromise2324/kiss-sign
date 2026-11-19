@@ -712,7 +712,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>過去交易</h2>
   <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">1</span> 筆：Safe <span class="num">1</span> 筆（1 個 Safe）、EOA <span class="num">0</span> 筆；形狀一樣、但用的是 registry 外的市場的有 <span class="num">3</span> 筆：Safe <span class="num">3</span> 筆（1 個 Safe）、EOA <span class="num">0</span> 筆；形狀不同的有 <span class="num">23</span> 筆，列在其他做法。這些交易全部成功執行：它們是從 flowmark-fgenesis-v2-6439 Submit時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 1 筆：<a href="https://etherscan.io/tx/0xf49e1f05b2b985b5d09511d99d322f56da0aeffee62d0c0ea172fc347b912f17">0xf49e1f05…</a>。形狀一樣的最近 3 筆：<a href="https://etherscan.io/tx/0xc552b9e3919b3f422ca082b32473b521c0bc75c1a62e40838518bfade707fb1d">0xc552b9e3…</a>、<a href="https://etherscan.io/tx/0xde6f1265301b9e1c40b209b8364c5d435bc1f74899d573764304c9591b78a66d">0xde6f1265…</a>、<a href="https://etherscan.io/tx/0x7d11443234cac3fbac5ea1df2a44904028ac8d64928a2c983e5fe943f1d98020">0x7d114432…</a>。</p>
-  <p class="intro"><span class="aiw" data-ai><span>一整年有 4 筆提交符合。不合的是在一個 multicall 裡提交後馬上執行、把好幾個市場放進一個 multicall，或改其他設定。</span><span class="byai">AI 研究</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>有 3 筆這個形狀的提交，市場不在 registry 裡。不合的是在一個 multicall 裡提交後馬上執行、一次放好幾個上限，或改其他設定。</span><span class="byai">AI 研究</span></span></p>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>

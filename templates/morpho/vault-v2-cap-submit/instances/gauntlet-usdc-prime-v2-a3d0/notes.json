@@ -7,8 +7,8 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "The Safe's own transactions all year submitted other settings. Its cap submissions ran in relayer batches of Safe transactions, which past-txs does not open.",
-    "zh-TW": "這個 Safe 一整年自己送出的交易都是提交其他設定。它的上限提交是由中繼者把多筆 Safe 交易打包送出，past-txs 不會拆開這種交易。"
+    "en": "The Safe's own transactions all year submitted other settings. Its cap submissions were in batches of its signed transactions sent by EOAs, which past-txs does not open.",
+    "zh-TW": "這個 Safe 一整年自己送出的交易都是提交其他設定。它的上限提交是由 EOA 把它簽好的多筆交易打包送出，past-txs 不會拆開這種交易。"
   },
   "judgments": [
     {

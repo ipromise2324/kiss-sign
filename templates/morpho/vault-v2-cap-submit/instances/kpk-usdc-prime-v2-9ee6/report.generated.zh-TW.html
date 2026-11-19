@@ -705,7 +705,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>過去交易</h2>
   <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">1</span> 筆：Safe <span class="num">1</span> 筆（1 個 Safe）、EOA <span class="num">0</span> 筆；形狀一樣、但用的是 registry 外的市場的有 <span class="num">2</span> 筆：Safe <span class="num">2</span> 筆（1 個 Safe）、EOA <span class="num">0</span> 筆；形狀不同的有 <span class="num">8</span> 筆，列在其他做法。這些交易全部成功執行：它們是從 kpk-usdc-prime-v2-9ee6 Submit時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 1 筆：<a href="https://etherscan.io/tx/0xb1c61a05a69389071a77a493b5a6928a094877416f9b26981a5878e2fa064bd9">0xb1c61a05…</a>。形狀一樣的最近 2 筆：<a href="https://etherscan.io/tx/0x7941b67103ad0cf62d6f9f47c86d5a883a282940f0e92bc09cda412b271cbb37">0x7941b671…</a>、<a href="https://etherscan.io/tx/0x5cd9e4d28fb77ef933b3a4fbc72328a24f81b8e30fca87f47a2472c6ccd46dfe">0x5cd9e4d2…</a>。</p>
-  <p class="intro"><span class="aiw" data-ai><span>這個 vault 的 curator Safe 一整年送了 3 筆這個形狀的市場上限提交。它也會把好幾個市場放進一個 multicall 或 MultiSend；這些都會是 MISMATCH。</span><span class="byai">AI 研究</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>有 2 筆這個形狀的提交，市場不在 registry 裡。不合的是在一個 multicall 或 MultiSend 裡放好幾個上限，或提交其他設定；都會是 MISMATCH。</span><span class="byai">AI 研究</span></span></p>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>

@@ -7,8 +7,8 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "Every withdrawal logs Deallocate, so the year overflows and the windows are searched; they held 17 withdrawals and no allocator transaction.",
-    "zh-TW": "每次提領都會記錄 Deallocate，一整年太多筆，所以改查取樣窗口；窗口裡只有 17 筆提領，沒有 allocator 的交易。"
+    "en": "The windows held no allocator transaction: 11 redeems or withdrawals, 2 forceDeallocate calls, a separate operation, and 4 calls through other contracts.",
+    "zh-TW": "取樣窗口裡沒有 allocator 的交易：11 筆贖回或提領、2 筆 forceDeallocate（另一種操作），和 4 筆透過其他合約的呼叫。"
   },
   "judgments": [
     {

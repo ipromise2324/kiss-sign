@@ -7,8 +7,8 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "Over the whole year 2 submissions fit, 1 for a collateral outside the registry. Misfits submit market or adapter caps, several in one transaction, or other settings.",
-    "zh-TW": "一整年有 2 筆提交符合，其中 1 筆的抵押品不在登記表裡。不合的是提交市場或轉接合約的上限、一筆交易提交好幾個，或提交其他設定。"
+    "en": "1 submission of this shape names a collateral outside the registry. Misfits submit market or adapter caps, several in one transaction, or other settings.",
+    "zh-TW": "有 1 筆這個形狀的提交，抵押品不在 registry 裡。不合的是提交市場或轉接合約的上限、一筆交易提交好幾個，或提交其他設定。"
   },
   "judgments": [
     {

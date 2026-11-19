@@ -544,7 +544,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>過去交易</h2>
   <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">1</span> 筆：Safe <span class="num">1</span> 筆（1 個 Safe）、EOA <span class="num">0</span> 筆；形狀一樣、但用的是 registry 外的地址的有 <span class="num">1</span> 筆：Safe <span class="num">1</span> 筆（1 個 Safe）、EOA <span class="num">0</span> 筆；形狀不同的有 <span class="num">9</span> 筆，列在其他做法。這些交易全部成功執行：它們是從 kpk-usdc-prime-v2-9ee6 Submit時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 1 筆：<a href="https://etherscan.io/tx/0x71497a279b6c03466a74b00fa240730146f2ced7bc91dc01d7030d65f5a30bc6">0x71497a27…</a>。形狀一樣的最近 1 筆：<a href="https://etherscan.io/tx/0xea0241166034c7ce5575b70759b7c9f5946140ea2ce207765ecdab28f3408cfd">0xea024116…</a>。</p>
-  <p class="intro"><span class="aiw" data-ai><span>一整年有 2 筆提交符合，其中 1 筆的抵押品不在登記表裡。不合的是提交市場或轉接合約的上限、一筆交易提交好幾個，或提交其他設定。</span><span class="byai">AI 研究</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>有 1 筆這個形狀的提交，抵押品不在 registry 裡。不合的是提交市場或轉接合約的上限、一筆交易提交好幾個，或提交其他設定。</span><span class="byai">AI 研究</span></span></p>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
