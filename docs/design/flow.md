@@ -19,7 +19,7 @@ Each picture is drawn from an HTML source in `docs/diagrams/`, and `sh docs/diag
    The AI asks the signer only for a preference no evidence can settle, once, with the report.
    An operation this design does not cover gets its design change proposed with the design changed first, in the same pull request when it changes only research code, and in a pull request of its own, merged before the template's, when it changes the [verdict core](program-ownership.md#the-verdict-core).
 2. **Research addresses.**
-   - **Find:** the AI finds the protocol's contracts on its official site and GitHub and cross-checks them across sources.
+   - **Find:** the AI always looks on the protocol's official site, GitHub and API, then searches further (deployment files, SDKs, audits, explorers, forums) and cross-checks them across sources; only the places in How the places count confirm an address, and anything else is a lead the AI follows back to one of them.
    - **Protocol API:** when the protocol runs its own public API, such as Morpho's GraphQL API at `api.morpho.org`, the AI queries it as one more source: the contract's address and what the protocol says about it, such as a vault's curator and asset.
      The AI reads the rest of the answer, not the program, because every protocol's API has its own shape; the report quotes the query and the answer.
      A protocol without an API has no entry here.
