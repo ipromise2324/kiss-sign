@@ -25,7 +25,7 @@
   .mono { font: 14px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
   svg.sketch { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; }
 
-  .legend { display: flex; gap: 30px; justify-content: center; margin-top: 34px; font-size: 17px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: flex-start; margin: 26px 0 26px; font-size: 17px; }
   .legend span { display: flex; align-items: center; gap: 8px; color: var(--c); }
   .legend i { width: 22px; height: 12px; border: 2px solid var(--c); border-radius: 2px; }
   .say { display: flex; align-items: center; gap: 34px; margin: 4px 0 26px; }
@@ -114,12 +114,14 @@
     </div>
   </div>
 
+  <div class="legend"><span class="you"><i></i>you decide</span><span class="ai"><i></i>your AI researches and judges</span><span class="prog"><i></i>kiss-sign: fixed code, same checks every time</span><span class="ind"><i></i>check.sh: a second computer</span></div>
+
   <h2>The first time: a template <b>once per operation</b></h2>
   <div class="chain" id="chain">
     <div class="steps">
       <div class="step" id="s1"><div class="t"><span class="n">1</span>Find each contract's address</div><div class="sk part ai"><div class="who">your AI</div><div>looks in the protocol's own docs and GitHub first, then the wider web</div><div class="logos"><span class="lg"><img class="mono-logo" src="logos/docs.svg" alt="">official site</span><span class="lg"><img class="mono-logo" src="logos/github.svg" alt="">GitHub</span><span class="lg"><img class="mono-logo" src="logos/api.svg" alt="">API</span></div></div><div class="sk part prog"><div class="who">kiss-sign</div><div>opens each page to see the address, checks the site is the protocol's, and needs two separate sources</div><div class="logos"><span class="lg"><img src="logos/defillama.jpg" alt="">DefiLlama</span><span class="lg"><img src="logos/coingecko.png" alt="">CoinGecko</span><span class="lg"><img class="mono-logo" src="logos/bounty.svg" alt="">Immunefi</span><span class="lg"><img class="mono-logo" src="logos/github.svg" alt="">GitHub</span></div></div></div>
-      <div class="step" id="s2"><div class="t"><span class="n">2</span>Check each contract's code</div><div class="sk part prog"><div class="who">kiss-sign</div><div>rebuilds the published source and checks it is the code on chain</div><div class="logos"><span class="lg"><img src="logos/etherscan.svg" alt="">Etherscan</span><span class="lg"><img class="mono-logo" src="logos/solidity.svg" alt="">solc</span></div></div></div>
-      <div class="step" id="s3"><div class="t"><span class="n">3</span>Write the rules</div><div class="sk part ai"><div class="who">your AI</div><div>a rule for every value in the transaction, and which contracts it calls behind the scenes</div></div></div>
+      <div class="step" id="s2"><div class="t"><span class="n">2</span>Prove each contract's ABI</div><div class="sk part prog"><div class="who">kiss-sign</div><div>rebuilds the published source and checks it is the code on chain, so the ABI (its list of functions) is right</div><div class="logos"><span class="lg"><img src="logos/etherscan.svg" alt="">Etherscan</span><span class="lg"><img class="mono-logo" src="logos/solidity.svg" alt="">solc</span></div></div></div>
+      <div class="step" id="s3"><div class="t"><span class="n">3</span>Write the rules</div><div class="sk part ai"><div class="who">your AI</div><div>using the proven ABI: a rule for every value in the transaction, and which contracts it calls behind the scenes</div></div></div>
       <div class="step" id="s4"><div class="t"><span class="n">4</span>See how others did it</div><div class="sk part prog"><div class="who">kiss-sign</div><div>finds a year of real transactions of the same kind and records what each one did</div><div class="logos"><span class="lg"><img src="logos/etherscan.svg" alt="">Etherscan</span><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span><span class="lg"><img src="logos/drpc.png" alt="">drpc</span></div></div><div class="sk part ai"><div class="who">your AI</div><div>spots the unusual ones and sets safe limits, such as how far ahead a deadline may be</div></div></div>
       <div class="step" id="s5"><div class="t"><span class="n">5</span>Check the protocol now</div><div class="sk part prog"><div class="who">kiss-sign</div><div>reads its size, past hacks and who holds the vault</div><div class="logos"><span class="lg"><img src="logos/defillama.jpg" alt="">DefiLlama</span><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span><span class="lg"><img src="logos/drpc.png" alt="">drpc</span></div></div><div class="sk part ai"><div class="who">your AI</div><div>reads audits and incidents and tells you what to weigh</div></div></div>
       <div class="step" id="s6"><div class="t"><span class="n">6</span>Pin the code</div><div class="sk part prog"><div class="who">kiss-sign</div><div>records each contract's code, so a later upgrade is caught</div><div class="logos"><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span><span class="lg"><img src="logos/drpc.png" alt="">drpc</span></div></div></div>
@@ -161,7 +163,6 @@
     </div>
   </div>
 
-  <div class="legend"><span class="you"><i></i>you</span><span class="ai"><i></i>your AI</span><span class="prog"><i></i>kiss-sign, on your computer</span><span class="ind"><i></i>check.sh, on a second computer</span></div>
 
 <script>
 Promise.all([document.fonts.ready, new Promise((ok) => (document.readyState === 'complete' ? ok() : addEventListener('load', ok)))]).then(() => {
