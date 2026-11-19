@@ -7,7 +7,7 @@ import type { DecodeFailure, DecodedCall, Region, Span } from './codec.ts';
 export type MultiSendDeployment = {
   readonly address: Address;
   readonly contract: 'MultiSend' | 'MultiSendCallOnly';
-  readonly version: '1.3.0' | '1.4.1';
+  readonly version: '1.3.0' | '1.4.1' | '1.5.0';
 };
 
 /** Mainnet addresses from github.com/safe-global/safe-deployments, `src/assets/v<version>/multi_send{,_call_only}.json`. */
@@ -18,6 +18,8 @@ export const OFFICIAL_MULTISEND: readonly MultiSendDeployment[] = [
   { address: '0xa1dabef33b3b82c7814b6d82a79e50f4ac44102b' as Address, contract: 'MultiSendCallOnly', version: '1.3.0' },
   { address: '0x38869bf66a61cf6bdb996a6ae40d5853fd43b526' as Address, contract: 'MultiSend', version: '1.4.1' },
   { address: '0x9641d764fc13c8b624c04430c7356c1c7c8102e2' as Address, contract: 'MultiSendCallOnly', version: '1.4.1' },
+  { address: '0x218543288004cd07832472d464648173c77d7eb7' as Address, contract: 'MultiSend', version: '1.5.0' },
+  { address: '0xa83c336b20401af773b6219ba5027174338d1836' as Address, contract: 'MultiSendCallOnly', version: '1.5.0' },
 ];
 
 export const MULTISEND = parseFunctionSignature('multiSend(bytes transactions)');
