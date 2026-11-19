@@ -510,7 +510,27 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="past">
-  <h2>過去交易</h2><p class="lead">這個操作沒有研究過去交易。</p>
+  <h2>過去交易</h2>
+  <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">1</span> 筆：Safe <span class="num">1</span> 筆（1 個 Safe）、EOA <span class="num">0</span> 筆；形狀一樣、但有地址不在 registry 裡的有 <span class="num">0</span> 筆；形狀不同的有 <span class="num">5</span> 筆，列在其他做法。它成功執行：它是從 kpk-usdc-prime-v2-9ee6 IncreaseAbsoluteCap時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 1 筆：<a href="https://etherscan.io/tx/0xc86672ea25ab95736afedcd4e77859b2c6a5e51a563b606ee79d8c6a2ba813fb">0xc86672ea…</a>。</p>
+  <p class="intro"><span class="aiw" data-ai><span>一整年有 1 筆接受符合。另一筆一次接受 36 個上限，EOA 也會一次接受兩個上限 id；timelock 結束後任何人都能接受。</span><span class="byai">AI 研究</span></span></p>
+  <details class="fold">
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
+  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
+  <h3>搜尋 kpk-usdc-prime-v2-9ee6 的IncreaseAbsoluteCap，找到 6 筆，研究 6 筆</h3>
+  <p class="lead">記錄在 <code>testdata/research/morpho-vault-v2-adapter-cap-accept-kpk-usdc-prime-v2-9ee6.json</code>。只有 Etherscan 搜尋事件，找到 <span class="num">6</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">2</span> 筆用了這個操作的呼叫（1 個 Safe），<span class="num">1</span> 筆跟模板一模一樣。</span></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap</code></div><div><code>data</code> 有 36 項，模板是 2 項<span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xc369256e0ce7944761dad6eb047953e1db2a0b99738cd37109c5268e84c421f4">0xc369256e…</a></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt">EOA 直接呼叫 multicall</span><span><span class="num">4</span> 筆用了這個操作的呼叫（3 個地址），<span class="num">0</span> 筆跟模板一模一樣。</span></div>
+    <div class="pg"><span class="pc num">3 筆</span><div><div class="pcalls"><code>kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap</code></div><div><code>data</code> 有 4 項，模板是 2 項<span class="f3">，來自 3 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x9abea3527ada54ebb0fc873a21ca044aa16daacbaa64f68330fce3531f96d00d">0x9abea352…</a>、<a href="https://etherscan.io/tx/0x62e2257bdfc1ccf730fe1ab46d588e2ed41e7f62267937533859d2eef57b973c">0x62e2257b…</a>、<a href="https://etherscan.io/tx/0xa5840cb778a0f9d65c789dbee8369f1d639b9b604fd12fff190cae1b53c15fb9">0xa5840cb7…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div><code>call.multicall.data[0].increaseAbsoluteCap.idData.encoding</code> 的值跟模板不同：模板要 <span class="addr">canonical capId(string,address)</span>，交易是 <span class="addr">differs at byte 295</span><span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xe060c571f3cc0b2acec58078edd5addd6f38fde7fcd408cb4f09efcc1d68e79c">0xe060c571…</a></div></div></div>
+  </div>
+  </details>
 </section>
 
 <section id="next">
@@ -552,7 +572,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<footer class="foot">由 <code>pnpm report morpho/vault-v2-adapter-cap-accept --instance-of kpk-usdc-prime-v2-9ee6 --record</code> 從 <code>templates/morpho/vault-v2-adapter-cap-accept/template.json</code>、<code>templates/morpho/vault-v2-adapter-cap-accept/docs.json</code>、<code>templates/morpho/vault-v2-adapter-cap-accept/instances/kpk-usdc-prime-v2-9ee6/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/morpho-vault-v2-adapter-cap-accept/kpk-usdc-prime-v2-9ee6.json</code>、<code>testdata/abi</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/morpho/vault-v2-adapter-cap-accept/notes.json</code>、<code>templates/morpho/vault-v2-adapter-cap-accept/instances/kpk-usdc-prime-v2-9ee6/notes.json</code> 寫出，資料在 2026-11-17 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
+<footer class="foot">由 <code>pnpm report morpho/vault-v2-adapter-cap-accept --instance-of kpk-usdc-prime-v2-9ee6 --record</code> 從 <code>templates/morpho/vault-v2-adapter-cap-accept/template.json</code>、<code>templates/morpho/vault-v2-adapter-cap-accept/docs.json</code>、<code>templates/morpho/vault-v2-adapter-cap-accept/instances/kpk-usdc-prime-v2-9ee6/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/morpho-vault-v2-adapter-cap-accept/kpk-usdc-prime-v2-9ee6.json</code>、<code>testdata/abi</code>、<code>testdata/research/morpho-vault-v2-adapter-cap-accept-kpk-usdc-prime-v2-9ee6.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/morpho/vault-v2-adapter-cap-accept/notes.json</code>、<code>templates/morpho/vault-v2-adapter-cap-accept/instances/kpk-usdc-prime-v2-9ee6/notes.json</code> 寫出，資料在 2026-11-17 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
 
 </div>
 </div>

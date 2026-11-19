@@ -14,6 +14,10 @@
       "zh-TW": "不動任何資產，但改的是誰能動這個 Safe：確認移除的是對的人，剩下的人數夠用。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "Misfits change several owners in one MultiSend, some with enableModule, which kiss-sign refuses. 11 sent one change through a MultiSend contract outside the registry.",
+    "zh-TW": "不合的是在一個 MultiSend 裡改好幾個 owner，有的還加 enableModule，kiss-sign 不接受。有 11 筆只改一個，但用的 MultiSend 合約不在登記表裡。"
+  },
   "flow": [],
   "protocols": {},
   "judgments": [

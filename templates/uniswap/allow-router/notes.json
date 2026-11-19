@@ -14,6 +14,10 @@
       "zh-TW": "授權只給 router；router 只從呼叫它的 Safe 拉代幣，留著也只有 Safe 能用。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "No Safe approval fits. EOA approvals mostly name an older Universal Router, 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af, or set an exact amount or 0; each gives MISMATCH.",
+    "zh-TW": "沒有 Safe 的授權符合。EOA 的授權多半給舊版 Universal Router 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af，或設固定數量或 0；都會是 MISMATCH。"
+  },
   "flow": [],
   "protocols": {
     "uniswap-v4": {

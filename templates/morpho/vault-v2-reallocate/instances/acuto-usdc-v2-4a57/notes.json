@@ -6,6 +6,10 @@
       "zh-TW": "可以用，但這是沒上架的小 vault，持有人集中；地址只有工廠確認，見待確認。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "Every withdrawal logs Deallocate, so the year overflows and the windows are searched; they held 17 withdrawals and no allocator transaction.",
+    "zh-TW": "每次提領都會記錄 Deallocate，一整年太多筆，所以改查取樣窗口；窗口裡只有 17 筆提領，沒有 allocator 的交易。"
+  },
   "judgments": [
     {
       "text": {

@@ -14,6 +14,10 @@
       "zh-TW": "不動任何資產，但改的是誰能動這個 Safe：新簽署人的地址要從聊天以外的來源核對。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "Most misfits change several owners in one MultiSend, which kiss-sign refuses. 3 used a MultiSendCallOnly outside the registry, 0xA83c336B20401Af773B6219BA5027174338D1836.",
+    "zh-TW": "不合的多半是在一個 MultiSend 裡改好幾個 owner，kiss-sign 不接受。有 3 筆用的 MultiSendCallOnly 不在登記表裡：0xA83c336B20401Af773B6219BA5027174338D1836。"
+  },
   "flow": [],
   "protocols": {},
   "judgments": [

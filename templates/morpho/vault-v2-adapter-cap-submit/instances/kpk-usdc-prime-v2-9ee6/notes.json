@@ -6,6 +6,10 @@
       "zh-TW": "可以用。KPK 文件、CoinGecko 和工廠都確認這個 vault。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "Over the whole year 1 submission fits. Misfits submit market or collateral caps, several caps in one transaction, or other settings.",
+    "zh-TW": "一整年有 1 筆提交符合。不合的是提交市場或抵押品的上限、一筆交易提交好幾個上限，或提交其他設定。"
+  },
   "judgments": [
     {
       "text": {

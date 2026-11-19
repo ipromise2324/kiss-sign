@@ -14,6 +14,10 @@
       "zh-TW": "不動任何資產，但門檻決定幾把鑰匙就能動這個 Safe。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "17 misfits sent the change through a MultiSend contract outside the registry. The others change owners and the threshold in one MultiSend, which kiss-sign refuses.",
+    "zh-TW": "有 17 筆不合，是透過不在登記表裡的 MultiSend 合約送出。其他的在一個 MultiSend 裡同時改 owner 和門檻，kiss-sign 不接受。"
+  },
   "flow": [],
   "protocols": {},
   "judgments": [
