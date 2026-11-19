@@ -93,11 +93,11 @@ On it, install Foundry for `cast` and `jq` 1.7 or later, then:
 
 ```sh
 git clone https://github.com/ipromise2324/kiss-sign-check.git && cd kiss-sign-check
-less check.sh             # read it in full, once, and write down the commit you read
+less check.sh             # read it once: about 1,000 lines of Bash
 cp config.example config  # set SAFE, SAFE_VERSION and LANGUAGE, the same language you gave init
 ```
 
-Then write `known-addresses.txt` by hand from each protocol's official docs, never from your computer. The [kiss-sign-check README](https://github.com/ipromise2324/kiss-sign-check#set-up-the-second-computer-once) has every step.
+Then write `known-addresses.txt` by hand from each protocol's official docs, never from your computer. The [kiss-sign-check README](https://github.com/ipromise2324/kiss-sign-check#set-up) has every step.
 
 ## How it works
 
@@ -177,7 +177,7 @@ Then every call, row by row, down to the calls inside a batch: both sides split 
 
 ![Some rows of call #3 on both pages side by side: the Bundler3 multicall, then its two inner calls, erc20TransferFrom of 1000611448606 and erc4626Deposit into the Hyperithm vault for the Safe, the same on both sides, with different names in the last column](docs/readme/compare-multicall.png)
 
-`--hints` tell `check.sh` how to read bytes that hold data rather than a call, such as a Vault V2 cap id. They carry positions and types only and never change a row, so a wrong hint cannot make the rows match. See [Hints from kiss-sign](https://github.com/ipromise2324/kiss-sign-check#hints-from-kiss-sign).
+`--hints` tell `check.sh` how to read bytes that hold data rather than a call, such as a Vault V2 cap id. They carry positions and types only and never change a row, so a wrong hint cannot make the rows match. See [Hints from kiss-sign](https://github.com/ipromise2324/kiss-sign-check/blob/main/docs/hints.md).
 
 ### 5. Sign
 
