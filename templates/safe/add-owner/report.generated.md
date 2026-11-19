@@ -211,7 +211,7 @@ examples that fit: 0x310ed21db9bfc2f3dbe4818b538bdf7bafb687b02f348040474607a89eb
 
 ## ERC-7730
 
-`pnpm erc7730 safe-1.3.0 safe-1.4.1`: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.
+`pnpm erc7730 safe-1.3.0 safe-1.4.1`: each entry's calldata and EIP-712 descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked, for the entries the operation touches and every registry singleton, whose EIP-712 descriptor a wallet applies to the Safe transaction itself. A second opinion on field meanings, never a rule.
 
 ```text
 ERC-7730 registry github.com/ethereum/clear-signing-erc7730-registry at commit 3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4
@@ -263,6 +263,24 @@ safe-1.3.0 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552 (singleton)
   function     0xd4d9bdcd approveHash(bytes32)
     field      hashToApprove raw
   attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash
+  descriptor   registry/safe/eip712-Safe-1.3.0.json
+  applies      by exact address (context.eip712.deployments lists it on chain 1)
+  index        index.eip712.json names this file
+  includes     registry/safe/common-eip712-Safe.json
+  file         sha256 223c3905b9dac997e42c22f7d30ab187ec15bb0dc50cd510b4c1f586f678168a of the file's bytes
+  hash         descriptorHash 0x8fecfec38cf3525867fa47cd4d577675647e5dee336acbc1e124d0ae2412639b: keccak256 of the RFC 8785 JSON of the descriptor with includes resolved (ERC-8176)
+  message      SafeTx typehash 0xbb8310d486368db6bd6f849402fdd73ad53d316b5a4b2644ad6efe0f941286d8
+    field      to addressName
+    field      value amount
+    field      operation enum
+    field      data calldata
+    field      baseGas raw
+    field      gasPrice raw
+    field      gasToken raw
+    field      refundReceiver raw
+    field      safeTxGas none (visible: never)
+    field      nonce none (visible: never)
+  attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash
 
 safe-1.4.1 0x41675C099F32341bf84BFc5382aF534df5C7461a (singleton)
   descriptor   registry/safe/calldata-Safe-1.4.1.json
@@ -309,5 +327,23 @@ safe-1.4.1 0x41675C099F32341bf84BFc5382aF534df5C7461a (singleton)
     field      _threshold raw
   function     0xd4d9bdcd approveHash(bytes32)
     field      hashToApprove raw
+  attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash
+  descriptor   registry/safe/eip712-Safe-1.4.1.json
+  applies      by exact address (context.eip712.deployments lists it on chain 1)
+  index        index.eip712.json names this file
+  includes     registry/safe/common-eip712-Safe.json
+  file         sha256 93b5d3df64a92607367e0faa4562d596ccd4b6a930b0e332306fe396657f5584 of the file's bytes
+  hash         descriptorHash 0xcd11bfd93038d7961ae96de9b1ef248e7d641471d1830272c5b6dafac6d12cd9: keccak256 of the RFC 8785 JSON of the descriptor with includes resolved (ERC-8176)
+  message      SafeTx typehash 0xbb8310d486368db6bd6f849402fdd73ad53d316b5a4b2644ad6efe0f941286d8
+    field      to addressName
+    field      value amount
+    field      operation enum
+    field      data calldata
+    field      baseGas raw
+    field      gasPrice raw
+    field      gasToken raw
+    field      refundReceiver raw
+    field      safeTxGas none (visible: never)
+    field      nonce none (visible: never)
   attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash
 ```

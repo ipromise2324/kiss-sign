@@ -535,8 +535,21 @@ export function trimReportRecording(
   };
 }
 
+/**
+ * What `pnpm erc7730` reads for a report: each entry the operation touches, the registry entry at each one's pinned
+ * implementation, and every registry singleton, since every Safe transaction is a `SafeTx` signed for a Safe proxy that runs one.
+ */
+export function erc7730Entries(entries: readonly RegistryEntry[], registry: Registry): RegistryEntry[] {
+  const implementations = entries.flatMap((entry) => {
+    const address = entry.code?.current.pin.implementation?.address;
+    return address === undefined ? [] : [registry.byAddress.get(address)?.name];
+  });
+  const read = new Set([...entries.map((entry) => entry.name), ...implementations]);
+  return [...registry.entries.values()].filter((entry) => read.has(entry.name) || entry.kind === 'singleton');
+}
+
 export async function erc7730Text(entries: readonly RegistryEntry[], registry: Registry, snapshot: Snapshot, chain: () => Promise<ChainAccess>): Promise<{ text: string; reports: EntryReport[] }> {
-  const reports = await studyEntries(entries, registry, snapshot, chain);
+  const reports = await studyEntries(erc7730Entries(entries, registry), registry, snapshot, chain);
   return { text: formatReports(snapshot, reports), reports };
 }
 
@@ -1431,16 +1444,14 @@ export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
     out.push(`### ${code(summary.file)}`, '', `Recorded with ${code(pastTxsCommand(summary))}, and studied again here with the template as it is now.`, '', ...fenced(summary.text.trimEnd()), '');
   }
 
-  out.push('## ERC-7730', '');
-  if (entries.length === 0) out.push('The operation touches no registry entry, so no descriptor can apply.', '');
-  else {
-    out.push(
-      `${code(`pnpm erc7730 ${entries.map((e) => e.name).join(' ')}`)}: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.`,
-      '',
-      ...fenced(inputs.erc7730.text),
-      '',
-    );
-  }
+  out.push(
+    '## ERC-7730',
+    '',
+    `${code(`pnpm erc7730 ${erc7730Entries(entries, registry).map((e) => e.name).join(' ')}`)}: each entry's calldata and EIP-712 descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked, for the entries the operation touches and every registry singleton, whose EIP-712 descriptor a wallet applies to the Safe transaction itself. A second opinion on field meanings, never a rule.`,
+    '',
+    ...fenced(inputs.erc7730.text),
+    '',
+  );
   return out.join('\n');
 }
 

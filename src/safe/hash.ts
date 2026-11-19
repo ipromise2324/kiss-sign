@@ -12,6 +12,8 @@ const SAFE_TX_TYPEHASH = keccak_256(
   ),
 );
 
+export const SAFE_TX_TYPEHASH_HEX = `0x${bytesToHex(SAFE_TX_TYPEHASH)}` as Hex;
+
 function uintWord(value: bigint): Uint8Array {
   return hexToBytes(value.toString(16).padStart(64, '0'));
 }

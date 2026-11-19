@@ -347,15 +347,30 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="wallet">
   <h2>錢包顯示 <span class="c">ERC-7730 描述檔</span></h2>
-  <p class="lead">硬體錢包用 ERC-7730 描述檔顯示每個呼叫。右邊是模板的規則，不是描述檔的文字。</p>
+  <p class="lead">支援 ERC-7730 的 Ledger 先用描述檔顯示 Safe 交易（SafeTx），再顯示裡面的呼叫。右邊是模板的規則，不是描述檔的文字。</p>
   <dl class="props two">
+    <div><dt>Safe 交易（SafeTx）</dt><dd>
+      <dl class="nest flat">
+        <div><dt><code>to</code></dt><dd>你選的代幣</dd></div>
+        <div><dt><code>value</code></dt><dd><span class="addr">0</span></dd></div>
+        <div><dt><code>operation</code></dt><dd>Call（0）</dd></div>
+        <div><dt><code>data</code></dt><dd>下面的呼叫 1</dd></div>
+        <div><dt><code>baseGas</code></dt><dd><span class="addr">0</span></dd></div>
+        <div><dt><code>gasPrice</code></dt><dd><span class="addr">0</span></dd></div>
+        <div><dt><code>gasToken</code></dt><dd>無（零地址）</dd></div>
+        <div><dt><code>refundReceiver</code></dt><dd>無（零地址）</dd></div>
+      </dl></dd></div>
     <div><dt>1 代幣.transfer</dt><dd>
       <dl class="nest flat">
         <div><dt>金額</dt><dd>你填的金額</dd></div>
         <div><dt>to</dt><dd>你選的收款人</dd></div>
       </dl></dd></div>
   </dl>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>你的 Safe 是 proxy：Ledger 透過 Ledger 自己的伺服器把它解析成 safe-1.3.0 或 safe-1.4.1，才用得上這些描述檔；不解析 proxy 的錢包只顯示原始資料。</span></div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>SafeTx：錢包不顯示 <code>safeTxGas</code>、<code>nonce</code>，只有 hash 涵蓋它們。</span></div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>Safe 交易也可以把這一個呼叫包進官方 MultiSend（Delegate Call（1）），verify 一樣接受：這時 to 是官方 MultiSend、value 是 0，呼叫只顯示原始資料。</span></div>
   <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>呼叫 1：列的是 usdt 的描述檔；usdc、morpho、cbbtc、usp、weeth 沒有描述檔，錢包只顯示原始資料。</span></div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>用 Ledger 簽的話，先在 Ethereum app 的設定打開「Transaction hash」：套用描述檔時，要打開它裝置才會顯示 domain hash 和 message hash。比對這兩個 hash 才是 kiss-sign 靠的檢查，解讀看起來再對也要比。</span></div>
 </section>
 
 <section id="addresses">
@@ -492,11 +507,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="next">
   <h2>下一步</h2>
   <ol class="steps">
-    <li><div>第一次用這個模板，或模板改過之後，先核准它<pre class="cmd"><code>bin/kiss-sign template approve erc20/transfer</code></pre>
+    <li><div>第一次用這個模板，或模板改過之後，先核准它<pre class="cmd"><code>pnpm kiss-sign template approve erc20/transfer</code></pre>
       <p class="then">它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 <code>y</code>。</p></div></li>
-    <li><div>收款人不是你的 Safe 時，先把它加進地址簿。名字自己取，用小寫英文和 - 連接；地址從聊天以外的來源取得<pre class="cmd"><code>bin/kiss-sign book add &#60;name&#62; &#60;address&#62;</code></pre>
+    <li><div>收款人不是你的 Safe 時，先把它加進地址簿。名字自己取，用小寫英文和 - 連接；地址從聊天以外的來源取得<pre class="cmd"><code>pnpm kiss-sign book add &#60;name&#62; &#60;address&#62;</code></pre>
       <p class="then">它印出名字和完整地址，問 <code>Add this entry? [y/N]</code> 。每個字元都跟聊天以外的來源核對過才打 <code>y</code> 。同一個收款人只要加一次。</p></div></li>
-    <li><div>做卡片<pre class="cmd"><code>bin/kiss-sign card new erc20/transfer</code></pre>
+    <li><div>做卡片<pre class="cmd"><code>pnpm kiss-sign card new erc20/transfer</code></pre>
       <p class="then">你這份 clone 的 <code>templates/</code> 或 <code>registry/</code> 跟 GitHub 上的 main 不一樣時，它什麼都不問就停下，叫你先跑 <code>git pull</code> 。</p></div></li>
     <li><div>代幣（<code>token</code>）：它列出可選的代幣，每個附完整地址。選你要的那個，名字和完整地址都要對。</div></li>
     <li><div>收款人（<code>recipient</code>）：它列出你的 Safe 和地址簿裡的名字，每個附完整地址。選你要的那個，完整地址要對。</div></li>
@@ -504,12 +519,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <p class="then">它在問 [y/N] 之前顯示的卡片列出整顆和 base units 兩種寫法，核對數字是你要的。</p></div></li>
     <li><div>它印出整張卡片，每個名字都附完整地址，最後問 <code>Is this what you mean to do? [y/N]</code> 。全部是你要的才打 <code>y</code> 。
       <p class="then">它印出 <code>Sealed card 0x…</code> ，這是卡片的 hash，下一步要用。</p></div></li>
-    <li><div>在 Safe web app 提出交易（第一次用這個模板，先用小額），複製它的 safeTxHash，然後跑<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
+    <li><div>在 Safe web app 提出交易（第一次用這個模板，先用小額），複製它的 safeTxHash，然後跑<pre class="cmd"><code>pnpm kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
       <p class="then"><code>MATCH</code>：它印出 safeTxHash 和一個網頁的路徑，網頁上有 domain hash、message hash 和比對清單，往下走。</p>
       <p class="then"><code>MISMATCH</code> 或 <code>UNVERIFIABLE</code>：不要簽。看它列出的檢查，再看本報告「<a href="#review">待確認</a>」裡 AI 的判斷，可能說明原因。</p></div></li>
     <li><div>加強等級：在獨立電腦上跑<pre class="cmd"><code>./check.sh &#60;nonce&#62;</code></pre>
       <p class="then">它算出的 hash 跟硬體錢包比對；它的網頁上的比對清單跟 <code>verify</code> 網頁上的逐列比對。</p></div></li>
     <li><div>硬體錢包上的 domain hash 和 message hash，跟 <code>verify</code> 網頁上的逐字比對，一樣才簽。
+      <p class="then">用 Ledger 簽的話，先在 Ethereum app 的設定打開「Transaction hash」：套用描述檔時，要打開它裝置才會顯示 domain hash 和 message hash。比對這兩個 hash 才是 kiss-sign 靠的檢查，解讀看起來再對也要比。</p>
       <div class="hash"><span>比對</span><span class="f2">domain hash 和 message hash，都是 0x 開頭 64 個字元</span></div></div></li>
   </ol>
   <div class="auto"><h3>程式每次簽名自動做的事</h3>
