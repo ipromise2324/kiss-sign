@@ -96,7 +96,7 @@ git clone https://github.com/ipromise2324/kiss-sign-check.git && cd kiss-sign-ch
 cp config.example config  # set SAFE, SAFE_VERSION and LANGUAGE, the same language you gave init
 ```
 
-Then write `known-addresses.txt` by hand from each protocol's official docs, never from your computer. The [kiss-sign-check README](https://github.com/ipromise2324/kiss-sign-check#set-up) has every step.
+The [kiss-sign-check README](https://github.com/ipromise2324/kiss-sign-check#set-up) has every step.
 
 ## How it works
 
@@ -172,7 +172,7 @@ First the hashes. They must be identical on both pages and on your hardware wall
 
 ![The hash rows of both pages side by side: safeTxHash, domain hash and message hash, the same on kiss-sign verify and on check.sh](docs/readme/compare-hashes.png)
 
-Then every call, row by row, down to the calls inside a batch: both sides split Bundler3's `multicall` into the token transfer and the vault deposit it runs. Every column must be identical except the names on the right, which each side writes from its own list:
+Then every call, row by row, down to the calls inside a batch: both sides split Bundler3's `multicall` into the token transfer and the vault deposit it runs. Every column must be identical except the names on the right, which only kiss-sign writes, from its registry:
 
 ![Some rows of call #3 on both pages side by side: the Bundler3 multicall, then its two inner calls, erc20TransferFrom of 1000611448606 and erc4626Deposit into the Hyperithm vault for the Safe, the same on both sides, with different names in the last column](docs/readme/compare-multicall.png)
 
@@ -214,7 +214,7 @@ Your AI finds each contract's address on the web, and a program fetches each con
 | The AI uses a wrong address | The address must be found in two places with different owners, such as the protocol's site, CoinGecko, the factory, the bug bounty or the SDK: fewer, flagged for you. To pass, the wrong address must be planted in two of them |
 | Etherscan serves source code that is not the contract's, so a harmful call reads as a harmless one | A program compiles it with a pinned compiler and compares it byte for byte with the code on chain, except values set at deployment (immutables and linked libraries) and a metadata hash that differs, which the report flags as a finding: any other difference, refused |
 
-With the second computer, `check.sh` also marks every address not in your own list as unknown, and takes its ABIs from Sourcify, not Etherscan.
+With the second computer, `check.sh` takes its ABIs from Sourcify, not Etherscan. It does not judge addresses: whether one is the protocol's real contract stays on kiss-sign's source checks and your review of the report.
 
 ### Your AI
 
