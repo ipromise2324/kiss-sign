@@ -171,6 +171,7 @@ const FIXTURES: readonly (FixtureCase & { readonly template: string })[] = [
   { name: 'safe-add-owner-raise-threshold', template: 'safe/add-owner', values: { owner: 'new', threshold: '2' }, book: { new: '0x383965940c950008a4b67bfaa477fdf6ac91a7f7' as Address } },
   { name: 'safe-remove-owner-1-3-0', template: 'safe/remove-owner', values: { owner: 'old', threshold: '1' }, book: { old: '0xa6003fc149b2e2f92f1430428fe4644736a99742' as Address } },
   { name: 'safe-remove-owner-first', template: 'safe/remove-owner', values: { owner: 'old', threshold: '2' }, book: { old: '0x4057bea8a5e2710ea78b7656045f3e6ec90f54f2' as Address } },
+  { name: 'safe-remove-owner-multisend-1-5-0', template: 'safe/remove-owner', values: { owner: 'old', threshold: '1' }, book: { old: '0xbe0b407782a7599380fa726db315340126d62229' as Address } },
   {
     name: 'safe-swap-owner-1-3-0',
     template: 'safe/swap-owner',
