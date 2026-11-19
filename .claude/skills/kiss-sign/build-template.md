@@ -66,8 +66,9 @@ Then follow [Data shapes](../../../docs/design/data-shapes.md#data-shapes); temp
 
 ## Study past transactions
 
-Run `pnpm past-txs <protocol>/<operation>` with no block range, anchored on the transfer or event the operation itself makes, such as a vault's shares minted for a deposit or the token's transfer for a transfer; `pnpm past-txs --help` lists the anchors.
-The program picks its own windows across the last year; never pass `--from-block` or `--to-block`, which replace them with one range of your choosing.
+Run `pnpm past-txs <protocol>/<operation>` with no block range, anchored on the transfer or event the operation itself makes, such as a vault's shares minted for a deposit, the token's transfer for a transfer, or, for an event each Safe logs about itself, `--anchor event --event 'AddedOwner(address)'` with no `--token`; `pnpm past-txs --help` lists the anchors.
+The program picks its own search: the whole last year in one request, and when that holds more than one page, 12 windows across it; never pass `--from-block` or `--to-block`, which replace both with one range of your choosing.
+To read again the blocks an earlier recording searched, such as to add what a read with no answer left out, pass `--same-windows-as <recording>`, which keeps that recording's head block and whether it asked the whole year first.
 
 1. For each field, note how many transactions and senders held the template's rule, for Safes and for EOAs separately.
 2. Read every misfit group.
@@ -81,7 +82,7 @@ The program picks its own windows across the last year; never pass `--from-block
    A difference beyond 10, or one that grows with the amount, such as a fee, is not rounding: stop and tell the signer.
 5. Read the spread `pnpm past-txs` prints for every `uint` or `int` the template leaves free or bounds with `withinSeconds`, over the transactions that fit, a value the signer does not choose, such as an order's `validTo` less the block's time, a deadline or a fee.
    Ask what the largest normal value is, and what a far larger one would let happen after the signer stops watching, such as an order or approval still valid in a year.
-   For a time, declare it `{"free": {"time": "<why>"}}` first, so the spread counts from the block's time, then replace that with `{"withinSeconds": <seconds>}` ([Template](../../../docs/design/data-shapes.md#template)), a whole number from 1 to 31,536,000, at or above the largest value real Safes used (when that is above a year, stop and tell the signer), and cite the spread in the field's note in `notes.json`, such as "136 Safe orders: median 1,720 s, 99th percentile 10,478 s, largest 604,767 s; bound 7 days".
+   For a time, declare it `{"free": {"time": {"<language>": "<why>"}}}` first, so the spread counts from the block's time, then replace that with `{"withinSeconds": <seconds>}` ([Template](../../../docs/design/data-shapes.md#template)), a whole number from 1 to 31,536,000, at or above the largest value real Safes used (when that is above a year, stop and tell the signer), and cite the spread in the field's note in `notes.json`, such as "136 Safe orders: median 1,720 s, 99th percentile 10,478 s, largest 604,767 s; bound 7 days".
    For another number, when the spread shows a bound is needed and no rule in the vocabulary can hold it, stop and propose a generic program change.
    When no bound is needed, say why in that note.
 6. Record the runs the report studies with `--record <name>` before you generate the report.
@@ -112,6 +113,7 @@ Cite a URL for every claim; it goes into `protocols` in `notes.json`.
 2. In `test/`, require `MATCH` for each with its implied card, and require the mutation check to catch every bound field; `test/canaries/template.canary.ts` and `test/canaries/mutation.canary.ts` show both.
 3. For a template with a free field, record the perturbation test of one transaction with `pnpm perturb <name> --card '<card json>' --record <name>`; `test/canaries/perturb.canary.ts` replays every recording.
    A failing field must be bound, not explained.
+4. Run `pnpm report <protocol>/<operation> --render` again, with `--instance-of <instance>` for a per-instance report: the report judges each perturbation recording and takes its example transaction from the first, so a recording added after the last render changes it, and `pnpm test` fails until you do.
 
 ## Open the pull request
 
