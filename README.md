@@ -24,7 +24,7 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 - [Why](#why)
 - [Install](#install)
   - [Your computer: kiss-sign](#your-computer-kiss-sign)
-  - [A clean computer: kiss-sign-check](#a-clean-computer-kiss-sign-check)
+  - [A second, clean computer: kiss-sign-check](#a-second-clean-computer-kiss-sign-check)
 - [How it works](#how-it-works)
   - [1. Tell your AI what you want](#1-tell-your-ai-what-you-want)
   - [2. Review the report and merge](#2-review-the-report-and-merge)
@@ -85,9 +85,9 @@ You need:
 
 **Language.** English (`en`, the default) or Traditional Chinese (`zh-TW`). Change it later with `pnpm kiss-sign init --language zh-TW`. It sets which HTML report your AI gives you, the terminal text, `verify`'s page and `pnpm history`; addresses, hashes and verdict words stay the same, and so do verdicts. Set `LANGUAGE` in `check.sh`'s `config` to the same language, or the comparison rows differ.
 
-### A clean computer: kiss-sign-check
+### A second, clean computer: kiss-sign-check
 
-For the hardened tier, set up a second computer that runs no AI and no kiss-sign, so malware or an AI on your computer cannot also change what you compare. Without it you are on the basic tier, kiss-sign alone. See [Two tiers](docs/design.md#two-tiers).
+Set this up too: a second computer that runs no AI and no kiss-sign, so malware or an AI on your computer cannot also change what you compare. kiss-sign works without it, but then nothing outside your computer would catch a computer or an AI that was tampered with.
 
 On it, install Foundry for `cast` and `jq` 1.7 or later, then:
 
@@ -215,7 +215,7 @@ Your AI finds each contract's address on the web, and a program fetches each con
 | The AI uses a wrong address | The address must be found in two places with different owners, such as the protocol's site, CoinGecko, the factory, the bug bounty or the SDK: fewer, flagged for you. To pass, the wrong address must be planted in two of them |
 | Etherscan serves source code that is not the contract's, so a harmful call reads as a harmless one | A program compiles it with a pinned compiler and compares it byte for byte with the code on chain, except values set at deployment (immutables and linked libraries) and a metadata hash that differs, which the report flags as a finding: any other difference, refused |
 
-On the hardened tier, `check.sh` also marks every address not in your own list as unknown, and takes its ABIs from Sourcify, not Etherscan.
+With the second computer, `check.sh` also marks every address not in your own list as unknown, and takes its ABIs from Sourcify, not Etherscan.
 
 ### Your AI
 
@@ -226,7 +226,7 @@ Models are trained to resist prompt injection, but a page your AI reads can stil
 | The AI gets something wrong, such as a template that allows too much | `verify` refuses a delegatecall other than to the official MultiSend, an unlimited approval other than a standing one the registry declares, such as to Permit2, a Safe setting change other than an owner or threshold change the card declares, and an unexplained balance change, whatever the template says; the rest shows in the report you review |
 | A steered AI changes the report, `verify`'s code or its verdict | A bad transaction must still reach your Safe, through a compromised web app or protocol app; otherwise the attack fails. `--compare` reads the report's facts again with your `main`'s code, and a program change never shares a pull request with a template or the registry |
 
-On the hardened tier, `check.sh` decodes the transaction without kiss-sign, so you see the real functions and arguments.
+With the second computer, `check.sh` decodes the transaction without kiss-sign, so you see the real functions and arguments.
 
 ### The protocol you use
 
