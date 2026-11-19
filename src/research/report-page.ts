@@ -1399,9 +1399,9 @@ function ruleWords(rule: Rule, context: Context): Inline {
 const SAFE_TX_FIELDS = ['to', 'value', 'data', 'operation', 'safeTxGas', 'baseGas', 'gasPrice', 'gasToken', 'refundReceiver', 'nonce'] as const;
 const SAFE_TX_TYPE = `0x${bytesToHex(SAFE_TX_TYPEHASH)}`;
 
-/** The registry entries a call to `name` runs as their implementation: the Safe runs a singleton, a proxy the entry its code pin names. */
-function implementationsOf(name: string, registry: Registry): string[] {
-  if (name === 'safe') return [...registry.entries.values()].filter((entry) => entry.kind === 'singleton').map((entry) => entry.name);
+const safeSingletons = (registry: Registry): string[] => [...registry.entries.values()].filter((entry) => entry.kind === 'singleton').map((entry) => entry.name);
+
+function pinnedImplementation(name: string, registry: Registry): string[] {
   const implementation = registry.entries.get(name)?.code?.current.pin.implementation?.address;
   const entry = implementation === undefined ? undefined : registry.byAddress.get(implementation);
   return entry === undefined ? [] : [entry.name];
@@ -1413,10 +1413,10 @@ const isShown = (f: { format: string; visible: string }): boolean => f.visible !
 
 function safeTxRows(context: Context, lines: Inline[]): WalletRows {
   const { template, registry, inputs, w } = context;
-  const singletons = implementationsOf('safe', registry);
+  const singletons = safeSingletons(registry);
   const described = inputs.erc7730.reports
     .filter((r) => singletons.includes(r.entry.name))
-    .flatMap((r) => r.descriptors.flatMap((d) => d.messages).filter((m) => m.typeHash === SAFE_TX_TYPE).map((message) => ({ entry: r.entry.name, message })));
+    .flatMap((r) => r.descriptors.flatMap((d) => (d.kind === 'eip712' ? d.messages : [])).filter((m) => m.typeHash === SAFE_TX_TYPE).map((message) => ({ entry: r.entry.name, message })));
   const first = described[0];
   if (first === undefined) return 'no-descriptor';
   const describedNames = [...new Set(described.map((d) => d.entry))];
@@ -1424,7 +1424,7 @@ function safeTxRows(context: Context, lines: Inline[]): WalletRows {
   if (without.length > 0) lines.push([w.safeTxDescriptorsOf(describedNames, without)]);
   lines.push([w.throughProxy(w.safe, singletons)]);
   const one = template.calls.length === 1 ? (template.calls[0] as TemplateCall) : undefined;
-  const value = (path: string): Inline => {
+  const value = (path: (typeof SAFE_TX_FIELDS)[number]): Inline => {
     switch (path) {
       case 'to':
         return one === undefined ? [w.officialMultiSend] : ruleWords(one.to, context);
@@ -1441,15 +1441,18 @@ function safeTxRows(context: Context, lines: Inline[]): WalletRows {
       case 'gasToken':
       case 'refundReceiver':
         return [w.zeroAddress];
-      default:
+      case 'nonce':
         return [w.noValue];
     }
   };
-  const fields = flatFields(first.message.fields);
-  const shown = fields.filter(isShown);
+  const shown = flatFields(first.message.fields).filter(isShown);
   const hidden = SAFE_TX_FIELDS.filter((name) => !shown.some((f) => f.path === name));
   if (hidden.length > 0) lines.push(w.safeTxHides(hidden.map((h): Span => ({ code: h }))));
-  return shown.map((f) => ((SAFE_TX_FIELDS as readonly string[]).includes(f.path) ? { label: [{ code: f.path }], value: value(f.path) } : { label: [w.notAnArgument], value: [w.noValue] }));
+  const field = (path: string) => SAFE_TX_FIELDS.find((name) => name === path);
+  return shown.map((f) => {
+    const name = field(f.path);
+    return name === undefined ? { label: [w.notAnArgument], value: [w.noValue] } : { label: [{ code: name }], value: value(name) };
+  });
 }
 
 function walletSection(context: Context): Section {
@@ -1466,7 +1469,7 @@ function walletSection(context: Context): Section {
   const functionsOf = (name: string, selector: Hex) =>
     reports
       .filter((r) => r.entry.name === name)
-      .flatMap((r) => r.descriptors.flatMap((d) => d.functions).filter((f) => f.selector === selector).map((fn) => ({ entry: name, fn })));
+      .flatMap((r) => r.descriptors.flatMap((d) => (d.kind === 'calldata' ? d.functions : [])).filter((f) => f.selector === selector).map((fn) => ({ entry: name, fn })));
   const calls = argumentTree(template).map(({ n, node, args }): WalletCall => {
     const call = template.calls[n - 1] as TemplateCall;
     const target = targetOf(call.to, context);
@@ -1475,7 +1478,7 @@ function walletSection(context: Context): Section {
     const described = target.names.flatMap((name) => {
       const own = functionsOf(name, node.fn.selector);
       if (own.length > 0) return own;
-      const implementations = implementationsOf(name, registry);
+      const implementations = name === 'safe' ? safeSingletons(registry) : pinnedImplementation(name, registry);
       const through = implementations.flatMap((implementation) => functionsOf(implementation, node.fn.selector)).map((d) => ({ ...d, entry: name }));
       if (through.length > 0) proxies.push({ name, implementations });
       return through;
