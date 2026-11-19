@@ -85,11 +85,11 @@ One report covers one concrete operation: for a template reported per instance, 
 2. **Research the addresses.** For each contract the operation touches, find and check the address yourself in every place you can, write what you saw as `entries.<name>.sources` in `notes.json`, record in the registry each place the program can read, and only then run the program's checks ([addresses.md](addresses.md)).
 3. **Establish the ABI.** Take function signatures only from a proven ABI ([how](build-template.md#establish-the-abi)).
 4. **Draft the template.** Start from the nearest existing template and bind every argument ([how](build-template.md#draft-the-template)).
-5. **Study past transactions.** Run `pnpm past-txs` with the program's own windows and read every misfit and every balance difference ([how](build-template.md#study-past-transactions)).
+5. **Study past transactions.** Run `pnpm past-txs` with the program's own search, the whole last year first and otherwise 12 windows, and read every misfit and every balance difference ([how](build-template.md#study-past-transactions)).
 6. **Check the protocol's health.** Hacks, audits, upgrades, admin changes, paused contracts, each with a URL ([how](build-template.md#check-the-protocols-health)).
 7. **Generate the report.** Write `docs.json`, then `pnpm report ... --record` ([how](build-template.md#generate-the-report)).
 8. **Write the notes and reviews.** Complete `notes.json` around your step 2 observations, write a review of every result the signer must look at against the result as printed, then `pnpm report ... --render` ([notes-and-reviews.md](notes-and-reviews.md)).
-9. **Add the tests.** Record two or more transactions of other Safes, require `MATCH`, and catch every bound field ([how](build-template.md#add-the-tests)).
+9. **Add the tests.** Record two or more transactions of other Safes, require `MATCH`, catch every bound field, and run `--render` again for every report of the template, since each judges the perturbation recordings ([how](build-template.md#add-the-tests)).
 10. **Check and open the pull request.** `pnpm test`, `pnpm typecheck` and `pnpm check-push origin/main..HEAD` must pass ([how](build-template.md#open-the-pull-request)).
 11. **Tell the signer.** Say what the card will ask, what will be checked and the findings, give the link, and give the next steps, the `--compare` run before merging among them ([how](build-template.md#tell-the-signer)).
 
@@ -116,7 +116,7 @@ A report covers every registry entry the operation can touch: those its template
 So a new entry, such as a token, changes every report that can touch it: a template's, such as `erc20/transfer` and `uniswap/approve-permit2` for a token, and an instance's, when another card field or a market of a per-instance template can name it.
 When unsure which, record and compare them all.
 
-1. Research the entry, and each entry it names as an attribute, as [addresses.md](addresses.md) says, its observations in each affected template's `notes.json` before any check: shared observations, reviews and `protocols` notes always go in the template's file, since an instance's `notes.json` holds only its own entries and reviews.
+1. Research the entry, and each entry it names as an attribute, as [addresses.md](addresses.md) says, its observations in each affected template's `notes.json` before any check: shared observations, reviews and `protocols` notes always go in the template's file, since an instance's `notes.json` holds only `verdict`, `flow`, `judgments`, `reviews`, `entries` and `pastTxsConclusion` about that instance ([An instance's notes](notes-and-reviews.md#an-instances-notes)).
 2. For each affected report, run `pnpm report <protocol>/<operation> --record`, with `--instance-of <instance>` for an instance's.
 3. Reconcile each affected report's reviews with its new results: `--render` requires a review for exactly the current set of results under To review, so write the new ones and revise or remove any that no longer match, and add `protocols` notes for a new protocol the report's protocol facts cover, with as many incidents as its hacks ([Notes and reviews](notes-and-reviews.md)); then run `--render`.
 4. Check and open one pull request, and tell the signer, as steps 10 and 11 of [Build a template](#build-a-template) say, with a `--compare` run for each affected report.
