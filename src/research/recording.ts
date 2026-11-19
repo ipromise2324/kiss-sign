@@ -1,3 +1,4 @@
+import { trimBlockAnswers } from '../chain/recording.ts';
 import type { Exchange } from '../chain/recording.ts';
 import type { ProviderName } from '../chain/providers.ts';
 import type { MessageExchange } from './messages.ts';
@@ -52,8 +53,8 @@ const redact = (value: unknown, needles: readonly string[]): unknown => {
  * Writes the configured Safe's address nowhere. In each search answer it is replaced by zeros, so every transaction the
  * search found keeps its place, the Safe's own included; `excluded` lists the transactions the run left out for
  * touching the Safe, so a replay leaves out the same without the address. Every chain read, signed message and call
- * trace that holds the address is dropped: those are the reads that left a transaction out. A recording that still
- * holds the address is refused.
+ * trace that holds the address is dropped, after each block is cut to its header, which is all a replay reads of it. A
+ * recording that still holds the address is refused.
  */
 export function scrubRecording(recording: PastTxsRecording, safes: readonly string[], excluded: ExcludedHashes): PastTxsRecording {
   const needles = safes.map((f) => f.toLowerCase().replace(/^0x/, ''));
@@ -61,7 +62,7 @@ export function scrubRecording(recording: PastTxsRecording, safes: readonly stri
   const messages = recording.messages === undefined ? {} : { messages: recording.messages.filter((m) => !mentions(m, needles)) };
   const traces = recording.traces === undefined ? {} : { traces: recording.traces.filter((t) => !mentions(t, needles)) };
   const left = excluded.found.size + excluded.sampled.size === 0 ? {} : { excluded: { found: [...excluded.found], sampled: [...excluded.sampled] } };
-  const scrubbed = { ...recording, sources, ...left, ...messages, ...traces, exchanges: recording.exchanges.filter((e) => !mentions(e, needles)) };
+  const scrubbed = { ...recording, sources, ...left, ...messages, ...traces, exchanges: recording.exchanges.map(trimBlockAnswers).filter((e) => !mentions(e, needles)) };
   if (mentions(scrubbed, needles)) throw new Error('the recording still holds the configured Safe\'s address; nothing written');
   return scrubbed;
 }

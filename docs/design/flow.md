@@ -225,7 +225,8 @@ Each picture is drawn from an HTML source in `docs/diagrams/`, and `sh docs/diag
    The configured Safe's address appears in no recording; its transactions may.
    The run leaves out of the study every transaction the Safe sent or is named in: one whose search entry names it, and a sampled one it sent or whose input or receipt logs name it.
    In the search answers `--record` writes zeros in place of the Safe's address, so each transaction the search found keeps its place and hash, the Safe's own included, and it lists the transactions the run left out, those found and those sampled, so a replay leaves out the same and samples the same without the address.
-   It drops every chain read, signed message and call trace that holds the address, which are the reads that left a transaction out, and refuses a recording that still holds it.
+   It cuts each block it read to its header, drops every other chain read, signed message and call trace that holds the address, mostly the reads that left a transaction out, and refuses a recording that still holds it.
+   A studied transaction one of whose other reads names the Safe, such as a simulation log paying it a fee, loses that read, and its replay shows it as not measured.
    These teach the AI.
    They prove nothing about safety.
    - **Anchor:** an ERC-20 `Transfer` of one token marks each transaction: a mint for a vault deposit, a burn for a withdrawal, or any transfer.
