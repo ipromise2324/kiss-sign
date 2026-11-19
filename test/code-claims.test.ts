@@ -26,15 +26,14 @@ function cowSwapElsewhere() {
   return parseTemplate(raw, registry);
 }
 
-const template = cowSwapElsewhere();
-const card = resolveCard(
-  { operations: [{ template: template.id, values: { 'sell-token': 'usdc', 'buy-token': 'usdt', 'sell-amount': '1000000', 'min-buy': '990000' } }] },
-  { templates: new Map([[template.id, template]]), registry, addressBook: new Map(), safe: tx.safe },
-);
-assert.equal(card.kind, 'resolved');
-const claims = codeClaims(tx, card.card, new Map([[template.id, template]]), registry);
-
 test('a contract a template names only inside packed bytes, a signed message or its domain has its code checked against its pin', async () => {
+  const template = cowSwapElsewhere();
+  const card = resolveCard(
+    { operations: [{ template: template.id, values: { 'sell-token': 'usdc', 'buy-token': 'usdt', 'sell-amount': '1000000', 'min-buy': '990000' } }] },
+    { templates: new Map([[template.id, template]]), registry, addressBook: new Map(), safe: tx.safe },
+  );
+  assert.equal(card.kind, 'resolved');
+  const claims = codeClaims(tx, card.card, new Map([[template.id, template]]), registry);
   const names = claims.map((entry) => entry.name);
   for (const name of ['gpv2-settlement', 'permit2', 'gpv2-vault-relayer']) assert.ok(names.includes(name), `${name} is checked: ${names.join(', ')}`);
   const otherCode = new Proxy({}, { get: (_, key) => (key === 'getCode' ? async () => ({ kind: 'agreed', value: '0x00', providers: ['alchemy', 'drpc'] }) : () => assert.fail(`${String(key)} is not read`)) }) as Reader;
