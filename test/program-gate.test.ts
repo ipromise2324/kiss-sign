@@ -86,6 +86,20 @@ test('a branch that changes the gate or a template is NOT ELIGIBLE, exit 3 for t
   assert.match(template.stdout, /\n {2}it changes templates\/ or registry\/, which only the signer merges: templates\/x\/op\/template\.json\n$/);
 });
 
+test('a branch that changes the verdict core beside a template or the gate is NOT ELIGIBLE, exit 1, as check-push refuses it, before any of its code runs', () => {
+  const repo = gateRepo();
+  const core = { 'src/check.ts': 'export const ok: number = 1;\n// changed\n' };
+  branch(repo, 'core-template', { ...core, 'templates/x/op/template.json': '{"a":1}\n' });
+  branch(repo, 'core-gate', { ...core, 'testdata/x.json': '1\n\n' });
+  const template = gate(repo, 'core-template');
+  assert.equal(template.status, 1, template.stdout + template.stderr);
+  assert.match(template.stdout, /\nNOT ELIGIBLE {2}the AI may not merge core-template:\n {2}core-template changes the verdict core and templates\/ or registry\/ together, counted from where it left origin\/main .*\n {2}verdict core:\n {4}src\/check\.ts\n {2}templates\/ and registry\/:\n {4}templates\/x\/op\/template\.json\n$/);
+  const gated = gate(repo, 'core-gate');
+  assert.equal(gated.status, 1, gated.stdout + gated.stderr);
+  assert.match(gated.stdout, /\n {2}core-gate changes the verdict core and the program gate together, .*\n {2}verdict core:\n {4}src\/check\.ts\n {2}program gate:\n {4}testdata\/x\.json\n$/);
+  for (const result of [template, gated]) assert.doesNotMatch(result.stdout, /typecheck|canary test/);
+});
+
 test('program-gate refuses to judge a branch from a checkout that is not origin/main', () => {
   const repo = gateRepo();
   branch(repo, 'core', { 'src/check.ts': 'export const ok: number = 1;\n// changed\n' });
