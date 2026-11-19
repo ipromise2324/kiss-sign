@@ -33,7 +33,7 @@ test('the skill names only kiss-sign commands the CLI has', async () => {
   const commands = (await usage())
     .split('\n')
     .map((line) => line.trim().split(' ').slice(2))
-    .map((words) => words.filter((_, i) => !words.slice(0, i + 1).some((w) => /^[<-]/.test(w))).join(' '))
+    .map((words) => words.filter((_, i) => !words.slice(0, i + 1).some((w) => /^[<[-]/.test(w))).join(' '))
     .filter((literal) => literal !== '');
   const named = code.flatMap((span) => [...span.matchAll(/\bkiss-sign ([a-z]+(?: [a-z]+)?)/g)].map((m) => m[1] as string));
   assert.ok(named.length >= 5, 'the skill names the signer commands');
