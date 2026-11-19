@@ -218,7 +218,7 @@ The market itself has no source page: its parts are checked as registry entries,
 `registry/attributes.json` declares every attribute a registry entry may carry and the kind of entry it must name, such as `{"asset": "token", "factory": "factory", "adapter": "adapter"}`.
 An entry of any kind may carry any declared attribute, as `"attributes": {"asset": "usdc", "factory": "vault-v2-factory"}`, and registry load refuses an attribute the table does not declare and one that names no registry entry of its kind.
 An attribute is a claim research makes about an entry, such as a vault's asset, a Vault V2's market adapter or a Uniswap pool's `token0`; a new protocol's attribute is a new line of the table, never code.
-A card reference reads one (`vault.asset`); template load refuses it when no entry its field accepts carries it, and a card naming an entry that lacks it is refused (`the registry has no adapter for <vault>`).
+A card reference reads one (`vault.asset`); template load refuses it when no entry its field accepts carries it, and `card new`, `card seal` and `verify` refuse a card naming an entry that lacks it before any check (`the registry has no adapter for <vault>, which <template> reads as vault.adapter`).
 A missing table, as in a verdict file from before it, declares the three attributes the program knew then: `asset` naming a `token`, `factory` a `factory` and `adapter` an `adapter`.
 
 An entry whose `factory` attribute names a registry factory is an instance of that factory.
