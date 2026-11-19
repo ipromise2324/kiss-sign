@@ -239,7 +239,7 @@ Each picture is drawn from an HTML source in `docs/diagrams/`, and `sh docs/diag
    - **Where it looks:** unless the AI gives a block range, the program first asks each source for the anchor over the whole last year, one request each: the 2,628,000 blocks that end where the newest window below ends.
      When every source's answer fits in one page, it studies those transactions, at most the number `--max-txs` gives, taken at even steps through all of them in block order, and the report says the search covered the year with no gap; an operation done a few dozen times a year, such as a vault curator's cap, is found whole this way.
      Otherwise the report says the year held more than one page, and the program searches the windows: 12 windows of up to 7,200 blocks (about a day), one every 219,000 blocks (a month) back from the head block.
-     The newest window ends on the last multiple of 7,200 blocks at least 64 blocks below the head, so a rerun picks the same windows, and the same year, until the head passes the next multiple.
+     The newest window ends on the last multiple of 7,200 blocks at least 64 blocks below the head, so a rerun picks the same windows, and the same year, until the head is 64 blocks past the next multiple.
      `--record` keeps in its query that it asked the whole year first; a recording made before it did searched the windows alone, and replays so, and `--same-windows-as` such a recording searches its windows alone too.
      `--record` keeps in its query the head block the windows were spread from, and `--same-windows-as <recording>` spreads them from the head that `testdata/research/<recording>.json` keeps instead of today's, so a run again, such as one to read again a transaction the first run could not, searches exactly the same windows.
      No one types a head block: it is read from the chain or taken from a recording that read it, and a block range given with it is refused.
@@ -554,7 +554,7 @@ Each picture is drawn from an HTML source in `docs/diagrams/`, and `sh docs/diag
    The AI writes a declarative template (see [Template](data-shapes.md#template)) and its test transactions, and opens a pull request with the template, the report, and the tests.
    It never merges.
    For each test transaction with a free field, the program (`pnpm perturb`) runs the perturbation test (see [Engine checks that every template gets](engine-and-chain.md#engine-checks-that-every-template-gets)) and records it, so CI replays it.
-   The report judges each perturbation recording and takes its example transaction from the first, so the AI runs `pnpm report ... --render` again once they are in place.
+   The report judges each perturbation recording and takes its example transaction from the first whose card resolves, so the AI runs `pnpm report ... --render` again once they are in place.
 8. **Signer reviews the pull request.**
    The signer reads the report and the template's rules on GitHub, runs `pnpm report <protocol>/<operation> --compare --data origin/<branch>` from `main`, with `--instance-of <instance>` for each per-instance report the branch changes (see Live check, step 6), and asks for changes.
    Approving and merging the pull request is the confirmation.

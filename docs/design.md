@@ -82,7 +82,7 @@ Everything runs on one computer, the signer's work computer, and the AI may run 
 | Step | Where | Who |
 |---|---|---|
 | 1. Research, write the template, open a pull request | The work computer | The AI. It never merges a template or the registry; a program change it needs goes first, in a pull request of its own, which the AI merges behind the [program gate](design/program-ownership.md#the-program-gate). |
-| 2. Read the report and the template, from `main`, run `pnpm report <protocol>/<operation> --compare --data origin/<branch>`, with `--instance-of <instance>` for each per-instance report, approve and merge | GitHub, and the work computer | The signer |
+| 2. Read the report and the template, run `pnpm report <protocol>/<operation> --compare --data origin/<branch>` from `main`, with `--instance-of <instance>` for each per-instance report the branch changes, approve and merge | GitHub, and the work computer | The signer |
 | 3. `git pull`, approve the template, fill the card with `pnpm kiss-sign card new` (which stops when the clone is behind GitHub's `main`), seal, verify | The work computer, in the signer's own terminal | The signer |
 | 4. The first time a template or a vault is used, send a small amount first | Safe | The signers |
 | 5. Sign, comparing the full hashes | Hardware wallet | The signer |
