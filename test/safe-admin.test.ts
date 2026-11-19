@@ -20,6 +20,7 @@ import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
 import { checkTemplateFields } from '../src/template/check.ts';
 import type { FieldChain, FieldCheck, OwnersRead } from '../src/template/check.ts';
 import { checkMutations } from '../src/template/mutation.ts';
+import { detailText } from '../src/verify/detail-text.ts';
 import { TemplateError, loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 
@@ -231,6 +232,23 @@ for (const c of FIXTURES) {
     assert.deepEqual(receiptChecks.kind === 'observed' ? [receiptChecks.effects.kind, receiptChecks.floor] : receiptChecks, ['match', { kind: 'pass' }]);
   });
 }
+
+test('the 1.5.0 MultiSend owner removal with its call\'s `to` zeroed is refused by the floor and the fields, naming why in both languages', async () => {
+  const c = FIXTURES.find((f) => f.name === 'safe-remove-owner-multisend-1-5-0')!;
+  const { tx, cardFor, reader, blocks } = fixtureOf(c);
+  const r = reader();
+  const owners = await readOwners(r, tx.safe, (await blocks(r)).parent);
+  const self = tx.safe.slice(2).toLowerCase();
+  assert.equal(tx.data.split(self).length, 2, 'the Safe appears once in the MultiSend data, as its call\'s to');
+  const zeroTo: SafeTx = { ...tx, data: tx.data.replace(self, '0'.repeat(40)) as Hex };
+  const floor = checkFloor(zeroTo, DECLARES_CHANGE);
+  const floorDetails = floor.kind === 'refused' ? floor.findings.map((f) => `${f.rule} at ${f.callPath}: ${f.detail}`) : [];
+  assert.deepEqual(floorDetails, ['delegatecall at safeTx: a MultiSend call with to = 0 at byte 69 is refused (MultiSend 1.5.0 sends it to the Safe itself)']);
+  const fields = checkTemplateFields(zeroTo, cardFor(c.values), templates, registry, [], { owners });
+  const fieldDetails = fields.kind === 'mismatch' ? fields.findings.map((f) => `${f.callPath} ${f.arg}: expected ${f.expected}, got ${f.actual}`) : [];
+  assert.deepEqual(fieldDetails, ['safeTx data: expected no MultiSend call with to = 0, which MultiSend 1.5.0 sends to the Safe itself, got a call with to = 0']);
+  for (const shown of [...floorDetails, ...fieldDetails]) assert.notEqual(detailText(shown, 'zh-TW'), shown, shown);
+});
 
 test('the same executed transactions give MISMATCH for a card naming another owner or another threshold', async () => {
   const OTHER = '0x5555555555555555555555555555555555555555' as Address;
