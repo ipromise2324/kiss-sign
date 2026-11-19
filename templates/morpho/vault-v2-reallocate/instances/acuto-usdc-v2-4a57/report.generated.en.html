@@ -695,7 +695,19 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="past">
-  <h2>Past transactions</h2><p class="lead">No past transactions were studied for this operation.</p>
+  <h2>Past transactions</h2>
+  <p class="lead">In past records, <span class="num">0</span> transactions match the template exactly; <span class="num">0</span> have the same shape but with an address outside the registry; <span class="num">0</span> have another shape.</p>
+  <p class="intro"><span class="aiw" data-ai><span>The windows held no allocator transaction: 11 redeems or withdrawals, 2 forceDeallocate calls, a separate operation, and 4 calls through other contracts.</span><span class="byai">AI research</span></span></p>
+  <details class="fold">
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Other ways</summary>
+  <p class="lead">Only transactions that used this operation&#39;s calls count. An exact match has the template&#39;s calls and argument positions, meets every rule the transaction itself can show (such as where the sender goes, or a fixed value), and uses a contract the template allows wherever the template binds a registry contract. Same shape but a market, token, vault or address outside the registry means the calls, argument positions and those rules are the same, but an address or market is not in the registry; the kind is named when the record shows it, otherwise only address. The rest are grouped by reason, each with up to 3 examples.</p>
+  <h3>Search of acuto-usdc-v2-4a57 Deallocate: 17 found, 17 studied</h3>
+  <p class="lead">Recorded in <code>testdata/research/morpho-vault-v2-reallocate-acuto-usdc-v2-4a57.json</code>. Only Etherscan searches an event, and found <span class="num">17</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">0</span> transactions used this operation&#39;s calls (0 Safes); <span class="num">0</span> match the template exactly.</span></div>
+  </div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>17 more are other operations, not counted: <code>acuto-usdc-v2-4a57.redeem</code> 6, <code>acuto-usdc-v2-4a57.withdraw</code> 5, <code>acuto-usdc-v2-4a57.forceDeallocate</code> 2, <code>bundler3.0x374f435d</code> 1, and others.</span></div>
+  </details>
 </section>
 
 <section id="next">
@@ -734,7 +746,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<footer class="foot">Written by <code>pnpm report morpho/vault-v2-reallocate --instance-of acuto-usdc-v2-4a57 --record</code> from <code>templates/morpho/vault-v2-reallocate/template.json</code>, <code>templates/morpho/vault-v2-reallocate/docs.json</code>, <code>templates/morpho/vault-v2-reallocate/instances/acuto-usdc-v2-4a57/docs.json</code>, <code>registry/contracts.json</code>, <code>registry/markets.json</code>, <code>testdata/report/morpho-vault-v2-reallocate/acuto-usdc-v2-4a57.json</code>, <code>testdata/abi</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/morpho/vault-v2-reallocate/notes.json</code>, <code>templates/morpho/vault-v2-reallocate/instances/acuto-usdc-v2-4a57/notes.json</code>; the data was read on 2026-11-17. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
+<footer class="foot">Written by <code>pnpm report morpho/vault-v2-reallocate --instance-of acuto-usdc-v2-4a57 --record</code> from <code>templates/morpho/vault-v2-reallocate/template.json</code>, <code>templates/morpho/vault-v2-reallocate/docs.json</code>, <code>templates/morpho/vault-v2-reallocate/instances/acuto-usdc-v2-4a57/docs.json</code>, <code>registry/contracts.json</code>, <code>registry/markets.json</code>, <code>testdata/report/morpho-vault-v2-reallocate/acuto-usdc-v2-4a57.json</code>, <code>testdata/abi</code>, <code>testdata/research/morpho-vault-v2-reallocate-acuto-usdc-v2-4a57.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/morpho/vault-v2-reallocate/notes.json</code>, <code>templates/morpho/vault-v2-reallocate/instances/acuto-usdc-v2-4a57/notes.json</code>; the data was read on 2026-11-17. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
 
 </div>
 </div>

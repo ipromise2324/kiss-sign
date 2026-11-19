@@ -14,6 +14,10 @@
       "zh-TW": "無上限授權給 Permit2 會留著；只有 Safe 另外在 Permit2 授權過的合約能用。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "No Safe approval to Permit2 was found. EOA misfits approve other spenders, or give Permit2 an exact amount or 0.",
+    "zh-TW": "沒找到 Safe 給 Permit2 的授權。EOA 不合的是授權給別的 spender，或給 Permit2 固定數量或 0。"
+  },
   "flow": [],
   "protocols": {},
   "judgments": [
