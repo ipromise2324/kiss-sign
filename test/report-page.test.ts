@@ -327,7 +327,7 @@ test('the wallet rows match a descriptor by each array item, by argument name wi
   assert.deepEqual(rowsOf(depositInputs, 2), [['bundle.[0].data', '呼叫 erc20TransferFrom，參數見流程'], ['bundle.[1].data', '呼叫 erc4626Deposit，參數見流程']]);
   const usdc = registry.entries.get('usdc') ?? assert.fail('usdc');
   const field = (path: string) => ({ kind: 'field', path, format: 'raw', visible: 'always' }) as const;
-  const usdtLike = { functions: [{ selector: '0x095ea7b3', signature: 'approve(address,uint256)', fields: [field('_spender'), field('_value')], notShown: [] }] } as unknown as EntryReport['descriptors'][number];
+  const usdtLike = { kind: 'calldata', functions: [{ selector: '0x095ea7b3', signature: 'approve(address,uint256)', fields: [field('_spender'), field('_value')], notShown: [] }] } as unknown as EntryReport['descriptors'][number];
   const reports = [...depositInputs.erc7730.reports, { entry: usdc, factory: undefined, index: undefined, eip712Index: [], descriptors: [usdtLike] }];
   assert.deepEqual(rowsOf({ ...depositInputs, erc7730: { ...depositInputs.erc7730, reports } }, 1), [['被授權者', 'general-adapter-1'], ['金額', '你填的金額']]);
 });
@@ -550,7 +550,7 @@ test('a wallet row is labelled by the argument it shows, never by a descriptor p
   const extra: FieldFact[] = ['constructor', '#.marketParams.toString', '#.loanTokenPermit'].map((path) => ({ kind: 'field', path, format: 'raw', visible: 'always' }));
   const reports = inputs.erc7730.reports.map((report) => ({
     ...report,
-    descriptors: report.descriptors.map((d) => ({ ...d, functions: d.functions.map((f) => ({ ...f, fields: [...f.fields, ...extra] })) })),
+    descriptors: report.descriptors.map((d) => (d.kind === 'calldata' ? { ...d, functions: d.functions.map((f) => ({ ...f, fields: [...f.fields, ...extra] })) } : d)),
   }));
   const rows = walletCall(oneCallPage(oneCall({ ...inputs, erc7730: { ...inputs.erc7730, reports } }, 2))).call.rows;
   assert.ok(Array.isArray(rows));

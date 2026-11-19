@@ -296,19 +296,14 @@ export type AttestationFact = { readonly file: string; readonly signer: Address 
 
 export type DescriptorFact = {
   readonly path: string;
-  readonly kind: DescriptorKind;
   readonly scope: Scope;
   /** sha256 of the descriptor file's bytes, as stored at the commit. */
   readonly fileSha256: string;
   readonly includes: readonly string[];
   readonly descriptorHash: Hex | undefined;
   readonly unresolved: string | undefined;
-  /** A calldata descriptor's functions; none for an EIP-712 one. */
-  readonly functions: readonly FunctionFact[];
-  /** An EIP-712 descriptor's messages; none for a calldata one. */
-  readonly messages: readonly MessageFact[];
   readonly attestations: readonly AttestationFact[];
-};
+} & ({ readonly kind: 'calldata'; readonly functions: readonly FunctionFact[] } | { readonly kind: 'eip712'; readonly messages: readonly MessageFact[] });
 
 export type EntryReport = {
   readonly entry: RegistryEntry;
@@ -574,16 +569,16 @@ export async function studyEntries(entries: readonly RegistryEntry[], registry: 
       const byFactory = factory !== undefined && scope.factories.includes(factory.address);
       if (!scope.deployment && !byFactory) continue;
       const descriptorHash = doc === undefined ? undefined : keccakHex(utf8ToBytes(jcs(doc)));
+      const shape =
+        d.kind === 'calldata' ? { kind: d.kind, functions: doc === undefined ? [] : functionFacts(doc) } : { kind: d.kind, messages: doc === undefined ? [] : messageFacts(doc) };
       facts.push({
         path: d.path,
-        kind: d.kind,
+        ...shape,
         scope,
         fileSha256: createHash('sha256').update(snapshot.files.get(d.path)!, 'utf8').digest('hex'),
         includes: d.resolved.kind === 'resolved' ? d.resolved.includes : [],
         descriptorHash,
         unresolved: d.resolved.kind === 'unresolved' ? d.resolved.why : undefined,
-        functions: doc === undefined || d.kind !== 'calldata' ? [] : functionFacts(doc),
-        messages: doc === undefined || d.kind !== 'eip712' ? [] : messageFacts(doc),
         attestations: await attestationFacts(snapshot, d, descriptorHash, once),
       });
     }
@@ -646,13 +641,13 @@ function descriptorLines(d: DescriptorFact, report: EntryReport): string[] {
       ? `  hash         descriptorHash not computed: ${d.unresolved}`
       : `  hash         descriptorHash ${d.descriptorHash}: keccak256 of the RFC 8785 JSON of the descriptor with includes resolved (ERC-8176)`,
   );
-  for (const fn of d.functions) {
+  for (const fn of d.kind === 'calldata' ? d.functions : []) {
     lines.push(`  function     ${fn.selector ?? '<a format key that is no function signature>'}${fn.signature === undefined ? '' : ` ${fn.signature}`}`);
     lines.push(...fieldLines(fn.fields, '    '));
     for (const path of fn.excluded) lines.push(`    excluded   ${path}`);
     if (fn.notShown.length > 0) lines.push(`    no field   ${fn.notShown.join(', ')}`);
   }
-  for (const message of d.messages) {
+  for (const message of d.kind === 'eip712' ? d.messages : []) {
     lines.push(`  message      ${message.primaryType === undefined ? '<a format key that is no EIP-712 type>' : `${message.primaryType} typehash ${message.typeHash}`}`);
     lines.push(...fieldLines(message.fields, '    '));
   }
