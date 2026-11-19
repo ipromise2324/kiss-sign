@@ -19,7 +19,7 @@ reads test/fixtures/registry/
 reads test/fixtures/templates/
 
 canary test/canaries/floor.canary.ts
-guards The floors every template gets: nonzero fee fields, a delegatecall to anything but an official MultiSend or inside it, a MultiSend that does not decode, a call to the Safe that changes its modules, guard, handler or singleton, an undeclared owner or threshold change, and an unlimited ERC-20, Permit2 or NFT approval are refused, statically and in the simulation or receipt.
+guards The floors every template gets: nonzero fee fields, a delegatecall to anything but an official MultiSend or inside it, a MultiSend that does not decode, a MultiSend call with to = 0, a call to the Safe that changes its modules, guard, handler or singleton, an undeclared owner or threshold change, and an unlimited ERC-20, Permit2 or NFT approval are refused, statically and in the simulation or receipt.
 reads testdata/safe-tx/morpho-vault-deposit.json
 
 canary test/canaries/card-floor.canary.ts

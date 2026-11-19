@@ -140,8 +140,6 @@ fields, over the 82 fitting transactions:
   call.addOwnerWithThreshold._threshold  [card threshold]
     same as the other leaves bound to card threshold in 82 of 82; values: 5 distinct values
 misfits, by reason:
-  3 from 3 Safes: a delegatecall to a contract that is not an official MultiSend
-    e.g. 0x4e419afe999a91cc12b59ccc72c98bfc3d5b86ebb98348eb4b920937f9544655, 0xab09ebbf88e59724a1cdf4bdcfb104201633f4ef62c90854401dd6469cdf6918, 0x2666fc4361a43b6d5527c2a47eb37fa224bdeaf07850f64294f21d5532a75c59
   1 from 1 Safe: calls 0xbDB8DDa0FB7E5698CBe49Cc266cA38C1536440De.addOwnerWithThreshold, 0xbDB8DDa0FB7E5698CBe49Cc266cA38C1536440De.addOwnerWithThreshold
     e.g. 0x29e2360fe5973a799dcf0bcfcfb24e5825c8c19bb47ca3a2e68530445c60a08b
   1 from 1 Safe: calls 0x4D732B231942aD768eD4216fc8a60c8330c85711.addOwnerWithThreshold, 0x4D732B231942aD768eD4216fc8a60c8330c85711.addOwnerWithThreshold, 0x4D732B231942aD768eD4216fc8a60c8330c85711.addOwnerWithThreshold, 0x4D732B231942aD768eD4216fc8a60c8330c85711.addOwnerWithThreshold
@@ -200,8 +198,14 @@ misfits, by reason:
     e.g. 0x4e6588f262092abc96e4b4eedb71fe935a55f96e8b128fe012ff852654b76442
   1 from 1 Safe: calls 0xB597026150552bB3F6092aC685A2241C5FA77Ed0.0xe318b52b, 0xB597026150552bB3F6092aC685A2241C5FA77Ed0.addOwnerWithThreshold, 0xB597026150552bB3F6092aC685A2241C5FA77Ed0.addOwnerWithThreshold
     e.g. 0x857acf6f64bffd2970366b8474a68fd2f0c25959fc2df988ee27dec9af754f35
+  1 from 1 Safe: calls 0x9F7c5d6932907D3e7718a049C0Ebbbb8Ac55abe5.addOwnerWithThreshold, 0x9F7c5d6932907D3e7718a049C0Ebbbb8Ac55abe5.addOwnerWithThreshold
+    e.g. 0x4e419afe999a91cc12b59ccc72c98bfc3d5b86ebb98348eb4b920937f9544655
+  1 from 1 Safe: calls 0x3afDE2fAb39a5aE59C81FD8095C89022b0cb6077.0xe318b52b, 0x3afDE2fAb39a5aE59C81FD8095C89022b0cb6077.addOwnerWithThreshold, 0x3afDE2fAb39a5aE59C81FD8095C89022b0cb6077.addOwnerWithThreshold, 0x3afDE2fAb39a5aE59C81FD8095C89022b0cb6077.addOwnerWithThreshold, 0x3afDE2fAb39a5aE59C81FD8095C89022b0cb6077.addOwnerWithThreshold, 0x3afDE2fAb39a5aE59C81FD8095C89022b0cb6077.addOwnerWithThreshold, 0x3afDE2fAb39a5aE59C81FD8095C89022b0cb6077.addOwnerWithThreshold, 0x3afDE2fAb39a5aE59C81FD8095C89022b0cb6077.0x610b5925
+    e.g. 0xab09ebbf88e59724a1cdf4bdcfb104201633f4ef62c90854401dd6469cdf6918
   1 from 1 Safe: calls 0x0589EbFa4A6A1d457AB9f4280DF8079806bA46ae.addOwnerWithThreshold, 0x0589EbFa4A6A1d457AB9f4280DF8079806bA46ae.addOwnerWithThreshold
     e.g. 0x9b96a5037ddee8e94569d5745ffedabc25ff996fd094d2ac3e357a6c0b214b83
+  1 from 1 Safe: calls 0x99C1DC8ece261b76D79d06B8B194950dd5eCF7cd.addOwnerWithThreshold, 0x99C1DC8ece261b76D79d06B8B194950dd5eCF7cd.addOwnerWithThreshold, 0x99C1DC8ece261b76D79d06B8B194950dd5eCF7cd.addOwnerWithThreshold
+    e.g. 0x2666fc4361a43b6d5527c2a47eb37fa224bdeaf07850f64294f21d5532a75c59
 examples that fit: 0x310ed21db9bfc2f3dbe4818b538bdf7bafb687b02f348040474607a89ebae0a7, 0xdd00f37ee6f301ec38b5045863ef26e61097806a8b5b0ef55b4198d292657a7e, 0xcede834ce62fff3b44e94a3d01eff9fdfd3081309911fa3398159fb353eb8325
 ```
 
