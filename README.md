@@ -16,7 +16,7 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/readme/overview-dark.png">
-  <img src="docs/readme/overview.png" alt="kiss-sign at a glance. You say what you want. Once per operation, your AI checks each address against the protocol's own sites and finds it in at least two places, checks the ABIs, past transactions, the protocol's state and the code, and writes a report you review and merge. At every signing you fill a card; kiss-sign verify simulates the transaction on two providers and checks it against the card; a second computer decodes it on its own with check.sh; and you compare the hashes on your hardware wallet before signing.">
+  <img src="docs/readme/overview.png" alt="kiss-sign at a glance. You say what you want. Once per operation, your AI finds each contract's address and kiss-sign confirms it in two separate sources; kiss-sign proves each contract's ABI by checking its published source is the code on chain; using that ABI, your AI writes a rule for every value in the transaction and lists the contracts it calls behind the scenes; kiss-sign finds a year of real transactions of the same kind and your AI sets safe limits from them; kiss-sign reads the protocol's size, past hacks and holders and your AI weighs audits and incidents; kiss-sign records each contract's code so a later upgrade is caught, and writes a report, with your AI's notes marked, which your AI sends you as a pull request to read, merge and approve. At every signing you fill a card; kiss-sign verify simulates the transaction on two providers and checks it against the card; a clean computer with no AI decodes it on its own with check.sh; and you compare the hashes on your hardware wallet before signing.">
 </picture>
 
 ## Contents
@@ -81,7 +81,7 @@ You need:
 - A hardware wallet that shows a Safe transaction's domain hash and message hash, or its safeTxHash.
 - For the hardened tier, a second computer with [kiss-sign-check](https://github.com/ipromise2324/kiss-sign-check), its `LANGUAGE` set to the language you gave `init`. It runs no AI and no kiss-sign, so malware or an AI on your computer cannot also change what you compare. Without it you are on the basic tier, kiss-sign alone. See [Two tiers](docs/design.md#two-tiers).
 
-**Language.** English (`en`, the default) or Traditional Chinese (`zh-TW`). Change it later with `pnpm kiss-sign init --language zh-TW`. It sets the terminal text, `verify`'s page and `pnpm history`; addresses, hashes and verdict words stay the same, and so do verdicts. Set `LANGUAGE` in `check.sh`'s `config` to the same language, or the comparison rows differ.
+**Language.** English (`en`, the default) or Traditional Chinese (`zh-TW`). Change it later with `pnpm kiss-sign init --language zh-TW`. It sets which HTML report your AI gives you, the terminal text, `verify`'s page and `pnpm history`; addresses, hashes and verdict words stay the same, and so do verdicts. Set `LANGUAGE` in `check.sh`'s `config` to the same language, or the comparison rows differ.
 
 ### 1. Tell your AI what you want
 
@@ -93,7 +93,7 @@ In Claude Code, from the clone, say it in one sentence: "deposit 1,000,611.44860
 
 The report shows what the transaction will do and where every fact came from. Text the AI wrote is marked `AI`; everything else the program read or checked.
 
-**The call flow.** Which contract the Safe calls, in which order, and what comes back.
+**The call flow.** Which contract the Safe calls, in which order, and what comes back. The Safe's own calls are the template's, which the program checks. The calls inside them are the AI's, from reading the source, and the program checks each against the call traces of other senders' past transactions: a line seen in every one is drawn solid, confirmed two ways.
 
 ![The call flow in the report: the Safe approves USDC to general-adapter-1, then calls bundler3.multicall, which pulls the USDC and deposits it, and the vault shares come back to the Safe](docs/readme/report-flow.png)
 
@@ -101,29 +101,29 @@ The report shows what the transaction will do and where every fact came from. Te
 
 ![The fields of usdc.approve in the report: spender is fixed to general-adapter-1 with its full address, and value is the amount you fill in](docs/readme/report-fields.png)
 
-**Every address.** Each place it was found, whether that site belongs to the protocol, and whether the newest version still lists it. This crop is from the CoW swap report, where CoW's settlement contract is confirmed in five places.
+**Every address.** Each place it was found, whether that site belongs to the protocol, and whether the newest version still lists it. This crop is from the CoW swap report. CoW's settlement contract is found in four sources, but places count by who owns them: two GitHub pages and the SDK all belong to CoW's GitHub organization, so with Immunefi it is confirmed in two places.
 
-![An address the report confirmed in five places: two pages on CoW's GitHub, whose organization Immunefi ties to the protocol, each still listing it at the newest version; Immunefi's bug bounty scope; CoW's SDK on npm; and the deployer, which also deployed another confirmed CoW contract](docs/readme/report-address.png)
+![An address the report confirmed in two places: two pages on CoW's GitHub and CoW's SDK on npm, which count as one place, CoW's GitHub organization, each still listing it at the newest version; and Immunefi's bug bounty scope. The deployer shares no other confirmed contract, so it counts for nothing](docs/readme/report-address.png)
 
 Weak evidence is shown, not hidden. The Hyperithm vault was confirmed only by its factory, so the report flags it and lists it under To review, with the AI's suggestion: open the vault from the Morpho app's list, compare the address, and send a small amount first.
 
 ![An address confirmed in only one place, the factory, flagged with low confidence: the Morpho app page could not be read, CoinGecko had nothing to compare, Immunefi's scope does not list it, and no deployer was proven](docs/readme/report-address-flagged.png)
 
-The report was made on the AI's computer. Before you merge, read its facts again with your own `main`'s code; any fact that differs is printed:
+The report was made on the AI's computer. Before you merge, read its facts again with your own `main`'s code. `--compare` prints each fact that differs, except what changes between two honest reads: the date the listings were read, DefiLlama's TVL and most block numbers. It fetches and traces again the past transactions the report recorded, but it does not search anew, and it reuses the recorded API answer for each signed message, such as a CoW order. It also checks that each HTML report is exactly what your `main`'s code writes from the recordings and the AI's notes. Run it once more with `--instance-of` for each per-instance report the branch changes:
 
 ```sh
 git fetch origin <branch>
 pnpm report <protocol>/<operation> [--instance-of <instance>] --compare --data origin/<branch>
 ```
 
-This review happens once per operation. Merging is your confirmation. Then approve the template on your own computer, which records its hash so `verify` refuses any other version:
+You review an operation once. After that you review only what changes: another vault's report, a registry pull request, or a changed template. Merging is your confirmation. Then approve the template on your own computer, which records its hash so `verify` refuses any other version:
 
 ```sh
 git pull
 pnpm kiss-sign template approve morpho/vault-deposit
 ```
 
-Approval records the template's hash, so another contract the same template can name needs only its report reviewed and merged.
+A changed template has a new hash, so `verify` refuses it until you approve it again.
 
 ### 3. Fill a card
 
@@ -169,7 +169,7 @@ Compare the hashes on `verify`'s page with your hardware wallet's screen, charac
 
 ### The Safe web app or Transaction Service
 
-`verify` never uses what the web app shows. It checks the transaction in the Transaction Service, and comparing the hashes on your wallet checks that you sign that one.
+`verify` checks the transaction you give it, from the Transaction Service by its safeTxHash or from a file, against your card, and comparing the hashes on your wallet checks that you sign that one.
 
 | Attack | Stopped by |
 |---|---|
@@ -192,8 +192,8 @@ Your AI finds each contract's address on the web, and a program fetches each con
 | Attack | Stopped by |
 |---|---|
 | The AI uses a fake site | A program, not the AI, compares the site with those the protocol's listings name, on DefiLlama, CoinGecko, its bug bounty and GitHub: not among them, flagged for you. To pass, the fake site must be listed there too |
-| The AI uses a wrong address | The address must be found in two places, such as the protocol's site, CoinGecko, the factory, the bug bounty or the SDK: fewer, flagged for you. To pass, the wrong address must be planted in two of them |
-| Etherscan serves source code that is not the contract's, so a harmful call reads as a harmless one | A program compiles it with a pinned compiler and compares it with the code on chain: different, refused |
+| The AI uses a wrong address | The address must be found in two places with different owners, such as the protocol's site, CoinGecko, the factory, the bug bounty or the SDK: fewer, flagged for you. To pass, the wrong address must be planted in two of them |
+| Etherscan serves source code that is not the contract's, so a harmful call reads as a harmless one | A program compiles it with a pinned compiler and compares it byte for byte with the code on chain, except values set at deployment (immutables and linked libraries) and a metadata hash that differs, which the report flags as a finding: any other difference, refused |
 
 On the hardened tier, `check.sh` also marks every address not in your own list as unknown, and takes its ABIs from Sourcify, not Etherscan.
 
@@ -203,7 +203,7 @@ Models are trained to resist prompt injection, but a page your AI reads can stil
 
 | Attack | Stopped by |
 |---|---|
-| The AI gets something wrong, such as a template that allows too much | `verify` refuses a delegatecall, an unlimited approval, a Safe setting change and an unexplained balance change whatever the template says; the rest shows in the report you review |
+| The AI gets something wrong, such as a template that allows too much | `verify` refuses a delegatecall other than to the official MultiSend, an unlimited approval other than a standing one the registry declares, such as to Permit2, a Safe setting change other than an owner or threshold change the card declares, and an unexplained balance change, whatever the template says; the rest shows in the report you review |
 | A steered AI changes the report, `verify`'s code or its verdict | A bad transaction must still reach your Safe, through a compromised web app or protocol app; otherwise the attack fails. `--compare` reads the report's facts again with your `main`'s code, and a program change never shares a pull request with a template or the registry |
 
 On the hardened tier, `check.sh` decodes the transaction without kiss-sign, so you see the real functions and arguments.
@@ -214,9 +214,9 @@ You choose the protocol; kiss-sign checks its state, its app's transactions and 
 
 | Attack | Stopped by |
 |---|---|
-| The protocol or vault you pick is unsafe right now, such as one just hacked, or a vault made yesterday with no holders | The report shows the protocol's TVL and hacks from DefiLlama, and the vault's size over 12 months and its holders, read through both providers, for you to judge before you merge |
-| The protocol's app is compromised and sets a field you do not fill to a value no real user sends, such as a CoW order valid for a year | Other senders' CoW orders expired within 1.5 hours, so the template allows 7 days at most: later is `MISMATCH`. Drift was exploited in April 2026 through pre-signed transactions that durable nonces kept valid |
-| A contract is upgraded or reconfigured to act maliciously | The simulation: a balance or allowance change the card does not explain, `MISMATCH`. The recorded code: a registry contract whose code changed since your review, `MISMATCH`. Settings, and contracts behind it such as a market's oracle, are not checked |
+| The protocol or vault you pick is unsafe right now, such as one just hacked, or a vault made yesterday with no holders | The report shows the protocol's TVL and hacks from DefiLlama, and the vault's size over 12 months and its holders, found through Alchemy and their balances read through both providers, for you to judge before you merge |
+| The protocol's app is compromised and sets a field you do not fill to a value no real user sends, such as a CoW order valid for a year | Of 136 CoW orders other Safes pre-signed, half expired within 30 minutes, nearly all within 3 hours, and the longest just under 7 days, so the template allows 7 days at most: later is `MISMATCH`. Drift was exploited in April 2026 through pre-signed transactions that durable nonces kept valid |
+| A contract is upgraded or reconfigured to act maliciously | The simulation: a balance or allowance change the card does not explain, `MISMATCH`. The recorded code: a registry contract whose code changed since your review, `MISMATCH`. Settings an admin can change, such as a vault's curator, fees or caps, and contracts that are not registry entries, such as the markets and oracles behind a vault, are not checked |
 | The protocol is hacked while your funds are in it | Nothing: kiss-sign checks only the transactions you sign |
 
 ### You
