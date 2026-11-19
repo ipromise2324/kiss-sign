@@ -362,10 +362,29 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="wallet">
   <h2>Wallet display <span class="c">ERC-7730 descriptors</span></h2>
-  <p class="lead">A hardware wallet shows each call with an ERC-7730 descriptor.</p>
+  <p class="lead">A Ledger that supports ERC-7730 shows the Safe transaction (SafeTx) with a descriptor first, then the call inside it. The right column holds the template&#39;s rules, not the descriptor&#39;s text.</p>
   <dl class="props two">
-    <div><dt>1 your Safe.removeOwner</dt><dd class="f3">no descriptor; the wallet shows only raw data</dd></div>
+    <div><dt>The Safe transaction (SafeTx)</dt><dd>
+      <dl class="nest flat">
+        <div><dt><code>to</code></dt><dd>your Safe</dd></div>
+        <div><dt><code>value</code></dt><dd><span class="addr">0</span></dd></div>
+        <div><dt><code>operation</code></dt><dd>Call (0)</dd></div>
+        <div><dt><code>data</code></dt><dd>call 1 below</dd></div>
+        <div><dt><code>baseGas</code></dt><dd><span class="addr">0</span></dd></div>
+        <div><dt><code>gasPrice</code></dt><dd><span class="addr">0</span></dd></div>
+        <div><dt><code>gasToken</code></dt><dd>none (zero address)</dd></div>
+        <div><dt><code>refundReceiver</code></dt><dd>none (zero address)</dd></div>
+      </dl></dd></div>
+    <div><dt>1 your Safe.removeOwner</dt><dd>
+      <dl class="nest flat">
+        <div><dt>owner</dt><dd>the signer you pick</dd></div>
+        <div><dt>_threshold</dt><dd>the threshold you type</dd></div>
+      </dl></dd></div>
   </dl>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>your Safe is a proxy: a Ledger resolves it to safe-1.3.0 or safe-1.4.1 through Ledger&#39;s own server to use these descriptors; a wallet that does not resolve proxies shows only raw data.</span></div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>SafeTx: the wallet does not show <code>safeTxGas</code>, <code>nonce</code>; only the hashes cover them.</span></div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>Call 1: the wallet does not show <code>prevOwner</code>.</span></div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>On a Ledger, first turn on &#34;Transaction hash&#34; in the Ethereum app&#39;s settings: with a descriptor applied, the device shows the domain hash and the message hash only when it is on. Comparing those hashes is the check kiss-sign relies on, however right the decoded fields look.</span></div>
 </section>
 
 <section id="addresses">
@@ -457,22 +476,23 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="next">
   <h2>Next steps</h2>
   <ol class="steps">
-    <li><div>The first time you use this template, or after it changes, approve it<pre class="cmd"><code>bin/kiss-sign template approve safe/remove-owner</code></pre>
+    <li><div>The first time you use this template, or after it changes, approve it<pre class="cmd"><code>pnpm kiss-sign template approve safe/remove-owner</code></pre>
       <p class="then">It prints the template, the commit of main on GitHub and the template&#39;s keccak256. Answer <code>y</code> only if it is the one you reviewed.</p></div></li>
-    <li><div>First add each signer you will add, remove or replace to your address book. Pick a name in lowercase English joined with -; get the address from a source outside the chat<pre class="cmd"><code>bin/kiss-sign book add &#60;name&#62; &#60;address&#62;</code></pre>
+    <li><div>First add each signer you will add, remove or replace to your address book. Pick a name in lowercase English joined with -; get the address from a source outside the chat<pre class="cmd"><code>pnpm kiss-sign book add &#60;name&#62; &#60;address&#62;</code></pre>
       <p class="then">It prints the name and the full address and asks <code>Add this entry? [y/N]</code>. Type <code>y</code> only after checking every character against a source outside the chat. Add each person once.</p></div></li>
-    <li><div>Make the card<pre class="cmd"><code>bin/kiss-sign card new safe/remove-owner</code></pre>
+    <li><div>Make the card<pre class="cmd"><code>pnpm kiss-sign card new safe/remove-owner</code></pre>
       <p class="then">When <code>templates/</code> or <code>registry/</code> in your clone differs from main on GitHub, it stops before asking anything and tells you to run <code>git pull</code> first.</p></div></li>
     <li><div>signer (<code>owner</code>): it lists the names in your address book, each with its full address. Pick the signer you want; its full address must be right.</div></li>
     <li><div><code>threshold</code>: type the new threshold, the number of signers needed to execute, digits only, at least 1.</div></li>
     <li><div>It prints the whole card, each name with its full address, and asks <code>Is this what you mean to do? [y/N]</code>. Type <code>y</code> only if all of it is what you want.
       <p class="then">It prints <code>Sealed card 0x…</code>, the card&#39;s hash, which the next step uses.</p></div></li>
-    <li><div>Propose the transaction in the Safe web app, copy its safeTxHash, then run<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
+    <li><div>Propose the transaction in the Safe web app, copy its safeTxHash, then run<pre class="cmd"><code>pnpm kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
       <p class="then"><code>MATCH</code>: it prints the safeTxHash and the path of a page with the domain hash, the message hash and the checklist. Go on.</p>
       <p class="then"><code>MISMATCH</code> or <code>UNVERIFIABLE</code>: do not sign. Read the checks it lists, then the AI judgment under &#34;<a href="#review">To review</a>&#34; in this report, which may explain why.</p></div></li>
     <li><div>Hardened tier: on an independent computer, run<pre class="cmd"><code>./check.sh &#60;nonce&#62;</code></pre>
       <p class="then">Compare the hashes it computes with the hardware wallet, and its page&#39;s checklist row by row with the <code>verify</code> page.</p></div></li>
     <li><div>Compare the domain hash and the message hash on the hardware wallet character by character with the <code>verify</code> page. Sign only if they are the same.
+      <p class="then">On a Ledger, first turn on &#34;Transaction hash&#34; in the Ethereum app&#39;s settings: with a descriptor applied, the device shows the domain hash and the message hash only when it is on. Comparing those hashes is the check kiss-sign relies on, however right the decoded fields look.</p>
       <div class="hash"><span>Compare</span><span class="f2">the domain hash and the message hash, each 0x followed by 64 characters</span></div></div></li>
   </ol>
   <div class="auto"><h3>What the program does at each signing</h3>

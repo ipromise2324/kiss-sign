@@ -238,7 +238,7 @@ misfits, by reason:
 
 ## ERC-7730
 
-`pnpm erc7730 usdc usdt morpho cbbtc universal-router-2.1.2 usp weeth`: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.
+`pnpm erc7730 usdc usdt morpho cbbtc safe-1.3.0 safe-1.4.1 universal-router-2.1.2 usp weeth`: each entry's calldata and EIP-712 descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked, for the entries the operation touches and every registry singleton, whose EIP-712 descriptor a wallet applies to the Safe transaction itself. A second opinion on field meanings, never a rule.
 
 ```text
 ERC-7730 registry github.com/ethereum/clear-signing-erc7730-registry at commit 3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4
@@ -269,6 +269,136 @@ morpho 0x58D97B57BB95320F9a05dC918Aef65434969c2B2 (token)
 cbbtc 0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf (token)
   descriptor   none: no calldata descriptor lists this address on chain 1
   index        index.calldata.json has no entry for this address
+
+safe-1.3.0 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552 (singleton)
+  descriptor   registry/safe/calldata-Safe-1.3.0.json
+  applies      by exact address (context.contract.deployments lists it on chain 1)
+  index        index.calldata.json names this file
+  includes     registry/safe/common-Safe.json
+  file         sha256 3e5e3335605722c4af001b49e622e486a467e724b9905da47dce0c70521b9904 of the file's bytes
+  hash         descriptorHash 0x3adcb2f6275c9af31b78c2dd046a14d52f3f1ea70ed0a8b2a50d958204fdd727: keccak256 of the RFC 8785 JSON of the descriptor with includes resolved (ERC-8176)
+  function     0xb63e800d setup(address[],uint256,address,bytes,address,address,uint256,address)
+    field      _owners.[] addressName
+    field      _threshold raw
+    field      fallbackHandler addressName
+    field      payment tokenAmount (visible: shown-unless-listed-value)
+    field      paymentReceiver addressName (visible: shown-unless-listed-value)
+    field      to addressName (visible: shown-unless-listed-value)
+    field      data calldata
+    no field   paymentToken
+  function     0x6a761202 execTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes)
+    field      operation enum
+    field      @.to addressName
+    field      @.from addressName
+    field      to addressName
+    field      value amount
+    field      @.value amount (visible: shown-unless-listed-value)
+    field      data calldata
+    field      baseGas raw
+    field      gasPrice tokenAmount
+    field      refundReceiver addressName
+    field      safeTxGas none (visible: never)
+    field      signatures none (visible: never)
+    no field   gasToken
+  function     0x0d582f13 addOwnerWithThreshold(address,uint256)
+    field      owner addressName
+    field      _threshold raw
+  function     0xf8dc5dd9 removeOwner(address,address,uint256)
+    field      owner addressName
+    field      _threshold raw
+    field      prevOwner none (visible: never)
+  function     0xe318b52b swapOwner(address,address,address)
+    field      oldOwner addressName
+    field      newOwner addressName
+    field      prevOwner none (visible: never)
+  function     0x694e80c3 changeThreshold(uint256)
+    field      _threshold raw
+  function     0xd4d9bdcd approveHash(bytes32)
+    field      hashToApprove raw
+  attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash
+  descriptor   registry/safe/eip712-Safe-1.3.0.json
+  applies      by exact address (context.eip712.deployments lists it on chain 1)
+  index        index.eip712.json names this file
+  includes     registry/safe/common-eip712-Safe.json
+  file         sha256 223c3905b9dac997e42c22f7d30ab187ec15bb0dc50cd510b4c1f586f678168a of the file's bytes
+  hash         descriptorHash 0x8fecfec38cf3525867fa47cd4d577675647e5dee336acbc1e124d0ae2412639b: keccak256 of the RFC 8785 JSON of the descriptor with includes resolved (ERC-8176)
+  message      SafeTx typehash 0xbb8310d486368db6bd6f849402fdd73ad53d316b5a4b2644ad6efe0f941286d8
+    field      to addressName
+    field      value amount
+    field      operation enum
+    field      data calldata
+    field      baseGas raw
+    field      gasPrice raw
+    field      gasToken raw
+    field      refundReceiver raw
+    field      safeTxGas none (visible: never)
+    field      nonce none (visible: never)
+  attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash
+
+safe-1.4.1 0x41675C099F32341bf84BFc5382aF534df5C7461a (singleton)
+  descriptor   registry/safe/calldata-Safe-1.4.1.json
+  applies      by exact address (context.contract.deployments lists it on chain 1)
+  index        index.calldata.json names this file
+  includes     registry/safe/common-Safe.json
+  file         sha256 39cb7b692f99603a09803f4b3a0a2b88ad0ee350320a9beeadffe43068585775 of the file's bytes
+  hash         descriptorHash 0x3625b12c1a6359bd5009813a7fde62e557e243afcf3e9dd461971427c2ad46cd: keccak256 of the RFC 8785 JSON of the descriptor with includes resolved (ERC-8176)
+  function     0xb63e800d setup(address[],uint256,address,bytes,address,address,uint256,address)
+    field      _owners.[] addressName
+    field      _threshold raw
+    field      fallbackHandler addressName
+    field      payment tokenAmount (visible: shown-unless-listed-value)
+    field      paymentReceiver addressName (visible: shown-unless-listed-value)
+    field      to addressName (visible: shown-unless-listed-value)
+    field      data calldata
+    no field   paymentToken
+  function     0x6a761202 execTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes)
+    field      operation enum
+    field      @.to addressName
+    field      @.from addressName
+    field      to addressName
+    field      value amount
+    field      @.value amount (visible: shown-unless-listed-value)
+    field      data calldata
+    field      baseGas raw
+    field      gasPrice tokenAmount
+    field      refundReceiver addressName
+    field      safeTxGas none (visible: never)
+    field      signatures none (visible: never)
+    no field   gasToken
+  function     0x0d582f13 addOwnerWithThreshold(address,uint256)
+    field      owner addressName
+    field      _threshold raw
+  function     0xf8dc5dd9 removeOwner(address,address,uint256)
+    field      owner addressName
+    field      _threshold raw
+    field      prevOwner none (visible: never)
+  function     0xe318b52b swapOwner(address,address,address)
+    field      oldOwner addressName
+    field      newOwner addressName
+    field      prevOwner none (visible: never)
+  function     0x694e80c3 changeThreshold(uint256)
+    field      _threshold raw
+  function     0xd4d9bdcd approveHash(bytes32)
+    field      hashToApprove raw
+  attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash
+  descriptor   registry/safe/eip712-Safe-1.4.1.json
+  applies      by exact address (context.eip712.deployments lists it on chain 1)
+  index        index.eip712.json names this file
+  includes     registry/safe/common-eip712-Safe.json
+  file         sha256 93b5d3df64a92607367e0faa4562d596ccd4b6a930b0e332306fe396657f5584 of the file's bytes
+  hash         descriptorHash 0xcd11bfd93038d7961ae96de9b1ef248e7d641471d1830272c5b6dafac6d12cd9: keccak256 of the RFC 8785 JSON of the descriptor with includes resolved (ERC-8176)
+  message      SafeTx typehash 0xbb8310d486368db6bd6f849402fdd73ad53d316b5a4b2644ad6efe0f941286d8
+    field      to addressName
+    field      value amount
+    field      operation enum
+    field      data calldata
+    field      baseGas raw
+    field      gasPrice raw
+    field      gasToken raw
+    field      refundReceiver raw
+    field      safeTxGas none (visible: never)
+    field      nonce none (visible: never)
+  attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash
 
 universal-router-2.1.2 0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85 (router)
   descriptor   none: no calldata descriptor lists this address on chain 1

@@ -301,8 +301,21 @@ function walletCall(page: Page): { readonly call: WalletCall; readonly lines: re
 }
 
 test('a template of two or more calls goes through MultiSend, so its wallet section only says to compare the safeTxHash', () => {
-  assert.deepEqual(body(pageOf(inputs), 'wallet').view, { kind: 'multisend', calls: 2 });
-  assert.deepEqual(body(depositPage, 'wallet').view, { kind: 'multisend', calls: 2 });
+  for (const page of [pageOf(inputs), depositPage]) {
+    const { view } = body(page, 'wallet');
+    assert.equal(view.kind, 'multisend');
+    assert.equal(view.kind === 'multisend' ? view.calls : 0, 2);
+    assert.ok(Array.isArray(view.safeTx), 'the SafeTx row is described');
+    assert.deepEqual(
+      view.safeTx.map((r) => [plain(r.label), plain(r.value)]).slice(0, 4),
+      [
+        ['to', '官方 MultiSend'],
+        ['value', '0'],
+        ['operation', 'Delegate Call（1），呼叫官方 MultiSend'],
+        ['data', 'MultiSend 打包的呼叫，只顯示原始資料'],
+      ],
+    );
+  }
 });
 
 test('the wallet rows match a descriptor by each array item, by argument name without underscores, and show a token with no descriptor as raw data', () => {
@@ -315,7 +328,7 @@ test('the wallet rows match a descriptor by each array item, by argument name wi
   const usdc = registry.entries.get('usdc') ?? assert.fail('usdc');
   const field = (path: string) => ({ kind: 'field', path, format: 'raw', visible: 'always' }) as const;
   const usdtLike = { functions: [{ selector: '0x095ea7b3', signature: 'approve(address,uint256)', fields: [field('_spender'), field('_value')], notShown: [] }] } as unknown as EntryReport['descriptors'][number];
-  const reports = [...depositInputs.erc7730.reports, { entry: usdc, factory: undefined, index: undefined, descriptors: [usdtLike] }];
+  const reports = [...depositInputs.erc7730.reports, { entry: usdc, factory: undefined, index: undefined, eip712Index: [], descriptors: [usdtLike] }];
   assert.deepEqual(rowsOf({ ...depositInputs, erc7730: { ...depositInputs.erc7730, reports } }, 1), [['被授權者', 'general-adapter-1'], ['金額', '你填的金額']]);
 });
 
@@ -523,7 +536,13 @@ test('the wallet table shows the template rule, and names the bound arguments th
   );
   assert.deepEqual(
     wallet.lines.map((line) => plain(line)),
-    ['呼叫 1：錢包不顯示 marketParams.loanToken、marketParams.oracle、marketParams.irm、loanTokenPermit.kind。', '呼叫 1：同樣兩種代幣的不同 market，只看錢包分不出來。'],
+    [
+      '你的 Safe 是 proxy：Ledger 透過 Ledger 自己的伺服器把它解析成 safe-1.3.0 或 safe-1.4.1，才用得上這些描述檔；不解析 proxy 的錢包只顯示原始資料。',
+      'SafeTx：錢包不顯示 safeTxGas、nonce，只有 hash 涵蓋它們。',
+      '呼叫 1：錢包不顯示 marketParams.loanToken、marketParams.oracle、marketParams.irm、loanTokenPermit.kind。',
+      '呼叫 1：同樣兩種代幣的不同 market，只看錢包分不出來。',
+      '用 Ledger 簽的話，先在 Ethereum app 的設定打開「Transaction hash」：套用描述檔時，要打開它裝置才會顯示 domain hash 和 message hash。比對這兩個 hash 才是 kiss-sign 靠的檢查，解讀看起來再對也要比。',
+    ],
   );
 });
 
@@ -732,12 +751,52 @@ test('an ETH transfer: no address section or address strip lines, its to/value/d
   assert.equal(flow.decoded, false);
   assert.deepEqual(flow.diagram.lifelines.map((l) => l.name), ['你的 Safe', '收款人']);
   assert.deepEqual(flow.after.map((r) => plain(r.note)), ['剛好你填的金額，給收款人']);
-  assert.deepEqual(body(page, 'wallet').view, { kind: 'no-data' });
+  const { view } = body(page, 'wallet');
+  assert.equal(view.kind, 'no-data');
+  assert.ok(Array.isArray(view.safeTx), 'the SafeTx row is described');
+  assert.deepEqual(
+    view.safeTx.map((r) => [plain(r.label), plain(r.value)]),
+    [
+      ['to', '你選的收款人'],
+      ['value', '你填的金額'],
+      ['operation', 'Call（0）'],
+      ['data', '空'],
+      ['baseGas', '0'],
+      ['gasPrice', '0'],
+      ['gasToken', '無（零地址）'],
+      ['refundReceiver', '無（零地址）'],
+    ],
+  );
+  assert.deepEqual(
+    view.lines.map((line) => plain(line)),
+    [
+      '你的 Safe 是 proxy：Ledger 透過 Ledger 自己的伺服器把它解析成 safe-1.3.0 或 safe-1.4.1，才用得上這些描述檔；不解析 proxy 的錢包只顯示原始資料。',
+      'SafeTx：錢包不顯示 safeTxGas、nonce，只有 hash 涵蓋它們。',
+      '用 Ledger 簽的話，先在 Ethereum app 的設定打開「Transaction hash」：套用描述檔時，要打開它裝置才會顯示 domain hash 和 message hash。比對這兩個 hash 才是 kiss-sign 靠的檢查，解讀看起來再對也要比。',
+    ],
+  );
   const next = body(page, 'next');
   assert.ok(next.steps.some((s) => plain(s.say).includes('先用小額')), 'a typed amount keeps the small first trial');
-  const book = next.steps.findIndex((s) => s.command === 'bin/kiss-sign book add <name> <address>');
-  assert.ok(book !== -1 && book < next.steps.findIndex((s) => s.command === 'bin/kiss-sign card new eth/transfer'), 'a recipient is added to the address book before the card');
+  const book = next.steps.findIndex((s) => s.command === 'pnpm kiss-sign book add <name> <address>');
+  assert.ok(book !== -1 && book < next.steps.findIndex((s) => s.command === 'pnpm kiss-sign card new eth/transfer'), 'a recipient is added to the address book before the card');
   assert.ok(!next.automatic.some((line) => plain(line).includes('code pin')), 'no code pin line without a registry entry');
+});
+
+test("a call to the Safe shows the singleton's descriptor reached through the proxy, and a target with no descriptor anywhere still shows raw data", async () => {
+  const { call, lines } = walletCall(await bareCase('safe/add-owner'));
+  assert.equal(plain(call.title), '1 你的 Safe.addOwnerWithThreshold');
+  assert.ok(Array.isArray(call.rows), 'the call is described through the Safe singletons');
+  assert.deepEqual(
+    call.rows.map((r) => [plain(r.label), plain(r.value)]),
+    [
+      ['owner', '你選的簽署人'],
+      ['_threshold', '你填的門檻'],
+    ],
+  );
+  const proxy = lines.map((line) => plain(line)).filter((line) => line.startsWith('你的 Safe 是 proxy'));
+  assert.deepEqual(proxy, ['你的 Safe 是 proxy：Ledger 透過 Ledger 自己的伺服器把它解析成 safe-1.3.0 或 safe-1.4.1，才用得上這些描述檔；不解析 proxy 的錢包只顯示原始資料。']);
+  assert.ok(lines.some((line) => plain(line).includes('「Transaction hash」')), 'the Ledger hash setting');
+  assert.equal(walletCall(oneCallPage(oneCall(inputs, 1))).call.rows, 'no-descriptor');
 });
 
 test('a cancellation: a self-call of 0 ETH is no transfer, its nonce rule has its own row, and no effect says the Safe gives and gets nothing', async () => {
@@ -751,7 +810,7 @@ test('a cancellation: a self-call of 0 ETH is no transfer, its nonce rule has it
   assert.deepEqual(flow.after, []);
   const next = body(page, 'next');
   assert.ok(!next.steps.some((s) => plain(s.say).includes('先用小額')), 'no amount, so no small first trial');
-  assert.ok(!next.steps.some((s) => s.command?.startsWith('bin/kiss-sign book add')), 'no recipient, so no address-book step');
+  assert.ok(!next.steps.some((s) => s.command?.startsWith('pnpm kiss-sign book add')), 'no recipient, so no address-book step');
   assert.ok(next.automatic.some((line) => plain(line) === 'Safe 交易的 nonce 是你填的 nonce'));
   assert.ok(next.automatic.some((line) => plain(line) === '模擬後 Safe 的餘額一點都不能變'));
   assert.ok(!JSON.stringify(page).includes('card.'), 'no internal name');

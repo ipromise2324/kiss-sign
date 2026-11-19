@@ -18,9 +18,11 @@ const USAGE = 'usage: pnpm erc7730 <registry name>... [--record <name>]';
 const HELP = `${USAGE}
 
 Finds each entry's ERC-7730 calldata descriptors in the pinned archive of the ERC-7730 registry, by
-exact address or by the entry's registry factory (printed loudly). It prints only structured facts:
-path, file sha256, ERC-8176 descriptorHash, includes, per function the selector and each field's
-path, format and visibility, and each ERC-8176 attestation as VALID, REVOKED, EXPIRED, INVALID or
+exact address or by the entry's registry factory (printed loudly), and its EIP-712 descriptors by
+exact address when they bind no domain name or version, which a Safe's own SafeTx never has. It
+prints only structured facts: path, file sha256, ERC-8176 descriptorHash, includes, per function
+the selector, per EIP-712 message its primary type and type hash, each field's path, format and
+visibility, and each ERC-8176 attestation as VALID, REVOKED, EXPIRED, INVALID or
 UNVERIFIABLE, with its signer recovered and its revocation read through both providers. It never
 prints descriptor text. Without ALCHEMY_API_KEY the attestations print as UNVERIFIABLE. It
 downloads a missing or changed archive first, as pnpm fetch-erc7730 does.
