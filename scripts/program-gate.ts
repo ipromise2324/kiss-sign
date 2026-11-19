@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runCanary, runProcess } from '../src/canaries.ts';
 import { exitOnHelp } from '../src/script-help.ts';
-import { CANARY_LIST, branchSplit, parseCanaryList } from '../src/verdict-core.ts';
+import { CANARY_LIST, branchSplit, mixedRefusal, parseCanaryList } from '../src/verdict-core.ts';
 
 const USAGE = 'usage: pnpm program-gate <branch>, run in a clone at origin/main, such as pnpm program-gate origin/my-branch';
 const HELP = `usage: pnpm program-gate <branch>
@@ -14,14 +14,17 @@ origin/main, such as pnpm program-gate origin/my-branch; it refuses to run anywh
 the one commit the branch names, which must hold origin/main, and prints the verdict core files and
 the other program files the branch changes.
 Without running the branch's code it stops at NOT ELIGIBLE, naming each file or test, when the
-branch changes a hand-written file under templates/ or registry/ or a gate file, or drops a test
-origin/main runs (a literal test, it, describe or suite title deleted, renamed, moved to another
-file, commented out, or skipped). Otherwise it checks the branch out into a temporary worktree and
-runs the typecheck, each canary of main's docs/canaries.txt with what it guards and its counts, and
-every other test, then requires every tracked file to be as committed.
+branch changes a hand-written file under templates/ or registry/, adds or deletes a generated report
+there, changes a gate file, or drops a test origin/main runs (a literal test, it, describe or suite
+title deleted, renamed, moved to another file, commented out, or skipped). Otherwise it checks the
+branch out into a temporary worktree and runs the typecheck, each canary of main's docs/canaries.txt
+with what it guards and its counts, and every other test, then requires every tracked file to be as
+committed.
 It prints ELIGIBLE, with the merge command for exactly that commit, and exits 0 only when all pass.
-NOT ELIGIBLE exits 3 when the only reason is a template, registry or gate file, or a dropped test
-with no verdict core change, the signer's to merge, and 1 otherwise. A wrong argument exits 2.
+NOT ELIGIBLE exits 3 when the only reason is a template, registry or gate file, or a dropped test,
+and the branch leaves the verdict core alone, the signer's to merge, and 1 otherwise: a branch that
+changes the core beside any of these is refused as pnpm check-push refuses it, and is no one's to
+merge until it is split. A wrong argument exits 2.
 CI runs it as the program-gate job on pull_request_target, from main's workflow and code; the job
 passes on exit 3 with the notice "The signer merges this pull request", so red means a check failed.
 
@@ -218,6 +221,9 @@ say(verdict.length === 0 ? 'verdict core changed: none' : `verdict core changed 
 for (const line of listed(verdict)) say(line);
 say(split.other.length === 0 ? 'other program files changed: none' : `other program files changed (${split.other.length}):`);
 for (const line of listed(split.other)) say(line);
+
+const mixed = mixedRefusal('origin/main', ref, split);
+if (mixed !== undefined) notEligible(mixed.split('\n'));
 
 const dropped = droppedTests(main, sha);
 const refused = verdict.length > 0 && dropped.length > 0;

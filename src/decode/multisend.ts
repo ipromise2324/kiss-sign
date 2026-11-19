@@ -7,7 +7,7 @@ import type { DecodeFailure, DecodedCall, Region, Span } from './codec.ts';
 export type MultiSendDeployment = {
   readonly address: Address;
   readonly contract: 'MultiSend' | 'MultiSendCallOnly';
-  readonly version: '1.3.0' | '1.4.1';
+  readonly version: '1.3.0' | '1.4.1' | '1.5.0';
 };
 
 /** Mainnet addresses from github.com/safe-global/safe-deployments, `src/assets/v<version>/multi_send{,_call_only}.json`. */
@@ -18,6 +18,8 @@ export const OFFICIAL_MULTISEND: readonly MultiSendDeployment[] = [
   { address: '0xa1dabef33b3b82c7814b6d82a79e50f4ac44102b' as Address, contract: 'MultiSendCallOnly', version: '1.3.0' },
   { address: '0x38869bf66a61cf6bdb996a6ae40d5853fd43b526' as Address, contract: 'MultiSend', version: '1.4.1' },
   { address: '0x9641d764fc13c8b624c04430c7356c1c7c8102e2' as Address, contract: 'MultiSendCallOnly', version: '1.4.1' },
+  { address: '0x218543288004cd07832472d464648173c77d7eb7' as Address, contract: 'MultiSend', version: '1.5.0' },
+  { address: '0xa83c336b20401af773b6219ba5027174338d1836' as Address, contract: 'MultiSendCallOnly', version: '1.5.0' },
 ];
 
 export const MULTISEND = parseFunctionSignature('multiSend(bytes transactions)');
@@ -37,9 +39,12 @@ export type Unwrapped =
   | { readonly kind: 'direct'; readonly calls: readonly [InnerCall] }
   | { readonly kind: 'multisend'; readonly deployment: MultiSendDeployment; readonly outer: DecodedCall; readonly calls: readonly InnerCall[] }
   /** A delegatecall to anything but an official MultiSend. It is not unwrapped; the floor rules refuse it. */
-  | { readonly kind: 'foreign-delegatecall'; readonly to: Address };
+  | { readonly kind: 'foreign-delegatecall'; readonly to: Address }
+  /** A MultiSend call whose `to` is zero, at byte `at`. MultiSend 1.5.0 sends it to the Safe itself, so the floor rules refuse it in every version. */
+  | { readonly kind: 'zero-to'; readonly at: number };
 
 const HEADER = 1 + 20 + 32 + 32;
+const ZERO_ADDRESS = `0x${'0'.repeat(40)}` as Address;
 
 function packEntry(call: InnerCall): Uint8Array {
   const data = regionBytes(call.data);
@@ -88,5 +93,8 @@ export function unwrapSafeTx(tx: Pick<SafeTx, 'to' | 'value' | 'data' | 'operati
   const transactions = outer.args[0];
   if (transactions?.kind !== 'bytes') throw new Error('multiSend(bytes) decoded without its bytes');
   const calls = decodeMultiSendTransactions({ root: data.root, start: transactions.span[0], end: transactions.span[1] });
-  return 'kind' in calls ? calls : { kind: 'multisend', deployment, outer, calls };
+  if ('kind' in calls) return calls;
+  const zeroTo = calls.find((call) => call.to === ZERO_ADDRESS);
+  if (zeroTo !== undefined) return { kind: 'zero-to', at: zeroTo.span[0] + 1 };
+  return { kind: 'multisend', deployment, outer, calls };
 }

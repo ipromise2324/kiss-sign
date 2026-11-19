@@ -51,5 +51,8 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22'
-      # Refuses a branch that changes the verdict core and templates/ or registry/ together.
-      - run: node scripts/check-push.ts origin/main..HEAD
+      # Refuses a branch that changes the verdict core beside templates/, registry/ or the program gate. A push to main
+      # diffs from the commit main held before it, since origin/main is HEAD then and the range would be empty.
+      - run: node scripts/check-push.ts "${BASE}..HEAD"
+        env:
+          BASE: ${{ github.event_name == 'push' && github.event.before || 'origin/main' }}

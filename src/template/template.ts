@@ -1500,8 +1500,8 @@ function routes(template: Template): boolean {
   return template.calls.some((call) => visit(call.to) || visit(call.value) || (call.data !== 'empty' && call.data.args.some(visit)));
 }
 
-/** A rule and every rule nested in it. */
-function rulesUnder(rule: Rule | undefined): Rule[] {
+/** A rule and every rule nested in it, the parts of packed bytes and the members of a signed message included. */
+export function rulesUnder(rule: Rule | undefined): Rule[] {
   if (rule === undefined) return [];
   const nested = (): readonly Rule[] => {
     switch (rule.kind) {
@@ -1526,7 +1526,7 @@ function rulesUnder(rule: Rule | undefined): Rule[] {
 }
 
 /** Every rule of the template's nonce and calls, nested ones included. */
-const callRules = (template: Template): Rule[] =>
+export const callRules = (template: Template): Rule[] =>
   [template.nonce, ...template.calls.flatMap((call) => [call.to, call.value, ...(call.data === 'empty' ? [] : call.data.args)])].flatMap(rulesUnder);
 
 /** The card amount fields a share price bound or an `atLeast` compares with: card fields only, never a path. */

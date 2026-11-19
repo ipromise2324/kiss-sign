@@ -53,6 +53,7 @@ const EXPECTED: readonly Shape[] = [
   shape('0 \\(call\\)', () => '0（call）'),
   shape('no data', () => '沒有資料'),
   shape('an official MultiSend for a delegatecall', () => '官方的 MultiSend（delegatecall 只能呼叫它）'),
+  shape('no MultiSend call with to = 0, which MultiSend 1\\.5\\.0 sends to the Safe itself', () => '沒有 to = 0 的 MultiSend 呼叫（MultiSend 1.5.0 會把它送給 Safe 自己）'),
   shape('no call', () => '沒有呼叫'),
   ...VALUE,
 ];
@@ -63,6 +64,7 @@ const ACTUAL: readonly Shape[] = [
   shape('(\\d+) bytes', (n) => `${n} 位元組`),
   shape('(\\d+) items', (n) => `${n} 項`),
   shape(`a call to (${ADDRESS})`, (address) => `呼叫 ${address}`),
+  shape('a call with to = 0', () => 'to = 0 的呼叫'),
   shape('missing', () => '缺少'),
   shape(DECODE_KIND, (kind) => DECODE[kind] as string),
   ...VALUE,
@@ -74,6 +76,7 @@ const FLOOR: readonly Shape[] = [
   shape('(\\S+) is (\\S+), must be zero', (name, value) => `${name} 是 ${value}，必須是零`),
   shape(`a delegatecall to (${ADDRESS}) inside the MultiSend`, (address) => `MultiSend 裡有對 ${address} 的 delegatecall`),
   shape(`a delegatecall to (${ADDRESS}), which is not an official MultiSend`, (address) => `對 ${address} 的 delegatecall，而它不是官方的 MultiSend`),
+  shape('a MultiSend call with to = 0 at byte (\\d+) is refused \\(MultiSend 1\\.5\\.0 sends it to the Safe itself\\)', (at) => `第 ${at} 位元組有 to = 0 的 MultiSend 呼叫，不接受（MultiSend 1.5.0 會把它送給 Safe 自己）`),
   shape(`the MultiSend data does not decode \\(${DECODE_KIND} at byte (\\d+)\\)`, (kind, at) => `MultiSend 的資料無法解碼（第 ${at} 位元組${DECODE[kind]}）`),
   shape('a call to the Safe itself with data \\(selector (0x[0-9a-f]{8})\\)', (selector) => `帶資料呼叫 Safe 自己（selector ${selector}）`),
   shape(`(\\S+) of token (${ADDRESS}) to spender (${ADDRESS}), amount (\\d+)`, (signature, token, spender, amount) => `代幣 ${token} 給 spender ${spender} 的 ${signature}，數量 ${amount}`),

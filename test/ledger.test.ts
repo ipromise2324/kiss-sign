@@ -300,8 +300,8 @@ const UNCOVERED = { call: 2, from: 'morpho-blue', to: 'usdc', kind: 'transferFro
 
 const ROWS: readonly Row[] = [
   { what: 'a flow line every traced transaction shows', change: {}, traced: { lines: [{ seen: 2, of: 2 }], uncovered: [] }, id: 'flow.1', kind: 'agrees', state: 'ok' },
-  { what: 'a flow line no traced transaction shows', change: {}, traced: { lines: [{ seen: 0, of: 2 }], uncovered: [] }, id: 'flow.1', kind: 'line-not-seen', state: 'bad' },
-  { what: 'a flow line only some traced transactions show', change: {}, traced: { lines: [{ seen: 1, of: 2 }], uncovered: [] }, id: 'flow.1', kind: 'line-partly-seen', state: 'warn' },
+  { what: 'a flow line no traced transaction shows', change: {}, traced: { lines: [{ seen: 0, of: 2 }], uncovered: [] }, id: 'flow.1', kind: 'line-not-every', state: 'bad' },
+  { what: 'a flow line only some traced transactions show', change: {}, traced: { lines: [{ seen: 1, of: 2 }], uncovered: [] }, id: 'flow.1', kind: 'line-not-every', state: 'bad' },
   { what: 'a money call in a trace no line covers', change: {}, traced: { lines: [], uncovered: [UNCOVERED] }, id: 'trace.2.morpho-blue.usdc.transferFrom', kind: 'money-uncovered', state: 'warn' },
   { what: 'the address next to its label', change: {}, id: 'vault/source.page', kind: 'agrees', state: 'ok' },
   { what: 'a source domain DefiLlama lists another site for', change: { protocol: { ...BASE.protocol!, url: new URL('https://other.org') } }, id: 'vault/source.site', kind: 'site-differs', state: 'bad' },

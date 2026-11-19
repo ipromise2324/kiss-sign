@@ -1284,7 +1284,7 @@ function reviewTitle(result: Result, context: Context): { readonly title: Inline
     return { title: w.fixtureTitle({ code: result.about.name }, words.title), why: [`${words.why}${detail}`] };
   }
   if (result.about.kind === 'flow') {
-    const counted = result.finding.kind === 'line-partly-seen' ? ` ${w.seenIn(result.finding.seen, result.finding.of)}` : result.finding.kind === 'line-not-seen' ? ` ${w.seenIn(0, result.finding.of)}` : '';
+    const counted = result.finding.kind === 'line-not-every' ? ` ${w.seenIn(result.finding.seen, result.finding.of)}` : '';
     return { title: [w.flowLineTitle(result.about.line, words.title)], why: [`${words.why}${counted}`] };
   }
   if (result.about.kind === 'money') {
@@ -1520,6 +1520,8 @@ function addressSection(context: Context): Section[] {
   ];
 }
 
+const SELF_LOGGED = 'Safe';
+
 /** A search anchor in words: a mint or burn of a vault's shares is a deposit or a withdrawal, of any other token only a mint or burn. */
 function anchorWords(query: PastTxsRecording['query'], token: RegistryEntry | undefined, w: Words): string {
   const { anchor } = query;
@@ -1695,7 +1697,7 @@ function pastSection(context: Context): Section {
     const same = [...run.found.values()].every((s) => s.length === 2);
     return {
       file,
-      count: w.searchCount(nameOf(query.token), anchorWords(query, registry.byAddress.get(query.token.toLowerCase() as Address), w), run.found.size, run.studies.length),
+      count: w.searchCount(query.token === undefined ? SELF_LOGGED : nameOf(query.token), anchorWords(query, query.token === undefined ? undefined : registry.byAddress.get(query.token.toLowerCase() as Address), w), run.found.size, run.studies.length),
       search: query.anchor === 'event' ? w.searchEtherscanOnly({ num: `${etherscan}` }) : w.searchSame(same, { num: `${alchemy} ${same ? '=' : '≠'} ${etherscan}` }),
       blocks,
       others,
@@ -1767,6 +1769,7 @@ function sameShape(context: Context): Inline {
   const searched = [
     ...new Set(
       context.inputs.pastTxs.map(({ query }) => {
+        if (query.token === undefined) return w.searched(SELF_LOGGED, anchorWords(query, undefined, w));
         const token = registry.byAddress.get(query.token.toLowerCase() as Address);
         return w.searched(token?.name ?? checksumAddress(query.token as Address), anchorWords(query, token, w));
       }),

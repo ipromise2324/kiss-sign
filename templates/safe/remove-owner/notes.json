@@ -14,6 +14,10 @@
       "zh-TW": "不動任何資產，但改的是誰能動這個 Safe：確認移除的是對的人，剩下的人數夠用。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "Every misfit batches several owner changes, some with enableModule, which kiss-sign refuses. A removal of one owner through MultiSend 1.5.0 fits.",
+    "zh-TW": "不合的都是一次改好幾個 owner，有的還加 enableModule，kiss-sign 不接受。透過 MultiSend 1.5.0 只移除一個 owner 的交易符合模板。"
+  },
   "flow": [],
   "protocols": {},
   "judgments": [

@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { selectorOf } from '../../src/decode/abi.ts';
 import { encodeCall, uintWord } from '../../src/decode/codec.ts';
-import { MULTISEND, unwrapSafeTx } from '../../src/decode/multisend.ts';
+import { MULTISEND, OFFICIAL_MULTISEND, unwrapSafeTx } from '../../src/decode/multisend.ts';
 import type { Unwrapped } from '../../src/decode/multisend.ts';
 import { checkFloor } from '../../src/floor/floor.ts';
 import type { FloorAllowed, FloorResult, SettingsChange } from '../../src/floor/floor.ts';
@@ -88,6 +88,15 @@ test('a MultiSend that does not decode is refused, not passed', () => {
   const result = checkFloor({ ...deposit, data: `${deposit.data}00` as Hex });
   assert.deepEqual(rules(result), ['delegatecall safeTx']);
   assert.match(details(result)[0]!, /does not decode/);
+});
+
+test('a MultiSend call with to = 0 is refused in every official MultiSend, since MultiSend 1.5.0 sends it to the Safe itself', () => {
+  const zeroTo = multiSend({ to: `0x${'0'.repeat(40)}` as Address, data: calldata('enableModule(address)', OTHER) });
+  for (const { address } of OFFICIAL_MULTISEND) {
+    const result = checkFloor({ ...zeroTo, to: address }, DECLARES_CHANGE);
+    assert.deepEqual(rules(result), ['delegatecall safeTx'], address);
+    assert.match(details(result)[0]!, /a MultiSend call with to = 0 at byte \d+ is refused/, address);
+  }
 });
 
 test('a call to the Safe with data is refused unless it changes the owners or threshold: modules, guards, handlers, setup, singleton', () => {

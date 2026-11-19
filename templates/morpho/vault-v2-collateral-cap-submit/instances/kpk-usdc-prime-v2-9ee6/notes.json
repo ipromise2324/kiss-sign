@@ -6,6 +6,10 @@
       "zh-TW": "可以用。KPK 文件、CoinGecko 和工廠都確認這個 vault。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "1 submission of this shape names a collateral outside the registry. Misfits submit market or adapter caps, several in one transaction, or other settings.",
+    "zh-TW": "有 1 筆這個形狀的提交，抵押品不在 registry 裡。不合的是提交市場或轉接合約的上限、一筆交易提交好幾個，或提交其他設定。"
+  },
   "judgments": [
     {
       "text": {

@@ -93,14 +93,21 @@ Options:
   --instance-of <instance>  report the template for this one instance (--vault and --vault-of were
                             removed and are refused)
   --record                  also write the answers, an ABI case for each entry testdata/abi/ lacks,
-                            and the report files from the recordings alone
-  --offline                 print the Markdown report from the recordings, reading nothing live
-  --render                  write the report files from the recordings, reading nothing live
-  --compare                 read every fact live again, print each that differs from the committed
-                            report and exit 1 on any (see Rules); it first refuses, exiting 1, a
-                            branch that changes the verdict core beside templates/ or registry/,
-                            and prints PROGRAM CHANGE for the program files it changes and AI TEXT
-                            for each notes.json it changes against origin/main
+                            and then the report files from the recordings alone; the HTML step
+                            refuses notes.json that lacks a review the results need, after the
+                            recordings and report.generated.md are written, so write the reviews
+                            and run --render
+  --offline                 print the Markdown report from the recordings, reading no fact live
+  --render                  write the report files from the recordings, reading no fact live
+  --compare                 read the facts live again (the past-transaction search and each signed
+                            message's answer still come from the recordings), print each that
+                            differs from the committed report, check each HTML report byte for
+                            byte against what this code writes, and exit 1 on any difference (see
+                            Rules); it first refuses, exiting 1, a branch that changes the verdict
+                            core beside templates/ or registry/, or beside the program gate, and
+                            prints PROGRAM CHANGE for the program files it changes, gate files
+                            among them, and AI TEXT for each notes.json it changes against
+                            origin/main
   --data <git ref>          with --compare: take templates/, registry/ and testdata/ from that ref
                             and run the code checked out; the signer runs it from main as
                             --compare --data origin/<branch> before merging
@@ -111,8 +118,10 @@ report.generated.html the program wrote before it wrote one file per language.
 Writes: with --record, testdata/report/<protocol>-<operation>.json (or <protocol>-<operation>/
 <instance>.json), testdata/abi/<entry>.json, and in the report's folder report.generated.md and,
 for a template with notes.json, report.generated.en.html and report.generated.zh-TW.html in each
-language the notes hold; --render writes the same report files; otherwise nothing. The folder is
-templates/<protocol>/<operation>/, or instances/<instance>/ under it.
+language the notes hold; --render writes report.generated.md and the HTML pages; otherwise nothing.
+The folder is templates/<protocol>/<operation>/, or instances/<instance>/ under it. Every mode
+downloads into vendor/ any pinned solc or Public Suffix List that is missing, and a live read the
+ERC-7730 archive, before it reads a fact.
 Keys: ALCHEMY_API_KEY and ETHERSCAN_API_KEY for a live read (not --offline or --render), from the
 environment or $KISS_SIGN_HOME/.env. GITHUB_TOKEN is optional: sent only to api.github.com, it
 raises GitHub's limit from 60 to 5,000 requests an hour and changes no answer.
