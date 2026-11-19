@@ -31,8 +31,10 @@ protocol, an sdk tarball's file and provenance, and what the same label binds in
 of each pinned place. With ALCHEMY_API_KEY and ETHERSCAN_API_KEY it also proves each entry's
 creation and names other entries of the protocol the same sender deployed. It ends with the sites
 each protocol's sources use. With no names it checks every entry. Each disagreement, missing
-listing, or missing Public Suffix List prints as FINDING for the signer to judge; nothing fails. A
-read with no answer is asked again after each pause and prints as UNVERIFIABLE if it never answers.
+listing, or missing Public Suffix List prints as FINDING for the signer to judge, and a place the
+program reads that lists nothing to compare prints as not listed, neither evidence nor a
+disagreement; nothing fails. A read with no answer is asked again after each pause and prints as
+UNVERIFIABLE if it never answers, and then --record writes nothing and exits 1.
 It downloads a missing or changed Public Suffix List first, as pnpm fetch-psl does.
 
 Options:
