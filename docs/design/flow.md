@@ -221,13 +221,11 @@ Each picture is drawn from an HTML source in `docs/diagrams/`, and `sh docs/diag
 4. **Study past transactions.**
    The AI looks at real transactions of the same operation to learn each field's role and the operation's normal shape.
    The program (`pnpm past-txs`) finds them through Alchemy's Transfers API and Etherscan, decodes each with the template, and counts, per field, the transactions and senders that held its rule; the AI reads the counts and every misfit.
-   `--record` keeps of the search only what the report replays, not the answers: the whole-year result, each window as asked and as searched with how many transactions it found and studied, each sampled transaction by hash in the order it was studied, with the sources that found it and, with no `--token`, the contracts that logged it, and every other transaction found only as a count per set of sources that found it; a replay studies the sampled transactions again and counts the others under hashes of its own that no real one holds, and names them as not sampled.
-   Of the chain reads it keeps each block cut to its header.
-   A recording made before this kept every search answer, cut to what the search reads, and still replays from them.
-   The configured Safe never reaches a recording, not by its address and not by the hash of a transaction that touches it.
-   Anyone can run a search again, so a transaction left out of a recording would show as a gap in its counts or its sample and point at the Safe; `--record` therefore writes nothing when the search found a transaction the Safe sent or is named in: one whose search entry names it, or a sampled one it sent, whose input or receipt logs name it, or whose transaction or receipt the providers do not agree on, and it says not to narrow the blocks or `--max-txs` to step around it, since blocks chosen to avoid the Safe's transaction would point at it too, but to tell the signer.
-   A transaction of the Safe's the search found but did not sample is never read, and the recording holds it only in a count, like every other unsampled one.
-   A recording that would still name the Safe, or hold the hash of any transaction the run found and did not sample, is refused too, so a read that carries one through another channel stops the recording rather than leak.
+   `--record` keeps of each search answer only what the search reads: of each list of transfers each one's transaction hash, block, `from` and `to` (and an Etherscan log's topics, and with no `--token` the contract that logged it), of an answer over one page only that it is over, and any other answer whole.
+   The configured Safe's address appears in no recording; its transactions may.
+   The run leaves out of the study every transaction the Safe sent or is named in: one whose search entry names it, and a sampled one it sent or whose input or receipt logs name it.
+   In the search answers `--record` writes zeros in place of the Safe's address, so each transaction the search found keeps its place and hash, the Safe's own included, and it lists the transactions the run left out, those found and those sampled, so a replay leaves out the same and samples the same without the address.
+   It drops every chain read, signed message and call trace that holds the address, which are the reads that left a transaction out, and refuses a recording that still holds it.
    These teach the AI.
    They prove nothing about safety.
    - **Anchor:** an ERC-20 `Transfer` of one token marks each transaction: a mint for a vault deposit, a burn for a withdrawal, or any transfer.

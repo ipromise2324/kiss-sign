@@ -7,23 +7,21 @@ import { after, test } from 'node:test';
 import { unreadRefusal } from '../src/chain/https.ts';
 import { createReader } from '../src/chain/reader.ts';
 import type { Reader } from '../src/chain/reader.ts';
-import { REPLAY_ENDPOINTS, recordingTransport, replayReader, replayTransport } from '../src/chain/recording.ts';
+import { REPLAY_ENDPOINTS, replayReader, replayTransport } from '../src/chain/recording.ts';
 import type { Transport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import type { Registry } from '../src/registry.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs, spreadOf } from '../src/research/past-txs.ts';
-import { parseSearch, scrubRecording, searchText } from '../src/research/recording.ts';
-import type { SearchText } from '../src/research/recording.ts';
+import { scrubRecording } from '../src/research/recording.ts';
 import { replayMessages } from '../src/research/messages.ts';
 import { pastTxsRecordings, pastTxsSampling } from '../src/research/report.ts';
 import type { Subject } from '../src/research/report.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { anchorEvent, recordingAsk, replayAsk, searchBoth } from '../src/research/sources.ts';
 import type { Anchor, AnchorKind, Ask, SourceExchange, SourceRequest } from '../src/research/sources.ts';
-import type { Address } from '../src/safe/types.ts';
+import type { Address, Hex } from '../src/safe/types.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
-import type { TxStudy } from '../src/research/study.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
 
@@ -231,7 +229,7 @@ test('a whole year holding more than one page of a source falls back to the wind
   assert.equal(text.replace(/^whole year: .*\n/m, ''), await report({ recorded: windowed }));
 });
 
-const recordedRun = (recorded: PastTxsRecording) => {
+const recordedRun = (recorded: PastTxsRecording, sources: readonly SourceExchange[] = recorded.sources) => {
   const { query } = recorded;
   return pastTxs(
     {
@@ -239,36 +237,23 @@ const recordedRun = (recorded: PastTxsRecording) => {
       anchor: { ...(query.token === undefined ? {} : { token: query.token as Address }), kind: 'event', event: anchorEvent(query.event as string) },
       sampling: pastTxsSampling(query),
     },
-    { ask: replayAsk([]), reader: replayReader(recorded.exchanges), registry, readMessage: replayMessages([]), exclude: undefined, maxTxs: query.maxTxs, recorded: parseSearch(recorded.search as SearchText) },
+    { ask: replayAsk(sources), reader: replayReader(recorded.exchanges), registry, readMessage: replayMessages([]), exclude: undefined, maxTxs: query.maxTxs },
   );
 };
 
-test('a year whose every answer fits one page is searched whole in one request, and its recording replays the year with the studied transactions alone', async () => {
+test('a year whose every answer fits one page is searched whole in one request, and sampled evenly by block', async () => {
   const year: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'whole-year.json'));
   assert.equal(year.query.wholeYear, true);
-  assert.deepEqual(year.sources, []);
-  const text = renderPastTxs(await recordedRun(year), registry);
-  assert.match(text, /^whole year: blocks 23810401 to 26438400, every source's answer in one page, so the search covers the year with no gap; at most 12 studied, taken evenly in block order\n {2}blocks 23810401 to 26438400: 16 found, 12 studied\nsources: etherscan found 16; /m);
+  assert.deepEqual(year.sources.map(({ request }) => (request.source === 'etherscan' ? [request.query.fromBlock, request.query.toBlock] : [])), [['23810401', '26438400']]);
+  const run = await recordedRun(year);
+  const text = renderPastTxs(run, registry);
+  assert.match(text, /^whole year: blocks 23810401 to 26438400, every source's answer in one page, so the search covers the year with no gap; at most 12 studied, taken evenly in block order\n {2}blocks 23810401 to 26438400: 16 found, 12 studied\nsources: /m);
   assert.doesNotMatch(text, /^windows:/m);
-  assert.match(text, /^senders, of 12 transactions studied:$/m);
-});
-
-test('the whole year is asked in one request and sampled at even steps in block order, whatever order the source lists it in', async () => {
-  const hash = (n: number) => `0x${n.toString(16).padStart(64, '0')}`;
-  const blocks = Array.from({ length: 16 }, (_, i) => (i * 7) % 16);
-  const asked: SourceRequest[] = [];
-  const ask: Ask = async (request) => {
-    asked.push(request);
-    return { status: '1', message: 'OK', result: blocks.map((b) => ({ transactionHash: hash(b + 1), blockNumber: `0x${(1000 + b).toString(16)}`, topics: [] })) };
-  };
-  const year: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'whole-year.json'));
-  const run = await pastTxs(
-    { template: loadTemplate(ROOT, year.query.template, registry), anchor: { token: year.query.token as Address, kind: 'event', event: anchorEvent(year.query.event as string) }, sampling: { ...DEFAULT_SPREAD, head: 26444119n } },
-    { ask, reader: replayReader([]), registry, readMessage: replayMessages([]), exclude: undefined, maxTxs: 12 },
-  );
-  assert.deepEqual(asked.map((r) => (r.source === 'etherscan' ? [r.query.fromBlock, r.query.toBlock] : [])), [['23810401', '26438400']]);
-  assert.deepEqual(run.search.sampled.map((s) => s.hash), Array.from({ length: 12 }, (_, i) => hash(Math.floor((i * 16) / 12) + 1)));
-  assert.deepEqual(run.search.unsampled, [{ sources: ['etherscan'], count: 4 }]);
+  const logs = (year.sources[0]?.answer as { result: { transactionHash: string; blockNumber: string }[] }).result;
+  const firstBlock = new Map<string, number>();
+  for (const log of logs) if (!firstBlock.has(log.transactionHash)) firstBlock.set(log.transactionHash, Number(log.blockNumber));
+  const byBlock = [...firstBlock.keys()].sort((a, b) => (firstBlock.get(a) as number) - (firstBlock.get(b) as number));
+  assert.deepEqual(new Set(run.studies.map((s) => s.hash)), new Set(Array.from({ length: 12 }, (_, i) => byBlock[Math.floor((i * 16) / 12)])));
 });
 
 test('the report takes a recording that asked the whole year first, or searched an event with no token, and refuses a transfer anchor with no token', () => {
@@ -297,9 +282,11 @@ test('an event searched over every contract is studied only where the sending Sa
   assert.match(text, /^not studied, the event logged only by another contract than the sender: 1, e\.g\. 0x2b854e652f87b788a5220cfac9ad5cdc7488e497c65b4a1c4b249df5fb8582e0$/m);
   assert.match(text, /^fit the template's shape: 1 transaction from 1 Safe; misfits: 1 from 1 Safe$/m);
   assert.match(text, new RegExp(`^examples that fit: ${fit}$`, 'm'));
-  const search = anyContract.search as SearchText;
-  const otherLogger = { ...anyContract, search: { ...search, sampled: search.sampled.map((s) => (s.hash === fit ? { ...s, emitters: [`0x${'5a'.repeat(20)}`] } : s)) } };
-  const moved = renderPastTxs(await recordedRun(otherLogger), registry);
+  const otherLogger = anyContract.sources.map(({ request, answer }) => {
+    const { result } = answer as { result: { transactionHash: string; address: string }[] };
+    return { request, answer: { ...(answer as object), result: result.map((log) => (log.transactionHash === fit ? { ...log, address: `0x${'5a'.repeat(20)}` } : log)) } };
+  });
+  const moved = renderPastTxs(await recordedRun(anyContract, otherLogger), registry);
   assert.match(moved, new RegExp(`^not studied, the event logged only by another contract than the sender: 2, e\\.g\\. .*${fit}`, 'm'));
   assert.match(moved, /^fit the template's shape: 0 transactions from 0 Safes; misfits: 1 from 1 Safe$/m);
 });
@@ -307,6 +294,7 @@ test('an event searched over every contract is studied only where the sending Sa
 test('the configured Safe is left out of every count and example, and never printed', async () => {
   const safe = safeOf(FIT);
   const text = await report({ exclude: safe });
+  assert.match(text, /^sources: alchemy found 62, etherscan found 62; both 62, /m);
   assert.match(text, /^ {2}proven Safe: 0, from 0 Safes$/m);
   assert.doesNotMatch(text, new RegExp(`${safe.slice(2)}|${FIT}|${MISFIT}`, 'i'));
 });
@@ -335,80 +323,64 @@ test('a transaction a provider would not serve is unreadable for that reason, ap
   assert.match(text, new RegExp(`^ {2}1 unreadable, eth_getTransactionByHash: alchemy and drpc disagree: ${MISFIT}$`, 'm'));
 });
 
-/** A reader over `exchanges` that keeps each read it made, as `--record` does. */
-function readsKept(exchanges: PastTxsRecording['exchanges']) {
-  const read = recordingTransport(replayTransport(exchanges, REPLAY_ENDPOINTS), REPLAY_ENDPOINTS);
-  return { reader: createReader(REPLAY_ENDPOINTS, read.transport, { retryPausesMs: [] }), exchanges: () => read.exchanges().filter((e) => REPLAY_ENDPOINTS.every((p) => p.provider in e.answers)) };
-}
-
-/**
- * The search of `any-contract.json` run again from an Etherscan answer that lists, after each transaction the recording
- * sampled, one more that `maxTxs` 4 leaves unsampled, and first the `extra` logs.
- */
-async function searchAgain(exclude: Address | undefined, extra: readonly { hash: string; emitter: string }[] = []) {
-  const anyContract: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'any-contract.json'));
-  const { query } = anyContract;
-  const event = anchorEvent(query.event as string);
-  const log = (hash: string, emitter: string) => ({ transactionHash: hash, address: emitter, topics: [event.topic], blockNumber: '0x1' });
-  const sampled = (anyContract.search as SearchText).sampled;
-  const unsampled = sampled.map((_, i) => `0x${'c0'.repeat(31)}${i.toString(16).padStart(2, '0')}`);
-  const logs = [...extra.map((e) => log(e.hash, e.emitter)), ...sampled.flatMap((s, i) => [log(s.hash, s.emitters[0] as string), log(unsampled[i] as string, `0x${'77'.repeat(20)}`)])];
-  const reads = readsKept(anyContract.exchanges);
-  const run = (reader: Reader, safe: Address | undefined, recorded?: PastTxsRecording) =>
+test("a recording keeps the configured Safe's found transactions with its address removed, and replays the run that left them out", async () => {
+  const safe = safeOf(FIT);
+  const { query } = recording;
+  const run = (exclude: Address | undefined, recorded: PastTxsRecording) =>
     pastTxs(
-      { template: loadTemplate(ROOT, query.template, registry), anchor: { kind: 'event', event }, sampling: pastTxsSampling(query) },
-      { ask: async () => ({ status: '1', message: 'OK', result: logs }), reader, registry, readMessage: replayMessages([]), exclude: safe, maxTxs: 4, ...(recorded === undefined ? {} : { recorded: parseSearch(recorded.search as SearchText) }) },
+      { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: pastTxsSampling(query) },
+      {
+        ask: replayAsk(recorded.sources),
+        reader: replayReader(recorded.exchanges),
+        registry,
+        readMessage: replayMessages([]),
+        exclude,
+        maxTxs: query.maxTxs,
+        excludedByRecording: { found: new Set(recorded.excluded?.found ?? []), sampled: new Set(recorded.excluded?.sampled ?? []) },
+      },
     );
-  const live = await run(reads.reader, exclude);
-  const record = (safe: Address) => scrubRecording({ ...anyContract, sources: [], search: searchText(live.search), exchanges: reads.exchanges() }, [safe], live);
-  return { anyContract, live, unsampled, record, replay: (written: PastTxsRecording) => run(replayReader(written.exchanges), undefined, written) };
-}
-
-const FAKE_SAFE = `0x${'5a'.repeat(20)}` as Address;
-
-test('a recording names no transaction it did not sample, only counts them, so an unsampled one, never read, is not identified, and it replays the same', async () => {
-  const { anyContract, live, unsampled, record, replay } = await searchAgain(FAKE_SAFE);
-  assert.deepEqual(live.search.sampled.map((s) => s.hash), (anyContract.search as SearchText).sampled.map((s) => s.hash));
-  assert.deepEqual(live.search.unsampled, [{ sources: ['etherscan'], count: 4 }]);
-  const written = record(FAKE_SAFE);
-  const text = JSON.stringify(written).toLowerCase();
-  assert.ok(!text.includes(FAKE_SAFE.slice(2)));
-  for (const hash of unsampled) assert.ok(!text.includes(hash), `${hash} is recorded`);
-  assert.equal(renderPastTxs(await replay(written), registry), renderPastTxs(live, registry));
+  const live = await run(safe, recording);
+  assert.ok(live.excluded.found.has(FIT as Hex));
+  const written = scrubRecording(recording, [safe], live.excluded);
+  const text = JSON.stringify(written);
+  assert.doesNotMatch(text, new RegExp(safe.slice(2), 'i'));
+  assert.ok(text.includes(FIT), 'the Safe\'s transaction is kept by hash');
+  assert.deepEqual(written.excluded?.found, [...live.excluded.found]);
+  assert.equal(renderPastTxs(await run(undefined, written), registry), renderPastTxs(live, registry));
 });
 
-test('a search that found a transaction the configured Safe sent or is named in is not recorded, sampled or not, since the gap it leaves would point at it', async () => {
-  const named = await searchAgain(FAKE_SAFE, [{ hash: `0x${'d0'.repeat(32)}`, emitter: FAKE_SAFE }]);
-  assert.equal(named.live.excluded.size, 1);
-  assert.throws(() => named.record(FAKE_SAFE), /found 1 transaction\(s\) the configured Safe sent or is named in, or that could not be checked, and a recording would point at them; nothing written/);
-  const plain = await searchAgain(undefined);
-  const bySafe = plain.live.studies.find((s) => 'sender' in s && s.sender.kind === 'safe') as Extract<TxStudy, { kind: 'fit' | 'misfit' }>;
-  const sent = await searchAgain(bySafe.sender.address);
-  assert.ok(sent.live.excluded.has(bySafe.hash));
-  assert.throws(() => sent.record(bySafe.sender.address), /a recording would point at them; nothing written/);
-});
-
-test('a recording keeps each block as its header only, and refuses one that still names the configured Safe or a transaction it did not sample', async () => {
-  const { anyContract, live, unsampled, record } = await searchAgain(undefined);
-  const block = { method: 'eth_getBlockByNumber', params: ['0x1', false], answers: { alchemy: { number: '0x1', hash: `0x${'ab'.repeat(32)}`, timestamp: '0x1', gasLimit: '0x1', mixHash: `0x${'cd'.repeat(32)}`, transactions: unsampled } } };
-  const trimmed = scrubRecording({ ...anyContract, sources: [], search: searchText(live.search), exchanges: [block] as unknown as PastTxsRecording['exchanges'] }, [FAKE_SAFE], live);
-  assert.ok(!JSON.stringify(trimmed).includes(unsampled[0] as string));
-  assert.ok(record(FAKE_SAFE));
-  assert.throws(() => scrubRecording({ ...anyContract, sources: [], search: searchText(live.search), query: { ...anyContract.query, token: FAKE_SAFE } }, [FAKE_SAFE], live), /still names the configured Safe/);
-  const leaked = { ...anyContract, sources: [], search: searchText(live.search), messages: [{ url: 'https://example.org', answer: unsampled[0] }] };
-  assert.throws(() => scrubRecording(leaked as unknown as PastTxsRecording, [FAKE_SAFE], live), /still names a transaction the run did not sample/);
-});
-
-test('with a Safe configured, a transaction whose receipt the providers do not give is left out, since nothing shows it does not name the Safe', async () => {
-  const anyContract: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'any-contract.json'));
-  const noReceipts = anyContract.exchanges.filter((e) => e.method !== 'eth_getTransactionReceipt');
-  const run = (exclude: Address | undefined) =>
+test("a transaction the configured Safe sent, found without its address in the search, is left out after sampling and replays left out without a chain read", async () => {
+  const year: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'whole-year.json'));
+  const senders = year.exchanges.filter((e) => e.method === 'eth_getTransactionByHash').map((e) => (e.answers.alchemy as { to: string }).to.toLowerCase());
+  const safe = senders.find((to, i) => senders.indexOf(to) !== i) as Address;
+  const { query } = year;
+  const run = (exclude: Address | undefined, recorded: PastTxsRecording) =>
     pastTxs(
-      { template: loadTemplate(ROOT, anyContract.query.template, registry), anchor: { kind: 'event', event: anchorEvent(anyContract.query.event as string) }, sampling: pastTxsSampling(anyContract.query) },
-      { ask: replayAsk([]), reader: replayReader(noReceipts), registry, readMessage: replayMessages([]), exclude, maxTxs: anyContract.query.maxTxs, recorded: parseSearch(anyContract.search as SearchText) },
+      { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: 'event', event: anchorEvent(query.event as string) }, sampling: pastTxsSampling(query) },
+      {
+        ask: replayAsk(recorded.sources),
+        reader: replayReader(recorded.exchanges),
+        registry,
+        readMessage: replayMessages([]),
+        exclude,
+        maxTxs: query.maxTxs,
+        excludedByRecording: { found: new Set(recorded.excluded?.found ?? []), sampled: new Set(recorded.excluded?.sampled ?? []) },
+      },
     );
-  assert.equal((await run(FAKE_SAFE)).excluded.size, 4);
-  assert.equal((await run(undefined)).excluded.size, 0);
+  const live = await run(safe, year);
+  assert.ok(live.excluded.sampled.size > 0);
+  const written = scrubRecording(year, [safe], live.excluded);
+  assert.doesNotMatch(JSON.stringify(written), new RegExp(safe.slice(2), 'i'));
+  for (const hash of live.excluded.sampled) assert.ok(JSON.stringify(written.sources).includes(hash), 'its search entry keeps its place and hash');
+  assert.equal(renderPastTxs(await run(undefined, written), registry), renderPastTxs(live, registry));
+});
+
+test("a recording that still holds the configured Safe's address is refused", () => {
+  const safe = `0x${'5a'.repeat(20)}`;
+  const none = { found: new Set<never>(), sampled: new Set<never>() };
+  assert.throws(() => scrubRecording({ ...recording, query: { ...recording.query, token: safe } }, [safe], none), /still holds the configured Safe's address; nothing written/);
+  const upper = scrubRecording({ ...recording, sources: [{ request: recording.sources[0]!.request, answer: { transfers: [{ hash: FIT, from: `0x${'5A'.repeat(20)}`, to: safe }] } }] }, [safe], none);
+  assert.doesNotMatch(JSON.stringify(upper), /5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a/i);
 });
 
 test('a template whose trailer allowance is shorter than real use lists those transactions as misfits, with the reason', async () => {
