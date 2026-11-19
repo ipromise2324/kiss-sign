@@ -220,6 +220,27 @@ function functionFacts(descriptor: JsonObject): FunctionFact[] {
   });
 }
 
+export type MessageFact = {
+  /** Undefined when the format key is no EIP-712 type string. */
+  readonly primaryType: string | undefined;
+  /** keccak256 of the format key, the type hash a message of that type is signed under. */
+  readonly typeHash: Hex | undefined;
+  readonly fields: readonly FieldFact[];
+};
+
+const ENCODE_TYPE = /^([A-Za-z_][A-Za-z0-9_]*)\([A-Za-z0-9_[\] ,]*\)([A-Za-z_][A-Za-z0-9_]*\([A-Za-z0-9_[\] ,]*\))*$/;
+
+function messageFacts(descriptor: JsonObject): MessageFact[] {
+  const display = isObject(descriptor.display) ? descriptor.display : {};
+  const formats = isObject(display.formats) ? display.formats : {};
+  const definitions = isObject(display.definitions) ? display.definitions : {};
+  return Object.entries(formats).map(([key, format]) => {
+    const fields = fieldFacts(isObject(format) ? format.fields : undefined, definitions);
+    const primaryType = ENCODE_TYPE.exec(key)?.[1];
+    return { primaryType, typeHash: primaryType === undefined ? undefined : keccakHex(utf8ToBytes(key)), fields };
+  });
+}
+
 export type Scope = { readonly deployment: boolean; readonly factories: readonly Address[] };
 
 function mainnetAddresses(raw: Json | undefined): Address[] {
@@ -234,19 +255,34 @@ function mainnetAddresses(raw: Json | undefined): Address[] {
   });
 }
 
+/** A Safe's EIP712Domain holds only the chain id and the Safe, so a descriptor bound to any other domain field never applies to it. */
+const SAFE_DOMAIN_KEYS = new Set(['chainId', 'verifyingContract']);
+
 function scopeOf(descriptor: JsonObject, address: Address): Scope {
+  const context = isObject(descriptor.context) ? descriptor.context : {};
+  if (isObject(context.eip712)) {
+    const { domain, deployments } = context.eip712;
+    const safeDomain = domain === undefined || (isObject(domain) && Object.keys(domain).every((key) => SAFE_DOMAIN_KEYS.has(key)));
+    return { deployment: safeDomain && mainnetAddresses(deployments).includes(address), factories: [] };
+  }
   const contract = isObject(descriptor.context) && isObject(descriptor.context.contract) ? descriptor.context.contract : {};
   const factory = isObject(contract.factory) ? contract.factory : {};
   return { deployment: mainnetAddresses(contract.deployments).includes(address), factories: mainnetAddresses(factory.deployments) };
 }
 
-type Descriptor = { readonly path: string; readonly resolved: Resolved };
+type DescriptorKind = 'calldata' | 'eip712';
+type Descriptor = { readonly path: string; readonly kind: DescriptorKind; readonly resolved: Resolved };
 
-const isCalldataDescriptor = (path: string) =>
-  /^(registry\/[^/]+(\/[^/]+)*|ercs)\/calldata-[^/]*\.json$/.test(path) && !path.endsWith('.tests.json') && !/\/(tests|testsv2|sigs)\//.test(path);
+const DESCRIPTOR_FILE = /^(?:registry\/[^/]+(?:\/[^/]+)*|ercs)\/(calldata|eip712)-[^/]*\.json$/;
 
-function calldataDescriptors(snapshot: Snapshot): Descriptor[] {
-  return [...snapshot.files.keys()].filter(isCalldataDescriptor).sort().map((path) => ({ path, resolved: resolve(snapshot, path) }));
+function descriptorFiles(snapshot: Snapshot): Descriptor[] {
+  return [...snapshot.files.keys()]
+    .sort()
+    .flatMap((path) => {
+      const kind = DESCRIPTOR_FILE.exec(path)?.[1] as DescriptorKind | undefined;
+      if (kind === undefined || path.endsWith('.tests.json') || /\/(tests|testsv2|sigs)\//.test(path)) return [];
+      return [{ path, kind, resolved: resolve(snapshot, path) }];
+    });
 }
 
 export type AttestationStatus =
@@ -266,14 +302,15 @@ export type DescriptorFact = {
   readonly includes: readonly string[];
   readonly descriptorHash: Hex | undefined;
   readonly unresolved: string | undefined;
-  readonly functions: readonly FunctionFact[];
   readonly attestations: readonly AttestationFact[];
-};
+} & ({ readonly kind: 'calldata'; readonly functions: readonly FunctionFact[] } | { readonly kind: 'eip712'; readonly messages: readonly MessageFact[] });
 
 export type EntryReport = {
   readonly entry: RegistryEntry;
   readonly factory: { readonly name: string; readonly address: Address } | undefined;
   readonly index: string | undefined;
+  /** The files `index.eip712.json` names for the address, under any primary type. */
+  readonly eip712Index: readonly string[];
   readonly descriptors: readonly DescriptorFact[];
 };
 
@@ -450,7 +487,7 @@ async function checkOnChain(a: Attestation, chain: Chain): Promise<AttestationSt
   return { kind: 'valid', attester, expires: a.expirationTime, block };
 }
 
-const SIG_FILE = /^(.*)\/sigs\/(calldata-.*)\.eip155-1-(0x[0-9a-fA-F]{40})\.json$/;
+const SIG_FILE = /^(.*)\/sigs\/((?:calldata|eip712)-.*)\.eip155-1-(0x[0-9a-fA-F]{40})\.json$/;
 
 /** Attestation files that name this descriptor by file name, and any other whose data is its descriptorHash. */
 function attestationFiles(snapshot: Snapshot, path: string, descriptorHash: Hex | undefined): { file: string; parsed: Attestation | string }[] {
@@ -492,6 +529,16 @@ async function attestationFacts(snapshot: Snapshot, d: Descriptor, descriptorHas
   return facts;
 }
 
+function eip712IndexEntry(snapshot: Snapshot, address: Address): string[] {
+  const text = snapshot.files.get('index.eip712.json');
+  if (text === undefined) return [];
+  const index = parseJson(text);
+  const byType = isObject(index) ? index[`eip155:1:${address.toLowerCase()}`] : undefined;
+  if (!isObject(byType)) return [];
+  const paths = Object.values(byType).flatMap((list) => (Array.isArray(list) ? list.flatMap((item) => (isObject(item) && typeof item.path === 'string' ? [item.path] : [])) : []));
+  return [...new Set(paths)].sort();
+}
+
 function indexEntry(snapshot: Snapshot, address: Address): string | undefined {
   const text = snapshot.files.get('index.calldata.json');
   if (text === undefined) return undefined;
@@ -502,13 +549,14 @@ function indexEntry(snapshot: Snapshot, address: Address): string | undefined {
 
 /**
  * Finds every calldata descriptor that lists the entry's address among its mainnet deployments, or whose factory is the
- * factory the entry's registry `factory` attribute names. Each found descriptor's attestations are checked; the chain is
+ * factory the entry's registry `factory` attribute names, and every EIP-712 descriptor that lists it and binds no domain
+ * field a Safe's domain lacks. Each found descriptor's attestations are checked; the chain is
  * opened only when one passes the checks that need no chain.
  */
 export async function studyEntries(entries: readonly RegistryEntry[], registry: Registry, snapshot: Snapshot, chain: () => Promise<ChainAccess>): Promise<EntryReport[]> {
   let opened: Promise<ChainAccess> | undefined;
   const once = () => (opened ??= chain());
-  const descriptors = calldataDescriptors(snapshot);
+  const descriptors = descriptorFiles(snapshot);
   const reports: EntryReport[] = [];
   for (const entry of entries) {
     const factoryName = entry.attributes.factory;
@@ -521,26 +569,28 @@ export async function studyEntries(entries: readonly RegistryEntry[], registry: 
       const byFactory = factory !== undefined && scope.factories.includes(factory.address);
       if (!scope.deployment && !byFactory) continue;
       const descriptorHash = doc === undefined ? undefined : keccakHex(utf8ToBytes(jcs(doc)));
+      const shape =
+        d.kind === 'calldata' ? { kind: d.kind, functions: doc === undefined ? [] : functionFacts(doc) } : { kind: d.kind, messages: doc === undefined ? [] : messageFacts(doc) };
       facts.push({
         path: d.path,
+        ...shape,
         scope,
         fileSha256: createHash('sha256').update(snapshot.files.get(d.path)!, 'utf8').digest('hex'),
         includes: d.resolved.kind === 'resolved' ? d.resolved.includes : [],
         descriptorHash,
         unresolved: d.resolved.kind === 'unresolved' ? d.resolved.why : undefined,
-        functions: doc === undefined ? [] : functionFacts(doc),
         attestations: await attestationFacts(snapshot, d, descriptorHash, once),
       });
     }
-    reports.push({ entry, factory, index: indexEntry(snapshot, entry.address), descriptors: facts });
+    reports.push({ entry, factory, index: indexEntry(snapshot, entry.address), eip712Index: eip712IndexEntry(snapshot, entry.address), descriptors: facts });
   }
   return reports;
 }
 
 /** Descriptors scoped by a factory: ERC-7730 applies them to any contract that factory deploys, and the index omits them. */
 function factoryScoped(snapshot: Snapshot): { path: string; factories: readonly Address[] }[] {
-  return calldataDescriptors(snapshot).flatMap((d) => {
-    if (d.resolved.kind !== 'resolved') return [];
+  return descriptorFiles(snapshot).flatMap((d) => {
+    if (d.kind !== 'calldata' || d.resolved.kind !== 'resolved') return [];
     const { factories } = scopeOf(d.resolved.value, '0x0000000000000000000000000000000000000000' as Address);
     return factories.length === 0 ? [] : [{ path: d.path, factories }];
   });
@@ -569,14 +619,21 @@ function statusLine(s: AttestationStatus): string {
 
 function descriptorLines(d: DescriptorFact, report: EntryReport): string[] {
   const lines = [`  descriptor   ${printablePath(d.path)}`];
-  if (d.scope.deployment) lines.push('  applies      by exact address (context.contract.deployments lists it on chain 1)');
+  if (d.scope.deployment) lines.push(`  applies      by exact address (context.${d.kind === 'calldata' ? 'contract' : 'eip712'}.deployments lists it on chain 1)`);
   if (d.scope.factories.length > 0) {
     const ours = report.factory !== undefined && d.scope.factories.includes(report.factory.address);
     lines.push(
       `  applies      BY FACTORY ${d.scope.factories.map(checksumAddress).join(', ')}${ours ? ` (the registry's factory ${report.factory!.name})` : ''}: ERC-7730 applies it to ANY contract that factory deploys, including an attacker's`,
     );
   }
-  lines.push(`  index        ${report.index === undefined ? 'index.calldata.json has no entry for this address' : report.index === d.path ? 'index.calldata.json names this file' : `index.calldata.json names ${printablePath(report.index)}`}`);
+  if (d.kind === 'calldata') {
+    lines.push(`  index        ${report.index === undefined ? 'index.calldata.json has no entry for this address' : report.index === d.path ? 'index.calldata.json names this file' : `index.calldata.json names ${printablePath(report.index)}`}`);
+  } else {
+    const named = report.eip712Index;
+    lines.push(
+      `  index        ${named.length === 0 ? 'index.eip712.json has no entry for this address' : named.includes(d.path) ? 'index.eip712.json names this file' : `index.eip712.json names ${named.map(printablePath).join(', ')}`}`,
+    );
+  }
   for (const include of d.includes) lines.push(`  includes     ${printablePath(include)}`);
   lines.push(`  file         sha256 ${d.fileSha256} of the file's bytes`);
   lines.push(
@@ -584,11 +641,15 @@ function descriptorLines(d: DescriptorFact, report: EntryReport): string[] {
       ? `  hash         descriptorHash not computed: ${d.unresolved}`
       : `  hash         descriptorHash ${d.descriptorHash}: keccak256 of the RFC 8785 JSON of the descriptor with includes resolved (ERC-8176)`,
   );
-  for (const fn of d.functions) {
+  for (const fn of d.kind === 'calldata' ? d.functions : []) {
     lines.push(`  function     ${fn.selector ?? '<a format key that is no function signature>'}${fn.signature === undefined ? '' : ` ${fn.signature}`}`);
     lines.push(...fieldLines(fn.fields, '    '));
     for (const path of fn.excluded) lines.push(`    excluded   ${path}`);
     if (fn.notShown.length > 0) lines.push(`    no field   ${fn.notShown.join(', ')}`);
+  }
+  for (const message of d.kind === 'eip712' ? d.messages : []) {
+    lines.push(`  message      ${message.primaryType === undefined ? '<a format key that is no EIP-712 type>' : `${message.primaryType} typehash ${message.typeHash}`}`);
+    lines.push(...fieldLines(message.fields, '    '));
   }
   if (d.attestations.length === 0) lines.push('  attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash');
   for (const a of d.attestations) {
@@ -625,7 +686,7 @@ export type Erc7730Recording = {
   readonly commit: string;
   readonly fetched: string;
   readonly entries: readonly string[];
-  /** The files the run read, by path; `index.calldata.json` cut to the checked addresses. */
+  /** The files the run read, by path; `index.calldata.json` and `index.eip712.json` cut to the checked addresses. */
   readonly files: Readonly<Record<string, string>>;
   readonly chain: readonly unknown[];
 };
@@ -647,15 +708,16 @@ export function trimForRecording(snapshot: Snapshot, reports: readonly EntryRepo
     }
   }
   const files = new Map([...keep].sort().map((p) => [p, snapshot.files.get(p)!]));
-  const index = snapshot.files.get('index.calldata.json');
-  if (index !== undefined) {
+  for (const name of ['index.calldata.json', 'index.eip712.json']) {
+    const index = snapshot.files.get(name);
+    if (index === undefined) continue;
     const full = parseJson(index);
     const cut: JsonObject = {};
     for (const report of reports) {
       const key = `eip155:1:${report.entry.address.toLowerCase()}`;
       if (isObject(full) && full[key] !== undefined) cut[key] = full[key];
     }
-    files.set('index.calldata.json', `${JSON.stringify(cut, null, 2)}\n`);
+    files.set(name, `${JSON.stringify(cut, null, 2)}\n`);
   }
   return files;
 }
