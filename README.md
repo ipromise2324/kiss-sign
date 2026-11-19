@@ -89,12 +89,11 @@ You need:
 
 Set this up too: a second computer that runs no AI and no kiss-sign, so malware or an AI on your computer cannot also change what you compare. kiss-sign works without it, but then nothing outside your computer would catch a computer or an AI that was tampered with.
 
-On it:
+On it (macOS already has `curl` and `jq`; on Linux, install `jq` 1.7 or later):
 
 ```sh
 curl -L https://foundry.paradigm.xyz | bash   # installs foundryup; open a new terminal after it
 foundryup                                     # installs Foundry, for cast
-brew install jq                               # or your package manager's jq, 1.7 or later
 git clone https://github.com/ipromise2324/kiss-sign-check.git && cd kiss-sign-check
 ./check.sh init --safe 0x… --safe-version 1.4.1 --language en   # the same language you gave kiss-sign
 ```
