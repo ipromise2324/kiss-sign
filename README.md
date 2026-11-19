@@ -16,7 +16,7 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/readme/overview-dark.png">
-  <img src="docs/readme/overview.png" alt="kiss-sign at a glance. You say what you want. Once per operation, your AI checks each address against the protocol's own sites and finds it in at least two places, checks the ABIs, past transactions, the protocol's state and the code, and writes a report you review and merge. At every signing you fill a card; kiss-sign verify simulates the transaction on two providers and checks it against the card; a second computer decodes it on its own with check.sh; and you compare the hashes on your hardware wallet before signing.">
+  <img src="docs/readme/overview.png" alt="kiss-sign at a glance. You say what you want. Once per operation, your AI finds each address and kiss-sign confirms it in at least two places; kiss-sign proves each ABI; your AI writes the template and its call flow; kiss-sign studies a year of past transactions and your AI sets the bounds; kiss-sign reads the protocol's state, which your AI judges, and pins the code; kiss-sign writes a report, with your AI's notes marked, that you review and merge. At every signing you fill a card; kiss-sign verify simulates the transaction on two providers and checks it against the card; a second computer decodes it on its own with check.sh; and you compare the hashes on your hardware wallet before signing.">
 </picture>
 
 ## Contents

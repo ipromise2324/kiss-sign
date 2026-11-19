@@ -49,17 +49,20 @@
   :root.dark .lg img.mono-logo { filter: invert(1); background: transparent; }
 
   .chain .steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 28px; margin-top: 6px; }
-  .step { padding: 12px 12px 14px; display: grid; align-content: start; gap: 4px; }
-  .step .t { font-size: 21px; line-height: 1.2; }
-  .step .n { color: var(--ai); margin-right: 6px; }
-  .step .logos { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
-  .then { display: flex; align-items: center; gap: 60px; margin: 64px 0 0 0; padding-left: 380px; }
+  .step { display: flex; flex-direction: column; gap: 22px; }
+  .step .t { font-size: 21px; line-height: 1.2; min-height: 52px; }
+  .step .n { color: var(--muted); margin-right: 6px; }
+  .part { padding: 9px 10px 11px; font-size: 16px; line-height: 1.3; display: grid; gap: 3px; }
+  .part .who { font-size: 16px; margin-bottom: 0; }
+  .part .logos { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
+  .then { display: flex; align-items: center; gap: 60px; margin: 64px 0 0 0; padding-left: 360px; }
   .note { color: var(--muted); font-size: 15px; }
 
-  .report { width: 440px; }
+  .report { width: 470px; }
   .report ul { list-style: none; display: grid; grid-template-columns: 1fr; gap: 5px; font-size: 18px; }
   .report li::before { content: "✓ "; color: var(--prog); }
-  .report li.q::before { content: "? "; color: var(--ai); }
+  .report li.ai::before { content: "✎ "; color: var(--ai); }
+  .report li.q::before { content: "? "; color: var(--you); }
 
   .merge { width: 220px; font-size: 18px; }
 
@@ -111,22 +114,21 @@
     </div>
   </div>
 
-  <h2>The first time: your AI builds a template <b>once per operation</b></h2>
-  <div class="chain ai" id="chain">
-    <div class="who">Your AI runs kiss-sign's checks, one step at a time</div>
+  <h2>The first time: a template <b>once per operation</b></h2>
+  <div class="chain" id="chain">
     <div class="steps">
-      <div class="sk step" id="s1"><div class="t"><span class="n">1</span>Find official sites</div><div class="note">which domains are its own?</div><div class="logos"><span class="lg"><img src="logos/defillama.jpg" alt="">DefiLlama</span><span class="lg"><img src="logos/coingecko.png" alt="">CoinGecko</span><span class="lg"><img class="mono-logo" src="logos/bounty.svg" alt="">Immunefi</span><span class="lg"><img class="mono-logo" src="logos/github.svg" alt="">GitHub</span></div></div>
-      <div class="sk step" id="s2"><div class="t"><span class="n">2</span>Find each address</div><div class="note">in at least two places?</div><div class="logos"><span class="lg"><img class="mono-logo" src="logos/docs.svg" alt="">official site</span><span class="lg"><img class="mono-logo" src="logos/api.svg" alt="">API</span><span class="lg"><img src="logos/coingecko.png" alt="">CoinGecko</span><span class="lg"><img class="mono-logo" src="logos/factory.svg" alt="">factory</span><span class="lg"><img class="mono-logo" src="logos/bounty.svg" alt="">bounty</span><span class="lg"><img class="mono-logo" src="logos/package.svg" alt="">npm</span><span class="lg"><img class="mono-logo" src="logos/deployer.svg" alt="">deployer</span></div></div>
-      <div class="sk step" id="s3"><div class="t"><span class="n">3</span>Prove each ABI</div><div class="note">compiles to the code on chain?</div><div class="logos"><span class="lg"><img src="logos/etherscan.svg" alt="">Etherscan</span><span class="lg"><img class="mono-logo" src="logos/solidity.svg" alt="">solc</span></div></div>
-      <div class="sk step" id="s4"><div class="t"><span class="n">4</span>See how others did it</div><div class="note">what real senders send decides what the card asks</div><div class="logos"><span class="lg"><img src="logos/etherscan.svg" alt="">Etherscan</span><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span></div></div>
-      <div class="sk step" id="s5"><div class="t"><span class="n">5</span>Check the protocol now</div><div class="note">TVL, hacks, vault size, holders</div><div class="logos"><span class="lg"><img src="logos/defillama.jpg" alt="">DefiLlama</span><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span><span class="lg"><img src="logos/drpc.png" alt="">drpc</span></div></div>
-      <div class="sk step" id="s6"><div class="t"><span class="n">6</span>Pin the code it runs</div><div class="note">so an upgrade after your review is caught</div><div class="logos"><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span><span class="lg"><img src="logos/drpc.png" alt="">drpc</span></div></div>
+      <div class="step" id="s1"><div class="t"><span class="n">1</span>Find each address</div><div class="sk part ai"><div class="who">your AI</div><div>searches widely, official places first</div><div class="logos"><span class="lg"><img class="mono-logo" src="logos/docs.svg" alt="">official site</span><span class="lg"><img class="mono-logo" src="logos/api.svg" alt="">API</span></div></div><div class="sk part prog"><div class="who">kiss-sign</div><div>checks each page and its site, and needs two places</div><div class="logos"><span class="lg"><img src="logos/defillama.jpg" alt="">DefiLlama</span><span class="lg"><img src="logos/coingecko.png" alt="">CoinGecko</span><span class="lg"><img class="mono-logo" src="logos/bounty.svg" alt="">Immunefi</span><span class="lg"><img class="mono-logo" src="logos/github.svg" alt="">GitHub</span></div></div></div>
+      <div class="step" id="s2"><div class="t"><span class="n">2</span>Prove each ABI</div><div class="sk part prog"><div class="who">kiss-sign</div><div>compiles the source and compares it with the chain</div><div class="logos"><span class="lg"><img src="logos/etherscan.svg" alt="">Etherscan</span><span class="lg"><img class="mono-logo" src="logos/solidity.svg" alt="">solc</span></div></div></div>
+      <div class="step" id="s3"><div class="t"><span class="n">3</span>Write the template</div><div class="sk part ai"><div class="who">your AI</div><div>and its call flow, from the proven ABI and the protocol's docs</div></div></div>
+      <div class="step" id="s4"><div class="t"><span class="n">4</span>See how others did it</div><div class="sk part prog"><div class="who">kiss-sign</div><div>finds a year of past transactions, counts each field, traces the calls</div><div class="logos"><span class="lg"><img src="logos/etherscan.svg" alt="">Etherscan</span><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span><span class="lg"><img src="logos/drpc.png" alt="">drpc</span></div></div><div class="sk part ai"><div class="who">your AI</div><div>reads the misfits and sets the bounds</div></div></div>
+      <div class="step" id="s5"><div class="t"><span class="n">5</span>Check the protocol now</div><div class="sk part prog"><div class="who">kiss-sign</div><div>TVL, hacks, vault size, holders</div><div class="logos"><span class="lg"><img src="logos/defillama.jpg" alt="">DefiLlama</span><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span></div></div><div class="sk part ai"><div class="who">your AI</div><div>judges incidents and audits</div></div></div>
+      <div class="step" id="s6"><div class="t"><span class="n">6</span>Pin the code</div><div class="sk part prog"><div class="who">kiss-sign</div><div>so an upgrade after your review is caught</div><div class="logos"><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span><span class="lg"><img src="logos/drpc.png" alt="">drpc</span></div></div></div>
     </div>
   </div>
   <div class="then">
-    <div class="sk ai report" id="report">
-      <div class="who">A report in a pull request</div>
-      <ul><li>the call flow</li><li>each field: fixed, yours, or bounded</li><li>where each address came from</li><li class="q">what still needs your eye</li></ul>
+    <div class="sk prog report" id="report">
+      <div class="who">kiss-sign writes a report in a pull request</div>
+      <ul><li>the call flow, checked against the traces</li><li>each field: fixed, yours, or bounded</li><li>where each address came from</li><li class="ai">your AI's notes, marked as its own</li><li class="q">what still needs your eye</li></ul>
     </div>
     <div class="sk you merge" id="merge">
       <div class="who">You</div>
@@ -201,6 +203,15 @@ Promise.all([document.fonts.ready, new Promise((ok) => (document.readyState === 
     const dy = (y2 - y1) * 0.08, s = 11;
     draw(`M${x2 - s} ${y2 - s * 0.6 - dy + rnd()} L${x2} ${y2} L${x2 - s} ${y2 + s * 0.6 - dy + rnd()}`, ink, 1.9);
   };
+  document.querySelectorAll('.step').forEach((st) => {
+    const ps = [...st.querySelectorAll('.part')];
+    for (let i = 1; i < ps.length; i++) {
+      const a = ps[i - 1].getBoundingClientRect(), b = ps[i].getBoundingClientRect();
+      const x = a.left + a.width / 2 + scrollX, y1 = a.bottom + 4 + scrollY, y2 = b.top - 4 + scrollY;
+      draw(`M${x + rnd()} ${y1} L${x + rnd()} ${y2}`, ink, 1.9);
+      draw(`M${x - 6} ${y2 - 8 + rnd()} L${x} ${y2} L${x + 6} ${y2 - 8 + rnd()}`, ink, 1.9);
+    }
+  });
   [['s1', 's2'], ['s2', 's3'], ['s3', 's4'], ['s4', 's5'], ['s5', 's6'], ['report', 'merge']].forEach(([a, b]) => arrow(a, b));
   {
     const steps = document.querySelector('.steps').getBoundingClientRect(), rb = document.getElementById('report').getBoundingClientRect();
