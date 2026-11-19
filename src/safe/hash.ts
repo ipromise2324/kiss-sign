@@ -6,11 +6,13 @@ import type { Address, Hex, SafeTx, SafeTxHashes } from './types.ts';
 // version's contract source before adding it to SAFE_VERSIONS.
 const DOMAIN_TYPEHASH = keccak_256(utf8ToBytes('EIP712Domain(uint256 chainId,address verifyingContract)'));
 const DOMAIN_TYPEHASH_1_1_1 = keccak_256(utf8ToBytes('EIP712Domain(address verifyingContract)'));
-export const SAFE_TX_TYPEHASH = keccak_256(
+const SAFE_TX_TYPEHASH = keccak_256(
   utf8ToBytes(
     'SafeTx(address to,uint256 value,bytes data,uint8 operation,uint256 safeTxGas,uint256 baseGas,uint256 gasPrice,address gasToken,address refundReceiver,uint256 nonce)',
   ),
 );
+
+export const SAFE_TX_TYPEHASH_HEX = `0x${bytesToHex(SAFE_TX_TYPEHASH)}` as Hex;
 
 function uintWord(value: bigint): Uint8Array {
   return hexToBytes(value.toString(16).padStart(64, '0'));

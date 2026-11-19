@@ -535,10 +535,17 @@ export function trimReportRecording(
   };
 }
 
-/** What `pnpm erc7730` reads for a report: each entry the operation touches and every registry singleton, since every Safe transaction is a `SafeTx` signed for a Safe proxy that runs one. */
+/**
+ * What `pnpm erc7730` reads for a report: each entry the operation touches, the registry entry at each one's pinned
+ * implementation, and every registry singleton, since every Safe transaction is a `SafeTx` signed for a Safe proxy that runs one.
+ */
 export function erc7730Entries(entries: readonly RegistryEntry[], registry: Registry): RegistryEntry[] {
-  const touched = new Set(entries.map((entry) => entry.name));
-  return [...registry.entries.values()].filter((entry) => touched.has(entry.name) || entry.kind === 'singleton');
+  const implementations = entries.flatMap((entry) => {
+    const address = entry.code?.current.pin.implementation?.address;
+    return address === undefined ? [] : [registry.byAddress.get(address)?.name];
+  });
+  const read = new Set([...entries.map((entry) => entry.name), ...implementations]);
+  return [...registry.entries.values()].filter((entry) => read.has(entry.name) || entry.kind === 'singleton');
 }
 
 export async function erc7730Text(entries: readonly RegistryEntry[], registry: Registry, snapshot: Snapshot, chain: () => Promise<ChainAccess>): Promise<{ text: string; reports: EntryReport[] }> {

@@ -12,7 +12,7 @@ import { say } from '../language.ts';
 import type { Language } from '../language.ts';
 import { MARKET_PARAMS, parseHttpsUrl, sizeOf } from '../registry.ts';
 import type { HttpsUrl, Market, Registry, RegistryEntry } from '../registry.ts';
-import { SAFE_TX_TYPEHASH } from '../safe/hash.ts';
+import { SAFE_TX_TYPEHASH_HEX } from '../safe/hash.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { decodeTemplateCall } from '../template/check.ts';
@@ -1397,7 +1397,6 @@ function ruleWords(rule: Rule, context: Context): Inline {
 
 /** The `SafeTx` struct's fields, in its type string's order. */
 const SAFE_TX_FIELDS = ['to', 'value', 'data', 'operation', 'safeTxGas', 'baseGas', 'gasPrice', 'gasToken', 'refundReceiver', 'nonce'] as const;
-const SAFE_TX_TYPE = `0x${bytesToHex(SAFE_TX_TYPEHASH)}`;
 
 const safeSingletons = (registry: Registry): string[] => [...registry.entries.values()].filter((entry) => entry.kind === 'singleton').map((entry) => entry.name);
 
@@ -1416,7 +1415,7 @@ function safeTxRows(context: Context, lines: Inline[]): WalletRows {
   const singletons = safeSingletons(registry);
   const described = inputs.erc7730.reports
     .filter((r) => singletons.includes(r.entry.name))
-    .flatMap((r) => r.descriptors.flatMap((d) => (d.kind === 'eip712' ? d.messages : [])).filter((m) => m.typeHash === SAFE_TX_TYPE).map((message) => ({ entry: r.entry.name, message })));
+    .flatMap((r) => r.descriptors.flatMap((d) => (d.kind === 'eip712' ? d.messages : [])).filter((m) => m.typeHash === SAFE_TX_TYPEHASH_HEX).map((message) => ({ entry: r.entry.name, message })));
   const first = described[0];
   if (first === undefined) return 'no-descriptor';
   const describedNames = [...new Set(described.map((d) => d.entry))];
@@ -1448,6 +1447,7 @@ function safeTxRows(context: Context, lines: Inline[]): WalletRows {
   const shown = flatFields(first.message.fields).filter(isShown);
   const hidden = SAFE_TX_FIELDS.filter((name) => !shown.some((f) => f.path === name));
   if (hidden.length > 0) lines.push(w.safeTxHides(hidden.map((h): Span => ({ code: h }))));
+  if (one !== undefined) lines.push([w.safeTxWrapped]);
   const field = (path: string) => SAFE_TX_FIELDS.find((name) => name === path);
   return shown.map((f) => {
     const name = field(f.path);
