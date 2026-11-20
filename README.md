@@ -150,9 +150,13 @@ A changed template has a new hash, so `verify` refuses it until you approve it a
 
 ### 3. Fill a card
 
-In your own terminal, answer what the template asks: pick each contract, such as a token, a recipient or a vault, from a list with full addresses, and type each amount. You never type a value the protocol's app fills in by itself, such as a minimum amount to receive: the program computes it from an on-chain read, the app's default slippage and a small margin the template states. The card is sealed under its hash before you see any transaction.
+In your own terminal, answer what the template asks: pick each contract, such as a token, a recipient or a vault, from a list with full addresses, and type each amount. You never type a value the protocol's app fills in by itself, such as a minimum amount to receive: the program computes it from an on-chain read, the app's default slippage and a small margin the template states.
 
-![A card for a Morpho vault deposit, pnpm kiss-sign card new morpho/vault-deposit: the vault is picked by number from a list with full addresses, the amount typed in whole tokens, the minimum shares computed from previewDeposit at a block where Alchemy and drpc agree, and the card sealed](docs/readme/card-new.png)
+![pnpm kiss-sign card new morpho/vault-deposit: the vault picked by number from a list with full addresses, the amount typed in whole tokens, and the minimum shares computed from previewDeposit with the protocol's default slippage and the template's margin](docs/readme/card-fill.png)
+
+Then it prints the whole card and asks you to confirm it. Type `y` only if every line is what you mean to do. The card is sealed under its hash before you see any transaction.
+
+![The card printed for confirmation: the Safe, the vault with its full address, the amount and the minimum shares in whole tokens and base units, read at a block where Alchemy and drpc agree; y typed, and the sealed card's hash](docs/readme/card-confirm.png)
 
 ### 4. Verify on your computer, and check on a second one
 
