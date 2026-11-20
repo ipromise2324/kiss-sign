@@ -578,7 +578,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="wallet">
   <h2>錢包顯示 <span class="c">ERC-7730 描述檔</span></h2>
-  <p class="lead">這筆 Safe 交易用 MultiSend 打包 2 個呼叫，沒有描述檔解得開 Safe 的 MultiSend，所以請比對裝置上的 hash 和 <code>verify</code> 印的 safeTxHash。</p>
+  <p class="lead">這筆 Safe 交易用 MultiSend 打包 2 個呼叫，沒有描述檔解得開打包在裡面的呼叫，所以請比對裝置上的 domain hash 和 message hash 跟 <code>verify</code> 印的是否一樣。</p>
   <dl class="props two">
     <div><dt>Safe 交易（SafeTx）</dt><dd>
       <dl class="nest flat">

@@ -490,7 +490,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="wallet">
   <h2>Wallet display <span class="c">ERC-7730 descriptors</span></h2>
-  <p class="lead">This Safe transaction packs 2 calls with MultiSend, which no descriptor decodes, so compare the hash on the device with the safeTxHash <code>verify</code> prints.</p>
+  <p class="lead">This Safe transaction packs 2 calls with MultiSend, and no descriptor decodes the calls inside, so compare the domain hash and the message hash on the device with the ones <code>verify</code> prints.</p>
   <dl class="props two">
     <div><dt>The Safe transaction (SafeTx)</dt><dd>
       <dl class="nest flat">
