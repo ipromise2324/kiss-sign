@@ -34,7 +34,7 @@ Key: it bears on whether an address or its code is the protocol's real one and d
 | --- | --- |
 | `vault` | a registry `vault` of the DefiLlama protocol `morpho-blue`, picked by number from the list below |
 | `market` | a market from `registry/markets.json`, picked by number from the list below |
-| `absolute-cap` | an integer in base units of the `asset` of the card's `vault`, or `max`, 340282366920938463463374607431768211455: written by the AI in the template: Vault V2 stores an absolute cap in 128 bits (increaseAbsoluteCap, newAbsoluteCap.toUint128()), so 2^128-1 is the largest cap it holds; curators set it for a market they cap only by its relative cap, as most submissions of the last year did.; in Traditional Chinese: Vault V2 用 128 bits 存絕對上限（increaseAbsoluteCap，newAbsoluteCap.toUint128()），所以 2^128-1 是它能存的最大上限；curator 只想用相對上限限制某個市場時就設這個值，過去一年大多數的提交都是這樣。 |
+| `absolute-cap` | an integer in base units of the `asset` of the card's `vault`, or `max`, 340282366920938463463374607431768211455: written by the AI in the template: 2^128-1 is the largest absolute cap Vault V2 can store; curators set it when they limit a market only by its relative cap, as most submissions of the last year did.; in Traditional Chinese: 2^128-1 是 Vault V2 能存的最大絕對上限；curator 只想用相對上限限制某個市場時就設這個值，過去一年大多數的提交都是這樣。 |
 | `relative-cap` | a percent, at most 100, held in WAD base units (100% is 1000000000000000000) |
 
 `vault` can name:
