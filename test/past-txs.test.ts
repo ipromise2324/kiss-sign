@@ -774,7 +774,7 @@ test('a source whose next page answers "No records found" has finished, so the y
   assert.match(text, /^ {2}blocks 23810401 to 26438400: 2000 found, 240 studied$/m);
 });
 
-test('a year still holding more after 10 pages of a source is searched in the windows, checks no party, and is recorded without its transfers', async () => {
+test('a year still holding more after 10 pages of a source is searched in the windows, checks no party, and is recorded without its transfers, the finished source as finished', async () => {
   const listed = mints(2500);
   const { ask, asked } = yearAsk(listed, { endless: true });
   const recorder = recordingAsk(ask);
@@ -785,6 +785,11 @@ test('a year still holding more after 10 pages of a source is searched in the wi
   const year = recorder.exchanges().filter(({ request }) => (request.source === 'alchemy' ? request.params.fromBlock === hexBlock(YEAR_FROM) : request.query.fromBlock === String(YEAR_FROM)));
   assert.equal(year.length, 13);
   assert.ok(listed.every((m) => !JSON.stringify(year).includes(m.hash)), 'no year transfer is kept');
+  assert.deepEqual(
+    year.filter(({ request }) => request.source === 'etherscan').map(({ answer }) => answer),
+    Array.from({ length: 3 }, () => ({ status: '1', message: 'OK', result: [] })),
+    'etherscan, which finished, keeps empty pages that read as finished',
+  );
   assert.equal(renderPastTxs(await yearRun(replayAsk(recorder.exchanges()), replayReader([])), registry), text, 'the replay needs no chain read');
 });
 
