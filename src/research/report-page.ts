@@ -31,7 +31,7 @@ import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, flowR
 import type { Confidence, FindingKind, Ledger, Phrase, Place, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
 import { NOTES_FILE, argumentTree, notesLanguages, notesScope, parseFlowLines, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
-import { PERCENTILES, amountsOf, freeNumbers } from './past-txs.ts';
+import { PERCENTILES, amountsOf, freeNumbers } from './past-txs-render.ts';
 import type { PastTxs } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { factsScope } from './protocol-facts.ts';
