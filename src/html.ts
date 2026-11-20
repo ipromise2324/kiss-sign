@@ -229,7 +229,7 @@ details.fixed>summary::-webkit-details-marker{display:none}
 details.fixed>summary:hover{color:var(--fg)}
 details.fixed[open]>summary .chev{transform:rotate(90deg)}
 .parts>details.fixed{grid-column:1/-1;display:grid;grid-template-columns:subgrid}
-.parts>details.fixed::details-content{display:contents}
+.parts>details.fixed[open]::details-content{display:contents}
 .parts>details.fixed>summary{grid-column:1/-1;padding:10px 0;border-bottom:0;border-top:1px solid var(--line)}
 .parts>details.fixed:first-child>summary,.plabel+details.fixed>summary{border-top:0;padding-top:2px}
 @media (max-width:720px){
