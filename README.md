@@ -121,9 +121,9 @@ The report shows what the transaction will do and where each fact came from. Tex
 
 ![The call flow: the Safe approves USDC to general-adapter-1 and calls bundler3.multicall; the adapter pulls the USDC and deposits it into the vault, lines seen in 8 of 8 past transactions; the shares come back to the Safe](docs/readme/report-flow.png)
 
-Under it, each argument says who decides it: you, the program or the template. Fixed values are folded; changing one is a MISMATCH.
+Under it, each argument says who decides it, down to the steps inside a bundle: you, the program or the template. Fixed values are folded; changing one is a MISMATCH.
 
-![The fields of usdc.approve: value is the amount you type, and one fixed value is folded](docs/readme/report-fields.png)
+![The fields of bundler3.multicall: a bundle of two steps, erc20TransferFrom and erc4626Deposit; the vault you pick, the amount you type, the price ceiling the program computes, and the fixed values folded](docs/readme/report-fields.png)
 
 **The protocol and the instance.** Morpho's TVL, audits and incidents, then this vault's facts from two providers: its factory, size, holders and a year of monthly size. The AI's notes say where your deposit goes and how to get it back.
 
