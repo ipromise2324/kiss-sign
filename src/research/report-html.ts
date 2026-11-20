@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { HTML_LANG, LANGUAGES } from '../language.ts';
 import type { Language } from '../language.ts';
@@ -624,22 +624,6 @@ export function writeHtmlPages(dir: string, pages: ReadonlyMap<Language, string>
   const stale = [...LANGUAGES.filter((language) => !pages.has(language)).map(generatedHtmlFile), OLD_HTML_FILE].filter((file) => existsSync(join(dir, file)));
   for (const file of stale) rmSync(join(dir, file));
   return stale;
-}
-
-/**
- * Each page committed in the report's folder `dir` against the pages the program writes, `undefined` with no notes:
- * per file, where it differs, a page in a language the notes do not hold and a missing one included, or undefined
- * where they agree. A language with neither a committed nor a written page is left out.
- */
-export function htmlDifferences(dir: string, pages: ReadonlyMap<Language, string> | undefined): { readonly file: string; readonly difference: string | undefined }[] {
-  const pageFiles = LANGUAGES.flatMap((language) => {
-    const file = generatedHtmlFile(language);
-    const committed = existsSync(join(dir, file)) ? readFileSync(join(dir, file), 'utf8') : undefined;
-    const written = pages?.get(language);
-    return committed === undefined && written === undefined ? [] : [{ file, difference: htmlDifference(file, committed, written) }];
-  });
-  const old = existsSync(join(dir, OLD_HTML_FILE)) ? [{ file: OLD_HTML_FILE, difference: `${OLD_HTML_FILE} is still committed beside the pages in each language that replace it` }] : [];
-  return [...pageFiles, ...old];
 }
 
 /** Where the committed `file` differs from what the program writes, byte for byte, or undefined when it does not. */

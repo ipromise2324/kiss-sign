@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import { selectorOf } from '../src/decode/abi.ts';
 import { loadRegistry } from '../src/registry.ts';
 import type { Ledger, Result } from '../src/research/ledger.ts';
-import { NotesError, fieldKeys, mergeNotes, notesChanges, notesLanguages, notesPath, notesScope, parseNotes, readNotes } from '../src/research/notes.ts';
+import { NotesError, fieldKeys, mergeNotes, notesLanguages, notesPath, notesScope, parseNotes, readNotes } from '../src/research/notes.ts';
 import type { Language } from '../src/language.ts';
 import type { NotesScope } from '../src/research/notes.ts';
 import type { ProtocolFacts } from '../src/research/protocol-facts.ts';
@@ -382,17 +382,6 @@ test("a vault's flow lines join the template's after them, and both count toward
 test("a template's flow line that names the vault or its asset is refused, since another vault's report could not name it", () => {
   const shared = { ...SHARED, flow: [{ ...VALID.flow[0], to: 'usdc', text: t('拉走資產') }] };
   assert.throws(() => mergeNotes(shared, undefined, VAULT_PATH, OWNED), (e: unknown) => e instanceof NotesError && e.message === `notes.json.flow: "usdc" differs per vault; its flow line belongs in ${VAULT_PATH}`);
-});
-
-test("--compare names a vault's notes.json too", () => {
-  assert.deepEqual(
-    notesChanges([
-      'templates/morpho/vault-deposit/instances/steakhouse-prime-usdc-v2-0f51/notes.json',
-      'templates/morpho/vault-deposit/instances/x/report.generated.html',
-      'templates/morpho/vault-deposit/instances/hyperithm-usdc-apex-v2-9e2f/notes.json',
-    ]),
-    ['templates/morpho/vault-deposit/instances/steakhouse-prime-usdc-v2-0f51/notes.json', 'templates/morpho/vault-deposit/instances/hyperithm-usdc-apex-v2-9e2f/notes.json'],
-  );
 });
 
 test('field keys walk every argument, tuple part, array item and nested call of the template', () => {
