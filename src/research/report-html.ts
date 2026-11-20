@@ -349,9 +349,9 @@ function vaultBody(block: VaultBlock, r: R): Html {
 }
 
 /** The AI's full text, folded under its one-line conclusion; left out when the conclusion is all of it. */
-const rest = (label: Html, note: AiText, conclusion: AiText, r: R): Html =>
+const rest = (label: string | undefined, note: AiText, conclusion: AiText, r: R): Html =>
   note.ai === conclusion.ai && note.sources.length === 0 ? h`` : h`
-          <div class="rec"><span class="lbl">${label}</span>${ai(note, r)}</div>`;
+          <div class="rec">${label === undefined ? '' : h`<span class="lbl">${label}</span>`}${ai(note, r)}</div>`;
 
 function reviewBody(body: Extract<Body, { kind: 'review' }>, r: R): Html {
   const empty = body.rows.length === 0 && body.judgments.length === 0;
@@ -365,7 +365,7 @@ function reviewBody(body: Extract<Body, { kind: 'review' }>, r: R): Html {
         <div class="rec"><span class="lbl">${r.w.reviewed[row.review.status]}</span>${ai(row.conclusion, r)}</div>
         <details class="more"><summary>${decor('chev')}${r.w.details}</summary>
           <div class="meta">${text(row.subject)}</div>
-          <div class="meta">${text(row.why)}${row.entry === undefined ? '' : h`<a href="#${row.entry}">${r.w.seeSource}</a>`}</div>${rest(h`${r.w.reviewed[row.review.status]}`, row.review.text, row.conclusion, r)}
+          <div class="meta">${text(row.why)}${row.entry === undefined ? '' : h`<a href="#${row.entry}">${r.w.seeSource}</a>`}</div>${rest(r.w.reviewed[row.review.status], row.review.text, row.conclusion, r)}
           <div class="rec"><span class="lbl">${r.w.advice}</span>${ai(row.review.recommendation, r)}</div>
         </details></div>
     </div>`,
@@ -374,7 +374,7 @@ function reviewBody(body: Extract<Body, { kind: 'review' }>, r: R): Html {
     <div class="row">
       ${icon('ask', r.language)}
       <div><div class="t">${ai(j.conclusion, r)}</div>
-        <details class="more"><summary>${decor('chev')}${r.w.details}</summary>${rest(h``, j.text, j.conclusion, r)}
+        <details class="more"><summary>${decor('chev')}${r.w.details}</summary>${rest(undefined, j.text, j.conclusion, r)}
           <div class="rec"><span class="lbl">${r.w.advice}</span>${ai(j.recommendation, r)}</div>
         </details></div>
     </div>`,
