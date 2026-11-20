@@ -899,7 +899,7 @@ test('the report refuses a recording whose yearPages goes with wholeYear, exceed
   }
 });
 
-test('the report replays a paged year\'s party reads from the recording, so --compare reading the chain otherwise chooses the same transactions', async () => {
+test('the report replays a paged year\'s party reads from the recording', async () => {
   const listed = mints(100);
   const recorder = recordingAsk(yearAsk(listed).ask);
   const onChain = chain({ safes: [10, 50, 90].map((i) => (listed[i] as Mint).to) });
@@ -912,13 +912,6 @@ test('the report replays a paged year\'s party reads from the recording, so --co
   };
   const offline = await summarizePastTxs(ROOT, registry, 'year.json', recorded);
   assert.match(offline.text, /^chosen to study: all 3 transactions with a proven Safe party, and 9 of the other 97, taken evenly in block order$/m);
-  const everySafe = chain({ safes: listed.map((m) => m.to) }).reader;
-  const failing = createReader(REPLAY_ENDPOINTS, async () => ({ status: 500, text: '' }), { retryPausesMs: [], rateLimitPausesMs: [] });
-  for (const live of [everySafe, failing]) {
-    const compared = await summarizePastTxs(ROOT, registry, 'year.json', recorded, live);
-    assert.equal(compared.text, offline.text);
-    assert.deepEqual(studied(compared.run), studied(offline.run));
-  }
 });
 
 test('with --max-txs not a multiple of 4 the rest keeps the quarter rounded up', async () => {

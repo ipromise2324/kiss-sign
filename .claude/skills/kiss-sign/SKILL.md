@@ -91,35 +91,35 @@ One report covers one concrete operation: for a template reported per instance, 
 8. **Write the notes and reviews.** Complete `notes.json` around your step 2 observations, write a review of every result the signer must look at against the result as printed, then `pnpm report ... --render` ([notes-and-reviews.md](notes-and-reviews.md)).
 9. **Add the tests.** Record two or more transactions of other Safes, require `MATCH`, catch every bound field, and run `--render` again for every report of the template, since each judges the perturbation recordings ([how](build-template.md#add-the-tests)).
 10. **Check and open the pull request.** `pnpm test`, `pnpm typecheck` and `pnpm check-push origin/main..HEAD` must pass ([how](build-template.md#open-the-pull-request)).
-11. **Tell the signer.** Say what the card will ask, what will be checked and the findings, give the link, and give the next steps, the `--compare` run before merging among them ([how](build-template.md#tell-the-signer)).
+11. **Tell the signer.** Say what the card will ask, what will be checked and the findings, give the link, and give the next steps, checking the sources before merging among them ([how](build-template.md#tell-the-signer)).
 
 ## Add an instance's report
 
 An instance of a template reported per instance, such as a second vault for `fluid/vault-deposit`, cannot be signed until it has its own report.
 The earlier instance's report already holds the shared part.
 
-1. Re-check the shared part live: `pnpm report <protocol>/<operation> --instance-of <an instance that has a report> --compare`.
-   The route, the template's contracts, the tokens and the factory must print no difference; a difference stops the work and goes to the signer.
-2. Research the new instance's address, and every entry it names that no report names yet, such as its asset, as [addresses.md](addresses.md) says, its observations in the instance's own `notes.json` before any check.
+The new instance's `--record` reads that shared part live again, since its report covers it too.
+
+1. Research the new instance's address, and every entry it names that no report names yet, such as its asset, as [addresses.md](addresses.md) says, its observations in the instance's own `notes.json` before any check.
    Prove its factory when the entry has a `factory` attribute, and read its evidence ([An instance a template is reported per](addresses.md#contracts-that-need-more)).
-3. Run `pnpm past-txs <protocol>/<operation>` anchored on the instance with the transfer or event the operation itself makes, such as `--token <vault> --anchor mint` for a vault deposit ([Study past transactions](build-template.md#study-past-transactions)), with no block range and `--record <name>`, and note the counts by sender type.
+2. Run `pnpm past-txs <protocol>/<operation>` anchored on the instance with the transfer or event the operation itself makes, such as `--token <vault> --anchor mint` for a vault deposit ([Study past transactions](build-template.md#study-past-transactions)), with no block range and `--record <name>`, and note the counts by sender type.
    The instance's report includes only the recordings whose `--token` is the instance itself, so anchor on it, never on its asset.
-4. Before recording, write the instance's own `docs.json` when a function's page is specific to this report, such as a page that names the instance, its asset or another contract only this report covers: `--record` reads and checks those pages.
+3. Before recording, write the instance's own `docs.json` when a function's page is specific to this report, such as a page that names the instance, its asset or another contract only this report covers: `--record` reads and checks those pages.
    Then run `pnpm report <protocol>/<operation> --instance-of <instance> --record`.
-5. Complete the instance's own `notes.json` ([An instance's notes](notes-and-reviews.md#an-instances-notes)), then run `pnpm report <protocol>/<operation> --instance-of <instance> --render`.
+4. Complete the instance's own `notes.json` ([An instance's notes](notes-and-reviews.md#an-instances-notes)), then run `pnpm report <protocol>/<operation> --instance-of <instance> --render`.
    Change no template text and no other instance's notes; the template's hash does not change, so the signer approves nothing again.
-6. Open a pull request with the registry change, the instance's folder, its recordings and the past-transactions recording ([Open the pull request](build-template.md#open-the-pull-request)), and tell the signer ([Tell the signer](build-template.md#tell-the-signer)).
+5. Open a pull request with the registry change, the instance's folder, its recordings and the past-transactions recording ([Open the pull request](build-template.md#open-the-pull-request)), and tell the signer ([Tell the signer](build-template.md#tell-the-signer)).
 
 ## Add a registry entry
 
 A report covers every registry entry the operation can touch: those its template and `docs.json` name, those a card field or market can name, their attributes and dependencies, and the Safe singleton for a template that calls the Safe with data.
 So a new entry, such as a token, changes every report that can touch it: a template's, such as `erc20/transfer` and `uniswap/approve-permit2` for a token, and an instance's, when another card field or a market of a per-instance template can name it.
-When unsure which, record and compare them all.
+When unsure which, record them all.
 
 1. Research the entry, and each entry it names as an attribute, as [addresses.md](addresses.md) says, its observations in each affected template's `notes.json` before any check: shared observations, reviews and `protocols` notes always go in the template's file, since an instance's `notes.json` holds only `verdict`, `flow`, `judgments`, `reviews`, `entries` and `pastTxsConclusion` about that instance ([An instance's notes](notes-and-reviews.md#an-instances-notes)).
 2. For each affected report, run `pnpm report <protocol>/<operation> --record`, with `--instance-of <instance>` for an instance's.
 3. Reconcile each affected report's reviews with its new results: `--render` requires a review for exactly the current set of results under To review, so write the new ones and revise or remove any that no longer match, and add `protocols` notes for a new protocol the report's protocol facts cover, with as many incidents as its hacks ([Notes and reviews](notes-and-reviews.md)); then run `--render`.
-4. Check and open one pull request, and tell the signer, as steps 10 and 11 of [Build a template](#build-a-template) say, with a `--compare` run for each affected report.
+4. Check and open one pull request, and tell the signer, as steps 10 and 11 of [Build a template](#build-a-template) say.
 
 ## Merge a program change
 

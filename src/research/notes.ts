@@ -24,9 +24,6 @@ export class NotesError extends Error {
 export const notesPath = (repoRoot: string, template: string, instance?: string): string =>
   join(instance === undefined ? join(TEMPLATES_DIR, template) : instanceReportDir(template, instance), NOTES_FILE);
 
-/** The changed files that hold text the AI wrote for a template's HTML report, an instance's included, which no program checks. */
-export const notesChanges = (changed: readonly string[]): string[] => changed.filter((file) => /^templates\/[^/]+\/[^/]+\/(instances\/[^/]+\/)?notes\.json$/.test(file));
-
 const readJson = (path: string): unknown => (existsSync(path) ? (JSON.parse(readFileSync(path, 'utf8')) as unknown) : undefined);
 
 /**

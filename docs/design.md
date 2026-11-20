@@ -29,7 +29,7 @@ The last column is what must hold before the action, and who or what enforces it
 
 | Action | Who | What must hold first |
 |---|---|---|
-| Merge a template or registry pull request | The signer | The signer reads the report and runs `pnpm report <protocol>/<operation> --compare --data origin/<branch>` from `main`, with `--instance-of <instance>` for each per-instance report the branch changes. `pnpm check-push`, run by CI, refuses the branch if it also changes the verdict core. See [Who owns the program](design/program-ownership.md#who-owns-the-program). |
+| Merge a template or registry pull request | The signer | The signer reads the report, opens the sources it lists, and merges. CI's `program-gate` job, which runs main's code, fails if the branch also changes the verdict core. See [Who owns the program](design/program-ownership.md#who-owns-the-program). |
 | Merge a program pull request | The AI, with a merge commit | `pnpm program-gate`, run from main's code, prints `ELIGIBLE`, and a fresh AI reviewer, given the diff and not the author's conclusions, finds no security regression. See [The program gate](design/program-ownership.md#the-program-gate). |
 | Merge a program gate pull request | The signer | The signer reviews it as they do a template. `pnpm program-gate` stops at `NOT ELIGIBLE` and names the gate files. `pnpm check-push` refuses the branch if it also changes the verdict core. |
 | Approve a template | The signer | `template approve` requires every `origin` URL to be the config's `repo`, fetches its `main`, prints the commit and the template's keccak256, and records that hash only after the signer's yes at a terminal. |
@@ -82,7 +82,7 @@ Everything runs on one computer, the signer's work computer, and the AI may run 
 | Step | Where | Who |
 |---|---|---|
 | 1. Research, write the template, open a pull request | The work computer | The AI. It never merges a template or the registry; a program change it needs goes first, in a pull request of its own, which the AI merges behind the [program gate](design/program-ownership.md#the-program-gate). |
-| 2. Read the report and the template, run `pnpm report <protocol>/<operation> --compare --data origin/<branch>` from `main`, with `--instance-of <instance>` for each per-instance report the branch changes, approve and merge | GitHub, and the work computer | The signer |
+| 2. Read the report and the template, approve and merge | GitHub, and the work computer | The signer |
 | 3. `git pull`, approve the template, fill the card with `pnpm kiss-sign card new` (which stops when the clone is behind GitHub's `main`), seal, verify | The work computer, in the signer's own terminal | The signer |
 | 4. The first time a template or a vault is used, send a small amount first | Safe | The signers |
 | 5. Sign, comparing the full hashes | Hardware wallet | The signer |

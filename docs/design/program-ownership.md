@@ -8,7 +8,7 @@ An upstream merge reaches a signer only when the signer pulls it into their own 
 The signer is not expected to read the program's code.
 Three kinds of pull request reach `main`, and different hands merge them:
 
-- **Templates and the registry,** the hand-written files under `templates/` and `registry/`: the signer reads the report, runs `--compare` from main, and merges.
+- **Templates and the registry,** the hand-written files under `templates/` and `registry/`: the signer reads the report and merges.
   Merging is the signer's confirmation.
   The AI never merges one.
 - **The program,** every other file, the [verdict core](#the-verdict-core) included: the AI merges it itself, with a merge commit, once [`pnpm program-gate`](#the-program-gate), run from main's code, prints `ELIGIBLE` and a fresh AI reviewer, given the diff and not the author's conclusions, finds no security regression.
@@ -24,7 +24,7 @@ The AI that writes templates reads the web, and no one yet knows how to stop suc
 
 - **`verify` runs exactly what is on the signer's own `main`.**
   The self-check below refuses any other origin, commit or file, unless something on the work computer rewrites the clone and the self-check together.
-- **The signer's review of every template and registry change,** with the generated report and `--compare`.
+- **The signer's review of every template and registry change,** with the generated report and the sources it lists.
 - **The program gate for every program change:** the canaries must still pass, and the change cannot touch them, run from main's code so the branch cannot change the gate that judges it.
 - **The hardware wallet's hash comparison.**
   The signer compares the domain hash and the message hash on `verify`'s page with the device's screen, every character.
@@ -63,7 +63,8 @@ A pull request that changes a template and, beside it, one comparison in the ver
 - **The rule.**
   A branch may not change a core file and a hand-written file under `templates/` or `registry/` together.
   The diff is taken from where the branch left `origin/main` (`git diff origin/main...<branch>`), so merging `main` into a branch never trips it, and the core is walked at both ends, so a file the branch adds to the core or takes out of it counts.
-  The check that enforces the rule counts as core too: `src/verdict-core.ts`, `scripts/check-push.ts`, `scripts/report.ts` (which holds `--compare`), the program gate's `src/canaries.ts`, `src/canary-reads.ts` and `scripts/program-gate.ts`, `.githooks/` and `.github/workflows/`, and so does `.gitignore`, which decides what the self-check lets lie beside the clone.
+  The check that enforces the rule counts as core too: `src/verdict-core.ts`, `scripts/check-push.ts`, the program gate's `src/canaries.ts`, `src/canary-reads.ts` and `scripts/program-gate.ts`, `.githooks/` and `.github/workflows/`, and so does `.gitignore`, which decides what the self-check lets lie beside the clone.
+  `scripts/report.ts`, which writes every report the signer reviews, is kept among them, so only the signer merges a change to it.
   A branch that git cannot compare with `origin/main`, such as one pushed when the clone has no `origin/main`, is refused, since the check cannot tell what it changes.
   A program change goes first, in its own pull request, merged behind the [program gate](#the-program-gate); the template that needs it follows in another.
 - **What stays free.**
@@ -72,9 +73,9 @@ A pull request that changes a template and, beside it, one comparison in the ver
   The reports `pnpm report` renders from recordings, `report.generated.md` and `report.generated.<language>.html`, are not hand-written, and `pnpm test` fails when one differs from what its recordings give, so a core change that alters a rendering may write the existing ones again.
   Adding or deleting one counts as data: an instance's `report.generated.md` is what lets `card seal` and `verify` accept that instance.
 - **Where it is enforced.**
-  `pnpm check-push` refuses such a branch before it is pushed, CI refuses it on every pull request and every push to `main`, a push diffed from the commit `main` held before it, and `pnpm report --compare`, which the signer runs with main's code, refuses it again, so a pull request that also weakens the check does not pass its own.
-  A pull request can still rewrite its own CI job; `--compare` from main is the check it cannot change, and since `scripts/report.ts` is guarded, no template pull request can weaken it for the next one.
-  The diff counts from `origin/main` as the clone last fetched it, so the signer fetches `main` before `--compare`; a stale one shows a core change already merged as the branch's own.
+  `pnpm check-push` refuses such a branch before it is pushed, and CI refuses it on every pull request and every push to `main`, a push diffed from the commit `main` held before it.
+  A pull request can rewrite its own `test` workflow, which runs from the pull request's files, so that job alone does not hold; the `program-gate` job runs main's workflow and main's code on `pull_request_target`, which the branch cannot change, and fails on such a branch, so the signer does not merge a template pull request whose `program-gate` job is red.
+  `pnpm check-push` counts the diff from `origin/main` as the clone last fetched it; a stale one shows a core change already merged as the branch's own.
   A template branch stacked on an unmerged core branch is refused until the core branch merges.
 
 ### The program gate
@@ -90,9 +91,8 @@ The gate is that set of tests and the code that runs them, kept apart from the v
   Every canary and every file under `test/canaries/`; every file a canary imports that the verdict core does not hold, walked as the core is, such as `src/attacks/attacks.ts` and `test/repo-with-test-fixtures.ts`; every path the list says a canary reads; `docs/canaries.txt`; and the code that enforces the rules: the guards the core rule names, `src/canaries.ts`, `src/canary-reads.ts`, `scripts/program-gate.ts`, `test/canaries.test.ts`, the kiss-sign skill, which tells the AI what it may merge, and `package.json`, `pnpm-lock.yaml` and `pnpm-workspace.yaml`, since a new dependency or a changed script is code no canary reads.
 - **The rule.**
   A branch that changes a verdict core file that is not itself a gate file, as the guards the core rule names are, may not change a gate file.
-  Like the core rule, it is counted from where the branch left `origin/main`, the gate is read at both ends, and `pnpm check-push`, CI and `pnpm report --compare` refuse the branch, naming both sets of files.
+  Like the core rule, it is counted from where the branch left `origin/main`, the gate is read at both ends, and `pnpm check-push` and CI refuse the branch, naming both sets of files.
   A branch that changes a gate file is a gate change: the signer reviews and merges it, never the AI, and a verdict core change that needs it follows in another pull request.
-  `--compare` prints such files under `PROGRAM CHANGE  gate:`.
 - **Eligibility.**
   `pnpm program-gate <branch>` says whether the AI may merge a branch.
   It runs in a clone whose checkout is exactly `origin/main`, every tracked file hashed from disk, so the gate that judges the branch is main's and not the branch's own, and refuses to run anywhere else.
@@ -121,7 +121,7 @@ The gate is that set of tests and the code that runs them, kept apart from the v
   The after-run check catches honest accidents, not an attack; against code written to defeat the gate, only the reviewer stands.
 - **Code outside the core.**
   The core rule and the gate cover what `verify` runs from the clone.
-  A research command such as `pnpm report --compare` or `pnpm history`, merged by the AI with no canary in play, runs with the signer's rights.
+  A research command such as `pnpm report` or `pnpm history`, merged by the AI with no canary in play, runs with the signer's rights.
   A package it rewrites in `node_modules`, and nothing else, is refused by the next signing command, which checks every package it loads against its pin before it loads one (see [The installed packages](#the-installed-packages)).
   What else such code can change, such as the git config the fetch reads or `$KISS_SIGN_HOME`, is not checked (see [Known limits](known-limits.md#known-limits)); only the reviewer stands between such a change and the signer.
 

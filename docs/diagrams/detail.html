@@ -189,12 +189,11 @@
       <h3><i>10</i>Review and merge</h3>
       <ul>
         <li>Read the report (below) and the template's rules</li>
-        <li>From <code>main</code>: <code>pnpm report … --compare --data origin/&lt;branch&gt;</code>, with <code>--instance-of &lt;instance&gt;</code> per instance report</li>
-        <li>It reads the facts again live, past transactions and their traces included (the search and signed messages stay recorded), and needs the HTML byte for byte</li>
-        <li>It refuses a branch that also changes the verdict core, and prints <code>PROGRAM CHANGE</code> and <code>AI TEXT</code></li>
+        <li>Open each source the report lists for a new address: the protocol's own domain, listing this address</li>
+        <li>CI passes; the <code>program-gate</code> job runs main's code and fails a branch that also changes the verdict core</li>
         <li>Merging is your approval; branch protection on <code>main</code> is recommended</li>
       </ul>
-      <div class="why"><b>Why <code>--compare</code>:</b> the recordings come from the AI's computer; main's code reads every fact again live and compares it with the report, so a pull request cannot weaken its own check.</div>
+      <div class="why"><b>Why the sources:</b> the recordings come from the AI's computer and no program reads them again; a steered AI that also changes the research code could make an attacker's address look normal.</div>
       <div class="chips"><span class="chip">GitHub</span></div></div>
     <div class="arrow">→</div>
     <div class="store repo"><h3>Your fork's <code>main</code> on GitHub</h3>
@@ -203,11 +202,11 @@
     <div class="arrow"></div>
     <div class="store merge"><h3>Who merges what</h3>
       <ul>
-        <li><b class="sg">Template or registry:</b> the signer, after the report and <code>--compare</code></li>
+        <li><b class="sg">Template or registry:</b> the signer, after the report and its sources</li>
         <li><b class="pg">Program:</b> the AI, once <code>pnpm program-gate</code>, run from main's code, prints <code>ELIGIBLE</code> (canaries pass, no test dropped) and a fresh reviewer finds no regression</li>
         <li><b class="sg">Program gate</b> (the canaries, their list, the code that enforces these rules): the signer, never the AI</li>
       </ul>
-      <div class="foot">A branch changing the verdict core beside <code>templates/</code>, <code>registry/</code> or the gate is refused by <code>check-push</code>, CI, <code>--compare</code> and <code>program-gate</code> until it is split.</div></div>
+      <div class="foot">A branch changing the verdict core beside <code>templates/</code>, <code>registry/</code> or the gate is refused by <code>check-push</code>, CI and <code>program-gate</code> until it is split.</div></div>
   </div>
 </section>
 

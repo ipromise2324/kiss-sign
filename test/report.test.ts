@@ -5,14 +5,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { createReader } from '../src/chain/reader.ts';
-import { REPLAY_ENDPOINTS, recordingTransport, replayReader, replayTransport } from '../src/chain/recording.ts';
-import type { Exchange } from '../src/chain/recording.ts';
+import { REPLAY_ENDPOINTS, recordingTransport, replayReader } from '../src/chain/recording.ts';
 import type { Reader } from '../src/chain/reader.ts';
 import type { Transport } from '../src/chain/rpc.ts';
 import type { BlockRef, BlockTag } from '../src/chain/types.ts';
 import { keccakCode } from '../src/contracts/code.ts';
-import { REGISTRY_PATH, loadRegistry, parseRegistry, sizeOf } from '../src/registry.ts';
-import type { Registry, RegistryEntry } from '../src/registry.ts';
+import { REGISTRY_PATH, loadRegistry, parseRegistry } from '../src/registry.ts';
+import type { Registry } from '../src/registry.ts';
 import { parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf } from '../src/research/listings.ts';
 import { chainAt } from '../src/research/erc7730.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
@@ -20,7 +19,6 @@ import {
   GENERATED_FILE,
   checkSpans,
   ReportError,
-  compareReports,
   entriesOf,
   signedEntryNames,
   erc7730Text,
@@ -31,21 +29,18 @@ import {
   parseDocs,
   readDocs,
   pastTxsRecordings,
-  programChangeLines,
   readInstances,
   readToday,
   renderReport,
   reportFixtures,
   reportRecordingPath,
   summarizePastTxs,
-  vaultsAt,
 } from '../src/research/report.ts';
 import type { ReportInputs, ReportRecording, Subject } from '../src/research/report.ts';
 import type { Page } from '../src/research/source-page.ts';
 import { parseFunctionSignature } from '../src/decode/abi.ts';
 import { STANDARDS } from '../src/research/standards.ts';
 import { notesPath } from '../src/research/notes.ts';
-import { alchemyCall, formatVaultEvidence, gatherVaultEvidence } from '../src/research/instance-evidence.ts';
 import type { AbiProof } from '../src/contracts/prove.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../src/template/template.ts';
@@ -53,7 +48,6 @@ import { reportedInstancesIn } from '../src/template/vault-reports.ts';
 import { PREDATE_REPORT } from './predate-report.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
 import { NO_SITE_LISTINGS } from '../src/research/site-listings.ts';
-import { splitChanges } from '../src/verdict-core.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
@@ -199,7 +193,7 @@ function chainReader(early: Hex): Reader {
   } as unknown as Reader;
 }
 
-test('the report prints every code span, and --compare flags an earlier span whose code the chain did not run', async () => {
+test('the report prints every code span, and an earlier span whose code the chain did not run is a key finding', async () => {
   const forged = keccakCode('0x6066' as Hex);
   const raw = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8'));
   raw['bundler3'].code = { hash: keccakCode('0x6002' as Hex), from: 250, earlier: [{ from: 100, hash: forged }] };
@@ -209,26 +203,24 @@ test('the report prints every code span, and --compare flags an earlier span who
   const report = async (early: Hex) => quick(recording.pages, new Map(), subject, undefined, undefined, await checkSpans(chainReader(early), bundler3), seen);
   const committed = await report('0x6066' as Hex);
   assert.match(committed, new RegExp(`^\\| \`bundler3\` \\| 100 \\| \`${forged}\` \\| none \\| PASS \\|\n\\| \`bundler3\` \\| 250 \\| \`${keccakCode('0x6002' as Hex)}\` \\| none \\| PASS \\|$`, 'm'));
-  const spans = newKeyFindings([
+  const forgedRun = await report('0x6001' as Hex);
+  assert.match(forgedRun, new RegExp(`^\\| \`bundler3\` \\| 100 \\| .*\\| FINDING: block 100 runs \`${keccakCode('0x6001' as Hex)}\` \\|$`, 'm'));
+  assert.match(forgedRun, new RegExp(`^\\| \`bundler3\` \\| 250 \\| .*\\| FINDING: block 249 runs \`${keccakCode('0x6001' as Hex)}\` \\|$`, 'm'));
+  assertKeyFindings(committed, forgedRun, [
     ['bundler3/code.1', 'the chain ran other code than the registered code'],
     ['bundler3/code.2', 'the chain ran other code than the registered code'],
   ]);
-  assert.deepEqual(compareReports(committed, await report('0x6001' as Hex)), [
-    `Code pins › \`bundler3\` › Chain: committed PASS, live FINDING: block 100 runs \`${keccakCode('0x6001' as Hex)}\``,
-    `Code pins › \`bundler3\` (2) › Chain: committed PASS, live FINDING: block 249 runs \`${keccakCode('0x6001' as Hex)}\``,
-    ...spans.rows,
-    ...spans.count(13, 0),
-  ]);
 });
 
-/** What --compare prints for key findings the live report holds and the committed one does not, beside the count it changes. */
-const newKeyFindings = (found: readonly (readonly [string, string])[]) => ({
-  rows: found.flatMap(([id, title]) => [`Findings › \`${id}\` › Grade: committed absent, live key`, `Findings › \`${id}\` › Finding: committed absent, live ${title}`]),
-  count: (key: number, reference: number) => [
-    `Findings › only committed: ${key} key and ${reference} reference findings.`,
-    `Findings › only live: ${key + found.length} key and ${reference} reference findings.`,
-  ],
-});
+/** `after` holds a key finding row for each of `found`, which `before` does not, and counts that many key findings more. */
+function assertKeyFindings(before: string, after: string, found: readonly (readonly [string, string])[]): void {
+  const count = (text: string) => Number(/^(\d+) key and \d+ reference findings?\.$/m.exec(text)?.[1]);
+  assert.equal(count(after), count(before) + found.length);
+  for (const [id, title] of found) {
+    const row = `| \`${id}\` | key | ${title} |`;
+    assert.ok(!before.split('\n').includes(row) && after.split('\n').includes(row), row);
+  }
+}
 
 function withDependency(): Registry {
   const raw = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8'));
@@ -245,7 +237,7 @@ const serving =
     return { status: 200, text: JSON.stringify({ jsonrpc: '2.0', id: 1, result }) };
   };
 
-test("the report reads at its latest block the code of an entry no ABI proof covers, from its recording too, and --compare flags code the chain no longer runs", async () => {
+test("the report reads at its latest block the code of an entry no ABI proof covers, from its recording too, and code the chain no longer runs is a key finding", async () => {
   const { subject, registry: seen } = loadReport(ROOT, withDependency(), TARGET);
   const block: BlockRef = { number: 300n, hash: `0x${'30'.repeat(32)}` as Hex };
   const recorded = recordingTransport(serving('0x6002' as Hex), REPLAY_ENDPOINTS);
@@ -255,12 +247,9 @@ test("the report reads at its latest block the code of an entry no ABI proof cov
   assert.match(committed, /^\| `liquidity` \| PASS \| 300 \|$/m);
   assert.match(committed, /^\| `liquidity` \| `0x5252525252525252525252525252525252525252` \| not proved: no call targets it and nothing the program reads is decoded with its ABI/m);
   const other = await readToday(createReader(REPLAY_ENDPOINTS, serving('0x6003' as Hex), { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [] }), subject, seen, { ...block, number: 400n });
-  const today = newKeyFindings([['liquidity/code.today', 'the chain ran other code than the registered code']]);
-  assert.deepEqual(compareReports(committed, quick(recording.pages, new Map(), subject, undefined, undefined, undefined, seen, undefined, other)), [
-    `Today's code › \`liquidity\` › Today: committed PASS, live FINDING: runs \`${keccakCode('0x6003' as Hex)}\``,
-    ...today.rows,
-    ...today.count(17, 1),
-  ]);
+  const changed = quick(recording.pages, new Map(), subject, undefined, undefined, undefined, seen, undefined, other);
+  assert.match(changed, new RegExp(`^\\| \`liquidity\` \\| FINDING: runs \`${keccakCode('0x6003' as Hex)}\` \\| 400 \\|$`, 'm'));
+  assertKeyFindings(committed, changed, [['liquidity/code.today', 'the chain ran other code than the registered code']]);
   assert.equal(await readToday(replayReader([]), scoped.subject, scoped.registry, block), undefined, 'a report with no such entry reads nothing');
 });
 
@@ -275,7 +264,7 @@ const answering =
     return { status: 200, text: JSON.stringify({ jsonrpc: '2.0', id: 1, result }) };
   };
 
-test("the report asks an adapter's factory and the vault naming it, from its recording too, and --compare flags a vault that no longer allocates through it", async () => {
+test("the report asks an adapter's factory and the vault naming it, from its recording too, and a vault that no longer allocates through it is a key finding", async () => {
   const { subject, registry: seen } = loadReport(ROOT, registry, { template: 'morpho/vault-v2-revoke', instance: 'acuto-usdc-v2-4a57' });
   const block: BlockRef = { number: 300n, hash: `0x${'30'.repeat(32)}` as Hex };
   const options = { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [] };
@@ -287,12 +276,9 @@ test("the report asks an adapter's factory and the vault naming it, from its rec
   assert.match(committed, /^\| `acuto-usdc-v2-4a57-market-adapter` \| `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2\(address\)` \| true \| 300 \|$/m);
   assert.match(committed, /^\| `acuto-usdc-v2-4a57-market-adapter` \| `acuto-usdc-v2-4a57` `isAdapter\(address\)` \| true \| 300 \|$/m);
   const removed = await readInstances(createReader(REPLAY_ENDPOINTS, answering(`0x${'00'.repeat(32)}` as Hex), options), subject, seen, { ...block, number: 400n });
-  const denied = newKeyFindings([['acuto-usdc-v2-4a57-market-adapter/factory.1.isAdapter.acuto-usdc-v2-4a57', 'a check the factory declares says no']]);
-  assert.deepEqual(compareReports(committed, render(removed)), [
-    'Factory answers › `acuto-usdc-v2-4a57-market-adapter` (2) › Answer: committed true, live REFUSED: acuto-usdc-v2-4a57 answered isAdapter(address) false for acuto-usdc-v2-4a57-market-adapter: it does not vouch for it',
-    ...denied.rows,
-    ...denied.count(66, 17),
-  ]);
+  const denied = render(removed);
+  assert.match(denied, /^\| `acuto-usdc-v2-4a57-market-adapter` \| `acuto-usdc-v2-4a57` `isAdapter\(address\)` \| REFUSED: acuto-usdc-v2-4a57 answered isAdapter\(address\) false for acuto-usdc-v2-4a57-market-adapter: it does not vouch for it \| 400 \|$/m);
+  assertKeyFindings(committed, denied, [['acuto-usdc-v2-4a57-market-adapter/factory.1.isAdapter.acuto-usdc-v2-4a57', 'a check the factory declares says no']]);
   assert.doesNotMatch(render(undefined), /isAdapter/, 'a recording that predates the answers prints them as not read');
   assert.equal(await readInstances(replayReader([]), scoped.subject, scoped.registry, block), undefined, 'a report with no such entry reads nothing');
 });
@@ -417,7 +403,7 @@ test('stored vault evidence holding a backtick or a character pnpm instance-evid
   assert.throws(() => quick(recording.pages, new Map(), undefined, new Map([[vault, `${stored}\n\`\`\`\n# Approved by the auditors`]])), ReportError);
   assert.throws(() => quick(recording.pages, new Map(), undefined, new Map([[vault, `${stored}\n<img src=x>`]])), ReportError);
   const text = quick(recording.pages, new Map(), undefined, new Map([[vault, stored]]));
-  assert.match(text, /stored output of `pnpm instance-evidence`, not recomputed by `pnpm test`; `pnpm report --compare` reads it again at the blocks it names/);
+  assert.match(text, /stored output of `pnpm instance-evidence`, not recomputed by `pnpm test`\.$/m);
   assert.ok(!/`pnpm test` writes it again/.test(text), 'the header does not claim pnpm test recomputes every section');
 });
 
@@ -459,46 +445,11 @@ test('a test transaction the template no longer matches is a key row of the Find
   assert.deepEqual(rows, fixtures.map((f) => `| \`fixture.${f.name}\` | key | the test transaction is judged differently now |`));
 });
 
-test('--compare prints a verdict that changed, and ignores the date and the block an ABI proof was read at', () => {
+test('a function its official page no longer shows is a key finding', () => {
   const pages = Object.fromEntries(Object.entries(recording.pages).map(([url, page]) => [url, url.endsWith('/src/Bundler3.sol') ? ({ kind: 'served', blocks: [] } as Page) : page]));
-  const differences = compareReports(quick(), quick(pages));
-  const unnamed = newKeyFindings([['bundler3/doc.0x374f435d.page', 'function not found on the docs page']]);
-  assert.deepEqual(differences, [
-    'Official documentation › `multicall((address,bytes,uint256,bool,bytes32)[])` › Function on page: committed PASS, live FINDING',
-    ...unnamed.rows,
-    ...unnamed.count(14, 0),
-  ]);
-
-  const committed = readFileSync(join(ROOT, generatedPath(ROOT, TARGET)), 'utf8');
-  const drifted = committed
-    .replace(/were read on \d{4}-\d{2}-\d{2}/, 'were read on 2027-01-01')
-    .replace(/\| 2638\d{4} \|$/gm, '| 27000000 |');
-  assert.notEqual(drifted, committed);
-  assert.deepEqual(compareReports(committed, drifted), []);
-  const point = /^  \d{4}-\d{2}-\d{2}  block \d+  [\d,.]+ usdc$/m.exec(committed)![0];
-  const raised = point.replace(/[\d,.]+ usdc$/, '140,000,000.000000 usdc');
-  const series = committed.replace(point, raised);
-  assert.deepEqual(compareReports(committed, series), [
-    `\`steakhouse-prime-usdc-v2-0f51\` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only committed: ${point}`,
-    `\`steakhouse-prime-usdc-v2-0f51\` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only live: ${raised}`,
-  ]);
-
-  const signer = '0x3846c3A30E62075Fa916216b35EF04B8F53931f6';
-  const attested = committed.replace(
-    '  attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash\n',
-    [
-      `  attestation  registry/morpho/sigs/calldata-MorphoBundlerV3.eip155-1-${signer}.json`,
-      `    signer     ${signer}, listed in auditors/`,
-      `    result     VALID: ERC-8176 schema and domain, data equals this descriptorHash, uid matches its fields, signature recovers ${signer} (both providers), never expires, not revoked as of block 26407564 (getRevokeOffchain, both providers)`,
-      '',
-    ].join('\n'),
-  );
-  assert.notEqual(attested, committed);
-  const revoked = attested.replace('VALID: ERC-8176', 'REVOKED: ERC-8176');
-  assert.equal(compareReports(attested, revoked).length, 2);
-  assert.match(compareReports(attested, revoked).join('\n'), /^ERC-7730 › [a-z0-9.-]+ 0x[0-9a-fA-F]{40} \(\w+\) › only live: .*REVOKED: ERC-8176/m);
-  const moved = committed.replace('| `bundler3` | `0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245` | router |', '| `bundler3` | `0x0000000000000000000000000000000000000001` | router |');
-  assert.deepEqual(compareReports(committed, moved), ['Registry entries › `bundler3` › Address: committed `0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245`, live `0x0000000000000000000000000000000000000001`']);
+  const [before, after] = [quick(), quick(pages)];
+  assert.match(after, /^\| `multicall\(\(address,bytes,uint256,bool,bytes32\)\[\]\)` \|.*\| FINDING \|/m);
+  assertKeyFindings(before, after, [['bundler3/doc.0x374f435d.page', 'function not found on the docs page']]);
 });
 
 test("docs.json's contract must be the call's target when the template binds the target", () => {
@@ -582,48 +533,7 @@ test('docs.json may name ERC-4626 for a vault function, and WETH9 only for WETH 
   assert.equal(onPage([{ text: '- name: deposits' }]).at(-1), 'FINDING', 'a declaration is not found inside a longer name');
 });
 
-const VAULT = 'steakhouse-high-yield-usdc-v2-a757';
-const vaultRecording: { exchanges: Exchange[] } = readRecording(join(ROOT, 'testdata', 'instance-evidence', `${VAULT}.json`));
-
-test('--compare reads each vault again at the blocks its evidence names, so a changed month, holder count or top-10 share differs', async () => {
-  const transport = replayTransport(vaultRecording.exchanges, REPLAY_ENDPOINTS);
-  const reader = createReader(REPLAY_ENDPOINTS, transport, { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [] });
-  const alchemy = alchemyCall(transport, REPLAY_ENDPOINTS[0].url, () => {}, []);
-  const read = async (vault: RegistryEntry, at: BlockTag) => {
-    const evidence = await gatherVaultEvidence(reader, alchemy, vault, sizeOf(vault, registry)!, at);
-    return 'kind' in evidence ? `UNVERIFIABLE ${evidence.reason}` : formatVaultEvidence(evidence, registry);
-  };
-  const { subject } = loadReport(ROOT, registry, { template: ID, instance: VAULT });
-  const vault = registry.entries.get(VAULT)!;
-  const honest = quick(recording.pages, new Map(), subject, new Map([[VAULT, await read(vault, 26385872n)]]), [], new Map(), registry);
-  const compare = async (committed: string) => compareReports(committed, quick(recording.pages, new Map(), subject, await vaultsAt(committed, [vault], read), [], new Map(), registry));
-  assert.deepEqual(await compare(honest), []);
-  for (const [was, now] of [
-    ['  2026-11-10  block 26385872  43,152,031.442033 usdc', '  2026-11-10  block 26385872  943,152,031.442033 usdc'],
-    ['holders      452 addresses', 'holders      45200 addresses'],
-    ['top 10       hold 53.52% of the shares', 'top 10       hold 5.35% of the shares'],
-  ] as const) {
-    const faked = honest.replace(was, now);
-    assert.notEqual(faked, honest, was);
-    const differences = await compare(faked);
-    assert.ok(differences.some((d) => d.startsWith(`\`${VAULT}\``) && d.includes(`only committed: ${now}`)), differences.join('\n'));
-    assert.ok(differences.some((d) => d.includes(`only live: ${was}`)), differences.join('\n'));
-  }
-});
-
-test('--compare fetches each recorded past transaction again by hash, so one the chain does not know differs', async () => {
-  const { subject } = scoped;
-  const { file, recording: past } = pastTxsRecordings(ROOT, subject).find((r) => r.recording.query.fromBlock !== undefined)!;
-  const committed = await summarizePastTxs(ROOT, registry, file, past);
-  assert.equal((await summarizePastTxs(ROOT, registry, file, past, replayReader(past.exchanges))).text, committed.text);
-  const first = past.exchanges.findIndex((e) => e.method === 'eth_getTransactionByHash');
-  const unknown = past.exchanges.map((e, i) => (i === first ? { ...e, answers: { alchemy: null, drpc: null } } : e));
-  const live = await summarizePastTxs(ROOT, registry, file, past, replayReader(unknown));
-  const differences = compareReports(quick(undefined, undefined, subject, undefined, [committed]), quick(undefined, undefined, subject, undefined, [live]));
-  assert.ok(differences.some((d) => d.startsWith(`\`${file}\``)), differences.join('\n'));
-});
-
-test('--compare traces each recorded transaction again, and a trace drpc now gives otherwise is UNVERIFIABLE with why', async () => {
+test('a recorded trace drpc gave no readable answer for counts the transaction as not checked', async () => {
   const { subject } = scoped;
   const { file, recording: past } = pastTxsRecordings(ROOT, subject).find((r) => r.recording.query.fromBlock !== undefined)!;
   const plain = await summarizePastTxs(ROOT, registry, file, past);
@@ -631,11 +541,6 @@ test('--compare traces each recorded transaction again, and a trace drpc now giv
   const traced = { ...past, traces: [{ hash: exact.hash, unreadable: 'recorded' }] };
   const recorded = await summarizePastTxs(ROOT, registry, file, traced);
   assert.match(recorded.text, /call traces, from drpc, of the transactions exactly the template: 1 transaction, 0 checked/);
-  const same = await summarizePastTxs(ROOT, registry, file, traced, replayReader(past.exchanges), async () => ({ kind: 'unreadable', why: 'recorded' }));
-  assert.equal(same.text, recorded.text);
-  const otherwise = await summarizePastTxs(ROOT, registry, file, traced, replayReader(past.exchanges), async () => ({ kind: 'unreadable', why: 'traced otherwise' }));
-  assert.notEqual(otherwise.text, recorded.text);
-  assert.match(otherwise.text, /UNVERIFIABLE, drpc's answer is no trace the program reads: drpc now traces it otherwise than the recording: 1/);
 });
 
 test('a recording that keeps its head block is studied again from it, and the command the report prints searches its windows again with --same-windows-as', async () => {
@@ -651,24 +556,6 @@ test('a recording that keeps its head block is studied again from it, and the co
   const name = file.replace(/^.*\//, '').replace(/\.json$/, '');
   assert.doesNotMatch(command(quick(undefined, undefined, subject, undefined, [before])) ?? '', /--same-windows-as/);
   assert.match(command(quick(undefined, undefined, subject, undefined, [after])) ?? '', new RegExp(` --max-txs ${past.query.maxTxs} --same-windows-as ${name} --record ${name}`));
-});
-
-test('--compare names the verdict core apart from the other program files a pull request changes, and the program gate', () => {
-  const changed = ['templates/morpho/vault-deposit/template.json', 'testdata/report/x.json', 'src/template/check.ts', 'scripts/report.ts', 'scripts/check-push.ts', 'docs/design.md'];
-  const isGate = (path: string) => path.startsWith('scripts/');
-  const lines = programChangeLines('origin/b', splitChanges(changed.map((path) => ({ path, modified: true })), new Set(['src/template/check.ts']), isGate));
-  assert.deepEqual(lines, [
-    'PROGRAM CHANGE  verdict core: origin/b changes 3 file(s) the signing commands run, or the check that keeps them apart; merging it changes what verify checks for every signing:',
-    '  src/template/check.ts',
-    '  scripts/report.ts',
-    '  scripts/check-push.ts',
-    'PROGRAM CHANGE  not the verdict: origin/b changes 1 other file(s) outside templates/, registry/ and testdata/, such as research tools and docs, which no signing runs:',
-    '  docs/design.md',
-    'PROGRAM CHANGE  gate: origin/b changes 2 file(s) of the program gate, the canaries of docs/canaries.txt, the files they import or read, or the code that enforces the rules; only the signer merges it:',
-    '  scripts/report.ts',
-    '  scripts/check-push.ts',
-  ]);
-  assert.deepEqual(programChangeLines('origin/b', splitChanges([{ path: 'templates/a/b/notes.json', modified: true }], new Set(), isGate)), []);
 });
 
 test('a market field lists every market with its id, lltv and parts, binds each MarketParams part, and prints the views read', () => {
@@ -757,7 +644,6 @@ test('--instance-of writes a new instance\'s report to instances/, and its notes
     rmSync(root, { recursive: true, force: true });
   }
   const text = quick(recording.pages, new Map(), scoped.subject, new Map([[TARGET.instance, recording.vaults[TARGET.instance]!]]));
-  assert.match(text, /`pnpm report morpho\/vault-deposit --instance-of steakhouse-prime-usdc-v2-0f51 --compare` reads/);
   assert.match(text, /stored as `pnpm instance-evidence` printed it/);
   assert.match(text, /the stored output of `pnpm instance-evidence`/);
 });

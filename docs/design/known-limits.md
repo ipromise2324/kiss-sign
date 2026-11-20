@@ -4,12 +4,17 @@ Part of [the kiss-sign design](../design.md).
 
 - A past transaction's call trace comes from drpc alone, since Alchemy's free plan does not serve one.
   Its token transfers and approvals are checked against the receipt both providers agree on, but a call that moves no token, and ETH sent inside a call, which logs nothing, rest on drpc's answer.
-  The receipt check counts movements, not where they sit: a `Transfer` of a token outside the registry, a registry token's mint or burn, from or to the zero address, and an `Approval` of a token outside the registry need no matching call, and a registry token's call that a hand-edited trace moves under another call, one already covered, still matches its log, so only `--compare`, which traces again each transaction whose trace the recording holds, catches such an edit.
+  The receipt check counts movements, not where they sit: a `Transfer` of a token outside the registry, a registry token's mint or burn, from or to the zero address, and an `Approval` of a token outside the registry need no matching call, and a registry token's call that a hand-edited trace moves under another call, one already covered, still matches its log, and no program traces a recorded transaction again, so such an edit is not caught.
   A trace only confirms a `flow` line in the report or asks the AI for a review; it never changes a verdict.
   A trace also shows one path: a contract may branch on state, so a line seen in every past transaction may not hold for the transaction to sign, and the effects check at signing is what protects the signer.
 - Etherscan name tags (labels such as "Morpho: Bundler3") are not used.
   Etherscan offers no free API for them.
   The verified contract name and the creator, read from the contract's Etherscan page, are used instead.
+- The registry's addresses come from the AI's research, and no program reads a recorded answer, call trace or code span again before the signer merges.
+  A re-check with main's code, `pnpm report --compare`, was removed on 2026-11-20: a steered AI may change and merge the research code such a check runs, since only the verdict core and the program gate are kept from it, so the check did not stop it.
+  A steered AI that also changes that code could add an attacker's contract to the registry, record answers that agree with it, and make the report look like any other.
+  `verify` and the independent computer then pass, since the transaction matches the card the signer built from that registry; both check the transaction against the card, not the registry against the protocol.
+  The signer's defense is the report's sources: open each page the report lists for the entry, check that its domain is the protocol's own, and that the page lists this address.
 - DefiLlama and CoinGecko are aggregators that take listing requests, so `pnpm check-sources` agreeing is supporting evidence, not proof.
   It finds the registrable domain with the Public Suffix List plus the shared hosts it leaves out (step 2); a shared host on neither still looks like one site, such as `dexscreener.com/<pair>` or `pump.fun/<coin>`.
   Every report line prints what it compared, or says that nothing was compared and why.
@@ -18,7 +23,7 @@ Part of [the kiss-sign design](../design.md).
   A `facts` reading is a size, not a check, and is not read again at signing.
 - `pnpm check-sources` reads a page the way a browser shows it with scripts off.
   A page that renders its addresses with JavaScript shows none of them, and its entries stay findings until a source that serves the text is found; an entry's `apiSource` adds the protocol API's answer beside it without changing it.
-  An API's answer is what its server says now: it shows the protocol's own service names the address, not that the service is correct, and an answer recorded on the AI's computer is checked again only by `--compare`.
+  An API's answer is what its server says now: it shows the protocol's own service names the address, not that the service is correct, and no program checks again an answer recorded on the AI's computer.
   It reads no stylesheet, so an address a stylesheet hides, such as with a class whose rule is `display:none`, still counts as shown.
   An element hidden by its own attributes whose end tag the page leaves out hides the rest of the page, which can only turn an agreement into a finding.
   Within a block, the label and the address only need to be close: a page that writes another contract's name next to the address, or an AI that picks a label from the wrong row of a block holding no other address, still agrees.
@@ -171,7 +176,7 @@ Part of [the kiss-sign design](../design.md).
   Storage other than the routes, such as the Liquidity layer's rates and limits, is not pinned (see the code pin limit above).
 - Earlier pins come from the chain, not from a review of that code.
   They answer whether a past transaction ran the code that contract held at its block, not whether that code was safe.
-  The generated report prints every span of every entry it covers and checks its first block and the block before on the chain, and `--compare` reads them again, so a hand-written span whose code the chain did not run there is a FINDING; one a reader of the report accepts is still unreviewed code.
+  The generated report prints every span of every entry it covers and checks its first block and the block before on the chain when the AI records it, so a hand-written span whose code the chain did not run there is a FINDING; no program reads those recorded answers again, and a span a reader of the report accepts is still unreviewed code.
   The spans of an entry no generated report covers are seen only in the `registry/contracts.json` diff.
   The check reads the two blocks at each edge, not every block in between, so code that changed and changed back inside a span is not seen; `verify` still reads the code at each transaction's own block.
   An entry pinned before ranges holds one pin from block 0 until `pnpm pin-code` reads it again, so a past transaction that ran before an upgrade of such an entry is `MISMATCH` (contract-code).
