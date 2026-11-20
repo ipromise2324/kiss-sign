@@ -135,7 +135,7 @@ Under it, each argument says who decides it, down to the steps inside a bundle: 
 
 Weak evidence is shown, not hidden. The Hyperithm vault is confirmed only by its factory, so it is flagged.
 
-![The Hyperithm vault confirmed only by its factory, flagged with low confidence, with what the AI also checked](docs/readme/report-address-flagged.png)
+![The Hyperithm vault confirmed only by its factory, flagged with low confidence](docs/readme/report-address-flagged.png)
 
 **Past transactions.** Other senders' executed transactions of this operation: here 8 match the template exactly.
 
