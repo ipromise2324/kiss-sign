@@ -62,7 +62,7 @@ b,strong{font-weight:590}
 h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:0;overflow-wrap:break-word}
 h1 .byai{vertical-align:6px;margin-left:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
-.sub{color:var(--fg2);margin:14px 0 0;max-width:60ch;font-size:17px}
+.sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
 .sub .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:inline-flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
@@ -92,7 +92,7 @@ section>h2{font-size:22px;font-weight:590;letter-spacing:-.012em;margin:0 0 8px;
 section>h2 .c{font-weight:400;font-size:var(--t-small);color:var(--fg3);letter-spacing:0}
 .lead{color:var(--fg3);font-size:var(--t-small);margin:0 0 20px}
 .lead.keylead{margin-top:12px}
-.intro{color:var(--fg2);margin:0 0 20px;max-width:62ch}
+.intro{color:var(--fg2);margin:0 0 20px}
 h3{font-size:16px;font-weight:590;margin:36px 0 10px}
 
 .props{margin:0;font-size:var(--t-row);border-top:1px solid var(--line)}
@@ -124,21 +124,19 @@ svg .call{stroke:var(--fg);stroke-width:1.4;fill:none}
 svg .inner{stroke:var(--fg3);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
 svg .inner.seen{stroke:var(--fg2);stroke-dasharray:none}
 svg .nested{stroke:var(--fg2);stroke-width:1.2;fill:none}
-svg .seenl{fill:var(--fg3);font:12.5px var(--sans)} svg .seenl a{fill:var(--fg2);text-decoration:underline}
 svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
-svg .ah{fill:var(--fg)} svg .ahi{fill:var(--fg3)} svg .ahg{fill:var(--ok)}
+svg .ah{fill:var(--fg)}
 svg .fn{fill:var(--fg);font:400 14px var(--mono)}
 svg .no{fill:var(--fg3);font:400 14px var(--mono)}
-svg .cap{fill:var(--fg2);font:14px var(--sans)}
-svg .capc{fill:var(--fg);font:13px var(--mono)}
-svg .codebox{fill:var(--hover);stroke:var(--line2)}
+svg .cap{display:flex;align-items:center;gap:8px;height:24px;white-space:nowrap;color:var(--fg2);font:14px/1 var(--sans)}
+svg .cap code{font-size:13px;padding:2px 6px}
+.mark{font-size:17px} .mark.ok{color:var(--ok)} .mark.bad{color:var(--bad)}
 svg .capg{fill:var(--ok);font:590 14px var(--sans)}
-svg .tagbox{fill:none;stroke:var(--fg3);stroke-dasharray:3 2}
-svg .tagt{fill:var(--fg2);font:12px var(--sans)}
 svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
 svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
 svg .axis{stroke:var(--line2)}
 svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.legend{list-style:none;margin:10px 0 14px;padding:0;display:flex;flex-direction:column;gap:4px;font-size:var(--t-small);color:var(--fg2)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
 
@@ -163,7 +161,6 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .arg .mid{margin-top:6px;font-size:var(--t-small);color:var(--fg3)}
 .arg .mid .addr{font-size:13px;color:var(--fg2)}
 .arg .raw{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere;line-height:1.5}
-.arg .raw .ex{font-family:var(--sans);font-size:12px;color:var(--fg3);margin-left:8px}
 .arg .is{color:var(--fg);font-size:var(--t-row);margin-top:4px}
 .arg .is .f3{font-size:var(--t-small)}
 .arg .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
@@ -198,6 +195,10 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .row .meta a{margin-left:8px;color:var(--fg2)}
 .row .rec{font-size:var(--t-row);margin-top:8px}
 .row .rec .lbl{color:var(--fg3);margin-right:8px}
+details.more>summary{cursor:pointer;list-style:none;display:inline-flex;gap:6px;align-items:center;margin-top:6px;color:var(--fg3);font-size:var(--t-small)}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary:hover{color:var(--fg)}
+details.more[open]>summary .chev{transform:rotate(90deg)}
 
 .ad{scroll-margin-top:24px;display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
 .ad .i{margin-top:4px}
@@ -248,7 +249,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
 .auto li{display:flex;gap:10px;align-items:baseline}
 .auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
-.foot{font-size:var(--t-small);color:var(--fg3);max-width:70ch;border-top:1px solid var(--line);padding-top:16px}
+.foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
 .foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
 </style>
@@ -302,13 +303,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <svg viewBox="0 0 660 136" role="img" aria-labelledby="dt dd">
     <title id="dt">交易流程</title>
     <desc id="dd">呼叫 1：Safe 呼叫 acuto-usdc-v2-4a57 的 multicall。</desc>
-    <defs><marker id="m-call" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="m-inside" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahi" d="M0 0L10 5L0 10z"/></marker><marker id="m-gets" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahg" d="M0 0L10 5L0 10z"/></marker></defs>
+    <defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>
     <line class="life" x1="90" y1="58" x2="90" y2="128"/>
     <rect class="node" x="24" y="14" width="132" height="44" rx="6"/><text class="nodet" x="90" y="34" text-anchor="middle">你的 Safe</text><text class="nodes" x="90" y="50" text-anchor="middle">發起</text>
     <line class="life" x1="280" y1="58" x2="280" y2="128"/>
     <rect class="node" x="193" y="14" width="174" height="44" rx="6"/><text class="nodet" x="280" y="34" text-anchor="middle">acuto-usdc-v2-4a57</text><text class="nodes" x="280" y="50" text-anchor="middle">金庫</text>
     <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">multicall</text>
-    <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#m-call)"/>
+    <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#head)"/>
   </svg>
   </div>
   <div class="scrollhint">圖可以左右滑動</div>
@@ -318,7 +319,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <span><span class="who you">你選</span>每次簽名選</span>
     <span><span class="who">固定</span>改了就 MISMATCH</span>
   </div>
-  <p class="lead keylead">每個單一值參數的第一行是 <code>cast decode-calldata</code> 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。acuto-usdc-v2-4a57 沒有換值測試的記錄可以當例子，每次簽名才決定的值只寫規則。</p>
+  <p class="lead keylead">下面逐一列出交易的每個呼叫。每個參數都寫出由誰決定、它的值或必須符合的規則，以及它的作用。</p>
   
   <div class="cb">
     <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">acuto-usdc-v2-4a57.</span>multicall</span><span class="sel">0xac9650d8</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol">github.com/morpho-org/vault-v2</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div></div>
@@ -545,46 +546,69 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="rows">
     <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-cbbtc-usdc-86/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t"><span class="lbl">重要</span> morpho-oracle-cbbtc-usdc-86：地址只在 1 個地方確認：協議 API</div>
-        <div class="meta">至少要 2 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-cbbtc-usdc-86">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>（市場 id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64），回答的 oracle 就是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div></div>
+      <div><div class="t"><span class="lbl">重要</span> 地址確認的地方不夠</div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="meta">morpho-oracle-cbbtc-usdc-86：地址只在 1 個地方確認：協議 API</div>
+          <div class="meta">至少要 2 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-cbbtc-usdc-86">看來源</a></div>
+          <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>（市場 id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64），回答的 oracle 就是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
     </div>
     <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-usp-usdc/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t"><span class="lbl">重要</span> morpho-oracle-usp-usdc：地址只在 1 個地方確認：協議 API</div>
-        <div class="meta">至少要 2 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-usp-usdc">看來源</a></div>
+      <div><div class="t"><span class="lbl">重要</span> 地址確認的地方不夠</div>
         <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>：usdc-usp-915 和 usdc-usp-86 兩個市場回答的 oracle 都是 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這兩個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="meta">morpho-oracle-usp-usdc：地址只在 1 個地方確認：協議 API</div>
+          <div class="meta">至少要 2 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-usp-usdc">看來源</a></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這兩個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
     </div>
     <div class="row" data-state="warn" data-grade="key" data-result="acuto-usdc-v2-4a57/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t"><span class="lbl">重要</span> acuto-usdc-v2-4a57：地址只在 1 個地方確認：工廠</div>
-        <div class="meta">至少要 2 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-acuto-usdc-v2-4a57">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>程式只有工廠確認：VaultV2Factory 回答 <code>isVaultV2</code> = true。AI 問 Morpho API 這個地址，名稱是 Acuto、沒有上架、curator 是 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5；AI 沒找到不靠網址帶地址就列出它的頁面。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>只在你就是這個 vault 的 curator 或 allocator 時用；先在 Morpho app 的 curator 頁比對地址。</span><span class="byai">AI 研究</span></span></div></div>
+      <div><div class="t"><span class="lbl">重要</span> 地址確認的地方不夠</div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>程式只有工廠確認：VaultV2Factory 回答 <code>isVaultV2</code> = true。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="meta">acuto-usdc-v2-4a57：地址只在 1 個地方確認：工廠</div>
+          <div class="meta">至少要 2 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-acuto-usdc-v2-4a57">看來源</a></div>
+          <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>程式只有工廠確認：VaultV2Factory 回答 <code>isVaultV2</code> = true。AI 問 Morpho API 這個地址，名稱是 Acuto、沒有上架、curator 是 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5；AI 沒找到不靠網址帶地址就列出它的頁面。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>只在你就是這個 vault 的 curator 或 allocator 時用；先在 Morpho app 的 curator 頁比對地址。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
     </div>
     <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-weeth-usdc-86/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t"><span class="lbl">重要</span> morpho-oracle-weeth-usdc-86：地址只在 1 個地方確認：協議 API</div>
-        <div class="meta">至少要 2 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-weeth-usdc-86">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>（市場 id 0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e），回答的 oracle 就是 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411；換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div></div>
+      <div><div class="t"><span class="lbl">重要</span> 地址確認的地方不夠</div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="meta">morpho-oracle-weeth-usdc-86：地址只在 1 個地方確認：協議 API</div>
+          <div class="meta">至少要 2 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-weeth-usdc-86">看來源</a></div>
+          <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>（市場 id 0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e），回答的 oracle 就是 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411；換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span><code>revoke</code> 要的資料必須跟當初 <code>submit</code> 的一模一樣，包括上限數字；不一樣的話 vault 會 revert（沒有排隊的資料）。只有 curator 或 sentinel 能取消。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>照排隊中的那筆填市場和兩個上限；verify 確認兩個 <code>executableAt</code> 都減少。</span><span class="byai">AI 研究</span></span></div></div>
+      <div><div class="t"><span class="aiw" data-ai><span><code>revoke</code> 要的資料必須跟當初 <code>submit</code> 的一模一樣，包括上限數字；不一樣的話 vault 會 revert（沒有排隊的資料）。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span><code>revoke</code> 要的資料必須跟當初 <code>submit</code> 的一模一樣，包括上限數字；不一樣的話 vault 會 revert（沒有排隊的資料）。只有 curator 或 sentinel 能取消。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>照排隊中的那筆填市場和兩個上限；verify 確認兩個 <code>executableAt</code> 都減少。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>這個 vault 沒有列在 Morpho app 上（Morpho API <code>listed</code> = false），2026-03 約 705 萬 USDC，現在約 76 萬；68 個地址持有股份，最大一個占 30.36%，前 10 名占 96.50%。curator 是 Safe 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>只有這個 vault 的 curator、sentinel 或 allocator 會用到；它小又集中，簽之前再看一次待確認。</span><span class="byai">AI 研究</span></span></div></div>
+      <div><div class="t"><span class="aiw" data-ai><span>這個 vault 沒有列在 Morpho app 上（Morpho API <code>listed</code> = false），2026-03 約 705 萬 USDC，現在約 76 萬；68 個地址持有股份，最大一個占 30.36%，前 10 名占 96.50%。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span>這個 vault 沒有列在 Morpho app 上（Morpho API <code>listed</code> = false），2026-03 約 705 萬 USDC，現在約 76 萬；68 個地址持有股份，最大一個占 30.36%，前 10 名占 96.50%。curator 是 Safe 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>只有這個 vault 的 curator、sentinel 或 allocator 會用到；它小又集中，簽之前再看一次待確認。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>這個 vault 的 <code>increaseAbsoluteCap</code> 和 <code>increaseRelativeCap</code> 的 timelock 都是 3 天（鏈上讀 <code>timelock</code>，259200 秒）：取消要在這 3 天內，執行後就不能取消。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>發現排錯就盡快取消。</span><span class="byai">AI 研究</span></span></div></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>發現排錯就盡快取消。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
     </div>
   </div>
 </section>
@@ -735,6 +759,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="next">
   <h2>下一步</h2>
   <ol class="steps">
+    <li><div>核准前，打開「<a href="#addresses">地址</a>」裡每個地址列出的來源：確認每個網域是協議自己的，而且頁面上列著這個地址。</div></li>
     <li><div>第一次用這個模板，或模板改過之後，先核准它<pre class="cmd"><code>pnpm kiss-sign template approve morpho/vault-v2-revoke</code></pre>
       <p class="then">它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 <code>y</code>。</p></div></li>
     <li><div>做卡片<pre class="cmd"><code>pnpm kiss-sign card new morpho/vault-v2-revoke</code></pre>
