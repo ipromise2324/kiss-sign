@@ -1,4 +1,11 @@
 {
+  "verdict": {
+    "status": "caution",
+    "text": {
+      "en": "Usable with care: only the factory confirms this vault's address and no Hyperithm page lists it. Read To review first and send a small amount first.",
+      "zh-TW": "可以用，但要小心：只有工廠確認這個 vault 的地址，Hyperithm 也沒有頁面列出它。先看待確認，第一次先送小額。"
+    }
+  },
   "flow": [
     {
       "after": 2,
@@ -21,7 +28,7 @@
       "function": "deposit(uint256,address)",
       "text": {
         "en": "Deposits the pulled USDC into this vault with `deposit`, which mints the shares to the Safe",
-        "zh-TW": "用 `deposit` 把拉來的 USDC 存進這個金庫，金庫把份額鑄給 Safe"
+        "zh-TW": "用 `deposit` 把拉來的 USDC 存進這個 vault，vault 把份額鑄給 Safe"
       },
       "sources": [
         "https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol#L89",
@@ -29,55 +36,130 @@
       ]
     }
   ],
-  "verdict": {
-    "status": "caution",
-    "text": {
-      "en": "OK to use. No official Hyperithm page lists this vault's address. Read To review first, and send a small amount the first time.",
-      "zh-TW": "可以用。Hyperithm 沒有官方頁列出這個 vault 的地址，先看待確認，第一次先送小額。"
-    }
-  },
   "pastTxsConclusion": {
-    "en": "Other Safes' deposits call only `multicall`, with no approve first. EOAs mostly deposit with a permit signature instead; a Safe cannot use permit.",
-    "zh-TW": "其他 Safe 存款只呼叫 `multicall`，沒有先 approve。EOA 多半改用 permit 簽名存，Safe 不能用 permit。"
+    "en": "The other Safes that deposited differently called only `multicall`, with no `approve` in the same transaction, so they used an allowance given earlier. Most EOAs put a USDC `permit` into the bundle instead of a separate `approve`.",
+    "zh-TW": "做法不同的其他 Safe 只呼叫 `multicall`，同一筆交易裡沒有 `approve`，用的是先前給的授權。EOA 多半把 USDC 的 `permit` 放進 bundle，取代另外的 `approve`。"
   },
   "judgments": [
     {
       "text": {
-        "en": "Within a year this vault grew from about 3,300 to about 7.5 million USDC, and reached about 12.6 million in 2026-07. The largest holder has 51.77% and the top 10 hold 90.10%.",
-        "zh-TW": "這個 vault 一年內從約 3,300 升到約 750 萬 USDC，2026-07 曾到約 1,260 萬；最大持有人占 51.77%，前 10 名占 90.10%。"
+        "en": "This vault's size moved sharply over the year: it rose from almost nothing to its peak within two months, then more than halved and doubled again several times. A few holders own most of the shares. The program's figures are in the Instance section.",
+        "zh-TW": "這個 vault 的規模一年內變動很大：兩個月內從幾乎是零升到最高點，之後又幾度減半再翻倍。大部分份額集中在少數幾個持有人手上。程式量到的數字在「實例」區。"
       },
       "recommendation": {
-        "en": "Deposit only an amount you can accept being unable to withdraw for a while, and send a small amount first.",
-        "zh-TW": "只存你能接受暫時提不出的金額，先送小額。"
+        "en": "Deposit only an amount you can accept being unable to withdraw for a while, since a large holder leaving can use up what can be withdrawn. Send a small amount first.",
+        "zh-TW": "只存你能接受暫時提不出的金額，因為大戶離開可能把能提的錢用完。先送小額。"
       }
+    }
+  ],
+  "context": [
+    {
+      "title": {
+        "en": "Where deposits go",
+        "zh-TW": "存款去哪裡"
+      },
+      "text": {
+        "en": "A Vault V2 passes a deposit on in the same transaction only when an allocator has set a liquidity adapter (`liquidityAdapter`); otherwise the USDC stays idle in the vault until an allocator calls `allocate`. AI read `liquidityAdapter()` on chain at block 26,455,691: it is the zero address, so your USDC first stays in the vault. Before that, from 2025-10-27 it was a MorphoVaultV1Adapter (0x0a57f5e279dc0b6132e8fe4b21b998902e03d15f), which deposited into the Morpho V1 vault 0x777791C4d6DC2CE140D00D2828a7C93503c67777; from 2026-04-28 it was the market adapter below; on 2026-05-14 it was cleared. So past deposits moved money on in the same transaction, and today's do not.",
+        "zh-TW": "Vault V2 只有在 allocator 設了流動性 adapter（`liquidityAdapter`）時，才會在同一筆交易裡把存款轉出去；沒設的話，USDC 先閒置在 vault 裡，等 allocator 呼叫 `allocate`。AI 在區塊 26,455,691 讀鏈上的 `liquidityAdapter()`：是零地址，所以你的 USDC 會先留在 vault。在這之前，2025-10-27 起是 MorphoVaultV1Adapter（0x0a57f5e279dc0b6132e8fe4b21b998902e03d15f），把錢存進 Morpho V1 vault 0x777791C4d6DC2CE140D00D2828a7C93503c67777；2026-04-28 起是下面的市場 adapter；2026-05-14 被清空。所以過去的存款會在同一筆交易裡被轉出去，現在的不會。"
+      },
+      "sources": [
+        "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L764-L774",
+        "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L615-L621",
+        "https://etherscan.io/tx/0xdf15d37677c950c85fe5d3cc7ce31503ee80cbed4c07aad9c1affe97c51680aa",
+        "https://etherscan.io/tx/0x40f2adbf810b179f5ced5aed0500246ffdeae1c7c4462f4b47dccf6fa5bfa855",
+        "https://etherscan.io/tx/0xca0b9bb9beae1ac4be8b5d45ba647eb3f587e50e0aae70a0d1566bc5b250b825"
+      ]
+    },
+    {
+      "title": {
+        "en": "Which markets it lends to",
+        "zh-TW": "借給哪些市場"
+      },
+      "text": {
+        "en": "The vault has one adapter (`adaptersLength` is 1 on chain), MorphoMarketV1AdapterV2 0x92872B97d89B54646D036E3aFd2BcCb84d8e3CA1, whose `parentVault()` is this vault. When an allocator calls `allocate`, it supplies the USDC to the Morpho Blue market the allocator names; the adapter accepts only markets that lend USDC with Morpho's adaptive curve rate model. Each allocation must stay within the caps the curator set for the adapter, for the collateral token and for the market, or it fails. Morpho's API lists most of the allocation in the markets with PT-USDat-14JAN2027 and mHyperBTC as collateral; it moves whenever an allocator reallocates.",
+        "zh-TW": "這個 vault 只有一個 adapter（鏈上 `adaptersLength` 是 1）：MorphoMarketV1AdapterV2 0x92872B97d89B54646D036E3aFd2BcCb84d8e3CA1，它的 `parentVault()` 就是這個 vault。allocator 呼叫 `allocate` 時，它把 USDC 供給 allocator 指定的 Morpho Blue 市場；adapter 只接受借出 USDC、用 Morpho adaptive curve 利率模型的市場。每次分配都必須在策展人替 adapter、抵押品代幣和市場設的上限內，否則失敗。Morpho 的 API 顯示大部分分配在以 PT-USDat-14JAN2027 和 mHyperBTC 為抵押品的市場；allocator 重新分配時就會變。"
+      },
+      "sources": [
+        "https://github.com/morpho-org/vault-v2/blob/3aedc886637fe6edee27dbe2042baf12d8117be3/src/adapters/MorphoMarketV1AdapterV2.sol#L176-L199",
+        "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L569-L589",
+        "https://etherscan.io/address/0x92872B97d89B54646D036E3aFd2BcCb84d8e3CA1#code",
+        "https://api.morpho.org/graphql"
+      ]
+    },
+    {
+      "title": {
+        "en": "Who can change it",
+        "zh-TW": "誰能改"
+      },
+      "text": {
+        "en": "Two allocators, 0x00b8e1509398ED692C3F326CbAf1694F9A881e27 and 0x9123B39058C5bCD00D4b0b9142fE9F527dDb562F (`isAllocator` true on chain), can move funds between markets and set the liquidity adapter at any time, within the caps. The curator 0x75178137D3B4B9A0F771E0e149b00fB8167BA325 must wait out a timelock read on chain: 3 days to add an adapter or raise a cap, 7 days to remove an adapter. Adding an allocator, changing the fees and setting the force-deallocate penalty have a timelock of 0, so the curator can do them at once. The curator or a sentinel can lower a cap at once.",
+        "zh-TW": "兩個 allocator：0x00b8e1509398ED692C3F326CbAf1694F9A881e27 和 0x9123B39058C5bCD00D4b0b9142fE9F527dDb562F（鏈上 `isAllocator` 為 true），可以隨時在上限內把資金移到別的市場、設定流動性 adapter。策展人 0x75178137D3B4B9A0F771E0e149b00fB8167BA325 要等鏈上讀到的 timelock：加 adapter 或調高上限等 3 天，移除 adapter 等 7 天。新增 allocator、改手續費、設定強制撤出罰金的 timelock 是 0，策展人可以立刻做。策展人或 sentinel 可以立刻調低上限。"
+      },
+      "sources": [
+        "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L340-L357",
+        "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L524-L532",
+        "https://etherscan.io/tx/0x791343a20aed1c2c34aa090f5bb50ecaffc3affc20974404c7b24d1c0f026a26",
+        "https://etherscan.io/tx/0x9223e5fcb97f37f285899856780ad1bdb137f0638a1217aa554b9129fbefa4bf"
+      ]
+    },
+    {
+      "title": {
+        "en": "Getting the USDC back",
+        "zh-TW": "怎麼把 USDC 拿回來"
+      },
+      "text": {
+        "en": "A withdrawal is paid from the USDC idle in the vault, and from the liquidity adapter only when one is set. With none set, a withdrawal larger than the idle USDC fails until an allocator moves USDC back, or until someone calls `forceDeallocate`, which pulls it from a market and charges the withdrawing account a penalty. AI read on chain at block 26,455,723: about 1.55 USDC idle and a penalty of 0 for the adapter; the curator can raise it to at most 2% at once. Either way a market can return only the USDC its borrowers have not borrowed.",
+        "zh-TW": "提款先從 vault 裡閒置的 USDC 付，只有設了流動性 adapter 時才會從它撤。沒設的話，比閒置 USDC 多的提款會失敗，直到 allocator 把 USDC 撤回，或有人呼叫 `forceDeallocate`：它從市場撤出 USDC，並向提款的帳戶收罰金。AI 在區塊 26,455,723 讀鏈上：閒置約 1.55 USDC，這個 adapter 的罰金是 0；策展人可以立刻調高，最多 2%。不論哪種，市場只能還出借款人沒借走的 USDC。"
+      },
+      "sources": [
+        "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L793-L811",
+        "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L813-L833",
+        "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/libraries/ConstantsLib.sol#L12"
+      ]
     }
   ],
   "reviews": {
     "hyperithm-usdc-apex-v2-9e2f/address": {
       "status": "concern",
       "text": {
-        "en": "The program's only check is the factory: VaultV2Factory answers `isVaultV2` = true. AI opened the vault's page on the Morpho app in a browser: the name is Hyperithm USDC Apex and the curator is 0x75178137D3B4B9A0F771E0e149b00fB8167BA325, the same as the V1 vault's. AI found no Hyperithm or Morpho page that lists this address without the address being in the URL.",
-        "zh-TW": "程式只有工廠確認：VaultV2Factory 回答 `isVaultV2` = true。AI 用瀏覽器打開 Morpho app 的 vault 頁，名稱是 Hyperithm USDC Apex，curator 是 0x75178137D3B4B9A0F771E0e149b00fB8167BA325，跟 V1 vault 相同。AI 沒找到 Hyperithm 或 Morpho 不靠網址帶地址就列出這個地址的頁面。"
+        "en": "The program's only place is the factory: VaultV2Factory answers `isVaultV2` = true. Etherscan shows the contract VaultV2 at 0x093272C07700d3cA5301C3Bf9B3A392624179E2F, made by the factory 0xA1D94F746dEfa1928926b84fB2596c06926C0405. AI found no Hyperithm or Morpho page that lists it without the address in the URL.",
+        "zh-TW": "程式唯一的確認來源是工廠：VaultV2Factory 回答 `isVaultV2` = true。Etherscan 顯示 0x093272C07700d3cA5301C3Bf9B3A392624179E2F 是 VaultV2 合約，由工廠 0xA1D94F746dEfa1928926b84fB2596c06926C0405 建立。AI 沒找到 Hyperithm 或 Morpho 不靠網址帶地址就列出它的頁面。"
       },
       "recommendation": {
-        "en": "First click into the vault from the Morpho app's vault list and compare the address. Send a small amount the first time.",
-        "zh-TW": "先在 Morpho app 的 vault 列表點進去比對地址，第一次送小額。"
+        "en": "Open the vault from the Morpho app's vault list yourself and compare the full address. Send a small amount the first time.",
+        "zh-TW": "自己從 Morpho app 的 vault 列表點進這個 vault，比對完整地址。第一次送小額。"
       }
     }
   },
   "entries": {
     "hyperithm-usdc-apex-v2-9e2f": {
       "role": {
-        "en": "USDC vault (V2) managed by Hyperithm",
-        "zh-TW": "Hyperithm 管理的 USDC vault（V2）"
+        "en": "USDC vault (V2) named Hyperithm USDC Apex",
+        "zh-TW": "名為 Hyperithm USDC Apex 的 USDC vault（V2）"
       },
       "sources": [
         {
           "text": {
-            "en": "The vault's page on the Morpho app, opened in a browser",
-            "zh-TW": "用瀏覽器打開 Morpho app 的 vault 頁"
+            "en": "Morpho's API (api.morpho.org/graphql), `vaultV2s` filtered by the curator 0x75178137D3B4B9A0F771E0e149b00fB8167BA325 on chain 1, answers this address as Hyperithm USDC Apex (hyperUSDCa), listed. A search, so it does not count",
+            "zh-TW": "Morpho 的 API（api.morpho.org/graphql）以策展人 0x75178137D3B4B9A0F771E0e149b00fB8167BA325 篩選鏈 1 的 `vaultV2s`，回答這個地址是 Hyperithm USDC Apex（hyperUSDCa），已上架。這是搜尋，不算一個來源"
           },
-          "url": "https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex",
+          "url": "https://api.morpho.org/graphql",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "Etherscan: verified contract VaultV2, created through the factory 0xA1D94F746dEfa1928926b84fB2596c06926C0405 at block 23,666,454",
+            "zh-TW": "Etherscan：已驗證合約 VaultV2，在區塊 23,666,454 經由工廠 0xA1D94F746dEfa1928926b84fB2596c06926C0405 建立"
+          },
+          "url": "https://etherscan.io/address/0x093272C07700d3cA5301C3Bf9B3A392624179E2F#code",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Hyperithm's own site lists no Morpho vault and no vault address",
+            "zh-TW": "Hyperithm 自己的網站沒有列出任何 Morpho vault 或 vault 地址"
+          },
+          "url": "https://www.hyperithm.com",
           "result": "attention"
         }
       ]
