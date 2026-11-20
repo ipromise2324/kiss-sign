@@ -125,13 +125,6 @@ Weak evidence is shown, not hidden. The Hyperithm vault was confirmed only by it
 
 ![An address confirmed in only one place, the factory, flagged with low confidence: the Morpho app page could not be read, CoinGecko had nothing to compare, Immunefi's scope does not list it, and no deployer was proven](docs/readme/report-address-flagged.png)
 
-The report was made on the AI's computer. Before you merge, read its facts again with your own `main`'s code. `--compare` prints each fact that differs, except what changes between two honest reads: the date the listings were read, DefiLlama's TVL and most block numbers. It fetches and traces again the past transactions the report recorded, but it does not search anew, and it reuses the recorded API answer for each signed message, such as a CoW order. It also checks that each HTML report is exactly what your `main`'s code writes from the recordings and the AI's notes. Run it once more with `--instance-of` for each per-instance report the branch changes:
-
-```sh
-git fetch origin <branch>
-pnpm report <protocol>/<operation> [--instance-of <instance>] --compare --data origin/<branch>
-```
-
 You review an operation once. After that you review only what changes: another vault's report, a registry pull request, or a changed template. Merging is your confirmation. Then approve the template on your own computer, which records its hash so `verify` refuses any other version:
 
 ```sh
@@ -220,7 +213,8 @@ Models are trained to resist prompt injection, but a page your AI reads can stil
 | Attack | Stopped by |
 |---|---|
 | The AI gets something wrong, such as a template that allows too much | `verify` refuses a delegatecall other than to the official MultiSend, an unlimited approval other than a standing one the registry declares, such as to Permit2, a Safe setting change other than an owner or threshold change the card declares, and an unexplained balance change, whatever the template says; the rest shows in the report you review |
-| A steered AI changes the report, `verify`'s code or its verdict | A bad transaction must still reach your Safe, through a compromised web app or protocol app; otherwise the attack fails. `--compare` reads the report's facts again with your `main`'s code, and a program change never shares a pull request with a template or the registry |
+| A steered AI changes the report, `verify`'s code or its verdict | A bad transaction must still reach your Safe, through a compromised web app or protocol app; otherwise the attack fails. A program change never shares a pull request with a template or the registry |
+| A steered AI adds a fake contract to the registry and makes the report look normal | Only you. `verify` and the second computer pass, since the transaction matches the card. The AI must be steered and change kiss-sign's code: hard, but possible. Open the sources the report lists, check that each domain is the protocol's own and that the page lists this address |
 
 With the second computer, `check.sh` decodes the transaction without kiss-sign, so you see the real functions and arguments.
 
