@@ -117,7 +117,7 @@ The report shows what the transaction will do and where each fact came from. Tex
 
 ![The To review section: one key item, the vault's address confirmed in too few places, and three AI judgments, each with Details folded](docs/readme/report-review.png)
 
-**The flow.** A diagram of where your tokens go: which contracts the Safe calls, which contracts those call in turn, and what comes back to the Safe. A solid line is a call the program also found in other senders' past transactions.
+**The flow.** A diagram of where your tokens go: which contracts the Safe calls, which contracts those call in turn, and what comes back to the Safe. A solid line is a call the AI read in the contract's source and the program also saw in other senders' past transactions.
 
 ![The call flow: the Safe approves USDC to general-adapter-1 and calls bundler3.multicall; the adapter pulls the USDC and deposits it into the vault, lines seen in 8 of 8 past transactions; the shares come back to the Safe](docs/readme/report-flow.png)
 
