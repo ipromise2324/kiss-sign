@@ -20,7 +20,7 @@ A template that was wrong when the signer approved it is not caught by any check
 | Signer | Owns their fork of kiss-sign; states intents, reads reports, merges template and registry pull requests and changes to the program gate, fills and confirms intent cards, confirms address-book entries, proposes on Safe, in the hardened tier runs the independent check, compares hashes on the hardware wallet | Pastes keys into the chat |
 | AI (any coding agent) | Researches addresses, ABIs and past transactions; writes the report; writes the template, and changes the program when an operation needs it, a change to the verdict core in a pull request of its own; opens the pull request to the signer's fork; merges a program pull request itself once the [program gate](design/program-ownership.md#the-program-gate) passes and a fresh review finds no security regression | Merges a template, registry or program gate pull request, fills or seals a card, decides a verdict, asks for or prints an API key |
 | Program (the engine) | Fetches and hashes the Safe transaction, decodes it, runs the template's checks, simulates, compares effects with the card | Reads web pages, follows instructions found in data |
-| Independent check (hardened tier) | Fetches the transaction by nonce, computes its hashes, decodes each call, labels addresses from the signer's own list | Reads kiss-sign, its templates or its registry; compares the transaction with the card |
+| Independent check (hardened tier) | Fetches the transaction by nonce, computes its hashes, decodes each call | Reads kiss-sign, its templates or its registry; compares the transaction with the card |
 
 ### Who authorises what
 
