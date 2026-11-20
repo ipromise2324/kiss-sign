@@ -47,8 +47,9 @@ It first pages each source through the whole last year, placed by the head block
 ${YEAR_PAGES} pages of 1000. When every source finishes within them, it reads each anchor party once at
 the year's last block for a Safe: the address minted to, burned from, the side --from or --to
 leaves open, or the contract that logged an event with no --token. It studies every transaction
-with a Safe party, leaving at least a quarter of --max-txs to the rest, and fills the remaining
-places from the rest, each taken evenly in block order.
+with a Safe party, leaving the rest Math.ceil(--max-txs / 4) places, and fills the remaining
+places from the rest, each taken evenly in block order. When an adapter or bundler moves the
+token, the party checked is that contract, so no Safe is found and the choice is the even sample.
 Otherwise it searches 12 windows of up to 7200 blocks spread over the year, and studies at most
 --max-txs (at least 12) transactions shared evenly between them. A window with more transfers
 than one page of a source is halved until they fit, and the report names the blocks left out.
