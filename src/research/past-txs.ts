@@ -66,7 +66,7 @@ export type WindowRun = { readonly asked: BlockRange; readonly range: BlockRange
  */
 export type PartyRule = { readonly kind: 'side'; readonly side: 'from' | 'to' | 'emitter'; readonly noun: string } | { readonly kind: 'none'; readonly why: string };
 
-export function partyRule(anchor: Omit<Anchor, keyof BlockRange>): PartyRule {
+function partyRule(anchor: Omit<Anchor, keyof BlockRange>): PartyRule {
   switch (anchor.kind) {
     case 'mint':
       return { kind: 'side', side: 'to', noun: 'the address minted to' };
@@ -184,7 +184,7 @@ const spacedSample = <T>(items: readonly T[], cap: number): T[] =>
  * At most `maxTxs` of the Safe-party transactions and the rest, each list taken evenly in its order: the Safes' first,
  * but never more than leaves a quarter of `maxTxs` for the rest while the rest holds that many.
  */
-export function safesFirst<T>(safes: readonly T[], rest: readonly T[], maxTxs: number): { readonly safes: T[]; readonly rest: T[] } {
+function safesFirst<T>(safes: readonly T[], rest: readonly T[], maxTxs: number): { readonly safes: T[]; readonly rest: T[] } {
   const restFloor = Math.min(rest.length, Math.floor(maxTxs / 4));
   const chosen = spacedSample(safes, maxTxs - restFloor);
   return { safes: chosen, rest: spacedSample(rest, maxTxs - chosen.length) };
@@ -220,14 +220,14 @@ async function chooseByParty(
     parties.forEach((party, i) => proofs.set(party, read[i] as PartyProof));
   }
   const isSafe = (hash: Hex) => [...(partiesOf.get(hash) ?? [])].some((party) => proofs.get(party)?.kind === 'safe');
-  const chosen = safesFirst(hashes.filter(isSafe), hashes.filter((hash) => !isSafe(hash)), maxTxs);
+  const [safeTxs, rest] = [hashes.filter(isSafe), hashes.filter((hash) => !isSafe(hash))];
+  const chosen = safesFirst(safeTxs, rest, maxTxs);
   const picked = new Set([...chosen.safes, ...chosen.rest]);
-  const safeCount = hashes.filter(isSafe).length;
   const proofCount = (kind: PartyProof['kind']) => [...proofs.values()].filter((p) => p.kind === kind).length;
   return {
     sample: hashes.filter((hash) => picked.has(hash)),
     check: rule.kind === 'none' ? { kind: 'not-checked', why: rule.why } : { kind: 'checked', noun: rule.noun, block: at, parties: parties.length, safes: proofCount('safe'), unreadable: proofCount('unreadable') },
-    selection: { safes: safeCount, safesChosen: chosen.safes.length, rest: hashes.length - safeCount, restChosen: chosen.rest.length },
+    selection: { safes: safeTxs.length, safesChosen: chosen.safes.length, rest: rest.length, restChosen: chosen.rest.length },
   };
 }
 
@@ -574,8 +574,7 @@ function renderTraces(lines: string[], run: PastTxs): void {
 }
 
 function chosenText({ safes, safesChosen, rest, restChosen }: Selection, checked: boolean): string {
-  const others = restChosen === rest ? `all ${rest}` : `${restChosen} of ${rest}`;
-  if (!checked) return `${others} transactions`;
+  if (!checked) return `${restChosen === rest ? 'all ' : `${restChosen} of `}${plural(rest, 'transaction')}`;
   const withSafe = safes === 0 ? 'no transaction with a proven Safe party' : `${safesChosen === safes ? 'all ' : `${safesChosen} of `}${plural(safes, 'transaction')} with a proven Safe party`;
   return `${withSafe}, and ${restChosen === rest ? `all ${rest} others` : `${restChosen} of the other ${rest}`}`;
 }
