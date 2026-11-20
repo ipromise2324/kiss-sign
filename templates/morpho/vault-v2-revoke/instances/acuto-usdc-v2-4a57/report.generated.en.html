@@ -29,6 +29,7 @@ a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
+.addr.line{display:block;margin-top:4px}
 .num{font-variant-numeric:tabular-nums}
 .f2{color:var(--fg2)} .f3{color:var(--fg3)}
 b,strong{font-weight:590}
@@ -140,6 +141,8 @@ svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
 svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
 svg .axis{stroke:var(--line2)}
 svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.chart svg{min-width:0}
+@media (max-width:600px){.chart .tick{font-size:18px}.chart .thin{display:none}}
 .legend{list-style:none;margin:10px 0 14px;padding:0;display:flex;flex-direction:column;gap:4px;font-size:var(--t-small);color:var(--fg2)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
@@ -182,6 +185,14 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .part .raw{font-size:var(--t-small)}
 .part .is{font-size:var(--t-small)}
 .part .ai{margin-top:4px}
+details.fixed>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);color:var(--fg2);font-size:var(--t-small)}
+details.fixed>summary::-webkit-details-marker{display:none}
+details.fixed>summary:hover{color:var(--fg)}
+details.fixed[open]>summary .chev{transform:rotate(90deg)}
+.parts>details.fixed{grid-column:1/-1;display:grid;grid-template-columns:subgrid}
+.parts>details.fixed[open]::details-content{display:contents}
+.parts>details.fixed>summary{grid-column:1/-1;padding:10px 0;border-bottom:0;border-top:1px solid var(--line)}
+.parts>details.fixed:first-child>summary,.plabel+details.fixed>summary{border-top:0;padding-top:2px}
 @media (max-width:720px){
   .arg{grid-template-columns:minmax(0,1fr)}
   .arg .nm{flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
@@ -192,6 +203,8 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
+.row .t .grade{font-weight:400;font-size:var(--t-label);color:var(--fg3);margin-right:10px;padding-right:10px;border-right:1px solid var(--line2);vertical-align:1px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .row .meta{font-size:var(--t-row);color:var(--fg2);margin-top:6px}
 .row .meta a{margin-left:8px;color:var(--fg2)}
 .row .rec{font-size:var(--t-row);margin-top:8px}
@@ -270,7 +283,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="Contents">
   <h2>Contents</h2>
-  <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">Instance</a></li><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">13</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  <ol><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">Instance</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">13</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
 </nav>
 
 <div class="main">
@@ -293,9 +306,84 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="warn"><span class="lbl">Advice</span><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg><span class="aiw" data-ai><span>OK to use, but this is a small unlisted vault with concentrated holders, and only the factory confirms its address. See To review.</span><span class="byai">AI research: be careful</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
-    <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">Instance</a></li><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">13</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+    <ol><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">Instance</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">13</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
   </details>
 </header>
+
+<section id="review">
+  <h2>To review <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></span></h2>
+  <p class="lead">The AI checked each item first and gives its advice.</p>
+  <div class="rows">
+    <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-cbbtc-usdc-86/address">
+      <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
+      <div><div class="t"><span class="grade"><span class="vh">Grade: </span>key</span>Address confirmed in too few places · morpho-oracle-cbbtc-usdc-86</div>
+        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI has no browser that runs JavaScript, so it did not open the market&#39;s page on the Morpho app.</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="meta">Confirmed in only 1 place: protocol API</div>
+          <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-morpho-oracle-cbbtc-usdc-86">see source</a></div>
+          <div class="rec"><span class="aiw" data-ai><span>AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain (market id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64), and the oracle it answers is 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a. The market id is the hash of the five parameters, so a different oracle means a different market.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To check again, open this market&#39;s page on the Morpho app and compare the oracle address.</span><span class="byai">AI research</span></span></div>
+        </details></div>
+    </div>
+    <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-usp-usdc/address">
+      <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
+      <div><div class="t"><span class="grade"><span class="vh">Grade: </span>key</span>Address confirmed in too few places · morpho-oracle-usp-usdc</div>
+        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain: for both markets, usdc-usp-915 and usdc-usp-86, the oracle it answers is 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d.</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="meta">Confirmed in only 1 place: protocol API</div>
+          <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-morpho-oracle-usp-usdc">see source</a></div>
+          <div class="rec"><span class="aiw" data-ai><span>The market id is the hash of the five parameters, so a different oracle means a different market.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To check again, open these two markets&#39; pages on the Morpho app and compare the oracle address.</span><span class="byai">AI research</span></span></div>
+        </details></div>
+    </div>
+    <div class="row" data-state="warn" data-grade="key" data-result="acuto-usdc-v2-4a57/address">
+      <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
+      <div><div class="t"><span class="grade"><span class="vh">Grade: </span>key</span>Address confirmed in too few places · acuto-usdc-v2-4a57</div>
+        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>The program&#39;s only check is the factory: VaultV2Factory answers <code>isVaultV2</code> = true.</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="meta">Confirmed in only 1 place: factory</div>
+          <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-acuto-usdc-v2-4a57">see source</a></div>
+          <div class="rec"><span class="aiw" data-ai><span>AI asked the Morpho API about this address: the name is Acuto, it is not listed, and the curator is 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5. AI found no page that lists it without the address being in the URL.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Use this only if you are this vault&#39;s curator or allocator. First compare the address on the Morpho app&#39;s curator page.</span><span class="byai">AI research</span></span></div>
+        </details></div>
+    </div>
+    <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-weeth-usdc-86/address">
+      <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
+      <div><div class="t"><span class="grade"><span class="vh">Grade: </span>key</span>Address confirmed in too few places · morpho-oracle-weeth-usdc-86</div>
+        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI has no browser that runs JavaScript, so it did not open the market&#39;s page on the Morpho app.</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="meta">Confirmed in only 1 place: protocol API</div>
+          <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-morpho-oracle-weeth-usdc-86">see source</a></div>
+          <div class="rec"><span class="aiw" data-ai><span>AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain (market id 0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e), and the oracle it answers is 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411. A different oracle means a different market.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To check again, open this market&#39;s page on the Morpho app and compare the oracle address.</span><span class="byai">AI research</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>The data <code>revoke</code> takes must be exactly the same as in the original <code>submit</code>, cap numbers included; otherwise the vault reverts (there is no queued data for it).</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="rec"><span class="aiw" data-ai><span>Only the curator or a sentinel can cancel.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Fill in the market and both caps from the queued one. verify confirms that both <code>executableAt</code> values go down.</span><span class="byai">AI research</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>This vault is not listed on the Morpho app (Morpho API <code>listed</code> = false).</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="rec"><span class="aiw" data-ai><span>It held about 7.05 million USDC in 2026-03 and about 760,000 now. 68 addresses hold shares; the largest has 30.36% and the top 10 hold 96.50%. Its curator is a Safe, 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Only this vault&#39;s curator, sentinel or allocator needs this. It is small and concentrated, so read To review again before signing.</span><span class="byai">AI research</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>This vault&#39;s timelock for both <code>increaseAbsoluteCap</code> and <code>increaseRelativeCap</code> is 3 days (<code>timelock</code> read on chain, 259200 seconds).</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="rec"><span class="aiw" data-ai><span>Cancel within those 3 days; once it is executed, it cannot be cancelled.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>If you find a queuing mistake, cancel it as soon as possible.</span><span class="byai">AI research</span></span></div>
+        </details></div>
+    </div>
+  </div>
+</section>
 
 <section id="flow">
   <h2>Flow <span class="c">1 call</span></h2>
@@ -313,7 +401,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <line class="call" x1="90" y1="104" x2="280" y2="104" marker-end="url(#head)"/>
   </svg>
   </div>
-  <div class="scrollhint">Scroll the diagram sideways</div>
+  <div class="scrollhint">Scroll the diagram sideways; acuto-usdc-v2-4a57 is at the far right</div>
   <div class="key">
     <span class="k0">Who decides</span>
     <span><span class="who you">you type</span>typed at each signing</span>
@@ -338,8 +426,6 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">idData</div><div><div class="is">the arguments of <code>capId</code></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The data that identifies the cap. The vault uses its keccak256 as the cap&#39;s id; here it means &#34;this market in this adapter&#34;.</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">kind<div class="pchips"><span class="who">fixed</span></div></div><div><div class="raw">&#34;this/marketParams&#34;</div><div class="is">fixed to &#34;this/marketParams&#34;</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The kind of id, fixed to this/marketParams: a cap on one market, not on the whole adapter or on a collateral token.</span></span></div></div></div>
         <div class="part"><div class="pn">adapter<div class="pchips"><span class="who you">you pick: vault</span></div></div><div><div class="raw">0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5</div><div class="is"><a href="#a-acuto-usdc-v2-4a57-market-adapter">acuto-usdc-v2-4a57-market-adapter</a> <span class="f3">the adapter of the vault you pick</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The vault&#39;s market adapter, through which funds go into Morpho Blue markets.</span></span></div></div></div>
         <div class="part"><div class="pn">marketParams<div class="pchips"><span class="who you">you pick: market</span></div></div><div><div class="is">the market you pick <span class="f3">5 values; any one different is a MISMATCH</span></div>
@@ -392,6 +478,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">lltv</div><div><div class="raw">860000000000000000</div><div class="is">86%</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The market&#39;s liquidation threshold.</span></span></div></div></div>
       </div></div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 fixed value; any change is a MISMATCH</summary>
+        <div class="part"><div class="pn">kind<div class="pchips"><span class="who">fixed</span></div></div><div><div class="raw">&#34;this/marketParams&#34;</div><div class="is">fixed to &#34;this/marketParams&#34;</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The kind of id, fixed to this/marketParams: a cap on one market, not on the whole adapter or on a collateral token.</span></span></div></div></div>
+      </details>
       </div></div>
         <div class="part"><div class="pn">newAbsoluteCap<div class="pchips"><span class="who you">you type: amount</span></div></div><div><div class="is">the amount you type</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The queued absolute cap number. Typing <code>max</code> means what was queued was no absolute cap.</span></span></div></div></div>
@@ -406,8 +496,6 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">idData</div><div><div class="is">the arguments of <code>capId</code></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The data that identifies the cap. The vault uses its keccak256 as the cap&#39;s id; here it means &#34;this market in this adapter&#34;.</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">kind<div class="pchips"><span class="who">fixed</span></div></div><div><div class="raw">&#34;this/marketParams&#34;</div><div class="is">fixed to &#34;this/marketParams&#34;</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The kind of id, fixed to this/marketParams: a cap on one market, not on the whole adapter or on a collateral token.</span></span></div></div></div>
         <div class="part"><div class="pn">adapter<div class="pchips"><span class="who you">you pick: vault</span></div></div><div><div class="raw">0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5</div><div class="is"><a href="#a-acuto-usdc-v2-4a57-market-adapter">acuto-usdc-v2-4a57-market-adapter</a> <span class="f3">the adapter of the vault you pick</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The vault&#39;s market adapter, through which funds go into Morpho Blue markets.</span></span></div></div></div>
         <div class="part"><div class="pn">marketParams<div class="pchips"><span class="who you">you pick: market</span></div></div><div><div class="is">the market you pick <span class="f3">5 values; any one different is a MISMATCH</span></div>
@@ -460,6 +548,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">lltv</div><div><div class="raw">860000000000000000</div><div class="is">86%</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The market&#39;s liquidation threshold.</span></span></div></div></div>
       </div></div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 fixed value; any change is a MISMATCH</summary>
+        <div class="part"><div class="pn">kind<div class="pchips"><span class="who">fixed</span></div></div><div><div class="raw">&#34;this/marketParams&#34;</div><div class="is">fixed to &#34;this/marketParams&#34;</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The kind of id, fixed to this/marketParams: a cap on one market, not on the whole adapter or on a collateral token.</span></span></div></div></div>
+      </details>
       </div></div>
         <div class="part"><div class="pn">newRelativeCap<div class="pchips"><span class="who you">you type: percent</span></div></div><div><div class="is">the percent you type</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The queued relative cap number.</span></span></div></div></div>
@@ -499,28 +591,27 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div><dt>Top 10</dt><dd><span class="num">96.50%</span></dd><dd class="src">of all shares</dd></div>
   </dl>
   <h3>Monthly totalAssets</h3>
-  <div class="diagram">
-  <svg viewBox="0 0 660 194" role="img" aria-labelledby="vt vd">
+  <div class="diagram chart">
+  <svg viewBox="0 0 660 198" role="img" aria-labelledby="vt vd">
     <title id="vt">Monthly totalAssets</title>
     <desc id="vd">13 months, 2025-11-20 to 2026-11-17, highest 6,974,944.3 usdc</desc>
     <text class="tick" x="16" y="18">highest 6,974,944.3 usdc</text>
     <line class="axis" x1="16" y1="150" x2="644" y2="150"/>
-    <rect class="barna" x="25.7" y="138" width="29.0" height="12"><title>2025-11-20: no code yet</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">Nov</text><text class="tick" x="40.2" y="184" text-anchor="middle">2025</text>
-    <rect class="barna" x="74.0" y="138" width="29.0" height="12"><title>2025-12-21: no code yet</title></rect><text class="tick" x="88.5" y="168" text-anchor="middle">Dec</text>
-    <rect class="barna" x="122.3" y="138" width="29.0" height="12"><title>2026-01-20: no code yet</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">Jan</text><text class="tick" x="136.8" y="184" text-anchor="middle">2026</text>
-    <rect class="barna" x="170.6" y="138" width="29.0" height="12"><title>2026-02-19: no code yet</title></rect><text class="tick" x="185.1" y="168" text-anchor="middle">Feb</text>
+    <rect class="barna" x="25.7" y="138" width="29.0" height="12"><title>2025-11-20: no code yet</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">Nov</text><text class="tick" x="40.2" y="188" text-anchor="middle">2025</text>
+    <rect class="barna" x="74.0" y="138" width="29.0" height="12"><title>2025-12-21: no code yet</title></rect><text class="tick thin" x="88.5" y="168" text-anchor="middle">Dec</text>
+    <rect class="barna" x="122.3" y="138" width="29.0" height="12"><title>2026-01-20: no code yet</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">Jan</text><text class="tick" x="136.8" y="188" text-anchor="middle">2026</text>
+    <rect class="barna" x="170.6" y="138" width="29.0" height="12"><title>2026-02-19: no code yet</title></rect><text class="tick thin" x="185.1" y="168" text-anchor="middle">Feb</text>
     <rect class="bar" x="218.9" y="34" width="29.0" height="116"><title>2026-03-21: 6,974,944.3 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">Mar</text>
-    <rect class="bar" x="267.2" y="69" width="29.0" height="81"><title>2026-04-20: 4,864,288.01 usdc</title></rect><text class="tick" x="281.7" y="168" text-anchor="middle">Apr</text>
+    <rect class="bar" x="267.2" y="69" width="29.0" height="81"><title>2026-04-20: 4,864,288.01 usdc</title></rect><text class="tick thin" x="281.7" y="168" text-anchor="middle">Apr</text>
     <rect class="bar" x="315.5" y="92" width="29.0" height="58"><title>2026-05-20: 3,501,213.31 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">May</text>
-    <rect class="bar" x="363.8" y="106" width="29.0" height="44"><title>2026-06-19: 2,652,332.13 usdc</title></rect><text class="tick" x="378.3" y="168" text-anchor="middle">Jun</text>
+    <rect class="bar" x="363.8" y="106" width="29.0" height="44"><title>2026-06-19: 2,652,332.13 usdc</title></rect><text class="tick thin" x="378.3" y="168" text-anchor="middle">Jun</text>
     <rect class="bar" x="412.1" y="126" width="29.0" height="24"><title>2026-07-20: 1,464,274.89 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">Jul</text>
-    <rect class="bar" x="460.4" y="97" width="29.0" height="53"><title>2026-08-19: 3,160,027.78 usdc</title></rect><text class="tick" x="474.9" y="168" text-anchor="middle">Aug</text>
+    <rect class="bar" x="460.4" y="97" width="29.0" height="53"><title>2026-08-19: 3,160,027.78 usdc</title></rect><text class="tick thin" x="474.9" y="168" text-anchor="middle">Aug</text>
     <rect class="bar" x="508.7" y="130" width="29.0" height="20"><title>2026-09-18: 1,176,078.9 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">Sep</text>
-    <rect class="bar" x="557.0" y="134" width="29.0" height="16"><title>2026-10-18: 954,131.35 usdc</title></rect><text class="tick" x="571.5" y="168" text-anchor="middle">Oct</text>
+    <rect class="bar" x="557.0" y="134" width="29.0" height="16"><title>2026-10-18: 954,131.35 usdc</title></rect><text class="tick thin" x="571.5" y="168" text-anchor="middle">Oct</text>
     <rect class="bar last" x="605.4" y="137" width="29.0" height="13"><title>2026-11-17: 759,018.27 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">Nov</text>
   </svg>
   </div>
-  <div class="scrollhint">Scroll the diagram sideways</div>
   <details class="fold">
     <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Figures for 13 months</summary>
     <dl class="props">
@@ -539,81 +630,6 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div><dt class="num">2026-11-17</dt><dd class="num">759,018.27 usdc</dd></div>
     </dl>
   </details>
-</section>
-
-<section id="review">
-  <h2>To review <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></span></h2>
-  <p class="lead">The AI checked each item first and gives its advice.</p>
-  <div class="rows">
-    <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-cbbtc-usdc-86/address">
-      <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
-      <div><div class="t"><span class="lbl">key</span> Address confirmed in too few places · morpho-oracle-cbbtc-usdc-86</div>
-        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI has no browser that runs JavaScript, so it did not open the market&#39;s page on the Morpho app.</span><span class="byai">AI research</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="meta">morpho-oracle-cbbtc-usdc-86: address confirmed in only 1 place: protocol API</div>
-          <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-morpho-oracle-cbbtc-usdc-86">see source</a></div>
-          <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI has no browser that runs JavaScript, so it did not open the market&#39;s page on the Morpho app. AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain (market id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64), and the oracle it answers is 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a. The market id is the hash of the five parameters, so a different oracle means a different market.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To check again, open this market&#39;s page on the Morpho app and compare the oracle address.</span><span class="byai">AI research</span></span></div>
-        </details></div>
-    </div>
-    <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-usp-usdc/address">
-      <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
-      <div><div class="t"><span class="lbl">key</span> Address confirmed in too few places · morpho-oracle-usp-usdc</div>
-        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain: for both markets, usdc-usp-915 and usdc-usp-86, the oracle it answers is 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d.</span><span class="byai">AI research</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="meta">morpho-oracle-usp-usdc: address confirmed in only 1 place: protocol API</div>
-          <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-morpho-oracle-usp-usdc">see source</a></div>
-          <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain: for both markets, usdc-usp-915 and usdc-usp-86, the oracle it answers is 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d. The market id is the hash of the five parameters, so a different oracle means a different market.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To check again, open these two markets&#39; pages on the Morpho app and compare the oracle address.</span><span class="byai">AI research</span></span></div>
-        </details></div>
-    </div>
-    <div class="row" data-state="warn" data-grade="key" data-result="acuto-usdc-v2-4a57/address">
-      <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
-      <div><div class="t"><span class="lbl">key</span> Address confirmed in too few places · acuto-usdc-v2-4a57</div>
-        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>The program&#39;s only check is the factory: VaultV2Factory answers <code>isVaultV2</code> = true.</span><span class="byai">AI research</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="meta">acuto-usdc-v2-4a57: address confirmed in only 1 place: factory</div>
-          <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-acuto-usdc-v2-4a57">see source</a></div>
-          <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>The program&#39;s only check is the factory: VaultV2Factory answers <code>isVaultV2</code> = true. AI asked the Morpho API about this address: the name is Acuto, it is not listed, and the curator is 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5. AI found no page that lists it without the address being in the URL.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Use this only if you are this vault&#39;s curator or allocator. First compare the address on the Morpho app&#39;s curator page.</span><span class="byai">AI research</span></span></div>
-        </details></div>
-    </div>
-    <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-weeth-usdc-86/address">
-      <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
-      <div><div class="t"><span class="lbl">key</span> Address confirmed in too few places · morpho-oracle-weeth-usdc-86</div>
-        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI has no browser that runs JavaScript, so it did not open the market&#39;s page on the Morpho app.</span><span class="byai">AI research</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="meta">morpho-oracle-weeth-usdc-86: address confirmed in only 1 place: protocol API</div>
-          <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-morpho-oracle-weeth-usdc-86">see source</a></div>
-          <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI has no browser that runs JavaScript, so it did not open the market&#39;s page on the Morpho app. AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain (market id 0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e), and the oracle it answers is 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411. A different oracle means a different market.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To check again, open this market&#39;s page on the Morpho app and compare the oracle address.</span><span class="byai">AI research</span></span></div>
-        </details></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>The data <code>revoke</code> takes must be exactly the same as in the original <code>submit</code>, cap numbers included; otherwise the vault reverts (there is no queued data for it).</span><span class="byai">AI research</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>The data <code>revoke</code> takes must be exactly the same as in the original <code>submit</code>, cap numbers included; otherwise the vault reverts (there is no queued data for it). Only the curator or a sentinel can cancel.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Fill in the market and both caps from the queued one. verify confirms that both <code>executableAt</code> values go down.</span><span class="byai">AI research</span></span></div>
-        </details></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>This vault is not listed on the Morpho app (Morpho API <code>listed</code> = false).</span><span class="byai">AI research</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>This vault is not listed on the Morpho app (Morpho API <code>listed</code> = false). It held about 7.05 million USDC in 2026-03 and about 760,000 now. 68 addresses hold shares; the largest has 30.36% and the top 10 hold 96.50%. Its curator is a Safe, 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Only this vault&#39;s curator, sentinel or allocator needs this. It is small and concentrated, so read To review again before signing.</span><span class="byai">AI research</span></span></div>
-        </details></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>This vault&#39;s timelock for both <code>increaseAbsoluteCap</code> and <code>increaseRelativeCap</code> is 3 days (<code>timelock</code> read on chain, 259200 seconds).</span><span class="byai">AI research</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>This vault&#39;s timelock for both <code>increaseAbsoluteCap</code> and <code>increaseRelativeCap</code> is 3 days (<code>timelock</code> read on chain, 259200 seconds). Cancel within those 3 days; once it is executed, it cannot be cancelled.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>If you find a queuing mistake, cancel it as soon as possible.</span><span class="byai">AI research</span></span></div>
-        </details></div>
-    </div>
-  </div>
 </section>
 
 <section id="wallet">
@@ -762,7 +778,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="next">
   <h2>Next steps</h2>
   <ol class="steps">
-    <li><div>Before you approve, open the sources <a href="#addresses">Addresses</a> lists for each address: check that each domain is the protocol&#39;s own and that the page lists this address.</div></li>
+    <li><div>Before you approve, open each address&#39;s sources in <a href="#addresses">Addresses</a> and check that each domain is the protocol&#39;s own and that the page lists the address.</div></li>
     <li><div>The first time you use this template, or after it changes, approve it<pre class="cmd"><code>pnpm kiss-sign template approve morpho/vault-v2-revoke</code></pre>
       <p class="then">It prints the template, the commit of main on GitHub and the template&#39;s keccak256. Answer <code>y</code> only if it is the one you reviewed.</p></div></li>
     <li><div>Make the card<pre class="cmd"><code>pnpm kiss-sign card new morpho/vault-v2-revoke</code></pre>

@@ -29,6 +29,7 @@ a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
+.addr.line{display:block;margin-top:4px}
 .num{font-variant-numeric:tabular-nums}
 .f2{color:var(--fg2)} .f3{color:var(--fg3)}
 b,strong{font-weight:590}
@@ -140,6 +141,8 @@ svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
 svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
 svg .axis{stroke:var(--line2)}
 svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.chart svg{min-width:0}
+@media (max-width:600px){.chart .tick{font-size:18px}.chart .thin{display:none}}
 .legend{list-style:none;margin:10px 0 14px;padding:0;display:flex;flex-direction:column;gap:4px;font-size:var(--t-small);color:var(--fg2)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
@@ -182,6 +185,14 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .part .raw{font-size:var(--t-small)}
 .part .is{font-size:var(--t-small)}
 .part .ai{margin-top:4px}
+details.fixed>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);color:var(--fg2);font-size:var(--t-small)}
+details.fixed>summary::-webkit-details-marker{display:none}
+details.fixed>summary:hover{color:var(--fg)}
+details.fixed[open]>summary .chev{transform:rotate(90deg)}
+.parts>details.fixed{grid-column:1/-1;display:grid;grid-template-columns:subgrid}
+.parts>details.fixed[open]::details-content{display:contents}
+.parts>details.fixed>summary{grid-column:1/-1;padding:10px 0;border-bottom:0;border-top:1px solid var(--line)}
+.parts>details.fixed:first-child>summary,.plabel+details.fixed>summary{border-top:0;padding-top:2px}
 @media (max-width:720px){
   .arg{grid-template-columns:minmax(0,1fr)}
   .arg .nm{flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
@@ -192,6 +203,8 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
+.row .t .grade{font-weight:400;font-size:var(--t-label);color:var(--fg3);margin-right:10px;padding-right:10px;border-right:1px solid var(--line2);vertical-align:1px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .row .meta{font-size:var(--t-row);color:var(--fg2);margin-top:6px}
 .row .meta a{margin-left:8px;color:var(--fg2)}
 .row .rec{font-size:var(--t-row);margin-top:8px}
@@ -270,7 +283,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">8</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">8</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
 </nav>
 
 <div class="main">
@@ -293,9 +306,39 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>訂單內容由雜湊鎖住，授權剛好是賣出數量；verify 依賴 CoW API。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">8</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">8</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
   </details>
 </header>
+
+<section id="review">
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
+  <p class="lead">每一項 AI 都先查過，附上建議。</p>
+  <div class="rows">
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>verify 要從 CoW 的訂單 API（api.cow.fi）讀回訂單原文。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span>API 讀不到時結果是 UNVERIFIABLE。API 回的內容只當資料，雜湊對不上就不算數。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>UNVERIFIABLE 時不要簽，等 API 恢復再跑一次 verify。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>卡片的「最少收到的數量」要你自己填：CoW app 的滑價每次報價不同（smart slippage），鏈上也沒有 CoW 的報價可讀。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>照 CoW app 顯示的最少收到數量填，不要填得更低。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>這兩項 app 會自己填。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span>到期時間模板限制在區塊時間後 7 天內（app 設 30 分鐘）；appData 模板不限制（可能含 0.1% 的合作方手續費）。成交仍不會少於你填的最少數量，也只給 Safe。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受。訂單過期前不想要了，用 Safe 撤回。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+  </div>
+</section>
 
 <section id="flow">
   <h2>流程 <span class="c">2 個呼叫</span></h2>
@@ -317,7 +360,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <line class="call" x1="90" y1="156" x2="467" y2="156" marker-end="url(#head)"/>
   </svg>
   </div>
-  <div class="scrollhint">圖可以左右滑動</div>
+  <div class="scrollhint">圖可以左右滑動，最右邊是 gpv2-settlement</div>
   <div class="key">
     <span class="k0">誰決定</span>
     <span><span class="who you">你填</span>每次簽名填</span>
@@ -330,16 +373,18 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   
   <div class="cb">
     <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">代幣（sell-token）.</span>approve</span><span class="sel">0x095ea7b3</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/ethereum/ERCs/blob/ae65e89408f387ffb47d220879925c4ab384dfc2/ERCS/erc-20.md">ERC-20 標準頁</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span> <span class="f3">標準定義這個函式，不代表合約照標準做</span></div></div>
-    <div class="arg" data-field="1.approve.spender">
-      <div class="nm"><span class="pn">spender</span><span class="who">固定</span></div>
-      <div class="val"><div class="raw">0xC92E8bdf79f0507f65a392b0ab4667716BFE0110</div><div class="is"><a href="#a-gpv2-vault-relayer">gpv2-vault-relayer</a></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>被授權者：CoW 的 vault relayer。CoW app 預設授權無上限，模板要你在 app 選剛好的數量。</span></span></div></div>
-    </div>
     <div class="arg" data-field="1.approve.value">
       <div class="nm"><span class="pn">value</span><span class="who you">你填：金額（sell-amount）</span></div>
       <div class="val"><div class="is">你填的金額（sell-amount）</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>授權的數量，必須剛好等於要賣的數量。</span></span></div></div>
     </div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 個固定的值；改了任何一個都是 MISMATCH</summary>
+    <div class="arg" data-field="1.approve.spender">
+      <div class="nm"><span class="pn">spender</span><span class="who">固定</span></div>
+      <div class="val"><div class="raw">0xC92E8bdf79f0507f65a392b0ab4667716BFE0110</div><div class="is"><a href="#a-gpv2-vault-relayer">gpv2-vault-relayer</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>被授權者：CoW 的 vault relayer。CoW app 預設授權無上限，模板要你在 app 選剛好的數量。</span></span></div></div>
+    </div>
+      </details>
   </div>
   <div class="cb">
     <div class="callh"><span class="no">2</span><span class="fnn"><span class="ct">gpv2-settlement.</span>setPreSignature</span><span class="sel">0xec6cb13f</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/src/contracts/mixins/GPv2Signing.sol">github.com/cowprotocol/contracts</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div></div>
@@ -355,8 +400,6 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要賣的代幣。</span></span></div></div></div>
         <div class="part"><div class="pn">buyToken</div><div><div class="is">你選的代幣（buy-token）</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要買的代幣。</span></span></div></div></div>
-        <div class="part"><div class="pn">receiver</div><div><div class="is">你的 Safe</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>買到的代幣給誰。CoW app 填 Safe 自己；填別的地址就會把錢送走。</span></span></div></div></div>
         <div class="part"><div class="pn">sellAmount</div><div><div class="is">你填的金額（sell-amount）</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要賣的數量，賣單整筆賣出。</span></span></div></div></div>
         <div class="part"><div class="pn">buyAmount</div><div><div class="is">至少你填的金額（min-buy） <span class="f3">比這個少就 MISMATCH</span></div>
@@ -365,6 +408,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>訂單到期時間（Unix 秒）。CoW Swap app 設為報價後 30 分鐘（DEFAULT_DEADLINE_FROM_NOW）。模板只允許判定交易所用區塊的時間之後最多 7 天（604,800 秒）；更晚就是 MISMATCH。在這之內，較晚的到期時間只會讓訂單開著更久：它仍然最多成交一次，數量不少於卡片上的最低值，而且付給 Safe；Safe 可以用 invalidateOrder 取消它。過去的訂單：pnpm past-txs（testdata/research/cow-swap-approve-presign.json）量了 19 個 Safe 在同一筆交易裡先授權再預簽的 19 筆批次，到期時間減去所在區塊時間：中位數 1,632 秒（約 27 分鐘），最大 5,353 秒（約 1.5 小時）；6 筆 EOA 單獨預簽的訂單最多 1,772 秒。為什麼是 7 天而不更短：較大的 cow/swap 紀錄（testdata/research/cow-swap-presign.json）看到一個 Safe 預簽的訂單在區塊後 604,767 秒到期，差一點 7 天。到期時間不限制時，訂單可以開好幾個月，簽名者早已不再注意，它仍能成交。</span></span></div></div></div>
         <div class="part"><div class="pn">appData</div><div><div class="is">每筆不同 <span class="f3">訂單裡的值，由雜湊鎖住；模板不限，也不換值測試</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>app 附在訂單上的 JSON 的雜湊（app 名稱、滑價、手續費、hooks）。結算合約不讀它。</span></span></div></div></div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>6 個固定的值；改了任何一個都是 MISMATCH</summary>
+        <div class="part"><div class="pn">receiver</div><div><div class="is">你的 Safe</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>買到的代幣給誰。CoW app 填 Safe 自己；填別的地址就會把錢送走。</span></span></div></div></div>
         <div class="part"><div class="pn">feeAmount</div><div><div class="raw">0</div><div class="is">固定為 0</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>訂單內扣的手續費，現在 CoW 的訂單都是 0。</span></span></div></div></div>
         <div class="part"><div class="pn">kind</div><div><div class="raw">&#34;sell&#34;</div><div class="is">固定為 &#34;sell&#34;</div>
@@ -375,18 +421,23 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>erc20 表示從 Safe 的一般代幣餘額扣，不用 Balancer vault。</span></span></div></div></div>
         <div class="part"><div class="pn">buyTokenBalance</div><div><div class="raw">&#34;erc20&#34;</div><div class="is">固定為 &#34;erc20&#34;</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>erc20 表示買到的代幣直接轉進 Safe 的一般餘額。</span></span></div></div></div>
+      </details>
       </div></div>
-        <div class="part"><div class="pn">owner</div><div><div class="is">你的 Safe</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>訂單擁有者，必須是送出這筆交易的 Safe；合約也會檢查。</span></span></div></div></div>
         <div class="part"><div class="pn">validTo</div><div><div class="is">跟 <code>calls[1].args.orderUid.packed.digest.eip712.fields.validTo</code> 同一個數</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>跟訂單裡的到期時間相同。</span></span></div></div></div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 個固定的值；改了任何一個都是 MISMATCH</summary>
+        <div class="part"><div class="pn">owner</div><div><div class="is">你的 Safe</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>訂單擁有者，必須是送出這筆交易的 Safe；合約也會檢查。</span></span></div></div></div>
+      </details>
       </div>
     </div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 個固定的值；改了任何一個都是 MISMATCH</summary>
     <div class="arg" data-field="2.setPreSignature.signed">
       <div class="nm"><span class="pn">signed</span><span class="who">固定</span></div>
       <div class="val"><div class="raw">true</div><div class="is">固定為 true</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>true 表示預簽；false 是撤回。</span></span></div></div>
     </div>
+      </details>
   </div>
   <h3>交易後</h3>
   <dl class="props">
@@ -410,43 +461,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <p class="srcline">程式在 2026-11-18 讀 <a href="https://defillama.com/protocol/cowswap">DefiLlama</a>、<a href="https://defillama.com/hacks">DefiLlama hacks</a>和鏈上。標 AI 研究的是 AI 查的。</p>
 </section>
 
-<section id="review">
-  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
-  <p class="lead">每一項 AI 都先查過，附上建議。</p>
-  <div class="rows">
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>verify 要從 CoW 的訂單 API（api.cow.fi）讀回訂單原文。</span><span class="byai">AI 研究</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="aiw" data-ai><span>verify 要從 CoW 的訂單 API（api.cow.fi）讀回訂單原文。API 讀不到時結果是 UNVERIFIABLE。API 回的內容只當資料，雜湊對不上就不算數。</span><span class="byai">AI 研究</span></span></div>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>UNVERIFIABLE 時不要簽，等 API 恢復再跑一次 verify。</span><span class="byai">AI 研究</span></span></div>
-        </details></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>卡片的「最少收到的數量」要你自己填：CoW app 的滑價每次報價不同（smart slippage），鏈上也沒有 CoW 的報價可讀。</span><span class="byai">AI 研究</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>照 CoW app 顯示的最少收到數量填，不要填得更低。</span><span class="byai">AI 研究</span></span></div>
-        </details></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>這兩項 app 會自己填。</span><span class="byai">AI 研究</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="aiw" data-ai><span>這兩項 app 會自己填。到期時間模板限制在區塊時間後 7 天內（app 設 30 分鐘）；appData 模板不限制（可能含 0.1% 的合作方手續費）。成交仍不會少於你填的最少數量，也只給 Safe。</span><span class="byai">AI 研究</span></span></div>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受。訂單過期前不想要了，用 Safe 撤回。</span><span class="byai">AI 研究</span></span></div>
-        </details></div>
-    </div>
-  </div>
-</section>
-
 <section id="wallet">
   <h2>錢包顯示 <span class="c">ERC-7730 描述檔</span></h2>
   <p class="lead">這筆 Safe 交易用 MultiSend 打包 2 個呼叫，沒有描述檔解得開 Safe 的 MultiSend，所以請比對裝置上的 hash 和 <code>verify</code> 印的 safeTxHash。</p>
   <dl class="props two">
     <div><dt>Safe 交易（SafeTx）</dt><dd>
       <dl class="nest flat">
-        <div><dt><code>to</code></dt><dd>官方 MultiSend</dd></div>
+        <div><dt><code>to</code></dt><dd>官方 MultiSend，是這 8 個 Safe 部署之一：<span class="addr line">0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761</span><span class="addr line">0x998739BFdAAdde7C933B942a68053933098f9EDa</span><span class="addr line">0x40A2aCCbd92BCA938b02010E17A5b8929b49130D</span><span class="addr line">0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B</span><span class="addr line">0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526</span><span class="addr line">0x9641d764fc13c8B624c04430C7356C1C7C8102e2</span><span class="addr line">0x218543288004CD07832472D464648173c77D7eB7</span><span class="addr line">0xA83c336B20401Af773B6219BA5027174338D1836</span></dd></div>
         <div><dt><code>value</code></dt><dd><span class="addr">0</span></dd></div>
         <div><dt><code>operation</code></dt><dd>Delegate Call（1），呼叫官方 MultiSend</dd></div>
         <div><dt><code>data</code></dt><dd>MultiSend 打包的呼叫，只顯示原始資料</dd></div>
@@ -607,7 +628,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="next">
   <h2>下一步</h2>
   <ol class="steps">
-    <li><div>核准前，打開「<a href="#addresses">地址</a>」裡每個地址列出的來源：確認每個網域是協議自己的，而且頁面上列著這個地址。</div></li>
+    <li><div>核准前，到「<a href="#addresses">地址</a>」逐一打開每個地址的來源，確認每個網域都是協議自己的，而且頁面上列著這個地址。</div></li>
     <li><div>第一次用這個模板，或模板改過之後，先核准它<pre class="cmd"><code>pnpm kiss-sign template approve cow/swap-approve</code></pre>
       <p class="then">它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 <code>y</code>。</p></div></li>
     <li><div>做卡片<pre class="cmd"><code>pnpm kiss-sign card new cow/swap-approve</code></pre>

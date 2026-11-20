@@ -29,6 +29,7 @@ a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
+.addr.line{display:block;margin-top:4px}
 .num{font-variant-numeric:tabular-nums}
 .f2{color:var(--fg2)} .f3{color:var(--fg3)}
 b,strong{font-weight:590}
@@ -140,6 +141,8 @@ svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
 svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
 svg .axis{stroke:var(--line2)}
 svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.chart svg{min-width:0}
+@media (max-width:600px){.chart .tick{font-size:18px}.chart .thin{display:none}}
 .legend{list-style:none;margin:10px 0 14px;padding:0;display:flex;flex-direction:column;gap:4px;font-size:var(--t-small);color:var(--fg2)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
@@ -182,6 +185,14 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .part .raw{font-size:var(--t-small)}
 .part .is{font-size:var(--t-small)}
 .part .ai{margin-top:4px}
+details.fixed>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);color:var(--fg2);font-size:var(--t-small)}
+details.fixed>summary::-webkit-details-marker{display:none}
+details.fixed>summary:hover{color:var(--fg)}
+details.fixed[open]>summary .chev{transform:rotate(90deg)}
+.parts>details.fixed{grid-column:1/-1;display:grid;grid-template-columns:subgrid}
+.parts>details.fixed[open]::details-content{display:contents}
+.parts>details.fixed>summary{grid-column:1/-1;padding:10px 0;border-bottom:0;border-top:1px solid var(--line)}
+.parts>details.fixed:first-child>summary,.plabel+details.fixed>summary{border-top:0;padding-top:2px}
 @media (max-width:720px){
   .arg{grid-template-columns:minmax(0,1fr)}
   .arg .nm{flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
@@ -192,6 +203,8 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
+.row .t .grade{font-weight:400;font-size:var(--t-label);color:var(--fg3);margin-right:10px;padding-right:10px;border-right:1px solid var(--line2);vertical-align:1px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .row .meta{font-size:var(--t-row);color:var(--fg2);margin-top:6px}
 .row .meta a{margin-left:8px;color:var(--fg2)}
 .row .rec{font-size:var(--t-row);margin-top:8px}
@@ -270,7 +283,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">7</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">7</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
 </nav>
 
 <div class="main">
@@ -293,9 +306,23 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>無上限授權給 Permit2 會留著；只有 Safe 另外在 Permit2 授權過的合約能用。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">7</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">7</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
   </details>
 </header>
+
+<section id="review">
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></span></h2>
+  <p class="lead">每一項 AI 都先查過，附上建議。</p>
+  <div class="rows">
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>授權給 Permit2 之後，任何 Safe 簽過的 Permit2 訊息都能動用這個代幣，而 Safe 訊息（EIP-1271）不經過 kiss-sign。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>簽任何 Permit2 訊息前確認 spender；不再用 Uniswap 時把授權改回 0。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+  </div>
+</section>
 
 <section id="flow">
   <h2>流程 <span class="c">1 個呼叫</span></h2>
@@ -313,7 +340,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#head)"/>
   </svg>
   </div>
-  <div class="scrollhint">圖可以左右滑動</div>
+  <div class="scrollhint">圖可以左右滑動，最右邊是 代幣</div>
   <div class="key">
     <span class="k0">誰決定</span>
     <span><span class="who">固定</span>改了就 MISMATCH</span>
@@ -322,6 +349,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   
   <div class="cb">
     <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">代幣.</span>approve</span><span class="sel">0x095ea7b3</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/ethereum/ERCs/blob/ae65e89408f387ffb47d220879925c4ab384dfc2/ERCS/erc-20.md">ERC-20 標準頁</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span> <span class="f3">標準定義這個函式，不代表合約照標準做</span></div></div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>2 個固定的值；改了任何一個都是 MISMATCH</summary>
     <div class="arg" data-field="1.approve.spender">
       <div class="nm"><span class="pn">spender</span><span class="who">固定</span></div>
       <div class="val"><div class="raw">0x000000000022D473030F116dDEE9F6B43aC78BA3</div><div class="is"><a href="#a-permit2">permit2</a></div>
@@ -332,25 +360,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="val"><div class="raw">115792089237316195423570985008687907853269984665640564039457584007913129639935</div><div class="is">固定值</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>授權額度 2^256-1，無上限；Uniswap app 的預設。</span></span></div></div>
     </div>
+      </details>
   </div>
   <h3>交易後</h3>
   <dl class="props">
     <div><dt>給 <a href="#a-permit2">permit2</a> 的 代幣 授權</dt><dd class="">可以留著，不限數量</dd><dd class="src">登記資料說明為什麼這個合約可以留著授權</dd></div>
   </dl>
-</section>
-
-<section id="review">
-  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></span></h2>
-  <p class="lead">每一項 AI 都先查過，附上建議。</p>
-  <div class="rows">
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>授權給 Permit2 之後，任何 Safe 簽過的 Permit2 訊息都能動用這個代幣，而 Safe 訊息（EIP-1271）不經過 kiss-sign。</span><span class="byai">AI 研究</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>簽任何 Permit2 訊息前確認 spender；不再用 Uniswap 時把授權改回 0。</span><span class="byai">AI 研究</span></span></div>
-        </details></div>
-    </div>
-  </div>
 </section>
 
 <section id="wallet">
@@ -575,7 +590,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="next">
   <h2>下一步</h2>
   <ol class="steps">
-    <li><div>核准前，打開「<a href="#addresses">地址</a>」裡每個地址列出的來源：確認每個網域是協議自己的，而且頁面上列著這個地址。</div></li>
+    <li><div>核准前，到「<a href="#addresses">地址</a>」逐一打開每個地址的來源，確認每個網域都是協議自己的，而且頁面上列著這個地址。</div></li>
     <li><div>第一次用這個模板，或模板改過之後，先核准它<pre class="cmd"><code>pnpm kiss-sign template approve uniswap/approve-permit2</code></pre>
       <p class="then">它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 <code>y</code>。</p></div></li>
     <li><div>做卡片<pre class="cmd"><code>pnpm kiss-sign card new uniswap/approve-permit2</code></pre>

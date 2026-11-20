@@ -29,6 +29,7 @@ a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
+.addr.line{display:block;margin-top:4px}
 .num{font-variant-numeric:tabular-nums}
 .f2{color:var(--fg2)} .f3{color:var(--fg3)}
 b,strong{font-weight:590}
@@ -140,6 +141,8 @@ svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
 svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
 svg .axis{stroke:var(--line2)}
 svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.chart svg{min-width:0}
+@media (max-width:600px){.chart .tick{font-size:18px}.chart .thin{display:none}}
 .legend{list-style:none;margin:10px 0 14px;padding:0;display:flex;flex-direction:column;gap:4px;font-size:var(--t-small);color:var(--fg2)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
@@ -182,6 +185,14 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .part .raw{font-size:var(--t-small)}
 .part .is{font-size:var(--t-small)}
 .part .ai{margin-top:4px}
+details.fixed>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);color:var(--fg2);font-size:var(--t-small)}
+details.fixed>summary::-webkit-details-marker{display:none}
+details.fixed>summary:hover{color:var(--fg)}
+details.fixed[open]>summary .chev{transform:rotate(90deg)}
+.parts>details.fixed{grid-column:1/-1;display:grid;grid-template-columns:subgrid}
+.parts>details.fixed[open]::details-content{display:contents}
+.parts>details.fixed>summary{grid-column:1/-1;padding:10px 0;border-bottom:0;border-top:1px solid var(--line)}
+.parts>details.fixed:first-child>summary,.plabel+details.fixed>summary{border-top:0;padding-top:2px}
 @media (max-width:720px){
   .arg{grid-template-columns:minmax(0,1fr)}
   .arg .nm{flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
@@ -192,6 +203,8 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
+.row .t .grade{font-weight:400;font-size:var(--t-label);color:var(--fg3);margin-right:10px;padding-right:10px;border-right:1px solid var(--line2);vertical-align:1px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .row .meta{font-size:var(--t-row);color:var(--fg2);margin-top:6px}
 .row .meta a{margin-left:8px;color:var(--fg2)}
 .row .rec{font-size:var(--t-row);margin-top:8px}
@@ -270,7 +283,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">實例</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
 </nav>
 
 <div class="main">
@@ -293,9 +306,50 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用。Hyperithm 沒有官方頁列出這個 vault 的地址，先看待確認，第一次先送小額。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">實例</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
   </details>
 </header>
+
+<section id="review">
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
+  <p class="lead">每一項 AI 都先查過，附上建議。</p>
+  <div class="rows">
+    <div class="row" data-state="warn" data-grade="key" data-result="hyperithm-usdc-apex-v2-9e2f/address">
+      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
+      <div><div class="t"><span class="grade"><span class="vh">等級：</span>重要</span>地址確認的地方不夠 · hyperithm-usdc-apex-v2-9e2f</div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>程式只有工廠確認：VaultV2Factory 回答 <code>isVaultV2</code> = true。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="meta">只在 1 個地方確認：工廠</div>
+          <div class="meta">至少要 2 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-hyperithm-usdc-apex-v2-9e2f">看來源</a></div>
+          <div class="rec"><span class="aiw" data-ai><span>AI 用瀏覽器打開 Morpho app 的 vault 頁，名稱是 Hyperithm USDC Apex，curator 是 0x75178137D3B4B9A0F771E0e149b00fB8167BA325，跟 V1 vault 相同。AI 沒找到 Hyperithm 或 Morpho 不靠網址帶地址就列出這個地址的頁面。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>先在 Morpho app 的 vault 列表點進去比對地址，第一次送小額。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>Morpho app 有時在 bundle 最後多加兩步，把 adapter 剩下的代幣和股份轉回給你。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span>這個模板只接受兩步的版本，多兩步時 verify 會判 MISMATCH。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>遇到 MISMATCH 不要簽；回報後再決定是否新增模板。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>Morpho 的 SDK 在 2026-09-25 拿掉 Bundler3 的地址，改列 VaultBundlesV1（0x02912516d49dE997db75B9D7858faAE59209650B）；docs.morpho.org 兩個都列。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span>記錄裡 2026-09 底之後的存款多半經 VaultBundlesV1，Morpho app 現在可能不再走這個模板的路線。 <a class="aisrc" href="https://github.com/morpho-org/sdks/commit/9ac0ea55b93225a62ddeabb1c625064319be728d">來源</a></span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>簽之前看 Safe 交易呼叫的是 Bundler3 還是 VaultBundlesV1；經 VaultBundlesV1 的要用 morpho/vault-bundles-deposit 模板，用這個模板 verify 會判 MISMATCH。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>這個 vault 一年內從約 3,300 升到約 750 萬 USDC，2026-07 曾到約 1,260 萬；最大持有人占 51.77%，前 10 名占 90.10%。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>只存你能接受暫時提不出的金額，先送小額。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+  </div>
+</section>
 
 <section id="flow">
   <h2>流程 <span class="c">2 個呼叫</span></h2>
@@ -331,7 +385,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <line class="gain" x1="891" y1="348" x2="93" y2="348" marker-end="url(#head)"/>
   </svg>
   </div>
-  <div class="scrollhint">圖可以左右滑動</div>
+  <div class="scrollhint">圖可以左右滑動，最右邊是 hyperithm-usdc-apex-v2-9e2f</div>
   <div class="key">
     <span class="k0">誰決定</span>
     <span><span class="who you">你填</span>每次簽名填</span>
@@ -343,16 +397,18 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   
   <div class="cb">
     <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">usdc.</span>approve</span><span class="sel">0x095ea7b3</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/circlefin/stablecoin-evm/blob/fc85788bc7c23cefe3df1a757133048bfddadeaa/contracts/v1/FiatTokenV1.sol">github.com/circlefin/stablecoin-evm</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div></div>
-    <div class="arg" data-field="1.approve.spender">
-      <div class="nm"><span class="pn">spender</span><span class="who">固定</span></div>
-      <div class="val"><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>被授權從 Safe 拉代幣的合約。這裡是 Morpho 的 GeneralAdapter1，呼叫 2 裡它用 <code>transferFrom</code> 拉走這筆錢。</span></span></div></div>
-    </div>
     <div class="arg" data-field="1.approve.value">
       <div class="nm"><span class="pn">value</span><span class="who you">你填：金額</span></div>
       <div class="val"><div class="is">你填的金額</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>授權的上限，等於存款金額。呼叫 2 會整筆拉走，交易後授權回到 0。</span></span></div></div>
     </div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 個固定的值；改了任何一個都是 MISMATCH</summary>
+    <div class="arg" data-field="1.approve.spender">
+      <div class="nm"><span class="pn">spender</span><span class="who">固定</span></div>
+      <div class="val"><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>被授權從 Safe 拉代幣的合約。這裡是 Morpho 的 GeneralAdapter1，呼叫 2 裡它用 <code>transferFrom</code> 拉走這筆錢。</span></span></div></div>
+    </div>
+      </details>
   </div>
   <div class="cb">
     <div class="callh"><span class="no">2</span><span class="fnn"><span class="ct">bundler3.</span>multicall</span><span class="sel">0x374f435d</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/Bundler3.sol">github.com/morpho-org/bundler3/…/Bundler3.sol</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div></div>
@@ -364,30 +420,32 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">[0]</div><div><div class="is">5 個部分</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>第一步：把代幣從 Safe 拉進 GeneralAdapter1。</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">to</div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步呼叫的合約，固定是 GeneralAdapter1。</span></span></div></div></div>
         <div class="part"><div class="pn">data</div><div><div class="is"><code>erc20TransferFrom</code> (<span class="addr">0xd96ca0b9</span>)</div><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol">github.com/morpho-org/bundler3/…/GeneralAdapter1.sol</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步要執行的函式和參數，下面逐項列出。</span></span></div></div>
       <div class="parts">
         <div class="part"><div class="pn">token<div class="pchips"><span class="who you">你選：金庫</span></div></div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</div><div class="is"><a href="#a-usdc">usdc</a> <span class="f3">你選的金庫的資產</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要拉的代幣，等於你選的 vault 的資產。</span></span></div></div></div>
-        <div class="part"><div class="pn">receiver<div class="pchips"><span class="who">固定</span></div></div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>代幣先轉到 GeneralAdapter1 自己，下一步再由它存進 vault。</span></span></div></div></div>
         <div class="part"><div class="pn">amount<div class="pchips"><span class="who you">你填：金額</span></div></div><div><div class="is">你填的金額</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>從 Safe 拉的數量，等於存款金額。Bundler3 記錄發起人是 Safe，所以只能拉 Safe 的錢。</span></span></div></div></div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 個固定的值；改了任何一個都是 MISMATCH</summary>
+        <div class="part"><div class="pn">receiver<div class="pchips"><span class="who">固定</span></div></div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>代幣先轉到 GeneralAdapter1 自己，下一步再由它存進 vault。</span></span></div></div></div>
+      </details>
       </div></div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>4 個固定的值；改了任何一個都是 MISMATCH</summary>
+        <div class="part"><div class="pn">to</div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步呼叫的合約，固定是 GeneralAdapter1。</span></span></div></div></div>
         <div class="part"><div class="pn">value</div><div><div class="raw">0</div><div class="is">固定為 0</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>附帶的 ETH，固定為 0。</span></span></div></div></div>
         <div class="part"><div class="pn">skipRevert</div><div><div class="raw">false</div><div class="is">固定為 false</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步失敗時是否略過。固定為 false：失敗就整筆失敗。</span></span></div></div></div>
         <div class="part"><div class="pn">callbackHash</div><div><div class="raw">0x0000000000000000000000000000000000000000000000000000000000000000</div><div class="is">固定值</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>只有需要回呼的步驟才用，固定為 0。</span></span></div></div></div>
+      </details>
       </div></div>
         <div class="part"><div class="pn">[1]</div><div><div class="is">5 個部分</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>第二步：GeneralAdapter1 把代幣存進 vault，股份給 Safe。</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">to</div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步呼叫的合約，固定是 GeneralAdapter1。</span></span></div></div></div>
         <div class="part"><div class="pn">data</div><div><div class="is"><code>erc4626Deposit</code> (<span class="addr">0x6ef5eeae</span>)</div><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol">github.com/morpho-org/bundler3/…/GeneralAdapter1.sol</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步要執行的函式和參數，下面逐項列出。</span></span></div></div>
       <div class="parts">
@@ -397,15 +455,21 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>存進 vault 的代幣數量，等於存款金額。</span></span></div></div></div>
         <div class="part"><div class="pn">maxSharePriceE27<div class="pchips"><span class="who">程式算：最少收到的數量</span></div></div><div><div class="is">價格上限 <span class="f3">依卡片的金額和股份數算出，交易裡的要一樣嚴或更嚴</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>每股最高價格（資產 ÷ 股份，乘以 1e27）。實際價格高於它，整筆失敗。程式要求它不高於「金額 ÷ 最少股份」，依 vault 自己回報的股份數，你至少拿到最少股份。</span></span></div></div></div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 個固定的值；改了任何一個都是 MISMATCH</summary>
         <div class="part"><div class="pn">receiver<div class="pchips"><span class="who">固定</span></div></div><div><div class="is">你的 Safe</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>收股份的地址，固定是 Safe。</span></span></div></div></div>
+      </details>
       </div></div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>4 個固定的值；改了任何一個都是 MISMATCH</summary>
+        <div class="part"><div class="pn">to</div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步呼叫的合約，固定是 GeneralAdapter1。</span></span></div></div></div>
         <div class="part"><div class="pn">value</div><div><div class="raw">0</div><div class="is">固定為 0</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>附帶的 ETH，固定為 0。</span></span></div></div></div>
         <div class="part"><div class="pn">skipRevert</div><div><div class="raw">false</div><div class="is">固定為 false</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步失敗時是否略過。固定為 false：失敗就整筆失敗。</span></span></div></div></div>
         <div class="part"><div class="pn">callbackHash</div><div><div class="raw">0x0000000000000000000000000000000000000000000000000000000000000000</div><div class="is">固定值</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>只有需要回呼的步驟才用，固定為 0。</span></span></div></div></div>
+      </details>
       </div></div>
       </div>
     </div>
@@ -446,28 +510,27 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div><dt>前 10 名</dt><dd><span class="num">90.75%</span></dd><dd class="src">占全部股份</dd></div>
   </dl>
   <h3>每月的 totalAssets</h3>
-  <div class="diagram">
-  <svg viewBox="0 0 660 194" role="img" aria-labelledby="vt vd">
+  <div class="diagram chart">
+  <svg viewBox="0 0 660 198" role="img" aria-labelledby="vt vd">
     <title id="vt">每月的 totalAssets</title>
     <desc id="vd">13 個月，2025-11-20 到 2026-11-17，最高 13,799,662.79 usdc</desc>
     <text class="tick" x="16" y="18">最高 13,799,662.79 usdc</text>
     <line class="axis" x1="16" y1="150" x2="644" y2="150"/>
-    <rect class="bar" x="25.7" y="149" width="29.0" height="1"><title>2025-11-20：3,337.55 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">11月</text><text class="tick" x="40.2" y="184" text-anchor="middle">2025</text>
-    <rect class="bar" x="74.0" y="149" width="29.0" height="1"><title>2025-12-21：159,471.62 usdc</title></rect><text class="tick" x="88.5" y="168" text-anchor="middle">12月</text>
-    <rect class="bar" x="122.3" y="149" width="29.0" height="1"><title>2026-01-20：160,316.51 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">1月</text><text class="tick" x="136.8" y="184" text-anchor="middle">2026</text>
-    <rect class="bar" x="170.6" y="62" width="29.0" height="88"><title>2026-02-19：10,509,191.98 usdc</title></rect><text class="tick" x="185.1" y="168" text-anchor="middle">2月</text>
+    <rect class="bar" x="25.7" y="149" width="29.0" height="1"><title>2025-11-20：3,337.55 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">11月</text><text class="tick" x="40.2" y="188" text-anchor="middle">2025</text>
+    <rect class="bar" x="74.0" y="149" width="29.0" height="1"><title>2025-12-21：159,471.62 usdc</title></rect><text class="tick thin" x="88.5" y="168" text-anchor="middle">12月</text>
+    <rect class="bar" x="122.3" y="149" width="29.0" height="1"><title>2026-01-20：160,316.51 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">1月</text><text class="tick" x="136.8" y="188" text-anchor="middle">2026</text>
+    <rect class="bar" x="170.6" y="62" width="29.0" height="88"><title>2026-02-19：10,509,191.98 usdc</title></rect><text class="tick thin" x="185.1" y="168" text-anchor="middle">2月</text>
     <rect class="bar" x="218.9" y="102" width="29.0" height="48"><title>2026-03-21：5,762,500.23 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">3月</text>
-    <rect class="bar" x="267.2" y="105" width="29.0" height="45"><title>2026-04-20：5,387,899.55 usdc</title></rect><text class="tick" x="281.7" y="168" text-anchor="middle">4月</text>
+    <rect class="bar" x="267.2" y="105" width="29.0" height="45"><title>2026-04-20：5,387,899.55 usdc</title></rect><text class="tick thin" x="281.7" y="168" text-anchor="middle">4月</text>
     <rect class="bar" x="315.5" y="115" width="29.0" height="35"><title>2026-05-20：4,148,517.12 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">5月</text>
-    <rect class="bar" x="363.8" y="92" width="29.0" height="58"><title>2026-06-19：6,925,178.25 usdc</title></rect><text class="tick" x="378.3" y="168" text-anchor="middle">6月</text>
+    <rect class="bar" x="363.8" y="92" width="29.0" height="58"><title>2026-06-19：6,925,178.25 usdc</title></rect><text class="tick thin" x="378.3" y="168" text-anchor="middle">6月</text>
     <rect class="bar" x="412.1" y="34" width="29.0" height="116"><title>2026-07-20：13,799,662.79 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">7月</text>
-    <rect class="bar" x="460.4" y="110" width="29.0" height="40"><title>2026-08-19：4,761,119.46 usdc</title></rect><text class="tick" x="474.9" y="168" text-anchor="middle">8月</text>
+    <rect class="bar" x="460.4" y="110" width="29.0" height="40"><title>2026-08-19：4,761,119.46 usdc</title></rect><text class="tick thin" x="474.9" y="168" text-anchor="middle">8月</text>
     <rect class="bar" x="508.7" y="88" width="29.0" height="62"><title>2026-09-18：7,337,295.43 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">9月</text>
-    <rect class="bar" x="557.0" y="67" width="29.0" height="83"><title>2026-10-18：9,861,953.99 usdc</title></rect><text class="tick" x="571.5" y="168" text-anchor="middle">10月</text>
+    <rect class="bar" x="557.0" y="67" width="29.0" height="83"><title>2026-10-18：9,861,953.99 usdc</title></rect><text class="tick thin" x="571.5" y="168" text-anchor="middle">10月</text>
     <rect class="bar last" x="605.4" y="92" width="29.0" height="58"><title>2026-11-17：6,849,805.81 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">11月</text>
   </svg>
   </div>
-  <div class="scrollhint">圖可以左右滑動</div>
   <details class="fold">
     <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>13 個月的數字</summary>
     <dl class="props">
@@ -488,54 +551,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </details>
 </section>
 
-<section id="review">
-  <h2>待確認 <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
-  <p class="lead">每一項 AI 都先查過，附上建議。</p>
-  <div class="rows">
-    <div class="row" data-state="warn" data-grade="key" data-result="hyperithm-usdc-apex-v2-9e2f/address">
-      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t"><span class="lbl">重要</span> 地址確認的地方不夠 · hyperithm-usdc-apex-v2-9e2f</div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>程式只有工廠確認：VaultV2Factory 回答 <code>isVaultV2</code> = true。</span><span class="byai">AI 研究</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="meta">hyperithm-usdc-apex-v2-9e2f：地址只在 1 個地方確認：工廠</div>
-          <div class="meta">至少要 2 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-hyperithm-usdc-apex-v2-9e2f">看來源</a></div>
-          <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>程式只有工廠確認：VaultV2Factory 回答 <code>isVaultV2</code> = true。AI 用瀏覽器打開 Morpho app 的 vault 頁，名稱是 Hyperithm USDC Apex，curator 是 0x75178137D3B4B9A0F771E0e149b00fB8167BA325，跟 V1 vault 相同。AI 沒找到 Hyperithm 或 Morpho 不靠網址帶地址就列出這個地址的頁面。</span><span class="byai">AI 研究</span></span></div>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>先在 Morpho app 的 vault 列表點進去比對地址，第一次送小額。</span><span class="byai">AI 研究</span></span></div>
-        </details></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>Morpho app 有時在 bundle 最後多加兩步，把 adapter 剩下的代幣和股份轉回給你。</span><span class="byai">AI 研究</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="aiw" data-ai><span>Morpho app 有時在 bundle 最後多加兩步，把 adapter 剩下的代幣和股份轉回給你。這個模板只接受兩步的版本，多兩步時 verify 會判 MISMATCH。</span><span class="byai">AI 研究</span></span></div>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>遇到 MISMATCH 不要簽；回報後再決定是否新增模板。</span><span class="byai">AI 研究</span></span></div>
-        </details></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>Morpho 的 SDK 在 2026-09-25 拿掉 Bundler3 的地址，改列 VaultBundlesV1（0x02912516d49dE997db75B9D7858faAE59209650B）；docs.morpho.org 兩個都列。</span><span class="byai">AI 研究</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="aiw" data-ai><span>Morpho 的 SDK 在 2026-09-25 拿掉 Bundler3 的地址，改列 VaultBundlesV1（0x02912516d49dE997db75B9D7858faAE59209650B）；docs.morpho.org 兩個都列。記錄裡 2026-09 底之後的存款多半經 VaultBundlesV1，Morpho app 現在可能不再走這個模板的路線。 <a class="aisrc" href="https://github.com/morpho-org/sdks/commit/9ac0ea55b93225a62ddeabb1c625064319be728d">來源</a></span><span class="byai">AI 研究</span></span></div>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>簽之前看 Safe 交易呼叫的是 Bundler3 還是 VaultBundlesV1；經 VaultBundlesV1 的要用 morpho/vault-bundles-deposit 模板，用這個模板 verify 會判 MISMATCH。</span><span class="byai">AI 研究</span></span></div>
-        </details></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>這個 vault 一年內從約 3,300 升到約 750 萬 USDC，2026-07 曾到約 1,260 萬；最大持有人占 51.77%，前 10 名占 90.10%。</span><span class="byai">AI 研究</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>只存你能接受暫時提不出的金額，先送小額。</span><span class="byai">AI 研究</span></span></div>
-        </details></div>
-    </div>
-  </div>
-</section>
-
 <section id="wallet">
   <h2>錢包顯示 <span class="c">ERC-7730 描述檔</span></h2>
   <p class="lead">這筆 Safe 交易用 MultiSend 打包 2 個呼叫，沒有描述檔解得開 Safe 的 MultiSend，所以請比對裝置上的 hash 和 <code>verify</code> 印的 safeTxHash。</p>
   <dl class="props two">
     <div><dt>Safe 交易（SafeTx）</dt><dd>
       <dl class="nest flat">
-        <div><dt><code>to</code></dt><dd>官方 MultiSend</dd></div>
+        <div><dt><code>to</code></dt><dd>官方 MultiSend，是這 8 個 Safe 部署之一：<span class="addr line">0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761</span><span class="addr line">0x998739BFdAAdde7C933B942a68053933098f9EDa</span><span class="addr line">0x40A2aCCbd92BCA938b02010E17A5b8929b49130D</span><span class="addr line">0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B</span><span class="addr line">0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526</span><span class="addr line">0x9641d764fc13c8B624c04430C7356C1C7C8102e2</span><span class="addr line">0x218543288004CD07832472D464648173c77D7eB7</span><span class="addr line">0xA83c336B20401Af773B6219BA5027174338D1836</span></dd></div>
         <div><dt><code>value</code></dt><dd><span class="addr">0</span></dd></div>
         <div><dt><code>operation</code></dt><dd>Delegate Call（1），呼叫官方 MultiSend</dd></div>
         <div><dt><code>data</code></dt><dd>MultiSend 打包的呼叫，只顯示原始資料</dd></div>
@@ -640,7 +662,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="next">
   <h2>下一步</h2>
   <ol class="steps">
-    <li><div>核准前，打開「<a href="#addresses">地址</a>」裡每個地址列出的來源：確認每個網域是協議自己的，而且頁面上列著這個地址。</div></li>
+    <li><div>核准前，到「<a href="#addresses">地址</a>」逐一打開每個地址的來源，確認每個網域都是協議自己的，而且頁面上列著這個地址。</div></li>
     <li><div>第一次用這個模板，或模板改過之後，先核准它<pre class="cmd"><code>pnpm kiss-sign template approve morpho/vault-deposit</code></pre>
       <p class="then">它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 <code>y</code>。</p></div></li>
     <li><div>做卡片<pre class="cmd"><code>pnpm kiss-sign card new morpho/vault-deposit</code></pre>

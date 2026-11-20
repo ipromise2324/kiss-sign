@@ -22,6 +22,7 @@ import type { HttpsUrl, RegistryEntry } from '../src/registry.ts';
 import { entriesOf, parseDocs, readDocs, renderReport, replayInputs } from '../src/research/report.ts';
 import type { ReportTitle, TodayCheck } from '../src/research/report.ts';
 import { checksumAddress } from '../src/safe/types.ts';
+import { OFFICIAL_MULTISEND } from '../src/decode/multisend.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { judgeFixtures } from '../src/template/perturb.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
@@ -102,9 +103,9 @@ test('the page of morpho/market-supply puts its sections in the signer order', {
   const page = pageOf(inputs);
   assert.deepEqual(
     page.sections.map((s) => s.anchor),
-    ['flow', 'protocol-morpho-blue', 'review', 'wallet', 'addresses', 'past', 'next'],
+    ['review', 'flow', 'protocol-morpho-blue', 'wallet', 'addresses', 'past', 'next'],
   );
-  assert.deepEqual(page.sections[0]?.count, { kind: 'text', text: '2 個呼叫' });
+  assert.deepEqual(page.sections[1]?.count, { kind: 'text', text: '2 個呼叫' });
 });
 
 test('each argument says who decides it and prints what cast decode-calldata prints', () => {
@@ -309,7 +310,7 @@ test('a template of two or more calls goes through MultiSend, so its wallet sect
     assert.deepEqual(
       view.safeTx.map((r) => [plain(r.label), plain(r.value)]).slice(0, 4),
       [
-        ['to', '官方 MultiSend'],
+        ['to', `官方 MultiSend，是這 8 個 Safe 部署之一：${OFFICIAL_MULTISEND.map((d) => checksumAddress(d.address)).join('')}`],
         ['value', '0'],
         ['operation', 'Delegate Call（1），呼叫官方 MultiSend'],
         ['data', 'MultiSend 打包的呼叫，只顯示原始資料'],
@@ -344,7 +345,7 @@ test("a per-vault report shows its vault as the card's value, with or without a 
 test("a per-vault report shows the vault's stored evidence after the protocol, with no USD value", () => {
   assert.deepEqual(
     depositPage.sections.map((s) => s.anchor),
-    ['flow', 'protocol-morpho-blue', 'vault-hyperithm-usdc-apex-v2-9e2f', 'review', 'wallet', 'addresses', 'past', 'next'],
+    ['review', 'flow', 'protocol-morpho-blue', 'vault-hyperithm-usdc-apex-v2-9e2f', 'wallet', 'addresses', 'past', 'next'],
   );
   const { vault } = body(depositPage, 'vault');
   assert.deepEqual(
@@ -373,8 +374,8 @@ test('a month the providers disagree on reads 讀不到 and draws no bar', () =>
 });
 
 test('the vault its factory alone confirms is the one 待確認; every address row names where its address was confirmed', () => {
-  assert.deepEqual(body(depositPage, 'review').rows.map((r) => [r.id, r.state, plain(r.subject)]), [
-    ['hyperithm-usdc-apex-v2-9e2f/address', 'warn', 'hyperithm-usdc-apex-v2-9e2f：地址只在 1 個地方確認：工廠'],
+  assert.deepEqual(body(depositPage, 'review').rows.map((r) => [r.id, r.state, plain(r.subject ?? [])]), [
+    ['hyperithm-usdc-apex-v2-9e2f/address', 'warn', '只在 1 個地方確認：工廠'],
   ]);
   const { open, folded } = body(depositPage, 'addresses');
   assert.deepEqual(
@@ -665,7 +666,7 @@ test('待確認 lists key results before reference ones, each marked, and counts
     ],
   );
   const html = renderPage(page);
-  assert.match(html, /data-grade="reference" data-result="usdc\/source.coingecko">[\s\S]*?<span class="lbl">參考<\/span>/);
+  assert.match(html, /data-grade="reference" data-result="usdc\/source.coingecko">[\s\S]*?<span class="grade"><span class="vh">等級：<\/span>參考<\/span>/);
   assert.match(html, /<span class="cnt" data-state="warn">[^]*?參考 1<\/span>/);
 });
 
@@ -734,7 +735,7 @@ async function bareCase(id: string): Promise<Page> {
 
 test('an ETH transfer: no address section or address strip lines, its to/value/data rules in words, and a wallet line for a call with no data', async () => {
   const page = await bareCase('eth/transfer');
-  assert.deepEqual(page.sections.map((s) => s.anchor), ['flow', 'review', 'wallet', 'past', 'next']);
+  assert.deepEqual(page.sections.map((s) => s.anchor), ['review', 'flow', 'wallet', 'past', 'next']);
   assert.deepEqual(page.header.strip.map((s) => [s.line, s.state, s.count]), [['params', 'na', '沒有測試'], ['providers', 'ok', undefined]]);
   assert.match(page.header.strip[0]?.explain ?? '', /^模板沒有不限的參數/);
   const { flow } = body(page, 'flow');
@@ -870,7 +871,7 @@ test('an entry reached only through dependsOn shows its routes, seeds and code a
   const factContracts = factsScope(of.subject.kind === 'template' ? of.subject.template : assert.fail('a template report'), of.registry, []).protocols.flatMap((p) => p.contracts.map((e) => e.name));
   assert.deepEqual(factContracts.slice(factContracts.indexOf('blue-bundles-v1'), factContracts.indexOf('blue-bundles-v1') + 2), ['blue-bundles-v1', 'liquidity-layer'], 'the protocol facts say whether what a called contract depends on is a proxy');
   const siteRow = body(pageOf(of), 'review').rows.find((r) => r.id === 'liquidity-layer/source.site') ?? assert.fail('no site review row');
-  assert.equal(plain(siteRow.subject), 'liquidity-layer：docs.example.org/liquidity，網站跟 DefiLlama 列的不同', 'a source result names its page as the address row does');
+  assert.equal(plain(siteRow.subject ?? []), 'docs.example.org/liquidity', 'a source result names its page as the address row does, and nothing the title says');
   assert.equal(stateOf(ledger.results.find((r) => r.id === 'liquidity-layer/abi') ?? assert.fail('no ABI result')), 'na');
   assert.equal(stateOf(ledger.results.find((r) => r.id === 'liquidity-layer/code.today') ?? assert.fail('no result at the latest block')), 'ok');
   const abiItem = (ledgerOf: typeof ledger) => strip(ledgerOf).find((item) => item.line === 'abi');
@@ -900,7 +901,7 @@ test('a dependency that runs other code at the latest block is red in 合約沒�
   assert.equal(page.header.strip.find((item) => item.line === 'code')?.state, 'bad');
   const review = body(page, 'review').rows.find((r) => r.id === 'liquidity-layer/code.today') ?? assert.fail('no review row');
   assert.equal(review.state, 'bad');
-  assert.equal(plain(review.subject), 'liquidity-layer：鏈上跑的不是登記的程式碼（最新區塊）');
+  assert.equal(plain(review.subject ?? []), '最新區塊');
   assert.ok(renderReport(finding, title).includes('| `liquidity-layer` | FINDING: runs something else | 24000000 |'));
 
   const unread = withLiquidityLayer(undefined);

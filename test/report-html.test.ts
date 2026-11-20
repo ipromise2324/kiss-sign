@@ -500,10 +500,13 @@ test('each To review item shows its state, grade, plain title and one-line concl
     for (const [row] of review.matchAll(/<div class="row" data-state="\w+" data-grade="\w+" data-result="[^"]+">.*?<\/details><\/div>\n    <\/div>/gs)) {
       const [open, folded] = row.split('<details class="more">') as [string, string];
       assert.match(open, /<svg class="i \w+"/, `${id}: the state icon stays open`);
-      assert.match(open, new RegExp(`<div class="t"><span class="lbl">(${Object.values(WORDS[language].grade).join('|')})</span> [^<]+</div>`), `${id}: grade and a plain title stay open`);
+      assert.match(open, new RegExp(`<div class="t"><span class="grade"><span class="vh">${WORDS[language].gradeName}</span>(${Object.values(WORDS[language].grade).join('|')})</span>[^<]+</div>`), `${id}: grade, named for a screen reader, and a plain title stay open`);
       assert.doesNotMatch(/<div class="t">.*?<\/div>/.exec(open)?.[0] ?? '', /<code>|0x[0-9a-fA-F]{40}/, `${id}: no address or code in the title`);
       assert.match(open, /<div class="rec"><span class="lbl">[^<]+<\/span><span class="aiw" data-ai>/, `${id}: the conclusion stays open`);
       assert.match(folded, /<div class="meta">/, `${id}: the details are folded`);
+      const title = /<div class="t"><span class="grade"><span class="vh">[^<]*<\/span>[^<]*<\/span>([^<]+)<\/div>/.exec(open)?.[1] ?? assert.fail(id);
+      const sentence = /<div class="rec">.*?<span class="aiw" data-ai><span>(.*?)<\/span><span class="byai">/s.exec(open)?.[1] ?? assert.fail(id);
+      assert.ok(!folded.includes(title.split(' · ')[0] as string) && !folded.includes(sentence), `${id}: the details repeat nothing shown open`);
     }
   }
   const frozen = unescape(pages.get(hyperithm())?.html.get('en') ?? assert.fail('the frozen page'));
@@ -511,13 +514,16 @@ test('each To review item shows its state, grade, plain title and one-line concl
   assert.match(row, /Address confirmed in too few places · hyperithm-usdc-apex-v2-9e2f<\/div>/, 'the title names the entry');
   assert.match(row, /AI has concerns<\/span>.*The program's only check is the factory: VaultV2Factory answers <code>isVaultV2<\/code> = true\.<\/span>/s);
   assert.doesNotMatch(row, /AI opened the vault's page/, 'the rest of the review is folded');
+  const details = /<div class="row" data-state="warn" data-grade="key"[^>]*>.*?(<details.*?<\/details>)/s.exec(frozen)?.[1] ?? assert.fail('the key row');
+  assert.match(details, /<div class="meta">Confirmed in only 1 place: factory<\/div>/, 'the details name only what the title does not');
+  assert.match(details, /<div class="rec"><span class="aiw" data-ai><span>AI opened the vault's page/, 'the folded review starts after its open sentence');
 });
 
 test('Next steps first asks the signer to open the sources the report lists for each address', () => {
   for (const [id, { language, html }] of replayed) {
     if (!html.includes('<section id="addresses">')) continue;
     const first = /<ol class="steps">\s*<li><div>(.*?)<\/div><\/li>/s.exec(html)?.[1] ?? assert.fail(id);
-    assert.ok(unescape(first).startsWith(language === 'en' ? 'Before you approve, open the sources <a href="#addresses">' : '核准前，打開「<a href="#addresses">'), `${id}: ${first.slice(0, 80)}`);
+    assert.ok(unescape(first).startsWith(language === 'en' ? 'Before you approve, open each address\'s sources in <a href="#addresses">' : '核准前，到「<a href="#addresses">'), `${id}: ${first.slice(0, 80)}`);
   }
 });
 
@@ -552,4 +558,26 @@ test("an instance's context notes show in its section under their titles, each w
   assert.match(section, /<p class="intro"><span class="aiw" data-ai><span>The vault lends each deposit on to the markets it allocates to\. <a class="aisrc" href="https:\/\/example\.org\/vault">[^<]+<\/a><\/span><span class="byai">/);
   const without = /<section id="vault-[^"]+">.*?<\/section>/s.exec(pages.get(hyperithm())?.html.get(language) ?? '')?.[0] ?? assert.fail('the committed instance section');
   assert.ok(!without.includes('<h3><span class="aiw"'), 'no context heading without context notes');
+});
+
+test('in the call ledger, each group keeps the rows the signer decides open and folds its fixed rows under one line that counts them', () => {
+  for (const language of LANGUAGES) {
+    const html = unescape(pages.get(hyperithm())?.html.get(language) ?? assert.fail('the frozen page'));
+    const flow = /<section id="flow">(.*?)<\/section>/s.exec(html)?.[1] ?? assert.fail(language);
+    const before = (field: string, fold: string): boolean => {
+      const at = flow.indexOf(`data-field="${field}"`);
+      const folded = flow.lastIndexOf('<details class="fixed">', at);
+      return folded !== -1 && flow.indexOf('</details>', folded) > at && flow.slice(folded, at).includes(fold);
+    };
+    const words = WORDS[language];
+    assert.ok(before('1.approve.spender', words.fixedFold(1)), `${language}: the approval's fixed spender folds`);
+    assert.ok(!flow.slice(0, flow.indexOf('data-field="1.approve.value"')).includes('<details class="fixed">'), `${language}: the amount the signer types stays open`);
+    const summaries = [...flow.matchAll(/<details class="fixed"><summary>.*?<\/svg>([^<]+)<\/summary>/g)].map((m) => m[1]);
+    assert.deepEqual(summaries, [words.fixedFold(1), words.fixedFold(1), words.fixedFold(4), words.fixedFold(1), words.fixedFold(4)], language);
+    for (const field of ['token', 'amount', 'vault', 'assets', 'maxSharePriceE27']) {
+      const row = new RegExp(`<div class="part"><div class="pn">${field}<`).exec(flow) ?? assert.fail(`${language}: ${field}`);
+      const shut = flow.lastIndexOf('<details class="fixed">', row.index);
+      assert.ok(shut === -1 || flow.lastIndexOf('</details>', row.index) > shut, `${language}: ${field} stays open`);
+    }
+  }
 });

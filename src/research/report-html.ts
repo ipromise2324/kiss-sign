@@ -24,7 +24,7 @@ function text(spans: Inline): Html {
   return h`${spans.map((span) => {
     if (typeof span === 'string') return span;
     if ('code' in span) return h`<code>${span.code}</code>`;
-    if ('mono' in span) return h`<span class="addr">${span.mono}</span>`;
+    if ('mono' in span) return h`<span class="addr${span.line === true ? ' line' : ''}">${span.mono}</span>`;
     if ('num' in span) return h`<span class="num">${span.num}</span>`;
     return h`<a href="${span.href.startsWith('https://') ? span.href : `#${span.href}`}">${span.label}</a>`;
   })}`;
@@ -221,7 +221,7 @@ function diagram(sequence: Sequence, r: R): Html {
     <defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>${nodes}${rows}
   </svg>
   </div>
-  <div class="scrollhint">${r.w.scrollHint}</div>${legend(sequence, r)}`;
+  <div class="scrollhint">${r.w.scrollTo(sequence.lifelines[lastLine]?.name ?? '')}</div>${legend(sequence, r)}`;
 }
 
 const CHIP_CLASS: Readonly<Record<Chip['who'], string>> = { 'you-type': 'who you', 'you-pick': 'who you', computed: 'who', fixed: 'who', free: 'who app', bounded: 'who app' };
@@ -239,24 +239,37 @@ function valueLines(row: ArgRow, r: R): Html {
         <div class="ai">${ai(row.ai, r)}</div>`}`;
 }
 
-function partsOf(row: ArgRow, r: R): Html {
+/** A group's rows, the fixed ones folded under one line that counts them; inside a fold every row shows as it is. */
+function grouped(rows: readonly ArgRow[], one: (row: ArgRow, folded: boolean) => Html, folded: boolean, r: R): Html {
+  const shut = folded ? [] : rows.filter((row) => row.fixed);
+  return h`${rows.filter((row) => folded || !row.fixed).map((row) => one(row, folded))}${
+    shut.length === 0
+      ? ''
+      : h`
+      <details class="fixed"><summary>${decor('chev')}${r.w.fixedFold(shut.length)}</summary>${shut.map((row) => one(row, true))}
+      </details>`
+  }`;
+}
+
+function partsOf(row: ArgRow, folded: boolean, r: R): Html {
+  const part = (p: ArgRow, inFold: boolean): Html => h`
+        <div class="part"><div class="pn">${p.name}${p.chips.length === 0 ? '' : h`<div class="pchips">${p.chips.map(chip)}</div>`}</div><div>${valueLines(p, r)}</div>${partsOf(p, inFold, r)}</div>`;
   return h`${row.parts.map(
     (group) => h`
-      <div class="parts">${group.label === undefined ? '' : h`<div class="plabel">${text(group.label)}</div>`}${group.rows.map(
-        (p) => h`
-        <div class="part"><div class="pn">${p.name}${p.chips.length === 0 ? '' : h`<div class="pchips">${p.chips.map(chip)}</div>`}</div><div>${valueLines(p, r)}</div>${partsOf(p, r)}</div>`,
-      )}
+      <div class="parts">${group.label === undefined ? '' : h`<div class="plabel">${text(group.label)}</div>`}${grouped(group.rows, part, folded, r)}
       </div>`,
   )}`;
 }
 
-function argRow(row: ArgRow, r: R): Html {
+function argRow(row: ArgRow, folded: boolean, r: R): Html {
   return h`
     <div class="arg" data-field="${row.key}">
       <div class="nm"><span class="pn">${row.name}</span>${row.chips.map(chip)}</div>
-      <div class="val">${valueLines(row, r)}</div>${partsOf(row, r)}
+      <div class="val">${valueLines(row, r)}</div>${partsOf(row, folded, r)}
     </div>`;
 }
+
+const argRows = (rows: readonly ArgRow[], r: R): Html => grouped(rows, (row, folded) => argRow(row, folded, r), false, r);
 
 function callHead(call: CallBlock): Html {
   const { head } = call;
@@ -283,7 +296,7 @@ function flowBody(flow: Flow, r: R): Html {
       ? ''
       : h`
   <div class="cb">
-    <div class="callh"><span class="what">${r.w.safeTx}</span></div>${flow.safeTx.map((row) => argRow(row, r))}
+    <div class="callh"><span class="what">${r.w.safeTx}</span></div>${argRows(flow.safeTx, r)}
   </div>`
   }
   ${flow.calls.map(
@@ -291,7 +304,7 @@ function flowBody(flow: Flow, r: R): Html {
   <div class="cb">
     <div class="callh"><span class="no">${call.n}</span>${callHead(call)}</div>${call.head.kind === 'fn' ? h`<div class="cdoc">${docLine(call.head.doc, r)}</div>` : ''}${
       call.sends === undefined ? '' : h`<div class="sends">${text(call.sends)}</div>`
-    }${call.args.map((row) => argRow(row, r))}
+    }${argRows(call.args, r)}
   </div>`,
   )}
   <h3>${r.w.afterTx}</h3>${
@@ -342,22 +355,22 @@ function chart(block: VaultBlock, r: R): Html {
         : h`<rect class="bar${i === block.bars.length - 1 ? ' last' : ''}" x="${x.toFixed(1)}" y="${CHART_BASE - height}" width="${w.toFixed(1)}" height="${height}"><title>${title}</title></rect>`;
     const [year, month] = bar.date.split('-');
     const first = i === 0 || month === '01';
+    const thin = !first && (block.bars.length - 1 - i) % 2 === 1;
     return h`
-    ${mark}<text class="tick" x="${(x + w / 2).toFixed(1)}" y="${CHART_BASE + 18}" text-anchor="middle">${month === undefined ? '?' : r.w.month(Number(month))}</text>${
-      first && year !== undefined && month !== undefined ? h`<text class="tick" x="${(x + w / 2).toFixed(1)}" y="${CHART_BASE + 34}" text-anchor="middle">${year}</text>` : ''
+    ${mark}<text class="tick${thin ? ' thin' : ''}" x="${(x + w / 2).toFixed(1)}" y="${CHART_BASE + 18}" text-anchor="middle">${month === undefined ? '?' : r.w.month(Number(month))}</text>${
+      first && year !== undefined && month !== undefined ? h`<text class="tick" x="${(x + w / 2).toFixed(1)}" y="${CHART_BASE + 38}" text-anchor="middle">${year}</text>` : ''
     }`;
   });
   const span = block.bars.length === 0 ? '' : r.w.chartSpan(`${block.bars[0]?.date}`, `${block.bars.at(-1)?.date}`);
   const most = block.most ?? r.w.notRead;
-  return h`<div class="diagram">
-  <svg viewBox="0 0 ${CHART_WIDTH} ${CHART_BASE + 44}" role="img" aria-labelledby="vt vd">
+  return h`<div class="diagram chart">
+  <svg viewBox="0 0 ${CHART_WIDTH} ${CHART_BASE + 48}" role="img" aria-labelledby="vt vd">
     <title id="vt">${r.w.monthly}</title>
     <desc id="vd">${r.w.chartDesc(block.bars.length, span, most)}</desc>
     <text class="tick" x="${CHART_SIDE}" y="18">${r.w.highest(most)}</text>
     <line class="axis" x1="${CHART_SIDE}" y1="${CHART_BASE}" x2="${CHART_WIDTH - CHART_SIDE}" y2="${CHART_BASE}"/>${bars}
   </svg>
-  </div>
-  <div class="scrollhint">${r.w.scrollHint}</div>`;
+  </div>`;
 }
 
 function vaultBody(block: VaultBlock, r: R): Html {
@@ -382,10 +395,10 @@ function vaultBody(block: VaultBlock, r: R): Html {
   <p class="intro">${ai(c.note, r)}</p>`)}`;
 }
 
-/** The AI's full text, folded under its one-line conclusion; left out when the conclusion is all of it. */
-const rest = (label: string | undefined, note: AiText, conclusion: AiText, r: R): Html =>
-  note.ai === conclusion.ai && note.sources.length === 0 ? h`` : h`
-          <div class="rec">${label === undefined ? '' : h`<span class="lbl">${label}</span>`}${ai(note, r)}</div>`;
+/** The AI's text after the sentence shown open, folded under it. */
+const rest = (note: AiText | undefined, r: R): Html =>
+  note === undefined ? h`` : h`
+          <div class="rec">${ai(note, r)}</div>`;
 
 function reviewBody(body: Extract<Body, { kind: 'review' }>, r: R): Html {
   const empty = body.rows.length === 0 && body.judgments.length === 0;
@@ -395,11 +408,11 @@ function reviewBody(body: Extract<Body, { kind: 'review' }>, r: R): Html {
     (row) => h`
     <div class="row" data-state="${row.state}" data-grade="${row.grade}" data-result="${row.id}">
       ${icon(row.state, r.language)}
-      <div><div class="t"><span class="lbl">${r.w.grade[row.grade]}</span> ${row.title}</div>
+      <div><div class="t"><span class="grade"><span class="vh">${r.w.gradeName}</span>${r.w.grade[row.grade]}</span>${row.title}</div>
         <div class="rec"><span class="lbl">${r.w.reviewed[row.review.status]}</span>${ai(row.conclusion, r)}</div>
-        <details class="more"><summary>${decor('chev')}${r.w.details}</summary>
-          <div class="meta">${text(row.subject)}</div>
-          <div class="meta">${text(row.why)}${row.entry === undefined ? '' : h`<a href="#${row.entry}">${r.w.seeSource}</a>`}</div>${rest(r.w.reviewed[row.review.status], row.review.text, row.conclusion, r)}
+        <details class="more"><summary>${decor('chev')}${r.w.details}</summary>${row.subject === undefined ? '' : h`
+          <div class="meta">${text(row.subject)}</div>`}
+          <div class="meta">${text(row.why)}${row.entry === undefined ? '' : h`<a href="#${row.entry}">${r.w.seeSource}</a>`}</div>${rest(row.review.rest, r)}
           <div class="rec"><span class="lbl">${r.w.advice}</span>${ai(row.review.recommendation, r)}</div>
         </details></div>
     </div>`,
@@ -408,7 +421,7 @@ function reviewBody(body: Extract<Body, { kind: 'review' }>, r: R): Html {
     <div class="row">
       ${icon('ask', r.language)}
       <div><div class="t">${ai(j.conclusion, r)}</div>
-        <details class="more"><summary>${decor('chev')}${r.w.details}</summary>${rest(undefined, j.text, j.conclusion, r)}
+        <details class="more"><summary>${decor('chev')}${r.w.details}</summary>${rest(j.rest, r)}
           <div class="rec"><span class="lbl">${r.w.advice}</span>${ai(j.recommendation, r)}</div>
         </details></div>
     </div>`,

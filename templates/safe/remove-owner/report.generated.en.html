@@ -29,6 +29,7 @@ a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
+.addr.line{display:block;margin-top:4px}
 .num{font-variant-numeric:tabular-nums}
 .f2{color:var(--fg2)} .f3{color:var(--fg3)}
 b,strong{font-weight:590}
@@ -140,6 +141,8 @@ svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
 svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
 svg .axis{stroke:var(--line2)}
 svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.chart svg{min-width:0}
+@media (max-width:600px){.chart .tick{font-size:18px}.chart .thin{display:none}}
 .legend{list-style:none;margin:10px 0 14px;padding:0;display:flex;flex-direction:column;gap:4px;font-size:var(--t-small);color:var(--fg2)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
@@ -182,6 +185,14 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .part .raw{font-size:var(--t-small)}
 .part .is{font-size:var(--t-small)}
 .part .ai{margin-top:4px}
+details.fixed>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);color:var(--fg2);font-size:var(--t-small)}
+details.fixed>summary::-webkit-details-marker{display:none}
+details.fixed>summary:hover{color:var(--fg)}
+details.fixed[open]>summary .chev{transform:rotate(90deg)}
+.parts>details.fixed{grid-column:1/-1;display:grid;grid-template-columns:subgrid}
+.parts>details.fixed[open]::details-content{display:contents}
+.parts>details.fixed>summary{grid-column:1/-1;padding:10px 0;border-bottom:0;border-top:1px solid var(--line)}
+.parts>details.fixed:first-child>summary,.plabel+details.fixed>summary{border-top:0;padding-top:2px}
 @media (max-width:720px){
   .arg{grid-template-columns:minmax(0,1fr)}
   .arg .nm{flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
@@ -192,6 +203,8 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
+.row .t .grade{font-weight:400;font-size:var(--t-label);color:var(--fg3);margin-right:10px;padding-right:10px;border-right:1px solid var(--line2);vertical-align:1px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .row .meta{font-size:var(--t-row);color:var(--fg2);margin-top:6px}
 .row .meta a{margin-left:8px;color:var(--fg2)}
 .row .rec{font-size:var(--t-row);margin-top:8px}
@@ -270,7 +283,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="Contents">
   <h2>Contents</h2>
-  <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>2</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">2</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>2</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">2</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
 </nav>
 
 <div class="main">
@@ -293,9 +306,32 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="ok"><span class="lbl">Advice</span><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span class="aiw" data-ai><span>Moves no asset, but changes who controls this Safe: confirm you are removing the right person and that enough signers remain.</span><span class="byai">AI research: be careful</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
-    <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>2</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">2</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+    <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>2</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">2</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
   </details>
 </header>
+
+<section id="review">
+  <h2>To review <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>2</span></span></h2>
+  <p class="lead">The AI checked each item first and gives its advice.</p>
+  <div class="rows">
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>After the removal, the number of signers left cannot be lower than the threshold.</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="rec"><span class="aiw" data-ai><span>With the threshold set to the number left, losing one key leaves the Safe unable to act ever again.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Leave some margin in the threshold: for example, 2 when 3 signers remain.</span><span class="byai">AI research</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>When the Safe web app&#39;s &#34;Manage signers&#34; changes several things at once, it wraps several calls in a MultiSend.</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="rec"><span class="aiw" data-ai><span>A kiss-sign card accepts only one signer or threshold change, so such a batch transaction gives MISMATCH.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Change one thing at a time, one transaction per change.</span><span class="byai">AI research</span></span></div>
+        </details></div>
+    </div>
+  </div>
+</section>
 
 <section id="flow">
   <h2>Flow <span class="c">1 call</span></h2>
@@ -311,7 +347,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <path class="call" d="M90 104h64v16h-61" marker-end="url(#head)"/>
   </svg>
   </div>
-  <div class="scrollhint">Scroll the diagram sideways</div>
+  <div class="scrollhint">Scroll the diagram sideways; your Safe is at the far right</div>
   <div class="key">
     <span class="k0">Who decides</span>
     <span><span class="who you">you type</span>typed at each signing</span>
@@ -322,11 +358,6 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   
   <div class="cb">
     <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">your Safe.</span>removeOwner</span><span class="sel">0xf8dc5dd9</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">Docs: </span><a href="https://docs.safe.global/reference-smart-account/owners/removeOwner">docs.safe.global/reference-smart-account/owners</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></div></div>
-    <div class="arg" data-field="1.removeOwner.prevOwner">
-      <div class="nm"><span class="pn">prevOwner</span><span class="who">fixed</span></div>
-      <div class="val"><div class="is">the owner just before the signer in the Safe&#39;s owner list <span class="f3">the program reads getOwners() on chain; you do not type it</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The Safe stores its signers as a linked list. This is the signer just before the one removed; the one before the first signer is 0x0000000000000000000000000000000000000001. If it is wrong, the transaction fails (GS205).</span></span></div></div>
-    </div>
     <div class="arg" data-field="1.removeOwner.owner">
       <div class="nm"><span class="pn">owner</span><span class="who you">you pick: signer</span></div>
       <div class="val"><div class="is">the signer you pick</div>
@@ -337,35 +368,19 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="val"><div class="is">the threshold you type</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The threshold after the removal. It cannot be greater than the number of signers left.</span></span></div></div>
     </div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 fixed value; any change is a MISMATCH</summary>
+    <div class="arg" data-field="1.removeOwner.prevOwner">
+      <div class="nm"><span class="pn">prevOwner</span><span class="who">fixed</span></div>
+      <div class="val"><div class="is">the owner just before the signer in the Safe&#39;s owner list <span class="f3">the program reads getOwners() on chain; you do not type it</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The Safe stores its signers as a linked list. This is the signer just before the one removed; the one before the first signer is 0x0000000000000000000000000000000000000001. If it is wrong, the transaction fails (GS205).</span></span></div></div>
+    </div>
+      </details>
   </div>
   <h3>After the transaction</h3>
   <dl class="props">
     <div><dt>Safe&#39;s signers</dt><dd class="">removes the signer</dd><dd class="src">getOwners() is read before and after the transaction; no other signer may change</dd></div>
     <div><dt>Safe&#39;s threshold</dt><dd class="">becomes the threshold you type</dd><dd class="src">getThreshold() is read before and after the transaction</dd></div>
   </dl>
-</section>
-
-<section id="review">
-  <h2>To review <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>2</span></span></h2>
-  <p class="lead">The AI checked each item first and gives its advice.</p>
-  <div class="rows">
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>After the removal, the number of signers left cannot be lower than the threshold.</span><span class="byai">AI research</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>After the removal, the number of signers left cannot be lower than the threshold. With the threshold set to the number left, losing one key leaves the Safe unable to act ever again.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Leave some margin in the threshold: for example, 2 when 3 signers remain.</span><span class="byai">AI research</span></span></div>
-        </details></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>When the Safe web app&#39;s &#34;Manage signers&#34; changes several things at once, it wraps several calls in a MultiSend.</span><span class="byai">AI research</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>When the Safe web app&#39;s &#34;Manage signers&#34; changes several things at once, it wraps several calls in a MultiSend. A kiss-sign card accepts only one signer or threshold change, so such a batch transaction gives MISMATCH.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Change one thing at a time, one transaction per change.</span><span class="byai">AI research</span></span></div>
-        </details></div>
-    </div>
-  </div>
 </section>
 
 <section id="wallet">
@@ -485,7 +500,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="next">
   <h2>Next steps</h2>
   <ol class="steps">
-    <li><div>Before you approve, open the sources <a href="#addresses">Addresses</a> lists for each address: check that each domain is the protocol&#39;s own and that the page lists this address.</div></li>
+    <li><div>Before you approve, open each address&#39;s sources in <a href="#addresses">Addresses</a> and check that each domain is the protocol&#39;s own and that the page lists the address.</div></li>
     <li><div>The first time you use this template, or after it changes, approve it<pre class="cmd"><code>pnpm kiss-sign template approve safe/remove-owner</code></pre>
       <p class="then">It prints the template, the commit of main on GitHub and the template&#39;s keccak256. Answer <code>y</code> only if it is the one you reviewed.</p></div></li>
     <li><div>First add each signer you will add, remove or replace to your address book. Pick a name in lowercase English joined with -; get the address from a source outside the chat<pre class="cmd"><code>pnpm kiss-sign book add &#60;name&#62; &#60;address&#62;</code></pre>
