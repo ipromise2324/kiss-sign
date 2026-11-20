@@ -12,7 +12,7 @@ import type { Language } from '../src/language.ts';
 import { OLD_HTML_FILE, generatedHtml, generatedHtmlFile, generatedHtmlPath, htmlDifference, renderPage, writeHtmlPages } from '../src/research/report-html.ts';
 import { buildPage } from '../src/research/report-page.ts';
 import { loadReport, readDocs, replayInputs, reportDir, templateTargets } from '../src/research/report.ts';
-import type { PastTxsSummary, ReportInputs, ReportTitle } from '../src/research/report.ts';
+import type { PastTxsSection, ReportInputs, ReportTitle } from '../src/research/report.ts';
 import type { YearSearch } from '../src/research/past-txs.ts';
 import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
@@ -390,7 +390,7 @@ test("a paged year's search line says how many transactions with a proven Safe p
   const id = bilingual((dir) => (pages.get(dir)?.inputs.pastTxs.length ?? 0) > 0);
   const { inputs, title, html } = pages.get(id) ?? assert.fail(id);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
-  const [first, ...rest] = inputs.pastTxs as [PastTxsSummary, ...PastTxsSummary[]];
+  const [first, ...rest] = inputs.pastTxs as [PastTxsSection, ...PastTxsSection[]];
   const withFixtures = { ...inputs, fixtures: await judgeFixtures(ROOT, template, registry), example: firstRecordedTx(ROOT, template, registry) };
   const covered = (safesFirst: Extract<YearSearch, { kind: 'covered' }>['safesFirst']): YearSearch => ({ kind: 'covered', range: { fromBlock: 1n, toBlock: 2n }, pages: new Map([['alchemy', 2], ['etherscan', 3]]), safesFirst });
   const checked = { kind: 'checked', noun: 'the address minted to', block: 2n, parties: 30, safes: 20, unreadable: 0 } as const;
