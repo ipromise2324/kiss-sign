@@ -29,7 +29,7 @@ The last column is what must hold before the action, and who or what enforces it
 
 | Action | Who | What must hold first |
 |---|---|---|
-| Merge a template or registry pull request | The signer | The signer reads the report and merges. `pnpm check-push`, run by CI, refuses the branch if it also changes the verdict core. See [Who owns the program](design/program-ownership.md#who-owns-the-program). |
+| Merge a template or registry pull request | The signer | The signer reads the report, opens the sources it lists, and merges. CI's `program-gate` job, which runs main's code, fails if the branch also changes the verdict core. See [Who owns the program](design/program-ownership.md#who-owns-the-program). |
 | Merge a program pull request | The AI, with a merge commit | `pnpm program-gate`, run from main's code, prints `ELIGIBLE`, and a fresh AI reviewer, given the diff and not the author's conclusions, finds no security regression. See [The program gate](design/program-ownership.md#the-program-gate). |
 | Merge a program gate pull request | The signer | The signer reviews it as they do a template. `pnpm program-gate` stops at `NOT ELIGIBLE` and names the gate files. `pnpm check-push` refuses the branch if it also changes the verdict core. |
 | Approve a template | The signer | `template approve` requires every `origin` URL to be the config's `repo`, fetches its `main`, prints the commit and the template's keccak256, and records that hash only after the signer's yes at a terminal. |
