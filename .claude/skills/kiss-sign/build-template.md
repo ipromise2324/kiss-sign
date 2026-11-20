@@ -68,7 +68,7 @@ Then follow [Data shapes](../../../docs/design/data-shapes.md#data-shapes); temp
 
 Run `pnpm past-txs <protocol>/<operation>` with no block range, anchored on the transfer or event the operation itself makes, such as a vault's shares minted for a deposit, the token's transfer for a transfer, or, for an event each Safe logs about itself, `--anchor event --event 'AddedOwner(address)'` with no `--token`; `pnpm past-txs --help` lists the anchors.
 The program picks its own search: the whole last year in up to 10 pages per source, studying first every transaction whose anchor party is a proven Safe, and when the year holds more, 12 windows across it; never pass `--from-block` or `--to-block`, which replace both with one range of your choosing.
-To read again the blocks an earlier recording searched, such as to add what a read with no answer left out, pass `--same-windows-as <recording>`, which keeps that recording's head block and the search it made.
+To read again the blocks an earlier recording searched, such as to add what a read with no answer left out, pass `--same-windows-as <name>`, which takes the head block and the search from the summary `testdata/research/<name>.json`.
 
 1. For each field, note how many transactions and senders held the template's rule, for Safes and for EOAs separately.
 2. Read every misfit group.
@@ -86,7 +86,9 @@ To read again the blocks an earlier recording searched, such as to add what a re
    For another number, when the spread shows a bound is needed and no rule in the vocabulary can hold it, stop and propose a generic program change.
    When no bound is needed, say why in that note.
 6. Record the runs the report studies with `--record <name>` before you generate the report.
-   The recording also keeps the call trace of each transaction exactly the template, which the report compares with your `flow` lines ([Notes and reviews](notes-and-reviews.md)).
+   It writes the full recording to `.cache/past-txs/<name>.json`, which git ignores and you never commit, and a summary of what the study found to `testdata/research/<name>.json`, which the report reads.
+   The summary also keeps the call trace of each transaction exactly the template, which the report compares with your `flow` lines ([Notes and reviews](notes-and-reviews.md)).
+   When `pnpm test` says a summary changed since it was studied, run `pnpm past-txs --restudy <name>` where `.cache/past-txs/<name>.json` exists, or run the summary's printed command again.
 
 ## Check the protocol's health
 
@@ -102,7 +104,7 @@ Cite a URL for every claim; it goes into `protocols` in `notes.json`.
    - A URL holds only RFC 3986 characters other than `[` and `]`; prefer the protocol's docs, and pin a GitHub page to a commit.
    - For a function a token standard defines, called on a registry token or vault, such as ERC-20's `approve`, `transfer` or `transferFrom`, write `{ "contract": "<registry name>", "standard": "erc-20" }` when the issuer publishes no page on its own site that names the function as code; the standards are `erc-20` (a token or a vault), `erc-4626` (a vault) and `weth9` (WETH alone).
 2. Run `pnpm report <protocol>/<operation> --record`, with `--instance-of <instance>` for the instance the signer named when the template is reported per instance.
-   It reads everything live, the past transactions studied again from the `pnpm past-txs` recordings, whose search, signed-message answers and traces it reuses, and records the answers in `testdata/report/` and any missing ABI case in `testdata/abi/`, and writes `report.generated.md`.
+   It reads everything live but the past transactions, which it prints from the `pnpm past-txs` summaries in `testdata/research/`, and records the answers in `testdata/report/` and any missing ABI case in `testdata/abi/`, and writes `report.generated.md`.
    Last it writes the HTML report from `notes.json`; that step refuses, naming the problem, until the notes review exactly the results the signer must look at.
    At this step the refusal is expected and comes after the recordings and `report.generated.md` are written: write the reviews ([notes-and-reviews.md](notes-and-reviews.md)) and run `--render`.
    Never edit the generated file; `pnpm test` fails if it differs from what the recordings give.
@@ -118,7 +120,7 @@ Cite a URL for every claim; it goes into `protocols` in `notes.json`.
 ## Open the pull request
 
 Run `pnpm test`, `pnpm typecheck` and `pnpm check-push origin/main..HEAD`; all must pass.
-Open the pull request to the signer's fork with the template, `docs.json`, `notes.json`, the generated reports (`report.generated.md` and each HTML file `--render` wrote), the recordings, the registry entries, the tests, and any research-code change with its design change.
+Open the pull request to the signer's fork with the template, `docs.json`, `notes.json`, the generated reports (`report.generated.md` and each HTML file `--render` wrote), the recordings, the `pnpm past-txs` summaries in `testdata/research/` (never the full recordings in `.cache/past-txs/`), the registry entries, the tests, and any research-code change with its design change.
 A verdict core change went in its own pull request first.
 Never paste generated output into the pull request description.
 
