@@ -31,7 +31,8 @@ import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, flowR
 import type { Confidence, FindingKind, Ledger, Phrase, Place, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
 import { NOTES_FILE, argumentTree, notesLanguages, notesScope, parseFlowLines, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
-import { PERCENTILES, amountsOf, freeNumbers } from './past-txs.ts';
+import { PERCENTILES, amountsOf, freeNumbers } from './past-txs-render.ts';
+import { foundBy } from './past-txs.ts';
 import type { PastTxs } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { factsScope } from './protocol-facts.ts';
@@ -1778,12 +1779,11 @@ function pastSection(context: Context): Section {
       ...(elsewhere.length === 0 ? [] : [w.otherOperations(elsewhere.length, top.map(([name, n]) => [{ code: name }, n] as const), tally.size > top.length)]),
       ...(skipped === 0 ? [] : [[w.skipped(skipped)]]),
     ];
-    const bySource = (source: string) => [...run.found.values()].filter((s) => s.includes(source as never)).length;
-    const [alchemy, etherscan] = [bySource('alchemy'), bySource('etherscan')];
-    const same = [...run.found.values()].every((s) => s.length === 2);
+    const [alchemy, etherscan] = [foundBy(run.found, 'alchemy'), foundBy(run.found, 'etherscan')];
+    const same = run.found.only.alchemy.length + run.found.only.etherscan.length === 0;
     return {
       file,
-      count: w.searchCount(query.token === undefined ? SELF_LOGGED : nameOf(query.token), anchorWords(query, query.token === undefined ? undefined : registry.byAddress.get(query.token.toLowerCase() as Address), w), run.found.size, run.studies.length, safeParties(run.year)),
+      count: w.searchCount(query.token === undefined ? SELF_LOGGED : nameOf(query.token), anchorWords(query, query.token === undefined ? undefined : registry.byAddress.get(query.token.toLowerCase() as Address), w), run.found.total, run.studies.length, safeParties(run.year)),
       search: query.anchor === 'event' ? w.searchEtherscanOnly({ num: `${etherscan}` }) : w.searchSame(same, { num: `${alchemy} ${same ? '=' : '≠'} ${etherscan}` }),
       blocks,
       others,

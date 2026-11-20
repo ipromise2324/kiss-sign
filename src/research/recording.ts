@@ -1,11 +1,17 @@
-import { trimBlockAnswers } from '../chain/recording.ts';
+import { replayReader, trimBlockAnswers } from '../chain/recording.ts';
 import type { Exchange } from '../chain/recording.ts';
 import type { ProviderName } from '../chain/providers.ts';
+import type { Registry } from '../registry.ts';
+import type { Address, Hex } from '../safe/types.ts';
+import type { Template } from '../template/template.ts';
+import { replayMessages } from './messages.ts';
 import type { MessageExchange } from './messages.ts';
-import type { SourceExchange } from './sources.ts';
+import { pastTxs } from './past-txs.ts';
+import type { BlockRange, ExcludedHashes, PastTxs, PastTxsQuery } from './past-txs.ts';
+import { anchorEvent, replayAsk } from './sources.ts';
+import type { AnchorKind, SourceExchange } from './sources.ts';
+import { replayTraces } from './trace.ts';
 import type { RecordedTrace } from './trace.ts';
-import type { BlockRange, ExcludedHashes } from './past-txs.ts';
-import type { Hex } from '../safe/types.ts';
 
 /** One `past-txs --record` run: its query, every search answer, and every chain read with each provider's answer. */
 export type PastTxsRecording = {
@@ -105,4 +111,31 @@ export function scrubRecording(recording: PastTxsRecording, safes: readonly stri
   const scrubbed = { ...recording, sources, ...left, ...messages, ...traces, exchanges: recording.exchanges.map(trimBlockAnswers).filter((e) => !mentions(e, needles)) };
   if (mentions(scrubbed, needles)) throw new Error('the recording still holds the configured Safe\'s address; nothing written');
   return scrubbed;
+}
+
+/** The anchor a recording's query searched. */
+export const anchorOf = (query: PastTxsRecording['query']): PastTxsQuery['anchor'] => ({
+  ...(query.token === undefined ? {} : { token: query.token as Address }),
+  kind: query.anchor as AnchorKind,
+  ...(query.from === undefined ? {} : { from: query.from as Address }),
+  ...(query.to === undefined ? {} : { to: query.to as Address }),
+  ...(query.event === undefined ? {} : { event: anchorEvent(query.event) }),
+});
+
+/** The run a recording holds, studied again from its answers alone with `template` and `registry`. */
+export function replayPastTxs(recording: PastTxsRecording, template: Template, registry: Registry): Promise<PastTxs> {
+  const { query } = recording;
+  return pastTxs(
+    { template, anchor: anchorOf(query), sampling: samplingOf(query) },
+    {
+      ask: replayAsk(recording.sources),
+      reader: replayReader(recording.exchanges),
+      registry,
+      readMessage: replayMessages(recording.messages ?? []),
+      exclude: undefined,
+      maxTxs: query.maxTxs,
+      traces: replayTraces(recording.traces),
+      excludedByRecording: { found: new Set(recording.excluded?.found ?? []), sampled: new Set(recording.excluded?.sampled ?? []) },
+    },
+  );
 }

@@ -31,7 +31,7 @@ function runOffline(script: string, args: readonly string[], output: string, net
       writeFileSync(join(sandbox, 'home', 'config.json'), JSON.stringify(config));
     }
     const copied = ['src', 'scripts', 'registry'];
-    for (const name of readdirSync(ROOT)) if (!['.git', 'testdata', ...copied].includes(name)) symlinkSync(join(ROOT, name), join(sandbox, name));
+    for (const name of readdirSync(ROOT)) if (!['.git', '.cache', 'testdata', ...copied].includes(name)) symlinkSync(join(ROOT, name), join(sandbox, name));
     for (const name of copied) cpSync(join(ROOT, name), join(sandbox, name), { recursive: true });
     mkdirSync(join(sandbox, 'testdata'));
     for (const name of readdirSync(join(ROOT, 'testdata'))) if (name !== output) symlinkSync(join(ROOT, 'testdata', name), join(sandbox, 'testdata', name));
@@ -97,7 +97,7 @@ test('simulate --record writes the recording when every read is answered, and no
 
 test('past-txs --record writes the study when every read is answered, and nothing when a read gets no answer', () => {
   const name = 'morpho-vault-deposit-windows';
-  const recording = readRecording<PastTxsRecording>(join(ROOT, 'testdata', 'research', `${name}.json`));
+  const recording = readRecording<PastTxsRecording>(join(ROOT, 'testdata', 'past-txs', `${name}.json`));
   const transfers: Exchange[] = [];
   const http: Http = {};
   for (const { request, answer } of recording.sources) {
@@ -109,6 +109,15 @@ test('past-txs --record writes the study when every read is answered, and nothin
   assertRecorded(runOffline('past-txs.ts', args, 'research', { exchanges: [...recording.exchanges, ...transfers], http }, seed), 'offline.json');
   const network = { exchanges: [...withheld(recording.exchanges, 'eth_getTransactionByHash'), ...transfers], http };
   assertRefused(runOffline('past-txs.ts', args, 'research', network, seed), 'drpc eth_getTransactionByHash: unreachable');
+});
+
+test('past-txs --record of a template reported per vault refuses a search anchored on no registry entry before any read', () => {
+  const args = ['morpho/vault-deposit', '--token', `0x${'7e'.repeat(20)}`, '--anchor', 'mint', '--record', 'offline'];
+  const run = runOffline('past-txs.ts', args, 'research', { exchanges: [] });
+  assert.equal(run.status, 64, run.stderr + run.stdout);
+  assert.match(run.stderr, /^--record offline: morpho\/vault-deposit is reported per vault, and the search anchors on no registry entry$/m);
+  assert.doesNotMatch(run.stderr, /got no answer/);
+  assert.deepEqual(run.written, []);
 });
 
 test('record-abi-case writes the case when every read is answered, and nothing when Etherscan gives no answer', () => {
