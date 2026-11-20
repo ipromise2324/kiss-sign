@@ -63,7 +63,7 @@ h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:
 h1 .byai{vertical-align:6px;margin-left:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
 .sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
-.sub .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
+.sub .byai,h3 .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:inline-flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
 .checks .n{color:var(--fg2)}
@@ -550,9 +550,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>Past transactions</h2>
-  <p class="lead">In past records, <span class="num">0</span> transactions match the template exactly; <span class="num">0</span> have the same shape but with an address outside the registry; <span class="num">2</span> have another shape, listed under Other ways.</p>
+  <p class="lead">In past records, <span class="num">0</span> transactions match the template exactly, made the way yours is.</p>
   <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Other ways</summary>
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span><span class="num">2</span> more differ from yours: <span class="num">0</span> have the same shape but with an address outside the registry, <span class="num">2</span> have another shape</span></summary>
   <p class="lead">Only transactions that used this operation&#39;s calls count. An exact match has the template&#39;s calls and argument positions, meets every rule the transaction itself can show (such as where the sender goes, or a fixed value), and uses a contract the template allows wherever the template binds a registry contract. Same shape but a market, token, vault or address outside the registry means the calls, argument positions and those rules are the same, but an address or market is not in the registry; the kind is named when the record shows it, otherwise only address. The rest are grouped by reason, each with up to 3 examples.</p>
   <h3>Search of morpho transfer: 2167 found, 240 studied</h3>
   <p class="lead">Recorded in <code>testdata/research/uniswap-swap-morpho.json</code>. Alchemy and Etherscan found exactly the same (<span class="num">2167 = 2167</span>).</p>

@@ -63,7 +63,7 @@ h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:
 h1 .byai{vertical-align:6px;margin-left:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
 .sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
-.sub .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
+.sub .byai,h3 .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:inline-flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
 .checks .n{color:var(--fg2)}
@@ -399,10 +399,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>過去交易</h2>
-  <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">77</span> 筆：Safe <span class="num">77</span> 筆（68 個 Safe）、EOA <span class="num">0</span> 筆；形狀一樣、但有地址不在 registry 裡的有 <span class="num">0</span> 筆；形狀不同的有 <span class="num">14</span> 筆，列在其他做法。這些交易全部成功執行：它們是從 Safe ChangedThreshold時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0x6ce6ac001cb6ed77c2812259bdd15471bc4d7646a88fabaf412e20ee32b00332">0x6ce6ac00…</a>、<a href="https://etherscan.io/tx/0xb61bcdbd73f1158ca68b19534e9ed8c3217b7c466acaeaef1051294f50dc8e30">0xb61bcdbd…</a>、<a href="https://etherscan.io/tx/0x0bdb8744801e015a4b889634f57a5dd62f872898d6966a5bda3c5435d2617a88">0x0bdb8744…</a>。</p>
-  <p class="intro"><span class="aiw" data-ai><span>不合的都是把門檻和 owner 變更一起送，有的還加 enableModule，kiss-sign 不接受。</span><span class="byai">AI 研究</span></span></p>
+  <p class="lead">過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 <span class="num">77</span> 筆：Safe <span class="num">77</span> 筆（68 個 Safe）、EOA <span class="num">0</span> 筆。這些交易全部成功執行：它們是從 Safe ChangedThreshold時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0x6ce6ac001cb6ed77c2812259bdd15471bc4d7646a88fabaf412e20ee32b00332">0x6ce6ac00…</a>、<a href="https://etherscan.io/tx/0xb61bcdbd73f1158ca68b19534e9ed8c3217b7c466acaeaef1051294f50dc8e30">0xb61bcdbd…</a>、<a href="https://etherscan.io/tx/0x0bdb8744801e015a4b889634f57a5dd62f872898d6966a5bda3c5435d2617a88">0x0bdb8744…</a>。</p>
   <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 <span class="num">14</span> 筆跟你這筆不一樣：形狀一樣、但有地址不在 registry 裡的 <span class="num">0</span> 筆，形狀不同的 <span class="num">14</span> 筆</span></summary>
+  <p class="intro"><span class="aiw" data-ai><span>不合的都是把門檻和 owner 變更一起送，有的還加 enableModule，kiss-sign 不接受。</span><span class="byai">AI 研究</span></span></p>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
   <h3>搜尋 Safe 的ChangedThreshold，找到 319 筆，研究 212 筆</h3>
   <p class="lead">記錄在 <code>testdata/research/safe-change-threshold.json</code>。只有 Etherscan 搜尋事件，找到 <span class="num">319</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
