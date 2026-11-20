@@ -337,12 +337,15 @@ test("a key or name both notes define is refused, and a vault's notes hold only 
   mergeRefused(['verdict'], `${VAULT_PATH}: not a JSON object`);
 });
 
-test("an instance's context notes parse with their sources, and the template's notes may not hold them", () => {
+test("an instance's context notes parse with their sources, hold at most 400 characters under a title of 40, and the template's notes may not hold them", () => {
   const context = [{ title: t('存款去哪'), text: t('vault 把存款借給它分配的市場。'), sources: ['https://example.org/vault'] }];
   const notes = parseNotes(mergeNotes(SHARED, { verdict: VALID.verdict, context }, VAULT_PATH, OWNED), SCOPE);
   assert.deepEqual(notes.context, [{ title: '存款去哪', text: 'vault 把存款借給它分配的市場。', sources: ['https://example.org/vault'] }]);
   assert.deepEqual(parseNotes(VALID, SCOPE).context, []);
   refused({ ...VALID, context: [{ ...context[0], sources: [] }] }, 'notes.json.context[0].sources: names no source');
+  assert.equal(parseNotes({ ...VALID, context: [{ ...context[0], text: t('x'.repeat(400)) }] }, SCOPE).context[0]?.text, 'x'.repeat(400));
+  refused({ ...VALID, context: [{ ...context[0], text: t('x'.repeat(401)) }] }, 'notes.json.context[0].text.zh-TW: longer than 400 characters');
+  refused({ ...VALID, context: [{ ...context[0], title: t('x'.repeat(41)) }] }, 'notes.json.context[0].title.zh-TW: longer than 40 characters');
 
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-notes-'));
   mkdirSync(join(root, TEMPLATES_DIR, 'fluid/vault-deposit', 'instances', 'fluid-fusdt'), { recursive: true });

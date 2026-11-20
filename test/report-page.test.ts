@@ -936,7 +936,7 @@ test("each call shows its function's documentation page under its heading, and a
     ['erc4626Deposit (0x6ef5eeae)', 'github.com/morpho-org/bundler3/…/GeneralAdapter1.sol'],
   ]);
   const html = renderPage(depositPage);
-  assert.ok(html.includes(`<div class="doc" data-state="ok"><span class="f3">文件：</span><a href="${APPROVE_PAGE}">github.com/circlefin/stablecoin-evm</a><span class="res"><svg class="i ok" role="img" aria-label="通過">`));
+  assert.ok(html.includes(`<div class="doc" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><span class="f3">文件：</span><a href="${APPROVE_PAGE}">github.com/circlefin/stablecoin-evm</a></span></div>`));
 });
 
 test("a function named by its standard shows the standard's page, with the caveat that the contract may not follow it", () => {
@@ -957,8 +957,7 @@ test('a documentation page read that does not name the function shows its amber 
   const reviews = { ...notes.reviews, 'usdc/doc.0x095ea7b3.page': { status: 'concern', text: both('review'), recommendation: both('look') } };
   const page = buildPage(lacking, { ...notes, reviews }, depositTitle, 'zh-TW');
   assert.deepEqual(callDoc(page, 1), { state: 'warn', phrase: 'not-on-page', href: APPROVE_PAGE, label: 'github.com/circlefin/stablecoin-evm', note: undefined });
-  assert.ok(renderPage(page).includes(`github.com/circlefin/stablecoin-evm</a><span class="res"><svg class="i warn" role="img" aria-label="`));
-  assert.ok(renderPage(page).includes('頁上沒有這個函式</span>'));
+  assert.ok(renderPage(page).includes(`<div class="doc" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span><span class="f3">文件：</span><a href="${APPROVE_PAGE}">github.com/circlefin/stablecoin-evm</a><span class="res">頁上沒有這個函式</span>`));
 });
 
 test('a documentation page the program has no copy of shows its amber icon and 讀不到 under the call', () => {
@@ -968,7 +967,7 @@ test('a documentation page the program has no copy of shows its amber icon and �
   const reviews = { ...notes.reviews, 'usdc/doc.0x095ea7b3.page': { status: 'concern', text: both('review'), recommendation: both('look') } };
   const page = buildPage(unread, { ...notes, reviews }, depositTitle, 'zh-TW');
   assert.deepEqual(callDoc(page, 1), { state: 'warn', phrase: 'unread', href: APPROVE_PAGE, label: 'github.com/circlefin/stablecoin-evm', note: undefined });
-  assert.ok(renderPage(page).includes(`github.com/circlefin/stablecoin-evm</a><span class="res"><svg class="i warn" role="img" aria-label="`));
+  assert.ok(renderPage(page).includes(`<div class="doc" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span><span class="f3">文件：</span><a href="${APPROVE_PAGE}">github.com/circlefin/stablecoin-evm</a><span class="res">讀不到</span>`));
 });
 
 function withComputingFactory(first: string): { readonly of: HtmlInputs; readonly notes: unknown; readonly vault: RegistryEntry } {

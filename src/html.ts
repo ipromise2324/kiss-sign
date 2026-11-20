@@ -197,7 +197,8 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .callh .sel{font-family:var(--mono);font-size:var(--t-label);color:var(--fg3)}
 .callh .what{font-size:16px;font-weight:590}
 .sends{font-size:var(--t-row);color:var(--fg2);padding:10px 0;border-bottom:1px solid var(--line)}
-.doc{font-size:var(--t-small);color:var(--fg2);margin-top:4px}
+.doc{display:flex;gap:8px;align-items:flex-start;font-size:var(--t-small);color:var(--fg2);margin-top:4px}
+.doc>.i{width:14px;height:14px;margin-top:3px}
 .cdoc{padding:10px 0;border-bottom:1px solid var(--line)}
 .cdoc .doc{margin-top:0}
 .arg{display:grid;grid-template-columns:248px minmax(0,1fr);gap:4px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
@@ -262,14 +263,15 @@ details.more[open]>summary .chev{transform:rotate(90deg)}
 .ad .body{grid-column:2;display:flex;flex-direction:column;gap:8px}
 .srcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row)}
 .src{display:flex;flex-direction:column;gap:4px}
-.site{display:flex;gap:6px;align-items:flex-start;padding-left:16px;font-size:var(--t-small);color:var(--fg2)}
+.srcrow{display:flex;gap:8px;align-items:flex-start}
+.ad .srcrow>.i{width:14px;height:14px;margin-top:5px}
+.site{display:flex;gap:6px;align-items:flex-start;padding-left:22px;font-size:var(--t-small);color:var(--fg2)}
 .ad .site .i{width:14px;height:14px;margin-top:3px;flex:none}
 .aisrcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
 .aisrcs .lbl{font-size:var(--t-small);color:var(--fg3)}
 .aisrcs .byai{margin-right:8px}
 .aires{margin-left:8px;font-size:var(--t-small);color:var(--fg3)}
-.res{margin-left:8px;color:var(--fg2)}
-.res .i{width:14px;height:14px;vertical-align:-2px;margin-right:6px}
+.res{margin-left:10px;color:var(--fg2)}
 .confirmed{font-size:var(--t-small);color:var(--fg2)}
 details.fold{border-bottom:1px solid var(--line)}
 details.fold>summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;padding:14px 0;color:var(--fg2);font-size:var(--t-row)}
