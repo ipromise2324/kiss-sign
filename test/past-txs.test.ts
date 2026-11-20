@@ -706,7 +706,7 @@ const mints = (n: number): Mint[] =>
   Array.from({ length: n }, (_, i) => ({ hash: `0x${(i + 1).toString(16).padStart(64, '0')}` as Hex, from: nth(i, 'f'), to: nth(i, 'e'), block: YEAR_FROM + BigInt(i) * 10n, emitter: nth(i, 'c') }));
 const hexBlock = (n: bigint) => `0x${n.toString(16)}`;
 
-function yearAsk(listed: readonly Mint[], options: { endless?: boolean; etherscanRefuses?: number } = {}): { ask: Ask; asked: SourceRequest[] } {
+function yearAsk(listed: readonly Mint[], options: { endless?: boolean; etherscanRefusesPage?: number } = {}): { ask: Ask; asked: SourceRequest[] } {
   const asked: SourceRequest[] = [];
   const ask: Ask = async (request) => {
     asked.push(request);
@@ -720,7 +720,7 @@ function yearAsk(listed: readonly Mint[], options: { endless?: boolean; ethersca
     }
     const of = request.query.fromBlock === String(YEAR_FROM) ? listed : [];
     const page = Number(request.query.page) - 1;
-    if (of === listed && page + 1 === options.etherscanRefuses) return { status: '0', message: 'NOTOK', result: 'Max rate limit reached' };
+    if (of === listed && page + 1 === options.etherscanRefusesPage) return { status: '0', message: 'NOTOK', result: 'Max rate limit reached' };
     const result = of.slice(page * 1000, (page + 1) * 1000).map((m) => ({ address: m.emitter, transactionHash: m.hash, topics: [etherscanBase.topic0, word(m.from), word(m.to)], blockNumber: hexBlock(m.block) }));
     return result.length === 0 ? { status: '0', message: 'No records found', result: [] } : { status: '1', message: 'OK', result };
   };
@@ -950,7 +950,7 @@ test('Etherscan answering a full 10th page has not finished the year, so the win
 
 test('an Etherscan error in a year Alchemy did not finish searches the windows, and one in a year Alchemy finished stops the run', async () => {
   const listed = mints(2500);
-  const over = renderPastTxs(await yearRun(yearAsk(listed, { endless: true, etherscanRefuses: 2 }).ask, replayReader([])), registry);
+  const over = renderPastTxs(await yearRun(yearAsk(listed, { endless: true, etherscanRefusesPage: 2 }).ask, replayReader([])), registry);
   assert.match(over, /^whole year: blocks 23810401 to 26438400 hold more than 10 pages of 1000 in alchemy, so the windows are searched$/m);
-  await assert.rejects(yearRun(yearAsk(listed, { etherscanRefuses: 2 }).ask, replayReader([])), /^ResearchError: etherscan refused: NOTOK Max rate limit reached$/);
+  await assert.rejects(yearRun(yearAsk(listed, { etherscanRefusesPage: 2 }).ask, replayReader([])), /^ResearchError: etherscan refused: NOTOK Max rate limit reached$/);
 });
