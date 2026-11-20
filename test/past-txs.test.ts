@@ -7,7 +7,8 @@ import { after, test } from 'node:test';
 import { unreadRefusal } from '../src/chain/https.ts';
 import { createReader } from '../src/chain/reader.ts';
 import type { Reader } from '../src/chain/reader.ts';
-import { REPLAY_ENDPOINTS, replayReader, replayTransport } from '../src/chain/recording.ts';
+import { REPLAY_ENDPOINTS, recordingTransport, replayReader, replayTransport } from '../src/chain/recording.ts';
+import type { Exchange } from '../src/chain/recording.ts';
 import type { Transport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import type { Registry } from '../src/registry.ts';
@@ -728,25 +729,23 @@ function yearAsk(listed: readonly Mint[], options: { endless?: boolean } = {}): 
   return { ask, asked };
 }
 
-/** A chain where `safes` are Safe proxies, `singletonOnly` hold an official singleton in slot 0 under other code, and `unreadable` answer no slot; no transaction is readable. */
-function partyReader(options: { safes?: readonly Address[]; singletonOnly?: readonly Address[]; unreadable?: readonly Address[] } = {}): { reader: Reader; reads: string[] } {
-  const reads: string[] = [];
-  const agreed = <T>(value: T) => ({ kind: 'agreed', value, providers: ['alchemy', 'drpc'] }) as const;
-  const refused = { kind: 'unverifiable', reason: 'eth_getStorageAt: drpc failed (rate-limited)', answers: [] } as never;
-  const reader: Reader = {
-    ...replayReader([]),
-    block: async (tag) => agreed({ number: tag as bigint, hash: `0x${'ab'.repeat(32)}` as Hex }),
-    getStorageAt: async (address) => {
-      reads.push(`eth_getStorageAt ${address}`);
-      if (options.unreadable?.includes(address) === true) return refused;
-      return agreed(options.safes?.includes(address) === true || options.singletonOnly?.includes(address) === true ? SINGLETON : (`0x${'00'.repeat(32)}` as Hex));
-    },
-    getCode: async (address) => {
-      reads.push(`eth_getCode ${address}`);
-      return agreed(options.safes?.includes(address) === true ? PROXY : ('0x6000' as Hex));
-    },
+/**
+ * A chain where `safes` are Safe proxies, `singletonOnly` hold an official singleton in slot 0 under other code, and
+ * `unreadable` answer no slot; every other read, each transaction's included, fails. Its reads are recorded as
+ * `--record` keeps them.
+ */
+function chain(options: { safes?: readonly Address[]; singletonOnly?: readonly Address[]; unreadable?: readonly Address[] } = {}): { reader: Reader; exchanges: () => Exchange[] } {
+  const transport: Transport = async (_url, body) => {
+    const { method, params } = JSON.parse(body) as { method: string; params: unknown[] };
+    const reply = (result: unknown) => ({ status: 200, text: JSON.stringify({ jsonrpc: '2.0', id: 1, result }) });
+    const listed = (list: readonly Address[] | undefined) => list?.includes(params[0] as Address) === true;
+    if (method === 'eth_getBlockByNumber') return reply({ number: params[0], hash: `0x${'ab'.repeat(32)}` });
+    if (method === 'eth_getStorageAt' && !listed(options.unreadable)) return reply(listed(options.safes) || listed(options.singletonOnly) ? SINGLETON : `0x${'00'.repeat(32)}`);
+    if (method === 'eth_getCode') return reply(listed(options.safes) ? PROXY : '0x6000');
+    return { status: 500, text: '' };
   };
-  return { reader, reads };
+  const recorder = recordingTransport(transport, REPLAY_ENDPOINTS);
+  return { reader: createReader(REPLAY_ENDPOINTS, recorder.transport, { retryPausesMs: [], rateLimitPausesMs: [] }), exchanges: recorder.exchanges };
 }
 
 const yearRun = (ask: Ask, reader: Reader, options: { maxTxs?: number; exclude?: Address; anchor?: Omit<Anchor, 'fromBlock' | 'toBlock'>; sampling?: Parameters<typeof pastTxs>[0]['sampling']; excludedByRecording?: { found: Set<Hex>; sampled: Set<Hex> } } = {}) =>
@@ -759,7 +758,7 @@ const studied = (run: Awaited<ReturnType<typeof pastTxs>>) => run.studies.map((s
 
 test('a year of 2500 mints is paged in 3 pages of each source, covering the year without the windows', async () => {
   const { ask, asked } = yearAsk(mints(2500));
-  const run = await yearRun(ask, partyReader().reader);
+  const run = await yearRun(ask, chain().reader);
   const text = renderPastTxs(run, registry);
   assert.match(text, /^whole year: blocks 23810401 to 26438400, alchemy in 3 pages and etherscan in 3 pages of up to 1000, so the search covers the year with no gap\n {2}blocks 23810401 to 26438400: 2500 found, 240 studied$/m);
   assert.match(text, /^sources: alchemy found 2500, etherscan found 2500; both 2500, /m);
@@ -770,7 +769,7 @@ test('a year of 2500 mints is paged in 3 pages of each source, covering the year
 
 test('a source whose next page answers "No records found" has finished, so the year is covered', async () => {
   const { ask } = yearAsk(mints(2000));
-  const text = renderPastTxs(await yearRun(ask, partyReader().reader), registry);
+  const text = renderPastTxs(await yearRun(ask, chain().reader), registry);
   assert.match(text, /^whole year: blocks 23810401 to 26438400, alchemy in 2 pages and etherscan in 3 pages of up to 1000, so the search covers the year with no gap$/m);
   assert.match(text, /^ {2}blocks 23810401 to 26438400: 2000 found, 240 studied$/m);
 });
@@ -779,39 +778,42 @@ test('a year still holding more after 10 pages of a source is searched in the wi
   const listed = mints(2500);
   const { ask, asked } = yearAsk(listed, { endless: true });
   const recorder = recordingAsk(ask);
-  const { reader, reads } = partyReader();
-  const text = renderPastTxs(await yearRun(recorder.ask, reader), registry);
+  const text = renderPastTxs(await yearRun(recorder.ask, chain().reader), registry);
   assert.match(text, /^whole year: blocks 23810401 to 26438400 hold more than 10 pages of 1000 in alchemy, so the windows are searched\nwindows: 12 of up to 7200 blocks/m);
   assert.doesNotMatch(text, /^anchor parties/m);
   assert.equal(asked.filter((r) => r.source === 'alchemy' && r.params.fromBlock === hexBlock(YEAR_FROM)).length, 10);
-  assert.deepEqual(reads, []);
   const year = recorder.exchanges().filter(({ request }) => (request.source === 'alchemy' ? request.params.fromBlock === hexBlock(YEAR_FROM) : request.query.fromBlock === String(YEAR_FROM)));
   assert.equal(year.length, 13);
   assert.ok(listed.every((m) => !JSON.stringify(year).includes(m.hash)), 'no year transfer is kept');
-  assert.equal(renderPastTxs(await yearRun(replayAsk(recorder.exchanges()), reader), registry), text);
+  assert.equal(renderPastTxs(await yearRun(replayAsk(recorder.exchanges()), replayReader([])), registry), text, 'the replay needs no chain read');
 });
 
-test('every transaction minting to a proven Safe is studied, and the rest fill the remaining places evenly in block order', async () => {
+/** A run of `listed` on `onChain`, recorded as `--record` keeps it, and the same run replayed from that recording alone. */
+async function recordedAndReplayed(listed: readonly Mint[], onChain: ReturnType<typeof chain>, maxTxs: number) {
+  const recorder = recordingAsk(yearAsk(listed).ask);
+  const live = await yearRun(recorder.ask, onChain.reader, { maxTxs });
+  const replayed = await yearRun(replayAsk(recorder.exchanges()), replayReader(onChain.exchanges()), { maxTxs });
+  return { live, replayed, text: renderPastTxs(live, registry) };
+}
+
+test('every transaction minting to a proven Safe is studied, and the rest fill the remaining places evenly in block order, the same again from the recording', async () => {
   const listed = mints(100);
   const safeAt = [10, 50, 90];
   const safes = safeAt.map((i) => (listed[i] as Mint).to);
   const notProxy = (listed[20] as Mint).to;
-  const { reader, reads } = partyReader({ safes, singletonOnly: [notProxy] });
-  const run = await yearRun(yearAsk(listed).ask, reader, { maxTxs: 12 });
-  const text = renderPastTxs(run, registry);
+  const { live, replayed, text } = await recordedAndReplayed(listed, chain({ safes, singletonOnly: [notProxy] }), 12);
   assert.match(text, /^anchor parties, the address minted to: 100, read at block 26438400: 3 proven Safes\nchosen to study: all 3 transactions with a proven Safe party, and 9 of the other 97, taken evenly in block order$/m);
   const rest = listed.filter((_, i) => !safeAt.includes(i));
   const restChosen = Array.from({ length: 9 }, (_, i) => rest[Math.floor((i * 97) / 9)] as Mint);
   const expected = listed.filter((m) => safeAt.some((i) => listed[i] === m) || restChosen.includes(m)).map((m) => m.hash);
-  assert.deepEqual(studied(run), expected);
-  assert.deepEqual(reads.filter((r) => r.startsWith('eth_getCode')).sort(), [...safes, notProxy].map((a) => `eth_getCode ${a}`).sort());
-  assert.equal(reads.filter((r) => r.startsWith('eth_getStorageAt')).length, 100);
+  assert.deepEqual(studied(live), expected);
+  assert.equal(renderPastTxs(replayed, registry), text);
+  assert.deepEqual(studied(replayed), expected);
 });
 
 test('Safe-party transactions beyond three quarters of --max-txs are sampled, leaving the rest a quarter', async () => {
   const listed = mints(300);
-  const { reader } = partyReader({ safes: listed.slice(0, 200).map((m) => m.to) });
-  const run = await yearRun(yearAsk(listed).ask, reader, { maxTxs: 240 });
+  const run = await yearRun(yearAsk(listed).ask, chain({ safes: listed.slice(0, 200).map((m) => m.to) }).reader, { maxTxs: 240 });
   assert.match(renderPastTxs(run, registry), /^chosen to study: 180 of 200 transactions with a proven Safe party, and 60 of the other 100, taken evenly in block order$/m);
   const hashes = new Set(studied(run));
   assert.equal(listed.slice(0, 200).filter((m) => hashes.has(m.hash)).length, 180);
@@ -820,46 +822,41 @@ test('Safe-party transactions beyond three quarters of --max-txs are sampled, le
 
 test('the party checked is the side the anchor leaves open: minted to, burned from, the other side of --from or --to, or the logging contract', async () => {
   const listed = mints(5);
-  const probed = async (anchor: Omit<Anchor, 'fromBlock' | 'toBlock'>) => {
-    const { reader, reads } = partyReader();
-    const text = renderPastTxs(await yearRun(yearAsk(listed).ask, reader, { anchor }), registry);
-    return { line: /^anchor parties.*$/m.exec(text)?.[0], probed: [...new Set(reads.map((r) => r.split(' ')[1]))].sort() };
-  };
-  const side = (key: 'from' | 'to' | 'emitter') => listed.map((m) => m[key]).sort();
+  const side = (key: 'from' | 'to' | 'emitter') => listed.map((m) => m[key]);
+  const line = async (anchor: Omit<Anchor, 'fromBlock' | 'toBlock'>, safes: readonly Address[] = []) =>
+    /^anchor parties.*$/m.exec(renderPastTxs(await yearRun(yearAsk(listed).ask, chain({ safes }).reader, { anchor }), registry))?.[0];
   const event = anchorEvent('PreSignature(address,bytes,bool)');
-  assert.deepEqual(await probed({ token: VAULT, kind: 'mint' }), { line: 'anchor parties, the address minted to: 5, read at block 26438400: 0 proven Safes', probed: side('to') });
-  assert.deepEqual(await probed({ token: VAULT, kind: 'burn' }), { line: 'anchor parties, the address burned from: 5, read at block 26438400: 0 proven Safes', probed: side('from') });
-  assert.deepEqual(await probed({ token: VAULT, kind: 'any' }), { line: 'anchor parties, the address the token moved out of: 5, read at block 26438400: 0 proven Safes', probed: side('from') });
-  assert.deepEqual(await probed({ token: VAULT, kind: 'any', to: LENDING }), { line: 'anchor parties, the address the token moved out of: 5, read at block 26438400: 0 proven Safes', probed: side('from') });
-  assert.deepEqual(await probed({ token: VAULT, kind: 'any', from: DISTRIBUTOR }), { line: 'anchor parties, the address the token moved into: 5, read at block 26438400: 0 proven Safes', probed: side('to') });
-  assert.deepEqual(await probed({ token: VAULT, kind: 'any', from: DISTRIBUTOR, to: LENDING }), { line: 'anchor parties: not checked, --from and --to fix both sides of the transfer', probed: [] });
-  assert.deepEqual(await probed({ kind: 'event', event }), { line: 'anchor parties, the contract that logged the event: 5, read at block 26438400: 0 proven Safes', probed: side('emitter') });
-  assert.deepEqual(await probed({ token: VAULT, kind: 'event', event }), { line: "anchor parties: not checked, a named contract's event has no party of fixed meaning", probed: [] });
+  assert.equal(await line({ token: VAULT, kind: 'mint' }, side('to')), 'anchor parties, the address minted to: 5, read at block 26438400: 5 proven Safes');
+  assert.equal(await line({ token: VAULT, kind: 'burn' }, side('from')), 'anchor parties, the address burned from: 5, read at block 26438400: 5 proven Safes');
+  assert.equal(await line({ token: VAULT, kind: 'any' }, side('from')), 'anchor parties, the address the token moved out of: 5, read at block 26438400: 5 proven Safes');
+  assert.equal(await line({ token: VAULT, kind: 'any', to: LENDING }, side('from')), 'anchor parties, the address the token moved out of: 5, read at block 26438400: 5 proven Safes');
+  assert.equal(await line({ token: VAULT, kind: 'any', from: DISTRIBUTOR }, side('to')), 'anchor parties, the address the token moved into: 5, read at block 26438400: 5 proven Safes');
+  assert.equal(await line({ token: VAULT, kind: 'any', from: DISTRIBUTOR, to: LENDING }), 'anchor parties: not checked, --from and --to fix both sides of the transfer');
+  assert.equal(await line({ kind: 'event', event }, side('emitter')), 'anchor parties, the contract that logged the event: 5, read at block 26438400: 5 proven Safes');
+  assert.equal(await line({ token: VAULT, kind: 'event', event }), "anchor parties: not checked, a named contract's event has no party of fixed meaning");
 });
 
 test('the configured Safe minted to is never read, and its scrubbed recording replays the same choice', async () => {
   const listed = mints(40);
   const safe = (listed[5] as Mint).to;
   const other = (listed[30] as Mint).to;
-  const { reader, reads } = partyReader({ safes: [safe, other] });
+  const onChain = chain({ safes: [safe, other] });
   const recorder = recordingAsk(yearAsk(listed).ask);
-  const live = await yearRun(recorder.ask, reader, { exclude: safe, maxTxs: 12 });
+  const live = await yearRun(recorder.ask, onChain.reader, { exclude: safe, maxTxs: 12 });
   const text = renderPastTxs(live, registry);
-  assert.ok(reads.every((r) => !r.includes(safe)), 'no read names the configured Safe');
+  assert.doesNotMatch(JSON.stringify(onChain.exchanges()), new RegExp(safe.slice(2), 'i'), 'no chain read names the configured Safe');
   assert.match(text, /^anchor parties, the address minted to: 39, read at block 26438400: 1 proven Safe\nchosen to study: all 1 transaction with a proven Safe party, and 11 of the other 38, taken evenly in block order$/m);
   assert.doesNotMatch(text, new RegExp(`${safe.slice(2)}|${(listed[5] as Mint).hash}`, 'i'));
-  const written = scrubRecording({ query: { template: 'morpho/vault-deposit', token: VAULT, anchor: 'mint', maxTxs: 12 }, sources: recorder.exchanges(), providers: [], exchanges: [] }, [safe], live.excluded);
+  const written = scrubRecording({ query: { template: 'morpho/vault-deposit', token: VAULT, anchor: 'mint', maxTxs: 12 }, sources: recorder.exchanges(), providers: [], exchanges: onChain.exchanges() }, [safe], live.excluded);
   assert.doesNotMatch(JSON.stringify(written), new RegExp(safe.slice(2), 'i'));
-  const replayed = partyReader({ safes: [other] });
-  const again = await yearRun(replayAsk(written.sources), replayed.reader, { maxTxs: 12, excludedByRecording: { found: new Set(written.excluded?.found ?? []), sampled: new Set(written.excluded?.sampled ?? []) } });
+  const again = await yearRun(replayAsk(written.sources), replayReader(written.exchanges), { maxTxs: 12, excludedByRecording: { found: new Set(written.excluded?.found ?? []), sampled: new Set(written.excluded?.sampled ?? []) } });
   assert.equal(renderPastTxs(again, registry), text);
-  assert.deepEqual(replayed.reads, reads);
+  assert.deepEqual(studied(again), studied(live));
 });
 
 test('a party whose slot cannot be read is counted unreadable, and its transactions go with the rest', async () => {
   const listed = mints(20);
-  const { reader } = partyReader({ safes: [(listed[3] as Mint).to], unreadable: [(listed[7] as Mint).to] });
-  const run = await yearRun(yearAsk(listed).ask, reader, { maxTxs: 12 });
+  const run = await yearRun(yearAsk(listed).ask, chain({ safes: [(listed[3] as Mint).to], unreadable: [(listed[7] as Mint).to] }).reader, { maxTxs: 12 });
   assert.match(renderPastTxs(run, registry), /^anchor parties, the address minted to: 20, read at block 26438400: 1 proven Safe, 1 unreadable\nchosen to study: all 1 transaction with a proven Safe party, and 11 of the other 19, taken evenly in block order$/m);
   assert.ok(studied(run).includes((listed[3] as Mint).hash));
 });
@@ -868,22 +865,21 @@ test('a recording of a paged year asks the same pages again, and one of the year
   const listed = mints(2500);
   const first = yearAsk(listed);
   const recorder = recordingAsk(first.ask);
-  const { reader } = partyReader();
-  const live = await yearRun(recorder.ask, reader, { sampling: { ...DEFAULT_SAMPLING, head: HEAD } });
+  const onChain = chain();
+  const live = await yearRun(recorder.ask, onChain.reader, { sampling: { ...DEFAULT_SAMPLING, head: HEAD } });
   const fields = samplingFields(live.query.sampling, live.head);
   assert.deepEqual(fields, { head: String(HEAD), yearPages: YEAR_PAGES });
   const replay = replayAsk(recorder.exchanges());
   const asked: SourceRequest[] = [];
-  const replayed = await yearRun((request) => (asked.push(request), replay(request)), reader, { sampling: samplingOf(fields) });
+  const replayed = await yearRun((request) => (asked.push(request), replay(request)), replayReader(onChain.exchanges()), { sampling: samplingOf(fields) });
   assert.equal(renderPastTxs(replayed, registry), renderPastTxs(live, registry));
   assert.deepEqual(asked.map((r) => JSON.stringify(r)).sort(), first.asked.map((r) => JSON.stringify(r)).sort());
 
   const old = yearAsk(listed);
-  const oneProbe = partyReader();
-  const text = renderPastTxs(await yearRun(old.ask, oneProbe.reader, { sampling: samplingOf({ head: String(HEAD), wholeYear: true }) }), registry);
+  const text = renderPastTxs(await yearRun(old.ask, replayReader([]), { sampling: samplingOf({ head: String(HEAD), wholeYear: true }) }), registry);
   assert.deepEqual(old.asked.filter((r) => (r.source === 'alchemy' ? r.params.fromBlock === hexBlock(YEAR_FROM) : r.query.fromBlock === String(YEAR_FROM))).map((r) => r.source).sort(), ['alchemy', 'etherscan']);
   assert.match(text, /^whole year: blocks 23810401 to 26438400 hold more than one page of a source, so the windows are searched$/m);
-  assert.deepEqual(oneProbe.reads, []);
+  assert.doesNotMatch(text, /^anchor parties/m);
 });
 
 test('the report refuses a recording whose yearPages goes with wholeYear, exceeds 10, or has no head block', () => {
