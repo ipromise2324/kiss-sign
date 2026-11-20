@@ -199,7 +199,6 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .arg .mid{margin-top:6px;font-size:var(--t-small);color:var(--fg3)}
 .arg .mid .addr{font-size:13px;color:var(--fg2)}
 .arg .raw{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere;line-height:1.5}
-.arg .raw .ex{font-family:var(--sans);font-size:12px;color:var(--fg3);margin-left:8px}
 .arg .is{color:var(--fg);font-size:var(--t-row);margin-top:4px}
 .arg .is .f3{font-size:var(--t-small)}
 .arg .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}

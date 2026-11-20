@@ -23,7 +23,7 @@ import { entriesOf, parseDocs, readDocs, renderReport, replayInputs } from '../s
 import type { ReportTitle, TodayCheck } from '../src/research/report.ts';
 import { checksumAddress } from '../src/safe/types.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
-import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
+import { judgeFixtures } from '../src/template/perturb.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
@@ -48,14 +48,14 @@ before(async () => {
   const compilers = await warmCompilers([...reportCases(ROOT, registry, [target]), ...reportCases(FROZEN, frozenRegistry, [deposit])]);
   const depositReplayed = await replayInputs(FROZEN, frozenRegistry, deposit, compilers, loadPublicSuffixList());
   const depositTemplate = depositReplayed.inputs.subject.kind === 'template' ? depositReplayed.inputs.subject.template : assert.fail('a template report');
-  depositInputs = { ...depositReplayed.inputs, fixtures: await judgeFixtures(FROZEN, depositTemplate, frozenRegistry), example: firstRecordedTx(FROZEN, depositTemplate, depositReplayed.inputs.registry) };
+  depositInputs = { ...depositReplayed.inputs, fixtures: await judgeFixtures(FROZEN, depositTemplate, frozenRegistry) };
   depositNotes = readNotes(FROZEN, deposit.template, frozenRegistry.entries.get(deposit.instance));
   depositTitle = depositReplayed.title;
   depositPage = buildPage(depositInputs, depositNotes, depositTitle, 'zh-TW');
   const replayed = await replayInputs(ROOT, registry, target, compilers, loadPublicSuffixList());
   title = replayed.title;
   template = replayed.inputs.subject.kind === 'template' ? replayed.inputs.subject.template : assert.fail('a template report');
-  inputs = { ...replayed.inputs, fixtures: await judgeFixtures(ROOT, template, registry), example: firstRecordedTx(ROOT, template, registry) };
+  inputs = { ...replayed.inputs, fixtures: await judgeFixtures(ROOT, template, registry) };
 });
 
 /** One AI text, the same in both languages. */
@@ -82,7 +82,7 @@ const pageOf = (of: HtmlInputs): Page => buildPage(of, notesFor(of), title, 'zh-
 function oneCall(of: HtmlInputs, n: number): HtmlInputs {
   const subject = of.subject.kind === 'template' ? of.subject : assert.fail('a template report');
   const call = subject.template.calls[n - 1] ?? assert.fail(`no call ${n}`);
-  return { ...of, subject: { ...subject, template: { ...subject.template, calls: [call] } }, example: undefined, fixtures: [] };
+  return { ...of, subject: { ...subject, template: { ...subject.template, calls: [call] } }, fixtures: [] };
 }
 
 const oneCallPage = (of: HtmlInputs): Page => buildPage(of, { ...notesFor(of), flow: [] }, title, 'zh-TW');
@@ -90,7 +90,7 @@ const oneCallPage = (of: HtmlInputs): Page => buildPage(of, { ...notesFor(of), f
 function templatePage(id: string): Page {
   const subject = inputs.subject.kind === 'template' ? inputs.subject : assert.fail('a template report');
   const other = loadTemplate(ROOT, id, registry);
-  return oneCallPage({ ...inputs, subject: { ...subject, template: other, docs: parseDocs(readDocs(ROOT, id), other, registry) }, example: undefined, fixtures: [] });
+  return oneCallPage({ ...inputs, subject: { ...subject, template: other, docs: parseDocs(readDocs(ROOT, id), other, registry) }, fixtures: [] });
 }
 const body = <K extends Body['kind']>(page: Page, kind: K): Extract<Body, { kind: K }> => page.sections.find((s) => s.body.kind === kind)?.body as Extract<Body, { kind: K }>;
 const args = (page: Page): ArgRow[] => body(page, 'flow').flow.calls.flatMap((call) => call.args);
@@ -111,23 +111,23 @@ test('each argument says who decides it and prints what cast decode-calldata pri
   const page = pageOf(inputs);
   const spender = arg(page, '1.approve.spender');
   assert.deepEqual(spender.chips, [{ who: 'fixed', label: '固定' }]);
-  assert.deepEqual(spender.value, { cast: '0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD', example: undefined });
+  assert.equal(spender.value, '0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD');
   assert.equal(plain(spender.words), 'blue-bundles-v1');
 
   const value = arg(page, '1.approve.value');
   assert.deepEqual(value.chips, [{ who: 'you-type', label: '你填：金額' }]);
-  assert.deepEqual(value.value, { cast: '72159646110', example: 'example' });
-  assert.equal(plain(value.words), '72,159.64611 usdc');
-  assert.equal(plain(value.qualifier), '6 位小數');
+  assert.equal(value.value, undefined);
+  assert.equal(plain(value.words), '你填的金額');
+  assert.equal(value.qualifier, undefined);
 
   const market = arg(page, '2.blueBundlesV1Supply.marketParams');
   assert.deepEqual(market.chips, [{ who: 'you-pick', label: '你選：市場' }]);
   assert.equal(market.value, undefined);
-  assert.equal(plain(market.words), 'usdc / cbbtc，LLTV 86%');
-  assert.match(plain(market.id), /0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/);
+  assert.equal(plain(market.words), '你選的市場');
+  assert.equal(market.id, undefined);
   const parts = market.parts.flatMap((g) => g.rows);
   assert.deepEqual(
-    parts.map((p) => [p.name, p.value?.cast, p.chips.length]),
+    parts.map((p) => [p.name, p.value, p.chips.length]),
     [
       ['loanToken', '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 0],
       ['collateralToken', '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf', 0],
@@ -160,10 +160,10 @@ test('each argument says who decides it and prints what cast decode-calldata pri
   assert.equal(permit.value, undefined);
   assert.equal(plain(permit.words), '2 個部分');
   assert.deepEqual(
-    permit.parts.flatMap((g) => g.rows).map((p) => [p.name, p.value?.cast]),
+    permit.parts.flatMap((g) => g.rows).map((p) => [p.name, p.value]),
     [
       ['kind', '0'],
-      ['data', '0x'],
+      ['data', undefined],
     ],
   );
   assert.deepEqual(arg(page, '2.blueBundlesV1Supply.deadline').chips, [{ who: 'free', label: 'app 填，不限' }]);
@@ -184,44 +184,41 @@ test('a container prints its summary in place of the hex and nests its parts; a 
   assert.equal(plain(data(second).words), 'erc4626Deposit (0x6ef5eeae)');
 
   const adapter = (frozenRegistry.entries.get('general-adapter-1') ?? assert.fail('general-adapter-1')).address;
-  const leaf = (item: ArgRow | undefined, name: string): string | undefined => rows(item ?? assert.fail('an item')).find((p) => p.name === name)?.value?.cast;
+  const leaf = (item: ArgRow | undefined, name: string): string | undefined => rows(item ?? assert.fail('an item')).find((p) => p.name === name)?.value;
   assert.equal(leaf(first, 'to')?.toLowerCase(), adapter);
   assert.equal(leaf(first, 'value'), '0');
   assert.equal(leaf(first, 'skipRevert'), 'false');
   assert.equal(leaf(first, 'callbackHash'), `0x${'0'.repeat(64)}`);
-  const amount = arg(depositPage, '1.approve.value').value;
-  assert.equal(amount?.example, 'example');
-  assert.deepEqual(leaf(data(first), 'amount'), amount?.cast);
-  assert.deepEqual(leaf(data(second), 'assets'), amount?.cast);
+  assert.equal(arg(depositPage, '1.approve.value').value, undefined);
+  assert.equal(leaf(data(first), 'amount'), undefined);
+  assert.equal(leaf(data(second), 'assets'), undefined);
   assert.equal(leaf(data(first), 'receiver')?.toLowerCase(), adapter);
 
   const all = (row: ArgRow): ArgRow[] => [row, ...rows(row).flatMap(all)];
   for (const row of args(depositPage).flatMap(all)) {
     if (row.parts.length > 0) assert.equal(row.value, undefined, `${row.key} is a container`);
-    else assert.ok(row.value === undefined || !/^[[(]/.test(row.value.cast), `${row.key} is a leaf`);
+    else assert.ok(row.value === undefined || !/^[[(]/.test(row.value), `${row.key} is a leaf`);
   }
 });
 
 test('without a recorded test transaction a card or free value prints its rule only', () => {
-  const page = pageOf({ ...inputs, example: undefined });
+  const page = pageOf(inputs);
   assert.equal(arg(page, '1.approve.value').value, undefined);
   assert.equal(plain(arg(page, '1.approve.value').words), '你填的金額');
   assert.equal(arg(page, '2.blueBundlesV1Supply.deadline').value, undefined);
-  assert.deepEqual(arg(page, '1.approve.spender').value, { cast: '0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD', example: undefined });
-  assert.equal(plain(body(page, 'flow').flow.example), '沒有換值測試的記錄可以當例子，每次簽名才決定的值只寫規則。');
+  assert.equal(arg(page, '1.approve.spender').value, '0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD');
 });
 
 test('a per-vault report takes its example from a test transaction of its own vault, or says that vault has none', () => {
-  assert.match(plain(body(depositPage, 'flow').flow.example), /^標「例」的.*取自 hyperithm-usdc-apex-v2-9e2f 的第一筆測試交易 /);
-  const none = buildPage({ ...depositInputs, example: undefined }, depositNotes, depositTitle, 'zh-TW');
-  assert.equal(plain(body(none, 'flow').flow.example), 'hyperithm-usdc-apex-v2-9e2f 沒有換值測試的記錄可以當例子，每次簽名才決定的值只寫規則。');
+  const all = (rows: readonly ArgRow[]): ArgRow[] => rows.flatMap((r) => [r, ...all(r.parts.flatMap((p) => p.rows))]);
+  const decided = all(args(depositPage)).filter((r) => r.chips.some((c) => c.who === 'you-type' || c.who === 'free'));
+  assert.ok(decided.length > 0 && decided.every((r) => r.value === undefined), decided.map((r) => `${r.key} ${r.value}`).join(' / '));
 });
 
 test("an example value that is the test transaction's Safe says it is another Safe, and a long amount shows six places with its base units", () => {
   const all = (rows: readonly ArgRow[]): ArgRow[] => rows.flatMap((r) => [r, ...all(r.parts.flatMap((p) => p.rows))]);
-  const fromSafe = all(args(depositPage)).filter((r) => r.value?.example === 'other-safe');
-  assert.ok(fromSafe.length > 0 && fromSafe.every((r) => plain(r.words) === '你的 Safe'), fromSafe.map((r) => r.key).join(' / '));
-  assert.match(plain(body(depositPage, 'flow').flow.example), /約 973,551\.731159 hyperithm-usdc-apex-v2-9e2f（973551731159989631767877 最小單位）。$/);
+  const toSafe = all(args(depositPage)).filter((r) => plain(r.words) === '你的 Safe');
+  assert.ok(toSafe.length > 0 && toSafe.every((r) => r.value === undefined), toSafe.map((r) => r.key).join(' / '));
 });
 
 test('交易後 says which way a token the Safe gives or gets more than nothing of moves', () => {
@@ -338,12 +335,9 @@ test('the wallet rows match a descriptor by each array item, by argument name wi
 test("a per-vault report shows its vault as the card's value, with or without a test transaction", () => {
   const vault = (page: Page) => arg(page, '2.multicall.bundle').parts.flatMap((g) => g.rows)[1]?.parts.flatMap((g) => g.rows).find((r) => r.name === 'data')?.parts.flatMap((g) => g.rows).find((r) => r.name === 'vault');
   const hyperithm = frozenRegistry.entries.get('hyperithm-usdc-apex-v2-9e2f') ?? assert.fail('the vault');
-  for (const page of [depositPage, buildPage({ ...depositInputs, example: undefined }, depositNotes, depositTitle, 'zh-TW')]) {
-    const row = vault(page) ?? assert.fail('the vault row');
-    assert.equal(row.value?.cast.toLowerCase(), hyperithm.address);
-    assert.equal(row.value?.example, undefined);
-    assert.equal(plain(row.words), 'hyperithm-usdc-apex-v2-9e2f');
-  }
+  const row = vault(depositPage) ?? assert.fail('the vault row');
+  assert.equal(row.value?.toLowerCase(), hyperithm.address);
+  assert.equal(plain(row.words), 'hyperithm-usdc-apex-v2-9e2f');
   assert.equal(depositPage.id, 'morpho/vault-deposit · hyperithm-usdc-apex-v2-9e2f');
 });
 
@@ -411,7 +405,7 @@ test("a Vault V2's market adapter is confirmed by the protocol API and, as one p
   const revoke = { template: 'morpho/vault-v2-revoke', instance: 'acuto-usdc-v2-4a57' };
   const replayed = await replayInputs(FROZEN, frozenRegistry, revoke, await warmCompilers(reportCases(FROZEN, frozenRegistry, [revoke])), loadPublicSuffixList());
   const revokeTemplate = replayed.inputs.subject.kind === 'template' ? replayed.inputs.subject.template : assert.fail('a template report');
-  const of = { ...replayed.inputs, fixtures: await judgeFixtures(FROZEN, revokeTemplate, frozenRegistry), example: firstRecordedTx(FROZEN, revokeTemplate, replayed.inputs.registry) };
+  const of = { ...replayed.inputs, fixtures: await judgeFixtures(FROZEN, revokeTemplate, frozenRegistry) };
   const page = buildPage(of, readNotes(FROZEN, revoke.template, frozenRegistry.entries.get(revoke.instance)), replayed.title, 'zh-TW');
   assert.ok(!body(page, 'review').rows.some((r) => r.id.startsWith('acuto-usdc-v2-4a57-market-adapter/')), 'the adapter is not for the signer');
   const { open, folded } = body(page, 'addresses');
@@ -735,7 +729,7 @@ async function bareCase(id: string): Promise<Page> {
   const of = { template: id };
   const replayed = await replayInputs(ROOT, registry, of, await warmCompilers(reportCases(ROOT, registry, [of])), loadPublicSuffixList());
   const subject = replayed.inputs.subject.kind === 'template' ? replayed.inputs.subject : assert.fail('a template report');
-  const html = { ...replayed.inputs, fixtures: await judgeFixtures(ROOT, subject.template, registry), example: firstRecordedTx(ROOT, subject.template, registry) };
+  const html = { ...replayed.inputs, fixtures: await judgeFixtures(ROOT, subject.template, registry) };
   return buildPage(html, { ...notesFor(html), flow: [] }, replayed.title, 'zh-TW');
 }
 
@@ -752,7 +746,6 @@ test('an ETH transfer: no address section or address strip lines, its to/value/d
     ['data', ['固定'], '沒有資料', undefined],
   ]);
   assert.deepEqual(flow.key.map((k) => k.label), ['你填', '你選', '固定']);
-  assert.equal(flow.decoded, false);
   assert.deepEqual(flow.diagram.lifelines.map((l) => l.name), ['你的 Safe', '收款人']);
   assert.deepEqual(flow.after.map((r) => plain(r.note)), ['剛好你填的金額，給收款人']);
   const { view } = body(page, 'wallet');
@@ -1042,7 +1035,7 @@ test('an address held as a 32-byte word reads as its address rule, left-padded, 
   const pageOfBurn = (language: 'en' | 'zh-TW', mintRecipient?: unknown): ArgRow => {
     if (mintRecipient !== undefined) raw.calls[1].args.mintRecipient = mintRecipient;
     const burn = parseTemplate(raw, registry);
-    const of = { ...inputs, subject: { ...subject, template: burn, docs: parseDocs(readDocs(ROOT, burn.id), burn, registry) }, example: undefined, fixtures: [] };
+    const of = { ...inputs, subject: { ...subject, template: burn, docs: parseDocs(readDocs(ROOT, burn.id), burn, registry) }, fixtures: [] };
     return arg(buildPage(of, { ...notesFor(of), flow: [] }, title, language), '2.depositForBurn.mintRecipient');
   };
   const zh = pageOfBurn('zh-TW');
@@ -1051,7 +1044,7 @@ test('an address held as a 32-byte word reads as its address rule, left-padded, 
   assert.equal(plain(pageOfBurn('en').words), 'the recipient you pick, as a 32-byte word left-padded with 12 zero bytes');
   const messenger = registry.entries.get('cctp-token-messenger-v2') ?? assert.fail('the messenger');
   const fixed = pageOfBurn('en', { addressWord: { contract: 'cctp-token-messenger-v2' } });
-  assert.deepEqual(fixed.value, { cast: `0x${'00'.repeat(12)}${messenger.address.slice(2)}`, example: undefined });
+  assert.equal(fixed.value, `0x${'00'.repeat(12)}${messenger.address.slice(2)}`);
   assert.equal(plain(fixed.words), 'cctp-token-messenger-v2, as a 32-byte word left-padded with 12 zero bytes');
 });
 
@@ -1062,7 +1055,7 @@ test('a withinSeconds field says in plain words, in both languages and in the Ma
     if (i !== n || call.data === 'empty') return call;
     return { ...call, data: { ...call.data, args: call.data.args.map((rule, a) => (a === at ? { kind: 'within-seconds' as const, seconds: 604800n } : rule)) } };
   });
-  const bounded: HtmlInputs = { ...inputs, subject: { ...subject, template: { ...subject.template, calls } }, example: undefined, fixtures: [] };
+  const bounded: HtmlInputs = { ...inputs, subject: { ...subject, template: { ...subject.template, calls } }, fixtures: [] };
   const rowOf = (language: 'en' | 'zh-TW') => {
     const page = buildPage(bounded, notesFor(bounded), title, language);
     const rows = body(page, 'flow').flow.calls.flatMap((call) => call.args);

@@ -198,7 +198,7 @@ const docLine = (doc: DocLine, r: R): Html =>
   }</div>`;
 
 function valueLines(row: ArgRow, r: R): Html {
-  return h`${row.value === undefined ? '' : h`<div class="raw">${row.value.cast}${row.value.example === undefined ? '' : h`<span class="ex">${r.w.example[row.value.example]}</span>`}</div>`}<div class="is">${text(row.words)}${
+  return h`${row.value === undefined ? '' : h`<div class="raw">${row.value}</div>`}<div class="is">${text(row.words)}${
     row.qualifier === undefined ? '' : h` <span class="f3">${text(row.qualifier)}</span>`
   }</div>${row.doc === undefined ? '' : docLine(row.doc, r)}${row.id === undefined ? '' : h`<div class="mid">${text(row.id)}</div>`}${row.ai === undefined ? '' : h`
         <div class="ai">${ai(row.ai, r)}</div>`}`;
@@ -231,7 +231,6 @@ function callHead(call: CallBlock): Html {
 }
 
 function flowBody(flow: Flow, r: R): Html {
-  const lead = [flow.decoded ? around(r.w.decodedLead, 'cast decode-calldata') : undefined, flow.example === undefined ? undefined : text(flow.example)].filter((part) => part !== undefined);
   return h`
   <p class="lead">${r.w.flowLead}</p>
   ${diagram(flow.diagram, r)}${flow.diagram.traced ? h`
@@ -243,8 +242,8 @@ function flowBody(flow: Flow, r: R): Html {
     <span class="k0">${r.w.whoDecides}</span>${flow.key.map((item) => h`
     <span>${chip(item)}${item.means}</span>`)}
   </div>`
-  }${lead.length === 0 ? '' : h`
-  <p class="lead keylead">${lead.flatMap((part, i) => (i === 0 ? [part] : [r.w.sentenceGap, part]))}</p>`}${
+  }
+  <p class="lead keylead">${r.w.callsLead}</p>${
     flow.safeTx.length === 0
       ? ''
       : h`

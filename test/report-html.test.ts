@@ -16,7 +16,7 @@ import type { HtmlInputs } from '../src/research/report-page.ts';
 import { loadReport, readDocs, replayInputs, reportDir, templateTargets } from '../src/research/report.ts';
 import type { PastTxsSection, ReportInputs, ReportTitle } from '../src/research/report.ts';
 import type { YearSearch } from '../src/research/past-txs.ts';
-import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
+import { judgeFixtures } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { NOT_YET_REBUILT, reportedInstances } from '../src/template/vault-reports.ts';
 import { FROZEN_REPORTS, repoWithFrozenReports } from './frozen-reports.ts';
@@ -154,7 +154,7 @@ const bilingual = (where: (dir: string) => boolean = () => true): string =>
 async function withFixtures(dir: string, inputs: ReportInputs): Promise<HtmlInputs> {
   const { root, registry } = reportOf(dir);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(dir);
-  return { ...inputs, fixtures: await judgeFixtures(root, template, registry), example: firstRecordedTx(root, template, registry) };
+  return { ...inputs, fixtures: await judgeFixtures(root, template, registry) };
 }
 
 /** Every piece of text in notes.json a page in `language` prints: its language's text, never a URL or an enum value. */

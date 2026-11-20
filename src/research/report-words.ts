@@ -2,7 +2,7 @@ import type { Language } from '../language.ts';
 import type { RegistryEntry } from '../registry.ts';
 import type { FreeClaim, ViewChange } from '../template/template.ts';
 import type { Confidence, FindingKind, Phrase, State, StripLine } from './ledger.ts';
-import type { AiTag, AiSourceResult, ExampleTag, Reviewed, Span, Who } from './report-page.ts';
+import type { AiTag, AiSourceResult, Reviewed, Span, Who } from './report-page.ts';
 import type { OutsideKind } from './study.ts';
 
 /** Chinese text before a word, with a space only when the word starts in Latin script or a digit. */
@@ -30,11 +30,7 @@ const ZH = {
   /** Joins the items of a list the way prose does: `a、b` in Chinese, `a, b` in English. */
   sep: '、',
   list: (items: readonly string[]): string => items.join('、'),
-  /** `a、b和c`. */
-  and: (items: readonly string[]): string => (items.length <= 1 ? items.join('') : before(`${items.slice(0, -1).join('、')}和`, items.at(-1) as string)),
   sentences: (items: readonly string[]): string => items.join(''),
-  /** What stands between two sentences. */
-  sentenceGap: '',
 
   tag: { research: 'AI 研究', ai: 'AI', safe: 'AI 研究：可以用', caution: 'AI 研究：要小心' } satisfies Record<AiTag, string>,
   strip: { sources: '地址來源', abi: '原始碼驗證', code: '合約沒被換掉', params: '參數保護', trace: '呼叫追蹤', providers: '雙節點比對' } satisfies Record<StripLine | 'providers', string>,
@@ -78,7 +74,6 @@ const ZH = {
   atMostTyped: (field: string): string => before('最多你填的', field),
   exactlyTyped: (field: string): string => before('剛好你填的', field),
   equalsTyped: (field: string): string => before('等於你填的', field),
-  forExample: '，例如 ',
 
   free: {
     scalar: '換成別的值測過，結果不變或交易失敗',
@@ -169,9 +164,6 @@ const ZH = {
   baseUnits: ' 最小單位',
   baseUnitsOf: (token: string): string => ` 最小單位的 ${token}`,
   decimalsUnread: 'decimals() 沒讀到',
-  decimals: (n: number): string => `${n} 位小數`,
-  about: '約 ',
-  approx: (shown: Span, token: string, base: Span): Span[] => ['約 ', shown, ` ${token}（`, base, ' 最小單位）'],
 
   safe: '你的 Safe',
   role: { sender: '發起', contract: '合約', fixed: '固定的地址', picked: '你選' },
@@ -181,7 +173,6 @@ const ZH = {
   chip: (who: string, field: string): string => `${who}：${field}`,
   chipParts: (names: readonly string[], who: string): string => `${names.join('、')} ${who}`,
   whoMeans: { 'you-type': '每次簽名填', 'you-pick': '每次簽名選', computed: 'card new 每次簽名讀鏈算出，你核對', fixed: '改了就 MISMATCH', bounded: '超過上限就 MISMATCH', member: '訂單裡的值，由雜湊鎖住' },
-  chosen: { 'you-type': '你填', 'you-pick': '你選', computed: '程式算', free: 'app 填' },
   change: { increases: '增加', decreases: '減少', same: '不變' } satisfies Record<ViewChange, string>,
   inParens: (items: readonly string[]): string => `（${items.join('、')}）`,
 
@@ -226,7 +217,7 @@ const ZH = {
   increases: (contract: string, value: string): string => `${contract} 的 ${value} 增加`,
   result: (text: string): string => `結果：${text}。`,
   emptyHead: (target: string, sendsEth: boolean): string => (sendsEth ? before('轉 ETH 給', target) : `${before('呼叫', target)}，0 ETH、沒有資料`),
-  sends: (words: readonly Span[], example: Span | undefined): Span[] => ['送出 ETH：', ...words, ...(example === undefined ? [] : ['，例如 ', example, ' ETH'])],
+  sends: (words: readonly Span[]): Span[] => ['送出 ETH：', ...words],
 
   all: '全部',
   givesMore: '給出多於 0',
@@ -262,13 +253,6 @@ const ZH = {
 
   flow: '流程',
   calls: (n: number): string => `${n} 個呼叫`,
-  exampleLead: (chosen: string, vault: string | undefined, fixture: Span, amounts: readonly (readonly Span[])[]): Span[] => [
-    before(`標「例」的${chosen}的值取自`, vault === undefined ? '第一筆測試交易 ' : `${vault} 的第一筆測試交易 `),
-    fixture,
-    ...amounts.flatMap((a) => ['，', ...a]),
-    '。',
-  ],
-  noExample: (vault: string | undefined): Span[] => [vault === undefined ? '沒有換值測試的記錄可以當例子' : `${vault} 沒有換值測試的記錄可以當例子`, '，每次簽名才決定的值只寫規則。'],
 
   notRead: '讀不到',
   noneFromDefillama: 'DefiLlama 沒給',
@@ -558,7 +542,6 @@ const ZH = {
     'deployer-alone': '沒有已確認的合約同一個部署者',
     'url-holds-address': '網址含地址',
   } satisfies Record<Phrase, string>,
-  example: { example: '例', 'other-safe': '例：別的 Safe' } satisfies Record<ExampleTag, string>,
   aiResult: { pass: 'AI 判斷：沒問題', attention: 'AI 判斷：要注意', fail: 'AI 判斷：有問題' } satisfies Record<AiSourceResult, string>,
   reviewed: { confirmed: 'AI 已確認', concern: 'AI 有疑慮' } satisfies Record<Reviewed, string>,
   confidence: { high: '高信心', medium: '中信心', low: '低信心' } satisfies Record<Confidence, string>,
@@ -571,7 +554,7 @@ const ZH = {
   scrollHint: '圖可以左右滑動',
   docs: '文件：',
   /** Text around a code span the renderer puts between the two. */
-  decodedLead: ['每個單一值參數的第一行是 ', ' 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。'] as readonly [string, string],
+  callsLead: '下面逐一列出交易的每個呼叫。每個參數都寫出由誰決定、它的值或必須符合的規則，以及它的作用。',
   flowLead: '實線是 Safe 發出的呼叫、模板綁定的內部呼叫，和程式在過去交易裡看到的流程線；虛線是還沒核對的 AI 研究；綠線是你得到的。',
   seenLabel: (seen: number, of: number): string => `兩邊都確認：程式在 ${of} 筆過去交易的呼叫追蹤裡看到 ${seen} 筆；AI 讀過合約原始碼`,
   seenCount: (seen: number, of: number): string => `程式在 ${of} 筆過去交易的呼叫追蹤裡只看到 ${seen} 筆，所以還不算確認`,
@@ -632,9 +615,7 @@ export type Words = typeof ZH;
 const EN: Words = {
   sep: ', ',
   list: (items) => items.join(', '),
-  and: (items) => (items.length <= 1 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items.at(-1) as string}`),
   sentences: (items) => items.join(' '),
-  sentenceGap: ' ',
 
   tag: { research: 'AI research', ai: 'AI', safe: 'AI research: OK to use', caution: 'AI research: be careful' },
   strip: { sources: 'Address sources', abi: 'Source verified', code: 'Code unchanged', params: 'Parameter checks', trace: 'Call traces', providers: 'Two providers' },
@@ -676,7 +657,6 @@ const EN: Words = {
   atMostTyped: (field) => `at most the ${field} you type`,
   exactlyTyped: (field) => `exactly the ${field} you type`,
   equalsTyped: (field) => `equals the ${field} you type`,
-  forExample: ', for example ',
 
   free: {
     scalar: 'tested with other values: the same result or the transaction fails',
@@ -795,9 +775,6 @@ const EN: Words = {
   baseUnits: ' base units',
   baseUnitsOf: (token) => ` base units of ${token}`,
   decimalsUnread: 'decimals() not read',
-  decimals: (n) => `${n} decimals`,
-  about: 'about ',
-  approx: (shown, token, base) => ['about ', shown, ` ${token} (`, base, ' base units)'],
 
   safe: 'your Safe',
   role: { sender: 'sender', contract: 'contract', fixed: 'fixed address', picked: 'you pick' },
@@ -807,7 +784,6 @@ const EN: Words = {
   chip: (who, field) => `${who}: ${field}`,
   chipParts: (names, who) => `${names.join(', ')} ${who}`,
   whoMeans: { 'you-type': 'typed at each signing', 'you-pick': 'picked at each signing', computed: 'read from the chain by card new at each signing; you check it', fixed: 'any change is a MISMATCH', bounded: 'past the limit is a MISMATCH', member: 'a value in the order, locked by its hash' },
-  chosen: { 'you-type': 'you type', 'you-pick': 'you pick', computed: 'the program computes', free: 'the app fills' },
   change: { increases: 'increases', decreases: 'decreases', same: 'unchanged' },
   inParens: (items) => ` (${items.join(', ')})`,
 
@@ -851,7 +827,7 @@ const EN: Words = {
   increases: (contract, value) => `${value} of ${contract} increases`,
   result: (text) => `Result: ${text}.`,
   emptyHead: (target, sendsEth) => (sendsEth ? `Send ETH to ${target}` : `Call ${target}, 0 ETH, no data`),
-  sends: (words, example) => ['Sends ETH: ', ...words, ...(example === undefined ? [] : [', for example ', example, ' ETH'])],
+  sends: (words) => ['Sends ETH: ', ...words],
 
   all: 'all',
   givesMore: 'gives more than 0',
@@ -886,14 +862,6 @@ const EN: Words = {
 
   flow: 'Flow',
   calls: (n) => `${n} ${plural(n, 'call', 'calls')}`,
-  exampleLead: (chosen, vault, fixture, amounts) => [
-    `Values that ${chosen}, marked "example", come from `,
-    fixture,
-    `, the first test transaction${vault === undefined ? '' : ` of ${vault}`}`,
-    ...amounts.flatMap((a, i) => [i === 0 ? ': ' : ', ', ...a]),
-    '.',
-  ],
-  noExample: (vault) => [`No perturbation test is recorded to serve as an example${vault === undefined ? '' : ` for ${vault}`}`, ', so values decided at each signing show only their rule.'],
 
   notRead: 'could not be read',
   noneFromDefillama: 'DefiLlama gives none',
@@ -1192,7 +1160,6 @@ const EN: Words = {
     'deployer-alone': 'no confirmed contract shares it',
     'url-holds-address': 'the URL holds the address',
   },
-  example: { example: 'example', 'other-safe': 'example: another Safe' },
   aiResult: { pass: 'AI judgment: no problem', attention: 'AI judgment: needs attention', fail: 'AI judgment: problem' },
   reviewed: { confirmed: 'AI confirmed', concern: 'AI has concerns' },
   confidence: { high: 'high confidence', medium: 'medium confidence', low: 'low confidence' },
@@ -1204,7 +1171,7 @@ const EN: Words = {
   diagramTitle: 'Transaction flow',
   scrollHint: 'Scroll the diagram sideways',
   docs: 'Docs: ',
-  decodedLead: ["Each single-value argument's first line is what ", ' prints; for an array, a tuple or a nested call the first line is a summary, and its contents follow below.'],
+  callsLead: "The transaction's calls, one by one. Each argument shows who decides it, its value or the rule it must follow, and what it does.",
   flowLead: "Solid lines are the Safe's calls, the calls the template binds inside them, and flow lines the program saw in past transactions; dashed lines are AI research not checked; green lines are what you get.",
   seenLabel: (seen, of) => `Confirmed two ways: the program saw it in the call traces of ${seen} of ${of} past transactions; the AI read the contract's source`,
   seenCount: (seen, of) => `The program saw it in the call traces of only ${seen} of ${of} past transactions, so it is not confirmed`,
