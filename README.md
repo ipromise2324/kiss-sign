@@ -97,11 +97,11 @@ To install it, follow the [kiss-sign-check README](https://github.com/ipromise23
 
 ## How it works
 
-The pictures below come from one real run: another Safe's deposit of 1,000,611.448606 USDC into a Morpho vault, the Hyperithm USDC Apex vault.
+The pictures below come from real reports kiss-sign generated from other Safes' transactions.
 
 ### 1. Tell your AI what you want
 
-In Claude Code, from the clone, say it in one sentence: "deposit 1,000,611.448606 USDC into Morpho's Hyperithm USDC Apex vault". If no template covers it yet, the AI builds one with the [kiss-sign skill](.claude/skills/kiss-sign/SKILL.md) and opens a pull request with a generated report.
+Open an AI coding agent, such as Claude Code or Codex, in the clone and say it in one sentence: "deposit 1,000,611.448606 USDC into Morpho's Hyperithm USDC Apex vault". If no template covers it yet, the AI builds one by following the [kiss-sign skill](.claude/skills/kiss-sign/SKILL.md) and opens a pull request with a generated report. Claude Code loads the skill by itself; point another agent at that file.
 
 ![Claude Code opened in the kiss-sign clone, with the intent typed at its prompt: I want to deposit 1,000,611.448606 USDC into Morpho's Hyperithm USDC Apex vault](docs/readme/intent.png)
 
@@ -117,7 +117,7 @@ The report shows what the transaction will do and where each fact came from. Tex
 
 ![The To review section: one key item, the vault's address confirmed in too few places, and three AI judgments, each with Details folded](docs/readme/report-review.png)
 
-**The flow.** Which contracts the Safe calls and what comes back. The template fixes the Safe's own calls. The AI drew the calls inside them, and the program found each one in other senders' past transactions.
+**The flow.** A diagram of where your tokens go: which contracts the Safe calls, which contracts those call in turn, and what comes back to the Safe. A solid line is a call the program also found in other senders' past transactions.
 
 ![The call flow: the Safe approves USDC to general-adapter-1 and calls bundler3.multicall; the adapter pulls the USDC and deposits it into the vault, lines seen in 8 of 8 past transactions; the shares come back to the Safe](docs/readme/report-flow.png)
 
