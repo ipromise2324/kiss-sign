@@ -100,7 +100,6 @@ function hitOf(source: SourceName, hash: unknown, from: unknown, to: unknown, bl
   }
 }
 
-/** One source's search of a range: every hit within `pages` pages of `PAGE`, or more than that. */
 type SourceSearch = { readonly kind: 'complete'; readonly hits: readonly Hit[]; readonly pages: number } | { readonly kind: 'overflow' };
 
 async function searchAlchemy(anchor: Anchor, ask: Ask, pages: number): Promise<SourceSearch> {
@@ -211,7 +210,6 @@ export async function search(anchor: Anchor, ask: Ask, pages: number): Promise<S
 
 export type SourceExchange = { readonly request: SourceRequest; readonly answer: unknown };
 
-/** The answer cut to the fields the search reads, so its replay finds the same transfers and the same overflow. */
 function readFields(request: SourceRequest, answer: unknown): unknown {
   if (!isRecord(answer)) return answer;
   if (request.source === 'alchemy') {
@@ -239,7 +237,6 @@ const rangeOf = (request: SourceRequest): string =>
 
 const morePages = (answer: unknown): boolean => isRecord(answer) && (typeof answer.pageKey === 'string' || (Array.isArray(answer.result) && answer.result.length >= PAGE));
 
-/** Whether `exchange` says more pages follow and no exchange asked the next one: its source did not finish the range. */
 function unfinished(exchange: SourceExchange, all: readonly SourceExchange[]): boolean {
   const { request, answer } = exchange;
   if (!morePages(answer)) return false;
@@ -251,12 +248,6 @@ function unfinished(exchange: SourceExchange, all: readonly SourceExchange[]): b
   });
 }
 
-/**
- * In a range some source did not finish, every page keeps no transfer: the source that did not finish keeps only that
- * more follow, its page key (Alchemy) or its length (Etherscan), and a source that finished keeps empty pages that read
- * as finished, so a replay finds the same overflow without reading a transfer. The search never reads such a range's
- * transfers, and a busy token's year and halved windows would otherwise hold thousands. An error is kept whole.
- */
 function cutUncovered(exchanges: readonly SourceExchange[]): SourceExchange[] {
   const over = exchanges.filter((e) => unfinished(e, exchanges)).map((e) => e.request);
   const uncovered = new Set(over.map(rangeOf));

@@ -65,10 +65,7 @@ type Kept = Exclude<TxStudy, { kind: 'excluded' }>;
 /** One window as searched, `asked` before any halving: `found` transactions after exclusion, of which `studied` were read. */
 export type WindowRun = { readonly asked: BlockRange; readonly range: BlockRange; readonly found: number; readonly studied: number };
 
-/**
- * Which address of an anchor hit is the party that would be a Safe doing the operation, or why none is: with `--from`
- * and `--to` both sides are fixed, and topic 1 of a named contract's event has no fixed meaning.
- */
+/** Which address of an anchor hit is the party that would be a Safe doing the operation, or why none is. */
 export type PartyRule = { readonly kind: 'side'; readonly side: 'from' | 'to' | 'emitter'; readonly noun: string } | { readonly kind: 'none'; readonly why: string };
 
 function partyRule(anchor: Omit<Anchor, keyof BlockRange>): PartyRule {
@@ -176,7 +173,6 @@ function byBlock(hashes: readonly Hex[], hits: Hits): Hex[] {
 
 type Searched = { readonly asked: BlockRange; readonly range: BlockRange; readonly hits: Hits };
 
-/** One page per source; an overflowing window is halved to its newer half, and a range given by hand is refused. */
 async function searchWindow(anchor: PastTxsQuery['anchor'], asked: BlockRange, halve: boolean, ask: Ask): Promise<Searched> {
   for (let range = asked; ; range = { fromBlock: range.toBlock - (range.toBlock - range.fromBlock + 1n) / 2n + 1n, toBlock: range.toBlock }) {
     const found = await search({ ...anchor, ...range }, ask, 1);
@@ -188,10 +184,6 @@ async function searchWindow(anchor: PastTxsQuery['anchor'], asked: BlockRange, h
 const spacedSample = <T>(items: readonly T[], cap: number): T[] =>
   items.length <= cap ? [...items] : Array.from({ length: cap }, (_, i) => items[Math.floor((i * items.length) / cap)] as T);
 
-/**
- * At most `maxTxs` of the Safe-party transactions and the rest, each list taken evenly in its order: the Safes' first,
- * but never more than leaves `Math.ceil(maxTxs / 4)` places for the rest while the rest holds that many.
- */
 function safesFirst<T>(safes: readonly T[], rest: readonly T[], maxTxs: number): { readonly safes: T[]; readonly rest: T[] } {
   const restFloor = Math.min(rest.length, Math.ceil(maxTxs / 4));
   const chosen = spacedSample(safes, maxTxs - restFloor);
@@ -200,10 +192,6 @@ function safesFirst<T>(safes: readonly T[], rest: readonly T[], maxTxs: number):
 
 const PROBE_WIDTH = 8;
 
-/**
- * Checks each distinct anchor party of the kept transactions for a Safe at the year's top block, and chooses the
- * transactions to study: every one with a Safe party first, by `safesFirst`, then the rest, in block order.
- */
 async function chooseByParty(
   hashes: readonly Hex[],
   hits: Hits,
@@ -239,7 +227,6 @@ async function chooseByParty(
   };
 }
 
-/** The year's pages each searching source may ask in `sampling`, or none when it searches the windows alone. */
 const yearPages = (sampling: Exclude<Sampling, { kind: 'range' }>): number | undefined =>
   sampling.kind === 'year' ? sampling.pages : sampling.kind === 'old-year' ? 1 : undefined;
 

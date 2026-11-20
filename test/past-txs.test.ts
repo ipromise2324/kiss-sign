@@ -454,7 +454,6 @@ async function requestsFor(anchor: Omit<Anchor, 'token' | 'kind' | 'fromBlock' |
   return sent;
 }
 
-/** One page per source, as a window asks: the hits when both finished. */
 async function searchBoth(anchor: Anchor, ask: Ask): Promise<Hits> {
   const found = await search(anchor, ask, 1);
   if (found.kind !== 'covered') throw new Error(`${found.sources.join(' and ')} overflowed`);
@@ -696,7 +695,6 @@ test('an order expiring later than withinSeconds after its block is a misfit wit
 
 const VAULT = `0x${'9a'.repeat(20)}` as Address;
 const ZERO_ADDRESS = `0x${'00'.repeat(20)}` as Address;
-/** The head a paged year is placed by: the year runs from block 23810401 to 26438400. */
 const HEAD = 26438464n;
 const [YEAR_FROM, YEAR_TO] = [23810401n, 26438400n];
 const PROXY = recording.exchanges.find((e) => e.method === 'eth_getCode' && (e.params as unknown[])[0] === safeOf(FIT))?.answers.alchemy as Hex;
@@ -708,10 +706,6 @@ const mints = (n: number): Mint[] =>
   Array.from({ length: n }, (_, i) => ({ hash: `0x${(i + 1).toString(16).padStart(64, '0')}` as Hex, from: nth(i, 'f'), to: nth(i, 'e'), block: YEAR_FROM + BigInt(i) * 10n, emitter: nth(i, 'c') }));
 const hexBlock = (n: bigint) => `0x${n.toString(16)}`;
 
-/**
- * Both sources listing `listed` over the year, 1000 a page, and nothing in any other range; with `endless`, Alchemy
- * always has another page of the year, and with `etherscanRefuses`, Etherscan refuses that page of the year.
- */
 function yearAsk(listed: readonly Mint[], options: { endless?: boolean; etherscanRefuses?: number } = {}): { ask: Ask; asked: SourceRequest[] } {
   const asked: SourceRequest[] = [];
   const ask: Ask = async (request) => {
@@ -733,11 +727,6 @@ function yearAsk(listed: readonly Mint[], options: { endless?: boolean; ethersca
   return { ask, asked };
 }
 
-/**
- * A chain where `safes` are Safe proxies, `singletonOnly` hold an official singleton in slot 0 under other code, and
- * `unreadable` answer no slot; every other read, each transaction's included, fails. Its reads are recorded as
- * `--record` keeps them.
- */
 function chain(options: { safes?: readonly Address[]; singletonOnly?: readonly Address[]; unreadable?: readonly Address[] } = {}): { reader: Reader; exchanges: () => Exchange[] } {
   const transport: Transport = async (_url, body) => {
     const { method, params } = JSON.parse(body) as { method: string; params: unknown[] };
@@ -797,7 +786,6 @@ test('a year still holding more after 10 pages of a source is searched in the wi
   assert.equal(renderPastTxs(await yearRun(replayAsk(recorder.exchanges()), replayReader([])), registry), text, 'the replay needs no chain read');
 });
 
-/** A run of `listed` on `onChain`, recorded as `--record` keeps it, and the same run replayed from that recording alone. */
 async function recordedAndReplayed(listed: readonly Mint[], onChain: ReturnType<typeof chain>, maxTxs: number) {
   const recorder = recordingAsk(yearAsk(listed).ask);
   const live = await yearRun(recorder.ask, onChain.reader, { maxTxs });
