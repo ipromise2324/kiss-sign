@@ -26,10 +26,11 @@ import { GENERATED_FILE, INSTANCE_FOLDER, reportUnit, reportedInstancesIn, sever
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, EffectToken, Quantity, Rule, Template, Tolerance, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording, SiteOwner } from './listings.ts';
 import { checkSources, githubLine, listingsFor, recordedListingReads, sourcePagesOf, sourceSiteLine, trimForRecording, trimSourcePage } from './listings.ts';
-import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from './past-txs.ts';
+import { pastTxs, renderPastTxs } from './past-txs.ts';
 import { factsScope, parseFactsRecording, protocolFacts, replaySources } from './protocol-facts.ts';
 import type { FactReading, FactsScope, ProtocolFacts } from './protocol-facts.ts';
-import type { PastTxs, Sampling } from './past-txs.ts';
+import type { PastTxs } from './past-txs.ts';
+import { YEAR_PAGES, samplingOf } from './recording.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { replayMessages } from './messages.ts';
 import { replayTraces } from './trace.ts';
@@ -593,14 +594,9 @@ function printableQuery(file: string, query: PastTxsRecording['query']): boolean
     block(query.head) &&
     (query.head === undefined || (query.fromBlock === undefined && query.toBlock === undefined)) &&
     (query.wholeYear === undefined || (query.wholeYear === true && query.head !== undefined)) &&
+    (query.yearPages === undefined || (Number.isSafeInteger(query.yearPages) && query.yearPages >= 1 && query.yearPages <= YEAR_PAGES && query.head !== undefined && query.wholeYear === undefined)) &&
     Number.isSafeInteger(query.maxTxs)
   );
-}
-
-export function pastTxsSampling(query: PastTxsRecording['query']): Sampling {
-  if (query.fromBlock !== undefined && query.toBlock !== undefined) return { kind: 'range', range: { fromBlock: BigInt(query.fromBlock), toBlock: BigInt(query.toBlock) } };
-  const spread = { ...DEFAULT_SPREAD, wholeYear: query.wholeYear === true };
-  return query.head === undefined ? spread : { ...spread, head: BigInt(query.head) };
 }
 
 /**
@@ -634,7 +630,7 @@ export async function summarizePastTxs(repoRoot: string, registry: Registry, fil
         ...(query.to === undefined ? {} : { to: query.to as Address }),
         ...(query.event === undefined ? {} : { event: anchorEvent(query.event) }),
       },
-      sampling: pastTxsSampling(query),
+      sampling: samplingOf(query),
     },
     {
       ask: replayAsk(recording.sources),

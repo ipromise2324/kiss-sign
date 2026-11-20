@@ -8,14 +8,14 @@ import { httpsTransport } from '../src/chain/rpc.ts';
 import { loadStoredConfig } from '../src/config.ts';
 import { kissSignHome } from '../src/keys.ts';
 import { loadRegistry } from '../src/registry.ts';
-import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from '../src/research/past-txs.ts';
+import { WINDOWS, pastTxs, renderPastTxs } from '../src/research/past-txs.ts';
 import { ANCHOR_KINDS, anchorEvent, liveAsk, recordingAsk } from '../src/research/sources.ts';
 import type { AnchorEvent, AnchorKind } from '../src/research/sources.ts';
 import { liveMessages, recordingMessages } from '../src/research/messages.ts';
 import { httpsMessage } from '../src/verify/messages.ts';
-import { scrubRecording } from '../src/research/recording.ts';
+import { DEFAULT_SAMPLING, YEAR_PAGES, samplingFields, samplingOf, scrubRecording } from '../src/research/recording.ts';
 import { drpcTraces } from '../src/research/trace.ts';
-import type { PastTxsRecording } from '../src/research/recording.ts';
+import type { PastTxsRecording, Sampling } from '../src/research/recording.ts';
 import { parseAddress } from '../src/safe/types.ts';
 import { loadTemplate } from '../src/template/template.ts';
 import { readRecording, recordingText } from '../src/chain/bytecode.ts';
@@ -123,8 +123,8 @@ if (templateId === undefined || positionals.length !== 1 || (flags.token === und
   console.error(USAGE);
   process.exit(64);
 }
-if (range === undefined && maxTxs < DEFAULT_SPREAD.count) {
-  console.error(`--max-txs must be at least ${DEFAULT_SPREAD.count}, one transaction per window`);
+if (range === undefined && maxTxs < WINDOWS.count) {
+  console.error(`--max-txs must be at least ${WINDOWS.count}, one transaction per window`);
   process.exit(64);
 }
 for (const flag of ['from', 'to'] as const) {
@@ -148,26 +148,25 @@ if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new 
 const sameAs = flags['same-windows-as'] === undefined ? undefined : await recordedSearch(flags['same-windows-as']);
 
 /**
- * The head block a `--record` run kept, or for a recording made before it kept one, its recorded head read, and whether
- * it asked the whole year first, so a run again searches its blocks; no one types a head block.
+ * The search a `--record` run made, placed by the head block it kept, or for a recording made before it kept one, its
+ * recorded head read, so a run again searches its blocks; no one types a head block.
  */
-async function recordedSearch(name: string): Promise<{ head: bigint; wholeYear: boolean }> {
+async function recordedSearch(name: string): Promise<Sampling> {
   const path = join(ROOT, 'testdata', 'research', `${name}.json`);
   if (!/^[a-z0-9-]+$/.test(name) || !existsSync(path)) {
     console.error(`--same-windows-as ${name}: no recording testdata/research/${name}.json`);
     process.exit(64);
   }
   const recording = readRecording(path) as PastTxsRecording;
-  const kept = recording.query.head;
-  const wholeYear = recording.query.wholeYear === true;
-  if (kept !== undefined && /^[0-9]+$/.test(kept)) return { head: BigInt(kept), wholeYear };
-  const read = recording.query.fromBlock === undefined ? await replayReader(recording.exchanges).blockNumber() : undefined;
-  if (read?.kind !== 'agreed') {
-    const why = recording.query.fromBlock === undefined ? 'keeps no head block and no head read' : 'searched one block range and keeps no head block';
+  const sampling = samplingOf(recording.query);
+  if (sampling.kind !== 'range' && sampling.head !== undefined) return sampling;
+  const read = sampling.kind === 'range' ? undefined : await replayReader(recording.exchanges).blockNumber();
+  if (sampling.kind === 'range' || read?.kind !== 'agreed') {
+    const why = sampling.kind === 'range' ? 'searched one block range and keeps no head block' : 'keeps no head block and no head read';
     console.error(`--same-windows-as ${name}: the recording ${why}, so it has no windows to search again`);
     process.exit(64);
   }
-  return { head: read.value, wholeYear: false };
+  return { ...sampling, head: read.value };
 }
 
 const registry = loadRegistry(ROOT);
@@ -189,7 +188,7 @@ const traces = drpcTraces(endpoints[1], httpsTransport(), note);
 const query = {
   template,
   anchor: { ...(token === undefined ? {} : { token }), kind, ...(from === undefined ? {} : { from }), ...(to === undefined ? {} : { to }), ...(event === undefined ? {} : { event }) },
-  sampling: range !== undefined ? ({ kind: 'range', range } as const) : sameAs === undefined ? DEFAULT_SPREAD : { ...DEFAULT_SPREAD, ...sameAs },
+  sampling: range !== undefined ? ({ kind: 'range', range } as const) : (sameAs ?? DEFAULT_SAMPLING),
 };
 const run = await pastTxs(query, {
   ask: sources.ask,
@@ -218,9 +217,7 @@ if (flags.record !== undefined) {
         ...(from === undefined ? {} : { from }),
         ...(to === undefined ? {} : { to }),
         ...(event === undefined ? {} : { event: event.signature }),
-        ...(range === undefined ? {} : { fromBlock: range.fromBlock.toString(), toBlock: range.toBlock.toString() }),
-        ...(run.head === undefined ? {} : { head: run.head.toString() }),
-        ...(run.year === undefined ? {} : { wholeYear: true as const }),
+        ...samplingFields(query.sampling, run.head),
         maxTxs,
       },
       sources: sources.exchanges(),

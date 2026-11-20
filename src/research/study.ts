@@ -1,6 +1,6 @@
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 import type { Reader } from '../chain/reader.ts';
-import type { Transaction } from '../chain/types.ts';
+import type { BlockRef, Transaction } from '../chain/types.ts';
 import { safeProxyFactory } from '../contracts/proxy.ts';
 import { parseFunctionSignature } from '../decode/abi.ts';
 import type { AbiType } from '../decode/abi.ts';
@@ -361,8 +361,24 @@ async function proveSafe(reader: Reader, address: Address, blockNumber: bigint):
   if (safeProxyFactory(code.value) === undefined) return { kind: 'unproven', why: 'its code is not a known Safe proxy' };
   const slot = await reader.getStorageAt(address, 0n, block.value);
   if (slot.kind === 'unverifiable') return { kind: 'unreadable', reason: slot.reason };
-  const official = OFFICIAL_SAFE_SINGLETONS.some((s) => slot.value === `0x${'00'.repeat(12)}${s.address.slice(2)}`);
-  return official ? { kind: 'proven' } : { kind: 'unproven', why: 'its singleton is not an official Safe singleton' };
+  return officialSingleton(slot.value) ? { kind: 'proven' } : { kind: 'unproven', why: 'its singleton is not an official Safe singleton' };
+}
+
+const officialSingleton = (slot0: Hex): boolean => OFFICIAL_SAFE_SINGLETONS.some((s) => slot0 === `0x${'00'.repeat(12)}${s.address.slice(2)}`);
+
+export type PartyProof = { readonly kind: 'safe' } | { readonly kind: 'not-safe' } | { readonly kind: 'unreadable'; readonly reason: string };
+
+/**
+ * Whether `address` is a Safe at `at`, by the rules `proveSafe` applies to a sender, reading its singleton slot first so
+ * an address that is no Safe costs one read.
+ */
+export async function proveParty(reader: Reader, address: Address, at: BlockRef): Promise<PartyProof> {
+  const slot = await reader.getStorageAt(address, 0n, at);
+  if (slot.kind === 'unverifiable') return { kind: 'unreadable', reason: slot.reason };
+  if (!officialSingleton(slot.value)) return { kind: 'not-safe' };
+  const code = await reader.getCode(address, at);
+  if (code.kind === 'unverifiable') return { kind: 'unreadable', reason: code.reason };
+  return safeProxyFactory(code.value) === undefined ? { kind: 'not-safe' } : { kind: 'safe' };
 }
 
 async function readMessages(tx: SafeTx, sender: Sender, shape: Shape, context: StudyContext): Promise<{ readonly candidates: string[]; readonly unread: string[] }> {
