@@ -107,23 +107,39 @@ In Claude Code, from the clone, say it in one sentence: "deposit 1,000,611.44860
 
 ### 2. Review the report and merge
 
-The report shows what the transaction will do and where every fact came from. Text the AI wrote is marked `AI`; everything else the program read or checked.
+The report shows what the transaction will do and where every fact came from. Text the AI wrote is marked `AI`; everything else the program read or checked. It reads top to bottom in the order below.
 
-**The call flow.** Which contract the Safe calls, in which order, and what comes back. The Safe's own calls are the template's, which the program checks. The calls inside them are the AI's, from reading the source, and the program checks each against the call traces of other senders' past transactions: a line seen in every one is drawn solid, confirmed two ways.
+**The top.** One summary of the transaction, a strip of the program's checks, and the AI's advice. Here five checks pass and one needs attention: 4 of 5 addresses are confirmed in at least two places. The advice says the vault is usable with care: only the factory confirms its address and no Hyperithm page lists it, so read To review and send a small amount first.
 
-![The call flow in the report: the Safe approves USDC to general-adapter-1, then calls bundler3.multicall, which pulls the USDC and deposits it, and the vault shares come back to the Safe](docs/readme/report-flow.png)
+![The top of the report: the title Deposit into a Morpho vault, the summary of the two calls, six checks (Address sources 4 / 5 with an attention mark; Source verified 4 / 4, Code unchanged 5 / 5, Parameter checks 1 / 1, Call traces 2 / 2 and Two providers passing), and the advice: usable with care, read To review first and send a small amount first](docs/readme/report-top.png)
 
-**Every field.** Each argument is fixed by the template, filled from your card, or, like a deadline or a route, left to the protocol's app within limits the template states.
+**To review.** What needs your attention, the AI's conclusion on each, and its advice. Here there is 1 key item: the vault's address is confirmed in too few places. Its details say why two places are needed and what the AI found, and advise you to open the vault from the Morpho app's vault list yourself, compare the full address, and send a small amount the first time. Three more items are the AI's judgments: the Morpho app sometimes adds two steps this template does not accept, Morpho's SDK now lists a newer contract in place of Bundler3, and the vault's size moved sharply over the year.
 
-![The fields of usdc.approve in the report: value is the amount you fill in, and spender, under the opened fold of fixed values, is fixed to general-adapter-1 with its full address](docs/readme/report-fields.png)
+![The To review section: one key item, Address confirmed in too few places for hyperithm-usdc-apex-v2-9e2f, with its details opened (confirmed in only 1 place, the factory; the rule of at least two places; what Etherscan shows; the advice to compare the address in the Morpho app and send a small amount first), then three AI judgments with their details folded](docs/readme/report-review.png)
 
-**Every address.** Each place it was found, whether that site belongs to the protocol, and whether the newest version still lists it. This crop is from the CoW swap report. CoW's settlement contract is found in four sources, but places count by who owns them: two GitHub pages and the SDK all belong to CoW's GitHub organization, so with Immunefi it is confirmed in two places.
+**The flow.** Which contract the Safe calls, in which order, and what comes back. The Safe's own calls are the template's, which the program checks. The calls inside them are the AI's, from reading the source, and the program looks for each in the call traces of other senders' past transactions: here both lines were seen in 8 of 8 transactions, so they are drawn solid and marked confirmed two ways.
+
+![The call flow in the report: the Safe approves USDC to general-adapter-1, then calls bundler3.multicall; general-adapter-1 pulls the USDC from the Safe and deposits it into the vault, two lines marked confirmed in 8 of 8 past transactions, and the vault shares come back to the Safe](docs/readme/report-flow.png)
+
+Under the diagram, every argument of every call says who decides it: you type it, you pick it, the program computes it, or the template fixes it. Fixed values fold away; any change to one is a MISMATCH.
+
+![The fields of usdc.approve in the report: value is the amount you type, and spender, under the opened fold of fixed values, is fixed to general-adapter-1 with its full address](docs/readme/report-fields.png)
+
+**The protocol and the instance.** The protocol part gives Morpho's TVL from DefiLlama ($9.66 B), the date DefiLlama first listed it, its audits and its incidents (0 on DefiLlama's hacks list). The instance part is about this one vault, read from two providers: the factory vouches for it, it holds 6,603,958.14 USDC, 169 addresses hold its shares and the largest holds 58.88%, and a chart shows its size each month for a year. The AI's notes under it say where deposits go: your USDC stays idle in the vault until an allocator lends it out, which markets it lends to, who can change that, and how to get the USDC back.
+
+![The Instance section: the factory answers isVaultV2 = true, totalAssets now 6,603,958.14 USDC, 169 holders of 357 that ever held shares, the largest holder 58.88% and the top 10 89.19%, a bar chart of monthly totalAssets from November 2025 to November 2026 peaking at 26,979,046.48 USDC in January, and the AI's note Where deposits go](docs/readme/report-instance.png)
+
+**Wallet display.** What your hardware wallet will show: this transaction packs 2 calls with MultiSend, which no ERC-7730 descriptor decodes, so you compare the hash on the device with the one `verify` prints.
+
+**Addresses.** Each place an address was found, whether that site belongs to the protocol, and whether the newest version still lists it. This crop is from the CoW swap report. CoW's settlement contract is found in four sources, but places count by who owns them: two GitHub pages and the SDK all belong to CoW's GitHub organization, so with Immunefi it is confirmed in two places.
 
 ![An address the report confirmed in two places: two pages on CoW's GitHub and CoW's SDK on npm, which count as one place, CoW's GitHub organization, each still listing it at the newest version; and Immunefi's bug bounty scope. The deployer shares no other confirmed contract, so it counts for nothing](docs/readme/report-address.png)
 
-Weak evidence is shown, not hidden. The Hyperithm vault was confirmed only by its factory, so the report flags it and lists it under To review, with the AI's suggestion: open the vault from the Morpho app's list, compare the address, and send a small amount first.
+Weak evidence is shown, not hidden. The Hyperithm vault was confirmed only by its factory, so the report flags it with low confidence and lists it under To review.
 
-![An address confirmed in only one place, the factory, flagged with low confidence: the Morpho app page is not read because its URL holds the address, CoinGecko had nothing to compare, Immunefi's scope does not list it, and no deployer was proven](docs/readme/report-address-flagged.png)
+![An address confirmed in only one place, the factory, flagged with low confidence: the Morpho app page does not count because its URL holds the address, CoinGecko had nothing to compare, Immunefi's scope does not list it, and no deployer was proven; under it, what the AI also checked in Morpho's API, on Etherscan and on Hyperithm's site](docs/readme/report-address-flagged.png)
+
+**Past transactions.** Other senders' executed transactions of the same operation: here 8 match the template exactly, 6 from 2 Safes and 2 from EOAs, and 24 more were made another way.
 
 You review an operation once. After that you review only what changes: another vault's report, a registry pull request, or a changed template. Merging is your confirmation. Then approve the template on your own computer, which records its hash so `verify` refuses any other version:
 
