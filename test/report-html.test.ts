@@ -410,7 +410,7 @@ test("a paged year's search line says how many transactions with a proven Safe p
   };
   const expected: Readonly<Record<Language, readonly [all: string, some: string, none: string]>> = {
     en: [', all 17 with a proven Safe party', ', 9 of 20 with a proven Safe party', ', none with a proven Safe party'],
-    'zh-TW': ['，含 Safe 參與方的 17 筆全數研究', '，含 Safe 參與方 20 筆中研究 9 筆', '，沒有 Safe 參與方的交易'],
+    'zh-TW': ['，含證實為 Safe 的參與方的 17 筆全數研究', '，含證實為 Safe 的參與方的 20 筆中研究 9 筆', '，沒有證實為 Safe 的參與方'],
   };
   for (const language of LANGUAGES) {
     const committed = /<h3>((?:Search of|搜尋)[^<]*)<\/h3>/.exec(html.get(language) ?? assert.fail(language))?.[1] ?? assert.fail(`${language}: a committed search line`);

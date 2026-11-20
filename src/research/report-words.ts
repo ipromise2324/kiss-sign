@@ -404,9 +404,9 @@ const ZH = {
   searchCount: (token: string, anchor: string, found: number, studied: number, safes?: SafeParties): string =>
     `搜尋 ${token} 的${anchor}，找到 ${found} 筆，研究 ${studied} 筆${
       safes === undefined ? ''
-      : safes.found === 0 ? '，沒有 Safe 參與方的交易'
-      : safes.studied === safes.found ? `，含 Safe 參與方的 ${safes.found} 筆全數研究`
-      : `，含 Safe 參與方 ${safes.found} 筆中研究 ${safes.studied} 筆`
+      : safes.found === 0 ? '，沒有證實為 Safe 的參與方'
+      : safes.studied === safes.found ? `，含證實為 Safe 的參與方的 ${safes.found} 筆全數研究`
+      : `，含證實為 Safe 的參與方的 ${safes.found} 筆中研究 ${safes.studied} 筆`
     }`,
   searchEtherscanOnly: (count: Span): Span[] => ['只有 Etherscan 搜尋事件，找到 ', count, ' 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。'],
   searchSame: (same: boolean, counts: Span): Span[] => [same ? 'Alchemy 和 Etherscan 找到的完全一樣' : 'Alchemy 和 Etherscan 找到的不一樣', '（', counts, '）。'],
