@@ -32,6 +32,7 @@ import type { Confidence, FindingKind, Ledger, Phrase, Place, ProgramSource, Res
 import { NOTES_FILE, argumentTree, notesLanguages, notesScope, parseFlowLines, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
 import { PERCENTILES, amountsOf, freeNumbers } from './past-txs.ts';
+import type { PastTxs } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { factsScope } from './protocol-facts.ts';
 import { functionNames, isOtherOperation, misfitText } from './study.ts';
@@ -44,7 +45,7 @@ import type { ReportInputs, ReportTitle } from './report.ts';
 import { WORDS } from './report-words.ts';
 import { compareFlow } from './trace.ts';
 import type { FlowComparison, TracedTx } from './trace.ts';
-import type { Words } from './report-words.ts';
+import type { SafeParties, Words } from './report-words.ts';
 
 declare const anchorBrand: unique symbol;
 /** An id the page itself gives an element: a section, or an address row (`a-<registry name>`). A link names only these or an HttpsUrl. */
@@ -1676,6 +1677,12 @@ function misfitWords(reason: MisfitReason, template: string, registry: Registry,
   }
 }
 
+function safeParties(year: PastTxs['year']): SafeParties | undefined {
+  if (year?.kind !== 'covered' || year.safesFirst?.check.kind !== 'checked') return undefined;
+  const { safes, safesChosen } = year.safesFirst.selection;
+  return { found: safes, studied: safesChosen };
+}
+
 function pastSection(context: Context): Section {
   const { registry, template, w } = context;
   const nameOf = (address: string): string => registry.byAddress.get(address.toLowerCase() as Address)?.name ?? checksumAddress(address as Address);
@@ -1776,7 +1783,7 @@ function pastSection(context: Context): Section {
     const same = [...run.found.values()].every((s) => s.length === 2);
     return {
       file,
-      count: w.searchCount(query.token === undefined ? SELF_LOGGED : nameOf(query.token), anchorWords(query, query.token === undefined ? undefined : registry.byAddress.get(query.token.toLowerCase() as Address), w), run.found.size, run.studies.length),
+      count: w.searchCount(query.token === undefined ? SELF_LOGGED : nameOf(query.token), anchorWords(query, query.token === undefined ? undefined : registry.byAddress.get(query.token.toLowerCase() as Address), w), run.found.size, run.studies.length, safeParties(run.year)),
       search: query.anchor === 'event' ? w.searchEtherscanOnly({ num: `${etherscan}` }) : w.searchSame(same, { num: `${alchemy} ${same ? '=' : '≠'} ${etherscan}` }),
       blocks,
       others,

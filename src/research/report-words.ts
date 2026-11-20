@@ -9,6 +9,9 @@ import type { OutsideKind } from './study.ts';
 const before = (prefix: string, word: string): string => (/^[A-Za-z0-9]/.test(word) ? `${prefix} ${word}` : `${prefix}${word}`);
 const plural = (n: number, one: string, many: string): string => (n === 1 ? one : many);
 
+/** Of a paged year's transactions with a proven Safe party, how many were found and how many studied. */
+export type SafeParties = { readonly found: number; readonly studied: number };
+
 /** How far a tolerance lets a balance end from the card's amount, such as `up to 2 base units lower or 1 base unit higher`. */
 export const toleranceSpan = (less: bigint, more: bigint): string => {
   const units = (n: bigint): string => `${n} base unit${n === 1n ? '' : 's'}`;
@@ -398,7 +401,13 @@ const ZH = {
     '。',
   ],
   skipped: (n: number): string => `另外 ${n} 筆來自不是 Safe 的合約、執行失敗或讀不到，不列入。`,
-  searchCount: (token: string, anchor: string, found: number, studied: number): string => `搜尋 ${token} 的${anchor}，找到 ${found} 筆，研究 ${studied} 筆`,
+  searchCount: (token: string, anchor: string, found: number, studied: number, safes?: SafeParties): string =>
+    `搜尋 ${token} 的${anchor}，找到 ${found} 筆，研究 ${studied} 筆${
+      safes === undefined ? ''
+      : safes.found === 0 ? '，沒有 Safe 參與方的交易'
+      : safes.studied === safes.found ? `，含 Safe 參與方的 ${safes.found} 筆全數研究`
+      : `，含 Safe 參與方 ${safes.found} 筆中研究 ${safes.studied} 筆`
+    }`,
   searchEtherscanOnly: (count: Span): Span[] => ['只有 Etherscan 搜尋事件，找到 ', count, ' 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。'],
   searchSame: (same: boolean, counts: Span): Span[] => [same ? 'Alchemy 和 Etherscan 找到的完全一樣' : 'Alchemy 和 Etherscan 找到的不一樣', '（', counts, '）。'],
   amountsLead: '每筆符合模板形狀的交易，都在它的上一個區塊上單獨重跑一次，讀它前後寄出方和收款方的餘額，跟交易寫的金額比較。只列出有宣告誤差，或餘額沒有剛好照金額變動的效果。',
@@ -1014,7 +1023,13 @@ const EN: Words = {
     '.',
   ],
   skipped: (n) => `${n} more came from contracts that are not Safes, failed, or could not be read, and are not counted.`,
-  searchCount: (token, anchor, found, studied) => `Search of ${token} ${anchor}: ${found} found, ${studied} studied`,
+  searchCount: (token, anchor, found, studied, safes) =>
+    `Search of ${token} ${anchor}: ${found} found, ${studied} studied${
+      safes === undefined ? ''
+      : safes.found === 0 ? ', none with a proven Safe party'
+      : safes.studied === safes.found ? `, ${safes.found === 1 ? 'the one' : `all ${safes.found}`} with a proven Safe party`
+      : `, ${safes.studied} of ${safes.found} with a proven Safe party`
+    }`,
   searchEtherscanOnly: (count) => ['Only Etherscan searches an event, and found ', count, "; Alchemy's eth_getLogs reads at most 10 blocks at a time on the free plan."],
   searchSame: (same, counts) => [same ? 'Alchemy and Etherscan found exactly the same' : 'Alchemy and Etherscan found different transactions', ' (', counts, ').'],
   amountsLead:
