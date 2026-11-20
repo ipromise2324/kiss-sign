@@ -122,7 +122,7 @@ const ZH = {
       title: '不是每筆過去交易都有這條流程線',
       why: '在呼叫追蹤裡，這條線所在的呼叫底下，不是每筆過去交易都有這個呼叫。流程線必須每筆都成立；會依狀態或選擇走不同路的流程，要用卡片欄位或另一個範本分開。',
     },
-    'money-uncovered': { title: '有動到錢的內部呼叫沒有說明', why: '呼叫追蹤裡有一筆代幣轉帳、授權或 ETH 轉帳，模板綁定的呼叫和流程線都沒有說明它。' },
+    'money-uncovered': { title: '有動到錢的內部呼叫沒有說明', why: '呼叫追蹤裡有一筆動到送出交易者的錢的代幣轉帳、授權或 ETH 轉帳，模板綁定的呼叫和流程線都沒有說明它。' },
     'no-answer': { title: '讀取沒有回應', why: '程式重試後仍讀不到答案，記為 UNVERIFIABLE。' },
     'site-not-compared': { title: '沒辦法比對來源網站', why: 'DefiLlama 找不到這個協議，或網域無法判斷。' },
     'no-second-source': {
@@ -719,7 +719,7 @@ const EN: Words = {
       title: 'not every past transaction shows this flow line',
       why: 'In the call traces, not every past transaction makes this call under the call the line follows. A flow line must hold on every one; a path that depends on state or on a choice is split by a card field or another template.',
     },
-    'money-uncovered': { title: 'a call inside moves money and nothing explains it', why: 'A call trace holds a token transfer, approval or ETH transfer that no call the template binds and no flow line explains.' },
+    'money-uncovered': { title: 'a call inside moves money and nothing explains it', why: "A call trace holds a token transfer, approval or ETH transfer that touches the sender's money, and no call the template binds and no flow line explains it." },
     'no-answer': { title: 'a read got no answer', why: 'The program got no answer even after retrying; it counts as UNVERIFIABLE.' },
     'site-not-compared': { title: 'the source site cannot be compared', why: 'DefiLlama does not know this protocol, or the domain cannot be determined.' },
     'no-second-source': {
