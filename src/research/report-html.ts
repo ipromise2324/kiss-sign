@@ -358,13 +358,13 @@ function chart(block: VaultBlock, r: R): Html {
     const thin = !first && (block.bars.length - 1 - i) % 2 === 1;
     return h`
     ${mark}<text class="tick${thin ? ' thin' : ''}" x="${(x + w / 2).toFixed(1)}" y="${CHART_BASE + 18}" text-anchor="middle">${month === undefined ? '?' : r.w.month(Number(month))}</text>${
-      first && year !== undefined && month !== undefined ? h`<text class="tick" x="${(x + w / 2).toFixed(1)}" y="${CHART_BASE + 34}" text-anchor="middle">${year}</text>` : ''
+      first && year !== undefined && month !== undefined ? h`<text class="tick" x="${(x + w / 2).toFixed(1)}" y="${CHART_BASE + 38}" text-anchor="middle">${year}</text>` : ''
     }`;
   });
   const span = block.bars.length === 0 ? '' : r.w.chartSpan(`${block.bars[0]?.date}`, `${block.bars.at(-1)?.date}`);
   const most = block.most ?? r.w.notRead;
   return h`<div class="diagram chart">
-  <svg viewBox="0 0 ${CHART_WIDTH} ${CHART_BASE + 44}" role="img" aria-labelledby="vt vd">
+  <svg viewBox="0 0 ${CHART_WIDTH} ${CHART_BASE + 48}" role="img" aria-labelledby="vt vd">
     <title id="vt">${r.w.monthly}</title>
     <desc id="vd">${r.w.chartDesc(block.bars.length, span, most)}</desc>
     <text class="tick" x="${CHART_SIDE}" y="18">${r.w.highest(most)}</text>
