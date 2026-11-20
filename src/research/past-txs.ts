@@ -46,7 +46,10 @@ export type PastTxsDeps = {
   readonly registry: Registry;
   readonly readMessage: ReadMessage;
   readonly exclude: Address | undefined;
-  /** The most transactions studied in a run, shared evenly between the windows; below one per window none is studied. */
+  /**
+   * The most transactions studied in a run: in the windows, shared evenly between them, and below one per window none;
+   * in a covered paged year, chosen by `safesFirst`; in a year a recording asked in one page, taken evenly.
+   */
   readonly maxTxs: number;
   /** Each transaction's call trace; without it, nothing is traced. */
   readonly traces?: TraceSource;
@@ -89,7 +92,10 @@ export type PartyCheck =
   | { readonly kind: 'not-checked'; readonly why: string }
   | { readonly kind: 'checked'; readonly noun: string; readonly block: bigint; readonly parties: number; readonly safes: number; readonly unreadable: number };
 
-/** How many of the year's transactions had a proven Safe party, and how many of each kind were chosen to study. */
+/**
+ * How many of the year's transactions had a proven Safe party, and how many of each kind were studied, counted as the
+ * year's window line counts its found and studied: after leaving out those that touch the configured Safe.
+ */
 export type Selection = { readonly safes: number; readonly safesChosen: number; readonly rest: number; readonly restChosen: number };
 
 /**
@@ -184,10 +190,10 @@ const spacedSample = <T>(items: readonly T[], cap: number): T[] =>
 
 /**
  * At most `maxTxs` of the Safe-party transactions and the rest, each list taken evenly in its order: the Safes' first,
- * but never more than leaves a quarter of `maxTxs` for the rest while the rest holds that many.
+ * but never more than leaves `Math.ceil(maxTxs / 4)` places for the rest while the rest holds that many.
  */
 function safesFirst<T>(safes: readonly T[], rest: readonly T[], maxTxs: number): { readonly safes: T[]; readonly rest: T[] } {
-  const restFloor = Math.min(rest.length, Math.floor(maxTxs / 4));
+  const restFloor = Math.min(rest.length, Math.ceil(maxTxs / 4));
   const chosen = spacedSample(safes, maxTxs - restFloor);
   return { safes: chosen, rest: spacedSample(rest, maxTxs - chosen.length) };
 }
@@ -205,7 +211,7 @@ async function chooseByParty(
   at: bigint,
   reader: Reader,
   maxTxs: number,
-): Promise<{ sample: Hex[]; check: PartyCheck; selection: Selection }> {
+): Promise<{ sample: Hex[]; check: PartyCheck; safeTxs: ReadonlySet<Hex> }> {
   const kept = new Set(hashes);
   const partiesOf = new Map<Hex, Set<Address>>();
   const sideOf = (hit: Hit): Address | undefined => (rule.kind === 'none' ? undefined : rule.side === 'emitter' ? hit.emitter : hit[rule.side]);
@@ -229,7 +235,7 @@ async function chooseByParty(
   return {
     sample: hashes.filter((hash) => picked.has(hash)),
     check: rule.kind === 'none' ? { kind: 'not-checked', why: rule.why } : { kind: 'checked', noun: rule.noun, block: at, parties: parties.length, safes: proofCount('safe'), unreadable: proofCount('unreadable') },
-    selection: { safes: safeTxs.length, safesChosen: chosen.safes.length, rest: rest.length, restChosen: chosen.rest.length },
+    safeTxs: new Set(safeTxs),
   };
 }
 
@@ -266,6 +272,7 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
   const excludedSampled = new Set<Hex>();
   const emitters = new Map<Hex, Set<Address>>();
   const searched: { asked: BlockRange; range: BlockRange; found: Hex[]; sample: Hex[] }[] = [];
+  let byParty: { check: PartyCheck; safeTxs: ReadonlySet<Hex> } | undefined;
   for (const { asked, range, hits } of windowed) {
     const window = hashesBySource(hits, deps.exclude, deps.excludedByRecording?.found ?? new Set());
     for (const hash of window.excluded) excludedFound.add(hash);
@@ -273,7 +280,7 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
     for (const hit of hits.etherscan) if (hit.emitter !== undefined) emitters.set(hit.hash, (emitters.get(hit.hash) ?? new Set()).add(hit.emitter));
     const hashes = year?.kind === 'covered' ? byBlock([...window.found.keys()], hits) : [...window.found.keys()];
     const chosen = year?.kind === 'covered' && sampling.kind === 'year' ? await chooseByParty(hashes, hits, partyRule(query.anchor), range.toBlock, deps.partyReader ?? deps.reader, deps.maxTxs) : undefined;
-    if (chosen !== undefined && year?.kind === 'covered') year = { ...year, safesFirst: { check: chosen.check, selection: chosen.selection } };
+    if (chosen !== undefined) byParty = chosen;
     searched.push({ asked, range, found: hashes, sample: chosen?.sample ?? spacedSample(hashes, perWindow) });
   }
   const shapes = shapesOf(query.template);
@@ -299,7 +306,16 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
   const measurements = new Map(fits.flatMap((fit, i) => (measured[i] === undefined ? [] : [[fit.hash, measured[i]] as const])));
   const traces = deps.traces === undefined ? [] : await traceExact(query.template, fits, deps.traces, deps.reader, deps.registry);
   const kept = (hashes: readonly Hex[]) => hashes.filter((hash) => !excludedFound.has(hash) && !excludedSampled.has(hash)).length;
-  const windows = searched.map(({ asked, range, found, sample }) => ({ asked, range, found: kept(found), studied: kept(sample.filter((hash) => !otherEmitter.includes(hash))) }));
+  const studiedOf = (sample: readonly Hex[]) => sample.filter((hash) => !otherEmitter.includes(hash));
+  const windows = searched.map(({ asked, range, found, sample }) => ({ asked, range, found: kept(found), studied: kept(studiedOf(sample)) }));
+  if (year?.kind === 'covered' && byParty !== undefined) {
+    const { check, safeTxs } = byParty;
+    const { found: hashes, sample } = searched[0] as (typeof searched)[number];
+    const isSafe = (hash: Hex) => safeTxs.has(hash);
+    const [safes, safesChosen] = [kept(hashes.filter(isSafe)), kept(studiedOf(sample).filter(isSafe))];
+    const selection = { safes, safesChosen, rest: kept(hashes) - safes, restChosen: kept(studiedOf(sample)) - safesChosen };
+    year = { ...year, safesFirst: { check, selection } };
+  }
   const excluded = { found: excludedFound, sampled: excludedSampled };
   return { query, head, year, windows, perWindow, found, studies, shapes, excluded, otherEmitter, effects, measurements, traces };
 }
@@ -576,9 +592,15 @@ function renderTraces(lines: string[], run: PastTxs): void {
 }
 
 function chosenText({ safes, safesChosen, rest, restChosen }: Selection, checked: boolean): string {
-  if (!checked) return `${restChosen === rest ? 'all ' : `${restChosen} of `}${plural(rest, 'transaction')}`;
-  const withSafe = safes === 0 ? 'no transaction with a proven Safe party' : `${safesChosen === safes ? 'all ' : `${safesChosen} of `}${plural(safes, 'transaction')} with a proven Safe party`;
-  return `${withSafe}, and ${restChosen === rest ? `all ${rest} others` : `${restChosen} of the other ${rest}`}`;
+  const some = (chosen: number, of: number, noun: string) => `${chosen === of ? 'all ' : `${chosen} of `}${plural(of, noun)}`;
+  const others =
+    rest === 0 ? `no ${checked ? 'other ' : ''}transaction`
+    : !checked ? some(restChosen, rest, 'transaction')
+    : restChosen === rest ? `all ${plural(rest, 'other')}`
+    : `${restChosen} of the other ${rest}`;
+  const withSafe = safes === 0 ? 'no transaction with a proven Safe party' : `${some(safesChosen, safes, 'transaction')} with a proven Safe party`;
+  const evenly = safesChosen + restChosen > 0 ? ', taken evenly in block order' : '';
+  return `${checked ? `${withSafe}, and ${others}` : others}${evenly}`;
 }
 
 /** What a reader of the report sees. Never names the configured Safe, and names no other sender either. */
@@ -617,7 +639,7 @@ export function renderPastTxs(run: PastTxs, registry: Registry): string {
         ? `anchor parties, ${check.noun}: ${check.parties}, read at block ${check.block}: ${plural(check.safes, 'proven Safe')}${unreadable}`
         : `anchor parties: not checked, ${check.why}`,
     );
-    lines.push(`chosen to study: ${chosenText(selection, check.kind === 'checked')}, taken evenly in block order`);
+    lines.push(`chosen to study: ${chosenText(selection, check.kind === 'checked')}`);
   }
 
   const bySource = (source: SourceName) => [...run.found].filter(([, s]) => s.includes(source)).length;

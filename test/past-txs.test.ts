@@ -928,3 +928,24 @@ test('the report replays a paged year\'s party reads from the recording, so --co
     assert.deepEqual(studied(compared.run), studied(offline.run));
   }
 });
+
+test('with --max-txs not a multiple of 4 the rest keeps the quarter rounded up', async () => {
+  const listed = mints(100);
+  const run = await yearRun(yearAsk(listed).ask, chain({ safes: listed.slice(0, 20).map((m) => m.to) }).reader, { maxTxs: 13 });
+  assert.match(renderPastTxs(run, registry), /^ {2}blocks 23810401 to 26438400: 100 found, 13 studied\n(?:.*\n)*chosen to study: 9 of 20 transactions with a proven Safe party, and 4 of the other 80, taken evenly in block order$/m);
+});
+
+test('the chosen line counts what the window line counts, after a sampled transaction touching the configured Safe is left out, and never says all 0', async () => {
+  const listed = mints(40);
+  const safeTx = (listed[30] as Mint).hash;
+  const left = await yearRun(yearAsk(listed).ask, chain({ safes: [(listed[30] as Mint).to] }).reader, { maxTxs: 12, excludedByRecording: { found: new Set(), sampled: new Set([safeTx]) } });
+  const text = renderPastTxs(left, registry);
+  assert.match(text, /^ {2}blocks 23810401 to 26438400: 39 found, 11 studied$/m);
+  assert.match(text, /^anchor parties, the address minted to: 40, read at block 26438400: 1 proven Safe\nchosen to study: no transaction with a proven Safe party, and 11 of the other 39, taken evenly in block order$/m);
+
+  const few = mints(4);
+  const allSafe = renderPastTxs(await yearRun(yearAsk(few).ask, chain({ safes: few.map((m) => m.to) }).reader, { maxTxs: 12 }), registry);
+  assert.match(allSafe, /^chosen to study: all 4 transactions with a proven Safe party, and no other transaction, taken evenly in block order$/m);
+  const unchecked = renderPastTxs(await yearRun(yearAsk([]).ask, chain().reader, { anchor: { token: VAULT, kind: 'any', from: DISTRIBUTOR, to: LENDING } }), registry);
+  assert.match(unchecked, /^chosen to study: no transaction$/m);
+});
