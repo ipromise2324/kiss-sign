@@ -22,6 +22,7 @@ import type { HttpsUrl, RegistryEntry } from '../src/registry.ts';
 import { entriesOf, parseDocs, readDocs, renderReport, replayInputs } from '../src/research/report.ts';
 import type { ReportTitle, TodayCheck } from '../src/research/report.ts';
 import { checksumAddress } from '../src/safe/types.ts';
+import { OFFICIAL_MULTISEND } from '../src/decode/multisend.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { judgeFixtures } from '../src/template/perturb.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
@@ -309,7 +310,7 @@ test('a template of two or more calls goes through MultiSend, so its wallet sect
     assert.deepEqual(
       view.safeTx.map((r) => [plain(r.label), plain(r.value)]).slice(0, 4),
       [
-        ['to', '官方 MultiSend'],
+        ['to', `官方 MultiSend，是這 8 個 Safe 部署之一：${OFFICIAL_MULTISEND.map((d) => checksumAddress(d.address)).join('')}`],
         ['value', '0'],
         ['operation', 'Delegate Call（1），呼叫官方 MultiSend'],
         ['data', 'MultiSend 打包的呼叫，只顯示原始資料'],
@@ -344,7 +345,7 @@ test("a per-vault report shows its vault as the card's value, with or without a 
 test("a per-vault report shows the vault's stored evidence after the protocol, with no USD value", () => {
   assert.deepEqual(
     depositPage.sections.map((s) => s.anchor),
-    ['flow', 'protocol-morpho-blue', 'vault-hyperithm-usdc-apex-v2-9e2f', 'review', 'wallet', 'addresses', 'past', 'next'],
+    ['review', 'flow', 'protocol-morpho-blue', 'vault-hyperithm-usdc-apex-v2-9e2f', 'wallet', 'addresses', 'past', 'next'],
   );
   const { vault } = body(depositPage, 'vault');
   assert.deepEqual(
@@ -665,7 +666,7 @@ test('待確認 lists key results before reference ones, each marked, and counts
     ],
   );
   const html = renderPage(page);
-  assert.match(html, /data-grade="reference" data-result="usdc\/source.coingecko">[\s\S]*?<span class="lbl">參考<\/span>/);
+  assert.match(html, /data-grade="reference" data-result="usdc\/source.coingecko">[\s\S]*?<span class="grade"><span class="vh">等級：<\/span>參考<\/span>/);
   assert.match(html, /<span class="cnt" data-state="warn">[^]*?參考 1<\/span>/);
 });
 
