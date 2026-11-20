@@ -708,8 +708,11 @@ const mints = (n: number): Mint[] =>
   Array.from({ length: n }, (_, i) => ({ hash: `0x${(i + 1).toString(16).padStart(64, '0')}` as Hex, from: nth(i, 'f'), to: nth(i, 'e'), block: YEAR_FROM + BigInt(i) * 10n, emitter: nth(i, 'c') }));
 const hexBlock = (n: bigint) => `0x${n.toString(16)}`;
 
-/** Both sources listing `listed` over the year, 1000 a page, and nothing in any other range; with `endless`, Alchemy always has another page of the year. */
-function yearAsk(listed: readonly Mint[], options: { endless?: boolean } = {}): { ask: Ask; asked: SourceRequest[] } {
+/**
+ * Both sources listing `listed` over the year, 1000 a page, and nothing in any other range; with `endless`, Alchemy
+ * always has another page of the year, and with `etherscanRefuses`, Etherscan refuses that page of the year.
+ */
+function yearAsk(listed: readonly Mint[], options: { endless?: boolean; etherscanRefuses?: number } = {}): { ask: Ask; asked: SourceRequest[] } {
   const asked: SourceRequest[] = [];
   const ask: Ask = async (request) => {
     asked.push(request);
@@ -723,6 +726,7 @@ function yearAsk(listed: readonly Mint[], options: { endless?: boolean } = {}): 
     }
     const of = request.query.fromBlock === String(YEAR_FROM) ? listed : [];
     const page = Number(request.query.page) - 1;
+    if (of === listed && page + 1 === options.etherscanRefuses) return { status: '0', message: 'NOTOK', result: 'Max rate limit reached' };
     const result = of.slice(page * 1000, (page + 1) * 1000).map((m) => ({ address: m.emitter, transactionHash: m.hash, topics: [etherscanBase.topic0, word(m.from), word(m.to)], blockNumber: hexBlock(m.block) }));
     return result.length === 0 ? { status: '0', message: 'No records found', result: [] } : { status: '1', message: 'OK', result };
   };
@@ -948,4 +952,17 @@ test('the chosen line counts what the window line counts, after a sampled transa
   assert.match(allSafe, /^chosen to study: all 4 transactions with a proven Safe party, and no other transaction, taken evenly in block order$/m);
   const unchecked = renderPastTxs(await yearRun(yearAsk([]).ask, chain().reader, { anchor: { token: VAULT, kind: 'any', from: DISTRIBUTOR, to: LENDING } }), registry);
   assert.match(unchecked, /^chosen to study: no transaction$/m);
+});
+
+test('Etherscan answering a full 10th page has not finished the year, so the windows are searched', async () => {
+  const text = renderPastTxs(await yearRun(yearAsk(mints(10000)).ask, replayReader([])), registry);
+  assert.match(text, /^whole year: blocks 23810401 to 26438400 hold more than 10 pages of 1000 in etherscan, so the windows are searched$/m);
+  assert.doesNotMatch(text, /^anchor parties/m);
+});
+
+test('an Etherscan error in a year Alchemy did not finish searches the windows, and one in a year Alchemy finished stops the run', async () => {
+  const listed = mints(2500);
+  const over = renderPastTxs(await yearRun(yearAsk(listed, { endless: true, etherscanRefuses: 2 }).ask, replayReader([])), registry);
+  assert.match(over, /^whole year: blocks 23810401 to 26438400 hold more than 10 pages of 1000 in alchemy, so the windows are searched$/m);
+  await assert.rejects(yearRun(yearAsk(listed, { etherscanRefuses: 2 }).ask, replayReader([])), /^ResearchError: etherscan refused: NOTOK Max rate limit reached$/);
 });
