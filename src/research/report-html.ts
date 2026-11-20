@@ -135,18 +135,18 @@ function diagram(sequence: Sequence, r: R): Html {
     if (arrow.kind === 'call' && arrow.to === 0) {
       rows.push(h`
     <text class="no" x="${x(0) + 12}" y="${y}">${arrow.n}</text><text class="fn" x="${x(0) + 30}" y="${y}">${arrow.fn}</text>
-    <path class="call" d="M${x(0)} ${y + 14}h${SELF_LOOP}v${SELF_LOOP / 4}h${3 - SELF_LOOP}" marker-end="url(#m-call)"/>`);
+    <path class="call" d="M${x(0)} ${y + 14}h${SELF_LOOP}v${SELF_LOOP / 4}h${3 - SELF_LOOP}" marker-end="url(#head)"/>`);
       y += 52 + SELF_LOOP / 4;
     } else if (arrow.kind === 'call') {
       rows.push(h`
     <text class="no" x="${x(0) + 12}" y="${y}">${arrow.n}</text><text class="fn" x="${x(0) + 30}" y="${y}">${arrow.fn}</text>
-    <line class="call" x1="${x(0)}" y1="${y + 14}" x2="${x(arrow.to) - 3}" y2="${y + 14}" marker-end="url(#m-call)"/>`);
+    <line class="call" x1="${x(0)}" y1="${y + 14}" x2="${x(arrow.to) - 3}" y2="${y + 14}" marker-end="url(#head)"/>`);
       y += 52;
     } else if (arrow.kind === 'nested') {
       const [from, to] = [x(arrow.from), arrow.to === arrow.from ? x(arrow.from) + 60 : x(arrow.to)];
       rows.push(h`
     <text class="fn" x="${Math.min(from, to) + 12}" y="${y}">${arrow.fn}</text>
-    <line class="nested" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#m-inside)"/>`);
+    <line class="nested" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#head)"/>`);
       y += 36;
     } else if (arrow.kind === 'inside') {
       const tag = r.w.tag[arrow.text.tag];
@@ -158,7 +158,7 @@ function diagram(sequence: Sequence, r: R): Html {
       const source = arrow.seen?.confirmed === true ? arrow.text.sources[0] : undefined;
       rows.push(h`
     <g data-ai><rect class="tagbox" x="${left}" y="${y - 14}" width="${tagged}" height="20" rx="6"/><text class="tagt" x="${left + tagged / 2}" y="${y}" text-anchor="middle">${tag}</text>${cap.boxes}${cap.text}</g>
-    <line class="${arrow.seen?.confirmed === true ? 'inner seen' : 'inner'}" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#m-inside)"/>${
+    <line class="${arrow.seen?.confirmed === true ? 'inner seen' : 'inner'}" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#head)"/>${
       seen === undefined
         ? ''
         : h`
@@ -168,7 +168,7 @@ function diagram(sequence: Sequence, r: R): Html {
     } else {
       rows.push(h`
     <text class="capg" x="${x(0) + 14}" y="${y}">${arrow.text}</text>
-    <line class="gain" x1="${x(arrow.from)}" y1="${y + 10}" x2="${x(0) + 3}" y2="${y + 10}" marker-end="url(#m-gets)"/>`);
+    <line class="gain" x1="${x(arrow.from)}" y1="${y + 10}" x2="${x(0) + 3}" y2="${y + 10}" marker-end="url(#head)"/>`);
       y += 40;
     }
   }
@@ -179,12 +179,11 @@ function diagram(sequence: Sequence, r: R): Html {
     <line class="life" x1="${x(i)}" y1="${NODE_TOP + NODE_HEIGHT}" x2="${x(i)}" y2="${height - 8}"/>
     <rect class="node" x="${x(i) - w / 2}" y="${NODE_TOP}" width="${w}" height="${NODE_HEIGHT}" rx="6"/><text class="nodet" x="${x(i)}" y="${NODE_TOP + 20}" text-anchor="middle">${line.name}</text><text class="nodes" x="${x(i)}" y="${NODE_TOP + 36}" text-anchor="middle">${line.role}</text>`;
   });
-  const marker = (id: string, cls: string) => h`<marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="${cls}" d="M0 0L10 5L0 10z"/></marker>`;
   return h`<div class="diagram">
   <svg viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="dt dd">
     <title id="dt">${r.w.diagramTitle}</title>
     <desc id="dd">${sequence.narration}</desc>
-    <defs>${marker('m-call', 'ah')}${marker('m-inside', 'ahi')}${marker('m-gets', 'ahg')}</defs>${nodes}${rows}
+    <defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>${nodes}${rows}
   </svg>
   </div>
   <div class="scrollhint">${r.w.scrollHint}</div>`;

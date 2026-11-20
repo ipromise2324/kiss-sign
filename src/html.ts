@@ -98,7 +98,7 @@ b,strong{font-weight:590}
 h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:0;overflow-wrap:break-word}
 h1 .byai{vertical-align:6px;margin-left:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
-.sub{color:var(--fg2);margin:14px 0 0;max-width:60ch;font-size:17px}
+.sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
 .sub .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:inline-flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
@@ -128,7 +128,7 @@ section>h2{font-size:22px;font-weight:590;letter-spacing:-.012em;margin:0 0 8px;
 section>h2 .c{font-weight:400;font-size:var(--t-small);color:var(--fg3);letter-spacing:0}
 .lead{color:var(--fg3);font-size:var(--t-small);margin:0 0 20px}
 .lead.keylead{margin-top:12px}
-.intro{color:var(--fg2);margin:0 0 20px;max-width:62ch}
+.intro{color:var(--fg2);margin:0 0 20px}
 h3{font-size:16px;font-weight:590;margin:36px 0 10px}
 
 .props{margin:0;font-size:var(--t-row);border-top:1px solid var(--line)}
@@ -162,7 +162,7 @@ svg .inner.seen{stroke:var(--fg2);stroke-dasharray:none}
 svg .nested{stroke:var(--fg2);stroke-width:1.2;fill:none}
 svg .seenl{fill:var(--fg3);font:12.5px var(--sans)} svg .seenl a{fill:var(--fg2);text-decoration:underline}
 svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
-svg .ah{fill:var(--fg)} svg .ahi{fill:var(--fg3)} svg .ahg{fill:var(--ok)}
+svg .ah{fill:var(--fg)}
 svg .fn{fill:var(--fg);font:400 14px var(--mono)}
 svg .no{fill:var(--fg3);font:400 14px var(--mono)}
 svg .cap{fill:var(--fg2);font:14px var(--sans)}
@@ -284,6 +284,6 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
 .auto li{display:flex;gap:10px;align-items:baseline}
 .auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
-.foot{font-size:var(--t-small);color:var(--fg3);max-width:70ch;border-top:1px solid var(--line);padding-top:16px}
+.foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
 .foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}`;
