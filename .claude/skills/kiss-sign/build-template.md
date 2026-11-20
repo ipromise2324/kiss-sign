@@ -132,5 +132,5 @@ Keep the final message short and plain.
    - Read the report in their language (`report.generated.en.html` or `report.generated.zh-TW.html`, or the one that exists).
    - For each registry entry the branch adds or changes, open each source the report lists for it, and check that its domain is the protocol's own and that the page lists this address.
      The recordings were made on your computer and no program reads them again ([Known limits](../../../docs/design/known-limits.md#known-limits)).
-   - Check that its CI jobs pass; a red `program-gate` job, which runs main's code, means the branch also changes the verdict core or the program gate, or a test failed.
+   - Check that its CI jobs pass. A template or registry branch that also changes the verdict core makes the `program-gate` job, which runs main's code, fail; do not merge it.
    - Merge when they are satisfied.

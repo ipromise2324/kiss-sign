@@ -63,7 +63,8 @@ A pull request that changes a template and, beside it, one comparison in the ver
 - **The rule.**
   A branch may not change a core file and a hand-written file under `templates/` or `registry/` together.
   The diff is taken from where the branch left `origin/main` (`git diff origin/main...<branch>`), so merging `main` into a branch never trips it, and the core is walked at both ends, so a file the branch adds to the core or takes out of it counts.
-  The check that enforces the rule counts as core too: `src/verdict-core.ts`, `scripts/check-push.ts`, `scripts/report.ts`, the program gate's `src/canaries.ts`, `src/canary-reads.ts` and `scripts/program-gate.ts`, `.githooks/` and `.github/workflows/`, and so does `.gitignore`, which decides what the self-check lets lie beside the clone.
+  The check that enforces the rule counts as core too: `src/verdict-core.ts`, `scripts/check-push.ts`, the program gate's `src/canaries.ts`, `src/canary-reads.ts` and `scripts/program-gate.ts`, `.githooks/` and `.github/workflows/`, and so does `.gitignore`, which decides what the self-check lets lie beside the clone.
+  `scripts/report.ts`, which writes every report the signer reviews, is kept among them, so only the signer merges a change to it.
   A branch that git cannot compare with `origin/main`, such as one pushed when the clone has no `origin/main`, is refused, since the check cannot tell what it changes.
   A program change goes first, in its own pull request, merged behind the [program gate](#the-program-gate); the template that needs it follows in another.
 - **What stays free.**
