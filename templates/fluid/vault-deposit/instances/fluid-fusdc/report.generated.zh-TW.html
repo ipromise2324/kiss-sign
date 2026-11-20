@@ -63,7 +63,7 @@ h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:
 h1 .byai{vertical-align:6px;margin-left:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
 .sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
-.sub .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
+.sub .byai,h3 .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:inline-flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
 .checks .n{color:var(--fg2)}
@@ -540,10 +540,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>過去交易</h2>
-  <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">97</span> 筆：Safe <span class="num">1</span> 筆（1 個 Safe）、EOA <span class="num">96</span> 筆（87 個地址，各自送模板的一個呼叫）；形狀一樣、但有地址不在 registry 裡的有 <span class="num">0</span> 筆；形狀不同的有 <span class="num">43</span> 筆，列在其他做法。這些交易全部成功執行：它們是從 fluid-fusdc 鑄造（存款）時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0x65e8a75ca2a4d4f09052428a7b2de41d46c55ea3c04d43208dcb163a10366430">0x65e8a75c…</a>、<a href="https://etherscan.io/tx/0x5c8e02c495cf31e9d7cc4a46ed2eb4664544071e61520ca2dd0d3a600189958a">0x5c8e02c4…</a>、<a href="https://etherscan.io/tx/0x699557e62adab4d3465ec69cb6a275c1f124999515cf007b9bf7bcc92b6f8586">0x699557e6…</a>。</p>
-  <p class="intro"><span class="aiw" data-ai><span>唯一不合的 Safe 交易呼叫的是別的合約的 <code>deposit</code>，由那個合約再存進 fUSDC，不是 Fluid app 的路線。</span><span class="byai">AI 研究</span></span></p>
+  <p class="lead">過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 <span class="num">97</span> 筆：Safe <span class="num">1</span> 筆（1 個 Safe）、EOA <span class="num">96</span> 筆（87 個地址，各自送模板的一個呼叫）。這些交易全部成功執行：它們是從 fluid-fusdc 鑄造（存款）時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0x65e8a75ca2a4d4f09052428a7b2de41d46c55ea3c04d43208dcb163a10366430">0x65e8a75c…</a>、<a href="https://etherscan.io/tx/0x5c8e02c495cf31e9d7cc4a46ed2eb4664544071e61520ca2dd0d3a600189958a">0x5c8e02c4…</a>、<a href="https://etherscan.io/tx/0x699557e62adab4d3465ec69cb6a275c1f124999515cf007b9bf7bcc92b6f8586">0x699557e6…</a>。</p>
   <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 <span class="num">43</span> 筆跟你這筆不一樣：形狀一樣、但有地址不在 registry 裡的 <span class="num">0</span> 筆，形狀不同的 <span class="num">43</span> 筆</span></summary>
+  <p class="intro"><span class="aiw" data-ai><span>唯一不合的 Safe 交易呼叫的是別的合約的 <code>deposit</code>，由那個合約再存進 fUSDC，不是 Fluid app 的路線。</span><span class="byai">AI 研究</span></span></p>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
   <h3>搜尋 fluid-fusdc 的鑄造（存款），找到 512 筆，研究 237 筆</h3>
   <p class="lead">記錄在 <code>testdata/research/fluid-vault-deposit-fusdc.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">512 = 512</span>）。</p>

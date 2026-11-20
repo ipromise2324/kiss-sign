@@ -30,7 +30,9 @@ const readJson = (path: string): unknown => (existsSync(path) ? (JSON.parse(read
  * What a vault's notes may hold: the text about that vault alone, and `flow` lines, which name the vault or its asset
  * and so differ per vault. Everything else every vault's report shares.
  */
-const VAULT_KEYS: readonly string[] = ['verdict', 'flow', 'judgments', 'reviews', 'entries', 'pastTxsConclusion'];
+const VAULT_KEYS: readonly string[] = ['verdict', 'flow', 'judgments', 'reviews', 'entries', 'pastTxsConclusion', 'context'];
+/** Keys about one instance alone, which only its own notes may hold. */
+const INSTANCE_ONLY: readonly string[] = ['context'];
 /** Lists both files may add to, joined: the limit on their length counts both. */
 const JOINED = ['flow', 'judgments'];
 const KEYED = ['reviews', 'entries'];
@@ -116,6 +118,8 @@ export function joinLanguages(shared: unknown, vault: unknown, sharedPath: strin
 export function readNotes(repoRoot: string, template: string, vault?: RegistryEntry): unknown {
   const sharedPath = notesPath(repoRoot, template);
   const shared = readJson(join(repoRoot, sharedPath));
+  const instanceKey = isRecord(shared) ? INSTANCE_ONLY.find((key) => own(shared, key) !== undefined) : undefined;
+  if (instanceKey !== undefined) refuse(`${sharedPath}.${instanceKey}`, "is about one instance; it belongs in that instance's notes.json");
   if (vault === undefined) return shared;
   const path = notesPath(repoRoot, template, vault.name);
   const [ours, theirs] = joinLanguages(shared, readJson(join(repoRoot, path)), sharedPath, path);
@@ -410,6 +414,7 @@ const NOTES_FIELDS = obj({
   ),
   fields: keyed((scope) => scope.fields, 'an argument of the template', true, () => text(2000)),
   pastTxsConclusion: opt(text(200)),
+  context: optList(obj({ title: text(40), text: text(1000), sources: where(list(url), (sources) => (sources.length === 0 ? 'names no source' : undefined)) }), 4),
 });
 
 const NOTES_SCHEMA = where(NOTES_FIELDS, (notes, scope) => {

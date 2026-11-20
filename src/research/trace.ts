@@ -301,6 +301,18 @@ export type FlowLine = { readonly after: number; readonly from: string; readonly
 export type MoneyKind = TokenCall | 'eth';
 
 /**
+ * The addresses whose money or allowance a money call of each kind can change, its caller among them. A money call is
+ * compared only when the sender is one of them: `verify`'s effects check pins the sender's balances and allowances at
+ * signing, so a call between two other addresses cannot move the sender's money.
+ */
+const MONEY_PARTIES: Readonly<Record<MoneyKind, (call: TraceCall) => readonly (Address | undefined)[]>> = {
+  transfer: (call) => [call.from, call.args?.[0]],
+  transferFrom: (call) => [call.from, call.args?.[0], call.args?.[1]],
+  approve: (call) => [call.from],
+  eth: (call) => [call.from, call.to],
+};
+
+/**
  * A money call no line covers, grouped: under which call (from 1), between whom, of which kind, in how many
  * transactions, and every address outside the registry among its parties and token arguments, so a review names them.
  */
@@ -358,8 +370,8 @@ export const holdingTemplateCalls = (template: Template, registry: Registry, tx:
 
 /**
  * The AI's `flow` lines against the traced transactions: each line seen in N of M, and every money call (a token
- * `transfer`, `transferFrom` or `approve`, or a call sending ETH) under a template call that is not a call the template
- * binds, nor one a seen line names, nor one made directly by either.
+ * `transfer`, `transferFrom` or `approve`, or a call sending ETH) that touches the sender, under a template call, that
+ * is not a call the template binds, nor one a seen line names, nor one made directly by either.
  */
 export function compareFlow(template: Template, registry: Registry, lines: readonly FlowLine[], traced: readonly Extract<TracedTx, { kind: 'traced' }>[]): FlowComparison {
   const addressOf = (name: string): Address | undefined => registry.entries.get(name)?.address.toLowerCase() as Address | undefined;
@@ -370,7 +382,7 @@ export function compareFlow(template: Template, registry: Registry, lines: reado
     const calls = templateCalls(template, registry, tx);
     if (calls === undefined) continue;
     const { end, parent } = shape(tx.calls);
-    const sender = tx.sender.address.toLowerCase();
+    const sender = tx.sender.address.toLowerCase() as Address;
     const under = (i: number): number[] => Array.from({ length: (end[i] as number) - i }, (_, k) => i + k);
     const named = new Set<number>();
     lines.forEach((line, l) => {
@@ -391,7 +403,7 @@ export function compareFlow(template: Template, registry: Registry, lines: reado
       for (const j of under(top)) {
         const call = tx.calls[j] as TraceCall;
         const kind: MoneyKind | undefined = call.type !== 'CALL' || call.to === undefined ? undefined : (tokenCall(call.selector) ?? (call.value === undefined ? undefined : 'eth'));
-        if (kind === undefined || call.to === undefined || covers(j) || covers(parent[j])) continue;
+        if (kind === undefined || call.to === undefined || !MONEY_PARTIES[kind](call).includes(sender) || covers(j) || covers(parent[j])) continue;
         const group = { call: n + 1, from: label(call.from), to: label(call.to), kind };
         const id = `${group.call}.${group.from}.${group.to}.${group.kind}`;
         const before = uncovered.get(id);

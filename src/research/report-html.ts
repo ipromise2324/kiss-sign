@@ -345,7 +345,9 @@ function vaultBody(block: VaultBlock, r: R): Html {
       <div><dt class="num">${bar.date}</dt><dd class="num">${bar.words}</dd></div>`)}
     </dl>
   </details>`
-  }`;
+  }${block.context.map((c) => h`
+  <h3>${ai(c.title, r)}</h3>
+  <p class="intro">${ai(c.note, r)}</p>`)}`;
 }
 
 /** The AI's full text, folded under its one-line conclusion; left out when the conclusion is all of it. */
@@ -467,8 +469,7 @@ function addressBody(body: Extract<Body, { kind: 'addresses' }>, r: R): Html {
 function pastBody(body: Extract<Body, { kind: 'past' }>, r: R): Html {
   if (body.recordings.length === 0) return h`<p class="lead">${r.w.noPast}</p>`;
   return h`
-  <p class="lead">${text(body.same)}</p>${body.conclusion === undefined ? '' : h`
-  <p class="intro">${ai(body.conclusion, r)}</p>`}${body.amounts.length === 0 ? '' : h`
+  <p class="lead">${text(body.same)}</p>${body.amounts.length === 0 ? '' : h`
   <p class="lead">${r.w.amountsLead}</p>`}${body.amounts.map(
     (a) => h`
   <div class="pblock">
@@ -490,7 +491,8 @@ function pastBody(body: Extract<Body, { kind: 'past' }>, r: R): Html {
   </div>`,
   )}
   <details class="fold">
-  <summary>${decor('chev')}${r.w.otherWays}</summary>
+  <summary>${decor('chev')}<span>${body.others === undefined ? r.w.otherWays : text(body.others)}</span></summary>${body.conclusion === undefined ? '' : h`
+  <p class="intro">${ai(body.conclusion, r)}</p>`}
   <p class="lead">${r.w.otherWaysLead}</p>${body.recordings.map(
     (rec) => h`
   <h3>${rec.count}</h3>

@@ -63,7 +63,7 @@ h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:
 h1 .byai{vertical-align:6px;margin-left:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
 .sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
-.sub .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
+.sub .byai,h3 .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:inline-flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
 .checks .n{color:var(--fg2)}
@@ -508,7 +508,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>過去交易</h2>
-  <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">24</span> 筆：Safe <span class="num">22</span> 筆（19 個 Safe）、EOA <span class="num">2</span> 筆（1 個地址，各自送模板的一個呼叫）；形狀一樣、但用的是 registry 外的地址的有 <span class="num">119</span> 筆：Safe <span class="num">114</span> 筆（85 個 Safe）、EOA <span class="num">5</span> 筆（5 個地址，各自送模板的一個呼叫）；形狀不同的有 <span class="num">167</span> 筆，列在其他做法。這些交易全部成功執行：它們是從 gpv2-settlement PreSignature時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0xdab061be5b3e92aa88f2f8c3904547af1da288ffba8647180a2aafb242f7cca9">0xdab061be…</a>、<a href="https://etherscan.io/tx/0x846277d0e3875162b1d5a4e915ad477de411846d242c75158e7808e7639c6c7c">0x846277d0…</a>、<a href="https://etherscan.io/tx/0xd7e08fb473927ad76d3c5f359f9cf213a6637ae13e0ee1f08739e283efe63d18">0xd7e08fb4…</a>。形狀一樣的最近 3 筆：<a href="https://etherscan.io/tx/0x07540e9a93b4746d8e44070403763bfa55b276e0259134330b2f3edc3b615844">0x07540e9a…</a>、<a href="https://etherscan.io/tx/0x2b01d3763fc39f10c9f5f48774fed9cefaed42a76c8e7f1327df083b6465a926">0x2b01d376…</a>、<a href="https://etherscan.io/tx/0xb788eac31619446d4e4891e267d26b21fee0f77b8f8eebbd8e7ce7fa365730b2">0xb788eac3…</a>。</p>
+  <p class="lead">過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 <span class="num">24</span> 筆：Safe <span class="num">22</span> 筆（19 個 Safe）、EOA <span class="num">2</span> 筆（1 個地址，各自送模板的一個呼叫）。這些交易全部成功執行：它們是從 gpv2-settlement PreSignature時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0xdab061be5b3e92aa88f2f8c3904547af1da288ffba8647180a2aafb242f7cca9">0xdab061be…</a>、<a href="https://etherscan.io/tx/0x846277d0e3875162b1d5a4e915ad477de411846d242c75158e7808e7639c6c7c">0x846277d0…</a>、<a href="https://etherscan.io/tx/0xd7e08fb473927ad76d3c5f359f9cf213a6637ae13e0ee1f08739e283efe63d18">0xd7e08fb4…</a>。</p>
   <p class="lead">模板留給 app 自由填的數字，在符合模板形狀的交易裡填了哪些值：最小、第 50、90、99 百分位和最大。模板宣告為時間的欄位，算的是它減掉交易所在區塊時間的秒數。這是證據，不是規則。</p>
   <div class="pblock">
     <div class="ph"><span class="pt"><code>call.setPreSignature.orderUid.digest.validTo</code></span><span>Safe: 減掉區塊時間後的秒數</span></div>
@@ -519,7 +519,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="pg"><span class="pc num">7 筆</span><div><div class="pex">min <span class="num">569 秒（約 9.5 分鐘）</span>、p50 <span class="num">1706 秒（約 28.4 分鐘）</span>、p90 <span class="num">86363 秒（約 24.0 小時）</span>、p99 <span class="num">86363 秒（約 24.0 小時）</span>、max <span class="num">86363 秒（約 24.0 小時）</span></div></div></div>
   </div>
   <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 <span class="num">286</span> 筆跟你這筆不一樣：形狀一樣、但用的是 registry 外的地址的 <span class="num">119</span> 筆，形狀不同的 <span class="num">167</span> 筆</span></summary>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
   <h3>搜尋 gpv2-settlement 的PreSignature，找到 1382 筆，研究 479 筆</h3>
   <p class="lead">記錄在 <code>testdata/research/cow-swap-presign.json</code>。只有 Etherscan 搜尋事件，找到 <span class="num">1382</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>

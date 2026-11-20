@@ -270,7 +270,7 @@ Inline SVG in the Sequence Diagram's frame, 660 wide at least and scrolling insi
 A `<nav>` in the left column, sticky 32px from the top: a 13px 590 Ink 3 "目錄", then an ordered list behind a 1px Hairline left rule, one 14px Ink 2 link per section, each 6px tall padding and 14px from the rule. A count sits right-aligned in Ink 3 (such as 2 個呼叫 or 6), and 待確認 shows its state icon with its count. Hover lightens the link to Ink and draws its piece of the rule in Ink 2. At 1040px and below the rail hides, and the same list folds under the verdict as a `<details>` named 目錄, laid out as a grid of 150px columns. Sections carry `scroll-margin-top` so a jump lands below the top edge.
 
 ### Folds
-`<details>` with a hidden marker, a chevron and Ink 2 15px summary text that lightens to Ink on hover. Used only for things that passed or ran automatically, for the numbers a chart already draws, for the details of a 待確認 row under its open title and conclusion, and for 過去交易's 其他做法, the past transactions of other shapes, which are context, not results.
+`<details>` with a hidden marker, a chevron and Ink 2 15px summary text that lightens to Ink on hover. Used only for things that passed or ran automatically, for the numbers a chart already draws, for the details of a 待確認 row under its open title and conclusion, and for the past transactions not exactly like the signer's under 過去交易, titled with their count, which are context, not results.
 
 ### Signing Steps
 An ordered list of hairline rows with a mono Ink 3 counter ("1."), each command in a copyable block of its own under the step's sentence, and a two-column hash grid (Ink 3 name, Ink 2 value).

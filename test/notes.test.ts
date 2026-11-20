@@ -337,6 +337,22 @@ test("a key or name both notes define is refused, and a vault's notes hold only 
   mergeRefused(['verdict'], `${VAULT_PATH}: not a JSON object`);
 });
 
+test("an instance's context notes parse with their sources, and the template's notes may not hold them", () => {
+  const context = [{ title: t('存款去哪'), text: t('vault 把存款借給它分配的市場。'), sources: ['https://example.org/vault'] }];
+  const notes = parseNotes(mergeNotes(SHARED, { verdict: VALID.verdict, context }, VAULT_PATH, OWNED), SCOPE);
+  assert.deepEqual(notes.context, [{ title: '存款去哪', text: 'vault 把存款借給它分配的市場。', sources: ['https://example.org/vault'] }]);
+  assert.deepEqual(parseNotes(VALID, SCOPE).context, []);
+  refused({ ...VALID, context: [{ ...context[0], sources: [] }] }, 'notes.json.context[0].sources: names no source');
+
+  const root = mkdtempSync(join(tmpdir(), 'kiss-sign-notes-'));
+  mkdirSync(join(root, TEMPLATES_DIR, 'fluid/vault-deposit', 'instances', 'fluid-fusdt'), { recursive: true });
+  writeFileSync(join(root, notesPath(root, 'fluid/vault-deposit')), JSON.stringify({ ...VALID, context }));
+  assert.throws(
+    () => readNotes(root, 'fluid/vault-deposit'),
+    (e: unknown) => e instanceof NotesError && e.message === `${notesPath(root, 'fluid/vault-deposit')}.context: is about one instance; it belongs in that instance's notes.json`,
+  );
+});
+
 test("a vault's notes review and describe only the vault and the entries its attributes name", () => {
   const owned = new Set(['vault-a', 'vault-factory']);
   const review = VALID.reviews['morpho-oracle/source.page'];

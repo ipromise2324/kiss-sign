@@ -514,3 +514,36 @@ test('Next steps first asks the signer to open the sources the report lists for 
     assert.ok(unescape(first).startsWith(language === 'en' ? 'Before you approve, open the sources <a href="#addresses">' : '核准前，打開「<a href="#addresses">'), `${id}: ${first.slice(0, 80)}`);
   }
 });
+
+/** The page's 過去交易 section, from its opening tag to its close. */
+const pastOf = (html: string): string => /<section id="past">.*?<\/section>/s.exec(html)?.[0] ?? assert.fail('a 過去交易 section');
+const textOf = (html: string): string => unescape(html.replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
+
+test("過去交易 leads with the transactions exactly like the signer's, keeps each FINDING open, and folds the rest under the one line that counts them", async () => {
+  const { inputs, title } = pages.get(hyperithm()) ?? assert.fail('the frozen Hyperithm report');
+  const page = buildPage(await withFixtures(hyperithm(), inputs), notesOf(hyperithm()), title, 'en');
+  const finding = { effect: 'gives amount', tolerance: 'exact', tokens: [], finding: 'beyond the tolerance', unmeasured: undefined };
+  const sections = page.sections.map((s) => (s.body.kind === 'past' ? { ...s, body: { ...s.body, amounts: [...s.body.amounts, finding] } satisfies Body } : s));
+  const past = pastOf(renderPage({ ...page, sections } satisfies Page));
+  const fold = past.indexOf('<details class="fold">');
+  assert.match(textOf(past.slice(0, fold)), /^Past transactions In past records, 32 transactions match the template exactly, made the way yours is: Safe 6 \(2 Safes\), EOA 26 /);
+  assert.ok(past.indexOf('FINDING: beyond the tolerance') > 0 && past.indexOf('FINDING: beyond the tolerance') < fold, 'a FINDING sits before the fold');
+  assert.equal(textOf(/<summary>(.*?)<\/summary>/s.exec(past.slice(fold))?.[1] ?? ''), '336 more differ from yours: 0 have the same shape but with an address outside the registry, 336 have another shape');
+  const conclusion = (notesOf(hyperithm()) as { pastTxsConclusion: { en: string } }).pastTxsConclusion.en.split('`')[0] as string;
+  assert.ok(unescape(past).indexOf(conclusion) > unescape(past).indexOf('<details class="fold">'), "the AI's word on the other shapes is in the fold");
+});
+
+test("an instance's context notes show in its section under their titles, each with the AI tag and its sources", async () => {
+  const { inputs, title } = pages.get(hyperithm()) ?? assert.fail('the frozen Hyperithm report');
+  const raw = notesOf(hyperithm()) as Record<string, unknown>;
+  const held = notesLanguages(raw);
+  const say = (text: string) => Object.fromEntries(held.map((language) => [language, text]));
+  const context = [{ title: say('Where deposits go'), text: say('The vault lends each deposit on to the markets it allocates to.'), sources: ['https://example.org/vault'] }];
+  const language = held[0] as Language;
+  const html = renderPage(buildPage(await withFixtures(hyperithm(), inputs), { ...raw, context }, title, language));
+  const section = /<section id="vault-[^"]+">.*?<\/section>/s.exec(html)?.[0] ?? assert.fail('an instance section');
+  assert.match(section, /<h3><span class="aiw" data-ai><span>Where deposits go<\/span><span class="byai">[^<]+<\/span><\/span><\/h3>/);
+  assert.match(section, /<p class="intro"><span class="aiw" data-ai><span>The vault lends each deposit on to the markets it allocates to\. <a class="aisrc" href="https:\/\/example\.org\/vault">[^<]+<\/a><\/span><span class="byai">/);
+  const without = /<section id="vault-[^"]+">.*?<\/section>/s.exec(pages.get(hyperithm())?.html.get(language) ?? '')?.[0] ?? assert.fail('the committed instance section');
+  assert.ok(!without.includes('<h3><span class="aiw"'), 'no context heading without context notes');
+});
