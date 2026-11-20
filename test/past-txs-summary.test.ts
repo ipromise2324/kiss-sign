@@ -15,6 +15,7 @@ import { replayPastTxs } from '../src/research/recording.ts';
 import { pastTxsRegistry, summarizePastTxs } from '../src/research/report.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { loadTemplate } from '../src/template/template.ts';
+import { FROZEN_DIR, repoWithFrozenReports } from './frozen-reports.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -163,6 +164,17 @@ test('every committed past-txs summary names a template and was studied with its
     if (root === undefined) return [`${file}: names no template in templates/ or test/fixtures/templates/`];
     const parts = staleParts(root, pastTxsRegistry(root, loadRegistry(root), summary.query), summary);
     return parts.length === 0 ? [] : [`${file}: the ${parts.join(' and the ')} changed since it was studied`];
+  });
+  assert.deepEqual(problems, []);
+});
+
+test("every frozen past-txs summary was studied with the frozen template and registry entries and this checkout's study code", () => {
+  const frozen = repoWithFrozenReports();
+  const problems = readdirSync(join(frozen, SUMMARIES_DIR)).flatMap((f) => {
+    const file = join(SUMMARIES_DIR, f);
+    const summary = parseSummary(file, readFileSync(join(frozen, file), 'utf8'));
+    const parts = staleParts(frozen, pastTxsRegistry(frozen, loadRegistry(frozen), summary.query), summary);
+    return parts.length === 0 ? [] : [`${join(FROZEN_DIR, file)}: the ${parts.join(' and the ')} changed since it was studied; run node test/freeze-reports.ts --restudy`];
   });
   assert.deepEqual(problems, []);
 });

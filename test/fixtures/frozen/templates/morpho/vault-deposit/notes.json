@@ -1,0 +1,166 @@
+{
+  "title": {
+    "en": "Deposit into a Morpho vault",
+    "zh-TW": "存入 Morpho vault"
+  },
+  "summary": {
+    "en": "The Safe first gives GeneralAdapter1 an allowance of exactly the amount you type, then calls `multicall` on Bundler3: GeneralAdapter1 pulls these tokens from the Safe and deposits them into the vault you pick, with the shares going straight to the Safe. The price per share cannot be higher than the price implied by the minimum shares you type, or the whole transaction fails.",
+    "zh-TW": "Safe 先授權 GeneralAdapter1 剛好你填的金額，再呼叫 Bundler3 的 `multicall`：GeneralAdapter1 從 Safe 拉走這筆代幣，存進你選的 vault，股份直接給 Safe。每股價格不能高過你填的最少股份換算出的價格，否則整筆失敗。"
+  },
+  "protocols": {
+    "morpho-blue": {
+      "intro": {
+        "en": "A Morpho vault spreads deposits across several Morpho Blue markets to lend them out. Vaults are managed by curators, and Morpho's factory contracts create them.",
+        "zh-TW": "Morpho 的 vault 把存款分配到多個 Morpho Blue market 放貸。vault 由策展人管理，Morpho 的工廠合約負責建立它們。"
+      },
+      "audits": {
+        "text": {
+          "en": "Bundler3's GitHub lists 3 audits (two by Spearbit, one by OpenZeppelin). Vault V2's GitHub lists 10 (Spearbit, Zellic, Blackthorn, ChainSecurity, Certora and one contest). MetaMorpho's GitHub lists audits by Cantina and OpenZeppelin.",
+          "zh-TW": "Bundler3 的 GitHub 列了 3 份稽核（Spearbit 兩份、OpenZeppelin 一份）。Vault V2 的 GitHub 列了 10 份（Spearbit、Zellic、Blackthorn、ChainSecurity、Certora 和一場競賽）。MetaMorpho 的 GitHub 列了 Cantina 和 OpenZeppelin 的稽核。"
+        },
+        "sources": [
+          "https://github.com/morpho-org/bundler3/tree/main/audits",
+          "https://github.com/morpho-org/vault-v2/tree/main/audits",
+          "https://github.com/morpho-org/metamorpho/tree/main/audits"
+        ]
+      },
+      "incidents": []
+    }
+  },
+  "judgments": [
+    {
+      "text": {
+        "en": "The Morpho app sometimes adds two more steps at the end of the bundle that send the tokens and shares left in the adapter back to you. This template accepts only the two-step version; with the two extra steps, verify returns MISMATCH.",
+        "zh-TW": "Morpho app 有時在 bundle 最後多加兩步，把 adapter 剩下的代幣和股份轉回給你。這個模板只接受兩步的版本，多兩步時 verify 會判 MISMATCH。"
+      },
+      "recommendation": {
+        "en": "On MISMATCH, do not sign. Report it, then decide whether to add a template.",
+        "zh-TW": "遇到 MISMATCH 不要簽；回報後再決定是否新增模板。"
+      }
+    },
+    {
+      "text": {
+        "en": "On 2026-09-25 Morpho's SDK removed the Bundler3 address and listed VaultBundlesV1 (0x02912516d49dE997db75B9D7858faAE59209650B) instead; docs.morpho.org lists both. In the recorded transactions, most deposits after the end of 2026-09 go through VaultBundlesV1, so the Morpho app may no longer take this template's route.",
+        "zh-TW": "Morpho 的 SDK 在 2026-09-25 拿掉 Bundler3 的地址，改列 VaultBundlesV1（0x02912516d49dE997db75B9D7858faAE59209650B）；docs.morpho.org 兩個都列。記錄裡 2026-09 底之後的存款多半經 VaultBundlesV1，Morpho app 現在可能不再走這個模板的路線。"
+      },
+      "sources": [
+        "https://github.com/morpho-org/sdks/commit/9ac0ea55b93225a62ddeabb1c625064319be728d"
+      ],
+      "recommendation": {
+        "en": "Before signing, check whether the Safe transaction calls Bundler3 or VaultBundlesV1. One that goes through VaultBundlesV1 needs the morpho/vault-bundles-deposit template; with this template, verify returns MISMATCH.",
+        "zh-TW": "簽之前看 Safe 交易呼叫的是 Bundler3 還是 VaultBundlesV1；經 VaultBundlesV1 的要用 morpho/vault-bundles-deposit 模板，用這個模板 verify 會判 MISMATCH。"
+      }
+    }
+  ],
+  "reviews": {},
+  "entries": {
+    "usdc": {
+      "role": {
+        "en": "The token deposited into a USDC vault",
+        "zh-TW": "存進 USDC vault 的代幣"
+      }
+    },
+    "bundler3": {
+      "role": {
+        "en": "Morpho's bundling contract. It runs each step of the bundle in order and records that the Safe started it",
+        "zh-TW": "Morpho 的打包合約，依序執行 bundle 裡的每一步，並記住發起人是 Safe"
+      }
+    },
+    "general-adapter-1": {
+      "role": {
+        "en": "Receives the allowance, pulls the tokens for the Safe and deposits them into the vault",
+        "zh-TW": "接收授權，替 Safe 拉代幣並存進 vault"
+      }
+    }
+  },
+  "fields": {
+    "1.approve.spender": {
+      "en": "The contract allowed to pull tokens from the Safe. Here it is Morpho's GeneralAdapter1, which pulls these funds with `transferFrom` in call 2.",
+      "zh-TW": "被授權從 Safe 拉代幣的合約。這裡是 Morpho 的 GeneralAdapter1，呼叫 2 裡它用 `transferFrom` 拉走這筆錢。"
+    },
+    "1.approve.value": {
+      "en": "The allowance limit, equal to the deposit amount. Call 2 pulls all of it, so the allowance is back to 0 after the transaction.",
+      "zh-TW": "授權的上限，等於存款金額。呼叫 2 會整筆拉走，交易後授權回到 0。"
+    },
+    "2.multicall.bundle": {
+      "en": "The list of steps Bundler3 runs in order, fixed at two here: first pull the tokens, then deposit them into the vault. If any step fails, the whole transaction fails.",
+      "zh-TW": "Bundler3 依序執行的步驟清單，這裡固定兩步：先拉代幣，再存進 vault。任何一步失敗，整筆交易失敗。"
+    },
+    "2.multicall.bundle[0]": {
+      "en": "Step 1: pull the tokens from the Safe into GeneralAdapter1.",
+      "zh-TW": "第一步：把代幣從 Safe 拉進 GeneralAdapter1。"
+    },
+    "2.multicall.bundle[0].to": {
+      "en": "The contract this step calls, fixed to GeneralAdapter1.",
+      "zh-TW": "這一步呼叫的合約，固定是 GeneralAdapter1。"
+    },
+    "2.multicall.bundle[0].data": {
+      "en": "The function and arguments this step runs, listed item by item below.",
+      "zh-TW": "這一步要執行的函式和參數，下面逐項列出。"
+    },
+    "2.multicall.bundle[0].data.erc20TransferFrom.token": {
+      "en": "The token to pull, equal to the asset of the vault you pick.",
+      "zh-TW": "要拉的代幣，等於你選的 vault 的資產。"
+    },
+    "2.multicall.bundle[0].data.erc20TransferFrom.receiver": {
+      "en": "The tokens go to GeneralAdapter1 itself first; in the next step it deposits them into the vault.",
+      "zh-TW": "代幣先轉到 GeneralAdapter1 自己，下一步再由它存進 vault。"
+    },
+    "2.multicall.bundle[0].data.erc20TransferFrom.amount": {
+      "en": "The amount pulled from the Safe, equal to the deposit amount. Bundler3 records the Safe as the one that started the bundle, so only the Safe's funds can be pulled.",
+      "zh-TW": "從 Safe 拉的數量，等於存款金額。Bundler3 記錄發起人是 Safe，所以只能拉 Safe 的錢。"
+    },
+    "2.multicall.bundle[0].value": {
+      "en": "ETH sent along, fixed at 0.",
+      "zh-TW": "附帶的 ETH，固定為 0。"
+    },
+    "2.multicall.bundle[0].skipRevert": {
+      "en": "Whether to skip this step if it fails. Fixed at false: if it fails, the whole transaction fails.",
+      "zh-TW": "這一步失敗時是否略過。固定為 false：失敗就整筆失敗。"
+    },
+    "2.multicall.bundle[0].callbackHash": {
+      "en": "Used only by steps that need a callback; fixed at 0.",
+      "zh-TW": "只有需要回呼的步驟才用，固定為 0。"
+    },
+    "2.multicall.bundle[1]": {
+      "en": "Step 2: GeneralAdapter1 deposits the tokens into the vault, with the shares going to the Safe.",
+      "zh-TW": "第二步：GeneralAdapter1 把代幣存進 vault，股份給 Safe。"
+    },
+    "2.multicall.bundle[1].to": {
+      "en": "The contract this step calls, fixed to GeneralAdapter1.",
+      "zh-TW": "這一步呼叫的合約，固定是 GeneralAdapter1。"
+    },
+    "2.multicall.bundle[1].data": {
+      "en": "The function and arguments this step runs, listed item by item below.",
+      "zh-TW": "這一步要執行的函式和參數，下面逐項列出。"
+    },
+    "2.multicall.bundle[1].data.erc4626Deposit.vault": {
+      "en": "Which vault to deposit into. This is the vault you pick on the card.",
+      "zh-TW": "存進哪一個 vault。這就是你在卡片上選的 vault。"
+    },
+    "2.multicall.bundle[1].data.erc4626Deposit.assets": {
+      "en": "The amount of tokens deposited into the vault, equal to the deposit amount.",
+      "zh-TW": "存進 vault 的代幣數量，等於存款金額。"
+    },
+    "2.multicall.bundle[1].data.erc4626Deposit.maxSharePriceE27": {
+      "en": "The highest price per share (assets ÷ shares, times 1e27). If the actual price is higher, the whole transaction fails. The program requires it to be no higher than \"amount ÷ minimum shares\", so by the share count the vault itself reports, you get at least the minimum shares.",
+      "zh-TW": "每股最高價格（資產 ÷ 股份，乘以 1e27）。實際價格高於它，整筆失敗。程式要求它不高於「金額 ÷ 最少股份」，依 vault 自己回報的股份數，你至少拿到最少股份。"
+    },
+    "2.multicall.bundle[1].data.erc4626Deposit.receiver": {
+      "en": "The address that receives the shares, fixed to the Safe.",
+      "zh-TW": "收股份的地址，固定是 Safe。"
+    },
+    "2.multicall.bundle[1].value": {
+      "en": "ETH sent along, fixed at 0.",
+      "zh-TW": "附帶的 ETH，固定為 0。"
+    },
+    "2.multicall.bundle[1].skipRevert": {
+      "en": "Whether to skip this step if it fails. Fixed at false: if it fails, the whole transaction fails.",
+      "zh-TW": "這一步失敗時是否略過。固定為 false：失敗就整筆失敗。"
+    },
+    "2.multicall.bundle[1].callbackHash": {
+      "en": "Used only by steps that need a callback; fixed at 0.",
+      "zh-TW": "只有需要回呼的步驟才用，固定為 0。"
+    }
+  }
+}

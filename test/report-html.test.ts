@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { before, test } from 'node:test';
 import { loadRegistry, pageUrlsOf } from '../src/registry.ts';
+import type { Registry } from '../src/registry.ts';
 import { STANDARDS } from '../src/research/standards.ts';
 import { NOTES_FILE, notesLanguages, notesPath, readNotes } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
@@ -11,12 +12,14 @@ import { LANGUAGES, isLanguage } from '../src/language.ts';
 import type { Language } from '../src/language.ts';
 import { OLD_HTML_FILE, generatedHtml, generatedHtmlFile, generatedHtmlPath, htmlDifference, renderPage, writeHtmlPages } from '../src/research/report-html.ts';
 import { buildPage } from '../src/research/report-page.ts';
+import type { HtmlInputs } from '../src/research/report-page.ts';
 import { loadReport, readDocs, replayInputs, reportDir, templateTargets } from '../src/research/report.ts';
 import type { PastTxsSection, ReportInputs, ReportTitle } from '../src/research/report.ts';
 import type { YearSearch } from '../src/research/past-txs.ts';
 import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { NOT_YET_REBUILT, reportedInstances } from '../src/template/vault-reports.ts';
+import { FROZEN_REPORTS, repoWithFrozenReports } from './frozen-reports.ts';
 import { PREDATE_REPORT } from './predate-report.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
@@ -26,13 +29,17 @@ const registry = loadRegistry(ROOT);
 const templates = readdirSync(join(ROOT, TEMPLATES_DIR)).flatMap((protocol) => readdirSync(join(ROOT, TEMPLATES_DIR, protocol)).map((operation) => `${protocol}/${operation}`));
 const has = (id: string, file: string) => existsSync(join(ROOT, TEMPLATES_DIR, id, file));
 const FIXTURES = repoWithTestFixtures();
+const FROZEN = repoWithFrozenReports();
 const MARKET: ReturnType<typeof templateTargets>[number] = { template: 'morpho/market-supply' };
-/** Each report with notes.json, by its folder: every template's in the repository, and the test fixtures' market-supply. */
+const HYPERITHM = FROZEN_REPORTS[0];
+const reportAt = (target: ReturnType<typeof templateTargets>[number], root: string, registry: Registry) => [join(root, reportDir(root, target)), { target, root, registry }] as const;
+/** Each report with notes.json, by its folder: every template's in the repository, the test fixtures' market-supply, and the frozen Hyperithm deposit. */
 const withNotes = new Map([
   ...templateTargets(ROOT, registry)
     .filter((t) => has(t.template, NOTES_FILE))
-    .map((target) => [reportDir(ROOT, target), { target, root: ROOT, registry }] as const),
-  [reportDir(FIXTURES, MARKET), { target: MARKET, root: FIXTURES, registry: loadRegistry(FIXTURES) }] as const,
+    .map((target) => reportAt(target, ROOT, registry)),
+  reportAt(MARKET, FIXTURES, loadRegistry(FIXTURES)),
+  reportAt(HYPERITHM, FROZEN, loadRegistry(FROZEN)),
 ]);
 const reportOf = (path: string) => withNotes.get(path) ?? assert.fail(path);
 const notesOf = (path: string): unknown => {
@@ -51,7 +58,7 @@ before(async () => {
     const { inputs, title } = await replayInputs(root, registry, target, compilers, loadPublicSuffixList());
     const html = (await generatedHtml(root, inputs, title)) ?? assert.fail(`${dir}: notes but no HTML`);
     pages.set(dir, { inputs, title, html });
-    for (const [language, page] of html) replayed.set(generatedHtmlPath(root, target, language), { dir, language, html: page });
+    for (const [language, page] of html) replayed.set(join(root, generatedHtmlPath(root, target, language)), { dir, language, html: page });
   }
 });
 
@@ -97,7 +104,7 @@ test('a template without notes.json gets no HTML report', async () => {
 test('each committed HTML report is what the program writes from the recordings and notes.json, byte for byte, in each language', () => {
   assert.ok([...withNotes.values()].some((report) => report.root === ROOT));
   for (const [path, { dir, language, html }] of replayed) {
-    if (reportOf(dir).root === ROOT) assert.equal(htmlDifference(generatedHtmlFile(language), readFileSync(join(ROOT, path), 'utf8'), html), undefined, path);
+    if (reportOf(dir).root === ROOT) assert.equal(htmlDifference(generatedHtmlFile(language), readFileSync(path, 'utf8'), html), undefined, path);
   }
 });
 
@@ -139,9 +146,16 @@ function withoutAi(html: string): { readonly rest: string; readonly cut: readonl
 
 /** Whether a notes.json value is one AI text: an object keyed by languages alone. */
 const isText = (raw: object): boolean => Object.keys(raw).length > 0 && Object.keys(raw).every(isLanguage);
-/** The first report whose notes hold both languages, which a test that edits a text in each language needs. */
+/** The first test fixture's report whose notes hold both languages, which a test that edits a text in each language needs; a committed report's notes may be rewritten in one. */
 const bilingual = (where: (dir: string) => boolean = () => true): string =>
-  [...withNotes.keys()].find((dir) => notesLanguages(notesOf(dir)).length === LANGUAGES.length && where(dir)) ?? assert.fail('a report whose notes hold both languages');
+  [...withNotes.keys()].find((dir) => reportOf(dir).root !== ROOT && notesLanguages(notesOf(dir)).length === LANGUAGES.length && where(dir)) ?? assert.fail('a report whose notes hold both languages');
+
+/** A report's inputs with its recorded test transactions judged, as `pnpm report --render` reads them. */
+async function withFixtures(dir: string, inputs: ReportInputs): Promise<HtmlInputs> {
+  const { root, registry } = reportOf(dir);
+  const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(dir);
+  return { ...inputs, fixtures: await judgeFixtures(root, template, registry), example: firstRecordedTx(root, template, registry) };
+}
 
 /** Every piece of text in notes.json a page in `language` prints: its language's text, never a URL or an enum value. */
 function noteTexts(raw: unknown, language: Language): string[] {
@@ -213,11 +227,10 @@ const both = (text: string) => ({ en: text, 'zh-TW': text });
 test('AI text is HTML-escaped', async () => {
   const id = bilingual();
   const { inputs, title } = pages.get(id) ?? assert.fail(id);
-  const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
   const raw = notesOf(id) as Record<string, unknown>;
   const html = renderPage(
     buildPage(
-      { ...inputs, fixtures: await judgeFixtures(ROOT, template, registry), example: firstRecordedTx(ROOT, template, registry) },
+      await withFixtures(id, inputs),
       { ...raw, title: both('<b>&"x</b>'), summary: both("<script>alert('x')</script>") },
       title,
       'en',
@@ -232,12 +245,11 @@ test('AI text is HTML-escaped', async () => {
 test('a code span in AI text prints as <code> in prose and as a boxed monospace span in the diagram, escaped', async () => {
   const id = bilingual((path) => ((notesOf(path) as { flow?: unknown[] }).flow ?? []).length > 0);
   const { inputs, title } = pages.get(id) ?? assert.fail(id);
-  const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
   const raw = notesOf(id) as { flow: { text: unknown }[] } & Record<string, unknown>;
   const flow = raw.flow.map((line, i) => (i === 0 ? { ...line, text: { en: 'Calls `erc20TransferFrom`, then `erc4626Deposit`', 'zh-TW': '依序呼叫 `erc20TransferFrom` 和 `erc4626Deposit`' } } : line));
   const html = renderPage(
     buildPage(
-      { ...inputs, fixtures: await judgeFixtures(ROOT, template, registry), example: firstRecordedTx(ROOT, template, registry) },
+      await withFixtures(id, inputs),
       { ...raw, summary: { en: 'Calls `multicall` first, <b>not</b> `approve()`', 'zh-TW': '先呼叫 `multicall`，<b>不是</b> `approve()`' }, flow },
       title,
       'zh-TW',
@@ -333,7 +345,7 @@ test('下一步 ends every signer report, each command alone in its own block wi
 });
 
 test('下一步 of a per-vault report names the vault in full, says to pick it by name, and shows the computed field it will not ask', () => {
-  const [id, { html }] = [...replayed].find(([, page]) => page.language === 'zh-TW' && withNotes.get(page.dir)?.target.instance === 'hyperithm-usdc-apex-v2-9e2f') ?? assert.fail('the Hyperithm report');
+  const [id, { html }] = [...replayed].find(([, page]) => page.language === 'zh-TW' && reportOf(page.dir).root === FROZEN && reportOf(page.dir).target.instance === HYPERITHM.instance) ?? assert.fail('the Hyperithm report');
   const section = unescape(nextSteps(html).replace(/<[^>]+>/g, ''));
   assert.ok(section.includes('選 hyperithm-usdc-apex-v2-9e2f，地址是 0x093272C07700d3cA5301C3Bf9B3A392624179E2F'), id);
   assert.ok(section.includes('照名字選'), id);
@@ -362,15 +374,14 @@ test('notes in one language give a page in that language alone, which says, in t
   const id = bilingual();
   const { inputs, title, html } = pages.get(id) ?? assert.fail(id);
   for (const page of html.values()) assert.ok(!Object.values(ONLY_IN).some((line) => page.includes(line)), `${id}: a report in both languages says it exists in one`);
-  const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
-  const withFixtures = { ...inputs, fixtures: await judgeFixtures(ROOT, template, registry), example: firstRecordedTx(ROOT, template, registry) };
+  const judged = await withFixtures(id, inputs);
   for (const language of LANGUAGES) {
     const raw = onlyIn(notesOf(id), language);
     assert.deepEqual(notesLanguages(raw), [language]);
-    const page = renderPage(buildPage(withFixtures, raw, title, language));
+    const page = renderPage(buildPage(judged, raw, title, language));
     assert.ok(page.includes(`<p class="srcline">${ONLY_IN[language]}</p>`), `${language}: the page says it exists only in ${language}`);
     const other = LANGUAGES.find((l) => l !== language) as Language;
-    assert.throws(() => buildPage(withFixtures, raw, title, other), new RegExp(`holds no ${other} text`));
+    assert.throws(() => buildPage(judged, raw, title, other), new RegExp(`holds no ${other} text`));
   }
 });
 
@@ -389,13 +400,12 @@ test('the report list verify reads at the trusted commit holds no report under v
 test("a paged year's search line says how many transactions with a proven Safe party were studied, and an older recording's says nothing more", async () => {
   const id = bilingual((dir) => (pages.get(dir)?.inputs.pastTxs.length ?? 0) > 0);
   const { inputs, title, html } = pages.get(id) ?? assert.fail(id);
-  const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
   const [first, ...rest] = inputs.pastTxs as [PastTxsSection, ...PastTxsSection[]];
-  const withFixtures = { ...inputs, fixtures: await judgeFixtures(ROOT, template, registry), example: firstRecordedTx(ROOT, template, registry) };
+  const judged = await withFixtures(id, inputs);
   const covered = (safesFirst: Extract<YearSearch, { kind: 'covered' }>['safesFirst']): YearSearch => ({ kind: 'covered', range: { fromBlock: 1n, toBlock: 2n }, pages: new Map([['alchemy', 2], ['etherscan', 3]]), safesFirst });
   const checked = { kind: 'checked', noun: 'the address minted to', block: 2n, parties: 30, safes: 20, unreadable: 0 } as const;
   const searchLine = (language: Language, year: YearSearch | undefined): string => {
-    const page = renderPage(buildPage({ ...withFixtures, pastTxs: [{ ...first, run: { ...first.run, year } }, ...rest] }, notesOf(id), title, language));
+    const page = renderPage(buildPage({ ...judged, pastTxs: [{ ...first, run: { ...first.run, year } }, ...rest] }, notesOf(id), title, language));
     return /<h3>((?:Search of|搜尋)[^<]*)<\/h3>/.exec(page)?.[1] ?? assert.fail(`${language}: a search line`);
   };
   const expected: Readonly<Record<Language, readonly [all: string, some: string, none: string]>> = {

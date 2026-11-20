@@ -314,6 +314,12 @@ node test/trim-past-txs.ts morpho-vault-deposit merkl-claim morpho-vault-deposit
 
 The windows follow the head block, so recording the last one again moves them.
 
+## Frozen reports
+
+`test/fixtures/frozen/` holds the inputs of each report `FROZEN_REPORTS` in `test/frozen-reports.ts` names, the Hyperithm `morpho/vault-deposit` and the Acuto `morpho/vault-v2-revoke` reports, as they were committed when frozen: the template folder with that instance alone and no generated report, `registry/`, the report recording in `report/` and the past-txs summaries in `research/`. The tests that pin what a page says, its numbers and its AI text, build it from this copy, so recording one of these reports again changes none of them; the byte-for-byte check still compares each committed page with what its own recordings and notes give.
+
+`node test/freeze-reports.ts` writes the copy from the committed files, and copies each full past-txs recording a summary was studied from to `.cache/past-txs/frozen/`; it refuses when studying that recording again does not give the committed summary. A change to the study code makes the frozen summaries stale, which `pnpm test` names: `node test/freeze-reports.ts --restudy` studies them again from `.cache/past-txs/frozen/`. Freezing again copies what is committed then, and the tests' numbers move with it.
+
 ## Safe proxy factories
 
 `safe-proxy/<name>.json` holds one run of `scripts/record-safe-proxy.ts <name> <transaction hash>`: the transaction in which an official mainnet proxy factory (`src/safe/deployments.ts`) created a Safe, and its chain reads (the receipt with the factory's `ProxyCreation`, the block, and the new proxy's code at that block), with the answers of Alchemy and drpc. The test requires one fixture per official factory and that each proxy's code is the known Safe proxy of that factory's version, so the code `past-txs` accepts as a Safe proxy is what an official factory deploys.
