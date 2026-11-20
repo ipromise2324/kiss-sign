@@ -129,8 +129,6 @@ Under it, each argument says who decides it, down to the steps inside a bundle: 
 
 ![The Instance section: the factory answers isVaultV2 = true, 6,603,958.14 USDC now, 169 holders, the largest 58.88% and the top 10 89.19%](docs/readme/report-instance.png)
 
-**Wallet display.** What your hardware wallet will show, field by field. Here it shows the Safe transaction going to Safe's MultiSend, but not the 2 calls packed inside, so you compare the hashes on the device with the ones `verify` prints.
-
 **Addresses.** Where each address was found and who owns that site. Sites with one owner count as one place. CoW's settlement contract is in four sources but two places: CoW's GitHub and Immunefi.
 
 ![CoW's settlement contract: two GitHub pages and the npm SDK, all CoW's GitHub, count as one place; Immunefi is the second](docs/readme/report-address.png)
