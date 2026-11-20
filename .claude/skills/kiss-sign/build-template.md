@@ -58,6 +58,7 @@ Then follow [Data shapes](../../../docs/design/data-shapes.md#data-shapes); temp
 - Put an allowance the operation leaves open in `effects.approves`; `unlimited` only to a registry contract that declares a `standingAllowance` of that route, with the reason from its code ([Standing allowances](../../../docs/design/data-shapes.md#standing-allowances)).
 - Write every reason the signer reads (each `free` reason or its `proof`, `unread` or `route`, each trailer's, `max`'s and `margin`'s `why`, a `merge` and a fact's `reason`) only in the signer's `language` from the config, as `{ "zh-TW": "..." }` or `{ "en": "..." }`, the same language for every reason of the template.
   When you change a template that holds both languages, keep both and write the change in each.
+- Keep a `why` that `card new` prints, `max`'s and `margin`'s, to at most 200 characters: the conclusion the signer needs, in plain words, such as "the app prices the deposit again, so the default alone can make it a MISMATCH". Leave out function names, file paths and commits.
 - **A signed order read by its digest.** Fetch one real order from the `lookup` API first and see where its members sit.
   When the API does not serve the message as one top-level object with each member under its own name, declare `answer` ([Signed messages](../../../docs/design/data-shapes.md#signed-messages)): the `path` to the object that holds it, and per member a `path` or `"encoding": "hex"` only where the API differs.
   A wrong `answer` cannot pass a forged order, but it makes every order `UNVERIFIABLE`.
