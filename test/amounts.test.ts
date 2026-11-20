@@ -9,7 +9,7 @@ import type { Registry } from '../src/registry.ts';
 import { pastTxs, renderPastTxs } from '../src/research/past-txs.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { replayMessages } from '../src/research/messages.ts';
-import { pastTxsSampling } from '../src/research/report.ts';
+import { samplingOf } from '../src/research/recording.ts';
 import { replayAsk } from '../src/research/sources.ts';
 import type { AnchorKind } from '../src/research/sources.ts';
 import type { Address } from '../src/safe/types.ts';
@@ -31,7 +31,7 @@ async function study(name: string, seen: Registry, template: Template): Promise<
   const recorded: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', `${name}.json`));
   const { query } = recorded;
   const run = await pastTxs(
-    { template, anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: pastTxsSampling(query) },
+    { template, anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: samplingOf(query) },
     { ask: replayAsk(recorded.sources), reader: replayReader(recorded.exchanges), registry: seen, readMessage: replayMessages([]), exclude: undefined, maxTxs: query.maxTxs },
   );
   return renderPastTxs(run, seen);

@@ -11,14 +11,14 @@ import { REPLAY_ENDPOINTS, replayReader, replayTransport } from '../src/chain/re
 import type { Transport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import type { Registry } from '../src/registry.ts';
-import { DEFAULT_SPREAD, pastTxs, renderPastTxs, spreadOf } from '../src/research/past-txs.ts';
-import { scrubRecording } from '../src/research/recording.ts';
+import { pastTxs, renderPastTxs, spreadOf } from '../src/research/past-txs.ts';
+import { samplingOf, scrubRecording } from '../src/research/recording.ts';
 import { replayMessages } from '../src/research/messages.ts';
-import { pastTxsRecordings, pastTxsSampling } from '../src/research/report.ts';
+import { pastTxsRecordings } from '../src/research/report.ts';
 import type { Subject } from '../src/research/report.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
-import { anchorEvent, recordingAsk, replayAsk, searchBoth } from '../src/research/sources.ts';
-import type { Anchor, AnchorKind, Ask, SourceExchange, SourceRequest } from '../src/research/sources.ts';
+import { anchorEvent, recordingAsk, replayAsk, search } from '../src/research/sources.ts';
+import type { Anchor, AnchorKind, Ask, Hits, SourceExchange, SourceRequest } from '../src/research/sources.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
@@ -49,7 +49,7 @@ async function report(
     {
       template: options.template ?? loadTemplate(ROOT, query.template, registry),
       anchor: { token: query.token as Address, kind: query.anchor as AnchorKind, ...(query.from === undefined ? {} : { from: query.from as Address }) },
-      sampling: pastTxsSampling(query),
+      sampling: samplingOf(query),
     },
     { ask: replayAsk(options.sources ?? recorded.sources), reader: options.reader ?? replayReader(options.exchanges ?? recorded.exchanges), registry: seen, readMessage: replayMessages([]), exclude: options.exclude, maxTxs: query.maxTxs },
   );
@@ -144,7 +144,7 @@ test('a window with more transfers than one page is halved, and the report names
   };
   const { query } = windowed;
   const run = await pastTxs(
-    { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: pastTxsSampling(query) },
+    { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: samplingOf(query) },
     { ask, reader: replayReader(windowed.exchanges), registry, readMessage: replayMessages([]), exclude: undefined, maxTxs: query.maxTxs },
   );
   const text = renderPastTxs(run, registry);
@@ -173,7 +173,7 @@ test('a recording keeps only what the search reads, so a busy token\'s halved wi
     const { query } = windowed;
     const study = (ask: Ask) =>
       pastTxs(
-        { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: pastTxsSampling(query) },
+        { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: samplingOf(query) },
         { ask, reader: replayReader(windowed.exchanges), registry, readMessage: replayMessages([]), exclude: undefined, maxTxs: query.maxTxs },
       );
     const recorder = recordingAsk(live);
@@ -220,7 +220,7 @@ test('a whole year holding more than one page of a source falls back to the wind
   };
   const { query } = windowed;
   const run = await pastTxs(
-    { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: { ...DEFAULT_SPREAD, wholeYear: true } },
+    { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: { kind: 'old-year' } },
     { ask, reader: replayReader(windowed.exchanges), registry, readMessage: replayMessages([]), exclude: undefined, maxTxs: query.maxTxs },
   );
   const text = renderPastTxs(run, registry);
@@ -235,7 +235,7 @@ const recordedRun = (recorded: PastTxsRecording, sources: readonly SourceExchang
     {
       template: loadTemplate(ROOT, query.template, registry),
       anchor: { ...(query.token === undefined ? {} : { token: query.token as Address }), kind: 'event', event: anchorEvent(query.event as string) },
-      sampling: pastTxsSampling(query),
+      sampling: samplingOf(query),
     },
     { ask: replayAsk(sources), reader: replayReader(recorded.exchanges), registry, readMessage: replayMessages([]), exclude: undefined, maxTxs: query.maxTxs },
   );
@@ -328,7 +328,7 @@ test("a recording keeps the configured Safe's found transactions with its addres
   const { query } = recording;
   const run = (exclude: Address | undefined, recorded: PastTxsRecording) =>
     pastTxs(
-      { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: pastTxsSampling(query) },
+      { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: samplingOf(query) },
       {
         ask: replayAsk(recorded.sources),
         reader: replayReader(recorded.exchanges),
@@ -356,7 +356,7 @@ test("a transaction the configured Safe sent, found without its address in the s
   const { query } = year;
   const run = (exclude: Address | undefined, recorded: PastTxsRecording) =>
     pastTxs(
-      { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: 'event', event: anchorEvent(query.event as string) }, sampling: pastTxsSampling(query) },
+      { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: 'event', event: anchorEvent(query.event as string) }, sampling: samplingOf(query) },
       {
         ask: replayAsk(recorded.sources),
         reader: replayReader(recorded.exchanges),
@@ -451,6 +451,13 @@ async function requestsFor(anchor: Omit<Anchor, 'token' | 'kind' | 'fromBlock' |
     return request.source === 'alchemy' ? { transfers: [] } : { status: '0', message: 'No records found', result: [] };
   });
   return sent;
+}
+
+/** One page per source, as a window asks: the hits when both finished. */
+async function searchBoth(anchor: Anchor, ask: Ask): Promise<Hits> {
+  const found = await search(anchor, ask, 1);
+  if (found.kind !== 'covered') throw new Error(`${found.sources.join(' and ')} overflowed`);
+  return found.hits;
 }
 
 const word = (address: Address): string => `0x${'00'.repeat(12)}${address.slice(2)}`;
@@ -624,7 +631,7 @@ async function cowRun(options: { time?: boolean; withinSeconds?: number; message
   if (options.withinSeconds !== undefined) fields.validTo = { withinSeconds: options.withinSeconds };
   const { query } = cow;
   return pastTxs(
-    { template: parseTemplate(raw, registry), anchor: { token: query.token as Address, kind: 'event', event: anchorEvent(query.event as string) }, sampling: pastTxsSampling(query) },
+    { template: parseTemplate(raw, registry), anchor: { token: query.token as Address, kind: 'event', event: anchorEvent(query.event as string) }, sampling: samplingOf(query) },
     { ask: replayAsk(cow.sources), reader: options.reader ?? replayReader(cow.exchanges), registry, readMessage: replayMessages(options.messages ?? cow.messages ?? []), exclude: undefined, maxTxs: query.maxTxs },
   );
 }
