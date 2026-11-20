@@ -29,6 +29,7 @@ a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
+.addr.line{display:block;margin-top:4px}
 .num{font-variant-numeric:tabular-nums}
 .f2{color:var(--fg2)} .f3{color:var(--fg3)}
 b,strong{font-weight:590}
@@ -140,6 +141,8 @@ svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
 svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
 svg .axis{stroke:var(--line2)}
 svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.chart svg{min-width:0}
+@media (max-width:600px){.chart .tick{font-size:18px}.chart .thin{display:none}}
 .legend{list-style:none;margin:10px 0 14px;padding:0;display:flex;flex-direction:column;gap:4px;font-size:var(--t-small);color:var(--fg2)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
@@ -182,6 +185,14 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .part .raw{font-size:var(--t-small)}
 .part .is{font-size:var(--t-small)}
 .part .ai{margin-top:4px}
+details.fixed>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);color:var(--fg2);font-size:var(--t-small)}
+details.fixed>summary::-webkit-details-marker{display:none}
+details.fixed>summary:hover{color:var(--fg)}
+details.fixed[open]>summary .chev{transform:rotate(90deg)}
+.parts>details.fixed{grid-column:1/-1;display:grid;grid-template-columns:subgrid}
+.parts>details.fixed::details-content{display:contents}
+.parts>details.fixed>summary{grid-column:1/-1;padding:10px 0;border-bottom:0;border-top:1px solid var(--line)}
+.parts>details.fixed:first-child>summary,.plabel+details.fixed>summary{border-top:0;padding-top:2px}
 @media (max-width:720px){
   .arg{grid-template-columns:minmax(0,1fr)}
   .arg .nm{flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
@@ -192,6 +203,8 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
+.row .t .grade{font-weight:400;font-size:var(--t-label);color:var(--fg3);margin-right:10px;padding-right:10px;border-right:1px solid var(--line2);vertical-align:1px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .row .meta{font-size:var(--t-row);color:var(--fg2);margin-top:6px}
 .row .meta a{margin-left:8px;color:var(--fg2)}
 .row .rec{font-size:var(--t-row);margin-top:8px}
@@ -270,7 +283,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="Contents">
   <h2>Contents</h2>
-  <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">7</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">7</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
 </nav>
 
 <div class="main">
@@ -293,9 +306,40 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="ok"><span class="lbl">Advice</span><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span class="aiw" data-ai><span>The hash locks the order&#39;s contents. Note that verify depends on the CoW API to read the order back.</span><span class="byai">AI research: be careful</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
-    <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">7</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+    <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">7</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
   </details>
 </header>
+
+<section id="review">
+  <h2>To review <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></span></h2>
+  <p class="lead">The AI checked each item first and gives its advice.</p>
+  <div class="rows">
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>verify must read the full order back from CoW&#39;s order API (api.cow.fi).</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="rec"><span class="aiw" data-ai><span>When the API cannot be read, the result is UNVERIFIABLE. The API&#39;s answer is treated only as data, and it does not count if its hash does not match.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>On UNVERIFIABLE, do not sign. Wait until the API is back, then run verify again.</span><span class="byai">AI research</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>You type the card&#39;s &#34;minimum to receive&#34; yourself.</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="rec"><span class="aiw" data-ai><span>The CoW app&#39;s slippage differs with each quote (smart slippage), and there is no CoW quote on chain to read.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Type the minimum to receive that the CoW app shows. Do not type a lower one.</span><span class="byai">AI research</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>The app fills these two items.</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="rec"><span class="aiw" data-ai><span>The template limits the expiry to at most 7 days after the block (the app sets 30 minutes) and does not limit appData (may include a 0.1% partner fee). The fill still gives no less than the minimum you type, and only to the Safe.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. If you no longer want the order before it expires, cancel it from the Safe.</span><span class="byai">AI research</span></span></div>
+        </details></div>
+    </div>
+  </div>
+</section>
 
 <section id="flow">
   <h2>Flow <span class="c">1 call</span></h2>
@@ -313,7 +357,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#head)"/>
   </svg>
   </div>
-  <div class="scrollhint">Scroll the diagram sideways</div>
+  <div class="scrollhint">Scroll the diagram sideways; gpv2-settlement is at the far right</div>
   <div class="key">
     <span class="k0">Who decides</span>
     <span><span class="who you">you type</span>typed at each signing</span>
@@ -338,8 +382,6 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The token to sell.</span></span></div></div></div>
         <div class="part"><div class="pn">buyToken</div><div><div class="is">the token (buy-token) you pick</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The token to buy.</span></span></div></div></div>
-        <div class="part"><div class="pn">receiver</div><div><div class="is">your Safe</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Who gets the bought token. The CoW app fills in the Safe itself; any other address would send the money away.</span></span></div></div></div>
         <div class="part"><div class="pn">sellAmount</div><div><div class="is">the amount (sell-amount) you type</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The amount to sell. A sell order sells all of it.</span></span></div></div></div>
         <div class="part"><div class="pn">buyAmount</div><div><div class="is">at least the amount (min-buy) you type <span class="f3">less than this is a MISMATCH</span></div>
@@ -348,6 +390,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>When the order expires (Unix seconds). The CoW Swap app sets it 30 minutes after the quote (DEFAULT_DEADLINE_FROM_NOW). The template allows at most 7 days (604,800 seconds) after the time of the block the transaction is judged on; a later expiry is MISMATCH. Within that, a later expiry only keeps the order open longer: it still fills at most once, at no less than the card&#39;s minimum, to the Safe, and the Safe can cancel it with invalidateOrder. Why 7 days: pnpm past-txs (testdata/research/cow-swap-presign.json) measured the expiry less its block&#39;s time on 136 orders Safes pre-signed: median 1,720 seconds (about 29 minutes), 99th percentile 10,478 (about 3 hours), largest 604,767 (just under 7 days); the 7 orders from EOAs reached at most 86,363 (one day). Every observed order fits. An order left open for months, which a free expiry allowed, stays fillable long after the signer stops watching.</span></span></div></div></div>
         <div class="part"><div class="pn">appData</div><div><div class="is">differs each time <span class="f3">a value in the order, locked by its hash; the template allows any value and no perturbation test tries another</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The hash of the JSON the app attaches to the order (app name, slippage, fees, hooks). The settlement contract does not read it.</span></span></div></div></div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>6 fixed values; any change is a MISMATCH</summary>
+        <div class="part"><div class="pn">receiver</div><div><div class="is">your Safe</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Who gets the bought token. The CoW app fills in the Safe itself; any other address would send the money away.</span></span></div></div></div>
         <div class="part"><div class="pn">feeAmount</div><div><div class="raw">0</div><div class="is">fixed to 0</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The fee taken inside the order. It is 0 on every CoW order today.</span></span></div></div></div>
         <div class="part"><div class="pn">kind</div><div><div class="raw">&#34;sell&#34;</div><div class="is">fixed to &#34;sell&#34;</div>
@@ -358,18 +403,23 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>erc20 means it is taken from the Safe&#39;s ordinary token balance, not through the Balancer vault.</span></span></div></div></div>
         <div class="part"><div class="pn">buyTokenBalance</div><div><div class="raw">&#34;erc20&#34;</div><div class="is">fixed to &#34;erc20&#34;</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>erc20 means the bought token goes straight into the Safe&#39;s ordinary balance.</span></span></div></div></div>
+      </details>
       </div></div>
-        <div class="part"><div class="pn">owner</div><div><div class="is">your Safe</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The order&#39;s owner. It must be the Safe that sends this transaction; the contract checks this too.</span></span></div></div></div>
         <div class="part"><div class="pn">validTo</div><div><div class="is">the same number as <code>calls[0].args.orderUid.packed.digest.eip712.fields.validTo</code></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The same as the expiry in the order.</span></span></div></div></div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 fixed value; any change is a MISMATCH</summary>
+        <div class="part"><div class="pn">owner</div><div><div class="is">your Safe</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The order&#39;s owner. It must be the Safe that sends this transaction; the contract checks this too.</span></span></div></div></div>
+      </details>
       </div>
     </div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 fixed value; any change is a MISMATCH</summary>
     <div class="arg" data-field="1.setPreSignature.signed">
       <div class="nm"><span class="pn">signed</span><span class="who">fixed</span></div>
       <div class="val"><div class="raw">true</div><div class="is">fixed to true</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>true means pre-sign; false means cancel.</span></span></div></div>
     </div>
+      </details>
   </div>
   <h3>After the transaction</h3>
   <p class="lead">The Safe gives and receives no asset: any change to its balances after simulation is a MISMATCH.</p>
@@ -389,37 +439,6 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       </dl></dd></div>
   </dl>
   <p class="srcline">On 2026-11-17 the program read <a href="https://defillama.com/protocol/cowswap">DefiLlama</a>, <a href="https://defillama.com/hacks">DefiLlama hacks</a> and the chain. What is tagged AI research, the AI looked up.</p>
-</section>
-
-<section id="review">
-  <h2>To review <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></span></h2>
-  <p class="lead">The AI checked each item first and gives its advice.</p>
-  <div class="rows">
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>verify must read the full order back from CoW&#39;s order API (api.cow.fi).</span><span class="byai">AI research</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>verify must read the full order back from CoW&#39;s order API (api.cow.fi). When the API cannot be read, the result is UNVERIFIABLE. The API&#39;s answer is treated only as data, and it does not count if its hash does not match.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>On UNVERIFIABLE, do not sign. Wait until the API is back, then run verify again.</span><span class="byai">AI research</span></span></div>
-        </details></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>You type the card&#39;s &#34;minimum to receive&#34; yourself.</span><span class="byai">AI research</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>You type the card&#39;s &#34;minimum to receive&#34; yourself. The CoW app&#39;s slippage differs with each quote (smart slippage), and there is no CoW quote on chain to read.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Type the minimum to receive that the CoW app shows. Do not type a lower one.</span><span class="byai">AI research</span></span></div>
-        </details></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>The app fills these two items.</span><span class="byai">AI research</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>The app fills these two items. The template limits the expiry to at most 7 days after the block (the app sets 30 minutes) and does not limit appData (may include a 0.1% partner fee). The fill still gives no less than the minimum you type, and only to the Safe.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. If you no longer want the order before it expires, cancel it from the Safe.</span><span class="byai">AI research</span></span></div>
-        </details></div>
-    </div>
-  </div>
 </section>
 
 <section id="wallet">
@@ -657,7 +676,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="next">
   <h2>Next steps</h2>
   <ol class="steps">
-    <li><div>Before you approve, open the sources <a href="#addresses">Addresses</a> lists for each address: check that each domain is the protocol&#39;s own and that the page lists this address.</div></li>
+    <li><div>Before you approve, open each address&#39;s sources in <a href="#addresses">Addresses</a> and check that each domain is the protocol&#39;s own and that the page lists the address.</div></li>
     <li><div>The first time you use this template, or after it changes, approve it<pre class="cmd"><code>pnpm kiss-sign template approve cow/swap</code></pre>
       <p class="then">It prints the template, the commit of main on GitHub and the template&#39;s keccak256. Answer <code>y</code> only if it is the one you reviewed.</p></div></li>
     <li><div>Make the card<pre class="cmd"><code>pnpm kiss-sign card new cow/swap</code></pre>

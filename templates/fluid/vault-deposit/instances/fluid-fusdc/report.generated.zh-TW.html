@@ -29,6 +29,7 @@ a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
+.addr.line{display:block;margin-top:4px}
 .num{font-variant-numeric:tabular-nums}
 .f2{color:var(--fg2)} .f3{color:var(--fg3)}
 b,strong{font-weight:590}
@@ -140,6 +141,8 @@ svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
 svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
 svg .axis{stroke:var(--line2)}
 svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.chart svg{min-width:0}
+@media (max-width:600px){.chart .tick{font-size:18px}.chart .thin{display:none}}
 .legend{list-style:none;margin:10px 0 14px;padding:0;display:flex;flex-direction:column;gap:4px;font-size:var(--t-small);color:var(--fg2)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
@@ -182,6 +185,14 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .part .raw{font-size:var(--t-small)}
 .part .is{font-size:var(--t-small)}
 .part .ai{margin-top:4px}
+details.fixed>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);color:var(--fg2);font-size:var(--t-small)}
+details.fixed>summary::-webkit-details-marker{display:none}
+details.fixed>summary:hover{color:var(--fg)}
+details.fixed[open]>summary .chev{transform:rotate(90deg)}
+.parts>details.fixed{grid-column:1/-1;display:grid;grid-template-columns:subgrid}
+.parts>details.fixed::details-content{display:contents}
+.parts>details.fixed>summary{grid-column:1/-1;padding:10px 0;border-bottom:0;border-top:1px solid var(--line)}
+.parts>details.fixed:first-child>summary,.plabel+details.fixed>summary{border-top:0;padding-top:2px}
 @media (max-width:720px){
   .arg{grid-template-columns:minmax(0,1fr)}
   .arg .nm{flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
@@ -192,6 +203,8 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
+.row .t .grade{font-weight:400;font-size:var(--t-label);color:var(--fg3);margin-right:10px;padding-right:10px;border-right:1px solid var(--line2);vertical-align:1px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .row .meta{font-size:var(--t-row);color:var(--fg2);margin-top:6px}
 .row .meta a{margin-left:8px;color:var(--fg2)}
 .row .rec{font-size:var(--t-row);margin-top:8px}
@@ -270,7 +283,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">實例</a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
 </nav>
 
 <div class="main">
@@ -293,9 +306,40 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>可以用。代幣實際放在 Fluid 的 Liquidity 合約，程式每次簽名都確認它的程式碼沒變；第一次先送小額。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">實例</a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
   </details>
 </header>
+
+<section id="review">
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
+  <p class="lead">每一項 AI 都先查過，附上建議。</p>
+  <div class="rows">
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>存進去的代幣放在 Fluid 的 Liquidity 合約，它是可升級的 InfiniteProxy。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span>程式每次簽名都確認它和它的 4 個實作沒變，升級後 verify 判 MISMATCH，直到新的 code pin 合併；只新增全新函式的實作看不到，Fluid 在區塊 24,649,359 做過一次。 <a class="aisrc" href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/Liquidity.json">來源 1</a> <a class="aisrc" href="https://docs.fluid.io/autogenerated-docs/protocols/lending/fToken/main.sol/abstract.fTokenActions.html">來源 2</a></span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>verify 判 MISMATCH 就不要簽；Fluid 升級後，等新的 code pin 合併再存。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span><code>deposit</code> 不設最少股份。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span>過去一年直接呼叫 fToken 存款的 EOA 都用這個兩參數版本，沒有一筆用帶 <code>minAmountOut_</code> 的版本。依合約設計，fToken 的換算價格來自 Liquidity 的利率累計，只升不降，存款當下很難被抬價。 <a class="aisrc" href="https://docs.fluid.io/autogenerated-docs/protocols/lending/fToken/main.sol/abstract.fTokenActions.html">來源</a></span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；在乎的話，verify 之後看 Safe 實際收到的股份數。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>fUSDC 一年前約 2.83 億 USDC，2026-01 到約 3.14 億，現在約 1.35 億；2026-05 到 06 一個月少了約 8,300 萬，跟獎勵私鑰事件同期（Fluid 說借貸池未受影響）。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span>2,128 個地址持有，前 10 名占 39.24%。 <a class="aisrc" href="https://docs.fluid.io/autogenerated-docs/protocols/lending/fToken/main.sol/abstract.fTokenActions.html">來源</a></span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>這是存在超過一年的池子；大額提領可能受 Fluid 的提款上限延後，存入前想好何時要提。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+  </div>
+</section>
 
 <section id="flow">
   <h2>流程 <span class="c">2 個呼叫</span></h2>
@@ -325,7 +369,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <line class="gain" x1="470" y1="296" x2="93" y2="296" marker-end="url(#head)"/>
   </svg>
   </div>
-  <div class="scrollhint">圖可以左右滑動</div>
+  <div class="scrollhint">圖可以左右滑動，最右邊是 fluid-liquidity</div>
   <div class="key">
     <span class="k0">誰決定</span>
     <span><span class="who you">你填</span>每次簽名填</span>
@@ -354,11 +398,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="val"><div class="is">你填的金額</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>存進 fToken 的代幣數量，等於存款金額。fToken 依當下換算價格算出要鑄的股份。</span></span></div></div>
     </div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 個固定的值；改了任何一個都是 MISMATCH</summary>
     <div class="arg" data-field="2.deposit.receiver">
       <div class="nm"><span class="pn">receiver</span><span class="who">固定</span></div>
       <div class="val"><div class="is">你的 Safe</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>收 fToken 股份的地址，固定是 Safe。</span></span></div></div>
     </div>
+      </details>
   </div>
   <h3>交易後</h3>
   <dl class="props">
@@ -399,28 +445,27 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div><dt>前 10 名</dt><dd><span class="num">37.93%</span></dd><dd class="src">占全部股份</dd></div>
   </dl>
   <h3>每月的 totalAssets</h3>
-  <div class="diagram">
+  <div class="diagram chart">
   <svg viewBox="0 0 660 194" role="img" aria-labelledby="vt vd">
     <title id="vt">每月的 totalAssets</title>
     <desc id="vd">13 個月，2025-11-21 到 2026-11-17，最高 318,963,517.99 usdc</desc>
     <text class="tick" x="16" y="18">最高 318,963,517.99 usdc</text>
     <line class="axis" x1="16" y1="150" x2="644" y2="150"/>
     <rect class="bar" x="25.7" y="45" width="29.0" height="105"><title>2025-11-21：289,134,742.69 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">11月</text><text class="tick" x="40.2" y="184" text-anchor="middle">2025</text>
-    <rect class="bar" x="74.0" y="42" width="29.0" height="108"><title>2025-12-21：297,445,155.59 usdc</title></rect><text class="tick" x="88.5" y="168" text-anchor="middle">12月</text>
+    <rect class="bar" x="74.0" y="42" width="29.0" height="108"><title>2025-12-21：297,445,155.59 usdc</title></rect><text class="tick thin" x="88.5" y="168" text-anchor="middle">12月</text>
     <rect class="bar" x="122.3" y="34" width="29.0" height="116"><title>2026-01-20：318,963,517.99 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">1月</text><text class="tick" x="136.8" y="184" text-anchor="middle">2026</text>
-    <rect class="bar" x="170.6" y="68" width="29.0" height="82"><title>2026-02-19：225,474,164.48 usdc</title></rect><text class="tick" x="185.1" y="168" text-anchor="middle">2月</text>
+    <rect class="bar" x="170.6" y="68" width="29.0" height="82"><title>2026-02-19：225,474,164.48 usdc</title></rect><text class="tick thin" x="185.1" y="168" text-anchor="middle">2月</text>
     <rect class="bar" x="218.9" y="59" width="29.0" height="91"><title>2026-03-21：249,911,532.12 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">3月</text>
-    <rect class="bar" x="267.2" y="92" width="29.0" height="58"><title>2026-04-21：159,702,358.37 usdc</title></rect><text class="tick" x="281.7" y="168" text-anchor="middle">4月</text>
+    <rect class="bar" x="267.2" y="92" width="29.0" height="58"><title>2026-04-21：159,702,358.37 usdc</title></rect><text class="tick thin" x="281.7" y="168" text-anchor="middle">4月</text>
     <rect class="bar" x="315.5" y="76" width="29.0" height="74"><title>2026-05-21：202,662,215.2 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">5月</text>
-    <rect class="bar" x="363.8" y="108" width="29.0" height="42"><title>2026-06-20：114,170,806.11 usdc</title></rect><text class="tick" x="378.3" y="168" text-anchor="middle">6月</text>
+    <rect class="bar" x="363.8" y="108" width="29.0" height="42"><title>2026-06-20：114,170,806.11 usdc</title></rect><text class="tick thin" x="378.3" y="168" text-anchor="middle">6月</text>
     <rect class="bar" x="412.1" y="99" width="29.0" height="51"><title>2026-07-20：140,377,325.63 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">7月</text>
-    <rect class="bar" x="460.4" y="95" width="29.0" height="55"><title>2026-08-19：151,226,487.48 usdc</title></rect><text class="tick" x="474.9" y="168" text-anchor="middle">8月</text>
+    <rect class="bar" x="460.4" y="95" width="29.0" height="55"><title>2026-08-19：151,226,487.48 usdc</title></rect><text class="tick thin" x="474.9" y="168" text-anchor="middle">8月</text>
     <rect class="bar" x="508.7" y="94" width="29.0" height="56"><title>2026-09-18：154,602,869.8 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">9月</text>
-    <rect class="bar" x="557.0" y="100" width="29.0" height="50"><title>2026-10-18：136,112,470.57 usdc</title></rect><text class="tick" x="571.5" y="168" text-anchor="middle">10月</text>
+    <rect class="bar" x="557.0" y="100" width="29.0" height="50"><title>2026-10-18：136,112,470.57 usdc</title></rect><text class="tick thin" x="571.5" y="168" text-anchor="middle">10月</text>
     <rect class="bar last" x="605.4" y="98" width="29.0" height="52"><title>2026-11-17：141,979,963.17 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">11月</text>
   </svg>
   </div>
-  <div class="scrollhint">圖可以左右滑動</div>
   <details class="fold">
     <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>13 個月的數字</summary>
     <dl class="props">
@@ -441,44 +486,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </details>
 </section>
 
-<section id="review">
-  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
-  <p class="lead">每一項 AI 都先查過，附上建議。</p>
-  <div class="rows">
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>存進去的代幣放在 Fluid 的 Liquidity 合約，它是可升級的 InfiniteProxy。</span><span class="byai">AI 研究</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="aiw" data-ai><span>存進去的代幣放在 Fluid 的 Liquidity 合約，它是可升級的 InfiniteProxy。程式每次簽名都確認它和它的 4 個實作沒變，升級後 verify 判 MISMATCH，直到新的 code pin 合併；只新增全新函式的實作看不到，Fluid 在區塊 24,649,359 做過一次。 <a class="aisrc" href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/Liquidity.json">來源 1</a> <a class="aisrc" href="https://docs.fluid.io/autogenerated-docs/protocols/lending/fToken/main.sol/abstract.fTokenActions.html">來源 2</a></span><span class="byai">AI 研究</span></span></div>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>verify 判 MISMATCH 就不要簽；Fluid 升級後，等新的 code pin 合併再存。</span><span class="byai">AI 研究</span></span></div>
-        </details></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span><code>deposit</code> 不設最少股份。</span><span class="byai">AI 研究</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="aiw" data-ai><span><code>deposit</code> 不設最少股份。過去一年直接呼叫 fToken 存款的 EOA 都用這個兩參數版本，沒有一筆用帶 <code>minAmountOut_</code> 的版本。依合約設計，fToken 的換算價格來自 Liquidity 的利率累計，只升不降，存款當下很難被抬價。 <a class="aisrc" href="https://docs.fluid.io/autogenerated-docs/protocols/lending/fToken/main.sol/abstract.fTokenActions.html">來源</a></span><span class="byai">AI 研究</span></span></div>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；在乎的話，verify 之後看 Safe 實際收到的股份數。</span><span class="byai">AI 研究</span></span></div>
-        </details></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>fUSDC 一年前約 2.83 億 USDC，2026-01 到約 3.14 億，現在約 1.35 億；2026-05 到 06 一個月少了約 8,300 萬，跟獎勵私鑰事件同期（Fluid 說借貸池未受影響）。</span><span class="byai">AI 研究</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="aiw" data-ai><span>fUSDC 一年前約 2.83 億 USDC，2026-01 到約 3.14 億，現在約 1.35 億；2026-05 到 06 一個月少了約 8,300 萬，跟獎勵私鑰事件同期（Fluid 說借貸池未受影響）。2,128 個地址持有，前 10 名占 39.24%。 <a class="aisrc" href="https://docs.fluid.io/autogenerated-docs/protocols/lending/fToken/main.sol/abstract.fTokenActions.html">來源</a></span><span class="byai">AI 研究</span></span></div>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>這是存在超過一年的池子；大額提領可能受 Fluid 的提款上限延後，存入前想好何時要提。</span><span class="byai">AI 研究</span></span></div>
-        </details></div>
-    </div>
-  </div>
-</section>
-
 <section id="wallet">
   <h2>錢包顯示 <span class="c">ERC-7730 描述檔</span></h2>
   <p class="lead">這筆 Safe 交易用 MultiSend 打包 2 個呼叫，沒有描述檔解得開 Safe 的 MultiSend，所以請比對裝置上的 hash 和 <code>verify</code> 印的 safeTxHash。</p>
   <dl class="props two">
     <div><dt>Safe 交易（SafeTx）</dt><dd>
       <dl class="nest flat">
-        <div><dt><code>to</code></dt><dd>官方 MultiSend</dd></div>
+        <div><dt><code>to</code></dt><dd>官方 MultiSend，是這 8 個 Safe 部署之一：<span class="addr line">0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761</span><span class="addr line">0x998739BFdAAdde7C933B942a68053933098f9EDa</span><span class="addr line">0x40A2aCCbd92BCA938b02010E17A5b8929b49130D</span><span class="addr line">0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B</span><span class="addr line">0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526</span><span class="addr line">0x9641d764fc13c8B624c04430C7356C1C7C8102e2</span><span class="addr line">0x218543288004CD07832472D464648173c77D7eB7</span><span class="addr line">0xA83c336B20401Af773B6219BA5027174338D1836</span></dd></div>
         <div><dt><code>value</code></dt><dd><span class="addr">0</span></dd></div>
         <div><dt><code>operation</code></dt><dd>Delegate Call（1），呼叫官方 MultiSend</dd></div>
         <div><dt><code>data</code></dt><dd>MultiSend 打包的呼叫，只顯示原始資料</dd></div>
@@ -565,7 +579,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="next">
   <h2>下一步</h2>
   <ol class="steps">
-    <li><div>核准前，打開「<a href="#addresses">地址</a>」裡每個地址列出的來源：確認每個網域是協議自己的，而且頁面上列著這個地址。</div></li>
+    <li><div>核准前，到「<a href="#addresses">地址</a>」逐一打開每個地址的來源，確認每個網域都是協議自己的，而且頁面上列著這個地址。</div></li>
     <li><div>第一次用這個模板，或模板改過之後，先核准它<pre class="cmd"><code>pnpm kiss-sign template approve fluid/vault-deposit</code></pre>
       <p class="then">它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 <code>y</code>。</p></div></li>
     <li><div>做卡片<pre class="cmd"><code>pnpm kiss-sign card new fluid/vault-deposit</code></pre>
