@@ -51,7 +51,15 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 
   1. [Safe's descriptor](https://github.com/ethereum/clear-signing-erc7730-registry/blob/3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4/registry/safe/common-eip712-Safe.json) shows the SafeTx and hands its data to the descriptor of the contract it calls.
   2. That contract is MultiSend, which wraps the whole batch. MultiSend has no descriptor, so neither call inside is shown.
-  3. Past MultiSend, [Bundler3's descriptor](https://github.com/ethereum/clear-signing-erc7730-registry/blob/3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4/registry/morpho/calldata-MorphoBundlerV3.json) names its call "Bundler3 Multicall" and hands each action to GeneralAdapter1, which has no descriptor either. The two steps that move your USDC into the vault have nothing to show them by.
+  3. Past MultiSend, [Bundler3's descriptor](https://github.com/ethereum/clear-signing-erc7730-registry/blob/3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4/registry/morpho/calldata-MorphoBundlerV3.json) names its call "Bundler3 Multicall" and hands each action to GeneralAdapter1, which has no descriptor either. The two steps that move your USDC into the vault have nothing to show them by. This is the part of the descriptor that shows the multicall:
+
+     ```json
+     "multicall((address to, bytes data, uint256 value, bool skipRevert, bytes32 callbackHash)[] bundle)": {
+       "intent": "Bundler3 Multicall",
+       "fields": [{ "path": "#.bundle.[].data", "label": "Action", "format": "calldata",
+                    "params": { "calleePath": "#.bundle.[].to", "amountPath": "#.bundle.[].value" } }]
+     }
+     ```
 
   kiss-sign needs no descriptor. Your wallet only has to show the hashes.
 
