@@ -1207,7 +1207,7 @@ function reviewSection(context: Context): Section {
   return { anchor: anchor('review'), label: context.w.review, count, body: { kind: 'review', rows, judgments } };
 }
 
-/** The template's rule in the signer's words, for the wallet table: never the example's value. */
+/** The template's rule in the signer's words, for the wallet table. */
 function ruleWords(rule: Rule, context: Context): Inline {
   const { w } = context;
   switch (rule.kind) {

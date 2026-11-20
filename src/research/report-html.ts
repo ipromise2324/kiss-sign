@@ -2,7 +2,6 @@ import { existsSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { HTML_LANG, LANGUAGES } from '../language.ts';
 import type { Language } from '../language.ts';
-import { firstRecordedTx } from '../template/perturb.ts';
 import type { State } from './ledger.ts';
 import { NOTES_FILE, codeSpans, notesLanguages, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
@@ -593,17 +592,11 @@ ${page.sections.map((s) => section(s, r).text).join('')}
 `;
 }
 
-/**
- * The template's HTML report in every language from the recordings and `notes.json`, or undefined when it has none. It
- * takes the template's first recorded test transaction as the example. Throws NotesError for notes the program refuses.
- */
-export async function generatedHtml(repoRoot: string, inputs: ReportInputs, title: ReportTitle): Promise<ReadonlyMap<Language, string> | undefined> {
-  const { subject, registry } = inputs;
-  const raw = readNotes(repoRoot, subject.template.id, subject.vault);
+/** The template's HTML report in every language from the recordings and `notes.json`, or undefined when it has none. Throws NotesError for notes the program refuses. */
+export function generatedHtml(repoRoot: string, inputs: ReportInputs, title: ReportTitle): ReadonlyMap<Language, string> | undefined {
+  const raw = readNotes(repoRoot, inputs.subject.template.id, inputs.subject.vault);
   if (raw === undefined) return undefined;
-  // The example must name the report's own vault.
-  const html = { ...inputs, example: firstRecordedTx(repoRoot, subject.template, registry) };
-  return new Map(notesLanguages(raw).map((language) => [language, renderPage(buildPage(html, raw, title, language))]));
+  return new Map(notesLanguages(raw).map((language) => [language, renderPage(buildPage(inputs, raw, title, language))]));
 }
 
 /** Up to 160 characters of a line from where it first differs, quoted so no control character reaches the terminal. */
