@@ -48,6 +48,8 @@ import { reportedInstancesIn } from '../src/template/vault-reports.ts';
 import { PREDATE_REPORT } from './predate-report.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
 import { NO_SITE_LISTINGS } from '../src/research/site-listings.ts';
+import { studyRecording } from '../src/research/past-txs-summary.ts';
+import type { PastTxsRecording } from '../src/research/recording.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
@@ -534,23 +536,24 @@ test('docs.json may name ERC-4626 for a vault function, and WETH9 only for WETH 
 });
 
 test('a recorded trace drpc gave no readable answer for counts the transaction as not checked', async () => {
-  const { subject } = scoped;
-  const { file, recording: past } = pastTxsRecordings(ROOT, subject).find((r) => r.recording.query.fromBlock !== undefined)!;
-  const plain = await summarizePastTxs(ROOT, registry, file, past);
+  const file = 'testdata/research/morpho-vault-deposit.json';
+  const past = readRecording<PastTxsRecording>(join(ROOT, 'testdata', 'past-txs', 'morpho-vault-deposit.json'));
+  const plain = summarizePastTxs(ROOT, registry, file, await studyRecording(ROOT, past, registry));
   const exact = plain.run.studies.find((s) => s.kind === 'fit' && s.outside.length === 0) ?? assert.fail('a transaction exactly the template');
   const traced = { ...past, traces: [{ hash: exact.hash, unreadable: 'recorded' }] };
-  const recorded = await summarizePastTxs(ROOT, registry, file, traced);
+  const recorded = summarizePastTxs(ROOT, registry, file, await studyRecording(ROOT, traced, registry));
   assert.match(recorded.text, /call traces, from drpc, of the transactions exactly the template: 1 transaction, 0 checked/);
 });
 
 test('a recording that keeps its head block is studied again from it, and the command the report prints searches its windows again with --same-windows-as', async () => {
   const { subject } = scoped;
-  const { file, recording: past } = pastTxsRecordings(ROOT, subject).find((r) => r.recording.query.fromBlock === undefined)!;
+  const file = 'testdata/research/morpho-vault-deposit-windows.json';
+  const past = readRecording<PastTxsRecording>(join(ROOT, 'testdata', 'past-txs', 'morpho-vault-deposit-windows.json'));
   const head = await replayReader(past.exchanges).blockNumber();
   assert.equal(head.kind, 'agreed');
   const kept = { ...past, query: { ...past.query, head: String(head.kind === 'agreed' ? head.value : '') }, exchanges: past.exchanges.filter((e) => e.method !== 'eth_blockNumber') };
-  const before = await summarizePastTxs(ROOT, registry, file, past);
-  const after = await summarizePastTxs(ROOT, registry, file, kept);
+  const before = summarizePastTxs(ROOT, registry, file, await studyRecording(ROOT, past, registry));
+  const after = summarizePastTxs(ROOT, registry, file, await studyRecording(ROOT, kept, registry));
   assert.equal(after.text, before.text);
   const command = (text: string) => text.split('\n').find((line) => line.includes(`--record ${file.replace(/^.*\//, '').replace(/\.json$/, '')}`));
   const name = file.replace(/^.*\//, '').replace(/\.json$/, '');

@@ -12,10 +12,12 @@ import type { Exchange } from '../src/chain/recording.ts';
 import type { Transport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import type { Registry } from '../src/registry.ts';
-import { pastTxs, renderPastTxs, spreadOf } from '../src/research/past-txs.ts';
+import { foundBy, pastTxs } from '../src/research/past-txs.ts';
+import { renderPastTxs, spreadOf } from '../src/research/past-txs-render.ts';
 import { DEFAULT_SAMPLING, YEAR_PAGES, samplingFields, samplingOf, scrubRecording } from '../src/research/recording.ts';
 import { replayMessages } from '../src/research/messages.ts';
 import { pastTxsRecordings, summarizePastTxs } from '../src/research/report.ts';
+import { studyRecording } from '../src/research/past-txs-summary.ts';
 import type { Subject } from '../src/research/report.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { anchorEvent, recordingAsk, replayAsk, search } from '../src/research/sources.ts';
@@ -27,8 +29,20 @@ import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = repoWithTestFixtures();
+
+/** The text of a summary of `query` that studied nothing. */
+const summaryOf = (query: PastTxsRecording['query']): string =>
+  JSON.stringify({
+    query,
+    ...(query.fromBlock === undefined ? { head: query.head ?? '1' } : {}),
+    studiedWith: { template: `0x${'00'.repeat(32)}`, registry: `0x${'00'.repeat(32)}`, study: `0x${'00'.repeat(32)}` },
+    search: { windows: [], perWindow: 0, found: { total: 0, only: { alchemy: [], etherscan: [] } }, otherEmitter: [] },
+    studies: [],
+    measurements: [],
+    traces: [],
+  });
 const SCRIPTS = join(import.meta.dirname, '..', 'scripts');
-const recording: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit.json'));
+const recording: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'morpho-vault-deposit.json'));
 const registry = loadRegistry(ROOT);
 
 const FIT = '0x88a65493c62cfc17be33cbc587fca29edf71d0984b6ba2295873dfb1a9a38c4c';
@@ -134,7 +148,7 @@ test('the template\'s function called on another contract than the vault whose m
 });
 
 test('a window with more transfers than one page is halved, and the report names the blocks left out', async () => {
-  const windowed: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'));
+  const windowed: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'morpho-vault-deposit-windows.json'));
   const [full, half] = [26373601n, 26377201n];
   const replay = replayAsk(windowed.sources);
   const fromBlockOf = (r: SourceRequest) => (r.source === 'alchemy' ? BigInt(r.params.fromBlock as string) : BigInt(r.query.fromBlock as string));
@@ -155,7 +169,7 @@ test('a window with more transfers than one page is halved, and the report names
 
 test('a recording keeps only what the search reads, so a busy token\'s halved windows, overflowing in either source alone, replay the same report at a size bounded by the answers and transfers found', async () => {
   for (const overflowing of ['alchemy', 'etherscan'] as const) {
-    const windowed: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'));
+    const windowed: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'morpho-vault-deposit-windows.json'));
     const [full, half] = [26373601n, 26377201n];
     const replay = replayAsk(windowed.sources);
     const fromBlockOf = (r: SourceRequest) => (r.source === 'alchemy' ? BigInt(r.params.fromBlock as string) : BigInt(r.query.fromBlock as string));
@@ -182,7 +196,7 @@ test('a recording keeps only what the search reads, so a busy token\'s halved wi
     const recorded = recorder.exchanges();
     assert.equal(renderPastTxs(await study(replayAsk(recorded)), registry), renderPastTxs(run, registry));
     assert.match(renderPastTxs(run, registry), /halved, too many transfers in 26373601 to 26380800/);
-    const hits = [...run.found.values()].reduce((n, sources) => n + sources.length, 0);
+    const hits = foundBy(run.found, 'alchemy') + foundBy(run.found, 'etherscan');
     assert.ok(JSON.stringify(recorded).length < recorded.length * 3_000 + hits * 300, `${JSON.stringify(recorded).length} bytes for ${recorded.length} answers and ${hits} transfers`);
   }
 });
@@ -194,7 +208,7 @@ test('--max-txs below one transaction per window is refused', () => {
 });
 
 test('by default the windows are spread over the last year from the head block, and each window is sampled to its share', async () => {
-  const windowed: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'));
+  const windowed: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'morpho-vault-deposit-windows.json'));
   const text = await report({ recorded: windowed });
   assert.match(text, /^windows: 12 of up to 7200 blocks, one every 219000 blocks over the last year; at most 2 studied per window$/m);
   const windows = [...text.matchAll(/^ {2}blocks (\d+) to (\d+): (\d+) found, (\d+) studied$/gm)].map((m) => m.slice(1).map(Number));
@@ -209,7 +223,7 @@ test('by default the windows are spread over the last year from the head block, 
 });
 
 test('a whole year holding more than one page of a source falls back to the windows, and the report says so', async () => {
-  const windowed: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'));
+  const windowed: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'morpho-vault-deposit-windows.json'));
   const replay = replayAsk(windowed.sources);
   const fromBlockOf = (r: SourceRequest) => (r.source === 'alchemy' ? BigInt(r.params.fromBlock as string) : BigInt(r.query.fromBlock as string));
   const yearStart = 26380800n - 2628000n + 1n;
@@ -262,7 +276,7 @@ test('the report takes a recording that asked the whole year first, or searched 
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-past-txs-'));
   after(() => rmSync(root, { recursive: true, force: true }));
   mkdirSync(join(root, 'testdata', 'research'), { recursive: true });
-  const write = (name: string, query: PastTxsRecording['query']) => writeFileSync(join(root, 'testdata', 'research', `${name}.json`), JSON.stringify({ query, sources: [], providers: [], exchanges: [] }));
+  const write = (name: string, query: PastTxsRecording['query']) => writeFileSync(join(root, 'testdata', 'research', `${name}.json`), summaryOf(query));
   const { token: _, ...anyContract } = year.query;
   const { event: __, ...anyTransfer } = anyContract;
   write('whole-year', year.query);
@@ -429,7 +443,7 @@ test('an EOA making one call is not judged by an equals rule naming a leaf of a 
 });
 
 test('an anchor with a sender asks both sources only for transfers out of it, and the report names it', async () => {
-  const claims: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'merkl-claim.json'));
+  const claims: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'merkl-claim.json'));
   const text = await report({ recorded: claims });
   assert.match(text, /^anchor: Transfer of morpho 0x58D97B57BB95320F9a05dC918Aef65434969c2B2 moved out of merkl-distributor$/m);
   assert.match(text, /^ {2}blocks 24020000 to 24030000: 120 found, 120 studied$/m);
@@ -509,7 +523,7 @@ test('--to goes with --anchor any only', () => {
 });
 
 test("a Safe's transaction that makes none of the template's calls is another operation, counted on its own and not among the misfits", async () => {
-  const transfers: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'erc20-transfer.json'));
+  const transfers: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'erc20-transfer.json'));
   const text = await report({ recorded: transfers });
   assert.match(
     text,
@@ -550,7 +564,7 @@ test('a read that still fails on the way after every retry is named, and --recor
 });
 
 test('a recording\'s head places the spread windows without reading the chain head, so a run again searches the same windows', async () => {
-  const windowed: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'));
+  const windowed: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'morpho-vault-deposit-windows.json'));
   const head = await replayReader(windowed.exchanges).blockNumber();
   assert.equal(head.kind, 'agreed');
   const kept = { ...windowed, query: { ...windowed.query, head: String(head.kind === 'agreed' ? head.value : '') } };
@@ -564,16 +578,16 @@ const pastTxsRun = (...args: string[]) =>
 test('--same-windows-as goes with the spread windows only, not with a block range', () => {
   const run = pastTxsRun('--same-windows-as', 'morpho-vault-deposit-windows', '--from-block', '1', '--to-block', '2');
   assert.equal(run.status, 64);
-  assert.match(run.stderr, /--same-windows-as <recording>/);
+  assert.match(run.stderr, /--same-windows-as <name>/);
 });
 
 test('--same-windows-as refuses a recording of one block range, and a name with no recording', () => {
   const old = pastTxsRun('--same-windows-as', 'morpho-vault-deposit');
   assert.equal(old.status, 64);
-  assert.equal(old.stderr, '--same-windows-as morpho-vault-deposit: the recording searched one block range and keeps no head block, so it has no windows to search again\n');
+  assert.equal(old.stderr, '--same-windows-as morpho-vault-deposit: the summary searched one block range and keeps no head block, so it has no windows to search again\n');
   const missing = pastTxsRun('--same-windows-as', 'no-such-study');
   assert.equal(missing.status, 64);
-  assert.equal(missing.stderr, '--same-windows-as no-such-study: no recording testdata/research/no-such-study.json\n');
+  assert.equal(missing.stderr, '--same-windows-as no-such-study: no summary testdata/research/no-such-study.json\n');
 });
 
 test('a free number is summarized by nearest rank: the smallest, the 50th, 90th and 99th percentile, and the largest', () => {
@@ -622,7 +636,7 @@ test('--event goes only with --anchor event, and --anchor event needs it', () =>
   }
 });
 
-const cow: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'cow-swap-presign.json'));
+const cow: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'cow-swap-presign.json'));
 
 async function cowRun(options: { time?: boolean; withinSeconds?: number; messages?: PastTxsRecording['messages']; reader?: Reader } = {}) {
   const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'cow', 'swap', 'template.json'), 'utf8'));
@@ -890,7 +904,7 @@ test('the report refuses a recording whose yearPages goes with wholeYear, exceed
   const only = (query: PastTxsRecording['query']) => {
     rmSync(join(root, 'testdata', 'research'), { recursive: true, force: true });
     mkdirSync(join(root, 'testdata', 'research'), { recursive: true });
-    writeFileSync(join(root, 'testdata', 'research', 'year.json'), JSON.stringify({ query, sources: [], providers: [], exchanges: [] }));
+    writeFileSync(join(root, 'testdata', 'research', 'year.json'), summaryOf(query));
     return () => pastTxsRecordings(root, subject);
   };
   assert.deepEqual(only({ ...paged, yearPages: 10 })().map((r) => r.file), ['testdata/research/year.json']);
@@ -910,7 +924,7 @@ test('the report replays a paged year\'s party reads from the recording', async 
     providers: [],
     exchanges: onChain.exchanges(),
   };
-  const offline = await summarizePastTxs(ROOT, registry, 'year.json', recorded);
+  const offline = summarizePastTxs(ROOT, registry, 'year.json', await studyRecording(ROOT, recorded, registry));
   assert.match(offline.text, /^chosen to study: all 3 transactions with a proven Safe party, and 9 of the other 97, taken evenly in block order$/m);
 });
 

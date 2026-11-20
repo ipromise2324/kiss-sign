@@ -26,14 +26,13 @@ import { GENERATED_FILE, INSTANCE_FOLDER, reportUnit, reportedInstancesIn, sever
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, EffectToken, Quantity, Rule, Template, Tolerance, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording, SiteOwner } from './listings.ts';
 import { checkSources, githubLine, listingsFor, recordedListingReads, sourcePagesOf, sourceSiteLine, trimForRecording, trimSourcePage } from './listings.ts';
-import { pastTxs, renderPastTxs } from './past-txs.ts';
+import { renderPastTxs } from './past-txs-render.ts';
 import { factsScope, parseFactsRecording, protocolFacts, replaySources } from './protocol-facts.ts';
 import type { FactReading, FactsScope, ProtocolFacts } from './protocol-facts.ts';
 import type { PastTxs } from './past-txs.ts';
-import { YEAR_PAGES, samplingOf } from './recording.ts';
 import type { PastTxsRecording } from './recording.ts';
-import { replayMessages } from './messages.ts';
-import { replayTraces } from './trace.ts';
+import { SUMMARIES_DIR, SummaryError, parseSummary, runOf, staleParts } from './past-txs-summary.ts';
+import type { PastTxsSummary } from './past-txs-summary.ts';
 import { pathText } from './api-source.ts';
 import { provenanceRepositories } from './npm-package.ts';
 import { gradedFindings, weightOf } from './grades.ts';
@@ -46,10 +45,8 @@ import type { SourcePages } from './source-page.ts';
 import { chainAt, formatReports, studyEntries } from './erc7730.ts';
 import type { ChainAccess, EntryReport, Snapshot } from './erc7730.ts';
 import { constText } from './study.ts';
-import { ANCHOR_KINDS, anchorEvent, replayAsk } from './sources.ts';
 import { STANDARDS } from './standards.ts';
 import type { Standard } from './standards.ts';
-import type { AnchorKind } from './sources.ts';
 import { readRecording } from '../chain/bytecode.ts';
 import { WORDS, toleranceSpan } from './report-words.ts';
 
@@ -79,7 +76,8 @@ export type ReportRecording = ListingsRecording & {
   readonly facts?: unknown;
 };
 
-export type PastTxsSummary = { readonly file: string; readonly query: PastTxsRecording['query']; readonly text: string; readonly run: PastTxs };
+/** One past-txs summary as a report prints it. */
+export type PastTxsSection = { readonly file: string; readonly query: PastTxsRecording['query']; readonly text: string; readonly run: PastTxs };
 
 export type ReportInputs = {
   readonly subject: Subject;
@@ -91,7 +89,7 @@ export type ReportInputs = {
   readonly abi: ReadonlyMap<Address, AbiProof | AbiRefusal>;
   /** What `pnpm instance-evidence` printed, by vault name. Absent: not read. */
   readonly vaults: ReadonlyMap<string, string>;
-  readonly pastTxs: readonly PastTxsSummary[];
+  readonly pastTxs: readonly PastTxsSection[];
   /** Each pinned entry's spans as `checkSpans` judged them, oldest first. */
   readonly spans: ReadonlyMap<Address, readonly SpanCheck[]>;
   /** What `checkToday` read for `todayEntries`; undefined when none needs it or the recording predates it. */
@@ -114,7 +112,6 @@ export const DOCS_FILE = 'docs.json';
 export const GENERATED_SUFFIX = '.generated.md';
 export { GENERATED_FILE };
 export const REPORT_RECORDINGS_DIR = join('testdata', 'report');
-const RESEARCH_DIR = join('testdata', 'research');
 
 /** The folder an instance's report files sit in. */
 export const instanceReportDir = (template: string, instance: string): string => join(TEMPLATES_DIR, template, INSTANCE_FOLDER, instance);
@@ -552,78 +549,46 @@ export async function erc7730Text(entries: readonly RegistryEntry[], registry: R
   return { text: formatReports(snapshot, reports), reports };
 }
 
-/** Every `pnpm past-txs --record` recording the subject's report summarizes: of the template, or anchored on the vault. */
-export function pastTxsRecordings(repoRoot: string, subject: Subject): { readonly file: string; readonly recording: PastTxsRecording }[] {
-  const dir = join(repoRoot, RESEARCH_DIR);
+/**
+ * Every past-txs summary the subject's report prints: of the template, or anchored on the vault. Each file is parsed
+ * once, and refused when anything in it is not what `pnpm past-txs` writes.
+ */
+export function pastTxsRecordings(repoRoot: string, subject: Subject): { readonly file: string; readonly recording: PastTxsSummary }[] {
+  const dir = join(repoRoot, SUMMARIES_DIR);
   return readdirSync(dir)
     .filter((f) => f.endsWith('.json'))
     .sort()
-    .map((f) => ({ file: join(RESEARCH_DIR, f), recording: readRecording(join(dir, f)) as PastTxsRecording }))
-    .filter(({ file, recording: { query } }) => {
-      if (!printableQuery(file, query)) throw new ReportError(`${file}: its name or query holds a value \`pnpm past-txs --record\` never writes`);
-      const onVault = subject.vault === undefined || query.token?.toLowerCase() === subject.vault.address;
-      return query.template === subject.template.id && onVault;
-    });
+    .map((f) => {
+      const file = join(SUMMARIES_DIR, f);
+      try {
+        return { file, recording: parseSummary(file, readFileSync(join(dir, f), 'utf8')) };
+      } catch (error) {
+        throw error instanceof SummaryError ? new ReportError(error.message) : error;
+      }
+    })
+    .filter(({ recording: { query } }) => query.template === subject.template.id && (subject.vault === undefined || query.token?.toLowerCase() === subject.vault.address));
 }
 
-function canonicalEvent(signature: string): boolean {
-  try {
-    return anchorEvent(signature).signature === signature;
-  } catch {
-    return false;
+/**
+ * The registry a summary of `query` is studied with: the one its report reads, which for a template reported per vault
+ * is scoped to the vault the query anchors on.
+ */
+export function pastTxsRegistry(repoRoot: string, full: Registry, query: PastTxsRecording['query']): Registry {
+  if (reportUnit(loadTemplate(repoRoot, query.template, full)).kind !== 'instance') return full;
+  const vault = query.token === undefined ? undefined : full.byAddress.get(query.token.toLowerCase() as Address);
+  if (vault === undefined) throw new ReportError(`${query.template} is reported per vault, and the search anchors on no registry entry`);
+  return loadReport(repoRoot, full, { template: query.template, instance: vault.name }).registry;
+}
+
+/** A summary as the report prints it, refused when this checkout's template, registry or study code would study it otherwise. */
+export function summarizePastTxs(repoRoot: string, registry: Registry, file: string, summary: PastTxsSummary): PastTxsSection {
+  const stale = staleParts(repoRoot, registry, summary);
+  if (stale.length > 0) {
+    const name = file.replace(/^.*\//, '').replace(/\.json$/, '');
+    throw new ReportError(`${file}: the ${stale.join(' and the ')} changed since it was studied; run pnpm past-txs --restudy ${name}`);
   }
-}
-
-/** The report prints a recording's file name and query as a command, so each must be what `pnpm past-txs` writes. */
-function printableQuery(file: string, query: PastTxsRecording['query']): boolean {
-  const address = (v: unknown) => typeof v === 'string' && /^0x[0-9a-fA-F]{40}$/.test(v);
-  const block = (v: unknown) => v === undefined || (typeof v === 'string' && /^\d+$/.test(v));
-  return (
-    /^[a-z0-9-]+\.json$/.test(file.replace(/^.*\//, '')) &&
-    /^[a-z0-9-]+\/[a-z0-9-]+$/.test(query.template) &&
-    (query.anchor === 'event' ? query.token === undefined || address(query.token) : address(query.token)) &&
-    (query.from === undefined || address(query.from)) &&
-    (query.to === undefined || address(query.to)) &&
-    (ANCHOR_KINDS as readonly string[]).includes(query.anchor) &&
-    (query.anchor === 'event') === (query.event !== undefined) &&
-    (query.event === undefined || canonicalEvent(query.event)) &&
-    block(query.fromBlock) &&
-    block(query.toBlock) &&
-    block(query.head) &&
-    (query.head === undefined || (query.fromBlock === undefined && query.toBlock === undefined)) &&
-    (query.wholeYear === undefined || (query.wholeYear === true && query.head !== undefined)) &&
-    (query.yearPages === undefined || (Number.isSafeInteger(query.yearPages) && query.yearPages >= 1 && query.yearPages <= YEAR_PAGES && query.head !== undefined && query.wholeYear === undefined)) &&
-    Number.isSafeInteger(query.maxTxs)
-  );
-}
-
-/** Runs the study again on a recording, with the template as it is now. */
-export async function summarizePastTxs(repoRoot: string, registry: Registry, file: string, recording: PastTxsRecording): Promise<PastTxsSummary> {
-  const { query } = recording;
-  const run = await pastTxs(
-    {
-      template: loadTemplate(repoRoot, query.template, registry),
-      anchor: {
-        ...(query.token === undefined ? {} : { token: query.token as Address }),
-        kind: query.anchor as AnchorKind,
-        ...(query.from === undefined ? {} : { from: query.from as Address }),
-        ...(query.to === undefined ? {} : { to: query.to as Address }),
-        ...(query.event === undefined ? {} : { event: anchorEvent(query.event) }),
-      },
-      sampling: samplingOf(query),
-    },
-    {
-      ask: replayAsk(recording.sources),
-      reader: replayReader(recording.exchanges),
-      registry,
-      readMessage: replayMessages(recording.messages ?? []),
-      exclude: undefined,
-      maxTxs: query.maxTxs,
-      traces: replayTraces(recording.traces),
-      excludedByRecording: { found: new Set(recording.excluded?.found ?? []), sampled: new Set(recording.excluded?.sampled ?? []) },
-    },
-  );
-  return { file, query, text: renderPastTxs(run, registry), run };
+  const run = runOf(summary, loadTemplate(repoRoot, summary.query.template, registry));
+  return { file, query: summary.query, text: renderPastTxs(run, registry), run };
 }
 
 /** Text the AI wrote, as literal Markdown on one line: every character Markdown or a table cell reads is escaped. */
@@ -1114,7 +1079,7 @@ function abiRow(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, 
 const COMMAND_FLAGS = ['token', 'anchor', 'event', 'from', 'to', 'fromBlock', 'toBlock', 'maxTxs'] as const;
 
 /** A recording that keeps its head names itself with `--same-windows-as`, so the command searches its windows again. */
-function pastTxsCommand({ query, file }: PastTxsSummary): string {
+function pastTxsCommand({ query, file }: PastTxsSection): string {
   const name = file.replace(/^.*\//, '').replace(/\.json$/, '');
   const flag = (key: (typeof COMMAND_FLAGS)[number]) => `--${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
   const args = COMMAND_FLAGS.flatMap((key) => (query[key] === undefined ? [] : [`${flag(key)} ${key === 'event' ? `'${query[key]}'` : String(query[key])}`]));
@@ -1490,7 +1455,7 @@ export async function replayInputs(
     fetched: recording.fetched,
     abi: await replayAbiProofs(provedEntries(subject, registry), loadAbiCases(repoRoot), compilers),
     vaults: new Map(Object.entries(recording.vaults)),
-    pastTxs: await Promise.all(pastRecordings.map(({ file, recording: r }) => summarizePastTxs(repoRoot, registry, file, r))),
+    pastTxs: pastRecordings.map(({ file, recording: r }) => summarizePastTxs(repoRoot, registry, file, r)),
     spans: await checkSpans(replayReader(recording.code), entries),
     today: recording.today === undefined ? undefined : await readToday(replayReader(recording.code), subject, registry, { number: BigInt(recording.today.number), hash: recording.today.hash }),
     instances:
