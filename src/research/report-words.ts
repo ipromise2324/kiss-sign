@@ -1027,7 +1027,7 @@ const EN: Words = {
     `Search of ${token} ${anchor}: ${found} found, ${studied} studied${
       safes === undefined ? ''
       : safes.found === 0 ? ', none with a proven Safe party'
-      : safes.studied === safes.found ? `, all ${safes.found} with a proven Safe party`
+      : safes.studied === safes.found ? `, ${safes.found === 1 ? 'the one' : `all ${safes.found}`} with a proven Safe party`
       : `, ${safes.studied} of ${safes.found} with a proven Safe party`
     }`,
   searchEtherscanOnly: (count) => ['Only Etherscan searches an event, and found ', count, "; Alchemy's eth_getLogs reads at most 10 blocks at a time on the free plan."],
