@@ -139,7 +139,7 @@ Weak evidence is shown, not hidden. The Hyperithm vault is confirmed only by its
 
 **Past transactions.** Other senders' executed transactions of this operation: here 8 match the template exactly.
 
-You review an operation once. After that you review only what changes: another vault's report, a registry pull request, or a changed template. Merging is your confirmation. Then approve the template on your own computer, which records its hash so `verify` refuses any other version:
+You review an operation once. After that you review only what is new or changed: a report for another contract the template can call, a registry pull request, or a changed template. Merging is your confirmation. Then approve the template on your own computer, which records its hash so `verify` refuses any other version:
 
 ```sh
 git pull
