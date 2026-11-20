@@ -115,7 +115,7 @@ The report shows what the transaction will do and where every fact came from. Te
 
 **Every field.** Each argument is fixed by the template, filled from your card, or, like a deadline or a route, left to the protocol's app within limits the template states.
 
-![The fields of usdc.approve in the report: spender is fixed to general-adapter-1 with its full address, and value is the amount you fill in](docs/readme/report-fields.png)
+![The fields of usdc.approve in the report: value is the amount you fill in, and spender, under the opened fold of fixed values, is fixed to general-adapter-1 with its full address](docs/readme/report-fields.png)
 
 **Every address.** Each place it was found, whether that site belongs to the protocol, and whether the newest version still lists it. This crop is from the CoW swap report. CoW's settlement contract is found in four sources, but places count by who owns them: two GitHub pages and the SDK all belong to CoW's GitHub organization, so with Immunefi it is confirmed in two places.
 
@@ -123,7 +123,7 @@ The report shows what the transaction will do and where every fact came from. Te
 
 Weak evidence is shown, not hidden. The Hyperithm vault was confirmed only by its factory, so the report flags it and lists it under To review, with the AI's suggestion: open the vault from the Morpho app's list, compare the address, and send a small amount first.
 
-![An address confirmed in only one place, the factory, flagged with low confidence: the Morpho app page could not be read, CoinGecko had nothing to compare, Immunefi's scope does not list it, and no deployer was proven](docs/readme/report-address-flagged.png)
+![An address confirmed in only one place, the factory, flagged with low confidence: the Morpho app page is not read because its URL holds the address, CoinGecko had nothing to compare, Immunefi's scope does not list it, and no deployer was proven](docs/readme/report-address-flagged.png)
 
 You review an operation once. After that you review only what changes: another vault's report, a registry pull request, or a changed template. Merging is your confirmation. Then approve the template on your own computer, which records its hash so `verify` refuses any other version:
 
