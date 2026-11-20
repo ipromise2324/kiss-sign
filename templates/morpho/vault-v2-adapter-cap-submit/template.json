@@ -12,8 +12,8 @@
       "max": {
         "value": "340282366920938463463374607431768211455",
         "why": {
-          "en": "Vault V2 stores an absolute cap in 128 bits (increaseAbsoluteCap, newAbsoluteCap.toUint128()), so 2^128-1 is the largest cap it holds; curators set it for an adapter they cap only by its relative cap.",
-          "zh-TW": "Vault V2 用 128 bits 存絕對上限（increaseAbsoluteCap，newAbsoluteCap.toUint128()），所以 2^128-1 是它能存的最大上限；curator 只想用相對上限限制轉接合約時就設這個值。"
+          "en": "2^128-1 is the largest absolute cap Vault V2 can store; curators set it when they limit an adapter only by its relative cap.",
+          "zh-TW": "2^128-1 是 Vault V2 能存的最大絕對上限；curator 只想用相對上限限制轉接合約時就設這個值。"
         }
       }
     },
