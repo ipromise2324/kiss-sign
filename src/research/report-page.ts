@@ -177,12 +177,17 @@ export type ReviewRow = {
   readonly id: ResultId;
   readonly state: State;
   readonly grade: Grade;
-  readonly title: Inline;
+  /** What kind of result it is, in plain words. */
+  readonly title: string;
+  /** The AI review's first sentence, shown open; the rest is folded. */
+  readonly conclusion: AiText;
+  /** What the result is about, as the program names it: the entry, source, call or test transaction. */
+  readonly subject: Inline;
   readonly why: Inline;
   readonly entry: Anchor | undefined;
   readonly review: { readonly status: 'confirmed' | 'concern'; readonly text: AiText; readonly recommendation: AiText };
 };
-export type Judgment = { readonly text: AiText; readonly recommendation: AiText };
+export type Judgment = { readonly conclusion: AiText; readonly text: AiText; readonly recommendation: AiText };
 
 export type WalletRows = readonly { readonly label: Inline; readonly value: Inline }[] | 'no-descriptor';
 export type WalletCall = { readonly n: number; readonly title: Inline; readonly rows: WalletRows };
@@ -1139,9 +1144,23 @@ function vaultSection(context: Context): Section[] {
   return section({ lead, rows, bars, most: most === undefined ? undefined : amount(most) });
 }
 
+const findingWords = (result: Result, w: Words): { readonly title: string; readonly why: string } =>
+  (w.finding as Readonly<Partial<Record<FindingKind, { readonly title: string; readonly why: string }>>>)[result.finding.kind] ?? { title: w.needsReview, why: '' };
+
+/** The text up to its first sentence end outside a code span, or all of it. */
+function firstSentence(text: string): string {
+  let at = 0;
+  for (const [i, part] of text.split('`').entries()) {
+    const end = i % 2 === 0 ? /[.!?](?=\s)|[。！？]/.exec(part) : null;
+    if (end !== null) return text.slice(0, at + end.index + 1);
+    at += part.length + 1;
+  }
+  return text;
+}
+
 function reviewTitle(result: Result, context: Context): { readonly title: Inline; readonly why: Inline } {
   const { w } = context;
-  const words = (w.finding as Readonly<Partial<Record<FindingKind, { readonly title: string; readonly why: string }>>>)[result.finding.kind] ?? { title: w.needsReview, why: '' };
+  const words = findingWords(result, w);
   if (result.about.kind === 'fixture') {
     const detail = result.finding.kind === 'judged-otherwise' ? ` ${result.finding.detail}` : '';
     return { title: w.fixtureTitle({ code: result.about.name }, words.title), why: [`${words.why}${detail}`] };
@@ -1188,17 +1207,20 @@ function reviewSection(context: Context): Section {
   const rows = grades.flatMap((grade) => graded(grade).map((result): ReviewRow => {
     const review = notes.reviews.get(result.id) as Notes['reviews'] extends ReadonlyMap<string, infer R> ? R : never;
     const { title, why } = reviewTitle(result, context);
+    const plain = findingWords(result, context.w).title;
     return {
       id: result.id,
       state: stateOf(result),
       grade,
-      title,
+      title: `${plain.charAt(0).toUpperCase()}${plain.slice(1)}`,
+      conclusion: research(firstSentence(review.text)),
+      subject: title,
       why,
       entry: result.about.kind === 'entry' ? entryAnchor(result.about.entry.name) : undefined,
       review: { status: review.status, text: research(review.text), recommendation: research(review.recommendation) },
     };
   }));
-  const judgments = notes.judgments.map((j) => ({ text: research(j.text, j.sources), recommendation: research(j.recommendation) }));
+  const judgments = notes.judgments.map((j) => ({ conclusion: research(firstSentence(j.text)), text: research(j.text, j.sources), recommendation: research(j.recommendation) }));
   const counts = [
     ...grades.flatMap((grade) => (graded(grade).length === 0 ? [] : [{ state: worst(graded(grade)), n: graded(grade).length, grade }])),
     ...(judgments.length === 0 ? [] : [{ state: 'ask' as const, n: judgments.length }]),

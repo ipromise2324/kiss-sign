@@ -373,7 +373,7 @@ test('a month the providers disagree on reads 讀不到 and draws no bar', () =>
 });
 
 test('the vault its factory alone confirms is the one 待確認; every address row names where its address was confirmed', () => {
-  assert.deepEqual(body(depositPage, 'review').rows.map((r) => [r.id, r.state, plain(r.title)]), [
+  assert.deepEqual(body(depositPage, 'review').rows.map((r) => [r.id, r.state, plain(r.subject)]), [
     ['hyperithm-usdc-apex-v2-9e2f/address', 'warn', 'hyperithm-usdc-apex-v2-9e2f：地址只在 1 個地方確認：工廠'],
   ]);
   const { open, folded } = body(depositPage, 'addresses');
@@ -871,7 +871,7 @@ test('an entry reached only through dependsOn shows its routes, seeds and code a
   const factContracts = factsScope(of.subject.kind === 'template' ? of.subject.template : assert.fail('a template report'), of.registry, []).protocols.flatMap((p) => p.contracts.map((e) => e.name));
   assert.deepEqual(factContracts.slice(factContracts.indexOf('blue-bundles-v1'), factContracts.indexOf('blue-bundles-v1') + 2), ['blue-bundles-v1', 'liquidity-layer'], 'the protocol facts say whether what a called contract depends on is a proxy');
   const siteRow = body(pageOf(of), 'review').rows.find((r) => r.id === 'liquidity-layer/source.site') ?? assert.fail('no site review row');
-  assert.equal(plain(siteRow.title), 'liquidity-layer：docs.example.org/liquidity，網站跟 DefiLlama 列的不同', 'a source result names its page as the address row does');
+  assert.equal(plain(siteRow.subject), 'liquidity-layer：docs.example.org/liquidity，網站跟 DefiLlama 列的不同', 'a source result names its page as the address row does');
   assert.equal(stateOf(ledger.results.find((r) => r.id === 'liquidity-layer/abi') ?? assert.fail('no ABI result')), 'na');
   assert.equal(stateOf(ledger.results.find((r) => r.id === 'liquidity-layer/code.today') ?? assert.fail('no result at the latest block')), 'ok');
   const abiItem = (ledgerOf: typeof ledger) => strip(ledgerOf).find((item) => item.line === 'abi');
@@ -901,7 +901,7 @@ test('a dependency that runs other code at the latest block is red in 合約沒�
   assert.equal(page.header.strip.find((item) => item.line === 'code')?.state, 'bad');
   const review = body(page, 'review').rows.find((r) => r.id === 'liquidity-layer/code.today') ?? assert.fail('no review row');
   assert.equal(review.state, 'bad');
-  assert.equal(plain(review.title), 'liquidity-layer：鏈上跑的不是登記的程式碼（最新區塊）');
+  assert.equal(plain(review.subject), 'liquidity-layer：鏈上跑的不是登記的程式碼（最新區塊）');
   assert.ok(renderReport(finding, title).includes('| `liquidity-layer` | FINDING: runs something else | 24000000 |'));
 
   const unread = withLiquidityLayer(undefined);

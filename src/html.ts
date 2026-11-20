@@ -231,6 +231,10 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .row .meta a{margin-left:8px;color:var(--fg2)}
 .row .rec{font-size:var(--t-row);margin-top:8px}
 .row .rec .lbl{color:var(--fg3);margin-right:8px}
+details.more>summary{cursor:pointer;list-style:none;display:inline-flex;gap:6px;align-items:center;margin-top:6px;color:var(--fg3);font-size:var(--t-small)}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary:hover{color:var(--fg)}
+details.more[open]>summary .chev{transform:rotate(90deg)}
 
 .ad{scroll-margin-top:24px;display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
 .ad .i{margin-top:4px}
