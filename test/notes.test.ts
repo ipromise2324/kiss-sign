@@ -337,7 +337,7 @@ test("a key or name both notes define is refused, and a vault's notes hold only 
   mergeRefused(['verdict'], `${VAULT_PATH}: not a JSON object`);
 });
 
-test("an instance's context notes parse with their sources, hold at most 400 characters under a title of 40, and the template's notes may not hold them", () => {
+test("an instance's context notes parse with their sources, and the template's notes may not hold them", () => {
   const context = [{ title: t('存款去哪'), text: t('vault 把存款借給它分配的市場。'), sources: ['https://example.org/vault'] }];
   const notes = parseNotes(mergeNotes(SHARED, { verdict: VALID.verdict, context }, VAULT_PATH, OWNED), SCOPE);
   assert.deepEqual(notes.context, [{ title: '存款去哪', text: 'vault 把存款借給它分配的市場。', sources: ['https://example.org/vault'] }]);

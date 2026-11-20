@@ -557,7 +557,7 @@ test("過去交易 leads with the transactions exactly like the signer's, keeps 
   assert.ok(unescape(past).indexOf(conclusion) > unescape(past).indexOf('<details class="fold">'), "the AI's word on the other shapes is in the fold");
 });
 
-test("an instance's context notes show in its section under their titles, each tagged once on its title, its text AI with its sources", async () => {
+test("an instance's context notes show in its section under their titles, each with the AI tag and its sources", async () => {
   const { inputs, title } = pages.get(hyperithm()) ?? assert.fail('the frozen Hyperithm report');
   const raw = notesOf(hyperithm()) as Record<string, unknown>;
   const held = notesLanguages(raw);
