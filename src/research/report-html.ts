@@ -5,7 +5,7 @@ import type { Language } from '../language.ts';
 import type { State } from './ledger.ts';
 import { NOTES_FILE, codeSpans, notesLanguages, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
-import type { AddressRow, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, NewestResult, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, VaultBlock, WalletRows } from './report-page.ts';
+import type { AddressRow, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, NewestResult, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, Span, VaultBlock, WalletRows } from './report-page.ts';
 import { CSS, Html, SYMBOLS, escape, h, icon } from '../html.ts';
 import { WORDS } from './report-words.ts';
 import type { Words } from './report-words.ts';
@@ -92,41 +92,53 @@ const SELF_LOOP = 64;
 const CJK_FIRST = 0x2e80;
 /** About how wide 14px text draws: a CJK character a full em, anything else about half. */
 const textWidth = (text: string): number => [...text].reduce((w, c) => w + ((c.codePointAt(0) ?? 0) >= CJK_FIRST ? 14 : 7.6), 0);
-/** A code span in a caption: 13px monospace, 0.6em a character, inside a box with this much room on each side. */
-const CODE_CHAR = 7.8;
-const CODE_PAD = 4;
-const CODE_GAP = 3;
+/** A code span in a caption: 14px monospace at about 0.6em a character, with its box's padding and border. */
+const codeWidth = (code: string): number => code.length * 8.4 + 16;
+/** A flow line's mark and the gap after it. */
+const MARK_WIDTH = 24;
+const CAPTION_HEIGHT = 24;
 
-/**
- * An AI caption in the diagram, starting at `x` on baseline `y`: each code span in monospace on its own box, every part
- * placed at its own x, so an estimate that is off moves only the text after it. Returns the markup and its width.
- */
-function caption(text: string, x: number, y: number): { readonly boxes: Html; readonly text: Html; readonly width: number } {
-  let at = x;
-  const boxes: Html[] = [];
-  const spans = aiParts(text).map((part) => {
-    if (!part.code) {
-      const span = h`<tspan x="${at}">${part.text}</tspan>`;
-      at += textWidth(part.text);
-      return span;
-    }
-    const width = part.text.length * CODE_CHAR;
-    boxes.push(h`<rect class="codebox" x="${at + CODE_GAP}" y="${y - 14}" width="${width + 2 * CODE_PAD}" height="19" rx="6"/>`);
-    const span = h`<tspan class="capc" x="${at + CODE_GAP + CODE_PAD}">${part.text}</tspan>`;
-    at += width + 2 * (CODE_PAD + CODE_GAP);
-    return span;
-  });
-  return { boxes: h`${boxes}`, text: h`<text class="cap" y="${y}">${spans}</text>`, width: at - x };
+type Inside = Extract<Arrow, { kind: 'inside' }>;
+
+/** The mark of the `i`th flow line the traces were compared with: ①, ②, … */
+const markOf = (i: number): string => String.fromCodePoint(0x2460 + i);
+
+/** Each flow line the traces were compared with, with its mark. */
+const markedLines = (sequence: Sequence): { readonly arrow: Inside; readonly mark: string }[] =>
+  sequence.arrows.flatMap((arrow) => (arrow.kind === 'inside' && arrow.seen !== undefined ? [arrow] : [])).map((arrow, i) => ({ arrow, mark: markOf(i) }));
+
+/** The marks below the diagram: one sentence for the confirmed lines and one for those seen in only some transactions, each with its counts. */
+function legend(sequence: Sequence, r: R): Html {
+  const marked = markedLines(sequence);
+  const counts = (confirmed: boolean): Span[] =>
+    marked
+      .filter(({ arrow }) => arrow.seen?.confirmed === confirmed)
+      .flatMap(({ arrow, mark }, i): Span[] => {
+        const source = confirmed ? arrow.text.sources[0] : undefined;
+        const seen = arrow.seen ?? { seen: 0, of: 0 };
+        return [...(i === 0 ? [] : [r.w.sep]), source === undefined ? mark : { href: source, label: mark }, ` ${r.w.seenOf(seen.seen, seen.of)}`];
+      });
+  const lines = [
+    { state: 'ok', counts: counts(true), words: r.w.legendConfirmed },
+    { state: 'bad', counts: counts(false), words: r.w.legendPartial },
+  ].filter((line) => line.counts.length > 0);
+  return lines.length === 0
+    ? h``
+    : h`
+  <ul class="legend">${lines.map((line) => h`
+    <li data-state="${line.state}">${text(line.words(line.counts))}</li>`)}
+  </ul>`;
 }
 
 function diagram(sequence: Sequence, r: R): Html {
   const x = (i: number) => FIRST_X + i * SPACING;
+  const marks = new Map(markedLines(sequence).map(({ arrow, mark }) => [arrow, mark]));
+  const confirmed = (arrow: Inside) => arrow.seen?.confirmed === true;
   // The tag's box fits its word: 12px text is narrower than textWidth's 14px estimate, which leaves the margin.
-  const tagWidth = (tag: string) => Math.max(AI_TAG_WIDTH, Math.ceil(textWidth(tag)));
-  const captionWidth = (arrow: Extract<Arrow, { kind: 'inside' }>) => tagWidth(r.w.tag[arrow.text.tag]) + 8 + caption(arrow.text.ai, 0, 0).width;
-  const seenText = (seen: NonNullable<Extract<Arrow, { kind: 'inside' }>['seen']>) => (seen.confirmed ? r.w.seenLabel(seen.seen, seen.of) : r.w.seenCount(seen.seen, seen.of));
-  const seenWidth = (arrow: Extract<Arrow, { kind: 'inside' }>) => (arrow.seen === undefined ? 0 : textWidth(seenText(arrow.seen)) * 0.9);
-  const widest = Math.max(0, ...sequence.arrows.map((arrow) => (arrow.kind === 'inside' ? x(0) + 12 + Math.max(captionWidth(arrow), seenWidth(arrow)) + 8 : 0)));
+  const tagWidth = (arrow: Inside) => (confirmed(arrow) ? 0 : Math.max(AI_TAG_WIDTH, Math.ceil(textWidth(r.w.tag[arrow.text.tag]))) + 8);
+  const captionWidth = (arrow: Inside) =>
+    (marks.has(arrow) ? MARK_WIDTH : 0) + tagWidth(arrow) + aiParts(arrow.text.ai).reduce((w, part) => w + (part.code ? codeWidth(part.text) : textWidth(part.text)), 0);
+  const widest = Math.max(0, ...sequence.arrows.map((arrow) => (arrow.kind === 'inside' ? x(0) + 12 + captionWidth(arrow) + 8 : 0)));
   const width = Math.max(660, x(sequence.lifelines.length - 1) + FIRST_X, Math.ceil(widest));
   const rows: Html[] = [];
   let y = NODE_TOP + NODE_HEIGHT + 32;
@@ -148,22 +160,15 @@ function diagram(sequence: Sequence, r: R): Html {
     <line class="nested" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#head)"/>`);
       y += 36;
     } else if (arrow.kind === 'inside') {
-      const tag = r.w.tag[arrow.text.tag];
-      const tagged = tagWidth(tag);
       const [from, to] = [x(arrow.from), arrow.to === arrow.from ? x(arrow.from) + 60 : x(arrow.to)];
       const left = Math.max(x(0) + 12, Math.min(Math.min(from, to) + 12, width - 8 - captionWidth(arrow)));
-      const cap = caption(arrow.text.ai, left + tagged + 8, y);
-      const seen = arrow.seen === undefined ? undefined : seenText(arrow.seen);
-      const source = arrow.seen?.confirmed === true ? arrow.text.sources[0] : undefined;
+      const mark = marks.get(arrow);
       rows.push(h`
-    <g data-ai><rect class="tagbox" x="${left}" y="${y - 14}" width="${tagged}" height="20" rx="6"/><text class="tagt" x="${left + tagged / 2}" y="${y}" text-anchor="middle">${tag}</text>${cap.boxes}${cap.text}</g>
-    <line class="${arrow.seen?.confirmed === true ? 'inner seen' : 'inner'}" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#head)"/>${
-      seen === undefined
-        ? ''
-        : h`
-    <text class="seenl" x="${left}" y="${y + 30}">${source === undefined ? seen : h`<a href="${source}">${seen}</a>`}</text>`
-    }`);
-      y += seen === undefined ? 36 : 56;
+    <foreignObject x="${left}" y="${y - 17}" width="${width - left}" height="${CAPTION_HEIGHT}"><div class="cap" data-ai>${mark === undefined ? '' : h`<span class="mark ${confirmed(arrow) ? 'ok' : 'bad'}">${mark}</span>`}${
+      confirmed(arrow) ? '' : h`<span class="byai">${r.w.tag[arrow.text.tag]}</span>`
+    }<span>${aiProse(arrow.text.ai)}</span></div></foreignObject>
+    <line class="${confirmed(arrow) ? 'inner seen' : 'inner'}" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#head)"/>`);
+      y += 36;
     } else {
       rows.push(h`
     <text class="capg" x="${x(0) + 14}" y="${y}">${arrow.text}</text>
@@ -185,7 +190,7 @@ function diagram(sequence: Sequence, r: R): Html {
     <defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>${nodes}${rows}
   </svg>
   </div>
-  <div class="scrollhint">${r.w.scrollHint}</div>`;
+  <div class="scrollhint">${r.w.scrollHint}</div>${legend(sequence, r)}`;
 }
 
 const CHIP_CLASS: Readonly<Record<Chip['who'], string>> = { 'you-type': 'who you', 'you-pick': 'who you', computed: 'who', fixed: 'who', free: 'who app', bounded: 'who app' };

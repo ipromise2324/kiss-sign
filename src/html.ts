@@ -160,21 +160,19 @@ svg .call{stroke:var(--fg);stroke-width:1.4;fill:none}
 svg .inner{stroke:var(--fg3);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
 svg .inner.seen{stroke:var(--fg2);stroke-dasharray:none}
 svg .nested{stroke:var(--fg2);stroke-width:1.2;fill:none}
-svg .seenl{fill:var(--fg3);font:12.5px var(--sans)} svg .seenl a{fill:var(--fg2);text-decoration:underline}
 svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
 svg .ah{fill:var(--fg)}
 svg .fn{fill:var(--fg);font:400 14px var(--mono)}
 svg .no{fill:var(--fg3);font:400 14px var(--mono)}
-svg .cap{fill:var(--fg2);font:14px var(--sans)}
-svg .capc{fill:var(--fg);font:13px var(--mono)}
-svg .codebox{fill:var(--hover);stroke:var(--line2)}
+svg .cap{display:flex;align-items:center;gap:8px;height:24px;white-space:nowrap;color:var(--fg2);font:14px/1 var(--sans)}
+svg .cap code{font-size:13px;padding:2px 6px}
+.mark{font-size:17px} .mark.ok{color:var(--ok)} .mark.bad{color:var(--bad)}
 svg .capg{fill:var(--ok);font:590 14px var(--sans)}
-svg .tagbox{fill:none;stroke:var(--fg3);stroke-dasharray:3 2}
-svg .tagt{fill:var(--fg2);font:12px var(--sans)}
 svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
 svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
 svg .axis{stroke:var(--line2)}
 svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.legend{list-style:none;margin:10px 0 14px;padding:0;display:flex;flex-direction:column;gap:4px;font-size:var(--t-small);color:var(--fg2)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
 

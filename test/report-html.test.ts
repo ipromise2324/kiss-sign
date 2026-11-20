@@ -214,7 +214,8 @@ test('every text the AI wrote is inside an element with its dashed AI tag, and n
   for (const [id, { dir, language, html }] of replayed) {
     const { rest, cut } = withoutAi(html);
     assert.ok(cut.length > 0, id);
-    for (const element of cut) assert.match(element, /class="(byai|tagt)"/, `${id}: AI text without its tag: ${element.slice(0, 120)}`);
+    // A flow line the call traces confirmed carries its mark in place of the tag; the legend under the diagram says the AI read its source.
+    for (const element of cut) assert.match(element, /class="(byai|mark ok)"/, `${id}: AI text without its tag: ${element.slice(0, 120)}`);
     const plain = noteTexts(notesOf(dir), language).flatMap((text) => text.split('`').filter((part, i) => i % 2 === 0 && part.length >= SHORTEST_LEAK[language]));
     assert.ok(plain.length > 0, `${id}: no text of notes.json in ${language}`);
     for (const text of plain) assert.ok(!unescape(rest).includes(text), `${id}: ${text} outside an AI element`);
@@ -257,9 +258,8 @@ test('a code span in AI text prints as <code> in prose and as a boxed monospace 
   );
   assert.ok(html.includes('先呼叫 <code>multicall</code>，&#60;b&#62;不是&#60;/b&#62; <code>approve()</code>'));
   assert.ok(!html.includes('`'), 'no backtick reaches the page');
-  const caption = /<g data-ai>.*?<\/g>/s.exec(html.slice(html.indexOf('<svg viewBox')))?.[0] ?? assert.fail('a flow caption');
-  assert.equal([...caption.matchAll(/<rect class="codebox"/g)].length, 2);
-  assert.deepEqual([...caption.matchAll(/<tspan class="capc"[^>]*>([^<]*)<\/tspan>/g)].map((m) => m[1]), ['erc20TransferFrom', 'erc4626Deposit']);
+  const caption = /<div class="cap" data-ai>.*?<\/div><\/foreignObject>/s.exec(html.slice(html.indexOf('<svg viewBox')))?.[0] ?? assert.fail('a flow caption');
+  assert.deepEqual([...caption.matchAll(/<code>([^<]*)<\/code>/g)].map((m) => m[1]), ['erc20TransferFrom', 'erc4626Deposit']);
 });
 
 const AI_SOURCE: Readonly<Record<Language, { readonly label: string; readonly result: RegExp }>> = {
