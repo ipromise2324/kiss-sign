@@ -1,24 +1,19 @@
 import { join } from 'node:path';
-import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
-import { resolveRef } from '../card.ts';
-import type { ResolvedCard, ResolvedValue } from '../card.ts';
-import { SHOWN_PLACES, groupedTokens, wholeTokens } from '../chain/decimals.ts';
+import { hexToBytes } from '@noble/hashes/utils.js';
+import { groupedTokens } from '../chain/decimals.ts';
 import { castValue } from '../decode/cast.ts';
 import type { AbiParam } from '../decode/abi.ts';
 import { namedSignatureOfAbiEntry, paramName, parseFunctionSignature } from '../decode/abi.ts';
-import type { AbiValue } from '../decode/codec.ts';
-import { unwrapSafeTx } from '../decode/multisend.ts';
 import { say } from '../language.ts';
 import type { Language } from '../language.ts';
 import { MARKET_PARAMS, parseHttpsUrl, sizeOf } from '../registry.ts';
 import type { HttpsUrl, Market, Registry, RegistryEntry } from '../registry.ts';
 import { SAFE_TX_TYPEHASH_HEX } from '../safe/hash.ts';
 import { checksumAddress } from '../safe/types.ts';
-import type { Address, Hex, SafeTx } from '../safe/types.ts';
-import { decodeTemplateCall } from '../template/check.ts';
+import type { Address, Hex } from '../safe/types.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
-import { TEMPLATES_DIR, addressWord, callSites, isNamedToken, refNames, slippageBps, viewTargetNames, wordAddress } from '../template/template.ts';
-import type { CardField, CardRef, ConstValue, EffectToken, KeptApproval, FreeClaim, PackedPart, Rule, Template, TemplateCall, Tolerance, TokenRef, ViewEffect, ViewExpectation } from '../template/template.ts';
+import { TEMPLATES_DIR, addressWord, callSites, isNamedToken, refNames, slippageBps, viewTargetNames } from '../template/template.ts';
+import type { CardField, CardRef, ConstValue, EffectToken, KeptApproval, FreeClaim, Rule, Template, TemplateCall, Tolerance, TokenRef, ViewEffect, ViewExpectation } from '../template/template.ts';
 import { distributionOf, effectText } from './amounts.ts';
 import type { Difference } from './amounts.ts';
 import type { FieldFact } from './erc7730.ts';
@@ -114,15 +109,12 @@ export type Who = 'you-type' | 'you-pick' | 'computed' | 'fixed' | 'free' | 'bou
 export type KeyItem = { readonly who: Who; readonly label: string; readonly means: string };
 export type Chip = { readonly who: Who; readonly label: string };
 
-/** A value from the example: of the first recorded test transaction, or naming its Safe as another Safe. */
-export type ExampleTag = 'example' | 'other-safe';
-
 export type ArgRow = {
   readonly key: string;
   readonly name: string;
   readonly chips: readonly Chip[];
-  /** As `cast decode-calldata` prints it; `example` tags a value from the first recorded test transaction, naming its Safe as another Safe. */
-  readonly value: { readonly cast: string; readonly example: ExampleTag | undefined } | undefined;
+  /** As `cast decode-calldata` prints it, for a value the template fixes; none for a value decided at each signing. */
+  readonly value: string | undefined;
   readonly words: Inline;
   readonly qualifier: Inline | undefined;
   readonly id: Inline | undefined;
@@ -156,9 +148,6 @@ export type Flow = {
   readonly diagram: Sequence;
   /** The who-decides key: each word some row uses, in key order, with what it means; a free field once per claim it makes. */
   readonly key: readonly KeyItem[];
-  /** Whether a call has data, so its rows print what `cast decode-calldata` prints. */
-  readonly decoded: boolean;
-  readonly example: Inline | undefined;
   /** The Safe transaction's own rules, such as a cancellation's nonce. */
   readonly safeTx: readonly ArgRow[];
   readonly calls: readonly CallBlock[];
@@ -188,12 +177,17 @@ export type ReviewRow = {
   readonly id: ResultId;
   readonly state: State;
   readonly grade: Grade;
-  readonly title: Inline;
+  /** What kind of result it is, in plain words. */
+  readonly title: string;
+  /** The AI review's first sentence, shown open; the rest is folded. */
+  readonly conclusion: AiText;
+  /** What the result is about, as the program names it: the entry, source, call or test transaction. */
+  readonly subject: Inline;
   readonly why: Inline;
   readonly entry: Anchor | undefined;
   readonly review: { readonly status: 'confirmed' | 'concern'; readonly text: AiText; readonly recommendation: AiText };
 };
-export type Judgment = { readonly text: AiText; readonly recommendation: AiText };
+export type Judgment = { readonly conclusion: AiText; readonly text: AiText; readonly recommendation: AiText };
 
 export type WalletRows = readonly { readonly label: Inline; readonly value: Inline }[] | 'no-descriptor';
 export type WalletCall = { readonly n: number; readonly title: Inline; readonly rows: WalletRows };
@@ -280,8 +274,6 @@ export type PastRecording = { readonly file: string; readonly count: string; rea
 /** Everything the HTML report reads beyond the Markdown report's inputs. */
 export type HtmlInputs = ReportInputs & {
   readonly fixtures: readonly FixtureJudgement[];
-  /** The first recorded test transaction of the template, with its card. */
-  readonly example: { readonly name: string; readonly tx: SafeTx; readonly card: ResolvedCard } | undefined;
 };
 
 /** A card field's word from its kind; a typed amount by what it counts: shares for a vault's own shares, an amount for an asset or ETH. */
@@ -459,10 +451,6 @@ type Context = {
   readonly ledger: Ledger;
   /** The `flow` lines and money calls against the past transactions' call traces. */
   readonly comparison: FlowComparison;
-  /** The example's card values, when there is an example. */
-  readonly card: ReadonlyMap<string, ResolvedValue> | undefined;
-  /** The example's decoded value at each field key; empty without an example or when it does not decode. */
-  readonly values: ReadonlyMap<string, AbiValue>;
 };
 
 const fieldsNote = (context: Context, key: string): AiText => research(context.notes.fields.get(key) as string, [], 'ai');
@@ -478,31 +466,14 @@ function tokenOf(ref: EffectToken, context: Context): { readonly address: Addres
     const entry = context.registry.entries.get(ref.contract);
     return entry === undefined ? undefined : { address: entry.address, name: entry.name };
   }
-  if (context.card === undefined) {
-    const names = refNames(ref, context.template, context.registry);
-    const entry = names.length === 1 ? context.registry.entries.get(names[0] as string) : undefined;
-    return entry === undefined ? undefined : { address: entry.address, name: entry.name };
-  }
-  const target = resolveRef(ref, context.card, context.registry);
-  if ('problem' in target || target.kind !== 'address') return undefined;
-  return { address: target.address, name: context.registry.byAddress.get(target.address)?.name ?? checksumAddress(target.address) };
+  const names = refNames(ref, context.template, context.registry);
+  const entry = names.length === 1 ? context.registry.entries.get(names[0] as string) : undefined;
+  return entry === undefined ? undefined : { address: entry.address, name: entry.name };
 }
 
 /** An effect's token by name: the registry name it resolves to, or the card field the signer picks it with. */
 const effectTokenName = (token: EffectToken, context: Context): string =>
   tokenOf(token, context)?.name ?? (token === 'eth' ? 'ETH' : isNamedToken(token) ? token.contract : context.w.picked(refWord(context.template, token, context.w)));
-
-/** An amount of `token` in whole tokens, from the recorded decimals; base units when they were not read. */
-function amountWords(amount: bigint, ref: EffectToken, context: Context): { readonly words: Inline; readonly qualifier: Inline | undefined } {
-  const { w } = context;
-  const token = tokenOf(ref, context);
-  if (token === undefined) return { words: [{ num: amount.toString() }, w.baseUnits], qualifier: undefined };
-  const decimals = token.address === 'eth' ? 18 : decimalsOf(context, token.address);
-  if (decimals === undefined) return { words: [{ num: amount.toString() }, w.baseUnitsOf(token.name)], qualifier: [w.decimalsUnread] };
-  const shown = groupedTokens(amount, decimals, SHOWN_PLACES);
-  if (shown === groupedTokens(amount, decimals)) return { words: [{ num: shown }, ` ${token.name}`], qualifier: [w.decimals(decimals)] };
-  return { words: w.approx({ num: shown }, token.name, { num: amount.toString() }), qualifier: [w.decimals(decimals)] };
-}
 
 /** The registry names a call's `to` can be, the name the page shows for it, and its role on the diagram's lifeline. */
 function targetOf(rule: Rule, context: Context): { readonly label: string; readonly names: readonly string[]; readonly role: string } {
@@ -520,9 +491,7 @@ function targetOf(rule: Rule, context: Context): { readonly label: string; reado
   if (rule.kind !== 'card') return { label: '?', names: [], role: '' };
   const names = refNames(rule.ref, context.template, registry);
   if (names.length === 1) return { label: names[0] as string, names, role: role(names[0] as string, w.role.picked) };
-  const picked = context.card === undefined ? undefined : resolveRef(rule.ref, context.card, registry);
-  const name = picked === undefined || 'problem' in picked || picked.kind !== 'address' ? undefined : registry.byAddress.get(picked.address)?.name;
-  return name === undefined ? { label: refWord(context.template, rule.ref, w), names, role: w.role.picked } : { label: name, names, role: role(name, w.role.picked) };
+  return { label: refWord(context.template, rule.ref, w), names, role: w.role.picked };
 }
 
 const isComputed = (template: Template, name: string): boolean => {
@@ -628,26 +597,13 @@ function onlyEntry(ref: CardRef, context: Context): RegistryEntry | undefined {
   return names.length === 1 ? context.registry.entries.get(names[0] as string) : undefined;
 }
 
-function cardWords(ref: CardRef, key: string, context: Context): { readonly words: Inline; readonly qualifier: Inline | undefined } {
+function cardWords(ref: CardRef, context: Context): { readonly words: Inline; readonly qualifier: Inline | undefined } {
   const { w } = context;
   const field = context.template.card.get(ref.field);
   const only = onlyEntry(ref, context);
   const picks = w.picked(refWord(context.template, ref, w));
   if (only !== undefined) return { words: [link(only)], qualifier: [picks] };
-  const example = context.values.get(key);
-  const typed = w.typed(fieldWord(context.template, ref.field, w));
-  if (field?.kind === 'amount') {
-    if (example?.kind !== 'uint') return { words: [typed], qualifier: undefined };
-    return amountWords(example.value, field.of, context);
-  }
-  if (field?.kind === 'percent') {
-    if (example?.kind !== 'uint') return { words: [typed], qualifier: undefined };
-    return { words: [typed, w.forExample, { num: `${wholeTokens(example.value * 100n, 18)}%` }], qualifier: undefined };
-  }
-  if (field?.kind === 'nonce' || field?.kind === 'threshold') return { words: [typed], qualifier: undefined };
-  const picked = example?.kind === 'address' ? context.registry.byAddress.get(example.value) : undefined;
-  if (picked !== undefined) return { words: [link(picked)], qualifier: [picks] };
-  if (field?.kind === 'market' && ref.attribute === 'lltv' && example?.kind === 'uint') return { words: [lltvWords(example.value, w)], qualifier: [picks] };
+  if (field?.kind === 'amount' || field?.kind === 'percent' || field?.kind === 'nonce' || field?.kind === 'threshold') return { words: [w.typed(fieldWord(context.template, ref.field, w))], qualifier: undefined };
   return { words: [picks], qualifier: undefined };
 }
 
@@ -668,7 +624,7 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
       return { words: [text.length <= 24 ? w.fixedTo(text) : w.fixedValue], qualifier: undefined };
     }
     case 'card':
-      return cardWords(rule.ref, node.key, context);
+      return cardWords(rule.ref, context);
     case 'address-word': {
       const inner = leafWords({ ...node, rule: rule.rule }, context);
       return { words: [...inner.words, w.asWord], qualifier: inner.qualifier };
@@ -705,19 +661,13 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
 }
 
 function valueOf(node: ArgNode, context: Context): ArgRow['value'] {
-  if (['call', 'items', 'fields', 'packed'].includes(node.rule.kind)) return undefined;
-  if (node.rule.kind === 'const') return { cast: constCast(node.rule.value), example: undefined };
+  if (node.rule.kind === 'const') return constCast(node.rule.value);
   const word = node.rule.kind === 'address-word';
   const rule = node.rule.kind === 'address-word' ? node.rule.rule : node.rule;
   const cast = (address: Address): string => (word ? addressWord(address) : checksumAddress(address));
-  if (rule.kind === 'contract') return { cast: cast((context.registry.entries.get(rule.name) as RegistryEntry).address), example: undefined };
+  if (rule.kind === 'contract') return cast((context.registry.entries.get(rule.name) as RegistryEntry).address);
   const only = rule.kind === 'card' ? onlyEntry(rule.ref, context) : undefined;
-  if (only !== undefined) return { cast: cast(only.address), example: undefined };
-  const example = context.values.get(node.key);
-  if (example === undefined) return undefined;
-  const address = example.kind === 'address' ? example.value : word && example.kind === 'fixed-bytes' ? wordAddress(example.value) : undefined;
-  const fromSafe = address !== undefined && address === context.inputs.example?.tx.safe;
-  return { cast: castValue(example), example: fromSafe ? 'other-safe' : 'example' };
+  return only === undefined ? undefined : cast(only.address);
 }
 
 function marketPartRows(node: ArgNode, market: Market, context: Context): ArgRow[] {
@@ -728,7 +678,7 @@ function marketPartRows(node: ArgNode, market: Market, context: Context): ArgRow
       key: child.key,
       name: child.name,
       chips: [],
-      value: { cast: entry === undefined ? market.lltv.toString() : checksumAddress(entry.address), example: undefined },
+      value: entry === undefined ? market.lltv.toString() : checksumAddress(entry.address),
       words: entry === undefined ? [lltvWords(market.lltv, context.w)] : [link(entry)],
       qualifier: undefined,
       id: undefined,
@@ -745,8 +695,7 @@ function argRow(node: ArgNode, context: Context, withChips: boolean, inMessage =
   const market = wholeMarket(node.rule, context.template);
   if (market !== undefined) {
     const markets = [...context.registry.markets.values()];
-    const picked = context.card?.get(market);
-    const shown = picked?.kind === 'market' ? picked.market : markets.length === 1 ? markets[0] : undefined;
+    const shown = markets.length === 1 ? markets[0] : undefined;
     return {
       key: node.key,
       name: node.name,
@@ -777,71 +726,6 @@ function argRow(node: ArgNode, context: Context, withChips: boolean, inMessage =
     parts: node.children.length === 0 ? [] : [{ label: undefined, rows: node.children.map((child) => argRow(child, context, nestedCall, inMessage || node.rule.kind === 'eip712')) }],
     doc: node.rule.kind === 'call' && node.rule.call.encoding === 'call' ? docLine(node.rule.call.fn.signature, context) : undefined,
   };
-}
-
-/** The packed parts of `value` as leaves, or undefined when its length is not theirs. */
-function packedParts(parts: readonly PackedPart[], value: { readonly value: Uint8Array; readonly span: readonly [number, number] }): AbiValue[] | undefined {
-  if (parts.reduce((sum, part) => sum + part.size, 0) !== value.value.length) return undefined;
-  let offset = 0;
-  return parts.map((part): AbiValue => {
-    const bytes = value.value.subarray(offset, offset + part.size);
-    const span = [value.span[0] + offset, value.span[0] + offset + part.size] as const;
-    offset += part.size;
-    const hex = `0x${bytesToHex(bytes)}`;
-    switch (part.type.kind) {
-      case 'address':
-        return { kind: 'address', value: hex as Address, span };
-      case 'bool':
-        return { kind: 'bool', value: BigInt(hex) !== 0n, span };
-      case 'fixed-bytes':
-        return { kind: 'fixed-bytes', value: hex as Hex, span };
-      case 'int':
-        return { kind: 'int', value: BigInt.asIntN(part.type.bits, BigInt(hex)), span };
-      default:
-        return { kind: 'uint', value: BigInt(hex), span };
-    }
-  });
-}
-
-/** Each argument's value in the example, keyed as `argumentTree` keys it; empty when any call does not decode. */
-function exampleValues(template: Template, tx: SafeTx): Map<string, AbiValue> {
-  const values = new Map<string, AbiValue>();
-  const unwrapped = unwrapSafeTx(tx);
-  if (!('calls' in unwrapped) || unwrapped.calls.length !== template.calls.length) return values;
-  const walk = (nodes: readonly ArgNode[], decoded: readonly AbiValue[], root: Uint8Array): boolean =>
-    nodes.every((node, i) => {
-      const value = decoded[i];
-      if (value === undefined) return false;
-      values.set(node.key, value);
-      if (node.rule.kind === 'call') {
-        if (value.kind !== 'bytes') return false;
-        const inner = decodeTemplateCall(node.rule.call, { root, start: value.span[0], end: value.span[1] });
-        return inner.kind === 'decoded' && walk(node.children, inner.args, root);
-      }
-      if (node.rule.kind === 'eip712') return true;
-      if (node.rule.kind === 'packed') {
-        if (value.kind !== 'bytes') return false;
-        const parts = packedParts(node.rule.parts, value);
-        return parts !== undefined && walk(node.children, parts, root);
-      }
-      if (node.children.length === 0) return true;
-      const items = value.kind === 'tuple' ? value.fields : value.kind === 'array' ? value.items : undefined;
-      return items !== undefined && walk(node.children, items, root);
-    });
-  const ok = argumentTree(template).every(({ n, node, args }) => {
-    const inner = unwrapped.calls[n - 1];
-    if (inner === undefined) return false;
-    const decoded = decodeTemplateCall(node, inner.data);
-    return decoded.kind === 'decoded' && walk(args, decoded.args, inner.data.root);
-  });
-  if (!ok) return new Map();
-  const none = [0, 0] as const;
-  unwrapped.calls.forEach((call, i) => {
-    values.set(`${i + 1}.to`, { kind: 'address', value: call.to, span: none });
-    values.set(`${i + 1}.value`, { kind: 'uint', value: call.value, span: none });
-  });
-  values.set('nonce', { kind: 'uint', value: tx.nonce, span: none });
-  return values;
 }
 
 function lifelines(context: Context): { readonly lines: Lifeline[]; readonly names: (readonly string[])[]; readonly callTo: number[]; readonly getsFrom: number[] } {
@@ -928,10 +812,8 @@ const zeroValue = (call: TemplateCall): boolean => call.value.kind === 'const' &
 
 function sends(call: TemplateCall, context: Context, n: number): Inline | undefined {
   if (zeroValue(call)) return undefined;
-  const example = context.inputs.example === undefined ? undefined : unwrapSafeTx(context.inputs.example.tx);
-  const inner = example !== undefined && 'calls' in example ? example.calls[n - 1] : undefined;
   const { words } = leafWords({ key: `${n}.value`, name: 'value', param: undefined, rule: call.value, children: [] }, context);
-  return context.w.sends(words, inner === undefined ? undefined : { num: wholeTokens(inner.value, 18) });
+  return context.w.sends(words);
 }
 
 function afterRows(context: Context): AfterRow[] {
@@ -943,11 +825,7 @@ function afterRows(context: Context): AfterRow[] {
     if (effect.amount.kind === 'any') return [w.getsAny];
     if (effect.amount.kind === 'at-least') return [w.atLeastTyped(field(effect.amount.field))];
     if (effect.amount.kind === 'at-most') return [w.atMostTyped(field(effect.amount.field))];
-    const value = context.card?.get(effect.amount.field);
-    if (value?.kind !== 'amount') return [w.typed(field(effect.amount.field))];
-    const { words } = amountWords(value.value, effect.token, context);
-    const sign = gives ? '−' : '+';
-    return words[0] === w.about ? [w.about, sign, ...words.slice(1)] : [sign, ...words];
+    return [w.typed(field(effect.amount.field))];
   };
   const note = (effect: Template['effects']['gives'][number]): Inline => {
     const amount =
@@ -1043,7 +921,7 @@ const noDataRow = (key: string, w: Words): ArgRow => ({
   key,
   name: 'data',
   chips: [{ who: 'fixed', label: w.who.fixed }],
-  value: { cast: '0x', example: undefined },
+  value: '0x',
   words: [w.noData],
   qualifier: undefined,
   id: undefined,
@@ -1091,34 +969,16 @@ function flowSection(context: Context): Section {
     return who === undefined ? [] : [who];
   });
   const used = new Set([...rows([...safeTx, ...calls.flatMap((call) => call.args)]).flatMap((row) => row.chips.map((c) => c.who)), ...sent]);
-  const { example } = context.inputs;
-  const chosen = chosenWords(used, w);
-  const { vault } = context.inputs.subject;
-  let lead: Inline | undefined;
-  if (chosen === '') lead = undefined;
-  else if (example !== undefined && context.values.size > 0) {
-    const amounts = [...template.card].flatMap(([field, card]): Inline[] => {
-      const value = context.card?.get(field);
-      return card.kind === 'amount' && value?.kind === 'amount' ? [[`${fieldWord(template, field, w)} `, ...amountWords(value.value, card.of, context).words]] : [];
-    });
-    lead = w.exampleLead(chosen, vault?.name, { code: example.name }, amounts);
-  } else {
-    lead = w.noExample(vault?.name);
-  }
   return {
     anchor: anchor('flow'),
     label: w.flow,
     count: { kind: 'text', text: w.calls(template.calls.length) },
     body: {
       kind: 'flow',
-      flow: { diagram: sequence(context), key: keyItems(used, template, w), decoded: calls.some((call) => call.head.kind === 'fn'), example: lead, safeTx, calls, after: afterRows(context) },
+      flow: { diagram: sequence(context), key: keyItems(used, template, w), safeTx, calls, after: afterRows(context) },
     },
   };
 }
-
-/** Who gives the values, in words, such as `you type, you pick and the app fills`. */
-const chosenWords = (used: ReadonlySet<Who>, w: Words): string =>
-  w.and((['you-type', 'you-pick', 'computed', 'free'] as const).filter((who) => used.has(who) || (who === 'free' && used.has('bounded'))).map((who) => w.chosen[who]));
 
 type ProtocolNote = NonNullable<ReturnType<Notes['protocols']['get']>>;
 
@@ -1284,9 +1144,23 @@ function vaultSection(context: Context): Section[] {
   return section({ lead, rows, bars, most: most === undefined ? undefined : amount(most) });
 }
 
+const findingWords = (result: Result, w: Words): { readonly title: string; readonly why: string } =>
+  (w.finding as Readonly<Partial<Record<FindingKind, { readonly title: string; readonly why: string }>>>)[result.finding.kind] ?? { title: w.needsReview, why: '' };
+
+/** The text up to its first sentence end outside a code span, or all of it. */
+function firstSentence(text: string): string {
+  let at = 0;
+  for (const [i, part] of text.split('`').entries()) {
+    const end = i % 2 === 0 ? /[.!?](?=\s)|[。！？]/.exec(part) : null;
+    if (end !== null) return text.slice(0, at + end.index + 1);
+    at += part.length + 1;
+  }
+  return text;
+}
+
 function reviewTitle(result: Result, context: Context): { readonly title: Inline; readonly why: Inline } {
   const { w } = context;
-  const words = (w.finding as Readonly<Partial<Record<FindingKind, { readonly title: string; readonly why: string }>>>)[result.finding.kind] ?? { title: w.needsReview, why: '' };
+  const words = findingWords(result, w);
   if (result.about.kind === 'fixture') {
     const detail = result.finding.kind === 'judged-otherwise' ? ` ${result.finding.detail}` : '';
     return { title: w.fixtureTitle({ code: result.about.name }, words.title), why: [`${words.why}${detail}`] };
@@ -1333,17 +1207,20 @@ function reviewSection(context: Context): Section {
   const rows = grades.flatMap((grade) => graded(grade).map((result): ReviewRow => {
     const review = notes.reviews.get(result.id) as Notes['reviews'] extends ReadonlyMap<string, infer R> ? R : never;
     const { title, why } = reviewTitle(result, context);
+    const plain = findingWords(result, context.w).title;
     return {
       id: result.id,
       state: stateOf(result),
       grade,
-      title,
+      title: `${plain.charAt(0).toUpperCase()}${plain.slice(1)}${result.about.kind === 'entry' ? ` · ${result.about.entry.name}` : ''}`,
+      conclusion: research(firstSentence(review.text)),
+      subject: title,
       why,
       entry: result.about.kind === 'entry' ? entryAnchor(result.about.entry.name) : undefined,
       review: { status: review.status, text: research(review.text), recommendation: research(review.recommendation) },
     };
   }));
-  const judgments = notes.judgments.map((j) => ({ text: research(j.text, j.sources), recommendation: research(j.recommendation) }));
+  const judgments = notes.judgments.map((j) => ({ conclusion: research(firstSentence(j.text)), text: research(j.text, j.sources), recommendation: research(j.recommendation) }));
   const counts = [
     ...grades.flatMap((grade) => (graded(grade).length === 0 ? [] : [{ state: worst(graded(grade)), n: graded(grade).length, grade }])),
     ...(judgments.length === 0 ? [] : [{ state: 'ask' as const, n: judgments.length }]),
@@ -1352,7 +1229,7 @@ function reviewSection(context: Context): Section {
   return { anchor: anchor('review'), label: context.w.review, count, body: { kind: 'review', rows, judgments } };
 }
 
-/** The template's rule in the signer's words, for the wallet table: never the example's value. */
+/** The template's rule in the signer's words, for the wallet table. */
 function ruleWords(rule: Rule, context: Context): Inline {
   const { w } = context;
   switch (rule.kind) {
@@ -1942,6 +1819,7 @@ function nextSection(context: Context): Section {
     hashes: false,
   });
   const steps: NextStep[] = [
+    ...(context.ledger.entries.length === 0 ? [] : [{ say: w.openSources({ href: anchor('addresses'), label: w.addresses }), command: undefined, then: [], hashes: false }]),
     { say: [w.approveSay], command: `pnpm kiss-sign template approve ${template.id}`, then: [w.approveThen(y)], hashes: false },
     ...(fields.some(([, f]) => f.kind === 'owner') ? [book(w.ownerBook, false)] : []),
     ...(fields.some(([, f]) => f.kind === 'recipient') ? [book(w.recipientBook, true)] : []),
@@ -2062,7 +1940,6 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
   );
   const ledger: Ledger = { ...judged, results: [...judged.results, ...flowResults(comparison)] };
   const notes = parseNotes(rawNotes, notesScope(inputs, ledger, template, language));
-  const { example } = inputs;
   const w = WORDS[language];
   const context: Context = {
     w,
@@ -2074,8 +1951,6 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
     notes,
     ledger,
     comparison,
-    card: example?.card.operations.find((op) => op.template === template.id)?.values,
-    values: example === undefined ? new Map() : exampleValues(template, example.tx),
   };
   const sections = [flowSection(context), ...protocolSections(context), ...vaultSection(context), reviewSection(context), walletSection(context), ...addressSection(context), pastSection(context), nextSection(context)];
   const sources = [...title.sources, 'testdata/perturb', 'testdata/safe-tx', join(TEMPLATES_DIR, template.id, NOTES_FILE), ...(subject.vault === undefined ? [] : [join(subject.dir, NOTES_FILE)])];

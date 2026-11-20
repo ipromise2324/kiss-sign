@@ -2,11 +2,10 @@ import { existsSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { HTML_LANG, LANGUAGES } from '../language.ts';
 import type { Language } from '../language.ts';
-import { firstRecordedTx } from '../template/perturb.ts';
 import type { State } from './ledger.ts';
 import { NOTES_FILE, codeSpans, notesLanguages, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
-import type { AddressRow, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, NewestResult, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, VaultBlock, WalletRows } from './report-page.ts';
+import type { AddressRow, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, NewestResult, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, Span, VaultBlock, WalletRows } from './report-page.ts';
 import { CSS, Html, SYMBOLS, escape, h, icon } from '../html.ts';
 import { WORDS } from './report-words.ts';
 import type { Words } from './report-words.ts';
@@ -93,41 +92,52 @@ const SELF_LOOP = 64;
 const CJK_FIRST = 0x2e80;
 /** About how wide 14px text draws: a CJK character a full em, anything else about half. */
 const textWidth = (text: string): number => [...text].reduce((w, c) => w + ((c.codePointAt(0) ?? 0) >= CJK_FIRST ? 14 : 7.6), 0);
-/** A code span in a caption: 13px monospace, 0.6em a character, inside a box with this much room on each side. */
-const CODE_CHAR = 7.8;
-const CODE_PAD = 4;
-const CODE_GAP = 3;
+/** A code span in a caption: 14px monospace at about 0.6em a character, with its box's padding and border. */
+const codeWidth = (code: string): number => code.length * 8.4 + 16;
+/** A flow line's mark and the gap after it. */
+const MARK_WIDTH = 24;
+const CAPTION_HEIGHT = 24;
 
-/**
- * An AI caption in the diagram, starting at `x` on baseline `y`: each code span in monospace on its own box, every part
- * placed at its own x, so an estimate that is off moves only the text after it. Returns the markup and its width.
- */
-function caption(text: string, x: number, y: number): { readonly boxes: Html; readonly text: Html; readonly width: number } {
-  let at = x;
-  const boxes: Html[] = [];
-  const spans = aiParts(text).map((part) => {
-    if (!part.code) {
-      const span = h`<tspan x="${at}">${part.text}</tspan>`;
-      at += textWidth(part.text);
-      return span;
-    }
-    const width = part.text.length * CODE_CHAR;
-    boxes.push(h`<rect class="codebox" x="${at + CODE_GAP}" y="${y - 14}" width="${width + 2 * CODE_PAD}" height="19" rx="6"/>`);
-    const span = h`<tspan class="capc" x="${at + CODE_GAP + CODE_PAD}">${part.text}</tspan>`;
-    at += width + 2 * (CODE_PAD + CODE_GAP);
-    return span;
-  });
-  return { boxes: h`${boxes}`, text: h`<text class="cap" y="${y}">${spans}</text>`, width: at - x };
+type Inside = Extract<Arrow, { kind: 'inside' }>;
+
+/** The mark of the `i`th flow line the traces were compared with: ①, ②, … */
+const markOf = (i: number): string => String.fromCodePoint(0x2460 + i);
+
+/** Each flow line the traces were compared with, with its mark. */
+const markedLines = (sequence: Sequence): { readonly arrow: Inside; readonly seen: NonNullable<Inside['seen']>; readonly mark: string }[] =>
+  sequence.arrows.flatMap((arrow) => (arrow.kind === 'inside' && arrow.seen !== undefined ? [{ arrow, seen: arrow.seen }] : [])).map((line, i) => ({ ...line, mark: markOf(i) }));
+
+/** The marks below the diagram: one sentence for the confirmed lines and one for those seen in only some transactions, each with its counts. */
+function legend(sequence: Sequence, r: R): Html {
+  const marked = markedLines(sequence);
+  const counts = (confirmed: boolean): Span[] =>
+    marked
+      .filter(({ seen }) => seen.confirmed === confirmed)
+      .flatMap(({ arrow, seen, mark }, i): Span[] => {
+        const source = confirmed ? arrow.text.sources[0] : undefined;
+        return [...(i === 0 ? [] : [r.w.sep]), source === undefined ? mark : { href: source, label: mark }, ` ${r.w.seenOf(seen.seen, seen.of)}`];
+      });
+  const lines = [
+    { state: 'ok', counts: counts(true), words: r.w.legendConfirmed },
+    { state: 'bad', counts: counts(false), words: r.w.legendPartial },
+  ].filter((line) => line.counts.length > 0);
+  return lines.length === 0
+    ? h``
+    : h`
+  <ul class="legend">${lines.map((line) => h`
+    <li data-state="${line.state}">${text(line.words(line.counts))}</li>`)}
+  </ul>`;
 }
 
 function diagram(sequence: Sequence, r: R): Html {
   const x = (i: number) => FIRST_X + i * SPACING;
+  const marks = new Map(markedLines(sequence).map(({ arrow, mark }) => [arrow, mark]));
+  const confirmed = (arrow: Inside) => arrow.seen?.confirmed === true;
   // The tag's box fits its word: 12px text is narrower than textWidth's 14px estimate, which leaves the margin.
-  const tagWidth = (tag: string) => Math.max(AI_TAG_WIDTH, Math.ceil(textWidth(tag)));
-  const captionWidth = (arrow: Extract<Arrow, { kind: 'inside' }>) => tagWidth(r.w.tag[arrow.text.tag]) + 8 + caption(arrow.text.ai, 0, 0).width;
-  const seenText = (seen: NonNullable<Extract<Arrow, { kind: 'inside' }>['seen']>) => (seen.confirmed ? r.w.seenLabel(seen.seen, seen.of) : r.w.seenCount(seen.seen, seen.of));
-  const seenWidth = (arrow: Extract<Arrow, { kind: 'inside' }>) => (arrow.seen === undefined ? 0 : textWidth(seenText(arrow.seen)) * 0.9);
-  const widest = Math.max(0, ...sequence.arrows.map((arrow) => (arrow.kind === 'inside' ? x(0) + 12 + Math.max(captionWidth(arrow), seenWidth(arrow)) + 8 : 0)));
+  const tagWidth = (arrow: Inside) => (confirmed(arrow) ? 0 : Math.max(AI_TAG_WIDTH, Math.ceil(textWidth(r.w.tag[arrow.text.tag]))) + 8);
+  const captionWidth = (arrow: Inside) =>
+    (marks.has(arrow) ? MARK_WIDTH : 0) + tagWidth(arrow) + aiParts(arrow.text.ai).reduce((w, part) => w + (part.code ? codeWidth(part.text) : textWidth(part.text)), 0);
+  const widest = Math.max(0, ...sequence.arrows.map((arrow) => (arrow.kind === 'inside' ? x(0) + 12 + captionWidth(arrow) + 8 : 0)));
   const width = Math.max(660, x(sequence.lifelines.length - 1) + FIRST_X, Math.ceil(widest));
   const rows: Html[] = [];
   let y = NODE_TOP + NODE_HEIGHT + 32;
@@ -135,40 +145,33 @@ function diagram(sequence: Sequence, r: R): Html {
     if (arrow.kind === 'call' && arrow.to === 0) {
       rows.push(h`
     <text class="no" x="${x(0) + 12}" y="${y}">${arrow.n}</text><text class="fn" x="${x(0) + 30}" y="${y}">${arrow.fn}</text>
-    <path class="call" d="M${x(0)} ${y + 14}h${SELF_LOOP}v${SELF_LOOP / 4}h${3 - SELF_LOOP}" marker-end="url(#m-call)"/>`);
+    <path class="call" d="M${x(0)} ${y + 14}h${SELF_LOOP}v${SELF_LOOP / 4}h${3 - SELF_LOOP}" marker-end="url(#head)"/>`);
       y += 52 + SELF_LOOP / 4;
     } else if (arrow.kind === 'call') {
       rows.push(h`
     <text class="no" x="${x(0) + 12}" y="${y}">${arrow.n}</text><text class="fn" x="${x(0) + 30}" y="${y}">${arrow.fn}</text>
-    <line class="call" x1="${x(0)}" y1="${y + 14}" x2="${x(arrow.to) - 3}" y2="${y + 14}" marker-end="url(#m-call)"/>`);
+    <line class="call" x1="${x(0)}" y1="${y + 14}" x2="${x(arrow.to) - 3}" y2="${y + 14}" marker-end="url(#head)"/>`);
       y += 52;
     } else if (arrow.kind === 'nested') {
       const [from, to] = [x(arrow.from), arrow.to === arrow.from ? x(arrow.from) + 60 : x(arrow.to)];
       rows.push(h`
     <text class="fn" x="${Math.min(from, to) + 12}" y="${y}">${arrow.fn}</text>
-    <line class="nested" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#m-inside)"/>`);
+    <line class="nested" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#head)"/>`);
       y += 36;
     } else if (arrow.kind === 'inside') {
-      const tag = r.w.tag[arrow.text.tag];
-      const tagged = tagWidth(tag);
       const [from, to] = [x(arrow.from), arrow.to === arrow.from ? x(arrow.from) + 60 : x(arrow.to)];
       const left = Math.max(x(0) + 12, Math.min(Math.min(from, to) + 12, width - 8 - captionWidth(arrow)));
-      const cap = caption(arrow.text.ai, left + tagged + 8, y);
-      const seen = arrow.seen === undefined ? undefined : seenText(arrow.seen);
-      const source = arrow.seen?.confirmed === true ? arrow.text.sources[0] : undefined;
+      const mark = marks.get(arrow);
       rows.push(h`
-    <g data-ai><rect class="tagbox" x="${left}" y="${y - 14}" width="${tagged}" height="20" rx="6"/><text class="tagt" x="${left + tagged / 2}" y="${y}" text-anchor="middle">${tag}</text>${cap.boxes}${cap.text}</g>
-    <line class="${arrow.seen?.confirmed === true ? 'inner seen' : 'inner'}" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#m-inside)"/>${
-      seen === undefined
-        ? ''
-        : h`
-    <text class="seenl" x="${left}" y="${y + 30}">${source === undefined ? seen : h`<a href="${source}">${seen}</a>`}</text>`
-    }`);
-      y += seen === undefined ? 36 : 56;
+    <foreignObject x="${left}" y="${y - 17}" width="${width - left}" height="${CAPTION_HEIGHT}"><div class="cap" data-ai>${mark === undefined ? '' : h`<span class="mark ${confirmed(arrow) ? 'ok' : 'bad'}">${mark}</span>`}${
+      confirmed(arrow) ? '' : h`<span class="byai">${r.w.tag[arrow.text.tag]}</span>`
+    }<span>${aiProse(arrow.text.ai)}</span></div></foreignObject>
+    <line class="${confirmed(arrow) ? 'inner seen' : 'inner'}" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#head)"/>`);
+      y += 36;
     } else {
       rows.push(h`
     <text class="capg" x="${x(0) + 14}" y="${y}">${arrow.text}</text>
-    <line class="gain" x1="${x(arrow.from)}" y1="${y + 10}" x2="${x(0) + 3}" y2="${y + 10}" marker-end="url(#m-gets)"/>`);
+    <line class="gain" x1="${x(arrow.from)}" y1="${y + 10}" x2="${x(0) + 3}" y2="${y + 10}" marker-end="url(#head)"/>`);
       y += 40;
     }
   }
@@ -179,15 +182,14 @@ function diagram(sequence: Sequence, r: R): Html {
     <line class="life" x1="${x(i)}" y1="${NODE_TOP + NODE_HEIGHT}" x2="${x(i)}" y2="${height - 8}"/>
     <rect class="node" x="${x(i) - w / 2}" y="${NODE_TOP}" width="${w}" height="${NODE_HEIGHT}" rx="6"/><text class="nodet" x="${x(i)}" y="${NODE_TOP + 20}" text-anchor="middle">${line.name}</text><text class="nodes" x="${x(i)}" y="${NODE_TOP + 36}" text-anchor="middle">${line.role}</text>`;
   });
-  const marker = (id: string, cls: string) => h`<marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="${cls}" d="M0 0L10 5L0 10z"/></marker>`;
   return h`<div class="diagram">
   <svg viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="dt dd">
     <title id="dt">${r.w.diagramTitle}</title>
     <desc id="dd">${sequence.narration}</desc>
-    <defs>${marker('m-call', 'ah')}${marker('m-inside', 'ahi')}${marker('m-gets', 'ahg')}</defs>${nodes}${rows}
+    <defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>${nodes}${rows}
   </svg>
   </div>
-  <div class="scrollhint">${r.w.scrollHint}</div>`;
+  <div class="scrollhint">${r.w.scrollHint}</div>${legend(sequence, r)}`;
 }
 
 const CHIP_CLASS: Readonly<Record<Chip['who'], string>> = { 'you-type': 'who you', 'you-pick': 'who you', computed: 'who', fixed: 'who', free: 'who app', bounded: 'who app' };
@@ -199,7 +201,7 @@ const docLine = (doc: DocLine, r: R): Html =>
   }</div>`;
 
 function valueLines(row: ArgRow, r: R): Html {
-  return h`${row.value === undefined ? '' : h`<div class="raw">${row.value.cast}${row.value.example === undefined ? '' : h`<span class="ex">${r.w.example[row.value.example]}</span>`}</div>`}<div class="is">${text(row.words)}${
+  return h`${row.value === undefined ? '' : h`<div class="raw">${row.value}</div>`}<div class="is">${text(row.words)}${
     row.qualifier === undefined ? '' : h` <span class="f3">${text(row.qualifier)}</span>`
   }</div>${row.doc === undefined ? '' : docLine(row.doc, r)}${row.id === undefined ? '' : h`<div class="mid">${text(row.id)}</div>`}${row.ai === undefined ? '' : h`
         <div class="ai">${ai(row.ai, r)}</div>`}`;
@@ -232,7 +234,6 @@ function callHead(call: CallBlock): Html {
 }
 
 function flowBody(flow: Flow, r: R): Html {
-  const lead = [flow.decoded ? around(r.w.decodedLead, 'cast decode-calldata') : undefined, flow.example === undefined ? undefined : text(flow.example)].filter((part) => part !== undefined);
   return h`
   <p class="lead">${r.w.flowLead}</p>
   ${diagram(flow.diagram, r)}${flow.diagram.traced ? h`
@@ -244,8 +245,8 @@ function flowBody(flow: Flow, r: R): Html {
     <span class="k0">${r.w.whoDecides}</span>${flow.key.map((item) => h`
     <span>${chip(item)}${item.means}</span>`)}
   </div>`
-  }${lead.length === 0 ? '' : h`
-  <p class="lead keylead">${lead.flatMap((part, i) => (i === 0 ? [part] : [r.w.sentenceGap, part]))}</p>`}${
+  }
+  <p class="lead keylead">${r.w.callsLead}</p>${
     flow.safeTx.length === 0
       ? ''
       : h`
@@ -347,6 +348,11 @@ function vaultBody(block: VaultBlock, r: R): Html {
   }`;
 }
 
+/** The AI's full text, folded under its one-line conclusion; left out when the conclusion is all of it. */
+const rest = (label: string | undefined, note: AiText, conclusion: AiText, r: R): Html =>
+  note.ai === conclusion.ai && note.sources.length === 0 ? h`` : h`
+          <div class="rec">${label === undefined ? '' : h`<span class="lbl">${label}</span>`}${ai(note, r)}</div>`;
+
 function reviewBody(body: Extract<Body, { kind: 'review' }>, r: R): Html {
   const empty = body.rows.length === 0 && body.judgments.length === 0;
   return h`
@@ -355,17 +361,22 @@ function reviewBody(body: Extract<Body, { kind: 'review' }>, r: R): Html {
     (row) => h`
     <div class="row" data-state="${row.state}" data-grade="${row.grade}" data-result="${row.id}">
       ${icon(row.state, r.language)}
-      <div><div class="t"><span class="lbl">${r.w.grade[row.grade]}</span> ${text(row.title)}</div>
-        <div class="meta">${text(row.why)}${row.entry === undefined ? '' : h`<a href="#${row.entry}">${r.w.seeSource}</a>`}</div>
-        <div class="rec"><span class="lbl">${r.w.reviewed[row.review.status]}</span>${ai(row.review.text, r)}</div>
-        <div class="rec"><span class="lbl">${r.w.advice}</span>${ai(row.review.recommendation, r)}</div></div>
+      <div><div class="t"><span class="lbl">${r.w.grade[row.grade]}</span> ${row.title}</div>
+        <div class="rec"><span class="lbl">${r.w.reviewed[row.review.status]}</span>${ai(row.conclusion, r)}</div>
+        <details class="more"><summary>${decor('chev')}${r.w.details}</summary>
+          <div class="meta">${text(row.subject)}</div>
+          <div class="meta">${text(row.why)}${row.entry === undefined ? '' : h`<a href="#${row.entry}">${r.w.seeSource}</a>`}</div>${rest(r.w.reviewed[row.review.status], row.review.text, row.conclusion, r)}
+          <div class="rec"><span class="lbl">${r.w.advice}</span>${ai(row.review.recommendation, r)}</div>
+        </details></div>
     </div>`,
   )}${body.judgments.map(
     (j) => h`
     <div class="row">
       ${icon('ask', r.language)}
-      <div><div class="t">${ai(j.text, r)}</div>
-        <div class="rec"><span class="lbl">${r.w.advice}</span>${ai(j.recommendation, r)}</div></div>
+      <div><div class="t">${ai(j.conclusion, r)}</div>
+        <details class="more"><summary>${decor('chev')}${r.w.details}</summary>${rest(undefined, j.text, j.conclusion, r)}
+          <div class="rec"><span class="lbl">${r.w.advice}</span>${ai(j.recommendation, r)}</div>
+        </details></div>
     </div>`,
   )}
   </div>`;
@@ -595,17 +606,11 @@ ${page.sections.map((s) => section(s, r).text).join('')}
 `;
 }
 
-/**
- * The template's HTML report in every language from the recordings and `notes.json`, or undefined when it has none. It
- * takes the template's first recorded test transaction as the example. Throws NotesError for notes the program refuses.
- */
-export async function generatedHtml(repoRoot: string, inputs: ReportInputs, title: ReportTitle): Promise<ReadonlyMap<Language, string> | undefined> {
-  const { subject, registry } = inputs;
-  const raw = readNotes(repoRoot, subject.template.id, subject.vault);
+/** The template's HTML report in every language from the recordings and `notes.json`, or undefined when it has none. Throws NotesError for notes the program refuses. */
+export function generatedHtml(repoRoot: string, inputs: ReportInputs, title: ReportTitle): ReadonlyMap<Language, string> | undefined {
+  const raw = readNotes(repoRoot, inputs.subject.template.id, inputs.subject.vault);
   if (raw === undefined) return undefined;
-  // The example must name the report's own vault.
-  const html = { ...inputs, example: firstRecordedTx(repoRoot, subject.template, registry) };
-  return new Map(notesLanguages(raw).map((language) => [language, renderPage(buildPage(html, raw, title, language))]));
+  return new Map(notesLanguages(raw).map((language) => [language, renderPage(buildPage(inputs, raw, title, language))]));
 }
 
 /** Up to 160 characters of a line from where it first differs, quoted so no control character reaches the terminal. */

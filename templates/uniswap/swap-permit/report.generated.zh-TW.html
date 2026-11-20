@@ -62,7 +62,7 @@ b,strong{font-weight:590}
 h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:0;overflow-wrap:break-word}
 h1 .byai{vertical-align:6px;margin-left:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
-.sub{color:var(--fg2);margin:14px 0 0;max-width:60ch;font-size:17px}
+.sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
 .sub .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:inline-flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
@@ -92,7 +92,7 @@ section>h2{font-size:22px;font-weight:590;letter-spacing:-.012em;margin:0 0 8px;
 section>h2 .c{font-weight:400;font-size:var(--t-small);color:var(--fg3);letter-spacing:0}
 .lead{color:var(--fg3);font-size:var(--t-small);margin:0 0 20px}
 .lead.keylead{margin-top:12px}
-.intro{color:var(--fg2);margin:0 0 20px;max-width:62ch}
+.intro{color:var(--fg2);margin:0 0 20px}
 h3{font-size:16px;font-weight:590;margin:36px 0 10px}
 
 .props{margin:0;font-size:var(--t-row);border-top:1px solid var(--line)}
@@ -124,21 +124,19 @@ svg .call{stroke:var(--fg);stroke-width:1.4;fill:none}
 svg .inner{stroke:var(--fg3);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
 svg .inner.seen{stroke:var(--fg2);stroke-dasharray:none}
 svg .nested{stroke:var(--fg2);stroke-width:1.2;fill:none}
-svg .seenl{fill:var(--fg3);font:12.5px var(--sans)} svg .seenl a{fill:var(--fg2);text-decoration:underline}
 svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
-svg .ah{fill:var(--fg)} svg .ahi{fill:var(--fg3)} svg .ahg{fill:var(--ok)}
+svg .ah{fill:var(--fg)}
 svg .fn{fill:var(--fg);font:400 14px var(--mono)}
 svg .no{fill:var(--fg3);font:400 14px var(--mono)}
-svg .cap{fill:var(--fg2);font:14px var(--sans)}
-svg .capc{fill:var(--fg);font:13px var(--mono)}
-svg .codebox{fill:var(--hover);stroke:var(--line2)}
+svg .cap{display:flex;align-items:center;gap:8px;height:24px;white-space:nowrap;color:var(--fg2);font:14px/1 var(--sans)}
+svg .cap code{font-size:13px;padding:2px 6px}
+.mark{font-size:17px} .mark.ok{color:var(--ok)} .mark.bad{color:var(--bad)}
 svg .capg{fill:var(--ok);font:590 14px var(--sans)}
-svg .tagbox{fill:none;stroke:var(--fg3);stroke-dasharray:3 2}
-svg .tagt{fill:var(--fg2);font:12px var(--sans)}
 svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
 svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
 svg .axis{stroke:var(--line2)}
 svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.legend{list-style:none;margin:10px 0 14px;padding:0;display:flex;flex-direction:column;gap:4px;font-size:var(--t-small);color:var(--fg2)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
 
@@ -163,7 +161,6 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .arg .mid{margin-top:6px;font-size:var(--t-small);color:var(--fg3)}
 .arg .mid .addr{font-size:13px;color:var(--fg2)}
 .arg .raw{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere;line-height:1.5}
-.arg .raw .ex{font-family:var(--sans);font-size:12px;color:var(--fg3);margin-left:8px}
 .arg .is{color:var(--fg);font-size:var(--t-row);margin-top:4px}
 .arg .is .f3{font-size:var(--t-small)}
 .arg .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
@@ -198,6 +195,10 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .row .meta a{margin-left:8px;color:var(--fg2)}
 .row .rec{font-size:var(--t-row);margin-top:8px}
 .row .rec .lbl{color:var(--fg3);margin-right:8px}
+details.more>summary{cursor:pointer;list-style:none;display:inline-flex;gap:6px;align-items:center;margin-top:6px;color:var(--fg3);font-size:var(--t-small)}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary:hover{color:var(--fg)}
+details.more[open]>summary .chev{transform:rotate(90deg)}
 
 .ad{scroll-margin-top:24px;display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
 .ad .i{margin-top:4px}
@@ -248,7 +249,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
 .auto li{display:flex;gap:10px;align-items:baseline}
 .auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
-.foot{font-size:var(--t-small);color:var(--fg3);max-width:70ch;border-top:1px solid var(--line);padding-top:16px}
+.foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
 .foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
 </style>
@@ -301,18 +302,18 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="diagram">
   <svg viewBox="0 0 660 176" role="img" aria-labelledby="dt dd">
     <title id="dt">交易流程</title>
-    <desc id="dd">呼叫 1：Safe 呼叫 universal-router-2.1.2 的 execute。結果：你得到 usdt。</desc>
-    <defs><marker id="m-call" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="m-inside" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahi" d="M0 0L10 5L0 10z"/></marker><marker id="m-gets" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahg" d="M0 0L10 5L0 10z"/></marker></defs>
+    <desc id="dd">呼叫 1：Safe 呼叫 universal-router-2.1.2 的 execute。結果：你得到 代幣。</desc>
+    <defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>
     <line class="life" x1="90" y1="58" x2="90" y2="168"/>
     <rect class="node" x="24" y="14" width="132" height="44" rx="6"/><text class="nodet" x="90" y="34" text-anchor="middle">你的 Safe</text><text class="nodes" x="90" y="50" text-anchor="middle">發起</text>
     <line class="life" x1="280" y1="58" x2="280" y2="168"/>
     <rect class="node" x="193" y="14" width="174" height="44" rx="6"/><text class="nodet" x="280" y="34" text-anchor="middle">universal-router-2.1.2</text><text class="nodes" x="280" y="50" text-anchor="middle">路由合約</text>
     <line class="life" x1="470" y1="58" x2="470" y2="168"/>
-    <rect class="node" x="404" y="14" width="132" height="44" rx="6"/><text class="nodet" x="470" y="34" text-anchor="middle">usdt</text><text class="nodes" x="470" y="50" text-anchor="middle">代幣</text>
+    <rect class="node" x="401" y="14" width="138" height="44" rx="6"/><text class="nodet" x="470" y="34" text-anchor="middle">代幣（buy-token）</text><text class="nodes" x="470" y="50" text-anchor="middle">你選</text>
     <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">execute</text>
-    <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#m-call)"/>
-    <text class="capg" x="104" y="142">你得到 usdt</text>
-    <line class="gain" x1="470" y1="152" x2="93" y2="152" marker-end="url(#m-gets)"/>
+    <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#head)"/>
+    <text class="capg" x="104" y="142">你得到 代幣</text>
+    <line class="gain" x1="470" y1="152" x2="93" y2="152" marker-end="url(#head)"/>
   </svg>
   </div>
   <div class="scrollhint">圖可以左右滑動</div>
@@ -325,7 +326,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <span><span class="who app">app 填，不限</span>換成別的值會走別的池子，但 Safe 給出和收到的數量仍要符合卡片，否則交易失敗或 MISMATCH</span>
     <span><span class="who app">app 填，不限</span>換成別的值，交易就失敗</span>
   </div>
-  <p class="lead keylead">每個單一值參數的第一行是 <code>cast decode-calldata</code> 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。標「例」的你填、你選和 app 填的值取自第一筆測試交易 <code>uniswap-swap-permit-usdc-usdt</code>，金額（sell-amount） <span class="num">24,000</span> usdc，金額（min-buy） <span class="num">23,978.654164</span> usdt。</p>
+  <p class="lead keylead">下面逐一列出交易的每個呼叫。每個參數都寫出由誰決定、它的值或必須符合的規則，以及它的作用。</p>
   
   <div class="cb">
     <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">universal-router-2.1.2.</span>execute</span><span class="sel">0x3593564c</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://developers.uniswap.org/llms.mdx/docs/protocols/universal-router/concepts/commands">developers.uniswap.org/llms.mdx/docs/protocols</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div></div>
@@ -348,21 +349,21 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">details</div><div><div class="is">4 個部分</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>授權的代幣、數量、到期時間和 nonce。</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">token</div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48<span class="ex">例</span></div><div class="is"><a href="#a-usdc">usdc</a> <span class="f3">你選的代幣（sell-token）</span></div>
+        <div class="part"><div class="pn">token</div><div><div class="is">你選的代幣（sell-token）</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>授權的代幣，也就是賣出的代幣。</span></span></div></div></div>
         <div class="part"><div class="pn">amount</div><div><div class="raw">1461501637330902918203684832716283019655932542975</div><div class="is">固定值</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>授權數量 2^160-1，Permit2 的無上限；Uniswap app 的預設。</span></span></div></div></div>
-        <div class="part"><div class="pn">expiration</div><div><div class="raw">1793933771<span class="ex">例</span></div><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
+        <div class="part"><div class="pn">expiration</div><div><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>授權到期時間，app 設 30 天後；verify 的網頁會顯示。</span></span></div></div></div>
-        <div class="part"><div class="pn">nonce</div><div><div class="raw">0<span class="ex">例</span></div><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
+        <div class="part"><div class="pn">nonce</div><div><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Permit2 對這個代幣和 router 的 nonce，每用一次加一。</span></span></div></div></div>
       </div></div>
         <div class="part"><div class="pn">spender</div><div><div class="raw">0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85</div><div class="is"><a href="#a-universal-router-2.1.2">universal-router-2.1.2</a></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>被授權的合約：Universal Router 2.1.2。</span></span></div></div></div>
-        <div class="part"><div class="pn">sigDeadline</div><div><div class="raw">1791343571<span class="ex">例</span></div><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
+        <div class="part"><div class="pn">sigDeadline</div><div><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這份簽名的有效期限，app 設 30 分鐘後。</span></span></div></div></div>
       </div></div>
-        <div class="part"><div class="pn">signature<div class="pchips"><span class="who app">app 填，不限</span></div></div><div><div class="raw">0x4f0274ece0c6e0eeff86a0caa2844d35f5d85068f2dff2e4734cc13bf1f8bc2b4a51cadbe74d300dcb6a2f2addee14ef171dbe11e30e5058b78f55a3117202f01c4947daae9b36f868247f2985a0ab6eea91d66f2beebbc275bc28e614bac99d0f75a7534203769da62a53ba7f3d8d79400af07c9c10f4a9ce7504e5528bd35bcb1cea8c62586456d394b5527a38ed96d1162f8d0ef1c65e5979924db9d9cf6e7f5d55473ffcb6323446334f236187b041f9d5ba2f96a512c9d1a04fb3df5ffebbfc1b<span class="ex">例</span></div><div class="is">每筆不同 <span class="f3">合約會驗證它，換成別的值交易就失敗</span></div>
+        <div class="part"><div class="pn">signature<div class="pchips"><span class="who app">app 填，不限</span></div></div><div><div class="is">每筆不同 <span class="f3">合約會驗證它，換成別的值交易就失敗</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Safe 簽署人對這份授權的簽名；Permit2 透過 Safe 的 <code>isValidSignature</code> 驗證，對不上交易就失敗。</span></span></div></div></div>
       </div></div>
         <div class="part"><div class="pn">[1]</div><div><div class="is"><code>V4_SWAP</code> 的參數</div>
@@ -379,7 +380,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">params<div class="pchips"><span class="who you">currencyIn、intermediateCurrency 你選</span><span class="who app">fee、tickSpacing、minHopPriceX36 不限</span><span class="who">hooks、hookData 固定</span><span class="who you">amountIn、amountOutMinimum 你填</span></div></div><div><div class="is">5 個部分</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>兌換的內容：賣什麼、經過哪個池子、賣多少、最少要拿到多少。</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">currencyIn</div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48<span class="ex">例</span></div><div class="is"><a href="#a-usdc">usdc</a> <span class="f3">你選的代幣（sell-token）</span></div>
+        <div class="part"><div class="pn">currencyIn</div><div><div class="is">你選的代幣（sell-token）</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>賣出的代幣。</span></span></div></div></div>
         <div class="part"><div class="pn">path</div><div><div class="is">1 項</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>經過的池子，一個池子一項；模板只接受一個池子。</span></span></div></div>
@@ -387,11 +388,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">[0]</div><div><div class="is">5 個部分</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>那個池子：另一邊的代幣、手續費、tick 間距、hook。</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">intermediateCurrency</div><div><div class="raw">0xdAC17F958D2ee523a2206206994597C13D831ec7<span class="ex">例</span></div><div class="is"><a href="#a-usdt">usdt</a> <span class="f3">你選的代幣（buy-token）</span></div>
+        <div class="part"><div class="pn">intermediateCurrency</div><div><div class="is">你選的代幣（buy-token）</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一跳換到的代幣，也就是買進的代幣。</span></span></div></div></div>
-        <div class="part"><div class="pn">fee</div><div><div class="raw">8<span class="ex">例</span></div><div class="is">每筆不同 <span class="f3">換成別的值測過，會走別的池子，收到的仍不少於卡片</span></div>
+        <div class="part"><div class="pn">fee</div><div><div class="is">每筆不同 <span class="f3">換成別的值測過，會走別的池子，收到的仍不少於卡片</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>池子的手續費等級，app 選路由時決定；USDC 和 USDT 之間看過 7 和 8（百萬分之 7、8）。換成別的值就是別的池子或不存在的池子。</span></span></div></div></div>
-        <div class="part"><div class="pn">tickSpacing</div><div><div class="raw">1<span class="ex">例</span></div><div class="is">每筆不同 <span class="f3">換成別的值測過，會走別的池子，收到的仍不少於卡片</span></div>
+        <div class="part"><div class="pn">tickSpacing</div><div><div class="is">每筆不同 <span class="f3">換成別的值測過，會走別的池子，收到的仍不少於卡片</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>池子的 tick 間距，和手續費一起決定是哪個池子；看過的都是 1。</span></span></div></div></div>
         <div class="part"><div class="pn">hooks</div><div><div class="raw">0x0000000000000000000000000000000000000000</div><div class="is">無（零地址）</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>池子的 hook 合約；零地址代表沒有 hook，兌換時不會跑任何額外的合約。</span></span></div></div></div>
@@ -399,18 +400,18 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>給 hook 的資料；沒有 hook，所以是空的。</span></span></div></div></div>
       </div></div>
       </div></div>
-        <div class="part"><div class="pn">minHopPriceX36</div><div><div class="raw">[]<span class="ex">例</span></div><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
+        <div class="part"><div class="pn">minHopPriceX36</div><div><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>每一跳的最低價格，可有可無；只會讓價格太差時交易失敗。看過的交易都是空的。</span></span></div></div></div>
-        <div class="part"><div class="pn">amountIn</div><div><div class="raw">24000000000<span class="ex">例</span></div><div class="is"><span class="num">24,000</span> usdc <span class="f3">6 位小數</span></div>
+        <div class="part"><div class="pn">amountIn</div><div><div class="is">你填的金額（sell-amount）</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>賣出的數量，以代幣的最小單位計。</span></span></div></div></div>
-        <div class="part"><div class="pn">amountOutMinimum</div><div><div class="raw">23978654164<span class="ex">例</span></div><div class="is">至少你填的金額（min-buy） <span class="f3">比這個少就 MISMATCH</span></div>
+        <div class="part"><div class="pn">amountOutMinimum</div><div><div class="is">至少你填的金額（min-buy） <span class="f3">比這個少就 MISMATCH</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>最少要拿到的買進代幣數量；少於這個數，router 讓整筆交易失敗。</span></span></div></div></div>
       </div></div>
       </div></div>
         <div class="part"><div class="pn">[1]</div><div><div class="is"><code>SETTLE</code> 的參數</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span><code>SETTLE</code> 的參數。</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">currency<div class="pchips"><span class="who you">你選：代幣（sell-token）</span></div></div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48<span class="ex">例</span></div><div class="is"><a href="#a-usdc">usdc</a> <span class="f3">你選的代幣（sell-token）</span></div>
+        <div class="part"><div class="pn">currency<div class="pchips"><span class="who you">你選：代幣（sell-token）</span></div></div><div><div class="is">你選的代幣（sell-token）</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要付給池子的代幣，也就是賣出的代幣。</span></span></div></div></div>
         <div class="part"><div class="pn">amount<div class="pchips"><span class="who">固定</span></div></div><div><div class="raw">0</div><div class="is">固定為 0</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>0 代表付清兌換欠下的全部數量，也就是 <code>amountIn</code>。</span></span></div></div></div>
@@ -420,9 +421,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">[2]</div><div><div class="is"><code>TAKE</code> 的參數</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span><code>TAKE</code> 的參數。</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">currency<div class="pchips"><span class="who you">你選：代幣（buy-token）</span></div></div><div><div class="raw">0xdAC17F958D2ee523a2206206994597C13D831ec7<span class="ex">例</span></div><div class="is"><a href="#a-usdt">usdt</a> <span class="f3">你選的代幣（buy-token）</span></div>
+        <div class="part"><div class="pn">currency<div class="pchips"><span class="who you">你選：代幣（buy-token）</span></div></div><div><div class="is">你選的代幣（buy-token）</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要領走的代幣，也就是買進的代幣。</span></span></div></div></div>
-        <div class="part"><div class="pn">recipient<div class="pchips"><span class="who">固定</span></div></div><div><div class="raw">0xD12e20E88A05Ce0F971ae6a6554337C7c075683d<span class="ex">例：別的 Safe</span></div><div class="is">你的 Safe</div>
+        <div class="part"><div class="pn">recipient<div class="pchips"><span class="who">固定</span></div></div><div><div class="is">你的 Safe</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>誰收到買進的代幣；必須是 Safe 自己。</span></span></div></div></div>
         <div class="part"><div class="pn">amount<div class="pchips"><span class="who">固定</span></div></div><div><div class="raw">0</div><div class="is">固定為 0</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>0 代表領走兌換得到的全部數量。</span></span></div></div></div>
@@ -433,15 +434,15 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     </div>
     <div class="arg" data-field="1.execute.deadline">
       <div class="nm"><span class="pn">deadline</span><span class="who app">app 填，不限</span></div>
-      <div class="val"><div class="raw">1791343641<span class="ex">例</span></div><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
+      <div class="val"><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>過了這個時間 router 就拒絕這筆兌換；app 建交易時設定，看過的交易大約是 30 分鐘後。</span></span></div></div>
     </div>
   </div>
   <h3>交易後</h3>
   <dl class="props">
-    <div><dt>Safe 的 usdc</dt><dd class="">−<span class="num">24,000</span> usdc</dd><dd class="src">剛好你填的金額（sell-amount）</dd></div>
-    <div><dt>Safe 的 usdt</dt><dd class="pos">至少你填的金額（min-buy）</dd><dd class="src">收到的不能少於你填的金額（min-buy）</dd></div>
-    <div><dt>透過 Permit2 給 <a href="#a-universal-router-2.1.2">universal-router-2.1.2</a> 的 usdc 授權</dt><dd class="">可以留著，不限數量</dd><dd class="src">到期時間記在 Permit2 裡，verify 的網頁會顯示</dd></div>
+    <div><dt>Safe 的 你選的代幣（sell-token）</dt><dd class="">你填的金額（sell-amount）</dd><dd class="src">剛好你填的金額（sell-amount）</dd></div>
+    <div><dt>Safe 的 你選的代幣（buy-token）</dt><dd class="pos">至少你填的金額（min-buy）</dd><dd class="src">收到的不能少於你填的金額（min-buy）</dd></div>
+    <div><dt>透過 Permit2 給 <a href="#a-universal-router-2.1.2">universal-router-2.1.2</a> 的 你選的代幣（sell-token） 授權</dt><dd class="">可以留著，不限數量</dd><dd class="src">到期時間記在 Permit2 裡，verify 的網頁會顯示</dd></div>
   </dl>
 </section>
 
@@ -464,23 +465,34 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="rows">
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>這筆交易用的 Permit2 授權是 Safe 簽署人事先簽的 Safe 訊息（EIP-1271），kiss-sign 不檢查那一步。交易裡的授權內容模板有綁住，簽錯會讓交易失敗；但被騙簽給別人的授權，不需要這筆交易就能被用掉。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>簽 Permit2 訊息時確認 spender 是 Universal Router 0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85。</span><span class="byai">AI 研究</span></span></div></div>
+      <div><div class="t"><span class="aiw" data-ai><span>這筆交易用的 Permit2 授權是 Safe 簽署人事先簽的 Safe 訊息（EIP-1271），kiss-sign 不檢查那一步。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span>這筆交易用的 Permit2 授權是 Safe 簽署人事先簽的 Safe 訊息（EIP-1271），kiss-sign 不檢查那一步。交易裡的授權內容模板有綁住，簽錯會讓交易失敗；但被騙簽給別人的授權，不需要這筆交易就能被用掉。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>簽 Permit2 訊息時確認 spender 是 Universal Router 0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>卡片的「最少收到的數量」要你自己填：Uniswap app 的滑價由它的交易 API 每次報價時算（自動滑價 0.5% 到 5.5%），價格來自 API 在很多池子間找的路由，鏈上沒有一個 view 讀得到。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>照 app 確認畫面上的最少收到數量填，不要填得更低。</span><span class="byai">AI 研究</span></span></div></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>照 app 確認畫面上的最少收到數量填，不要填得更低。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>池子（手續費和 tick 間距）由 app 選，模板不限，只要求沒有 hook。任何人都能開 v4 池子，所以價格只靠你填的最少數量保護：少於它，router 讓交易失敗，verify 也會 MISMATCH。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；最少收到的數量一定照 app 顯示的填。</span><span class="byai">AI 研究</span></span></div></div>
+      <div><div class="t"><span class="aiw" data-ai><span>池子（手續費和 tick 間距）由 app 選，模板不限，只要求沒有 hook。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span>池子（手續費和 tick 間距）由 app 選，模板不限，只要求沒有 hook。任何人都能開 v4 池子，所以價格只靠你填的最少數量保護：少於它，router 讓交易失敗，verify 也會 MISMATCH。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；最少收到的數量一定照 app 顯示的填。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>交易後留著的授權：Safe 給 Permit2 的無上限授權，和 Permit2 裡給 Universal Router 的 2^160-1、30 天授權。router 只從呼叫它的地址拉代幣，所以只有 Safe 自己之後的交易能用它。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想收回時，對代幣呼叫 approve(Permit2, 0)，或在 Permit2 呼叫 lockdown。</span><span class="byai">AI 研究</span></span></div></div>
+      <div><div class="t"><span class="aiw" data-ai><span>交易後留著的授權：Safe 給 Permit2 的無上限授權，和 Permit2 裡給 Universal Router 的 2^160-1、30 天授權。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span>交易後留著的授權：Safe 給 Permit2 的無上限授權，和 Permit2 裡給 Universal Router 的 2^160-1、30 天授權。router 只從呼叫它的地址拉代幣，所以只有 Safe 自己之後的交易能用它。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想收回時，對代幣呼叫 approve(Permit2, 0)，或在 Permit2 呼叫 lockdown。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
     </div>
   </div>
 </section>
@@ -599,6 +611,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="next">
   <h2>下一步</h2>
   <ol class="steps">
+    <li><div>核准前，打開「<a href="#addresses">地址</a>」裡每個地址列出的來源：確認每個網域是協議自己的，而且頁面上列著這個地址。</div></li>
     <li><div>第一次用這個模板，或模板改過之後，先核准它<pre class="cmd"><code>pnpm kiss-sign template approve uniswap/swap-permit</code></pre>
       <p class="then">它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 <code>y</code>。</p></div></li>
     <li><div>做卡片<pre class="cmd"><code>pnpm kiss-sign card new uniswap/swap-permit</code></pre>
@@ -624,8 +637,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <ul>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>交易只有這 1 個呼叫，MultiSend 也一個個解開</span></li>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>每個參數符合上面的規則，重新編碼要一模一樣</span></li>
-      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬後 Safe 給出的 usdc 剛好是你填的金額（sell-amount）</span></li>
-      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬後 Safe 收到 usdt，不少於你填的金額（min-buy）</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬後 Safe 給出的 你選的代幣（sell-token） 剛好是你填的金額（sell-amount）</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬後 Safe 收到 你選的代幣（buy-token），不少於你填的金額（min-buy）</span></li>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>除了上面「交易後」列出可以留著的授權，沒有任何授權在交易後變高</span></li>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>卡片用到的每個登記合約，程式碼還是 code pin 記錄的那份</span></li>
     </ul>

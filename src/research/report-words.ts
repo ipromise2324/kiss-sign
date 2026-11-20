@@ -2,7 +2,7 @@ import type { Language } from '../language.ts';
 import type { RegistryEntry } from '../registry.ts';
 import type { FreeClaim, ViewChange } from '../template/template.ts';
 import type { Confidence, FindingKind, Phrase, State, StripLine } from './ledger.ts';
-import type { AiTag, AiSourceResult, ExampleTag, Reviewed, Span, Who } from './report-page.ts';
+import type { AiTag, AiSourceResult, Reviewed, Span, Who } from './report-page.ts';
 import type { OutsideKind } from './study.ts';
 
 /** Chinese text before a word, with a space only when the word starts in Latin script or a digit. */
@@ -30,11 +30,7 @@ const ZH = {
   /** Joins the items of a list the way prose does: `a、b` in Chinese, `a, b` in English. */
   sep: '、',
   list: (items: readonly string[]): string => items.join('、'),
-  /** `a、b和c`. */
-  and: (items: readonly string[]): string => (items.length <= 1 ? items.join('') : before(`${items.slice(0, -1).join('、')}和`, items.at(-1) as string)),
   sentences: (items: readonly string[]): string => items.join(''),
-  /** What stands between two sentences. */
-  sentenceGap: '',
 
   tag: { research: 'AI 研究', ai: 'AI', safe: 'AI 研究：可以用', caution: 'AI 研究：要小心' } satisfies Record<AiTag, string>,
   strip: { sources: '地址來源', abi: '原始碼驗證', code: '合約沒被換掉', params: '參數保護', trace: '呼叫追蹤', providers: '雙節點比對' } satisfies Record<StripLine | 'providers', string>,
@@ -78,7 +74,6 @@ const ZH = {
   atMostTyped: (field: string): string => before('最多你填的', field),
   exactlyTyped: (field: string): string => before('剛好你填的', field),
   equalsTyped: (field: string): string => before('等於你填的', field),
-  forExample: '，例如 ',
 
   free: {
     scalar: '換成別的值測過，結果不變或交易失敗',
@@ -148,6 +143,7 @@ const ZH = {
     'no-abi-case': { title: '沒有 ABI 證明的紀錄', why: 'testdata/abi 沒有這個合約的 ABI 證明，程式沒有比對它的原始碼。' },
     'compiler-not-pinned': { title: '編譯器沒有釘選', why: '這個合約用的 solc 版本沒有釘選，程式沒有重新編譯它的原始碼。' },
     'pinned-before-spans': { title: 'code pin 沒有區段紀錄', why: '這個 code pin 寫在記錄區塊範圍之前，程式沒有讀鏈上從哪個區塊起跑這份程式碼。' },
+    'few-confirmations': { title: '地址確認的地方不夠', why: '' },
   } satisfies { readonly [K in FindingKind]?: { readonly title: string; readonly why: string } },
   needsReview: '要你看',
   fixtureTitle: (name: Span, title: string): Span[] => ['測試交易 ', name, `：${title}`],
@@ -169,9 +165,6 @@ const ZH = {
   baseUnits: ' 最小單位',
   baseUnitsOf: (token: string): string => ` 最小單位的 ${token}`,
   decimalsUnread: 'decimals() 沒讀到',
-  decimals: (n: number): string => `${n} 位小數`,
-  about: '約 ',
-  approx: (shown: Span, token: string, base: Span): Span[] => ['約 ', shown, ` ${token}（`, base, ' 最小單位）'],
 
   safe: '你的 Safe',
   role: { sender: '發起', contract: '合約', fixed: '固定的地址', picked: '你選' },
@@ -181,7 +174,6 @@ const ZH = {
   chip: (who: string, field: string): string => `${who}：${field}`,
   chipParts: (names: readonly string[], who: string): string => `${names.join('、')} ${who}`,
   whoMeans: { 'you-type': '每次簽名填', 'you-pick': '每次簽名選', computed: 'card new 每次簽名讀鏈算出，你核對', fixed: '改了就 MISMATCH', bounded: '超過上限就 MISMATCH', member: '訂單裡的值，由雜湊鎖住' },
-  chosen: { 'you-type': '你填', 'you-pick': '你選', computed: '程式算', free: 'app 填' },
   change: { increases: '增加', decreases: '減少', same: '不變' } satisfies Record<ViewChange, string>,
   inParens: (items: readonly string[]): string => `（${items.join('、')}）`,
 
@@ -226,7 +218,7 @@ const ZH = {
   increases: (contract: string, value: string): string => `${contract} 的 ${value} 增加`,
   result: (text: string): string => `結果：${text}。`,
   emptyHead: (target: string, sendsEth: boolean): string => (sendsEth ? before('轉 ETH 給', target) : `${before('呼叫', target)}，0 ETH、沒有資料`),
-  sends: (words: readonly Span[], example: Span | undefined): Span[] => ['送出 ETH：', ...words, ...(example === undefined ? [] : ['，例如 ', example, ' ETH'])],
+  sends: (words: readonly Span[]): Span[] => ['送出 ETH：', ...words],
 
   all: '全部',
   givesMore: '給出多於 0',
@@ -262,13 +254,6 @@ const ZH = {
 
   flow: '流程',
   calls: (n: number): string => `${n} 個呼叫`,
-  exampleLead: (chosen: string, vault: string | undefined, fixture: Span, amounts: readonly (readonly Span[])[]): Span[] => [
-    before(`標「例」的${chosen}的值取自`, vault === undefined ? '第一筆測試交易 ' : `${vault} 的第一筆測試交易 `),
-    fixture,
-    ...amounts.flatMap((a) => ['，', ...a]),
-    '。',
-  ],
-  noExample: (vault: string | undefined): Span[] => [vault === undefined ? '沒有換值測試的記錄可以當例子' : `${vault} 沒有換值測試的記錄可以當例子`, '，每次簽名才決定的值只寫規則。'],
 
   notRead: '讀不到',
   noneFromDefillama: 'DefiLlama 沒給',
@@ -404,9 +389,9 @@ const ZH = {
   searchCount: (token: string, anchor: string, found: number, studied: number, safes?: SafeParties): string =>
     `搜尋 ${token} 的${anchor}，找到 ${found} 筆，研究 ${studied} 筆${
       safes === undefined ? ''
-      : safes.found === 0 ? '，沒有 Safe 參與方的交易'
-      : safes.studied === safes.found ? `，含 Safe 參與方的 ${safes.found} 筆全數研究`
-      : `，含 Safe 參與方 ${safes.found} 筆中研究 ${safes.studied} 筆`
+      : safes.found === 0 ? '，沒有證實為 Safe 的參與方'
+      : safes.studied === safes.found ? `，含證實為 Safe 的參與方的 ${safes.found} 筆全數研究`
+      : `，含證實為 Safe 的參與方的 ${safes.found} 筆中研究 ${safes.studied} 筆`
     }`,
   searchEtherscanOnly: (count: Span): Span[] => ['只有 Etherscan 搜尋事件，找到 ', count, ' 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。'],
   searchSame: (same: boolean, counts: Span): Span[] => [same ? 'Alchemy 和 Etherscan 找到的完全一樣' : 'Alchemy 和 Etherscan 找到的不一樣', '（', counts, '）。'],
@@ -478,6 +463,7 @@ const ZH = {
 
   next: '下一步',
   trial: (vault: boolean): string => `（第一次用這個模板${vault ? '或這個合約' : ''}，先用小額）`,
+  openSources: (addresses: Span): Span[] => ['核准前，打開「', addresses, '」裡每個地址列出的來源：確認每個網域是協議自己的，而且頁面上列著這個地址。'],
   approveSay: '第一次用這個模板，或模板改過之後，先核准它',
   approveThen: (y: Span): Span[] => ['它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 ', y, '。'],
   ownerBook: '先把要加、要移除或要換的簽署人加進地址簿。名字自己取，用小寫英文和 - 連接；地址從聊天以外的來源取得',
@@ -558,7 +544,6 @@ const ZH = {
     'deployer-alone': '沒有已確認的合約同一個部署者',
     'url-holds-address': '網址含地址',
   } satisfies Record<Phrase, string>,
-  example: { example: '例', 'other-safe': '例：別的 Safe' } satisfies Record<ExampleTag, string>,
   aiResult: { pass: 'AI 判斷：沒問題', attention: 'AI 判斷：要注意', fail: 'AI 判斷：有問題' } satisfies Record<AiSourceResult, string>,
   reviewed: { confirmed: 'AI 已確認', concern: 'AI 有疑慮' } satisfies Record<Reviewed, string>,
   confidence: { high: '高信心', medium: '中信心', low: '低信心' } satisfies Record<Confidence, string>,
@@ -571,10 +556,11 @@ const ZH = {
   scrollHint: '圖可以左右滑動',
   docs: '文件：',
   /** Text around a code span the renderer puts between the two. */
-  decodedLead: ['每個單一值參數的第一行是 ', ' 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。'] as readonly [string, string],
+  callsLead: '下面逐一列出交易的每個呼叫。每個參數都寫出由誰決定、它的值或必須符合的規則，以及它的作用。',
   flowLead: '實線是 Safe 發出的呼叫、模板綁定的內部呼叫，和程式在過去交易裡看到的流程線；虛線是還沒核對的 AI 研究；綠線是你得到的。',
-  seenLabel: (seen: number, of: number): string => `兩邊都確認：程式在 ${of} 筆過去交易的呼叫追蹤裡看到 ${seen} 筆；AI 讀過合約原始碼`,
-  seenCount: (seen: number, of: number): string => `程式在 ${of} 筆過去交易的呼叫追蹤裡只看到 ${seen} 筆，所以還不算確認`,
+  seenOf: (seen: number, of: number): string => `${of} 筆中 ${seen} 筆`,
+  legendConfirmed: (counts: readonly Span[]): Span[] => ['兩邊都確認：程式在過去交易的呼叫追蹤裡看到這條線（', ...counts, '），AI 也讀過合約原始碼；每條線旁的說明是 AI 寫的。'],
+  legendPartial: (counts: readonly Span[]): Span[] => ['程式只在部分過去交易的呼叫追蹤裡看到這條線（', ...counts, '），所以還不算確認。'],
   traceNote: '呼叫追蹤只顯示過去交易走過的路；合約可能依當時狀態走別條路，簽名時保護你的是效果檢查。',
   whoDecides: '誰決定',
   safeTx: 'Safe 交易',
@@ -594,6 +580,7 @@ const ZH = {
   grade: { key: '重要', reference: '參考' },
   reviewLead: '每一項 AI 都先查過，附上建議。',
   seeSource: '看來源',
+  details: '細節',
   multisendLead: (n: number): readonly [string, string] => [`這筆 Safe 交易用 MultiSend 打包 ${n} 個呼叫，沒有描述檔解得開 Safe 的 MultiSend，所以請比對裝置上的 hash 和 `, ' 印的 safeTxHash。'],
   noDataLead: '這筆交易的呼叫沒有資料，沒有函式可以用 ERC-7730 描述檔解讀。',
   walletLead: '支援 ERC-7730 的 Ledger 先用描述檔顯示 Safe 交易（SafeTx），再顯示裡面的呼叫。',
@@ -632,9 +619,7 @@ export type Words = typeof ZH;
 const EN: Words = {
   sep: ', ',
   list: (items) => items.join(', '),
-  and: (items) => (items.length <= 1 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items.at(-1) as string}`),
   sentences: (items) => items.join(' '),
-  sentenceGap: ' ',
 
   tag: { research: 'AI research', ai: 'AI', safe: 'AI research: OK to use', caution: 'AI research: be careful' },
   strip: { sources: 'Address sources', abi: 'Source verified', code: 'Code unchanged', params: 'Parameter checks', trace: 'Call traces', providers: 'Two providers' },
@@ -676,7 +661,6 @@ const EN: Words = {
   atMostTyped: (field) => `at most the ${field} you type`,
   exactlyTyped: (field) => `exactly the ${field} you type`,
   equalsTyped: (field) => `equals the ${field} you type`,
-  forExample: ', for example ',
 
   free: {
     scalar: 'tested with other values: the same result or the transaction fails',
@@ -774,6 +758,7 @@ const EN: Words = {
       title: 'the code pin has no span record',
       why: 'This code pin was written before block ranges were recorded; the program did not read from which block the chain runs this code.',
     },
+    'few-confirmations': { title: 'address confirmed in too few places', why: '' },
   },
   needsReview: 'needs your review',
   fixtureTitle: (name, title) => ['Test transaction ', name, `: ${title}`],
@@ -795,9 +780,6 @@ const EN: Words = {
   baseUnits: ' base units',
   baseUnitsOf: (token) => ` base units of ${token}`,
   decimalsUnread: 'decimals() not read',
-  decimals: (n) => `${n} decimals`,
-  about: 'about ',
-  approx: (shown, token, base) => ['about ', shown, ` ${token} (`, base, ' base units)'],
 
   safe: 'your Safe',
   role: { sender: 'sender', contract: 'contract', fixed: 'fixed address', picked: 'you pick' },
@@ -807,7 +789,6 @@ const EN: Words = {
   chip: (who, field) => `${who}: ${field}`,
   chipParts: (names, who) => `${names.join(', ')} ${who}`,
   whoMeans: { 'you-type': 'typed at each signing', 'you-pick': 'picked at each signing', computed: 'read from the chain by card new at each signing; you check it', fixed: 'any change is a MISMATCH', bounded: 'past the limit is a MISMATCH', member: 'a value in the order, locked by its hash' },
-  chosen: { 'you-type': 'you type', 'you-pick': 'you pick', computed: 'the program computes', free: 'the app fills' },
   change: { increases: 'increases', decreases: 'decreases', same: 'unchanged' },
   inParens: (items) => ` (${items.join(', ')})`,
 
@@ -851,7 +832,7 @@ const EN: Words = {
   increases: (contract, value) => `${value} of ${contract} increases`,
   result: (text) => `Result: ${text}.`,
   emptyHead: (target, sendsEth) => (sendsEth ? `Send ETH to ${target}` : `Call ${target}, 0 ETH, no data`),
-  sends: (words, example) => ['Sends ETH: ', ...words, ...(example === undefined ? [] : [', for example ', example, ' ETH'])],
+  sends: (words) => ['Sends ETH: ', ...words],
 
   all: 'all',
   givesMore: 'gives more than 0',
@@ -886,14 +867,6 @@ const EN: Words = {
 
   flow: 'Flow',
   calls: (n) => `${n} ${plural(n, 'call', 'calls')}`,
-  exampleLead: (chosen, vault, fixture, amounts) => [
-    `Values that ${chosen}, marked "example", come from `,
-    fixture,
-    `, the first test transaction${vault === undefined ? '' : ` of ${vault}`}`,
-    ...amounts.flatMap((a, i) => [i === 0 ? ': ' : ', ', ...a]),
-    '.',
-  ],
-  noExample: (vault) => [`No perturbation test is recorded to serve as an example${vault === undefined ? '' : ` for ${vault}`}`, ', so values decided at each signing show only their rule.'],
 
   notRead: 'could not be read',
   noneFromDefillama: 'DefiLlama gives none',
@@ -1102,6 +1075,7 @@ const EN: Words = {
 
   next: 'Next steps',
   trial: (vault) => ` (the first time you use this template${vault ? ' or this contract' : ''}, start with a small amount)`,
+  openSources: (addresses) => ['Before you approve, open the sources ', addresses, " lists for each address: check that each domain is the protocol's own and that the page lists this address."],
   approveSay: 'The first time you use this template, or after it changes, approve it',
   approveThen: (y) => ["It prints the template, the commit of main on GitHub and the template's keccak256. Answer ", y, ' only if it is the one you reviewed.'],
   ownerBook: 'First add each signer you will add, remove or replace to your address book. Pick a name in lowercase English joined with -; get the address from a source outside the chat',
@@ -1192,7 +1166,6 @@ const EN: Words = {
     'deployer-alone': 'no confirmed contract shares it',
     'url-holds-address': 'the URL holds the address',
   },
-  example: { example: 'example', 'other-safe': 'example: another Safe' },
   aiResult: { pass: 'AI judgment: no problem', attention: 'AI judgment: needs attention', fail: 'AI judgment: problem' },
   reviewed: { confirmed: 'AI confirmed', concern: 'AI has concerns' },
   confidence: { high: 'high confidence', medium: 'medium confidence', low: 'low confidence' },
@@ -1204,10 +1177,11 @@ const EN: Words = {
   diagramTitle: 'Transaction flow',
   scrollHint: 'Scroll the diagram sideways',
   docs: 'Docs: ',
-  decodedLead: ["Each single-value argument's first line is what ", ' prints; for an array, a tuple or a nested call the first line is a summary, and its contents follow below.'],
+  callsLead: "The transaction's calls, one by one. Each argument shows who decides it, its value or the rule it must follow, and what it does.",
   flowLead: "Solid lines are the Safe's calls, the calls the template binds inside them, and flow lines the program saw in past transactions; dashed lines are AI research not checked; green lines are what you get.",
-  seenLabel: (seen, of) => `Confirmed two ways: the program saw it in the call traces of ${seen} of ${of} past transactions; the AI read the contract's source`,
-  seenCount: (seen, of) => `The program saw it in the call traces of only ${seen} of ${of} past transactions, so it is not confirmed`,
+  seenOf: (seen, of) => `${seen} of ${of}`,
+  legendConfirmed: (counts) => ['Confirmed two ways: the program saw the line in the call traces of past transactions (', ...counts, "), and the AI read the contract's source; the words beside each line are the AI's."],
+  legendPartial: (counts) => ['Seen in the call traces of only some past transactions (', ...counts, '), so not confirmed.'],
   traceNote: 'A call trace shows only the path past transactions took; a contract may take another path on other state, and what protects you at signing is the effects check.',
   whoDecides: 'Who decides',
   safeTx: 'Safe transaction',
@@ -1227,6 +1201,7 @@ const EN: Words = {
   grade: { key: 'key', reference: 'reference' },
   reviewLead: 'The AI checked each item first and gives its advice.',
   seeSource: 'see source',
+  details: 'Details',
   multisendLead: (n) => [`This Safe transaction packs ${n} calls with MultiSend, which no descriptor decodes, so compare the hash on the device with the safeTxHash `, ' prints.'],
   noDataLead: "This transaction's calls have no data, so there is no function for an ERC-7730 descriptor to show.",
   walletLead: 'A Ledger that supports ERC-7730 shows the Safe transaction (SafeTx) with a descriptor first, then the call inside it.',

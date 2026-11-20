@@ -12,11 +12,12 @@ import { LANGUAGES, isLanguage } from '../src/language.ts';
 import type { Language } from '../src/language.ts';
 import { OLD_HTML_FILE, generatedHtml, generatedHtmlFile, generatedHtmlPath, htmlDifference, renderPage, writeHtmlPages } from '../src/research/report-html.ts';
 import { buildPage } from '../src/research/report-page.ts';
-import type { HtmlInputs } from '../src/research/report-page.ts';
+import type { Body, HtmlInputs, Page } from '../src/research/report-page.ts';
+import { WORDS } from '../src/research/report-words.ts';
 import { loadReport, readDocs, replayInputs, reportDir, templateTargets } from '../src/research/report.ts';
 import type { PastTxsSection, ReportInputs, ReportTitle } from '../src/research/report.ts';
 import type { YearSearch } from '../src/research/past-txs.ts';
-import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
+import { judgeFixtures } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { NOT_YET_REBUILT, reportedInstances } from '../src/template/vault-reports.ts';
 import { FROZEN_REPORTS, repoWithFrozenReports } from './frozen-reports.ts';
@@ -154,7 +155,7 @@ const bilingual = (where: (dir: string) => boolean = () => true): string =>
 async function withFixtures(dir: string, inputs: ReportInputs): Promise<HtmlInputs> {
   const { root, registry } = reportOf(dir);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(dir);
-  return { ...inputs, fixtures: await judgeFixtures(root, template, registry), example: firstRecordedTx(root, template, registry) };
+  return { ...inputs, fixtures: await judgeFixtures(root, template, registry) };
 }
 
 /** Every piece of text in notes.json a page in `language` prints: its language's text, never a URL or an enum value. */
@@ -214,7 +215,8 @@ test('every text the AI wrote is inside an element with its dashed AI tag, and n
   for (const [id, { dir, language, html }] of replayed) {
     const { rest, cut } = withoutAi(html);
     assert.ok(cut.length > 0, id);
-    for (const element of cut) assert.match(element, /class="(byai|tagt)"/, `${id}: AI text without its tag: ${element.slice(0, 120)}`);
+    // A flow line the call traces confirmed carries its mark in place of the tag; the legend under the diagram says the AI read its source.
+    for (const element of cut) assert.match(element, /class="(byai|mark ok)"/, `${id}: AI text without its tag: ${element.slice(0, 120)}`);
     const plain = noteTexts(notesOf(dir), language).flatMap((text) => text.split('`').filter((part, i) => i % 2 === 0 && part.length >= SHORTEST_LEAK[language]));
     assert.ok(plain.length > 0, `${id}: no text of notes.json in ${language}`);
     for (const text of plain) assert.ok(!unescape(rest).includes(text), `${id}: ${text} outside an AI element`);
@@ -257,9 +259,8 @@ test('a code span in AI text prints as <code> in prose and as a boxed monospace 
   );
   assert.ok(html.includes('先呼叫 <code>multicall</code>，&#60;b&#62;不是&#60;/b&#62; <code>approve()</code>'));
   assert.ok(!html.includes('`'), 'no backtick reaches the page');
-  const caption = /<g data-ai>.*?<\/g>/s.exec(html.slice(html.indexOf('<svg viewBox')))?.[0] ?? assert.fail('a flow caption');
-  assert.equal([...caption.matchAll(/<rect class="codebox"/g)].length, 2);
-  assert.deepEqual([...caption.matchAll(/<tspan class="capc"[^>]*>([^<]*)<\/tspan>/g)].map((m) => m[1]), ['erc20TransferFrom', 'erc4626Deposit']);
+  const caption = /<div class="cap" data-ai>.*?<\/div><\/foreignObject>/s.exec(html.slice(html.indexOf('<svg viewBox')))?.[0] ?? assert.fail('a flow caption');
+  assert.deepEqual([...caption.matchAll(/<code>([^<]*)<\/code>/g)].map((m) => m[1]), ['erc20TransferFrom', 'erc4626Deposit']);
 });
 
 const AI_SOURCE: Readonly<Record<Language, { readonly label: string; readonly result: RegExp }>> = {
@@ -410,7 +411,7 @@ test("a paged year's search line says how many transactions with a proven Safe p
   };
   const expected: Readonly<Record<Language, readonly [all: string, some: string, none: string]>> = {
     en: [', all 17 with a proven Safe party', ', 9 of 20 with a proven Safe party', ', none with a proven Safe party'],
-    'zh-TW': ['，含 Safe 參與方的 17 筆全數研究', '，含 Safe 參與方 20 筆中研究 9 筆', '，沒有 Safe 參與方的交易'],
+    'zh-TW': ['，含證實為 Safe 的參與方的 17 筆全數研究', '，含證實為 Safe 的參與方的 20 筆中研究 9 筆', '，沒有證實為 Safe 的參與方'],
   };
   for (const language of LANGUAGES) {
     const committed = /<h3>((?:Search of|搜尋)[^<]*)<\/h3>/.exec(html.get(language) ?? assert.fail(language))?.[1] ?? assert.fail(`${language}: a committed search line`);
@@ -421,5 +422,95 @@ test("a paged year's search line says how many transactions with a proven Safe p
     assert.equal(searchLine(language, covered({ check: { kind: 'not-checked', why: '--from and --to fix both sides of the transfer' }, selection: { safes: 0, safesChosen: 0, rest: 40, restChosen: 12 } })), committed, 'no party checked adds nothing');
     assert.equal(searchLine(language, covered(undefined)), committed, 'a year asked in one page adds nothing');
     assert.equal(searchLine(language, undefined), committed, 'a recording of the windows adds nothing');
+  }
+});
+
+test('the Flow section opens its calls with one sentence and prints no example value', () => {
+  for (const [id, { language, html }] of replayed) {
+    const page = unescape(html);
+    assert.equal(page.split(`<p class="lead keylead">${WORDS[language].callsLead}</p>`).length, 2, `${id}: the one sentence over the calls`);
+    assert.doesNotMatch(page, /class="ex"|first test transaction|第一筆測試交易|marked "example"|標「例」|例：別的 Safe/, id);
+  }
+});
+
+/** The flow diagram's SVG. */
+const diagramOf = (html: string): string => {
+  const start = html.indexOf('<svg viewBox');
+  return html.slice(start, html.indexOf('</svg>', start));
+};
+
+const hyperithm = (): string => join(FROZEN, reportDir(FROZEN, HYPERITHM));
+
+/** The frozen Hyperithm page with its flow lines marked as the traces would mark them: the first seen in all 8 transactions, the second in 3. */
+async function tracedPage(language: Language): Promise<string> {
+  const { inputs, title } = pages.get(hyperithm()) ?? assert.fail('the frozen Hyperithm report');
+  const page = buildPage(await withFixtures(hyperithm(), inputs), notesOf(hyperithm()), title, language);
+  let n = 0;
+  const sections = page.sections.map((section) => {
+    if (section.body.kind !== 'flow') return section;
+    const { flow } = section.body;
+    const arrows = flow.diagram.arrows.map((arrow) => (arrow.kind === 'inside' ? { ...arrow, seen: n++ === 0 ? { seen: 8, of: 8, confirmed: true } : { seen: 3, of: 8, confirmed: false } } : arrow));
+    return { ...section, body: { kind: 'flow', flow: { ...flow, diagram: { ...flow.diagram, arrows, traced: true } } } satisfies Body };
+  });
+  assert.equal(n, 2, 'the Hyperithm diagram draws two flow lines');
+  return renderPage({ ...page, sections } satisfies Page);
+}
+
+test('a traced flow line carries a short mark in the diagram, and one legend under it explains the marks with their counts', async () => {
+  const expected: Readonly<Record<Language, readonly [confirmed: RegExp, partial: RegExp]>> = {
+    en: [/^Confirmed two ways: .*\(<a href="https:[^"]+">①<\/a> 8 of 8\), and the AI read the contract's source; the words beside each line are the AI's\.$/, /^Seen in the call traces of only some past transactions \(② 3 of 8\), so not confirmed\.$/],
+    'zh-TW': [/^兩邊都確認：.*（<a href="https:[^"]+">①<\/a> 8 筆中 8 筆），AI 也讀過合約原始碼；每條線旁的說明是 AI 寫的。$/, /^程式只在部分過去交易的呼叫追蹤裡看到這條線（② 8 筆中 3 筆），所以還不算確認。$/],
+  };
+  for (const language of LANGUAGES) {
+    const html = unescape(await tracedPage(language));
+    const svg = diagramOf(html);
+    const captions = [...svg.matchAll(/<div class="cap" data-ai>(.*?)<\/div><\/foreignObject>/g)].map((m) => m[1] as string);
+    assert.equal(captions.length, 2, language);
+    assert.match(captions[0] ?? '', /^<span class="mark ok">①<\/span><span>/, `${language}: a confirmed line has its mark and no AI tag`);
+    assert.match(captions[1] ?? '', /^<span class="mark bad">②<\/span><span class="byai">/, `${language}: a line seen in only some keeps its AI tag`);
+    assert.doesNotMatch(svg, /8 of 8|3 of 8|8 筆中/, `${language}: no count inside the diagram`);
+    const legend = /<\/svg>\s*<\/div>\s*<div class="scrollhint">[^<]*<\/div>\s*<ul class="legend">(.*?)<\/ul>/s.exec(html)?.[1] ?? assert.fail(`${language}: a legend right under the diagram`);
+    const lines = [...legend.matchAll(/<li data-state="(\w+)">(.*?)<\/li>/g)].map((m) => [m[1], m[2]] as const);
+    assert.deepEqual(lines.map(([state]) => state), ['ok', 'bad']);
+    expected[language].forEach((pattern, i) => assert.match(lines[i]?.[1] ?? '', pattern, language));
+  }
+  const untraced = unescape(pages.get(hyperithm())?.html.get('en') ?? assert.fail('the committed page'));
+  assert.ok(!untraced.includes('class="legend"') && !untraced.includes('class="mark'), 'no mark and no legend when no line was compared');
+});
+
+test('every arrow in the diagram ends in the one arrowhead, drawn in the foreground colour', () => {
+  for (const [id, { html }] of replayed) {
+    const svg = diagramOf(html);
+    const ends = [...svg.matchAll(/marker-end="([^"]*)"/g)].map((m) => m[1]);
+    assert.ok(ends.length > 0 && ends.every((end) => end === 'url(#head)'), `${id}: ${[...new Set(ends)].join(' ')}`);
+    assert.deepEqual([...svg.matchAll(/<marker [^>]*>(.*?)<\/marker>/g)].map((m) => m[1]), ['<path class="ah" d="M0 0L10 5L0 10z"/>'], id);
+    assert.ok(html.includes('svg .ah{fill:var(--fg)}'), `${id}: the arrowhead takes the foreground colour`);
+  }
+});
+
+test('each To review item shows its state, grade, plain title and one-line conclusion open, and folds the rest', () => {
+  for (const [id, { language, html }] of replayed) {
+    const review = /<section id="review">(.*?)<\/section>/s.exec(html)?.[1] ?? assert.fail(id);
+    for (const [row] of review.matchAll(/<div class="row" data-state="\w+" data-grade="\w+" data-result="[^"]+">.*?<\/details><\/div>\n    <\/div>/gs)) {
+      const [open, folded] = row.split('<details class="more">') as [string, string];
+      assert.match(open, /<svg class="i \w+"/, `${id}: the state icon stays open`);
+      assert.match(open, new RegExp(`<div class="t"><span class="lbl">(${Object.values(WORDS[language].grade).join('|')})</span> [^<]+</div>`), `${id}: grade and a plain title stay open`);
+      assert.doesNotMatch(/<div class="t">.*?<\/div>/.exec(open)?.[0] ?? '', /<code>|0x[0-9a-fA-F]{40}/, `${id}: no address or code in the title`);
+      assert.match(open, /<div class="rec"><span class="lbl">[^<]+<\/span><span class="aiw" data-ai>/, `${id}: the conclusion stays open`);
+      assert.match(folded, /<div class="meta">/, `${id}: the details are folded`);
+    }
+  }
+  const frozen = unescape(pages.get(hyperithm())?.html.get('en') ?? assert.fail('the frozen page'));
+  const row = /<div class="row" data-state="warn" data-grade="key"[^>]*>(.*?)<details/s.exec(frozen)?.[1] ?? assert.fail('the key row');
+  assert.match(row, /Address confirmed in too few places · hyperithm-usdc-apex-v2-9e2f<\/div>/, 'the title names the entry');
+  assert.match(row, /AI has concerns<\/span>.*The program's only check is the factory: VaultV2Factory answers <code>isVaultV2<\/code> = true\.<\/span>/s);
+  assert.doesNotMatch(row, /AI opened the vault's page/, 'the rest of the review is folded');
+});
+
+test('Next steps first asks the signer to open the sources the report lists for each address', () => {
+  for (const [id, { language, html }] of replayed) {
+    if (!html.includes('<section id="addresses">')) continue;
+    const first = /<ol class="steps">\s*<li><div>(.*?)<\/div><\/li>/s.exec(html)?.[1] ?? assert.fail(id);
+    assert.ok(unescape(first).startsWith(language === 'en' ? 'Before you approve, open the sources <a href="#addresses">' : '核准前，打開「<a href="#addresses">'), `${id}: ${first.slice(0, 80)}`);
   }
 });

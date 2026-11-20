@@ -62,7 +62,7 @@ b,strong{font-weight:590}
 h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:0;overflow-wrap:break-word}
 h1 .byai{vertical-align:6px;margin-left:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
-.sub{color:var(--fg2);margin:14px 0 0;max-width:60ch;font-size:17px}
+.sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
 .sub .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:inline-flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
@@ -92,7 +92,7 @@ section>h2{font-size:22px;font-weight:590;letter-spacing:-.012em;margin:0 0 8px;
 section>h2 .c{font-weight:400;font-size:var(--t-small);color:var(--fg3);letter-spacing:0}
 .lead{color:var(--fg3);font-size:var(--t-small);margin:0 0 20px}
 .lead.keylead{margin-top:12px}
-.intro{color:var(--fg2);margin:0 0 20px;max-width:62ch}
+.intro{color:var(--fg2);margin:0 0 20px}
 h3{font-size:16px;font-weight:590;margin:36px 0 10px}
 
 .props{margin:0;font-size:var(--t-row);border-top:1px solid var(--line)}
@@ -124,21 +124,19 @@ svg .call{stroke:var(--fg);stroke-width:1.4;fill:none}
 svg .inner{stroke:var(--fg3);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
 svg .inner.seen{stroke:var(--fg2);stroke-dasharray:none}
 svg .nested{stroke:var(--fg2);stroke-width:1.2;fill:none}
-svg .seenl{fill:var(--fg3);font:12.5px var(--sans)} svg .seenl a{fill:var(--fg2);text-decoration:underline}
 svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
-svg .ah{fill:var(--fg)} svg .ahi{fill:var(--fg3)} svg .ahg{fill:var(--ok)}
+svg .ah{fill:var(--fg)}
 svg .fn{fill:var(--fg);font:400 14px var(--mono)}
 svg .no{fill:var(--fg3);font:400 14px var(--mono)}
-svg .cap{fill:var(--fg2);font:14px var(--sans)}
-svg .capc{fill:var(--fg);font:13px var(--mono)}
-svg .codebox{fill:var(--hover);stroke:var(--line2)}
+svg .cap{display:flex;align-items:center;gap:8px;height:24px;white-space:nowrap;color:var(--fg2);font:14px/1 var(--sans)}
+svg .cap code{font-size:13px;padding:2px 6px}
+.mark{font-size:17px} .mark.ok{color:var(--ok)} .mark.bad{color:var(--bad)}
 svg .capg{fill:var(--ok);font:590 14px var(--sans)}
-svg .tagbox{fill:none;stroke:var(--fg3);stroke-dasharray:3 2}
-svg .tagt{fill:var(--fg2);font:12px var(--sans)}
 svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
 svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
 svg .axis{stroke:var(--line2)}
 svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.legend{list-style:none;margin:10px 0 14px;padding:0;display:flex;flex-direction:column;gap:4px;font-size:var(--t-small);color:var(--fg2)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
 
@@ -163,7 +161,6 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .arg .mid{margin-top:6px;font-size:var(--t-small);color:var(--fg3)}
 .arg .mid .addr{font-size:13px;color:var(--fg2)}
 .arg .raw{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere;line-height:1.5}
-.arg .raw .ex{font-family:var(--sans);font-size:12px;color:var(--fg3);margin-left:8px}
 .arg .is{color:var(--fg);font-size:var(--t-row);margin-top:4px}
 .arg .is .f3{font-size:var(--t-small)}
 .arg .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
@@ -198,6 +195,10 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .row .meta a{margin-left:8px;color:var(--fg2)}
 .row .rec{font-size:var(--t-row);margin-top:8px}
 .row .rec .lbl{color:var(--fg3);margin-right:8px}
+details.more>summary{cursor:pointer;list-style:none;display:inline-flex;gap:6px;align-items:center;margin-top:6px;color:var(--fg3);font-size:var(--t-small)}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary:hover{color:var(--fg)}
+details.more[open]>summary .chev{transform:rotate(90deg)}
 
 .ad{scroll-margin-top:24px;display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
 .ad .i{margin-top:4px}
@@ -248,7 +249,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
 .auto li{display:flex;gap:10px;align-items:baseline}
 .auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
-.foot{font-size:var(--t-small);color:var(--fg3);max-width:70ch;border-top:1px solid var(--line);padding-top:16px}
+.foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
 .foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
 </style>
@@ -302,13 +303,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <svg viewBox="0 0 660 136" role="img" aria-labelledby="dt dd">
     <title id="dt">Transaction flow</title>
     <desc id="dd">Call 1: the Safe calls multicall on acuto-usdc-v2-4a57.</desc>
-    <defs><marker id="m-call" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="m-inside" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahi" d="M0 0L10 5L0 10z"/></marker><marker id="m-gets" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahg" d="M0 0L10 5L0 10z"/></marker></defs>
+    <defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>
     <line class="life" x1="90" y1="58" x2="90" y2="128"/>
     <rect class="node" x="24" y="14" width="132" height="44" rx="6"/><text class="nodet" x="90" y="34" text-anchor="middle">your Safe</text><text class="nodes" x="90" y="50" text-anchor="middle">sender</text>
     <line class="life" x1="280" y1="58" x2="280" y2="128"/>
     <rect class="node" x="193" y="14" width="174" height="44" rx="6"/><text class="nodet" x="280" y="34" text-anchor="middle">acuto-usdc-v2-4a57</text><text class="nodes" x="280" y="50" text-anchor="middle">vault</text>
     <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">multicall</text>
-    <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#m-call)"/>
+    <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#head)"/>
   </svg>
   </div>
   <div class="scrollhint">Scroll the diagram sideways</div>
@@ -318,7 +319,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <span><span class="who you">you pick</span>picked at each signing</span>
     <span><span class="who">fixed</span>any change is a MISMATCH</span>
   </div>
-  <p class="lead keylead">Each single-value argument&#39;s first line is what <code>cast decode-calldata</code> prints; for an array, a tuple or a nested call the first line is a summary, and its contents follow below. No perturbation test is recorded to serve as an example for acuto-usdc-v2-4a57, so values decided at each signing show only their rule.</p>
+  <p class="lead keylead">The transaction&#39;s calls, one by one. Each argument shows who decides it, its value or the rule it must follow, and what it does.</p>
   
   <div class="cb">
     <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">acuto-usdc-v2-4a57.</span>multicall</span><span class="sel">0xac9650d8</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">Docs: </span><a href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol">github.com/morpho-org/vault-v2</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></div></div>
@@ -539,46 +540,71 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="rows">
     <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-cbbtc-usdc-86/address">
       <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
-      <div><div class="t"><span class="lbl">key</span> morpho-oracle-cbbtc-usdc-86: address confirmed in only 1 place: protocol API</div>
-        <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-morpho-oracle-cbbtc-usdc-86">see source</a></div>
-        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI has no browser that runs JavaScript, so it did not open the market&#39;s page on the Morpho app. AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain (market id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64), and the oracle it answers is 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a. The market id is the hash of the five parameters, so a different oracle means a different market.</span><span class="byai">AI research</span></span></div>
-        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To check again, open this market&#39;s page on the Morpho app and compare the oracle address.</span><span class="byai">AI research</span></span></div></div>
+      <div><div class="t"><span class="lbl">key</span> Address confirmed in too few places · morpho-oracle-cbbtc-usdc-86</div>
+        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI has no browser that runs JavaScript, so it did not open the market&#39;s page on the Morpho app.</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="meta">morpho-oracle-cbbtc-usdc-86: address confirmed in only 1 place: protocol API</div>
+          <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-morpho-oracle-cbbtc-usdc-86">see source</a></div>
+          <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI has no browser that runs JavaScript, so it did not open the market&#39;s page on the Morpho app. AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain (market id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64), and the oracle it answers is 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a. The market id is the hash of the five parameters, so a different oracle means a different market.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To check again, open this market&#39;s page on the Morpho app and compare the oracle address.</span><span class="byai">AI research</span></span></div>
+        </details></div>
     </div>
     <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-usp-usdc/address">
       <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
-      <div><div class="t"><span class="lbl">key</span> morpho-oracle-usp-usdc: address confirmed in only 1 place: protocol API</div>
-        <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-morpho-oracle-usp-usdc">see source</a></div>
-        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain: for both markets, usdc-usp-915 and usdc-usp-86, the oracle it answers is 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d. The market id is the hash of the five parameters, so a different oracle means a different market.</span><span class="byai">AI research</span></span></div>
-        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To check again, open these two markets&#39; pages on the Morpho app and compare the oracle address.</span><span class="byai">AI research</span></span></div></div>
+      <div><div class="t"><span class="lbl">key</span> Address confirmed in too few places · morpho-oracle-usp-usdc</div>
+        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain: for both markets, usdc-usp-915 and usdc-usp-86, the oracle it answers is 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d.</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="meta">morpho-oracle-usp-usdc: address confirmed in only 1 place: protocol API</div>
+          <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-morpho-oracle-usp-usdc">see source</a></div>
+          <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain: for both markets, usdc-usp-915 and usdc-usp-86, the oracle it answers is 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d. The market id is the hash of the five parameters, so a different oracle means a different market.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To check again, open these two markets&#39; pages on the Morpho app and compare the oracle address.</span><span class="byai">AI research</span></span></div>
+        </details></div>
     </div>
     <div class="row" data-state="warn" data-grade="key" data-result="acuto-usdc-v2-4a57/address">
       <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
-      <div><div class="t"><span class="lbl">key</span> acuto-usdc-v2-4a57: address confirmed in only 1 place: factory</div>
-        <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-acuto-usdc-v2-4a57">see source</a></div>
-        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>The program&#39;s only check is the factory: VaultV2Factory answers <code>isVaultV2</code> = true. AI asked the Morpho API about this address: the name is Acuto, it is not listed, and the curator is 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5. AI found no page that lists it without the address being in the URL.</span><span class="byai">AI research</span></span></div>
-        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Use this only if you are this vault&#39;s curator or allocator. First compare the address on the Morpho app&#39;s curator page.</span><span class="byai">AI research</span></span></div></div>
+      <div><div class="t"><span class="lbl">key</span> Address confirmed in too few places · acuto-usdc-v2-4a57</div>
+        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>The program&#39;s only check is the factory: VaultV2Factory answers <code>isVaultV2</code> = true.</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="meta">acuto-usdc-v2-4a57: address confirmed in only 1 place: factory</div>
+          <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-acuto-usdc-v2-4a57">see source</a></div>
+          <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>The program&#39;s only check is the factory: VaultV2Factory answers <code>isVaultV2</code> = true. AI asked the Morpho API about this address: the name is Acuto, it is not listed, and the curator is 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5. AI found no page that lists it without the address being in the URL.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Use this only if you are this vault&#39;s curator or allocator. First compare the address on the Morpho app&#39;s curator page.</span><span class="byai">AI research</span></span></div>
+        </details></div>
     </div>
     <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-weeth-usdc-86/address">
       <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
-      <div><div class="t"><span class="lbl">key</span> morpho-oracle-weeth-usdc-86: address confirmed in only 1 place: protocol API</div>
-        <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-morpho-oracle-weeth-usdc-86">see source</a></div>
-        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI has no browser that runs JavaScript, so it did not open the market&#39;s page on the Morpho app. AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain (market id 0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e), and the oracle it answers is 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411. A different oracle means a different market.</span><span class="byai">AI research</span></span></div>
-        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To check again, open this market&#39;s page on the Morpho app and compare the oracle address.</span><span class="byai">AI research</span></span></div></div>
+      <div><div class="t"><span class="lbl">key</span> Address confirmed in too few places · morpho-oracle-weeth-usdc-86</div>
+        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI has no browser that runs JavaScript, so it did not open the market&#39;s page on the Morpho app.</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="meta">morpho-oracle-weeth-usdc-86: address confirmed in only 1 place: protocol API</div>
+          <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-morpho-oracle-weeth-usdc-86">see source</a></div>
+          <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI has no browser that runs JavaScript, so it did not open the market&#39;s page on the Morpho app. AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain (market id 0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e), and the oracle it answers is 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411. A different oracle means a different market.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To check again, open this market&#39;s page on the Morpho app and compare the oracle address.</span><span class="byai">AI research</span></span></div>
+        </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>Anyone can execute: once the timelock ends, any address can send these two calls; the contract checks only <code>executableAt</code>. The caps you type must be exactly the ones in the original <code>submit</code>, or the vault reverts.</span><span class="byai">AI research</span></span></div>
-        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Type the numbers from the original submit. verify confirms that after the transaction both caps equal what you typed.</span><span class="byai">AI research</span></span></div></div>
+      <div><div class="t"><span class="aiw" data-ai><span>Anyone can execute: once the timelock ends, any address can send these two calls; the contract checks only <code>executableAt</code>.</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="rec"><span class="aiw" data-ai><span>Anyone can execute: once the timelock ends, any address can send these two calls; the contract checks only <code>executableAt</code>. The caps you type must be exactly the ones in the original <code>submit</code>, or the vault reverts.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Type the numbers from the original submit. verify confirms that after the transaction both caps equal what you typed.</span><span class="byai">AI research</span></span></div>
+        </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>This vault is not listed on the Morpho app (Morpho API <code>listed</code> = false). It held about 7.05 million USDC in 2026-03 and about 760,000 now. 68 addresses hold shares; the largest has 30.36% and the top 10 hold 96.50%. Its curator is a Safe, 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5.</span><span class="byai">AI research</span></span></div>
-        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Only this vault&#39;s curator, sentinel or allocator needs this. It is small and concentrated, so read To review again before signing.</span><span class="byai">AI research</span></span></div></div>
+      <div><div class="t"><span class="aiw" data-ai><span>This vault is not listed on the Morpho app (Morpho API <code>listed</code> = false).</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="rec"><span class="aiw" data-ai><span>This vault is not listed on the Morpho app (Morpho API <code>listed</code> = false). It held about 7.05 million USDC in 2026-03 and about 760,000 now. 68 addresses hold shares; the largest has 30.36% and the top 10 hold 96.50%. Its curator is a Safe, 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Only this vault&#39;s curator, sentinel or allocator needs this. It is small and concentrated, so read To review again before signing.</span><span class="byai">AI research</span></span></div>
+        </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>This vault&#39;s timelock for both <code>increaseAbsoluteCap</code> and <code>increaseRelativeCap</code> is 3 days (<code>timelock</code> read on chain, 259200 seconds). Executing before it ends reverts.</span><span class="byai">AI research</span></span></div>
-        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Send it after the timelock ends, with the same numbers as when it was queued.</span><span class="byai">AI research</span></span></div></div>
+      <div><div class="t"><span class="aiw" data-ai><span>This vault&#39;s timelock for both <code>increaseAbsoluteCap</code> and <code>increaseRelativeCap</code> is 3 days (<code>timelock</code> read on chain, 259200 seconds).</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="rec"><span class="aiw" data-ai><span>This vault&#39;s timelock for both <code>increaseAbsoluteCap</code> and <code>increaseRelativeCap</code> is 3 days (<code>timelock</code> read on chain, 259200 seconds). Executing before it ends reverts.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Send it after the timelock ends, with the same numbers as when it was queued.</span><span class="byai">AI research</span></span></div>
+        </details></div>
     </div>
   </div>
 </section>
@@ -738,6 +764,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="next">
   <h2>Next steps</h2>
   <ol class="steps">
+    <li><div>Before you approve, open the sources <a href="#addresses">Addresses</a> lists for each address: check that each domain is the protocol&#39;s own and that the page lists this address.</div></li>
     <li><div>The first time you use this template, or after it changes, approve it<pre class="cmd"><code>pnpm kiss-sign template approve morpho/vault-v2-cap-accept</code></pre>
       <p class="then">It prints the template, the commit of main on GitHub and the template&#39;s keccak256. Answer <code>y</code> only if it is the one you reviewed.</p></div></li>
     <li><div>Make the card<pre class="cmd"><code>pnpm kiss-sign card new morpho/vault-v2-cap-accept</code></pre>
