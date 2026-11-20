@@ -153,10 +153,6 @@ try {
 if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new Error('--record takes a name of lowercase letters, digits and -');
 const sameAs = flags['same-windows-as'] === undefined ? undefined : await recordedSearch(flags['same-windows-as']);
 
-/**
- * The search a `--record` run made, placed by the head block it kept, or for a recording made before it kept one, its
- * recorded head read, so a run again searches its blocks; no one types a head block.
- */
 async function recordedSearch(name: string): Promise<Sampling> {
   const path = join(ROOT, 'testdata', 'research', `${name}.json`);
   if (!/^[a-z0-9-]+$/.test(name) || !existsSync(path)) {
