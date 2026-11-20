@@ -99,7 +99,7 @@ h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:
 h1 .byai{vertical-align:6px;margin-left:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
 .sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
-.sub .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
+.sub .byai,h3 .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:inline-flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
 .checks .n{color:var(--fg2)}

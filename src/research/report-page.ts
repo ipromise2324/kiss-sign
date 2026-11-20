@@ -88,7 +88,7 @@ export type Body =
   | { readonly kind: 'review'; readonly rows: readonly ReviewRow[]; readonly judgments: readonly Judgment[] }
   | { readonly kind: 'wallet'; readonly view: WalletView }
   | { readonly kind: 'addresses'; readonly open: readonly AddressRow[]; readonly folded: readonly AddressRow[] }
-  | { readonly kind: 'past'; readonly same: Inline; readonly conclusion: AiText | undefined; readonly amounts: readonly PastAmounts[]; readonly spreads: readonly PastSpread[]; readonly recordings: readonly PastRecording[] }
+  | { readonly kind: 'past'; readonly same: Inline; readonly others: Inline | undefined; readonly conclusion: AiText | undefined; readonly amounts: readonly PastAmounts[]; readonly spreads: readonly PastSpread[]; readonly recordings: readonly PastRecording[] }
   | { readonly kind: 'next'; readonly steps: readonly NextStep[]; readonly automatic: readonly Inline[] };
 
 export type NextStep = { readonly say: Inline; readonly command: string | undefined; readonly then: readonly Inline[]; readonly hashes: boolean };
@@ -171,6 +171,8 @@ export type VaultBlock = {
   /** Oldest first. */
   readonly bars: readonly VaultBar[];
   readonly most: string | undefined;
+  /** The AI's context about the instance, such as where its deposits go, each under its title. */
+  readonly context: readonly { readonly title: AiText; readonly note: AiText }[];
 };
 
 export type ReviewRow = {
@@ -1101,7 +1103,8 @@ function vaultSection(context: Context): Section[] {
   const section = (block: VaultBlock): Section[] => [{ anchor: anchor(`vault-${vault.name}`), label: w.vault, count: undefined, body: { kind: 'vault', vault: block } }];
   const command = { code: 'pnpm instance-evidence' };
   const lead: Inline = w.vaultLead(link(vault), command);
-  if (text === undefined) return section({ lead: w.vaultNone(link(vault), command), rows: [], bars: [], most: undefined });
+  const about = context.notes.context.map((c) => ({ title: research(c.title), note: research(c.text, c.sources) }));
+  if (text === undefined) return section({ lead: w.vaultNone(link(vault), command), rows: [], bars: [], most: undefined, context: about });
   const evidence = readStoredEvidence(text, vault, context.registry);
   const unit = evidence.asset?.name === undefined ? '' : ` ${evidence.asset.name}`;
   const amount = (value: bigint): string => (evidence.asset === undefined ? `${value}${w.baseUnits}` : `${groupedTokens(value, evidence.asset.decimals, 2)}${unit}`);
@@ -1141,7 +1144,7 @@ function vaultSection(context: Context): Section[] {
           { label: w.top10, value: [{ num: evidence.holders.top10 }], note: [w.ofShares] },
         ]),
   ];
-  return section({ lead, rows, bars, most: most === undefined ? undefined : amount(most) });
+  return section({ lead, rows, bars, most: most === undefined ? undefined : amount(most), context: about });
 }
 
 const findingWords = (result: Result, w: Words): { readonly title: string; readonly why: string } =>
@@ -1700,10 +1703,14 @@ function pastSection(context: Context): Section {
     );
   });
   const conclusion = context.notes.pastTxsConclusion === undefined ? undefined : research(context.notes.pastTxsConclusion);
-  return { anchor: anchor('past'), label: w.past, count: undefined, body: { kind: 'past', same: sameShape(context), conclusion, amounts, spreads, recordings } };
+  return { anchor: anchor('past'), label: w.past, count: undefined, body: { kind: 'past', ...sameShape(context), conclusion, amounts, spreads, recordings } };
 }
 
-function sameShape(context: Context): Inline {
+/**
+ * The past transactions exactly the template, by kind of sender, and the one line counting those of the operation that
+ * are not, undefined when there is none, each transaction counted once across the recordings.
+ */
+function sameShape(context: Context): { readonly same: Inline; readonly others: Inline | undefined } {
   const { registry, template, w } = context;
   const best = new Map<Hex, Studied>();
   for (const { run } of context.inputs.pastTxs) {
@@ -1738,14 +1745,10 @@ function sameShape(context: Context): Inline {
       }),
     ),
   ];
-  const line = w.sameLine(exact.length, by(exact), outside.length === 0 ? w.anyOutside : outsideWords(outside, w), outside.length, by(outside), misfits);
-  if (exact.length + outside.length === 0) return line;
-  return [
-    ...line,
-    w.succeeded(exact.length + outside.length === 1, searched),
-    ...(exact.length === 0 ? [] : [w.latestExact(Math.min(exact.length, 3)), ...latest(exact), w.end]),
-    ...(outside.length === 0 ? [] : [w.latestShape(Math.min(outside.length, 3)), ...latest(outside), w.end]),
-  ];
+  const others = outside.length + misfits === 0 ? undefined : w.othersLine(outside.length === 0 ? w.anyOutside : outsideWords(outside, w), outside.length, misfits);
+  const line = w.sameLine(exact.length, by(exact));
+  if (exact.length === 0) return { same: line, others };
+  return { same: [...line, w.succeeded(exact.length === 1, searched), w.latestExact(Math.min(exact.length, 3)), ...latest(exact), w.end], others };
 }
 
 function onlyName(ref: CardRef, context: Context): RegistryEntry | undefined {

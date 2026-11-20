@@ -616,19 +616,18 @@ test('a bundle with another number of items is grouped and named by the function
 test('過去交易 leads with how many past transactions were exactly the template, had its shape outside the registry, or another shape, each counted once, and the latest of them', () => {
   assert.equal(
     plain(body(depositPage, 'past').same),
-    '過去的記錄裡，跟模板一模一樣的有 32 筆：Safe 6 筆（2 個 Safe）、EOA 26 筆（17 個地址，各自送模板的一個呼叫）；形狀一樣、但有地址不在 registry 裡的有 0 筆；形狀不同的有 336 筆，列在其他做法。這些交易全部成功執行：它們是從 hyperithm-usdc-apex-v2-9e2f 鑄造（存款）時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：0x88258583…、0xa56ce3d8…、0x15133c00…。',
+    '過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 32 筆：Safe 6 筆（2 個 Safe）、EOA 26 筆（17 個地址，各自送模板的一個呼叫）。這些交易全部成功執行：它們是從 hyperithm-usdc-apex-v2-9e2f 鑄造（存款）時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：0x88258583…、0xa56ce3d8…、0x15133c00…。',
   );
+  assert.equal(plain(body(depositPage, 'past').others), '另外 336 筆跟你這筆不一樣：形狀一樣、但有地址不在 registry 裡的 0 筆，形狀不同的 336 筆');
   const noFits = depositInputs.pastTxs.map((p) => ({ ...p, run: { ...p.run, studies: p.run.studies.filter((s) => s.kind !== 'fit') } }));
-  assert.equal(
-    plain(body(buildPage({ ...depositInputs, pastTxs: noFits }, depositNotes, depositTitle, 'zh-TW'), 'past').same),
-    '過去的記錄裡，跟模板一模一樣的有 0 筆；形狀一樣、但有地址不在 registry 裡的有 0 筆；形狀不同的有 336 筆，列在其他做法。',
-  );
-  assert.equal(
-    plain(body(pageOf(inputs), 'past').same),
-    '過去的記錄裡，跟模板一模一樣的有 0 筆；形狀一樣、但用的是 registry 外的市場的有 1 筆：Safe 0 筆、EOA 1 筆（1 個地址，各自送模板的一個呼叫）；形狀不同的有 7 筆，列在其他做法。它成功執行：它是從 usdc 轉帳時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。形狀一樣的最近 1 筆：0x2f82601d…。',
-  );
+  assert.equal(plain(body(buildPage({ ...depositInputs, pastTxs: noFits }, depositNotes, depositTitle, 'zh-TW'), 'past').same), '過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 0 筆。');
+  assert.equal(plain(body(pageOf(inputs), 'past').same), '過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 0 筆。');
+  assert.equal(plain(body(pageOf(inputs), 'past').others), '另外 8 筆跟你這筆不一樣：形狀一樣、但用的是 registry 外的市場的 1 筆，形狀不同的 7 筆');
+  const onlyExact = depositInputs.pastTxs.map((p) => ({ ...p, run: { ...p.run, studies: p.run.studies.filter((s) => s.kind === 'fit') } }));
+  assert.equal(body(buildPage({ ...depositInputs, pastTxs: onlyExact }, depositNotes, depositTitle, 'zh-TW'), 'past').others, undefined, 'no line counts others when there are none');
   const twice = [...depositInputs.pastTxs, ...depositInputs.pastTxs];
   assert.deepEqual(body(buildPage({ ...depositInputs, pastTxs: twice }, depositNotes, depositTitle, 'zh-TW'), 'past').same, body(depositPage, 'past').same);
+  assert.deepEqual(body(buildPage({ ...depositInputs, pastTxs: twice }, depositNotes, depositTitle, 'zh-TW'), 'past').others, body(depositPage, 'past').others);
 });
 
 test('待確認 counts the program results apart from the AI judgments, in the rail and the heading', () => {
