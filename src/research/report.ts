@@ -26,7 +26,8 @@ import { GENERATED_FILE, INSTANCE_FOLDER, reportUnit, reportedInstancesIn, sever
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, EffectToken, Quantity, Rule, Template, Tolerance, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording, SiteOwner } from './listings.ts';
 import { checkSources, githubLine, listingsFor, recordedListingReads, sourcePagesOf, sourceSiteLine, trimForRecording, trimSourcePage } from './listings.ts';
-import { pastTxs, renderPastTxs } from './past-txs.ts';
+import { pastTxs } from './past-txs.ts';
+import { renderPastTxs } from './past-txs-render.ts';
 import { factsScope, parseFactsRecording, protocolFacts, replaySources } from './protocol-facts.ts';
 import type { FactReading, FactsScope, ProtocolFacts } from './protocol-facts.ts';
 import type { PastTxs } from './past-txs.ts';
