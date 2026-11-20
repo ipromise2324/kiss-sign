@@ -24,7 +24,7 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 - [Why](#why)
 - [Install](#install)
   - [Your computer: kiss-sign](#your-computer-kiss-sign)
-  - [A second, clean computer: kiss-sign-check](#a-second-clean-computer-kiss-sign-check)
+  - [A second, clean computer: kiss-sign-check (strongly recommended)](#a-second-clean-computer-kiss-sign-check-strongly-recommended)
 - [How it works](#how-it-works)
   - [1. Tell your AI what you want](#1-tell-your-ai-what-you-want)
   - [2. Review the report and merge](#2-review-the-report-and-merge)
@@ -85,21 +85,11 @@ You need:
 
 **Language.** English (`en`, the default) or Traditional Chinese (`zh-TW`). Change it later with `pnpm kiss-sign init --language zh-TW`. It sets which HTML report your AI gives you, the terminal text, `verify`'s page and `pnpm history`; addresses, hashes and verdict words stay the same, and so do verdicts. Give `./check.sh init` on the second computer the same language, or the comparison rows differ.
 
-### A second, clean computer: kiss-sign-check
+### A second, clean computer: kiss-sign-check (strongly recommended)
 
-Set this up too: a second computer that runs no AI and no kiss-sign, so malware or an AI on your computer cannot also change what you compare. kiss-sign works without it, but then nothing outside your computer would catch a computer or an AI that was tampered with.
+kiss-sign-check runs on a second computer that has no AI and no kiss-sign. Malware or an AI on your computer cannot change what that computer shows, so it catches a tampered computer or AI that kiss-sign alone would miss. kiss-sign works without it.
 
-On it, with macOS or Linux (on Windows, use WSL):
-
-```sh
-curl -L https://foundry.paradigm.xyz | bash   # installs foundryup; open a new terminal after it
-foundryup                                     # installs Foundry, for cast
-sudo apt install jq                           # Linux only, needs jq 1.7 or later; macOS already has it
-git clone https://github.com/ipromise2324/kiss-sign-check.git && cd kiss-sign-check
-./check.sh init --safe 0x… --safe-version 1.4.1 --language en   # the same language you gave kiss-sign
-```
-
-The [kiss-sign-check README](https://github.com/ipromise2324/kiss-sign-check#set-up) has every step.
+To install it, follow the [kiss-sign-check README](https://github.com/ipromise2324/kiss-sign-check#set-up) on the second computer.
 
 ## How it works
 
