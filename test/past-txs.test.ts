@@ -15,7 +15,7 @@ import type { Registry } from '../src/registry.ts';
 import { pastTxs, renderPastTxs, spreadOf } from '../src/research/past-txs.ts';
 import { DEFAULT_SAMPLING, YEAR_PAGES, samplingFields, samplingOf, scrubRecording } from '../src/research/recording.ts';
 import { replayMessages } from '../src/research/messages.ts';
-import { pastTxsRecordings } from '../src/research/report.ts';
+import { pastTxsRecordings, summarizePastTxs } from '../src/research/report.ts';
 import type { Subject } from '../src/research/report.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { anchorEvent, recordingAsk, replayAsk, search } from '../src/research/sources.ts';
@@ -899,5 +899,27 @@ test('the report refuses a recording whose yearPages goes with wholeYear, exceed
   assert.deepEqual(only({ ...paged, yearPages: 10 })().map((r) => r.file), ['testdata/research/year.json']);
   for (const query of [{ ...paged, yearPages: 11 }, { ...paged, yearPages: 0 }, { ...year.query, yearPages: 10 }, { ...headless, yearPages: 10 }]) {
     assert.throws(only(query), /year\.json: its name or query holds a value `pnpm past-txs --record` never writes/, JSON.stringify(query));
+  }
+});
+
+test('the report replays a paged year\'s party reads from the recording, so --compare reading the chain otherwise chooses the same transactions', async () => {
+  const listed = mints(100);
+  const recorder = recordingAsk(yearAsk(listed).ask);
+  const onChain = chain({ safes: [10, 50, 90].map((i) => (listed[i] as Mint).to) });
+  await yearRun(recorder.ask, onChain.reader, { maxTxs: 12 });
+  const recorded: PastTxsRecording = {
+    query: { template: 'morpho/vault-deposit', token: VAULT, anchor: 'mint', head: String(HEAD), yearPages: YEAR_PAGES, maxTxs: 12 },
+    sources: recorder.exchanges(),
+    providers: [],
+    exchanges: onChain.exchanges(),
+  };
+  const offline = await summarizePastTxs(ROOT, registry, 'year.json', recorded);
+  assert.match(offline.text, /^chosen to study: all 3 transactions with a proven Safe party, and 9 of the other 97, taken evenly in block order$/m);
+  const everySafe = chain({ safes: listed.map((m) => m.to) }).reader;
+  const failing = createReader(REPLAY_ENDPOINTS, async () => ({ status: 500, text: '' }), { retryPausesMs: [], rateLimitPausesMs: [] });
+  for (const live of [everySafe, failing]) {
+    const compared = await summarizePastTxs(ROOT, registry, 'year.json', recorded, live);
+    assert.equal(compared.text, offline.text);
+    assert.deepEqual(studied(compared.run), studied(offline.run));
   }
 });
