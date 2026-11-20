@@ -1,0 +1,6762 @@
+{
+ "query": {
+  "template": "fluid/vault-deposit",
+  "token": "0x5c20b550819128074fd538edf79791733ccedd18",
+  "anchor": "mint",
+  "head": "26433569",
+  "maxTxs": 240
+ },
+ "head": "26433569",
+ "studiedWith": {
+  "template": "0xd28e1e75854e17d54f42e1c116a3f20d0d6cd72f0be362f181972719becc3d5f",
+  "registry": "0x86918d6ba7d89f444d205fd69be1a87a2e0b8d0b79570c1283d79f8ac4905bf7",
+  "study": "0xa3d8a7f49c350a885c28f40368280902337dba93ab55421baa7446e7816dd793"
+ },
+ "search": {
+  "windows": [
+   {
+    "asked": {
+     "fromBlock": "24015001",
+     "toBlock": "24022200"
+    },
+    "range": {
+     "fromBlock": "24015001",
+     "toBlock": "24022200"
+    },
+    "found": 39,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "24234001",
+     "toBlock": "24241200"
+    },
+    "range": {
+     "fromBlock": "24234001",
+     "toBlock": "24241200"
+    },
+    "found": 28,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "24453001",
+     "toBlock": "24460200"
+    },
+    "range": {
+     "fromBlock": "24453001",
+     "toBlock": "24460200"
+    },
+    "found": 9,
+    "studied": 9
+   },
+   {
+    "asked": {
+     "fromBlock": "24672001",
+     "toBlock": "24679200"
+    },
+    "range": {
+     "fromBlock": "24672001",
+     "toBlock": "24679200"
+    },
+    "found": 17,
+    "studied": 17
+   },
+   {
+    "asked": {
+     "fromBlock": "24891001",
+     "toBlock": "24898200"
+    },
+    "range": {
+     "fromBlock": "24891001",
+     "toBlock": "24898200"
+    },
+    "found": 19,
+    "studied": 19
+   },
+   {
+    "asked": {
+     "fromBlock": "25110001",
+     "toBlock": "25117200"
+    },
+    "range": {
+     "fromBlock": "25110001",
+     "toBlock": "25117200"
+    },
+    "found": 13,
+    "studied": 13
+   },
+   {
+    "asked": {
+     "fromBlock": "25329001",
+     "toBlock": "25336200"
+    },
+    "range": {
+     "fromBlock": "25329001",
+     "toBlock": "25336200"
+    },
+    "found": 30,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "25548001",
+     "toBlock": "25555200"
+    },
+    "range": {
+     "fromBlock": "25548001",
+     "toBlock": "25555200"
+    },
+    "found": 13,
+    "studied": 13
+   },
+   {
+    "asked": {
+     "fromBlock": "25767001",
+     "toBlock": "25774200"
+    },
+    "range": {
+     "fromBlock": "25767001",
+     "toBlock": "25774200"
+    },
+    "found": 10,
+    "studied": 10
+   },
+   {
+    "asked": {
+     "fromBlock": "25986001",
+     "toBlock": "25993200"
+    },
+    "range": {
+     "fromBlock": "25986001",
+     "toBlock": "25993200"
+    },
+    "found": 18,
+    "studied": 18
+   },
+   {
+    "asked": {
+     "fromBlock": "26205001",
+     "toBlock": "26212200"
+    },
+    "range": {
+     "fromBlock": "26205001",
+     "toBlock": "26212200"
+    },
+    "found": 4,
+    "studied": 4
+   },
+   {
+    "asked": {
+     "fromBlock": "26424001",
+     "toBlock": "26431200"
+    },
+    "range": {
+     "fromBlock": "26424001",
+     "toBlock": "26431200"
+    },
+    "found": 41,
+    "studied": 20
+   }
+  ],
+  "perWindow": 20,
+  "found": {
+   "total": 241,
+   "only": {
+    "alchemy": [],
+    "etherscan": []
+   }
+  },
+  "otherEmitter": []
+ },
+ "studies": [
+  {
+   "kind": "fit",
+   "hash": "0xb0a1d8be43349b93649a75643b20af9e43bf2a796efdedcfa0969d03eac5439e",
+   "block": "24015063",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x131446310270a239537b08b1e20fcbe2aa689476",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "2100000000",
+    "0x131446310270a239537b08b1e20fcbe2aa689476"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x6c2f33f57a4cd08e3ee37608315355a8ad386a0cf142d4935803b14ddaacf286",
+   "block": "24015093",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x5719a703d6f6500f12075d65e6afe12be9196f72",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "60204117",
+    "0x5719a703d6f6500f12075d65e6afe12be9196f72"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xcb90640022637e72213d926d0323be55af5ebf93cbf1facf0671ebe9369aaaca",
+   "block": "24015194",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x4243e2bfe90d3d58d83860a18e2168105a4f8a69",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "3976545479",
+    "0x4243e2bfe90d3d58d83860a18e2168105a4f8a69"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xffa969dff32ff3f3d5b679717607807f0558304fe83a318299354ab1ad7a8b03",
+   "block": "24015477",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x62b70c31e733239d0bfb31dbbf26bddb812bf147",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "44692000000",
+    "0x62b70c31e733239d0bfb31dbbf26bddb812bf147"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8420a234d92e13d68e96b4e3df805a393ba21fd3a1a899102ecc3e1ca5631fda",
+   "block": "24016659",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x1cc96b151b8d94447c3b8aadd40f3ca6c8e3a640",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "160000003790",
+    "0x1cc96b151b8d94447c3b8aadd40f3ca6c8e3a640"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5dd91ee0c677b58e525cd7abc008893151d701ccf6d7517d6397788ab750c4b2",
+   "why": "calls no function the template calls",
+   "to": "0xe4b4911ef30922eebd9b97d3c88a86a905ca40f9",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8e16046cb9c9ea3815217845748b8a8ce65795af753e7b7a58ca97089f684e43",
+   "why": "calls no function the template calls",
+   "to": "0xe4b4911ef30922eebd9b97d3c88a86a905ca40f9",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x1103f2dc169ddc2687f5afc3c954d99a81582a17d67f3ca2600ecb4e4ac9bb96",
+   "block": "24017302",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x2b8a769a09c2cea036a312c87c0a772f01e501f7",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "119999001020",
+    "0x2b8a769a09c2cea036a312c87c0a772f01e501f7"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x31d5bda34afa536f8e0673dac5a9b48a4546c2ef0e34bb1706016e67b9fc3862",
+   "block": "24017480",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb282081b2681ba4eb2899c2722eeef0a98515b98",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "90945925472",
+    "0xb282081b2681ba4eb2899c2722eeef0a98515b98"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2bbbb645627c12f42df41aaac96062f4f1c9b2ae86bf03b0e63bc2adc610d4fc",
+   "block": "24017855",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x62b70c31e733239d0bfb31dbbf26bddb812bf147",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "69978595897",
+    "0x62b70c31e733239d0bfb31dbbf26bddb812bf147"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2eaca41ae6380ca9a829d30b08a8540d0d53f0e5e4a8863ac45667e9b5d55206",
+   "why": "calls no function the template calls",
+   "to": "0x11c30a5634396bbb667eacdaf492687aa24db317",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa87b41fad1de74f77072d41b2c8d00045a334c09528949aa2edf1b805bf4c7a8",
+   "why": "calls no function the template calls",
+   "to": "0xabab980f0ecb232d52f422c6b68d25c3d0c18e3e",
+   "selector": "0xbaae8abf"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x4a2564cbae31509cea7df1bb3ccffa98b7ddcbcd4d8ca3afd33d0611faf743e6",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb703a059a6db4c3f1a24de814e3ae68b08137d39"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x9fb7b4477576fe5b32be4c1843afb1e55f251b33",
+      "selector": "0x6e553f65"
+     },
+     {
+      "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x5c20b550819128074fd538edf79791733ccedd18",
+      "selector": "0x6e553f65"
+     },
+     {
+      "to": "0x40d16fc0246ad3160ccc09b8d0d3a2cd28ae6c2f",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x6a29a46e21c730dca1d8b23d637c101cec605c5b",
+      "selector": "0x6e553f65"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0xa4e103c7c0ecd24fac521fb847fd6a6359eb14615fdee23c01861f4149d80a01",
+   "block": "24018602",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xcea72ca7a826708ad6282ad93b71b759339a146a",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "35194500000",
+    "0xcea72ca7a826708ad6282ad93b71b759339a146a"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xaba17b6a711f6c3d3a7cea47d48933af819561fcf87d18e720f6ef010b1e1002",
+   "block": "24019617",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd428d1f17aeb49860f3031a014a293e4c5d14bbc",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "10000000000",
+    "0xd428d1f17aeb49860f3031a014a293e4c5d14bbc"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x9c81ce38d8b44601e039c53b7e7bec6e226e7b939489caceecb4667cff7faefd",
+   "block": "24019628",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xfac4bc306475c864f2ba370070bfa9776ac91f4d",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "9000000000",
+    "0xfac4bc306475c864f2ba370070bfa9776ac91f4d"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xd6097cdd57e14ad3a72dfa15314407393642979e7be1e413039d63efda001877",
+   "block": "24020671",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x7741a9b7a1b17bfd261752506021f83c0ec29a12",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "29600000000",
+    "0x7741a9b7a1b17bfd261752506021f83c0ec29a12"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x0c46432567bca6374eb5598165a6695056b216434e46d57f3fe66f5e3f1c5a10",
+   "block": "24020837",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x44cb263e46fe6fd4f336af7449b81592391f75a9",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "441221171",
+    "0x44cb263e46fe6fd4f336af7449b81592391f75a9"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x78411d993fe927eda5ef3f951be1bc6a58a5c1470ed179e5bdf213c7664733bb",
+   "block": "24021097",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb282081b2681ba4eb2899c2722eeef0a98515b98",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "80637596665",
+    "0xb282081b2681ba4eb2899c2722eeef0a98515b98"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xc957381532f106d965c174bbb633fcb2c816c23753d0f691ae2c4951af4d80f5",
+   "block": "24021914",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf53ebdcae2631fc81ca4f5047accc6587b0bb8ec",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "246876629853",
+    "0xf53ebdcae2631fc81ca4f5047accc6587b0bb8ec"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6fc74b498721b9f30dfdacde6e388bfe53eab9af8e7922137a3e8181a4a21be8",
+   "why": "calls no function the template calls",
+   "to": "0x7835b58a709f22f2aea9466f32f3f7fd4d46f777",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4c791d6df734d6b5a0db4b9e0a2148f8f61ff1084418d93c6ad5bb42af7aef23",
+   "why": "calls no function the template calls",
+   "to": "0x11f87318b7dba75a74d7ef5cd78b04fa81d7d0e4",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x80c3fd56830d39345211c335bdb5b46166a674668bc9649a0d358c3460b4bc04",
+   "why": "calls no function the template calls",
+   "to": "0x763c3c6f97850eba08cdbccfb88a8992538ed9b6",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x7a6e5376502ddaafb3ff080d95485dd568733e3897fee84359ee3176fde791d4",
+   "sender": {
+    "kind": "safe",
+    "address": "0x44a2c7f1a021cb70680c30f3c8ba3e5205b0b590"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x5c20b550819128074fd538edf79791733ccedd18",
+      "selector": "0x6e553f65"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5af91316866c3882f9ffe780226524fe3ed43f593c3b175e34ac0bac1c2cec47",
+   "why": "calls no function the template calls",
+   "to": "0x15f49a21d7ede365cf2def0b36b9e983c873ecd6",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xa9432b1ce061ef54bd170fb64094c855ed5951949cf32db91e4e220cfd75258d",
+   "block": "24235483",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x7ac413638051a7809fe1f4edc8d8ec1367daf676",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "49950000000",
+    "0x7ac413638051a7809fe1f4edc8d8ec1367daf676"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x42f153c139f8f107d74af316deedc55dce65e3c28dff47f3629d0f6f9af9d0a6",
+   "block": "24235858",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x6a736d2289deebacf3054b712ac76d6f08e54b7e",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "12825032297",
+    "0x6a736d2289deebacf3054b712ac76d6f08e54b7e"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xec89876328be11beee924122a2c04d3a046b9b1d918bb67c212a4284437895de",
+   "block": "24236042",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x73b8b55fef5b239fc3cabc985f666efbceca6f06",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "10000000819",
+    "0x73b8b55fef5b239fc3cabc985f666efbceca6f06"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x96d4f470e51d10ecd5ebb7e5dac8bb6c09ade6d64ebdda4197be854e44566238",
+   "why": "calls no function the template calls",
+   "to": "0xabab980f0ecb232d52f422c6b68d25c3d0c18e3e",
+   "selector": "0xbaae8abf"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2ca19e4f93f76105a8d5ff4ed47191ac0c74f979eb9fa3137526a7b01083d535",
+   "block": "24237608",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xafa359c76228ca611bce866a7a766b0853d69102",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "366400852924",
+    "0xafa359c76228ca611bce866a7a766b0853d69102"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x99e548542984a4ee018b2bd27c7d069c157a69e2831327dcd3f6571cc6b699a1",
+   "block": "24239271",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xee7ada00c9e5f654c8f8ea0f355a1f3c50942732",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "34622646844",
+    "0xee7ada00c9e5f654c8f8ea0f355a1f3c50942732"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x46688d984bbcb1344ea03bb1bc456b0816014a2a918d1d291d2db3af039ed527",
+   "block": "24239371",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x2109e977b8a7acc0ab7d64399b49a2c83bd1a075",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "2000000000000",
+    "0x2109e977b8a7acc0ab7d64399b49a2c83bd1a075"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8cbeeec0abac148066da0ed24e14e615544bb327e6cf55a9bb774074a88a1f03",
+   "why": "calls no function the template calls",
+   "to": "0xd94d5f8969825c5fbcc127195f08f0762a010ba8",
+   "selector": "0xfcf2849f"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xcec52cec0354cb5f4eae6f0ab3c56d0f034e19d1a3be956e6b122445e0fb23a6",
+   "block": "24239779",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x6457b1c277e77477311ad7dbe3afdd4e4625f42e",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "801000000",
+    "0x6457b1c277e77477311ad7dbe3afdd4e4625f42e"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xbcfc9f4f1649ba32774fcb087add3d5c98cc96dc8c0be13c61cbc55e3352040b",
+   "block": "24240321",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xc31989c9760707df00f52e590834447e67c8ba88",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "41415403142",
+    "0xc31989c9760707df00f52e590834447e67c8ba88"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x9a1ee49d972e922549d484e0e0d33ee87e6bbc62f765e6e5e55db9d1150d77e3",
+   "block": "24240426",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xc262ae1cca7684c52f6d430862083eabfbbbec93",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "3748303379",
+    "0xc262ae1cca7684c52f6d430862083eabfbbbec93"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf063fcec1656679fa8b27dfa2aa4de8c774a34f1afe2823e4a047423d4a314ad",
+   "block": "24240447",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xc31989c9760707df00f52e590834447e67c8ba88",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "35625765007",
+    "0xc31989c9760707df00f52e590834447e67c8ba88"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xa418254bdc22fc70d530b6d937dbc5d4bc957bfeab8c5bded2876d41cea0a6eb",
+   "block": "24240669",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xc31989c9760707df00f52e590834447e67c8ba88",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "5058560566",
+    "0xc31989c9760707df00f52e590834447e67c8ba88"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf211157e392f36f63c5c9a646440a1bf14323a4c0b035a3b072b634b8e00b788",
+   "block": "24240800",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x38a2238689a8bc2687f5f689a0f2aa1ec53ddd87",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "46553422160",
+    "0x38a2238689a8bc2687f5f689a0f2aa1ec53ddd87"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x1c98c46260e97c4d7a3ae492e7c4366cb061d47c910d1e664fcb5ea181d20f32",
+   "block": "24240813",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x502d222e8e4daef69032f55f0c1a999effd78fb3",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "6006184140867",
+    "0x502d222e8e4daef69032f55f0c1a999effd78fb3"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xacf2de3b9c57944f375780393015ef15e03698caad8099813cbb238606b93af3",
+   "block": "24453842",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd0c2f70670db8cbb854d77a0db7cbf7b48ea7f14",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "11712178",
+    "0xd0c2f70670db8cbb854d77a0db7cbf7b48ea7f14"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf7930cf5b5e9fb8c4b28ced9e65c1b55fc3f779c42743c2b91d020d8ae4f3b53",
+   "why": "calls no function the template calls",
+   "to": "0x7583d7f36635e5642713accbded717ca59fdad07",
+   "selector": "0x0af210a1"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xeb5b7408b7cc3ffd085e7b16bc7a9c3ccd07ac8219c70ddc0c15fca0a0433f59",
+   "block": "24456083",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xe58dbe55ed833b5285dc9bd400c4460e1b404a44",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "852836183846",
+    "0xe58dbe55ed833b5285dc9bd400c4460e1b404a44"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x5b678d8ce34fa2f51f45c666c52ae2b228fce14cc08f6314dd409006ecf34f71",
+   "block": "24456086",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x9c3fe81af260d83757df9475ca165357434b8ca3",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "628485843236",
+    "0x9c3fe81af260d83757df9475ca165357434b8ca3"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xfab26c1858e00d9af67e104a7eefe2502b085bd7d5f7185c7b77971ed075badc",
+   "block": "24456989",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xaed7ad04895d3288f723e3e55c9f9b6c18d486d8",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "19149752",
+    "0xaed7ad04895d3288f723e3e55c9f9b6c18d486d8"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x755ce6a983e670e65e658dc4c76b076313a4046fc698ec8f8c9cd0b63dd13648",
+   "block": "24457646",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x3834b4b83be0f4c5942729e2d0909591ec08161c",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "14349389957",
+    "0x3834b4b83be0f4c5942729e2d0909591ec08161c"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xb57bb176f0270bb12cf1cc127ed9cabb98c23df9c45b86f93ce118b4de1288cf",
+   "block": "24457708",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xafb7839dc1fdb8a0d8bef59dced5d35989757cd1",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "121648000000",
+    "0xafb7839dc1fdb8a0d8bef59dced5d35989757cd1"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x399888124ce66f00972829b3947ac03ee3c8a40fa0d3b0d98e75e23da13e3f67",
+   "why": "calls no function the template calls",
+   "to": "0x604e586f17ce106b64185a7a0d2c1da5bace711e",
+   "selector": "0x61f13e00"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xafe1d2423e3aa9be7206de09c52cfba118cc2e45af9e942047526a638d382b61",
+   "block": "24459716",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x03afac2595995694cff1c0f33492f1beccf76753",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "1558481719",
+    "0x03afac2595995694cff1c0f33492f1beccf76753"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xe3fc156c6cfb2b25a024718d08fc940308398a659ae0ed84977c56af6960fc2c",
+   "block": "24672011",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb6a6fb381aa53cc01b74cd004fa6ddd9b5488998",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "100000000000",
+    "0xb6a6fb381aa53cc01b74cd004fa6ddd9b5488998"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xbcf2e41ce30d948ad05983f4005e191bf250ae00f9fdbc73138a2be82f9c3d76",
+   "block": "24672441",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb6a6fb381aa53cc01b74cd004fa6ddd9b5488998",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "3400016139462",
+    "0xb6a6fb381aa53cc01b74cd004fa6ddd9b5488998"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xe68c2c3956ac55786fdbcd6ead29471e5f33f8c701247cb363a2f23e1e81b8a6",
+   "block": "24672820",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xed41a12ea862f31df054e9bd3af1dd59486c6029",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "2557800000000",
+    "0xed41a12ea862f31df054e9bd3af1dd59486c6029"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x4bd117753e496713cdb0c4f71ce55500de9ec8c0280e6c41373e259d2f2ab593",
+   "block": "24674012",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa418c5603f68533bd04e7b6c85101db751c574cc",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "5481888960",
+    "0xa418c5603f68533bd04e7b6c85101db751c574cc"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x43d1935821b70bed2f01e56d6628ddbb255bcb0586de5e013f26393069364725",
+   "block": "24674274",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x9152f4515c49ade8a91b40124bb2966f8e50dcc5",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "6859598110",
+    "0x9152f4515c49ade8a91b40124bb2966f8e50dcc5"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x0e35caa69f180a07088358aa05fc503c03d4ab9451ec9e13ef719ceaee5e39de",
+   "block": "24674334",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xafb7839dc1fdb8a0d8bef59dced5d35989757cd1",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "131413000000",
+    "0xafb7839dc1fdb8a0d8bef59dced5d35989757cd1"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x56378f960436ecc25585d86c10fe2ed5036d0e63ebfd84e2cc94c0b513788b12",
+   "block": "24675478",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xdafb0b076195c6897ab1f9ff6c694a46e092bda9",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "1801000000",
+    "0xdafb0b076195c6897ab1f9ff6c694a46e092bda9"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x5aa3c71f6e281a4984ff66c2f85bfeeb24644bbc0dbe969a77c64b2635b20c6d",
+   "block": "24675911",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xc55863b0dd1cf89fb41563ade7ac12f840a507d2",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "5326000000",
+    "0xc55863b0dd1cf89fb41563ade7ac12f840a507d2"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x00af0384866b95da251cb4b15cac3dd37c9c709bd62a9c4e885d53e61eaee1d6",
+   "block": "24676068",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x476904e366876e660064b734e6f6c5fcf2959f6e",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "199999667334",
+    "0x476904e366876e660064b734e6f6c5fcf2959f6e"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2751bbfc7c8a200d737d1063082d5c30882144d208fabfd04c2406ca5e82ec12",
+   "block": "24676537",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa1148b4949681858689f64cbb01109c243a3e59d",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "8000000000",
+    "0xa1148b4949681858689f64cbb01109c243a3e59d"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xfc6b0a593e877aa6d05ec8f42b9be71be5e4f8584d8b70560f5127e0a05a051a",
+   "block": "24677199",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd6045fd204c40898f5d24cca4e6c611b3585c455",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "175046979",
+    "0xd6045fd204c40898f5d24cca4e6c611b3585c455"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8b479b655ec937f19171e408a1351ca443ab857116c3d461fd46720022bb80f4",
+   "block": "24677489",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x7c13e2b033728bebcf53ba48e0d802aa67d223d8",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "1029871000",
+    "0x7c13e2b033728bebcf53ba48e0d802aa67d223d8"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x5d0120cc8c83514f953053b82d770ef8a61d53c1b1f937835a6650756d724892",
+   "block": "24677644",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x306eb3340713232cc8c1c8a5d78d9cc1eee46f3a",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "501848274",
+    "0x306eb3340713232cc8c1c8a5d78d9cc1eee46f3a"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xfa4e153557ad7efbb1c804191557238852aea8daed2e0dbeaf6d942da0c2f554",
+   "block": "24678298",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x2a980c4257bb349fc95826979a08596f180f9dfe",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "100963577",
+    "0x2a980c4257bb349fc95826979a08596f180f9dfe"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x57ab889de76452395a8ea289ed3f42f8fc4ad8960a458c8ea0a58f507fa4d241",
+   "why": "calls no function the template calls",
+   "to": "0x81853a85f9542026ce6ffd621e04b6fdd7f43b8a",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xa3729e71e3e4221cddfc722e04501db0be37106fdd2d3e0fa7ab2749a38b7704",
+   "block": "24678920",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x554655c3e743abe133e9a0d395ca5a09a03f920b",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "1961423796778",
+    "0x554655c3e743abe133e9a0d395ca5a09a03f920b"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x84b7ba0b07328fb358df479a35e786962aefb4e5abf7d90f86e429c16c04ec96",
+   "block": "24679038",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x48e845d8aca34b29a57a35f239b6fdd2a7ab18ee",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "714498717",
+    "0x48e845d8aca34b29a57a35f239b6fdd2a7ab18ee"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x318d2d7d9af2c564b872e9c5edac2bf240e9a89d0102d8ddd92fa117a843a7e9",
+   "block": "24891350",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xcdd342b253f3ea24d4ce1c5f040c1288e4214fe6",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "1276978832",
+    "0xcdd342b253f3ea24d4ce1c5f040c1288e4214fe6"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x089ca68a8efed49486698deaa5e6675b42cb107cfa67c61cdd89075bfc7b532d",
+   "block": "24891399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x6ba044d32044677a4d214b94cc498bc7cbbb09ef",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "6130000000",
+    "0x6ba044d32044677a4d214b94cc498bc7cbbb09ef"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x10ac4eb9f3fbc5a13106e10c309e152ed0f81ea68f783bae941611cf9d39848d",
+   "block": "24891437",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x11e1fad68d024b3b9cac273f115b0c1bd8d28f6b",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "100000000000",
+    "0x11e1fad68d024b3b9cac273f115b0c1bd8d28f6b"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xedc59a5866c39ab374b2e80871a69796e268d750827e023c3f7fa9f6875aea94",
+   "why": "calls no function the template calls",
+   "to": "0x17303e14e899638c08a9b3b335ba163671a6e0a5",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x689ba36078f289463722b1e20f88e76f92ae70e85fe46730f1aa70c9dc76651c",
+   "block": "24891860",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x795076d2fe4a017aa3da73e74db2c5fca24e2889",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "784000000",
+    "0x795076d2fe4a017aa3da73e74db2c5fca24e2889"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x5417cb1f2521809ecd5ccb902b65e254b9dd4ab3ff25f8c4ef87aba290dd727f",
+   "block": "24891901",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x66ce7b9d0b49e3f39ff244986c27a080d5b60796",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "3677360316",
+    "0x66ce7b9d0b49e3f39ff244986c27a080d5b60796"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x9fb9db62a05d24abaa47455fede4749f841a0463a8ce2f9476abf9b3b960f744",
+   "block": "24893055",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa1e20b98e6edc702d1057aa564cc42b35c545840",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "1400000000",
+    "0xa1e20b98e6edc702d1057aa564cc42b35c545840"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xc4aab62e613cfe608d449f5a04f8685f0ae043a8565d400a3360fbfe23b7ce93",
+   "block": "24893505",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x90ffde40038ac437f5661fbbad90feae2667b27a",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "42174144135",
+    "0x90ffde40038ac437f5661fbbad90feae2667b27a"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x52a458e4ec3b8537273f705a415cebb50a3a58b7d57fa063f74c6ebb9a190373",
+   "block": "24894019",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x72d0b7d69c06863ec721aca1279ca61c2aad9994",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "3539017",
+    "0x72d0b7d69c06863ec721aca1279ca61c2aad9994"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf139324117d9692f9cce89db19912148c1cadd22b4d21922848c8b95df9d33e5",
+   "block": "24894048",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf1d63a20d1711c91e2601411664f2221740dd413",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "9492680818",
+    "0xf1d63a20d1711c91e2601411664f2221740dd413"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x530129e5e006ca71e49d01ccdd908194e0a6f4157b24aa024519a1d314ba977f",
+   "block": "24894099",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xca3153e9a271d419b513a44a882d8a5ae60c068e",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "22099504700",
+    "0xca3153e9a271d419b513a44a882d8a5ae60c068e"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x84e903f790ba601d9adc5c757424c03312f7b7f41c21cb763547cd4b3bc69153",
+   "block": "24894380",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x69dc706ed10bf7c543522f62c228af622a6859c1",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "7644542",
+    "0x69dc706ed10bf7c543522f62c228af622a6859c1"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x7fcbab0192c930b43f81da46bde1f2569ab4aaf5575a7bec24e15a65a6804039",
+   "block": "24894710",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa1e20b98e6edc702d1057aa564cc42b35c545840",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "15000000000",
+    "0xa1e20b98e6edc702d1057aa564cc42b35c545840"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x426315556bdc5cc8b9e12e417011f9d132e3a2e39962b64ded749ba9c44640b5",
+   "block": "24894798",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa1e20b98e6edc702d1057aa564cc42b35c545840",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "20000000000",
+    "0xa1e20b98e6edc702d1057aa564cc42b35c545840"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf567159fbd05b16ef0021aa3cc2eda41c08b0e04a444ca6d10be318e6b908cc7",
+   "block": "24895146",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x646b531849d09d9b5bb33de4351f3c6c7b0e9e4a",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "5000000000",
+    "0x646b531849d09d9b5bb33de4351f3c6c7b0e9e4a"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x3b22e7d63cb647c57af346938aa4ba573af69f53855210ba74b484de2468beb8",
+   "block": "24895643",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x62e363fa4af3f03c03fcd3ae6ff12cee6b1839ae",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "4055079933",
+    "0x62e363fa4af3f03c03fcd3ae6ff12cee6b1839ae"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xadad4a5f50a5449a0ec5a87b9bf6a645da755875d2cdb4a34322e4e37d84fc99",
+   "block": "24895743",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xce7dc02303b76fec690207bb2e95725f1aaa4c32",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "9999500199",
+    "0xce7dc02303b76fec690207bb2e95725f1aaa4c32"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x90691469ab4d207c82bc46b6b89219f3ca4049009405b47d1f46076d1284e831",
+   "block": "24897192",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x5543c2d78231f71ea73d67a67647bb4f8f88dcef",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "10058553099",
+    "0x5543c2d78231f71ea73d67a67647bb4f8f88dcef"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf1a9eb2956e9bcc22c75509ec361ed6c547263db4e8ff3bbc563188d911a6587",
+   "block": "24897800",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x75f1d60d847d29519f83294811fb6c5af04004a0",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "699619000000",
+    "0x75f1d60d847d29519f83294811fb6c5af04004a0"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1e5f8b817204b84edc8660d21a77ec742caab3921b81d330cf404517a36b7bbc",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xef460a831c3e635b56cd3da85fd2ebdcbfdd317401e1a4d271ac4bdc33813fd9",
+   "block": "25110770",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x769cfe34654eb1e31e0240f5742868f799fe725a",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "171718612676",
+    "0x769cfe34654eb1e31e0240f5742868f799fe725a"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x081bef6e3908221fe59258aa1dc7b25536e8b5167500269e1674061730af34c3",
+   "block": "25112015",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x5ffab11640f42352685c1a35e12500ec983920ae",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "105191713676",
+    "0x5ffab11640f42352685c1a35e12500ec983920ae"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xb29b5791b102274aa64216137808da75ba71031e8776a8b66e0d979ed14b493d",
+   "block": "25112513",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x75f1d60d847d29519f83294811fb6c5af04004a0",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "999960159170",
+    "0x75f1d60d847d29519f83294811fb6c5af04004a0"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x548331239d21a32ffdb0e3ef3291ef7c69911e47d2822f9e7e27d96c813c7781",
+   "block": "25112832",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x7c2c82f8aebcb7882ca79529093a585c2be833d2",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "50000000000",
+    "0x7c2c82f8aebcb7882ca79529093a585c2be833d2"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5e71d4f08bf48f8fa1be432116ca475420e4cddf0087115f44b153e6f8437ea8",
+   "why": "calls no function the template calls",
+   "to": "0x517cc1dea5c7a0348773a119e76ac5166b975f6d",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x07bf52a3caff08156100734404012aeac806c95f8496ec7df23acc2e4381772f",
+   "block": "25113473",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x69032676d75cad34a31296d6008250e46f008795",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "16793031875",
+    "0x69032676d75cad34a31296d6008250e46f008795"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x0f87a2fdbff629a3d39ea08bdb2fa171dee1cd7f29255a0319f9bde5f1252c39",
+   "block": "25113919",
+   "sender": {
+    "kind": "safe",
+    "address": "0x4f59b53ac148537294643552600aaa634dafefd7"
+   },
+   "paths": [
+    "multiSend[0].to",
+    "multiSend[0].value",
+    "multiSend[0].approve.spender",
+    "multiSend[0].approve.value",
+    "multiSend[1].to",
+    "multiSend[1].value",
+    "multiSend[1].deposit.assets",
+    "multiSend[1].deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256",
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "96470000",
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "96470000",
+    "0x4f59b53ac148537294643552600aaa634dafefd7"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x51df44ec700de4b250a8f36fcf1650c809afae779e00f56746f007f7aab14ed5",
+   "block": "25113921",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x75f1d60d847d29519f83294811fb6c5af04004a0",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "499930000702",
+    "0x75f1d60d847d29519f83294811fb6c5af04004a0"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x635036a517d10d6ba4041f1617db0deca2994b14de4e3ecdfebe823ebe5ef93b",
+   "block": "25114404",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x28d175ba63943406e59dfeb81d721d87854e7c2b",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "5000000500",
+    "0x28d175ba63943406e59dfeb81d721d87854e7c2b"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2a7fa9481a324dd6d4c15a8c4791ebdebe28b2f788a9c70f3554c384645c3848",
+   "block": "25115093",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x19087cd19b4202ffc40e5b4432b107b33b3c4569",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "169794230226",
+    "0x19087cd19b4202ffc40e5b4432b107b33b3c4569"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6e5a50405d284bd91572e4e64a45733b92038a2b094be449772fe702aeda68a1",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xe0f612d03b05280dfb0da30e01198d06ac7bed152c84a0a8181238c5fd033923",
+   "block": "25116132",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x5beed1a923edb0068feb95fa02d37594c901d08e",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "4488877302",
+    "0x5beed1a923edb0068feb95fa02d37594c901d08e"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6d646b7b2d97115e6664d1bb115fc164167da2f8d09fdc2798f631ba2446277f",
+   "why": "calls no function the template calls",
+   "to": "0xe7ecede5fbc4db1d2adf815ed8254214c090bf51",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x96f00a4fed1ed1da31365b83886e894b90ebebd3c3efa77b7b5625e253c7b594",
+   "block": "25329206",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x9f39076f253f1c17863ef4821fa32115a60abdfa",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "266585100",
+    "0x9f39076f253f1c17863ef4821fa32115a60abdfa"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x5a0e3949603e93ca7c02fbc10db4a97125232fc1d96cf23fb676c150822f8931",
+   "block": "25329414",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xc53337ca98ffcc94dc9a6df817f262f2b090f279",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "15000000000",
+    "0xc53337ca98ffcc94dc9a6df817f262f2b090f279"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf09b3481cb7f72b546aa4dee49196d1319059a33c99e7a3d6638b1b9fb2d068a",
+   "block": "25329431",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x421c61529d75ee5e873b7c1d45143421d6a4ddde",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "100000002808",
+    "0x421c61529d75ee5e873b7c1d45143421d6a4ddde"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xbebcac7ca74c87526ab7d43c4f72ca70a933622cf8919c5c33a44792b01c63e5",
+   "block": "25329891",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x13e07ff049f3a13e21eb3c143a45975501d3139f",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "29000000",
+    "0x13e07ff049f3a13e21eb3c143a45975501d3139f"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x7aaea92876d5afcb2a364de7df85c8d885b647894136dc8dcb9a05d2734aedc0",
+   "block": "25329978",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x13e07ff049f3a13e21eb3c143a45975501d3139f",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "1993000000",
+    "0x13e07ff049f3a13e21eb3c143a45975501d3139f"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2cf5c9a519bde7f0751759671c99363d7833b8d3598a71c315374ea1f51cd34f",
+   "block": "25330191",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x7994bdf209070b8602a27299135095ec3dc39577",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "116294271",
+    "0x7994bdf209070b8602a27299135095ec3dc39577"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x7eb2175fdde93131b5d5c8bba5eca222fa915d427d12ed2aa64551169a0ef9b6",
+   "block": "25330198",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x7e5b15cec434de3f5575c6313a911f8a3bfa1411",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "1000330000",
+    "0x7e5b15cec434de3f5575c6313a911f8a3bfa1411"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xb8f5b4cc50d804f70e1d84404dab642eba8791b3c89f30eb5a4f122cc84954e1",
+   "block": "25330354",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa9de968a6943ac335ea702b0a146e1c12138816d",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "109027413250",
+    "0xa9de968a6943ac335ea702b0a146e1c12138816d"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8e85e11dc9518de9b4ddb79d92c22278b38617e2a9129d6604ca9ffb2b477b92",
+   "block": "25330386",
+   "sender": {
+    "kind": "safe",
+    "address": "0xf19027c9a0ca2c6a2781ab9b760abbd2611b3a3a"
+   },
+   "paths": [
+    "multiSend[0].to",
+    "multiSend[0].value",
+    "multiSend[0].approve.spender",
+    "multiSend[0].approve.value",
+    "multiSend[1].to",
+    "multiSend[1].value",
+    "multiSend[1].deposit.assets",
+    "multiSend[1].deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256",
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "342855198151",
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "342855198151",
+    "0xf19027c9a0ca2c6a2781ab9b760abbd2611b3a3a"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x529dbc9454a42d2a4b04b95f0b8008a07e3b43801ca15a340fdf2aa39dabb8a5",
+   "block": "25331196",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x5023fd0d6cdb80188e8cb9a49c04230f019748fc",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "60000000000",
+    "0x5023fd0d6cdb80188e8cb9a49c04230f019748fc"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xc7756a18f6e6aeb8ec9d9cade0da66e2143106da2c06cd692a0b111f5b71e499",
+   "block": "25331229",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf20cd458030ec97774daf95008bc7be685f2c615",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "6032505033",
+    "0xf20cd458030ec97774daf95008bc7be685f2c615"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x4d691b9d6738faf0b457947acda71ff397c3dcfc459baf32599c3d83e2cf0e19",
+   "block": "25331953",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd93814273b33dd33b32cd345225cfb65deb048dd",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "5000000000000",
+    "0xd93814273b33dd33b32cd345225cfb65deb048dd"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x66b25b85fd3e22bafee40f6a9e2756803fcb43a755a1281b2e74ad921058bc7e",
+   "block": "25332015",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x0b5502263510f3d8604fc395ca780d0b0e4b084f",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "17435486119",
+    "0x0b5502263510f3d8604fc395ca780d0b0e4b084f"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x706fe8851b999b4eef48f74e5617469f277aaef499f03e8cb00f9a68c52c7b7f",
+   "block": "25332370",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xaff7d55a7355d8a0fb5b71562d8ab00a9277b5b2",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "19287268110",
+    "0xaff7d55a7355d8a0fb5b71562d8ab00a9277b5b2"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1bccf5ae593c096f1d8097c2de08167dc07bd9d0cbba724b91617b4feb831521",
+   "why": "calls no function the template calls",
+   "to": "0x136c29ac5b2c63eea1fed54354dfc13c475a410a",
+   "selector": "0x3f707e6b"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xfa00b7f27a473476b1135f708ca3d085178be526336b69b0c4f97f82cea185c7",
+   "block": "25334905",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa838ccdcf2089f985200aa73953ea2456cbd3532",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "98999000000",
+    "0xa838ccdcf2089f985200aa73953ea2456cbd3532"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xd9ebacfd51b48c7b64400c0743b4a2516431f68852e436956acad80ec3f383b1",
+   "block": "25335062",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x8bb7790fc3349f08f2c71496d1049d3fafe571c6",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "89603114533",
+    "0x8bb7790fc3349f08f2c71496d1049d3fafe571c6"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xc20242c3354d2eb47b12ef8250d380a88e33b380d5139c38ea1ab0a2172408bd",
+   "block": "25335969",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xdb15d36eeed663454a2d4f9a8aae67e2241b8b22",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "1001856288",
+    "0xdb15d36eeed663454a2d4f9a8aae67e2241b8b22"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8372ad773c357a8e51de46ffc0dcce0a63bfb3d748312546552e1e3285232c42",
+   "block": "25336143",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf3a050e0acadee4c984136772331a1427bb9228f",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "5308062735",
+    "0xf3a050e0acadee4c984136772331a1427bb9228f"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xcda0b467bb4a9dc40c57eb8baff38aa1a2380f866b75f64fa9d5d2a7dd66ba31",
+   "block": "25548200",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x0757f686c16419c1e12bdbe5ebd46f393ef2ebce",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "23579000207",
+    "0x0757f686c16419c1e12bdbe5ebd46f393ef2ebce"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x83353d2c3ccce6f3e993fda9ecd94d3fa2a8fb3f3adcda88703666b7dcffca28",
+   "block": "25549886",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xcd102c81b54897c4d3ba1d2b4c8884900c1064e6",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "1854954178",
+    "0xcd102c81b54897c4d3ba1d2b4c8884900c1064e6"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x39a1393b644edc043f00c9f3db43fffbc0dac489d6db3e751018f560763a67e1",
+   "block": "25550625",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x36101daee54ebb1f71b9e5c90d3c48cfd96846ff",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "27982679074",
+    "0x36101daee54ebb1f71b9e5c90d3c48cfd96846ff"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xd3e63112fff262be70e0ff41fa3a9d54d468d3bf20c4c52354b7e93c358da293",
+   "block": "25550908",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa23932860b5c22efc97d56d12c4454be78bc4da5",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "20696000472",
+    "0xa23932860b5c22efc97d56d12c4454be78bc4da5"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x7e879e68f843b7a01b5e1c22b8e523602e0357e32a3dab9e276fb7c0ba70c63d",
+   "block": "25551088",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x3372db3a5d246593db2422c1d26b86ae97235d1d",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "192108469731",
+    "0x3372db3a5d246593db2422c1d26b86ae97235d1d"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x380aac884cfbfab9a640ab93b387ecebddf7d3283076cebae76c20ee6aa29040",
+   "block": "25551473",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x0f2f462e4ab437a6464d030747f9f6c91726c0b9",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "120389095",
+    "0x0f2f462e4ab437a6464d030747f9f6c91726c0b9"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xca0ea95c058021ea843e43d255a21c759b91d24a8ca20f31021a92b2685fa042",
+   "block": "25551538",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x757dad3c10b9460a4fb42b0014d0262a9d550d01",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "67262004",
+    "0x757dad3c10b9460a4fb42b0014d0262a9d550d01"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf3c40dbe828882fe0ff94980ec564cd486788bba7cc40ecbdaa652060c91fa0a",
+   "block": "25552131",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa719009f5da9d888d4b063b6a02437aadd7b391e",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "2000000",
+    "0xa719009f5da9d888d4b063b6a02437aadd7b391e"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x852048ee30d798d88d872a345225d0493f4b7a645b17990ea89fcf613f0a0b37",
+   "block": "25552352",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xab03a2f806b7c22ff7287dea703ed709e9823188",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "99909000000",
+    "0xab03a2f806b7c22ff7287dea703ed709e9823188"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd478af38def8afc2fa5d4f8e0199d51f06a77fbb636a5b094b8d50bb6075df47",
+   "why": "calls no function the template calls",
+   "to": "0x866ad6ed87c2a0ab43b498c3a92e383b466407fb",
+   "selector": "0x36a6f255"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf1e73ec02dbb1bfcade1d68bbf81757fc3e6171e4684389b72ad2dc763aca847",
+   "block": "25553525",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa23932860b5c22efc97d56d12c4454be78bc4da5",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "127065600699",
+    "0xa23932860b5c22efc97d56d12c4454be78bc4da5"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xffcf92b2df2340c77ddcc78c148a1de9b4fe1afb14a67a648aca6a839da2ef7c",
+   "block": "25553895",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xe3ac1a4faeb2cc3f5511f248e183171951a6e180",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "643855143920",
+    "0xe3ac1a4faeb2cc3f5511f248e183171951a6e180"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x663f82c117795ce86737f3721b5d15971d25d81113f070f0a501e0ed35cfe2a7",
+   "block": "25554137",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x754c4a7fef59e908222df71abcad266eca46d81a",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "205479271060",
+    "0x754c4a7fef59e908222df71abcad266eca46d81a"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x888d47b0cd8ef2c7125c13924f263bc65a38c39eb08f8be67180563d7bfc6cab",
+   "block": "25767434",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa6c399d047c00a1b6c2cd0a982d7870dc033bf8a",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "35393157728",
+    "0xa6c399d047c00a1b6c2cd0a982d7870dc033bf8a"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x1f54a9c5564aed80843e62054845bd1168815a80f3e5ed0a0900e707c8ea646c",
+   "block": "25768346",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa6c399d047c00a1b6c2cd0a982d7870dc033bf8a",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "35843419001",
+    "0xa6c399d047c00a1b6c2cd0a982d7870dc033bf8a"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8f1c769213a26f51f22c9c88e478f66fc8cd797445f5edce359571174d6778a6",
+   "block": "25769074",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa779546e5eb320da916f2bfde1abd974e1c831c3",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "299935400000",
+    "0xa779546e5eb320da916f2bfde1abd974e1c831c3"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xbc6c39af6c89870c85e3e12f9df65008dea5742b99b79db4d02774d239aa2c51",
+   "block": "25769178",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xec5d028b816c74d5bda58d0e8a4c937f8757b0a0",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "32505011669",
+    "0xec5d028b816c74d5bda58d0e8a4c937f8757b0a0"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4a37598d27f0d984f4083b69e96dd1fbaa9cba0817dcce7bef5f6ddf2c4380ad",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x9dca7ebcc2de96a6f2f3e67b409ef181348b5c669cdacc61bbcf9a6bf9168da6",
+   "block": "25769661",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x2068752bbe01e3629970362099b1702cf6e662b4",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "2500504545",
+    "0x2068752bbe01e3629970362099b1702cf6e662b4"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x9d384303493fa0f3b92b329f6a70bada4b8d89254b239bf46b250c8928f33e83",
+   "block": "25770613",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xc407d9993b29f0ada4a98686f134c78567d0f562",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "165247192",
+    "0xc407d9993b29f0ada4a98686f134c78567d0f562"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xfdf608679840844b010e3fad98efeb65fface13d7ed6e06cdc8ba489c3f78f90",
+   "block": "25770723",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x4c394f24dd6114532fad62d40cee84f5a768d62c",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "100715150",
+    "0x4c394f24dd6114532fad62d40cee84f5a768d62c"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x397d6a3eec2dc13ebbf72fe1c24baf9a6aa233ff865f7052a6b058ae04dfabf4",
+   "block": "25772242",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x60318b16c32edf4c1a88395656209700cc093872",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "239229374",
+    "0x60318b16c32edf4c1a88395656209700cc093872"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xb37bfef30fc5d343f59d972b6b8c1b19d574bde3b63fc9a173d2774bba1b9132",
+   "block": "25773203",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xee5bcbd8ce33348bb4753da9c372c76c18d29141",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "70000000000",
+    "0xee5bcbd8ce33348bb4753da9c372c76c18d29141"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x75279729051d4545bbb8b62c14f6d72be60fb20f92a67fbd8278acf8433d7c6b",
+   "block": "25986345",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf95a3d0a9bb453e2acc280d41c4b9d52a4fc160b",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "78787190849",
+    "0xf95a3d0a9bb453e2acc280d41c4b9d52a4fc160b"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x95ee2f9385cd502e2c213c54f942708b6e47d59917607f7c5ddf224cc32f57da",
+   "block": "25986345",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xec5d028b816c74d5bda58d0e8a4c937f8757b0a0",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "8500000000",
+    "0xec5d028b816c74d5bda58d0e8a4c937f8757b0a0"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x0a38b3c1613ba79ae4df40a3aaacd17bc77681188a0609abe78c73e46461d32c",
+   "block": "25988269",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xe8a3795915ca8bf4ee9e87321d2a226abd640740",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "150387819127",
+    "0xe8a3795915ca8bf4ee9e87321d2a226abd640740"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xa0c695ee6947b141e4b8b6988776e598719d4aba3cd0004ffa433f9235d10f41",
+   "block": "25988511",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf56056ece1d901ab5f3c84854f57450ed08ca696",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "1154788652",
+    "0xf56056ece1d901ab5f3c84854f57450ed08ca696"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8104a201f1c349d00abe74ce578200c63ca5243bf72ec63c4734ec3d88168298",
+   "block": "25988956",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x45736b85b2f0e89afeb6964dc955fa7e537e6a32",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "149540000",
+    "0x45736b85b2f0e89afeb6964dc955fa7e537e6a32"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x66d6c90008b4de3e3f943e4d529096dfed63229f45548aa59fad596f1d8aebf6",
+   "block": "25989194",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x9086c95682218ba1dcc25f3c9c79b1f66437707d",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "30000003283",
+    "0x9086c95682218ba1dcc25f3c9c79b1f66437707d"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1493ee3f63e7bdb0a95d1a5030a6a033c5652f67ddfeeaa19c45673f5bb66af5",
+   "why": "calls no function the template calls",
+   "to": "0x866ad6ed87c2a0ab43b498c3a92e383b466407fb",
+   "selector": "0x36a6f255"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xd4f1708d1d86ba1f498e1ddfb4aa74a871d9f03ad0a9ae98fdedb9f3758f2e19",
+   "block": "25989270",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x4641ba9ccb730c9282bdadbfce45850aba9c39a8",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "100000000",
+    "0x4641ba9ccb730c9282bdadbfce45850aba9c39a8"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xefdd08aef9073c7c957ebda82602f0e32a5c18613e8317c1794b31eabb9dc80e",
+   "block": "25989295",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x4641ba9ccb730c9282bdadbfce45850aba9c39a8",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "23868930552",
+    "0x4641ba9ccb730c9282bdadbfce45850aba9c39a8"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xa5d8ac8d7744ba98c899ecda4d2450561463072d4308b2bc7a3d6477c68f8d0a",
+   "block": "25989453",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x9086c95682218ba1dcc25f3c9c79b1f66437707d",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "26506603724",
+    "0x9086c95682218ba1dcc25f3c9c79b1f66437707d"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x01448e8bc566f9fa90b2bdeeb1b3c366e7a3fcf5d8ea8abb4b1328510b4d1acd",
+   "block": "25989798",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xc5283b8e3f065ce370854306a643f482ecaf8f57",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "1000000074",
+    "0xc5283b8e3f065ce370854306a643f482ecaf8f57"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xb4ee7b641b0b3f49edf8760bc2a7a18ba3b59c20df73ade5d49c48fe331c53d0",
+   "block": "25990138",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x7e589f2be447afb05f0aef39ccf86307f0befc46",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "41473416819",
+    "0x7e589f2be447afb05f0aef39ccf86307f0befc46"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x3b1389eaaee341eb0d50ab5848fa4a1ee3b9da3d6ac63dd3f2cd34aacf1bba8e",
+   "block": "25990786",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x843e9c07041628aaef4f6de7004cca7e623498c9",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "50000000",
+    "0x843e9c07041628aaef4f6de7004cca7e623498c9"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x39c46654e7fac85858d027054a3bcd186a689f26070f9d6e9f6090d0e0e5c87c",
+   "block": "25990872",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xdafb0b076195c6897ab1f9ff6c694a46e092bda9",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "805000093",
+    "0xdafb0b076195c6897ab1f9ff6c694a46e092bda9"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xa4cafd7e2f994deac52a37c17caf6da6f54d2821b03120b6507ffc74e506db4a",
+   "block": "25991041",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xcf4a35ad34d200c19c5d5a0e4b95bea4513b2d61",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "100056190479",
+    "0xcf4a35ad34d200c19c5d5a0e4b95bea4513b2d61"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb3401eac12ebe6feb91aeed8ad7aa5d1ffc0121f083593b0433241f619783de5",
+   "why": "calls no function the template calls",
+   "to": "0x8fe02545e479aa8ba77d84e51b1d9ca17b88011a",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x30f601b2cf332700f6ca04e30bc3de3a527aaf9fcddd249b27c0f4c77187c147",
+   "block": "25993048",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xec5d028b816c74d5bda58d0e8a4c937f8757b0a0",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "2000000000",
+    "0xec5d028b816c74d5bda58d0e8a4c937f8757b0a0"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2167c84cdd04b60ad540bdde53ff7275e6f8f0afd61f656d56a48d5cfc88598d",
+   "block": "25993172",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x49071b7fd34b4a6f9ee228f4dc3d7d90359aaec7",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "195761000000",
+    "0x49071b7fd34b4a6f9ee228f4dc3d7d90359aaec7"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x85f0bdf11f15fbd166c3bb5f06ae0d9f3ce603d047609c77473bee9bee75c50a",
+   "block": "26206321",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x4cc8fa51f6759978f3fa7c184ffa21dedc43d9a9",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "61271000000",
+    "0x4cc8fa51f6759978f3fa7c184ffa21dedc43d9a9"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xe505ac1adcc71adff2206f3e5828c2aa4175228f2cc202ae24991b3a4aebf751",
+   "block": "26207653",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x7c13e2b033728bebcf53ba48e0d802aa67d223d8",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "18424000000",
+    "0x7c13e2b033728bebcf53ba48e0d802aa67d223d8"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x6ee85a17769badb8b8a06c181d21334d422ff5bcead11be257620aacdedba908",
+   "block": "26208739",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x8bb7790fc3349f08f2c71496d1049d3fafe571c6",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "91110979700",
+    "0x8bb7790fc3349f08f2c71496d1049d3fafe571c6"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xb7b98f9921c28073af923d158d6f904f64129bd21f31cbad9a692c345cfeb37b",
+   "block": "26211253",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x970cbee81088fa258da5f9f7c9fd5906fcb65080",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "9057628",
+    "0x970cbee81088fa258da5f9f7c9fd5906fcb65080"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xd09d0415b9ae7939f9d7322ee98ba3f5e568c37cea0cfa12d0205bfd96f87280",
+   "block": "26424746",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xca48f635009e67541804eb5909286a8bec051e81",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "104317000000",
+    "0xca48f635009e67541804eb5909286a8bec051e81"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2dfd4ca848fa23b42935e6bb43f254f5b240fc727b7807692a15f5a18cc97b92",
+   "block": "26426054",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x01d0162d7398e5ba74a692474272269228beb527",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "20000000000",
+    "0x01d0162d7398e5ba74a692474272269228beb527"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x5f989cf72e59a2459789972863cc8666ed371da78c30cb5a80094284c5a762cd",
+   "block": "26426173",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x09996215b697378e5080405a01a98bef0cd0c766",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "100000000000",
+    "0x09996215b697378e5080405a01a98bef0cd0c766"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x849abfb39a53e40e6ece0595dc6039cd38584f4bdd4bf4f369ebda7bbdd14d4f",
+   "block": "26426920",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd2bfc407d5844b3d5d0875e431be85a90715a9cf",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "90404087892",
+    "0xd2bfc407d5844b3d5d0875e431be85a90715a9cf"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x775419705dc38b3403ae3fcb0c591cb2a6d962bc68972e1d850fa1b936d1d5c0",
+   "block": "26427577",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xfee918eab404322ca74403fab665af93bb1b5bd8",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "25270000",
+    "0xfee918eab404322ca74403fab665af93bb1b5bd8"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x3f63960d3e5e0f309e7ef484a76909c3e847d0dca42f2600e52debc5b53c28a5",
+   "block": "26427750",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x8d82afe931cf292d1342f0e02e707381f8d918e5",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "70000000",
+    "0x8d82afe931cf292d1342f0e02e707381f8d918e5"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x849e0bf69ed451d0838caba20dd66074656246b57967f599c18efd59847d78a2",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1d8e237862758490fb906d55a447ab6d16f06377a83b79c5e303a6fc46868f25",
+   "why": "calls no function the template calls",
+   "to": "0x019aa399a4865d157fb58641dab388ed8870b9d2",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x18fb02f624bdf20de16aa86b77c737409b3502c55c3773a5ed8446dbd5b2c0b7",
+   "block": "26428505",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x438f338a4731007b61420039c05d15b0e39656e0",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "15766397228",
+    "0x438f338a4731007b61420039c05d15b0e39656e0"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x5dfc9db251ac7916aa2f188b7bf11440ebec41c610f5c4331d493d047bee4a86",
+   "block": "26428807",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xcad07a3c7de7eeaed84e22bc75caf7529778a825",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "11120483",
+    "0xcad07a3c7de7eeaed84e22bc75caf7529778a825"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xaa32ff3df17f87475f7597f60f6e6b178362f554cac4c004d95763572450d135",
+   "block": "26429218",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa9f86d9eaf339305cd36e76bc0de7ac5b024f075",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "700000000000",
+    "0xa9f86d9eaf339305cd36e76bc0de7ac5b024f075"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xb27f060752f364309619b422b0f7348b420aa3cfe8a9937910f335ae2e2ab286",
+   "block": "26429382",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xc3638bc8870668709a80cf459d3e043f5bf0c2a7",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "3346995733",
+    "0xc3638bc8870668709a80cf459d3e043f5bf0c2a7"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x708b590f6ffd22bbb05de48ddb8319b023f4926bf79493a3ef38461b90582967",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x1484ab812a3b4da24967eb0281586ef5b6371074",
+    "call": 1
+   },
+   "reason": {
+    "kind": "trailer",
+    "at": "call"
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0xefa4027b6461527189017cdc9870aecf01ac3a7e159775926bf1bb6c92b72e8e",
+   "block": "26429940",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb0cc42d4dc12a1e40efb72f87290fe06ecde4a9b",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "532007691",
+    "0xb0cc42d4dc12a1e40efb72f87290fe06ecde4a9b"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xb641d6026528d256ef7dc3536473f772443c3c345e20b1282540a1c961b4ae6a",
+   "block": "26429985",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf7300d1cb2fe7ab70423e4ab5a8a1c3183514ae8",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "3999710008",
+    "0xf7300d1cb2fe7ab70423e4ab5a8a1c3183514ae8"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd5438369c25cc4585e7ad6b5d5edbc89c3187229bdf6205972618de2d2ba6bea",
+   "why": "calls no function the template calls",
+   "to": "0x8368a23ce4bfeb696e4904bfe807f402c830c237",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2d8b9d818860c3468ede2fb2c8e3d512e4dbf050eab61912effc993210bf28d5",
+   "block": "26430357",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x111d35c163eadfb6b6b22f7cddd8c26662e716f2",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "1000000007",
+    "0x111d35c163eadfb6b6b22f7cddd8c26662e716f2"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xa42bcc6f5051ccb63d0963a28f7bb186727c8fca94dcaa29c12cc4e77c1a5dd1",
+   "block": "26430477",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd5c08f1dba83bb5752909489ea028f9504076cbc",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "3505639108",
+    "0xd5c08f1dba83bb5752909489ea028f9504076cbc"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x9b8b0778b2aad41580013560058b6ff0199a9effa79b8c253df24f0b9a4e9264",
+   "block": "26430794",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb5611541054f0039d748c695ec9ace936d35a305",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "2540861",
+    "0xb5611541054f0039d748c695ec9ace936d35a305"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf4fc6c26416d681b440d7203cf6c78bf112e6b7aea1ed0991c6bb247990fc5a4",
+   "block": "26431011",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb31c5a99fc3c9908aae551a8cfedc5729f1568fa",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.deposit.assets",
+    "call.deposit.receiver"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "uint256",
+    "address"
+   ],
+   "values": [
+    "0x5c20b550819128074fd538edf79791733ccedd18",
+    "0",
+    "300000000000",
+    "0xb31c5a99fc3c9908aae551a8cfedc5729f1568fa"
+   ],
+   "outside": []
+  }
+ ],
+ "measurements": [
+  {
+   "hash": "0xb0a1d8be43349b93649a75643b20af9e43bf2a796efdedcfa0969d03eac5439e",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x6c2f33f57a4cd08e3ee37608315355a8ad386a0cf142d4935803b14ddaacf286",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xcb90640022637e72213d926d0323be55af5ebf93cbf1facf0671ebe9369aaaca",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xffa969dff32ff3f3d5b679717607807f0558304fe83a318299354ab1ad7a8b03",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x8420a234d92e13d68e96b4e3df805a393ba21fd3a1a899102ecc3e1ca5631fda",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x1103f2dc169ddc2687f5afc3c954d99a81582a17d67f3ca2600ecb4e4ac9bb96",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x31d5bda34afa536f8e0673dac5a9b48a4546c2ef0e34bb1706016e67b9fc3862",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x2bbbb645627c12f42df41aaac96062f4f1c9b2ae86bf03b0e63bc2adc610d4fc",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xa4e103c7c0ecd24fac521fb847fd6a6359eb14615fdee23c01861f4149d80a01",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xaba17b6a711f6c3d3a7cea47d48933af819561fcf87d18e720f6ef010b1e1002",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x9c81ce38d8b44601e039c53b7e7bec6e226e7b939489caceecb4667cff7faefd",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xd6097cdd57e14ad3a72dfa15314407393642979e7be1e413039d63efda001877",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x0c46432567bca6374eb5598165a6695056b216434e46d57f3fe66f5e3f1c5a10",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x78411d993fe927eda5ef3f951be1bc6a58a5c1470ed179e5bdf213c7664733bb",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xc957381532f106d965c174bbb633fcb2c816c23753d0f691ae2c4951af4d80f5",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xa9432b1ce061ef54bd170fb64094c855ed5951949cf32db91e4e220cfd75258d",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x42f153c139f8f107d74af316deedc55dce65e3c28dff47f3629d0f6f9af9d0a6",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xec89876328be11beee924122a2c04d3a046b9b1d918bb67c212a4284437895de",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x2ca19e4f93f76105a8d5ff4ed47191ac0c74f979eb9fa3137526a7b01083d535",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x99e548542984a4ee018b2bd27c7d069c157a69e2831327dcd3f6571cc6b699a1",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x46688d984bbcb1344ea03bb1bc456b0816014a2a918d1d291d2db3af039ed527",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xcec52cec0354cb5f4eae6f0ab3c56d0f034e19d1a3be956e6b122445e0fb23a6",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xbcfc9f4f1649ba32774fcb087add3d5c98cc96dc8c0be13c61cbc55e3352040b",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x9a1ee49d972e922549d484e0e0d33ee87e6bbc62f765e6e5e55db9d1150d77e3",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xf063fcec1656679fa8b27dfa2aa4de8c774a34f1afe2823e4a047423d4a314ad",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xa418254bdc22fc70d530b6d937dbc5d4bc957bfeab8c5bded2876d41cea0a6eb",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xf211157e392f36f63c5c9a646440a1bf14323a4c0b035a3b072b634b8e00b788",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x1c98c46260e97c4d7a3ae492e7c4366cb061d47c910d1e664fcb5ea181d20f32",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xacf2de3b9c57944f375780393015ef15e03698caad8099813cbb238606b93af3",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xeb5b7408b7cc3ffd085e7b16bc7a9c3ccd07ac8219c70ddc0c15fca0a0433f59",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x5b678d8ce34fa2f51f45c666c52ae2b228fce14cc08f6314dd409006ecf34f71",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xfab26c1858e00d9af67e104a7eefe2502b085bd7d5f7185c7b77971ed075badc",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x755ce6a983e670e65e658dc4c76b076313a4046fc698ec8f8c9cd0b63dd13648",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xb57bb176f0270bb12cf1cc127ed9cabb98c23df9c45b86f93ce118b4de1288cf",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xafe1d2423e3aa9be7206de09c52cfba118cc2e45af9e942047526a638d382b61",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xe3fc156c6cfb2b25a024718d08fc940308398a659ae0ed84977c56af6960fc2c",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xbcf2e41ce30d948ad05983f4005e191bf250ae00f9fdbc73138a2be82f9c3d76",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xe68c2c3956ac55786fdbcd6ead29471e5f33f8c701247cb363a2f23e1e81b8a6",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x4bd117753e496713cdb0c4f71ce55500de9ec8c0280e6c41373e259d2f2ab593",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x43d1935821b70bed2f01e56d6628ddbb255bcb0586de5e013f26393069364725",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x0e35caa69f180a07088358aa05fc503c03d4ab9451ec9e13ef719ceaee5e39de",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x56378f960436ecc25585d86c10fe2ed5036d0e63ebfd84e2cc94c0b513788b12",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x5aa3c71f6e281a4984ff66c2f85bfeeb24644bbc0dbe969a77c64b2635b20c6d",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x00af0384866b95da251cb4b15cac3dd37c9c709bd62a9c4e885d53e61eaee1d6",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x2751bbfc7c8a200d737d1063082d5c30882144d208fabfd04c2406ca5e82ec12",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xfc6b0a593e877aa6d05ec8f42b9be71be5e4f8584d8b70560f5127e0a05a051a",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x8b479b655ec937f19171e408a1351ca443ab857116c3d461fd46720022bb80f4",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x5d0120cc8c83514f953053b82d770ef8a61d53c1b1f937835a6650756d724892",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xfa4e153557ad7efbb1c804191557238852aea8daed2e0dbeaf6d942da0c2f554",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xa3729e71e3e4221cddfc722e04501db0be37106fdd2d3e0fa7ab2749a38b7704",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x84b7ba0b07328fb358df479a35e786962aefb4e5abf7d90f86e429c16c04ec96",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x318d2d7d9af2c564b872e9c5edac2bf240e9a89d0102d8ddd92fa117a843a7e9",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x089ca68a8efed49486698deaa5e6675b42cb107cfa67c61cdd89075bfc7b532d",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x10ac4eb9f3fbc5a13106e10c309e152ed0f81ea68f783bae941611cf9d39848d",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x689ba36078f289463722b1e20f88e76f92ae70e85fe46730f1aa70c9dc76651c",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x5417cb1f2521809ecd5ccb902b65e254b9dd4ab3ff25f8c4ef87aba290dd727f",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x9fb9db62a05d24abaa47455fede4749f841a0463a8ce2f9476abf9b3b960f744",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xc4aab62e613cfe608d449f5a04f8685f0ae043a8565d400a3360fbfe23b7ce93",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x52a458e4ec3b8537273f705a415cebb50a3a58b7d57fa063f74c6ebb9a190373",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xf139324117d9692f9cce89db19912148c1cadd22b4d21922848c8b95df9d33e5",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x530129e5e006ca71e49d01ccdd908194e0a6f4157b24aa024519a1d314ba977f",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x84e903f790ba601d9adc5c757424c03312f7b7f41c21cb763547cd4b3bc69153",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x7fcbab0192c930b43f81da46bde1f2569ab4aaf5575a7bec24e15a65a6804039",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x426315556bdc5cc8b9e12e417011f9d132e3a2e39962b64ded749ba9c44640b5",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xf567159fbd05b16ef0021aa3cc2eda41c08b0e04a444ca6d10be318e6b908cc7",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x3b22e7d63cb647c57af346938aa4ba573af69f53855210ba74b484de2468beb8",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xadad4a5f50a5449a0ec5a87b9bf6a645da755875d2cdb4a34322e4e37d84fc99",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x90691469ab4d207c82bc46b6b89219f3ca4049009405b47d1f46076d1284e831",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xf1a9eb2956e9bcc22c75509ec361ed6c547263db4e8ff3bbc563188d911a6587",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xef460a831c3e635b56cd3da85fd2ebdcbfdd317401e1a4d271ac4bdc33813fd9",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x081bef6e3908221fe59258aa1dc7b25536e8b5167500269e1674061730af34c3",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xb29b5791b102274aa64216137808da75ba71031e8776a8b66e0d979ed14b493d",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x548331239d21a32ffdb0e3ef3291ef7c69911e47d2822f9e7e27d96c813c7781",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x07bf52a3caff08156100734404012aeac806c95f8496ec7df23acc2e4381772f",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x0f87a2fdbff629a3d39ea08bdb2fa171dee1cd7f29255a0319f9bde5f1252c39",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x51df44ec700de4b250a8f36fcf1650c809afae779e00f56746f007f7aab14ed5",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x635036a517d10d6ba4041f1617db0deca2994b14de4e3ecdfebe823ebe5ef93b",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x2a7fa9481a324dd6d4c15a8c4791ebdebe28b2f788a9c70f3554c384645c3848",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xe0f612d03b05280dfb0da30e01198d06ac7bed152c84a0a8181238c5fd033923",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x96f00a4fed1ed1da31365b83886e894b90ebebd3c3efa77b7b5625e253c7b594",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x5a0e3949603e93ca7c02fbc10db4a97125232fc1d96cf23fb676c150822f8931",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xf09b3481cb7f72b546aa4dee49196d1319059a33c99e7a3d6638b1b9fb2d068a",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xbebcac7ca74c87526ab7d43c4f72ca70a933622cf8919c5c33a44792b01c63e5",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x7aaea92876d5afcb2a364de7df85c8d885b647894136dc8dcb9a05d2734aedc0",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x2cf5c9a519bde7f0751759671c99363d7833b8d3598a71c315374ea1f51cd34f",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x7eb2175fdde93131b5d5c8bba5eca222fa915d427d12ed2aa64551169a0ef9b6",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xb8f5b4cc50d804f70e1d84404dab642eba8791b3c89f30eb5a4f122cc84954e1",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x8e85e11dc9518de9b4ddb79d92c22278b38617e2a9129d6604ca9ffb2b477b92",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x529dbc9454a42d2a4b04b95f0b8008a07e3b43801ca15a340fdf2aa39dabb8a5",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xc7756a18f6e6aeb8ec9d9cade0da66e2143106da2c06cd692a0b111f5b71e499",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x4d691b9d6738faf0b457947acda71ff397c3dcfc459baf32599c3d83e2cf0e19",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x66b25b85fd3e22bafee40f6a9e2756803fcb43a755a1281b2e74ad921058bc7e",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x706fe8851b999b4eef48f74e5617469f277aaef499f03e8cb00f9a68c52c7b7f",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xfa00b7f27a473476b1135f708ca3d085178be526336b69b0c4f97f82cea185c7",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xd9ebacfd51b48c7b64400c0743b4a2516431f68852e436956acad80ec3f383b1",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xc20242c3354d2eb47b12ef8250d380a88e33b380d5139c38ea1ab0a2172408bd",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x8372ad773c357a8e51de46ffc0dcce0a63bfb3d748312546552e1e3285232c42",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xcda0b467bb4a9dc40c57eb8baff38aa1a2380f866b75f64fa9d5d2a7dd66ba31",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x83353d2c3ccce6f3e993fda9ecd94d3fa2a8fb3f3adcda88703666b7dcffca28",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x39a1393b644edc043f00c9f3db43fffbc0dac489d6db3e751018f560763a67e1",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xd3e63112fff262be70e0ff41fa3a9d54d468d3bf20c4c52354b7e93c358da293",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x7e879e68f843b7a01b5e1c22b8e523602e0357e32a3dab9e276fb7c0ba70c63d",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x380aac884cfbfab9a640ab93b387ecebddf7d3283076cebae76c20ee6aa29040",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xca0ea95c058021ea843e43d255a21c759b91d24a8ca20f31021a92b2685fa042",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xf3c40dbe828882fe0ff94980ec564cd486788bba7cc40ecbdaa652060c91fa0a",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x852048ee30d798d88d872a345225d0493f4b7a645b17990ea89fcf613f0a0b37",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xf1e73ec02dbb1bfcade1d68bbf81757fc3e6171e4684389b72ad2dc763aca847",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xffcf92b2df2340c77ddcc78c148a1de9b4fe1afb14a67a648aca6a839da2ef7c",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x663f82c117795ce86737f3721b5d15971d25d81113f070f0a501e0ed35cfe2a7",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x888d47b0cd8ef2c7125c13924f263bc65a38c39eb08f8be67180563d7bfc6cab",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x1f54a9c5564aed80843e62054845bd1168815a80f3e5ed0a0900e707c8ea646c",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x8f1c769213a26f51f22c9c88e478f66fc8cd797445f5edce359571174d6778a6",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xbc6c39af6c89870c85e3e12f9df65008dea5742b99b79db4d02774d239aa2c51",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x9dca7ebcc2de96a6f2f3e67b409ef181348b5c669cdacc61bbcf9a6bf9168da6",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x9d384303493fa0f3b92b329f6a70bada4b8d89254b239bf46b250c8928f33e83",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xfdf608679840844b010e3fad98efeb65fface13d7ed6e06cdc8ba489c3f78f90",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x397d6a3eec2dc13ebbf72fe1c24baf9a6aa233ff865f7052a6b058ae04dfabf4",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xb37bfef30fc5d343f59d972b6b8c1b19d574bde3b63fc9a173d2774bba1b9132",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x75279729051d4545bbb8b62c14f6d72be60fb20f92a67fbd8278acf8433d7c6b",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x95ee2f9385cd502e2c213c54f942708b6e47d59917607f7c5ddf224cc32f57da",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x0a38b3c1613ba79ae4df40a3aaacd17bc77681188a0609abe78c73e46461d32c",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xa0c695ee6947b141e4b8b6988776e598719d4aba3cd0004ffa433f9235d10f41",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x8104a201f1c349d00abe74ce578200c63ca5243bf72ec63c4734ec3d88168298",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x66d6c90008b4de3e3f943e4d529096dfed63229f45548aa59fad596f1d8aebf6",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xd4f1708d1d86ba1f498e1ddfb4aa74a871d9f03ad0a9ae98fdedb9f3758f2e19",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xefdd08aef9073c7c957ebda82602f0e32a5c18613e8317c1794b31eabb9dc80e",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xa5d8ac8d7744ba98c899ecda4d2450561463072d4308b2bc7a3d6477c68f8d0a",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x01448e8bc566f9fa90b2bdeeb1b3c366e7a3fcf5d8ea8abb4b1328510b4d1acd",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xb4ee7b641b0b3f49edf8760bc2a7a18ba3b59c20df73ade5d49c48fe331c53d0",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x3b1389eaaee341eb0d50ab5848fa4a1ee3b9da3d6ac63dd3f2cd34aacf1bba8e",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x39c46654e7fac85858d027054a3bcd186a689f26070f9d6e9f6090d0e0e5c87c",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xa4cafd7e2f994deac52a37c17caf6da6f54d2821b03120b6507ffc74e506db4a",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x30f601b2cf332700f6ca04e30bc3de3a527aaf9fcddd249b27c0f4c77187c147",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x2167c84cdd04b60ad540bdde53ff7275e6f8f0afd61f656d56a48d5cfc88598d",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x85f0bdf11f15fbd166c3bb5f06ae0d9f3ce603d047609c77473bee9bee75c50a",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xe505ac1adcc71adff2206f3e5828c2aa4175228f2cc202ae24991b3a4aebf751",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x6ee85a17769badb8b8a06c181d21334d422ff5bcead11be257620aacdedba908",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xb7b98f9921c28073af923d158d6f904f64129bd21f31cbad9a692c345cfeb37b",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xd09d0415b9ae7939f9d7322ee98ba3f5e568c37cea0cfa12d0205bfd96f87280",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x2dfd4ca848fa23b42935e6bb43f254f5b240fc727b7807692a15f5a18cc97b92",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x5f989cf72e59a2459789972863cc8666ed371da78c30cb5a80094284c5a762cd",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x849abfb39a53e40e6ece0595dc6039cd38584f4bdd4bf4f369ebda7bbdd14d4f",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x775419705dc38b3403ae3fcb0c591cb2a6d962bc68972e1d850fa1b936d1d5c0",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x3f63960d3e5e0f309e7ef484a76909c3e847d0dca42f2600e52debc5b53c28a5",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x18fb02f624bdf20de16aa86b77c737409b3502c55c3773a5ed8446dbd5b2c0b7",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x5dfc9db251ac7916aa2f188b7bf11440ebec41c610f5c4331d493d047bee4a86",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xaa32ff3df17f87475f7597f60f6e6b178362f554cac4c004d95763572450d135",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xb27f060752f364309619b422b0f7348b420aa3cfe8a9937910f335ae2e2ab286",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xefa4027b6461527189017cdc9870aecf01ac3a7e159775926bf1bb6c92b72e8e",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xb641d6026528d256ef7dc3536473f772443c3c345e20b1282540a1c961b4ae6a",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x2d8b9d818860c3468ede2fb2c8e3d512e4dbf050eab61912effc993210bf28d5",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xa42bcc6f5051ccb63d0963a28f7bb186727c8fca94dcaa29c12cc4e77c1a5dd1",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x9b8b0778b2aad41580013560058b6ff0199a9effa79b8c253df24f0b9a4e9264",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xf4fc6c26416d681b440d7203cf6c78bf112e6b7aea1ed0991c6bb247990fc5a4",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  }
+ ],
+ "traces": []
+}

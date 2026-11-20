@@ -1,9 +1,9 @@
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { createReader } from '../src/chain/reader.ts';
-import { recordingTransport, replayReader } from '../src/chain/recording.ts';
+import { recordingTransport } from '../src/chain/recording.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
 import { loadStoredConfig } from '../src/config.ts';
 import { kissSignHome } from '../src/keys.ts';
@@ -15,6 +15,8 @@ import type { AnchorEvent, AnchorKind } from '../src/research/sources.ts';
 import { liveMessages, recordingMessages } from '../src/research/messages.ts';
 import { httpsMessage } from '../src/verify/messages.ts';
 import { DEFAULT_SAMPLING, YEAR_PAGES, samplingFields, samplingOf, scrubRecording } from '../src/research/recording.ts';
+import { RECORDINGS_DIR, SUMMARIES_DIR, parseSummary, studyRecording, summaryText } from '../src/research/past-txs-summary.ts';
+import { pastTxsRegistry } from '../src/research/report.ts';
 import { drpcTraces } from '../src/research/trace.ts';
 import type { PastTxsRecording, Sampling } from '../src/research/recording.ts';
 import { parseAddress } from '../src/safe/types.ts';
@@ -28,7 +30,8 @@ const USAGE = `usage: pnpm past-txs <protocol>/<operation>
   [--to <registry name | address>]
   [--token <registry name | address>] --anchor event --event '<event signature>'
   [--max-txs <n>] [--record <name>]
-  [--from-block <n> --to-block <n> | --same-windows-as <recording>]
+  [--from-block <n> --to-block <n> | --same-windows-as <name>]
+       pnpm past-txs --restudy [<name>...]
 
 Finds executed transactions of one operation through an anchor: an ERC-20 Transfer of --token, or
 an event (--anchor event), as one of the two forms above.
@@ -54,9 +57,9 @@ token, the party checked is that contract, so no Safe is found and the choice is
 Otherwise it searches 12 windows of up to 7200 blocks spread over the year, and studies at most
 --max-txs (at least 12) transactions shared evenly between them. A window with more transfers
 than one page of a source is halved until they fit, and the report names the blocks left out.
---same-windows-as places the year and the windows by the head block
-testdata/research/<recording>.json keeps instead of today's, and searches as that recording did,
-so a run again searches the same blocks. --from-block and --to-block replace the year and the
+--same-windows-as places the year and the windows by the head block the summary
+testdata/research/<name>.json keeps instead of today's, and searches as that run did, so a run
+again searches the same blocks. --from-block and --to-block replace the year and the
 windows with one range.
 Both Alchemy (alchemy_getAssetTransfers) and Etherscan (logs) search each window for a Transfer;
 each transaction says which found it. Only Etherscan searches an event: Alchemy's eth_getLogs
@@ -70,6 +73,16 @@ contract that is not a proven Safe, and an EOA making one of the template's call
 The Safe in $KISS_SIGN_HOME/config.json is left out of every count and example, and its address out
 of every recording; a recording keeps its transactions' place and hash.`;
 const HELP = `${USAGE}
+--record keeps two files. The full recording, every answer the run read with the configured
+Safe's address taken out, goes to .cache/past-txs/<name>.json, which git ignores. The summary,
+studied again from that recording, goes to testdata/research/<name>.json: the query, how many
+transactions the search found, the hashes only one source found, each studied transaction's
+result, amounts and call traces, and the hashes of the template, the registry entries the study
+can read and the study code it was studied with. pnpm test fails when one of those hashes differs
+from the checkout's; --restudy then studies each named recording in .cache/past-txs/ again, every
+one when none is named, with the template, registry and code of the checkout, and rewrites its
+summary. A computer without the recording runs the command of the report again, with
+--same-windows-as.
 Per field it prints how many transactions and senders held the template's rule, and the misfits
 grouped by reason. For each fitting transaction it runs the transaction alone on its parent block
 and compares each stated amount with the balances, printing FINDING for a sender's difference
@@ -90,12 +103,15 @@ Options:
                                  windows, at least 1 with --from-block and --to-block.
   --from-block, --to-block <n>   Search one block range in place of the windows, for debugging
                                  the search; a template's research never passes them.
-  --same-windows-as <recording>  Search the year or windows of testdata/research/<recording>.json
+  --same-windows-as <name>       Search the year or windows of testdata/research/<name>.json
                                  again.
-  --record <name>                Write testdata/research/<name>.json; nothing is written when a
-                                 read got no answer.
+  --record <name>                Write .cache/past-txs/<name>.json and testdata/research/<name>.json;
+                                 nothing is written when a read got no answer.
+  --restudy [<name>...]          Rewrite each testdata/research/<name>.json from
+                                 .cache/past-txs/<name>.json, reading nothing live.
 
-Writes: testdata/research/<name>.json with --record; otherwise nothing.
+Writes: .cache/past-txs/<name>.json and testdata/research/<name>.json with --record;
+testdata/research/<name>.json with --restudy; otherwise nothing.
 Keys: ALCHEMY_API_KEY and ETHERSCAN_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
 Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 4,
   Study past transactions, Call traces).`;
@@ -117,8 +133,26 @@ const { values: flags, positionals } = parseArgs({
     event: { type: 'string' },
     'max-txs': { type: 'string', default: '240' },
     record: { type: 'string' },
+    restudy: { type: 'boolean' },
   },
 });
+
+if (flags.restudy === true) {
+  const names = positionals.length > 0 ? positionals : readdirSync(join(ROOT, RECORDINGS_DIR)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -'.json'.length)).sort();
+  const registry = loadRegistry(ROOT);
+  for (const name of names) {
+    const path = join(ROOT, RECORDINGS_DIR, `${name}.json`);
+    if (!/^[a-z0-9-]+$/.test(name) || !existsSync(path)) {
+      console.error(`--restudy ${name}: no recording ${join(RECORDINGS_DIR, `${name}.json`)}`);
+      process.exit(64);
+    }
+    const recording = readRecording(path) as PastTxsRecording;
+    const summary = await studyRecording(ROOT, recording, pastTxsRegistry(ROOT, registry, recording.query));
+    writeFileSync(join(ROOT, SUMMARIES_DIR, `${name}.json`), summaryText(summary));
+    console.log(`wrote ${join(SUMMARIES_DIR, `${name}.json`)}`);
+  }
+  process.exit(0);
+}
 const [templateId] = positionals;
 const kind = ANCHOR_KINDS.find((k) => k === flags.anchor) as AnchorKind | undefined;
 const block = (raw: string | undefined) => (raw !== undefined && /^[0-9]+$/.test(raw) ? BigInt(raw) : undefined);
@@ -152,24 +186,21 @@ try {
   process.exit(64);
 }
 if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new Error('--record takes a name of lowercase letters, digits and -');
-const sameAs = flags['same-windows-as'] === undefined ? undefined : await recordedSearch(flags['same-windows-as']);
+const sameAs = flags['same-windows-as'] === undefined ? undefined : recordedSearch(flags['same-windows-as']);
 
-async function recordedSearch(name: string): Promise<Sampling> {
-  const path = join(ROOT, 'testdata', 'research', `${name}.json`);
+function recordedSearch(name: string): Sampling {
+  const path = join(ROOT, SUMMARIES_DIR, `${name}.json`);
   if (!/^[a-z0-9-]+$/.test(name) || !existsSync(path)) {
-    console.error(`--same-windows-as ${name}: no recording testdata/research/${name}.json`);
+    console.error(`--same-windows-as ${name}: no summary ${join(SUMMARIES_DIR, `${name}.json`)}`);
     process.exit(64);
   }
-  const recording = readRecording(path) as PastTxsRecording;
-  const sampling = samplingOf(recording.query);
-  if (sampling.kind !== 'range' && sampling.head !== undefined) return sampling;
-  const read = sampling.kind === 'range' ? undefined : await replayReader(recording.exchanges).blockNumber();
-  if (sampling.kind === 'range' || read?.kind !== 'agreed') {
-    const why = sampling.kind === 'range' ? 'searched one block range and keeps no head block' : 'keeps no head block and no head read';
-    console.error(`--same-windows-as ${name}: the recording ${why}, so it has no windows to search again`);
+  const summary = parseSummary(join(SUMMARIES_DIR, `${name}.json`), readFileSync(path, 'utf8'));
+  const sampling = samplingOf(summary.query);
+  if (sampling.kind === 'range' || summary.head === undefined) {
+    console.error(`--same-windows-as ${name}: the summary searched one block range and keeps no head block, so it has no windows to search again`);
     process.exit(64);
   }
-  return { ...sampling, head: read.value };
+  return { ...sampling, head: summary.head };
 }
 
 const registry = loadRegistry(ROOT);
@@ -232,8 +263,14 @@ if (flags.record !== undefined) {
     exclude === undefined ? [] : [exclude],
     run.excluded,
   );
-  const out = join(ROOT, 'testdata', 'research', `${flags.record}.json`);
+  const summary = summaryText(await studyRecording(ROOT, fixture, pastTxsRegistry(ROOT, registry, fixture.query)));
+  if (exclude !== undefined && summary.toLowerCase().includes(exclude.slice(2).toLowerCase())) throw new Error("the summary holds the configured Safe's address; nothing written");
+  const full = join(ROOT, RECORDINGS_DIR, `${flags.record}.json`);
+  const out = join(ROOT, SUMMARIES_DIR, `${flags.record}.json`);
+  mkdirSync(join(full, '..'), { recursive: true });
   mkdirSync(join(out, '..'), { recursive: true });
-  writeFileSync(out, recordingText(fixture, 1));
-  console.log(`wrote ${out}: ${fixture.sources.length} source answers, ${fixture.exchanges.length} chain requests, ${fixture.traces?.length ?? 0} call traces`);
+  writeFileSync(full, recordingText(fixture, 1));
+  writeFileSync(out, summary);
+  console.log(`wrote ${full}: ${fixture.sources.length} source answers, ${fixture.exchanges.length} chain requests, ${fixture.traces?.length ?? 0} call traces`);
+  console.log(`wrote ${out}`);
 }

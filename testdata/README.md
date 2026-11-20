@@ -267,13 +267,24 @@ The first recording of `morpho-migrate-all-smokehouse` failed: an approval one s
 
 ## Past-transaction searches
 
-`research/<name>.json` holds one run of `scripts/past-txs.ts --record <name>`:
+`research/<name>.json` is the summary of one run of `scripts/past-txs.ts --record <name>`, which the reports print:
 
-- `query`: the template, the anchor token, the anchor kind, the sender when the search had one (`--from`), the block range when one was given (none means the default windows), and `--max-txs`.
-- `sources`: each request to Alchemy (`alchemy_getAssetTransfers`) and Etherscan (`logs/getLogs`), with its answer. No request holds a key.
-- `providers` and `exchanges`: each chain read (the head block, transactions, and for an `execTransaction` the block before, the contract's code and slot 0, and the receipt), with the answers of Alchemy and drpc.
+- `query`: the template, the anchor token, the anchor kind, the sender or receiver when the search had one (`--from`, `--to`), the event, the block range when one was given, the head block when the run kept it, the year's pages, and `--max-txs`.
+- `head`: the head block the year and the windows were placed by; absent for a block range.
+- `studiedWith`: the keccak256 of the template's `template.json`, of the registry entries the study can read (each the template names, each whose address occurs in the results, the markets of those, and the attribute table), and of the files of the study code (`STUDY_FILES` in `src/research/past-txs-summary.ts`).
+- `search`: the year search, each window with how many it found and studied, how many the search found, and when both sources searched, the hashes only one of them found.
+- `studies`, `measurements` and `traces`: each studied transaction's result, each fitting transaction's amounts against its balances, and each checked call trace.
 
-Before writing, the script drops every entry that mentions the configured Safe or one of its transactions, and refuses to write if any mention is left.
+The amounts tests print the stETH and USDC transfer summaries with other tolerances and registries, which judge the differences the summaries hold.
+
+The run's answers, each search answer, chain read, signed message and call trace, go to `.cache/past-txs/<name>.json` on the computer that ran it, which git ignores. `pnpm past-txs --restudy <name>` studies that recording again and rewrites the summary. `pnpm test` fails when a summary's `studiedWith` differs from what the checkout gives, naming that command.
+
+## Past-transaction fixtures
+
+`past-txs/<name>.json` holds the answers of a past-transaction run, for the tests that study them again: `query`, `sources` (each request to Alchemy and Etherscan with its answer), `providers` and `exchanges` (each chain read with the answers of Alchemy and drpc), and, when the run read them, `messages` and `traces`.
+
+`node test/trim-past-txs.ts <name>...` cuts each from `.cache/past-txs/<name>.json`: it studies the recording again with the test fixtures' templates and registry and keeps only what that study reads, each search answer and block cut as `--record` cuts them today. `whole-year.json` and `any-contract.json` were recorded small and are not cut.
+A test-only template's report prints a summary in `research/` too: `node test/fixture-summaries.ts <name>` studies `past-txs/<name>.json` in the test fixtures' repository and writes it.
 
 The tests replay the run and require the counts a reader sees: per window, per source, per sender type, per field, and per misfit reason. A Safe set as the configured Safe disappears from every count, and a transaction removed from one source's answer is marked as found by the other only. A Safe whose recorded code or slot 0 is changed counts as a contract, not a proven Safe. A window whose recorded Alchemy answer is given a next page is halved, and the report names the blocks left out. An EOA's `multicall` sent to a contract other than Bundler3 counts as calling no function the template calls.
 
@@ -282,6 +293,9 @@ The tests replay the run and require the counts a reader sees: per window, per s
 | `morpho-vault-deposit.json` | Steakhouse Prime USDC shares minted | 26,044,000 to 26,052,000 | 65 transactions, all found by both sources; 3 from 1 proven Safe, 2 fitting `morpho/vault-deposit`; 25 from 24 EOAs calling `multicall` directly, 2 fitting that call |
 | `merkl-claim.json` | MORPHO moved out of the Merkl Distributor | 24,020,000 to 24,030,000 | 120 transactions, all found by both sources; 3 from 3 proven Safes, 1 fitting `merkl/claim`; 102 from 90 EOAs |
 | `morpho-vault-deposit-windows.json` | Steakhouse Prime USDC shares minted | the default 12 windows from head block 26,385,810 | 222 transactions, 2 studied per window, 18 in all |
+| `erc20-transfer.json` | SAFE transfers | 26,380,801 to 26,388,000 | a Safe's transaction making none of the template's calls, and a transfer of a token outside the registry |
+| `morpho-market-supply.json` | USDC moved into `0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad` | the default 12 windows from head block 26,391,005 | 528 transactions, 40 studied; its summary in `research/` is the one the test-only `morpho/market-supply` report prints |
+| `cow-swap-presign.json` | `PreSignature` logged by GPv2Settlement | the default search from head block 26,436,848 | Safe orders, each with the CoW order its signed message names, read from `api.cow.fi` |
 
 ### Recording again
 
@@ -295,6 +309,7 @@ That home's `config.json` names the Safe of `safe-tx/morpho-vault-deposit.json`,
 ```sh
 pnpm past-txs merkl/claim --token morpho --anchor any --from merkl-distributor --from-block 24020000 --to-block 24030000 --record merkl-claim
 pnpm past-txs morpho/vault-deposit --token steakhouse-prime-usdc-v2-0f51 --anchor mint --max-txs 24 --record morpho-vault-deposit-windows
+node test/trim-past-txs.ts morpho-vault-deposit merkl-claim morpho-vault-deposit-windows
 ```
 
 The windows follow the head block, so recording the last one again moves them.

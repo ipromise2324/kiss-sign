@@ -1,0 +1,7207 @@
+{
+ "query": {
+  "template": "safe/swap-owner",
+  "anchor": "event",
+  "event": "AddedOwner(address)",
+  "head": "26447442",
+  "wholeYear": true,
+  "maxTxs": 240
+ },
+ "head": "26447442",
+ "studiedWith": {
+  "template": "0x9cb03d0434b04bf96c3406641f2e189b6498d8101cd02eb81b8bf3328478cfab",
+  "registry": "0xb3e92d8951adc35c8f96198c1db622d3cf8caa0d75c1969bc0add6634016d737",
+  "study": "0xa3d8a7f49c350a885c28f40368280902337dba93ab55421baa7446e7816dd793"
+ },
+ "search": {
+  "year": {
+   "kind": "overflow",
+   "range": {
+    "fromBlock": "23817601",
+    "toBlock": "26445600"
+   },
+   "pages": 1,
+   "sources": [
+    "etherscan"
+   ]
+  },
+  "windows": [
+   {
+    "asked": {
+     "fromBlock": "24029401",
+     "toBlock": "24036600"
+    },
+    "range": {
+     "fromBlock": "24029401",
+     "toBlock": "24036600"
+    },
+    "found": 56,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "24248401",
+     "toBlock": "24255600"
+    },
+    "range": {
+     "fromBlock": "24248401",
+     "toBlock": "24255600"
+    },
+    "found": 47,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "24467401",
+     "toBlock": "24474600"
+    },
+    "range": {
+     "fromBlock": "24467401",
+     "toBlock": "24474600"
+    },
+    "found": 30,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "24686401",
+     "toBlock": "24693600"
+    },
+    "range": {
+     "fromBlock": "24686401",
+     "toBlock": "24693600"
+    },
+    "found": 41,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "24905401",
+     "toBlock": "24912600"
+    },
+    "range": {
+     "fromBlock": "24905401",
+     "toBlock": "24912600"
+    },
+    "found": 26,
+    "studied": 16
+   },
+   {
+    "asked": {
+     "fromBlock": "25124401",
+     "toBlock": "25131600"
+    },
+    "range": {
+     "fromBlock": "25124401",
+     "toBlock": "25131600"
+    },
+    "found": 110,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "25343401",
+     "toBlock": "25350600"
+    },
+    "range": {
+     "fromBlock": "25343401",
+     "toBlock": "25350600"
+    },
+    "found": 72,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "25562401",
+     "toBlock": "25569600"
+    },
+    "range": {
+     "fromBlock": "25562401",
+     "toBlock": "25569600"
+    },
+    "found": 13,
+    "studied": 12
+   },
+   {
+    "asked": {
+     "fromBlock": "25781401",
+     "toBlock": "25788600"
+    },
+    "range": {
+     "fromBlock": "25781401",
+     "toBlock": "25788600"
+    },
+    "found": 65,
+    "studied": 19
+   },
+   {
+    "asked": {
+     "fromBlock": "26000401",
+     "toBlock": "26007600"
+    },
+    "range": {
+     "fromBlock": "26000401",
+     "toBlock": "26007600"
+    },
+    "found": 104,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "26219401",
+     "toBlock": "26226600"
+    },
+    "range": {
+     "fromBlock": "26219401",
+     "toBlock": "26226600"
+    },
+    "found": 64,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "26438401",
+     "toBlock": "26445600"
+    },
+    "range": {
+     "fromBlock": "26438401",
+     "toBlock": "26445600"
+    },
+    "found": 127,
+    "studied": 20
+   }
+  ],
+  "perWindow": 20,
+  "found": {
+   "total": 755,
+   "only": {
+    "alchemy": [],
+    "etherscan": []
+   }
+  },
+  "otherEmitter": [
+   "0x3e980c21b5feacc0cc99ce651561fe0b1c211aca0915dd7481092f758c098098",
+   "0xc7164661afc10c0c7c8b31af8884c4f72df6b01b212d255c9fd5488fe8752823",
+   "0x1186522a8b2a7566b6ae947c54fdbe702c54ec9d52c4c3b55756b595f5b7e5ec",
+   "0x76447583f5e9b00a06ce9ea8f8a09421a50b99219c0e4adbe1cc73d3e9c91107",
+   "0x698d479d644471c0eea9b7fe288c1edf837555e90666d48e11d295fcaf9db4b9",
+   "0x0a775c23ebf74d97f822298c915b3e51478d586e1499be53e6beaa14ca9835d5"
+  ]
+ },
+ "studies": [
+  {
+   "kind": "misfit",
+   "hash": "0x29e2360fe5973a799dcf0bcfcfb24e5825c8c19bb47ca3a2e68530445c60a08b",
+   "sender": {
+    "kind": "safe",
+    "address": "0xbdb8dda0fb7e5698cbe49cc266ca38c1536440de"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbdb8dda0fb7e5698cbe49cc266ca38c1536440de",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0xbdb8dda0fb7e5698cbe49cc266ca38c1536440de",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x310ed21db9bfc2f3dbe4818b538bdf7bafb687b02f348040474607a89ebae0a7",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb2b5568aa9b7d815a046c550e28d13796ea7201b"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xb2b5568aa9b7d815a046c550e28d13796ea7201b",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x1934e1bc306e2b4ac405b85e3e73aa945b4b6a6f44580aa3c5650cd86154f65b",
+   "sender": {
+    "kind": "safe",
+    "address": "0x4d732b231942ad768ed4216fc8a60c8330c85711"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x4d732b231942ad768ed4216fc8a60c8330c85711",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x4d732b231942ad768ed4216fc8a60c8330c85711",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x4d732b231942ad768ed4216fc8a60c8330c85711",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x4d732b231942ad768ed4216fc8a60c8330c85711",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x3326c7e512563a6a686bc9349a96de0b6451275457888b021b2913d4b2a1c12c",
+   "block": "24031108",
+   "sender": {
+    "kind": "safe",
+    "address": "0x89142862b1a472682b148875c10dd6426ccca58b"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x89142862b1a472682b148875c10dd6426ccca58b",
+    "0",
+    "0x955b696250fc0d03c2cad61f20cd3872da2f5994",
+    "0xd0d3653e205e73eeaa314328ea4146b9105bee17",
+    "0x030b56d9c373758ee45761cfc2a1f77b85d5c931"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x85010c188184a17bf459248946bc534804c520ef5d9d613f44d726b7352e5bea",
+   "why": "execTransaction calldata does not decode",
+   "to": "0x06a3cd99c8ac21123dcbad6f4ff893eb1e40a9e5",
+   "selector": "0x6a761202"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x4742f3291cdfbadd2d58ec76c5859d4459b6b4987ce50fbb55cd28ffaaacfcd7",
+   "block": "24031639",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7fea69d107a77b5817379d1254cc80d9671e171b"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x7fea69d107a77b5817379d1254cc80d9671e171b",
+    "0",
+    "0x479fd465f4839f6c59aeb54a003224c6eef1a82a",
+    "0x7cd64b87251f793027590c34b206145c3aa362ae",
+    "0xcf17b63a3d1aaf9af9ee11123c7e1d1829cd2151"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xdd00f37ee6f301ec38b5045863ef26e61097806a8b5b0ef55b4198d292657a7e",
+   "sender": {
+    "kind": "safe",
+    "address": "0xad8392ecc2e52a15fb92886e832d2ae2f0a56869"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xad8392ecc2e52a15fb92886e832d2ae2f0a56869",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xcede834ce62fff3b44e94a3d01eff9fdfd3081309911fa3398159fb353eb8325",
+   "sender": {
+    "kind": "safe",
+    "address": "0xe3df22b04f1f788ff025adc2466638f5aae588e0"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xe3df22b04f1f788ff025adc2466638f5aae588e0",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x84d47e6edb24e67dc8e0e73345676ca0e4272539a8e48505518bd7b03eff71ac",
+   "sender": {
+    "kind": "safe",
+    "address": "0x97de715474125b66c948d4d220fc434d1a17b003"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x97de715474125b66c948d4d220fc434d1a17b003",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf6f1b71dd30cd6fe10bb94dcb6270299602c05c1673a46917e0e6f935ebe97f9",
+   "sender": {
+    "kind": "safe",
+    "address": "0x90e78edf2a7f79e2343460f7d4ea858294023015"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x90e78edf2a7f79e2343460f7d4ea858294023015",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x02f89ec0ea4294476915f4e261c89300031fed662b6d1932024838da70ca00a2",
+   "sender": {
+    "kind": "safe",
+    "address": "0x28da1782aad1d86c66edccf81b58486234280bcd"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x28da1782aad1d86c66edccf81b58486234280bcd",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe97578aef3b352387f6f7b59663e0ae65fd775ada123d3ebea74a5533465af8d",
+   "sender": {
+    "kind": "safe",
+    "address": "0xa11699b0bb0243a775f3c55bba84be7aa6eba0c9"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa11699b0bb0243a775f3c55bba84be7aa6eba0c9",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x6f84e2b359f8e766cf0320025d487d7709c8b0c559e9e4ac21ac0e9dff0804a7",
+   "block": "24033328",
+   "sender": {
+    "kind": "safe",
+    "address": "0xe3da312823bfa5fbc650c7ac2df865563f55f1e7"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0xe3da312823bfa5fbc650c7ac2df865563f55f1e7",
+    "0",
+    "0xf7db7defa58d5b3f511be5cef7bf5030573ab75d",
+    "0xf17e74aebd1a74e5fc647193bbf1a9deeaeab22a",
+    "0x31c18e66f802080476e2211a8bfb9bcb9346b5c5"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x660ebd9480e9fc084f8742c39f745f7e46d229b6858ee7b1a16c3578f07e12e5",
+   "sender": {
+    "kind": "safe",
+    "address": "0x0780a6e1321c303c7bef2551d356852e7487a599"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x0780a6e1321c303c7bef2551d356852e7487a599",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x0780a6e1321c303c7bef2551d356852e7487a599",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb8b24c125ed657c7bf76a66d9ae8ecb0d26522a320429b7383e4607bc83a93bb",
+   "sender": {
+    "kind": "safe",
+    "address": "0x5fd548b83982696c96bb794a749a978a12c094fa"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x5fd548b83982696c96bb794a749a978a12c094fa",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x694136b3fe9af3143c366a91640c82c66cbfbf283b745ece9503fc6f6d491f11",
+   "sender": {
+    "kind": "safe",
+    "address": "0x5fd548b83982696c96bb794a749a978a12c094fa"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x5fd548b83982696c96bb794a749a978a12c094fa",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x592eebd584679f6f70466604b6b68a93646555048a0c8aa299b16643a864fa56",
+   "sender": {
+    "kind": "safe",
+    "address": "0x3f89c9aa856628af66c68522fbcd74e304380444"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x3f89c9aa856628af66c68522fbcd74e304380444",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x3f89c9aa856628af66c68522fbcd74e304380444",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x3f89c9aa856628af66c68522fbcd74e304380444",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x67ab04807672d82cc8584cfe5cd0728f775c422615b6f7d0060a8a7af2902024",
+   "block": "24035070",
+   "sender": {
+    "kind": "safe",
+    "address": "0x221f68514d18b621bbf247ee83d6443d7551b0ed"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x221f68514d18b621bbf247ee83d6443d7551b0ed",
+    "0",
+    "0x3d35b26b3d0d710f44e1a3b2097cc4c01e793c3d",
+    "0xe326d1785ebdfa75ccd936d36e26952d48b8408b",
+    "0x1e6957d9a70af43f6da1ed55b93b87bb938151a8"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6b892cd4c2ff7f5c61cc7c8f90ed380390de6bd01949752381c60635027664cb",
+   "why": "calls no function the template calls",
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6c087ee216ee648b3ae102574917ac2479291681dd17c5728dde1cfc43612dbe",
+   "why": "calls no function the template calls",
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x288246c38164bd09de39600567266fdcf60449589927d3031d80aff7f7090b63",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1b07d2b31be2c6ee7639a06dcf66281c3bd58714"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x1b07d2b31be2c6ee7639a06dcf66281c3bd58714",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x1b07d2b31be2c6ee7639a06dcf66281c3bd58714",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb9310c196b5111c47b07f88f9dc83c28573c782e8e231a4b87aabfbc45e93a2c",
+   "sender": {
+    "kind": "safe",
+    "address": "0x2beec0742e11c6c95bb1341c8ed30fae112c6ce3"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x2beec0742e11c6c95bb1341c8ed30fae112c6ce3",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x2beec0742e11c6c95bb1341c8ed30fae112c6ce3",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x48d30b5736d5201f498d0f52ac706c7516c754dc8a9156e85d0d37e40ba7a7c6",
+   "block": "24248604",
+   "sender": {
+    "kind": "safe",
+    "address": "0x590639b39c1c2c284a3b05a2d5997d607d119c91"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x590639b39c1c2c284a3b05a2d5997d607d119c91",
+    "0",
+    "0x6b2ba82994a1606605af1f11e50da0b2b0cee6e6",
+    "0x59ce4e1709c7e462f3b72ca3e1256dfa7358fc29",
+    "0x6624307a4f672ec5c289fba196952902bb518dc0"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa6df86829a348d6a41d574c4e733b829277dcb3b2a30749292e240971bc7be09",
+   "sender": {
+    "kind": "safe",
+    "address": "0x4f290e869ba6c105f56079c36f6042c44100dcc8"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x4f290e869ba6c105f56079c36f6042c44100dcc8",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x4f290e869ba6c105f56079c36f6042c44100dcc8",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x4f290e869ba6c105f56079c36f6042c44100dcc8",
+      "selector": "0xf8dc5dd9"
+     },
+     {
+      "to": "0x4f290e869ba6c105f56079c36f6042c44100dcc8",
+      "selector": "0xf8dc5dd9"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x7345af6d7317ef093653b96fb451676a6510fa41bd45fa619c9f549e5a67d26e",
+   "sender": {
+    "kind": "safe",
+    "address": "0x6700ff94169a708d1ff16d199398161e4b003bc8"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x6700ff94169a708d1ff16d199398161e4b003bc8",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x6700ff94169a708d1ff16d199398161e4b003bc8",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x6700ff94169a708d1ff16d199398161e4b003bc8",
+      "selector": "0xf8dc5dd9"
+     },
+     {
+      "to": "0x6700ff94169a708d1ff16d199398161e4b003bc8",
+      "selector": "0xf8dc5dd9"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8988b0110d697c25b15258fe6b076c18caf996f5d47eb008a90c6cb5df41b127",
+   "why": "calls no function the template calls",
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xaef7c76adbc1af2bc406c7fa776a400a5cadf180476df1f571da079b03f75135",
+   "block": "24248790",
+   "sender": {
+    "kind": "safe",
+    "address": "0xcd6507d87f605f5e95c12f7c4b1fc3279dc944ab"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0xcd6507d87f605f5e95c12f7c4b1fc3279dc944ab",
+    "0",
+    "0x6b2ba82994a1606605af1f11e50da0b2b0cee6e6",
+    "0x59ce4e1709c7e462f3b72ca3e1256dfa7358fc29",
+    "0xdeb97974dfcc73178672205a1eaddc2bdeac1bd4"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x6398b51583a621802fb5f9e2386a431b4bd305d929ae2d08c56ab01e6d84f364",
+   "block": "24248799",
+   "sender": {
+    "kind": "safe",
+    "address": "0x83fea41623fc65e6042d9adc025b2c314cff35b8"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x83fea41623fc65e6042d9adc025b2c314cff35b8",
+    "0",
+    "0x6b2ba82994a1606605af1f11e50da0b2b0cee6e6",
+    "0x59ce4e1709c7e462f3b72ca3e1256dfa7358fc29",
+    "0x6624307a4f672ec5c289fba196952902bb518dc0"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8857931b7f05aa6234bf149994be039a553bf778d8e4715dde58fc1e595aaa70",
+   "block": "24248823",
+   "sender": {
+    "kind": "safe",
+    "address": "0x134750a99286afc269d17eb791b9b670c6c0c91e"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x134750a99286afc269d17eb791b9b670c6c0c91e",
+    "0",
+    "0xf045025c845e786e343df30cc6f67ec6bb822b34",
+    "0x59ce4e1709c7e462f3b72ca3e1256dfa7358fc29",
+    "0x6624307a4f672ec5c289fba196952902bb518dc0"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xe48119dcf991772017a9a7bba5f4dfdee0dbf1535d57135f3f6e96ba13430e0e",
+   "block": "24248933",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc6f35423ada89cb1e362dddf68d7e1b07138b808"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0xc6f35423ada89cb1e362dddf68d7e1b07138b808",
+    "0",
+    "0x6c20ea7778ea9f3afd74ce4538bc4d9d61e6abb1",
+    "0x59ce4e1709c7e462f3b72ca3e1256dfa7358fc29",
+    "0xdeb97974dfcc73178672205a1eaddc2bdeac1bd4"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x44d847b8f36ca08c93ca22f556c533733694f434057a396bb046dc2806f10064",
+   "block": "24248942",
+   "sender": {
+    "kind": "safe",
+    "address": "0x62732050fca612c8f149121378a8be5184da7d9e"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x62732050fca612c8f149121378a8be5184da7d9e",
+    "0",
+    "0x0000000000000000000000000000000000000001",
+    "0xb024e05533e26302d41d505e0059f0409ee244c3",
+    "0xdeb97974dfcc73178672205a1eaddc2bdeac1bd4"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x35aa206a03be3fccf8446d2f52381eb1b6ed496911d7da769e132469e02cdace",
+   "sender": {
+    "kind": "safe",
+    "address": "0x3f32bc09d41ee699844f8296e806417d6bf61bba"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x3f32bc09d41ee699844f8296e806417d6bf61bba",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x3f32bc09d41ee699844f8296e806417d6bf61bba",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x8ec14f66e9cd114d9da6418482cb1b06439bcccb98f38cb28e24355766ee3983",
+   "sender": {
+    "kind": "safe",
+    "address": "0x0e96ac4fabd314410ff1d9d2264deb13d768ce40"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x0e96ac4fabd314410ff1d9d2264deb13d768ce40",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x945fdd7a240a4482c61367d008f3d073d509823b66bff5b0506661e52aa20bf1",
+   "sender": {
+    "kind": "safe",
+    "address": "0xddfb930d706651c51eae353ae1e1d691f44e3030"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xddfb930d706651c51eae353ae1e1d691f44e3030",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xdf45773c6f869559f08f3ec0daee7ed77d16c49bd64e2d5f919cfbb8227ca3ef",
+   "sender": {
+    "kind": "safe",
+    "address": "0x3bc3f06b55deeb08e84a6b0c99452713712a24ad"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x3bc3f06b55deeb08e84a6b0c99452713712a24ad",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x35e236d85c80e911cd3bcc1cba103a883b69be118daf41eb7b799da495e2c2bb",
+   "block": "24251574",
+   "sender": {
+    "kind": "safe",
+    "address": "0x63e8a52995eddce799de72163cdf688f1b16f347"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x63e8a52995eddce799de72163cdf688f1b16f347",
+    "0",
+    "0x0000000000000000000000000000000000000001",
+    "0x740e74b4714e263b9ae684e084547d3fb147753d",
+    "0x5342bce8751d801cf6be78794a1b64757c7b77cb"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x447c19b28374b425933f32552a3acb7c8b7851324f8b759b6f238ae03f841712",
+   "sender": {
+    "kind": "safe",
+    "address": "0x6ef2253f3c0071c1b82a7cef2411dab99ba70c1a"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x6ef2253f3c0071c1b82a7cef2411dab99ba70c1a",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x6ef2253f3c0071c1b82a7cef2411dab99ba70c1a",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x33f0882210e5a61c29c0aeeb3ddcf2d6df70161f395f04026160fa06d1df423a",
+   "block": "24252407",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb8dc51fe90a0e23cee567553d9a39a4c935683dd"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0xb8dc51fe90a0e23cee567553d9a39a4c935683dd",
+    "0",
+    "0x7af345ad8c2e7372c5aceaaf86bda08676e3d634",
+    "0xd67182d1f634930309b0f0be777f3a3a5497eafb",
+    "0x9d87a9b62490f0431cea5268c27dd4eeff5d7c28"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xcd6962b284032d5f476773474858d1fb6b3479950cd06423f2f800700ec306d0",
+   "sender": {
+    "kind": "safe",
+    "address": "0xf667a54f141a7141b12c3e5831b4e893b107aa21"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xf667a54f141a7141b12c3e5831b4e893b107aa21",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0xf667a54f141a7141b12c3e5831b4e893b107aa21",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x60886a3c21ab3344bf8971282ae147c796411a9ee6423c29625057f300e00b58",
+   "sender": {
+    "kind": "safe",
+    "address": "0x190f252b87a8efc1354126953178ca5bd3da100e"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x190f252b87a8efc1354126953178ca5bd3da100e",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xce8e311d9bf3e26b8b889d051598442e8619326079dccac66e1666a6c048f824",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1ef5d5c7ab41e72f035b9fdf90695cc439d6bf52"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x1ef5d5c7ab41e72f035b9fdf90695cc439d6bf52",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x8d8cd19af6899ebce0caaef34f44d21d76f52ebfadd3644134d35155cd5520c2",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb3d3975394657c9a89a1ea9adaea11a024e9939c"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xb3d3975394657c9a89a1ea9adaea11a024e9939c",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x5e0aadfa0d5e783655aa87de07d574041ad920418ff109d4e9c13d3ba40c74c1",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7f20e66199c7b261db54439e0d4bbbbea34b9247"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x7f20e66199c7b261db54439e0d4bbbbea34b9247",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x39163de399b4295f444ed8761d184dedcf9f8613f06af40470791f3043cb7006",
+   "sender": {
+    "kind": "safe",
+    "address": "0xabdec57e0cf44cbeee820a38188776335dc7c36d"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xabdec57e0cf44cbeee820a38188776335dc7c36d",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x223997cd349b3da2f237296263d3488d4c1a0b08253d19e6a10b9d3d1687166b",
+   "block": "24469166",
+   "sender": {
+    "kind": "safe",
+    "address": "0xf78278888ada9c76739e5341d94a8dd482678e82"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0xf78278888ada9c76739e5341d94a8dd482678e82",
+    "0",
+    "0x3ab84ce553184b82baec953753540e9b95182ee9",
+    "0x2a0c65464c706cf8984c4c7cc15f542733e5426d",
+    "0x08f76360db5617defc7a2799f6bbff04550ef9fc"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xaf969eda53c4cdc0d8c7c71d85e11647b552c398c6c7d730887ac01211af76bd",
+   "sender": {
+    "kind": "safe",
+    "address": "0x687f28b8b246678c6d25df0d45707bf058673556"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x687f28b8b246678c6d25df0d45707bf058673556",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf9814d2455a8378587a9dd25dcac46d3ec19a4cb15daf4ea983d0c5b7135d954",
+   "sender": {
+    "kind": "safe",
+    "address": "0x737a349c8326be1558497871aceaf7e2478fadcf"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x737a349c8326be1558497871aceaf7e2478fadcf",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x1eb64d1230bd97c72b70ef4dc1642a449ddd44e5983acd4c1396f0e19b395acd",
+   "block": "24469421",
+   "sender": {
+    "kind": "safe",
+    "address": "0x08fbd3a7950b29d4afc38c438ba1a5e64287ab2f"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x08fbd3a7950b29d4afc38c438ba1a5e64287ab2f",
+    "0",
+    "0x0000000000000000000000000000000000000001",
+    "0x58f4a0cc48473c322c8f75eacdd166e646a25655",
+    "0x6502f476cbb11dc189692224d979efa3165984ee"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x7071443ba037adbc3bed9b00ca571bb3d5ab34cc659baec231bd7015064a60be",
+   "block": "24469938",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1145cee4c4e46e08c523a0ed39620fb71857eff0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x1145cee4c4e46e08c523a0ed39620fb71857eff0",
+    "0",
+    "0x1853e9c41afc3a43968c47388a5ab7f6f8aefe9b",
+    "0x153d0789396fa8bd507cfef8ae273462a2dd17b9",
+    "0xdc16dae952df20e4703aba3d204226765d935fd9"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x28ebd8ac546510747211059cb12aaa9ec62bf4ceded7cc412576245506568130",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa4a671b9ae89e727f381b2c7adc0960bf016fd50c1851972019df12f5d5ad4fb",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9a8599c351874cfd059ef06dff497f73ec5120cc"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x9a8599c351874cfd059ef06dff497f73ec5120cc",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x8af2a840d54a150baf4c17cb97166229345d588ec42f161ea7119b01a3372163",
+   "sender": {
+    "kind": "safe",
+    "address": "0x6c956cd44cd4699273965869e461c2f51355f125"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x6c956cd44cd4699273965869e461c2f51355f125",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x6c956cd44cd4699273965869e461c2f51355f125",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x6c956cd44cd4699273965869e461c2f51355f125",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x6c956cd44cd4699273965869e461c2f51355f125",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x6c956cd44cd4699273965869e461c2f51355f125",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x5c409459c2adc0f1a9d5aa9e8ed106fdd0861aee66345ba21a976e7727bc3314",
+   "sender": {
+    "kind": "safe",
+    "address": "0x01d7206195efe3149b87a67679a25c12bdfefe73"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x01d7206195efe3149b87a67679a25c12bdfefe73",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x01d7206195efe3149b87a67679a25c12bdfefe73",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x1bbd289cfbcc1415d7bf5b25626be3b70c10e76ad18416f833d3182f8d78bd75",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1fbe3fc54100e161a61613ee9c3c992cc196463a"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x1fbe3fc54100e161a61613ee9c3c992cc196463a",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x1fbe3fc54100e161a61613ee9c3c992cc196463a",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x1fbe3fc54100e161a61613ee9c3c992cc196463a",
+      "selector": "0x694e80c3"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x85112319ca5b17e77bfe187275a6bcc84fcf95ef8215859ed627cfdb7099a737",
+   "block": "24471685",
+   "sender": {
+    "kind": "safe",
+    "address": "0xcc1937f2ff947259f43fa97696fd34145bbb3927"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0xcc1937f2ff947259f43fa97696fd34145bbb3927",
+    "0",
+    "0x6caf762d1966dc9a47c32db53b975d150dd120df",
+    "0xfdd9f33c076098f5aaad484fb2d95d96c358dab1",
+    "0x39873f189289df127260e437155df9e794e7ce31"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x2a90b016cfcb58e5c21e12866a9bbb64553daeccdf4b40997e4d638e104aac14",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd1583cf348027dbc27681380f2a737129958cdc5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xd1583cf348027dbc27681380f2a737129958cdc5",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x40840c6830ce449582ce079a52a49a2c2705f7d54ce9d0dbbee442d503ad9e8b",
+   "why": "calls no function the template calls",
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x404ee91b335d0569585bc4f347db3981eb92a4f707b4cebf09e5ff81241a8984",
+   "why": "calls no function the template calls",
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x264bad7c3031cd008e082fd0f9b9ecbce4557805fe78820f7dfe967b8999b5bd",
+   "sender": {
+    "kind": "safe",
+    "address": "0xef3be90072a21e1aa1c0093c7e49b95d260d4bd6"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xef3be90072a21e1aa1c0093c7e49b95d260d4bd6",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xaef2ba0e505b62944691da95b7f2cfc6967be6fc3743a5d259046b0ac1d04838",
+   "why": "calls no function the template calls",
+   "to": "0x000003fdc0c3328c2006b99bcf32d35a3ffd0000",
+   "selector": "0xcaa5c23f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x31b7baf4c129342d62e1b5ce326bea4bdf0f24263c1e487a10d8d70442e3791c",
+   "why": "calls no function the template calls",
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x46b50568a57af03ee6272e3a69082ecc7f1809aac4bd1fe4026942c9e015ba11",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd172caf196af6a316f23c5f3f4c9015b1da00b2d90ef24be3f4030e1a65cb141",
+   "why": "calls no function the template calls",
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe2b955dd4c00cf7f520670d23d01884c52a8a3bdfc0e05d40c87f03c50a3f109",
+   "sender": {
+    "kind": "safe",
+    "address": "0xfc43582532e90fa8726fe9cdb5fad48f4e487d27"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xfc43582532e90fa8726fe9cdb5fad48f4e487d27",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa77ffa1721d77d4d770bd779bb9bf9b6c3db83f3363f445b05174ed7a72ba783",
+   "sender": {
+    "kind": "safe",
+    "address": "0xe638bcdec82608a6bd543ce8dc16b9736507f65d"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xe638bcdec82608a6bd543ce8dc16b9736507f65d",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x63a39d275de52cd92f4ef53246c78013df3bfc98d7663ed07f14354d7ac4f01b",
+   "sender": {
+    "kind": "safe",
+    "address": "0x014ad4a22704f3e672da7748bbb3d1752e61b27c"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x014ad4a22704f3e672da7748bbb3d1752e61b27c",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x98d3118330a6610aa199c46ca232b659386905d3b2f7f8a9af2bf3af61d26586",
+   "sender": {
+    "kind": "safe",
+    "address": "0x285960c5b22fd66a736c7136967a3eb15e93cc67"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x285960c5b22fd66a736c7136967a3eb15e93cc67",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x53b25d7f38839f1d6766d3f2dcfcc88f2a83c97d1ff08c49d78d02f0aa6bbe02",
+   "sender": {
+    "kind": "safe",
+    "address": "0x577ce18ad7ccf7b34c9d3cb4efd7c7dd3cde38ff"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x577ce18ad7ccf7b34c9d3cb4efd7c7dd3cde38ff",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x655f0ab292709405a9dcb4876712aba27fda7c8fba19953f33210eca6b53e624",
+   "block": "24690686",
+   "sender": {
+    "kind": "safe",
+    "address": "0xe29646591b236b38ef2eb0a1afdd7701217cac02"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0xe29646591b236b38ef2eb0a1afdd7701217cac02",
+    "0",
+    "0x8fc3fd6a6c47dd7c784342a2653a21a1f23e0e04",
+    "0x1567ac0764142e91ab0a9c65c568f0dbe9e168bf",
+    "0x58bf63fa45a5512d63aba07e2a0f6c3c2a47a238"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xd5a214ab6bcbd19a5627a98f207a99c85288b28f6aa60984604e11e1d6d74550",
+   "block": "24690698",
+   "sender": {
+    "kind": "safe",
+    "address": "0x95c26cc8c577d00fe4250d42e43fafd3a122d004"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x95c26cc8c577d00fe4250d42e43fafd3a122d004",
+    "0",
+    "0xa265146ca40f52cfc439888d0b4291b5440e6769",
+    "0x42248c9fc719499c821d0c1ce7d8e367ba04a075",
+    "0x8bdfaea4c849d0cf8045057d73f6dbc65ba7ad4a"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x2ca68e5332d4d2150dc6e4df9fa080d071eda6dd3a6f270aa9cfd938084c9b82",
+   "sender": {
+    "kind": "safe",
+    "address": "0x40fc9dd8a846134c0c4583d7668ec75dd2f9c423"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x40fc9dd8a846134c0c4583d7668ec75dd2f9c423",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xfea6cc0cfe9470000e6f2fcd37e970bea4f70627929393a6e1ced0daa35fd54c",
+   "sender": {
+    "kind": "safe",
+    "address": "0x3d836f57f86d593629ea68b445f0c1d671cdc992"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x3d836f57f86d593629ea68b445f0c1d671cdc992",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x43c3b81883bc230a0da020911795a4edd5d4ca197d9c984a724b1cfb2d7ed6e8",
+   "sender": {
+    "kind": "safe",
+    "address": "0xefb3f9e9c72df55c6842a671cac6bd2501659fbe"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xefb3f9e9c72df55c6842a671cac6bd2501659fbe",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0xfe1d16af1ad8af334dd46351b8eb5e205f077f95a949b10785727ad5451e85d0",
+   "block": "24692150",
+   "sender": {
+    "kind": "safe",
+    "address": "0xdc29bd10cb9000dffbb5aacd30606c66f07c866c"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0xdc29bd10cb9000dffbb5aacd30606c66f07c866c",
+    "0",
+    "0x4767c164333e0745b658e077c4046bbc9dbf9472",
+    "0x1fa1c72a48243e7c7d78f4b95d942d96a8d05588",
+    "0xd5f9ce3bbcb6877488335d1ca0c2180e842bb2b8"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x22c4a1d17e307183d96dd8ef5f5ebd13a9e05139c5b146fcd8e037bc757ee274",
+   "sender": {
+    "kind": "safe",
+    "address": "0xbba4c8eb57df16c4cfabe4e9a3ab697a3e0c65d8"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbba4c8eb57df16c4cfabe4e9a3ab697a3e0c65d8",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x9394beb4bdc9b32dd0f5c584a1c1faa516b30087f78b679a807fcccdd05566b4",
+   "sender": {
+    "kind": "safe",
+    "address": "0x90a48d5cf7343b08da12e067680b4c6dbfe551be"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x90a48d5cf7343b08da12e067680b4c6dbfe551be",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x9165766eb7260c94c0c3397b7e3132d1b2f641d2f2e00f7f4bd702e1d9accb2e",
+   "sender": {
+    "kind": "safe",
+    "address": "0x95a8592de66cfe99284e586a9141f6fff36bd89e"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x95a8592de66cfe99284e586a9141f6fff36bd89e",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x95a8592de66cfe99284e586a9141f6fff36bd89e",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x99536802b73dee4a3e6eb200735763dcc219e3e671af3e129b00f5fbbfad7c72",
+   "sender": {
+    "kind": "safe",
+    "address": "0x73bd2701d7b07a8de578cb73f1d3d7fa193d9589"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x73bd2701d7b07a8de578cb73f1d3d7fa193d9589",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x73bd2701d7b07a8de578cb73f1d3d7fa193d9589",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc652054e8567e845f9f2a2b341617eb0585195e1f2b6954401897c918324e998",
+   "sender": {
+    "kind": "safe",
+    "address": "0x73bd2701d7b07a8de578cb73f1d3d7fa193d9589"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x73bd2701d7b07a8de578cb73f1d3d7fa193d9589",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x73bd2701d7b07a8de578cb73f1d3d7fa193d9589",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0xe4903c7de1e36725f0b73ed56b60d341c9905bcaeb535909e10325b85119d817",
+   "block": "24693160",
+   "sender": {
+    "kind": "safe",
+    "address": "0x4c2b454f7993fb99c998c231498cf6af12d7c983"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x4c2b454f7993fb99c998c231498cf6af12d7c983",
+    "0",
+    "0x109f17008cc23cb9c58ee67586819a7ae51f3957",
+    "0x72d7038ad93a18b731bc7e015b5d84d9511b35a0",
+    "0xf0db7e6bbba403a044d423ab172d34cd393f89dc"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xcaa871aa6c15adcdf135516da0fd0b0f82e0a90a0e9d61484f3b33d18e83dd2d",
+   "sender": {
+    "kind": "safe",
+    "address": "0x2ca7212599386afee58da90dc97caf6941b31c0c"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x2ca7212599386afee58da90dc97caf6941b31c0c",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf369b237cca4448ca64eff4c5e5eaf35b10d617f77cc1d35aaed36c5573b7728",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc6df49362b2151eb316cdbc6c416a2c2852e6f4e"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xc6df49362b2151eb316cdbc6c416a2c2852e6f4e",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf23c5ee223fe2493e805c67008fa8649e6898c1109840f2a6cba0ba2ab7a14da",
+   "why": "calls no function the template calls",
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x81d4f287a33748ec29e2b72aa9edb29a185936c3d516c7fb34dc410674bbb9e3",
+   "why": "calls no function the template calls",
+   "to": "0xf1d1aba8bd488c0f0b1ea4d2085b243091f9d410",
+   "selector": "0xc35d5cb3"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x49196fc622e765c0f39a88c834b7527e13b62fbb93920fb5ddcc89e1c7ed8d42",
+   "sender": {
+    "kind": "safe",
+    "address": "0x77936222820085a9d7e961485f1338ef3e265bf3"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x77936222820085a9d7e961485f1338ef3e265bf3",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x77936222820085a9d7e961485f1338ef3e265bf3",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x48745c65d85f51aa42679dee189f1250dfbabb9a4674173268992af554dc7f95",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb373788ae0ad2ee69b8c04e6f9261379e7288011"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xb373788ae0ad2ee69b8c04e6f9261379e7288011",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x760f4f5b40f474462a07641bf67c032345a35defe00460d615f14d683c07c911",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd6812e7fd599e293e4d0c5c752f7c98f1c22e687"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xd6812e7fd599e293e4d0c5c752f7c98f1c22e687",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0xd6812e7fd599e293e4d0c5c752f7c98f1c22e687",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0xd6812e7fd599e293e4d0c5c752f7c98f1c22e687",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x65935475cb33caa938b9875acce505f88c2a6667179199bf532af6191c2f3904",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc990a6ebbbf6a2713cf61224ff1eb1e5a24cf393"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xc990a6ebbbf6a2713cf61224ff1eb1e5a24cf393",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4219a5993cc4eae7ef632c6a6cecfe3b90bd16b5079ecc6e28eaacbb40eeb629",
+   "why": "calls no function the template calls",
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x83906820060d537a56649662e9d9a11e83528a5a496a1d07bdb93497d18bb4fa",
+   "block": "24911375",
+   "sender": {
+    "kind": "safe",
+    "address": "0xe4e3eca65460c14a5245b09fee15a92ba09458b6"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0xe4e3eca65460c14a5245b09fee15a92ba09458b6",
+    "0",
+    "0xc9180ff81675b86a73a02e61233e6145658f4488",
+    "0x09680b1a4f41634eebff333f5d668430db19539b",
+    "0x7fd82ad94cf5d9d947beb7ce3328300aa34acb3c"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x267a8299646929e2c83f4b24a9407ac7adc6147e46dba8d13e69d0d0e1527d8d",
+   "block": "24911392",
+   "sender": {
+    "kind": "safe",
+    "address": "0xf016e1d45ef23bdd414e7a2e4d46e1b34577b508"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0xf016e1d45ef23bdd414e7a2e4d46e1b34577b508",
+    "0",
+    "0xc9180ff81675b86a73a02e61233e6145658f4488",
+    "0x09680b1a4f41634eebff333f5d668430db19539b",
+    "0x7fd82ad94cf5d9d947beb7ce3328300aa34acb3c"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x76af447853efbd8c2f57b06c578313c022683f10ee96fad8f7a5f196e8604d82",
+   "sender": {
+    "kind": "safe",
+    "address": "0xf016e1d45ef23bdd414e7a2e4d46e1b34577b508"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xf016e1d45ef23bdd414e7a2e4d46e1b34577b508",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x8a8a84151673534cdf0c0f59ef8ee3429b6bfd5814f3de4044344b437b069e29",
+   "sender": {
+    "kind": "safe",
+    "address": "0xe4e3eca65460c14a5245b09fee15a92ba09458b6"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xe4e3eca65460c14a5245b09fee15a92ba09458b6",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x2a88fb253b1545b9e2424951ff369e5bc71e573169fe37d0f09d0f0a7ee6483b",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7a1dd3dd821cc00c4a94f3b9026b7336f7e5a195"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x7a1dd3dd821cc00c4a94f3b9026b7336f7e5a195",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2ac16dd72362a2adb02edb2fab88dd30793149f611b115fdc669cfc0377d3a14",
+   "why": "calls no function the template calls",
+   "to": "0x40a2accbd92bca938b02010e17a5b8929b49130d",
+   "selector": "0x8d80ff0a"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x1140d201779c3de006b5ace56aabb272880d89f8f8a3680aa812980e12da8135",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc351c917a7f7b267e86a5f5368be40fd1788c32b"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xc351c917a7f7b267e86a5f5368be40fd1788c32b",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x1cb961b161a2cc6dbbb29cc76686607a08a9ae81cfa4a7d8acc71f36b923dfa9",
+   "sender": {
+    "kind": "safe",
+    "address": "0x719f4ba282b0752a3dd63a241390237db5816183"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x719f4ba282b0752a3dd63a241390237db5816183",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x719f4ba282b0752a3dd63a241390237db5816183",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x719f4ba282b0752a3dd63a241390237db5816183",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x719f4ba282b0752a3dd63a241390237db5816183",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xfb350a4565704a1ffb132fb5bba435855ef232f6d0b0d97a95979600bb55969e",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1126f2617531f00b0cbb31c6ee49c00e8d9e292"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xc1126f2617531f00b0cbb31c6ee49c00e8d9e292",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xef0010deb056ae5c73c3754d2bde67cddf7eef17763decc4d31d4372122be3db",
+   "sender": {
+    "kind": "safe",
+    "address": "0x73e2cc28ef2f663f51d0bd87dda54d27f4796fd6"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x73e2cc28ef2f663f51d0bd87dda54d27f4796fd6",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x73e2cc28ef2f663f51d0bd87dda54d27f4796fd6",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd6dbc14036bf1fe48de37eb156bbba9733dbe322defb58e7350a4959e74193e0",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd196e1a3e65b19d5f6b5d9cff169cd0e18cbbea8"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xd196e1a3e65b19d5f6b5d9cff169cd0e18cbbea8",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa8885bbf5da9497360790e737f8d44911cb4a6ca2f7b641d83645e57d1097627",
+   "sender": {
+    "kind": "safe",
+    "address": "0x35bb9d2b6c091d158930e2b5c9f1711c0de14997"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x35bb9d2b6c091d158930e2b5c9f1711c0de14997",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x1e2fcbf173257a4f01443f7b021115dd160bba0d10ddf5646b97e6bbb922e978",
+   "block": "25128168",
+   "sender": {
+    "kind": "safe",
+    "address": "0x2bcc4b9babb8e0e31edf076483168adc521f667b"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x2bcc4b9babb8e0e31edf076483168adc521f667b",
+    "0",
+    "0x884d58567ac8ed6d1ac7b7081c45507d7538f6c3",
+    "0x1c83cd5ed9f5bfd3e1ea0a5d33cd548578bfdb4c",
+    "0xfd4d7dbdd7149de3cf4bd2e62387f2c7310b1a9e"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xbf03b87e37491f0f798eab001d5e24bbd2571d5a4921408abe44bf19c3bc78d4",
+   "sender": {
+    "kind": "safe",
+    "address": "0x07d0191c3a3bf62a32f9cfc198ee3f6046ec6434"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x07d0191c3a3bf62a32f9cfc198ee3f6046ec6434",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0f6d966bc56ba4af87aafc57eca8c620b560353e1b7d4441e393fa59c8a59139",
+   "why": "calls no function the template calls",
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xfd0b683dc32fefd537d751610567e5ac6318212d4e5c8fc273865f34538043ed",
+   "block": "25129476",
+   "sender": {
+    "kind": "safe",
+    "address": "0x0196b86ed686483887089c6c31167d46f9fae1ab"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x0196b86ed686483887089c6c31167d46f9fae1ab",
+    "0",
+    "0x884d58567ac8ed6d1ac7b7081c45507d7538f6c3",
+    "0x1c83cd5ed9f5bfd3e1ea0a5d33cd548578bfdb4c",
+    "0xfd4d7dbdd7149de3cf4bd2e62387f2c7310b1a9e"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x57d0626a5aa4ee81195d642368a3455df9b298758a87a8034c6f4ef6b66b8a71",
+   "sender": {
+    "kind": "safe",
+    "address": "0x64f6dd92f89b1cc42f7eee958973c6832ff3c9c5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x64f6dd92f89b1cc42f7eee958973c6832ff3c9c5",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe9e53fbe4830d41a256614d5d5c322784c229a52f0e1b6761e162a8cc5443dd6",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9d73c053afcbf6cd5c8986c3f049fd2ce005730c"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x9d73c053afcbf6cd5c8986c3f049fd2ce005730c",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe47eac707cb9a80ee6a66d1c7f18062d4999281836f3072ed0f54856445e5094",
+   "sender": {
+    "kind": "safe",
+    "address": "0x5a0e0ee17f93dd26d698ae2eabad3e96d6ddf813"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x5a0e0ee17f93dd26d698ae2eabad3e96d6ddf813",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x07f718ec33f0829fef759d2dec167a68e97c8c3c90dff35cc5ccd469adda9b4e",
+   "block": "25130348",
+   "sender": {
+    "kind": "safe",
+    "address": "0xeb15aea72cf51cf8895cd456bb3582540def9292"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0xeb15aea72cf51cf8895cd456bb3582540def9292",
+    "0",
+    "0xe447d7a59c953d9a0ca880067d4cb2de1260855e",
+    "0x90f1366740b785584d5be03af3ba84c1216ec226",
+    "0xe4348d6d98bb720b1e50f8af52479226cd54d3c2"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xcca1cccd787be535822efdf0a46a97eea4fc6cfd5bf6ba44df5bdac15a691f9b",
+   "sender": {
+    "kind": "safe",
+    "address": "0x246d024c6816efaae060235d5695a8af31e3d562"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x246d024c6816efaae060235d5695a8af31e3d562",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x246d024c6816efaae060235d5695a8af31e3d562",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x246d024c6816efaae060235d5695a8af31e3d562",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x246d024c6816efaae060235d5695a8af31e3d562",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0xee9bef1576cf23617473671491a994af88155e349597d3851f0784209d2bb37b",
+   "block": "25130391",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb309be6a45a255ca04d245bda9c115f3f3e07239"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0xb309be6a45a255ca04d245bda9c115f3f3e07239",
+    "0",
+    "0xe447d7a59c953d9a0ca880067d4cb2de1260855e",
+    "0x90f1366740b785584d5be03af3ba84c1216ec226",
+    "0xe4348d6d98bb720b1e50f8af52479226cd54d3c2"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xbc7be43eb69e3000fe6297d61a23e84184d0760a41a29d1c54c9ed7b1865a9a6",
+   "block": "25130411",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd9db1282552cca70ed72cf0f5a14bb7a99ede1cd"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0xd9db1282552cca70ed72cf0f5a14bb7a99ede1cd",
+    "0",
+    "0xe447d7a59c953d9a0ca880067d4cb2de1260855e",
+    "0x90f1366740b785584d5be03af3ba84c1216ec226",
+    "0xe4348d6d98bb720b1e50f8af52479226cd54d3c2"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8e18038a9e38e0a0c0aaa1841f894dfed9a46382a50b92ce7b2449dc649d3afb",
+   "block": "25130452",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8c45444888d5aa466467b35da7d215ceecb786d0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x8c45444888d5aa466467b35da7d215ceecb786d0",
+    "0",
+    "0x56e975b7d3457408a76fa04ef1126b426f5dde4f",
+    "0x22a9f4ea3b0211f0b29e62b3a7f9a0488ddd1e72",
+    "0x631f1f329a0c42debf8c0ca04b2c5764b79a80f2"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe68bf49034783cac6c9f4bb2d2ab74a254eecdf9ac7b4ce1b3d2a967c64565ee",
+   "sender": {
+    "kind": "safe",
+    "address": "0x32f6d7290a33ae015f4024bfea452733762f8a4b"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x32f6d7290a33ae015f4024bfea452733762f8a4b",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x32f6d7290a33ae015f4024bfea452733762f8a4b",
+      "selector": "0xf8dc5dd9"
+     },
+     {
+      "to": "0x32f6d7290a33ae015f4024bfea452733762f8a4b",
+      "selector": "0xf8dc5dd9"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xfebda770cb596875a119cb9e34aa56a7479c2829ec7f1c8e72d015b0b57bcadc",
+   "sender": {
+    "kind": "safe",
+    "address": "0x5d1d5d923ec60c09693869b9748dde95cdf2c143"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x5d1d5d923ec60c09693869b9748dde95cdf2c143",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x5d1d5d923ec60c09693869b9748dde95cdf2c143",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x5d1d5d923ec60c09693869b9748dde95cdf2c143",
+      "selector": "0xf8dc5dd9"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x292536ec4c2142ced8e99b5a1cb0ccac18bd7ebc9f0d6f1539927b2446c92dc1",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7f20e66199c7b261db54439e0d4bbbbea34b9247"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x7f20e66199c7b261db54439e0d4bbbbea34b9247",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x7f20e66199c7b261db54439e0d4bbbbea34b9247",
+      "selector": "0xf8dc5dd9"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x1262e1372a383349fa9ccb048547ae95c92e676f6f26361a72e8fd17fc85a696",
+   "block": "25343432",
+   "sender": {
+    "kind": "safe",
+    "address": "0x263caccb7c935ead43616a34605d191d86c5bcda"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x263caccb7c935ead43616a34605d191d86c5bcda",
+    "0",
+    "0x0000000000000000000000000000000000000001",
+    "0x921aa565ed71f4e8602c64dd6296bdf013b6180e",
+    "0xf89374276413dba4e887e3c0efbac5b988f5f0ae"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2d808b9d3fa6f8504a65bbe3fce98f751d122c019edba9a0e65b5cda136d2b6d",
+   "block": "25343605",
+   "sender": {
+    "kind": "safe",
+    "address": "0xdf02870d82cba90563cfde72b640def6b94d2d1a"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0xdf02870d82cba90563cfde72b640def6b94d2d1a",
+    "0",
+    "0x0000000000000000000000000000000000000001",
+    "0x921aa565ed71f4e8602c64dd6296bdf013b6180e",
+    "0xf89374276413dba4e887e3c0efbac5b988f5f0ae"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xba948077d6a1e66cc6d5a6977e7d89e305261c1263548cd34cc0a4c64914904d",
+   "sender": {
+    "kind": "safe",
+    "address": "0x3965ac3d295641e452e0ea896a086a9cd7c6c5b6"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x3965ac3d295641e452e0ea896a086a9cd7c6c5b6",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x3965ac3d295641e452e0ea896a086a9cd7c6c5b6",
+      "selector": "0xf8dc5dd9"
+     },
+     {
+      "to": "0x3965ac3d295641e452e0ea896a086a9cd7c6c5b6",
+      "selector": "0xf8dc5dd9"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe6faacda4a7bc3464a4021eecae28e2abc3ec2a94b7be63600363770c20f0c38",
+   "sender": {
+    "kind": "safe",
+    "address": "0xfb3b8cbefb7d666a6af34c53e189edc31862a7be"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xfb3b8cbefb7d666a6af34c53e189edc31862a7be",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0xfb3b8cbefb7d666a6af34c53e189edc31862a7be",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb1d03670e6a4c7ff9c7c2af826de613c5be4719bdde1c1c2af370768d92c9ee3",
+   "sender": {
+    "kind": "safe",
+    "address": "0x6795171edd600547c8ca50fc547bac7a54ace103"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x6795171edd600547c8ca50fc547bac7a54ace103",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x60fb83eb7db9ea642b152dc059ab1bc7ffaef8fdd1543c3ed0ae19532904a294",
+   "why": "calls no function the template calls",
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5aa5ab318ed1f024846c013ab03df47ad8de7e0b9f820a0b6df5e1f41af9547c",
+   "why": "calls no function the template calls",
+   "to": "0x9641d764fc13c8b624c04430c7356c1c7c8102e2",
+   "selector": "0x8d80ff0a"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x7b5795ec8ccbf900fea66cc235ccb1455cd3d80752b2f5beaf6181ae4ea32fbc",
+   "sender": {
+    "kind": "safe",
+    "address": "0x2ff5fc5b63f2bfce5d6bb9ea4d170cf1aa40693c"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x2ff5fc5b63f2bfce5d6bb9ea4d170cf1aa40693c",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x2ff5fc5b63f2bfce5d6bb9ea4d170cf1aa40693c",
+      "selector": "0xe318b52b"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe57b632de06c1cf6e7775a8244027e29a20183bdc12ddc6ff6fbd9501495a9e6",
+   "sender": {
+    "kind": "safe",
+    "address": "0x06314b3d9e70fe3faac93b899f24674dd7da6405"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x06314b3d9e70fe3faac93b899f24674dd7da6405",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x018a22adc70f3dc1bd676a77f0e316036cb7529f0e55ddf871aec8625fce2ff9",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1783fd3733363ecfa638549e82cc1049a89814cf"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x1783fd3733363ecfa638549e82cc1049a89814cf",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x80ba3bc7a53463672f8fb1a8d6afc00af40d33cfc80baadaf1d2eec069c1884a",
+   "sender": {
+    "kind": "safe",
+    "address": "0x6e37b02b1275f3cae922f741926959da36faaab3"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x6e37b02b1275f3cae922f741926959da36faaab3",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xabfeb597fc92aa930404beb56943ee3317ec6a17a1d07dbe564c335208f58eb1",
+   "why": "calls no function the template calls",
+   "to": "0x088f6cfd8bb1ddb1bb069ccb3fc1a98927d233f2",
+   "selector": "0x315a7af3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa13b1912377d3dcfb151a5cb6fa8779290d7e64fb4f9e99c9d0b7af9a1647328",
+   "why": "calls no function the template calls",
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x10434a4a2ff076a7a41059b81712d979515d3b28ac6246252f6eb746df3ecf24",
+   "sender": {
+    "kind": "safe",
+    "address": "0x91f6be9ba9abc119aec219531dc9020e5bf5bf8c"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x91f6be9ba9abc119aec219531dc9020e5bf5bf8c",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xcff74a9ab36f44808fb64c9269f507f1c65cc196bb95a756c64d59b844e54ab7",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1cb50a69a3f2875dfba40212757bcafae6523d9d"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x1cb50a69a3f2875dfba40212757bcafae6523d9d",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x1cb50a69a3f2875dfba40212757bcafae6523d9d",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x403cf7189e1e0033ffbe1984ee2ecc17b7153c654d3c812ba13dbf157e55b76c",
+   "sender": {
+    "kind": "safe",
+    "address": "0x144bb2ebdf67c2fc4796ad29763250bc91a25a46"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x144bb2ebdf67c2fc4796ad29763250bc91a25a46",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x144bb2ebdf67c2fc4796ad29763250bc91a25a46",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf44770c60649c1c53076a72e915d33b0ce82837f2e7ecb9e6e27a09a1ed88611",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9eab532d04fa5e3ebc4bc06102ab2102d5d93d0d"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x9eab532d04fa5e3ebc4bc06102ab2102d5d93d0d",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x9eab532d04fa5e3ebc4bc06102ab2102d5d93d0d",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x7d49feeb99269770464482780350fe0c1cd3efd8c871e20c569b4897a9396c3d",
+   "sender": {
+    "kind": "safe",
+    "address": "0xa390cbf1a1c62514494fb385fdb7da74220f66a4"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa390cbf1a1c62514494fb385fdb7da74220f66a4",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0xa390cbf1a1c62514494fb385fdb7da74220f66a4",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x53259e5f0a6797b707d27d112f62ea6031ae7d460523ca0cfc9ef7bf29be24aa",
+   "sender": {
+    "kind": "safe",
+    "address": "0x391c1ce36421d59496dfa216e4198815bf5060b3"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x391c1ce36421d59496dfa216e4198815bf5060b3",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf2aeb22f7aea0a48f3cbdf276c30e27c646132f06ed1d7e4f27ae33bb2c1755a",
+   "sender": {
+    "kind": "safe",
+    "address": "0xa4e42c0ee443ea79aeddf91adaa0ff0e72ae99a8"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa4e42c0ee443ea79aeddf91adaa0ff0e72ae99a8",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0xa4e42c0ee443ea79aeddf91adaa0ff0e72ae99a8",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x672068392aeb71cd6e044293e853710bfd87ac3e1838fc331d227d5b92ab92e6",
+   "sender": {
+    "kind": "safe",
+    "address": "0x949195b3943be1bfbc89f22c2ebd35ae3e14c270"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x949195b3943be1bfbc89f22c2ebd35ae3e14c270",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x890217f0ff7dc10ce8121e42e03eeaa2e4fb31d531e3a46e5239350ef90b9510",
+   "sender": {
+    "kind": "safe",
+    "address": "0xdcc0f74a2cda32e42973bf39690deb11a59d8194"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xdcc0f74a2cda32e42973bf39690deb11a59d8194",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x944198e897b512935164d9020b32919b532e915f903169063f28a3fb706a9ba7",
+   "sender": {
+    "kind": "safe",
+    "address": "0x18c4a9fe8347f1938dd8a9157205f46479adf169"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x18c4a9fe8347f1938dd8a9157205f46479adf169",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4e652f9122a674e5565b9842d5a2ef28abf354e62e83f5e2667d0b44c609b3ed",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3e61588169737f643141e3b8ded0f4fc83f4579240509d5e076bcd74a1bd012a",
+   "sender": {
+    "kind": "safe",
+    "address": "0x68e7a1f14b65ae2fee83c91dd3428f4733956144"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x68e7a1f14b65ae2fee83c91dd3428f4733956144",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe2a99fe55d0d99566e764d583b50e14fc802e043a09c36eb6c32979a613beb25",
+   "sender": {
+    "kind": "safe",
+    "address": "0xaa088dff3dcf619664094945028d44e779f19894"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xaa088dff3dcf619664094945028d44e779f19894",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2bfdc915c8768e305e88a959fcae6299b4ba3ca1af02de113912f43365e0b45d",
+   "block": "25567202",
+   "sender": {
+    "kind": "safe",
+    "address": "0x6edc56bdc96db38432cc900d51da03b9a6d29dce"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x6edc56bdc96db38432cc900d51da03b9a6d29dce",
+    "0",
+    "0x0000000000000000000000000000000000000001",
+    "0x9a6400f42a3c0b667bc64f5cc40b9bff5e510022",
+    "0x8801055268d8b038856005b5fb504a9c8c63d9ca"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x72c1132175eebcc4235bb9f8fd70a981d89a489a86a67c0db7a1056c0fc9671a",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xa3d621b0797c12daeca891e93458bc3911f0d2ddc2020a99cbd74aed69fe2433",
+   "block": "25567486",
+   "sender": {
+    "kind": "safe",
+    "address": "0x4c820b2ec883b559af53cd80e0687fde407637d7"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x4c820b2ec883b559af53cd80e0687fde407637d7",
+    "0",
+    "0x0000000000000000000000000000000000000001",
+    "0xba9d12671b1398344ee50361acb070b32ac2040c",
+    "0xaf8e02a1bbae38b37f0dc22cf0dcef8bfc57f496"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x850ab39a6baa67970b45167bf413a19eaa90cbf098baacf2727755854597971d",
+   "why": "calls no function the template calls",
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x797fe5e23dc06da4eb03052c3ff155b35eedd71928abd0e7703fb0914d369c8d",
+   "sender": {
+    "kind": "safe",
+    "address": "0x931b52c5c495a3881304a42dddf5b1fef0469846"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x931b52c5c495a3881304a42dddf5b1fef0469846",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb50c51df7f6a4fdd94bb1690858021f782e1a1a05d880d25af82452f24ae78e7",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x72931b132de28208f48adef6426e27c207f02b1cb54970d4bc8179de7a1ca908",
+   "sender": {
+    "kind": "safe",
+    "address": "0xf2a97a2cb44220baccddd31a2a338de822ee45c7"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xf2a97a2cb44220baccddd31a2a338de822ee45c7",
+      "selector": "0x610b5925"
+     },
+     {
+      "to": "0xb6e77c23a643e850d5c509ce36d2a15c8bab22a7",
+      "selector": "0x610b5925"
+     },
+     {
+      "to": "0xf2a97a2cb44220baccddd31a2a338de822ee45c7",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0xf2a97a2cb44220baccddd31a2a338de822ee45c7",
+      "selector": "0x694e80c3"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf43d63b42a1e5bc21fa6d688c10a26b893e70d2ef9abfc530426127f194a127a",
+   "sender": {
+    "kind": "safe",
+    "address": "0x95e84518f48291415ae5d16b08f676ba451340ca"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x95e84518f48291415ae5d16b08f676ba451340ca",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x95e84518f48291415ae5d16b08f676ba451340ca",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x9d8900b39cb92c1c33a1a6746eeb97c4f28a8860620e078297db0e18a08d6cd8",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8c0a2cd7a2e106f24557b3090e974b5ca0b80175"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x8c0a2cd7a2e106f24557b3090e974b5ca0b80175",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x8c0a2cd7a2e106f24557b3090e974b5ca0b80175",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x8c0a2cd7a2e106f24557b3090e974b5ca0b80175",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x4e6588f262092abc96e4b4eedb71fe935a55f96e8b128fe012ff852654b76442",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb7a9b5f301ef3bad36c2b4964e82931dd7fb989c"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xb7a9b5f301ef3bad36c2b4964e82931dd7fb989c",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0xb7a9b5f301ef3bad36c2b4964e82931dd7fb989c",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0xfeca40b3db73eee13c43df74e7d4934857607c2a56a3add5cb7225c8ef6d2036",
+   "block": "25782508",
+   "sender": {
+    "kind": "safe",
+    "address": "0x900ade7d9bafc70b1472f84854a4061aa0839018"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x900ade7d9bafc70b1472f84854a4061aa0839018",
+    "0",
+    "0x0000000000000000000000000000000000000001",
+    "0x22cf6eba32e087064e5297c9bbcde153976bac43",
+    "0x6410ed29dfac3329458fe2f5b8058640bc44256f"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2bdfb07aba915f9f9864476481b650ae189dc9768b9e85d2027ec534e0c85962",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x98c0ecade0258bf0c2922319d716f3aaa72dbb9bb4bc9020ab0fcba01903c236",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x857acf6f64bffd2970366b8474a68fd2f0c25959fc2df988ee27dec9af754f35",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb597026150552bb3f6092ac685a2241c5fa77ed0"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xb597026150552bb3f6092ac685a2241c5fa77ed0",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0xb597026150552bb3f6092ac685a2241c5fa77ed0",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0xb597026150552bb3f6092ac685a2241c5fa77ed0",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5dafbd7408db8bc5b450444780c8eef88de389899127df29a14da55d870e77b7",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb3ac9ec965681fabf0f7492fe8ac6f030db67aad75f9543fbd35bafd930d1f94",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8d302ea520b224089276f83c73c97b6a945e3184"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x8d302ea520b224089276f83c73c97b6a945e3184",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xffd9b5c649275b310bc02849297917d9f82d0f174fdcec383807819a956102ab",
+   "why": "calls no function the template calls",
+   "to": "0x00000000005ad9ce1f5035fd62ca96cef16adaaf",
+   "selector": "0x8f5c3522"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x141dc17e7852e5f2feed25078a7b431773ab8e37fdcb2627ca992a1eec4a2c0e",
+   "why": "calls no function the template calls",
+   "to": "0x00000000005ad9ce1f5035fd62ca96cef16adaaf",
+   "selector": "0x8f5c3522"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0b4b2b0779c60dd68a999bd6480768ba456305c4b296b99ffb109cffee57462a",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc839301d9b5611563142b3e082ed9ad02bd64b1a1442ee88607137f2b3086841",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x19ae5b9d4649aa2759860ed3227db12e893ecb9bd10f67e14879d13af772bdcf",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb84b1b41c433f04fc84ae6627f68fc6bb84c6b86b004054dc9b15765e5fb05c6",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8795c32b32664f96a5e87e5b5e199f847c2373be"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x8795c32b32664f96a5e87e5b5e199f847c2373be",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xac307326d0dd8424c27062b728a9b774b54f1a93799226704373b581bda9a89a",
+   "sender": {
+    "kind": "safe",
+    "address": "0x608a60e587666766f855c1adffc99851f9d44c62"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x608a60e587666766f855c1adffc99851f9d44c62",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe8759c87f2f14ce494478fd2f93152b9d661279f188d1031e24e6f1153637fd9",
+   "why": "calls no function the template calls",
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x5f795521a772405e7245d98bf95bf5c216660449f84c6427f43620bac81bf33b",
+   "block": "25788282",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7528a46a90ecb2d66624e595116a25e355cb29cd"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x7528a46a90ecb2d66624e595116a25e355cb29cd",
+    "0",
+    "0xcbe3fbdf7ce069c9e087b20a0c1f950229c77de3",
+    "0xa93a14235553acf74769e5bce9587447935005e4",
+    "0x6258b0ec94e4fca3450a61d644f240958bbe003e"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x8314f73842dec51d9dbef14f49384ea38c99a59ad6b2b2de3788225101e055d1",
+   "sender": {
+    "kind": "safe",
+    "address": "0x198273f7fc5d71a824a9c0944494495f3e1d898a"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x198273f7fc5d71a824a9c0944494495f3e1d898a",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x9a2b6f9aecb9331a7320f14fd0ecb2a27b891cf50cd29a502dd0cffcbb6b638e",
+   "sender": {
+    "kind": "safe",
+    "address": "0x612e22423969d393080281c427d057347c6efaa8"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x612e22423969d393080281c427d057347c6efaa8",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x403d76dddb3625cd0f38aa120fb26e7ab29be6bced3e2e5740cfa8f666cd9f91",
+   "why": "calls no function the template calls",
+   "to": "0x00000000005ad9ce1f5035fd62ca96cef16adaaf",
+   "selector": "0x8f5c3522"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xcbc19132bc715c9de5c71bb2390411a102d0f1e49ee5e344406353201bd2e1c3",
+   "sender": {
+    "kind": "safe",
+    "address": "0xbb4716a4a47342aad4f162ebc34af8414360cdc5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbb4716a4a47342aad4f162ebc34af8414360cdc5",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2da567796ba0b0fb499dd797c4a92279c513d62986fa52e78a0ea9d7782dd2a0",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x3578723667955f06c55bb13fdcdd268b54518d82b952e411e89595686e8e231e",
+   "block": "26004530",
+   "sender": {
+    "kind": "safe",
+    "address": "0xdc090892e5642aa6c9a325aacfc0f11b49fff967"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0xdc090892e5642aa6c9a325aacfc0f11b49fff967",
+    "0",
+    "0x1c4e22f3bca1c233bfbc13d17b666f81966ca919",
+    "0x0d3b0ee91249e88938cbc939ef5c3e2a9c645ce3",
+    "0x0137f24fe2af79fd64bb1747b693613744ba14e7"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x813f9735eb94861a3cf1e91f3ddc31e5874bc2defa3fb1e206ec38b8a9ac5686",
+   "sender": {
+    "kind": "safe",
+    "address": "0xf546f11acb94b5499aeef52cf3a520267b04c86a"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xf546f11acb94b5499aeef52cf3a520267b04c86a",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0xf546f11acb94b5499aeef52cf3a520267b04c86a",
+      "selector": "0xe318b52b"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x7d6135fe2ea29b8fa2f584332c598d61e9dc2a40762dc7fbd7545cd8cee0bc7a",
+   "block": "26004896",
+   "sender": {
+    "kind": "safe",
+    "address": "0x470e8fb7ec4971e322f18ad0128683299b064cc7"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x470e8fb7ec4971e322f18ad0128683299b064cc7",
+    "0",
+    "0x1c4e22f3bca1c233bfbc13d17b666f81966ca919",
+    "0x0d3b0ee91249e88938cbc939ef5c3e2a9c645ce3",
+    "0x0137f24fe2af79fd64bb1747b693613744ba14e7"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd539416cb92ad205ccf5ba874bfd5507846e25f453be93bb50bbf7463a553934",
+   "sender": {
+    "kind": "safe",
+    "address": "0x19e0698c18d36731be5fbc8412e555c31aac199b"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x19e0698c18d36731be5fbc8412e555c31aac199b",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x7874ca1b9c379908339299f12816ae6ac434e1fb28dce8fe99e5e5bd48c22d27",
+   "block": "26005217",
+   "sender": {
+    "kind": "safe",
+    "address": "0x693622aff06e1a562def413be0effeb2bf9ea957"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x693622aff06e1a562def413be0effeb2bf9ea957",
+    "0",
+    "0x69dedecd93b4ed86425b261f73265dd277829a1a",
+    "0x938e486a0d4b2d46d0806f92717069558df203cf",
+    "0x482f2e0cbe0eed6b8dd373d18cd65e86c578b08d"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xab43ec9eb6c4174f20571b9ba9402fecb87a815e264deda31719848db3d3d5eb",
+   "block": "26005254",
+   "sender": {
+    "kind": "safe",
+    "address": "0xeada392a3b81835fe00588870f6b88f994615d12"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0xeada392a3b81835fe00588870f6b88f994615d12",
+    "0",
+    "0x69dedecd93b4ed86425b261f73265dd277829a1a",
+    "0x938e486a0d4b2d46d0806f92717069558df203cf",
+    "0x482f2e0cbe0eed6b8dd373d18cd65e86c578b08d"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x3c1a82d12ada84763ff175fdec750382c1eda02eca06bbf8c4f02643eeb57c66",
+   "block": "26005309",
+   "sender": {
+    "kind": "safe",
+    "address": "0x90083db6d1c38b5fc4b5aaa4f22ddc019dfc242c"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x90083db6d1c38b5fc4b5aaa4f22ddc019dfc242c",
+    "0",
+    "0x69dedecd93b4ed86425b261f73265dd277829a1a",
+    "0x938e486a0d4b2d46d0806f92717069558df203cf",
+    "0xf6b5e9c05c9ac5f1107a5be6b2ac456baae3b2a1"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x472845cfe7170103bd51551399f7fc530e34ffc6f1299be1dd3677ab73e2eeb8",
+   "block": "26005443",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e9671d6b630c91d8e121584100261a07db5d902"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x9e9671d6b630c91d8e121584100261a07db5d902",
+    "0",
+    "0xb370e690bffe270d2f3877633cb36c8c1b4371d7",
+    "0x938e486a0d4b2d46d0806f92717069558df203cf",
+    "0xf6b5e9c05c9ac5f1107a5be6b2ac456baae3b2a1"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x0399410213eda4d184a9465db4e8bf63b9eee33ac4ef430b9f613ab6c1307ae6",
+   "block": "26005510",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1f65d5628b3013146e0d47cfb21f7b15ad9219b7"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x1f65d5628b3013146e0d47cfb21f7b15ad9219b7",
+    "0",
+    "0x0000000000000000000000000000000000000001",
+    "0x75f58030c190bb4288f56100f0ee49b6eeb4a134",
+    "0xb748e69da6285159bc6f483ee3f3e459f4229f16"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x938e71dacd4a258c806904f6487dbc7719fc227e7f7f91b682c5ca44c1c5338c",
+   "block": "26005554",
+   "sender": {
+    "kind": "safe",
+    "address": "0x299d3a82776b40a4837c7fe0a225dc92e11a932e"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x299d3a82776b40a4837c7fe0a225dc92e11a932e",
+    "0",
+    "0xd7d6dced94957c1e2dfd8f4964df995897419fd2",
+    "0x938e486a0d4b2d46d0806f92717069558df203cf",
+    "0xf6b5e9c05c9ac5f1107a5be6b2ac456baae3b2a1"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x336e09b6102d9623bb1b23d4e37c192aff7ae699620b266e1151171cb37cf0f3",
+   "block": "26005595",
+   "sender": {
+    "kind": "safe",
+    "address": "0x84225f6468e6dd9f3e0e64823c4f4a4d09feb468"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x84225f6468e6dd9f3e0e64823c4f4a4d09feb468",
+    "0",
+    "0xd7d6dced94957c1e2dfd8f4964df995897419fd2",
+    "0x938e486a0d4b2d46d0806f92717069558df203cf",
+    "0xf6b5e9c05c9ac5f1107a5be6b2ac456baae3b2a1"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2c547d67eaab329471f525ec20dfa91749cc611155fd082e6c7f33b538afa2c4",
+   "block": "26005627",
+   "sender": {
+    "kind": "safe",
+    "address": "0x85550106a91430985e1ecb1bf52a642bcdfd1932"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x85550106a91430985e1ecb1bf52a642bcdfd1932",
+    "0",
+    "0xd7d6dced94957c1e2dfd8f4964df995897419fd2",
+    "0x938e486a0d4b2d46d0806f92717069558df203cf",
+    "0xf6b5e9c05c9ac5f1107a5be6b2ac456baae3b2a1"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xfe28634e7d398aca5e3498f855f4c502962bca8c2218d03d1120aa98b342e65a",
+   "sender": {
+    "kind": "safe",
+    "address": "0xcded9d57fe29ddc63233dc6a9ad67dd22ab31d6f"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xcded9d57fe29ddc63233dc6a9ad67dd22ab31d6f",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x9b7e35f018e62296c723761bd16d24bd3d446a4425b7579dcd3bc1d83729e3b1",
+   "sender": {
+    "kind": "safe",
+    "address": "0xbc09cef6a7d2a6c0313a958ee3d5e8d9428b58f8"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbc09cef6a7d2a6c0313a958ee3d5e8d9428b58f8",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb54ac75e03c99c78467c35038fa71014250d00633a2b0627b8178d42f2adee7c",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x29367f558e875c31900e42ddfcbd3a3688795c49e4a4491c9455dd1b5d27fca4",
+   "why": "calls no function the template calls",
+   "to": "0x000000000004598d17aad017bf0734a364c5588b",
+   "selector": "0x00000000"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x42089e344b2c7288e2ea5d63bff6577bf9b68217973d02eeb8a22c62ee9faa78",
+   "sender": {
+    "kind": "safe",
+    "address": "0x287c995e9f099dc0d23ba73ae629b42746dcb530"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x287c995e9f099dc0d23ba73ae629b42746dcb530",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe7c8ef2637108c98c1444430641ecdf299e8ff8779a914a97c99afc308cc976d",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xef93019de5e4dc752026dec929ea6cce1458b73edada7e5551a50d6f3a52c261",
+   "sender": {
+    "kind": "safe",
+    "address": "0x38c5725af9b803231758cf06097421e63cd66bd6"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x38c5725af9b803231758cf06097421e63cd66bd6",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x319ee8233eef2f3b3d6c65ac743ff6fb2952a780e1cdc99105ee34b62c95b15b",
+   "sender": {
+    "kind": "safe",
+    "address": "0x595bf4ec0ebab790b9c3aea947fc3ee2eaca029b"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x595bf4ec0ebab790b9c3aea947fc3ee2eaca029b",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb1a38ef75f82c5a764101c1c50c5725dd00d794e7695f91745e9c55674826c07",
+   "sender": {
+    "kind": "safe",
+    "address": "0x25352da017945ca4f695c30f25780bbe15a01911"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x25352da017945ca4f695c30f25780bbe15a01911",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x8e706af5e2011f89eec228d576b8a9d539cbeacdfc355ba8f1a9fdb05d608e41",
+   "sender": {
+    "kind": "safe",
+    "address": "0x587e10d8de431486b7a26a45857ae0124f3589ab"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x587e10d8de431486b7a26a45857ae0124f3589ab",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xef3109ccac4cb31fa2b1920178b80ba0022e1ca250eabfa71d27e23936dfa1f4",
+   "sender": {
+    "kind": "safe",
+    "address": "0x32c0f655049eaa49815a935f7209afa58c6418ee"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x32c0f655049eaa49815a935f7209afa58c6418ee",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x4e419afe999a91cc12b59ccc72c98bfc3d5b86ebb98348eb4b920937f9544655",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9f7c5d6932907d3e7718a049c0ebbbb8ac55abe5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x9f7c5d6932907d3e7718a049c0ebbbb8ac55abe5",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x9f7c5d6932907d3e7718a049c0ebbbb8ac55abe5",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x67b111c2186ac47248a013b8c6e70f5b8c27eab046f8cd4a694a916c9364639d",
+   "sender": {
+    "kind": "safe",
+    "address": "0xe26ad15174dd541b660410707b69c5e88ff66efd"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xe26ad15174dd541b660410707b69c5e88ff66efd",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0xb144095833174743b6f88698fddf050fc043f4ca12a83c545fdb6d7bb4d89fd7",
+   "block": "26224773",
+   "sender": {
+    "kind": "safe",
+    "address": "0x988f741cecb52d2dde718287340a6e3fe391d649"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x988f741cecb52d2dde718287340a6e3fe391d649",
+    "0",
+    "0x33819124a35a076ce59535e8c109234e0b9ffb16",
+    "0x3824ea78073bbb703d61b3f18f5b976b599b3f03",
+    "0xa705437f633188ab040682d6be50806a65383fcb"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xcd44a3cac161d50d4bef0bb45c445d42611ded25eb4ff01b6a4dfa1513771c02",
+   "sender": {
+    "kind": "safe",
+    "address": "0x4a47b096ac18a29b0b41f68aced7c2ad4dec8ee5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x4a47b096ac18a29b0b41f68aced7c2ad4dec8ee5",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x4a47b096ac18a29b0b41f68aced7c2ad4dec8ee5",
+      "selector": "0xf8dc5dd9"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x4a4220fab4264f3eaae177157efdd5266d698bee815dc699b6285cd695ce6775",
+   "sender": {
+    "kind": "safe",
+    "address": "0x661abaa32a46054433537e464011176d2a4c4955"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x661abaa32a46054433537e464011176d2a4c4955",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x661abaa32a46054433537e464011176d2a4c4955",
+      "selector": "0x694e80c3"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x5ada11e3792d72641cdc6adba5b082edb633d1c13a3a093020b3c9dff8b9d134",
+   "sender": {
+    "kind": "safe",
+    "address": "0xcd0968683b0ae53aac398fa651bb7f5fef3c5a27"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xcd0968683b0ae53aac398fa651bb7f5fef3c5a27",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xab09ebbf88e59724a1cdf4bdcfb104201633f4ef62c90854401dd6469cdf6918",
+   "sender": {
+    "kind": "safe",
+    "address": "0x3afde2fab39a5ae59c81fd8095c89022b0cb6077"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x3afde2fab39a5ae59c81fd8095c89022b0cb6077",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x3afde2fab39a5ae59c81fd8095c89022b0cb6077",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x3afde2fab39a5ae59c81fd8095c89022b0cb6077",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x3afde2fab39a5ae59c81fd8095c89022b0cb6077",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x3afde2fab39a5ae59c81fd8095c89022b0cb6077",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x3afde2fab39a5ae59c81fd8095c89022b0cb6077",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x3afde2fab39a5ae59c81fd8095c89022b0cb6077",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x3afde2fab39a5ae59c81fd8095c89022b0cb6077",
+      "selector": "0x610b5925"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7a378c249a50a869fea50a54a712e2f71290ee384a00ef6124747cf1df22598f",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0683b879e654d21bf964730df41989a4ec607333c1f6388c58ccabb283f66445",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd2820c1e2ecde8dd3ae4c44f5b957b7e13580b8e10071fd1770470579bf94039",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xbdbe50dc36f75f916ee0251558998bf2c518c82682e2edb5fa73c40d55bcc5e0",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd43d8ce7e6a610fabe2240ecee363a8b7da7e5bc47ac12e76de65c0d869d7d33",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb35ef2a79823c9ed7b0ccb55b25979e559b8c7ff"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xb35ef2a79823c9ed7b0ccb55b25979e559b8c7ff",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa52ea7915dd3d9fdefff3fe359b974d720b46a1d08ab25c97e625ebdba46c87c",
+   "sender": {
+    "kind": "safe",
+    "address": "0x31b15ae0854f8693ac6bf4bb75845288ad70d1e9"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x31b15ae0854f8693ac6bf4bb75845288ad70d1e9",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x9b96a5037ddee8e94569d5745ffedabc25ff996fd094d2ac3e357a6c0b214b83",
+   "sender": {
+    "kind": "safe",
+    "address": "0x0589ebfa4a6a1d457ab9f4280df8079806ba46ae"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x0589ebfa4a6a1d457ab9f4280df8079806ba46ae",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x0589ebfa4a6a1d457ab9f4280df8079806ba46ae",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe789076d46980b7dee35048a2a91415a12965a97bbd98a0104076e1067df253c",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8ba9a899e57931b1f3b2e97fe63122ac9c872663"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x89ee96be70a4cebd01421ddb5a2c315d94a26bd8",
+      "selector": "0xe38335e5"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xbfad9ff85ebd2668333070a17944554db3ae772ac15a7fb558f2965a47def716",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb1b7c2a49d07bb81620337b45a7986e4a160d2ac"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xb1b7c2a49d07bb81620337b45a7986e4a160d2ac",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x9d7c4fe06af3e28f0ebed87dc93782334e74ddac2c2d23c619435714f7b2e3e1",
+   "block": "26441103",
+   "sender": {
+    "kind": "safe",
+    "address": "0x226bde983abc5f83275e7c4086a79bc9080deeb3"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x226bde983abc5f83275e7c4086a79bc9080deeb3",
+    "0",
+    "0xb6d87a05917265044a250913cb40924867df7348",
+    "0x67a89e5bc662428fad309982823e44d75d16c914",
+    "0x1e891eb23f631915c6f0d7b0d26b6d518b6501c7"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x49c21e05deabf1a09ecdb5dc353a0fd0e1f31a2fd3fd6af234a0d0fba06e12d5",
+   "sender": {
+    "kind": "safe",
+    "address": "0x4074665a778ee8ed76df5a9353bb11e40764ddb5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x4074665a778ee8ed76df5a9353bb11e40764ddb5",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x906a388a45e9fa2370303e2e102ab2f113cb9e2a143e72da8009f9379ef3fe3f",
+   "block": "26441419",
+   "sender": {
+    "kind": "safe",
+    "address": "0x4e6b14fa3a6e7942b261afc6b32b8ddb16f03cb6"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x4e6b14fa3a6e7942b261afc6b32b8ddb16f03cb6",
+    "0",
+    "0xde7722270d915b564aa16660b608f829d4f77b31",
+    "0x23292996e6d30c04a21ca8203dccf88cb418395b",
+    "0xbb144c9577fb749bd7417a835abddd43c77ee9a5"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xa8a971016e5113b729fe2deca444afe1e36c85a5ed7b7022051abf637a2fb0ed",
+   "block": "26441693",
+   "sender": {
+    "kind": "safe",
+    "address": "0x044324d8ee214b498391a4f82d88961d089d7c9f"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x044324d8ee214b498391a4f82d88961d089d7c9f",
+    "0",
+    "0x0000000000000000000000000000000000000001",
+    "0x73d8e9e5d4ef80153d6e7662572479567a89c0da",
+    "0xd0d22ffdb5fd8b7f0dfcbf42088fb2bbb8b6173e"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9bc7483c490f3071c6f6884b5e1996d584051898168fde584b3ecc45d34c0d11",
+   "why": "calls no function the template calls",
+   "to": "0x433709009b8330fda32311df1c2afa402ed8d009",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x25c7b9ebfb4a21dd482fe24f949c9dfe4e78dfe495f840b0a907b0aea561d8fe",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xbcd50b61849ea7a7a99b581f95bc70783df2002bc05ed3e24142154be733c1a3",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa50faa99e9805304bd9ae6375c77a25cd40ade6ae6084b7f8854becd3b047e79",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc9858060419579d8e7d1fc467ac4b2db2a99d1dac0cdc3da4d2e4ce9d17930b7",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x797786653b447dc41a4fdb7991fdf4bba4f0db724f2dab671a4ee12c5fbe75f9",
+   "block": "26443331",
+   "sender": {
+    "kind": "safe",
+    "address": "0x0f035e7ff8a21159f10994aa0186449fc852a9e7"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x0f035e7ff8a21159f10994aa0186449fc852a9e7",
+    "0",
+    "0xed9211bacb6b264bcd598a5949e5ef78ff0edd52",
+    "0xc89aff2a6f6eb3832c0b5a8fe60cdc8bf1eb0b3e",
+    "0x6239ef1932828e58197e3d474bf1c98c2e530c6a"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc12b3865edda44fff6498373a310a445e08d9ca06322a8036dbbc908cad5771e",
+   "sender": {
+    "kind": "safe",
+    "address": "0x41ee891a68cd96ce390ef93304ef40aa7e3e7710"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x41ee891a68cd96ce390ef93304ef40aa7e3e7710",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc220c915d4e817c3774f5a59403dc75c671db671459b51baa6627a055585e0a8",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7a36852a428513221555aec720a09ecd83818310"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x7a36852a428513221555aec720a09ecd83818310",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x7a36852a428513221555aec720a09ecd83818310",
+      "selector": "0xf8dc5dd9"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0xe7dfd5470584e9d4223a0c52a02635f80785dfe8f64a26635fcacecc518a09d2",
+   "block": "26444130",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9db8cb8ddec721aa2ec51e5417af862132e7ba08"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.swapOwner.prevOwner",
+    "call.swapOwner.oldOwner",
+    "call.swapOwner.newOwner"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address"
+   ],
+   "values": [
+    "0x9db8cb8ddec721aa2ec51e5417af862132e7ba08",
+    "0",
+    "0x21bfb64b7d46e77a2407705cdd622ea419ce84cb",
+    "0x638361e1e59a8f1691f1b0376228a69049b9b1e4",
+    "0x419372b0d1485795e88ab8e5c484882f8a191a11"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x2666fc4361a43b6d5527c2a47eb37fa224bdeaf07850f64294f21d5532a75c59",
+   "sender": {
+    "kind": "safe",
+    "address": "0x99c1dc8ece261b76d79d06b8b194950dd5ecf7cd"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x99c1dc8ece261b76d79d06b8b194950dd5ecf7cd",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x99c1dc8ece261b76d79d06b8b194950dd5ecf7cd",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x99c1dc8ece261b76d79d06b8b194950dd5ecf7cd",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x043efe0abc36b53bfc3e622b828f559bf232d33835a83608061ef0e377c839e2",
+   "why": "calls no function the template calls",
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa9d7bee5ce0e21df25f4c1f5cdd5fb4cf8e4aa2ded5e6518eb7e7f35d96bda7d",
+   "sender": {
+    "kind": "safe",
+    "address": "0xe2c14d51859e722846f70c81c85df0fbb8a6dd27"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xe2c14d51859e722846f70c81c85df0fbb8a6dd27",
+      "selector": "0x0d582f13"
+     }
+    ]
+   }
+  }
+ ],
+ "measurements": [],
+ "traces": [
+  {
+   "kind": "traced",
+   "hash": "0x3326c7e512563a6a686bc9349a96de0b6451275457888b021b2913d4b2a1c12c",
+   "sender": {
+    "kind": "safe",
+    "address": "0x89142862b1a472682b148875c10dd6426ccca58b"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xd0d3653e205e73eeaa314328ea4146b9105bee17",
+     "to": "0x89142862b1a472682b148875c10dd6426ccca58b",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x89142862b1a472682b148875c10dd6426ccca58b",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x89142862b1a472682b148875c10dd6426ccca58b",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xe675079a"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x89142862b1a472682b148875c10dd6426ccca58b",
+     "to": "0x89142862b1a472682b148875c10dd6426ccca58b",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x89142862b1a472682b148875c10dd6426ccca58b",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x4742f3291cdfbadd2d58ec76c5859d4459b6b4987ce50fbb55cd28ffaaacfcd7",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7fea69d107a77b5817379d1254cc80d9671e171b"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x2a61d3ba5030ef471c74f612962c7367eca3a62d",
+     "to": "0x7fea69d107a77b5817379d1254cc80d9671e171b",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x7fea69d107a77b5817379d1254cc80d9671e171b",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x7fea69d107a77b5817379d1254cc80d9671e171b",
+     "to": "0x7fea69d107a77b5817379d1254cc80d9671e171b",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x7fea69d107a77b5817379d1254cc80d9671e171b",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x6f84e2b359f8e766cf0320025d487d7709c8b0c559e9e4ac21ac0e9dff0804a7",
+   "sender": {
+    "kind": "safe",
+    "address": "0xe3da312823bfa5fbc650c7ac2df865563f55f1e7"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x58ca18d66f7b8c751d32bc97e8f280619eee48d2",
+     "to": "0xe3da312823bfa5fbc650c7ac2df865563f55f1e7",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xe3da312823bfa5fbc650c7ac2df865563f55f1e7",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xe3da312823bfa5fbc650c7ac2df865563f55f1e7",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xb684a3c2"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xe3da312823bfa5fbc650c7ac2df865563f55f1e7",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xb684a3c2"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xe3da312823bfa5fbc650c7ac2df865563f55f1e7",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xb684a3c2"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xe3da312823bfa5fbc650c7ac2df865563f55f1e7",
+     "to": "0xe3da312823bfa5fbc650c7ac2df865563f55f1e7",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xe3da312823bfa5fbc650c7ac2df865563f55f1e7",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x67ab04807672d82cc8584cfe5cd0728f775c422615b6f7d0060a8a7af2902024",
+   "sender": {
+    "kind": "safe",
+    "address": "0x221f68514d18b621bbf247ee83d6443d7551b0ed"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x3d35b26b3d0d710f44e1a3b2097cc4c01e793c3d",
+     "to": "0x221f68514d18b621bbf247ee83d6443d7551b0ed",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x221f68514d18b621bbf247ee83d6443d7551b0ed",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x221f68514d18b621bbf247ee83d6443d7551b0ed",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xbb29cb26"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x221f68514d18b621bbf247ee83d6443d7551b0ed",
+     "to": "0x221f68514d18b621bbf247ee83d6443d7551b0ed",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x221f68514d18b621bbf247ee83d6443d7551b0ed",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x48d30b5736d5201f498d0f52ac706c7516c754dc8a9156e85d0d37e40ba7a7c6",
+   "sender": {
+    "kind": "safe",
+    "address": "0x590639b39c1c2c284a3b05a2d5997d607d119c91"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xf045025c845e786e343df30cc6f67ec6bb822b34",
+     "to": "0x590639b39c1c2c284a3b05a2d5997d607d119c91",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x590639b39c1c2c284a3b05a2d5997d607d119c91",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x590639b39c1c2c284a3b05a2d5997d607d119c91",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xc9b2538f"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x590639b39c1c2c284a3b05a2d5997d607d119c91",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xc9b2538f"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x590639b39c1c2c284a3b05a2d5997d607d119c91",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xc9b2538f"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x590639b39c1c2c284a3b05a2d5997d607d119c91",
+     "to": "0x590639b39c1c2c284a3b05a2d5997d607d119c91",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x590639b39c1c2c284a3b05a2d5997d607d119c91",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xaef7c76adbc1af2bc406c7fa776a400a5cadf180476df1f571da079b03f75135",
+   "sender": {
+    "kind": "safe",
+    "address": "0xcd6507d87f605f5e95c12f7c4b1fc3279dc944ab"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xf045025c845e786e343df30cc6f67ec6bb822b34",
+     "to": "0xcd6507d87f605f5e95c12f7c4b1fc3279dc944ab",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xcd6507d87f605f5e95c12f7c4b1fc3279dc944ab",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd6507d87f605f5e95c12f7c4b1fc3279dc944ab",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xcf71fe86"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd6507d87f605f5e95c12f7c4b1fc3279dc944ab",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xcf71fe86"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd6507d87f605f5e95c12f7c4b1fc3279dc944ab",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xcf71fe86"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xcd6507d87f605f5e95c12f7c4b1fc3279dc944ab",
+     "to": "0xcd6507d87f605f5e95c12f7c4b1fc3279dc944ab",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd6507d87f605f5e95c12f7c4b1fc3279dc944ab",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x6398b51583a621802fb5f9e2386a431b4bd305d929ae2d08c56ab01e6d84f364",
+   "sender": {
+    "kind": "safe",
+    "address": "0x83fea41623fc65e6042d9adc025b2c314cff35b8"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xf045025c845e786e343df30cc6f67ec6bb822b34",
+     "to": "0x83fea41623fc65e6042d9adc025b2c314cff35b8",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x83fea41623fc65e6042d9adc025b2c314cff35b8",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x83fea41623fc65e6042d9adc025b2c314cff35b8",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xe113601d"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x83fea41623fc65e6042d9adc025b2c314cff35b8",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xe113601d"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x83fea41623fc65e6042d9adc025b2c314cff35b8",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xe113601d"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x83fea41623fc65e6042d9adc025b2c314cff35b8",
+     "to": "0x83fea41623fc65e6042d9adc025b2c314cff35b8",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x83fea41623fc65e6042d9adc025b2c314cff35b8",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x8857931b7f05aa6234bf149994be039a553bf778d8e4715dde58fc1e595aaa70",
+   "sender": {
+    "kind": "safe",
+    "address": "0x134750a99286afc269d17eb791b9b670c6c0c91e"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xf045025c845e786e343df30cc6f67ec6bb822b34",
+     "to": "0x134750a99286afc269d17eb791b9b670c6c0c91e",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x134750a99286afc269d17eb791b9b670c6c0c91e",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x134750a99286afc269d17eb791b9b670c6c0c91e",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x50d81da7"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x134750a99286afc269d17eb791b9b670c6c0c91e",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x50d81da7"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x134750a99286afc269d17eb791b9b670c6c0c91e",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x50d81da7"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x134750a99286afc269d17eb791b9b670c6c0c91e",
+     "to": "0x134750a99286afc269d17eb791b9b670c6c0c91e",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x134750a99286afc269d17eb791b9b670c6c0c91e",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xe48119dcf991772017a9a7bba5f4dfdee0dbf1535d57135f3f6e96ba13430e0e",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc6f35423ada89cb1e362dddf68d7e1b07138b808"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xf045025c845e786e343df30cc6f67ec6bb822b34",
+     "to": "0xc6f35423ada89cb1e362dddf68d7e1b07138b808",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xc6f35423ada89cb1e362dddf68d7e1b07138b808",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xc6f35423ada89cb1e362dddf68d7e1b07138b808",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x2e4d7239"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xc6f35423ada89cb1e362dddf68d7e1b07138b808",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x2e4d7239"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xc6f35423ada89cb1e362dddf68d7e1b07138b808",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x2e4d7239"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xc6f35423ada89cb1e362dddf68d7e1b07138b808",
+     "to": "0xc6f35423ada89cb1e362dddf68d7e1b07138b808",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xc6f35423ada89cb1e362dddf68d7e1b07138b808",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x44d847b8f36ca08c93ca22f556c533733694f434057a396bb046dc2806f10064",
+   "sender": {
+    "kind": "safe",
+    "address": "0x62732050fca612c8f149121378a8be5184da7d9e"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xf045025c845e786e343df30cc6f67ec6bb822b34",
+     "to": "0x62732050fca612c8f149121378a8be5184da7d9e",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x62732050fca612c8f149121378a8be5184da7d9e",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x62732050fca612c8f149121378a8be5184da7d9e",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xc2b9efe1"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x62732050fca612c8f149121378a8be5184da7d9e",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xc2b9efe1"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x62732050fca612c8f149121378a8be5184da7d9e",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xc2b9efe1"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x62732050fca612c8f149121378a8be5184da7d9e",
+     "to": "0x62732050fca612c8f149121378a8be5184da7d9e",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x62732050fca612c8f149121378a8be5184da7d9e",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x35e236d85c80e911cd3bcc1cba103a883b69be118daf41eb7b799da495e2c2bb",
+   "sender": {
+    "kind": "safe",
+    "address": "0x63e8a52995eddce799de72163cdf688f1b16f347"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xb0528351c49ca7950c2f8ced526202ff4e69bfe3",
+     "to": "0x63e8a52995eddce799de72163cdf688f1b16f347",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x63e8a52995eddce799de72163cdf688f1b16f347",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x63e8a52995eddce799de72163cdf688f1b16f347",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xdb05632a"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x63e8a52995eddce799de72163cdf688f1b16f347",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xdb05632a"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x63e8a52995eddce799de72163cdf688f1b16f347",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xdb05632a"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x63e8a52995eddce799de72163cdf688f1b16f347",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xdb05632a"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x63e8a52995eddce799de72163cdf688f1b16f347",
+     "to": "0x63e8a52995eddce799de72163cdf688f1b16f347",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x63e8a52995eddce799de72163cdf688f1b16f347",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x33f0882210e5a61c29c0aeeb3ddcf2d6df70161f395f04026160fa06d1df423a",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb8dc51fe90a0e23cee567553d9a39a4c935683dd"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x7af345ad8c2e7372c5aceaaf86bda08676e3d634",
+     "to": "0xb8dc51fe90a0e23cee567553d9a39a4c935683dd",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xb8dc51fe90a0e23cee567553d9a39a4c935683dd",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xb8dc51fe90a0e23cee567553d9a39a4c935683dd",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x9a54fcc9"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xb8dc51fe90a0e23cee567553d9a39a4c935683dd",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x9a54fcc9"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xb8dc51fe90a0e23cee567553d9a39a4c935683dd",
+     "to": "0xb8dc51fe90a0e23cee567553d9a39a4c935683dd",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xb8dc51fe90a0e23cee567553d9a39a4c935683dd",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x223997cd349b3da2f237296263d3488d4c1a0b08253d19e6a10b9d3d1687166b",
+   "sender": {
+    "kind": "safe",
+    "address": "0xf78278888ada9c76739e5341d94a8dd482678e82"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x9abda73a7de016dfa7fc87ba017f29733de7d38b",
+     "to": "0xf78278888ada9c76739e5341d94a8dd482678e82",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xf78278888ada9c76739e5341d94a8dd482678e82",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xf78278888ada9c76739e5341d94a8dd482678e82",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xd76f7224"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xf78278888ada9c76739e5341d94a8dd482678e82",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xd76f7224"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xf78278888ada9c76739e5341d94a8dd482678e82",
+     "to": "0xf78278888ada9c76739e5341d94a8dd482678e82",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xf78278888ada9c76739e5341d94a8dd482678e82",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x1eb64d1230bd97c72b70ef4dc1642a449ddd44e5983acd4c1396f0e19b395acd",
+   "sender": {
+    "kind": "safe",
+    "address": "0x08fbd3a7950b29d4afc38c438ba1a5e64287ab2f"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x5a7854b12ee7b1e734dc4f645a2555d75a48f05e",
+     "to": "0x08fbd3a7950b29d4afc38c438ba1a5e64287ab2f",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x08fbd3a7950b29d4afc38c438ba1a5e64287ab2f",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x08fbd3a7950b29d4afc38c438ba1a5e64287ab2f",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x65cfd3c9"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x08fbd3a7950b29d4afc38c438ba1a5e64287ab2f",
+     "to": "0x08fbd3a7950b29d4afc38c438ba1a5e64287ab2f",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x08fbd3a7950b29d4afc38c438ba1a5e64287ab2f",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x7071443ba037adbc3bed9b00ca571bb3d5ab34cc659baec231bd7015064a60be",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1145cee4c4e46e08c523a0ed39620fb71857eff0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xb219c19484def676314e9af4967c1f5b39151f6e",
+     "to": "0x1145cee4c4e46e08c523a0ed39620fb71857eff0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x1145cee4c4e46e08c523a0ed39620fb71857eff0",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x1145cee4c4e46e08c523a0ed39620fb71857eff0",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x61b89769"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x1145cee4c4e46e08c523a0ed39620fb71857eff0",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x61b89769"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x1145cee4c4e46e08c523a0ed39620fb71857eff0",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x61b89769"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x1145cee4c4e46e08c523a0ed39620fb71857eff0",
+     "to": "0x1145cee4c4e46e08c523a0ed39620fb71857eff0",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x1145cee4c4e46e08c523a0ed39620fb71857eff0",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x85112319ca5b17e77bfe187275a6bcc84fcf95ef8215859ed627cfdb7099a737",
+   "sender": {
+    "kind": "safe",
+    "address": "0xcc1937f2ff947259f43fa97696fd34145bbb3927"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x6caf762d1966dc9a47c32db53b975d150dd120df",
+     "to": "0xcc1937f2ff947259f43fa97696fd34145bbb3927",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xcc1937f2ff947259f43fa97696fd34145bbb3927",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcc1937f2ff947259f43fa97696fd34145bbb3927",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x3c669324"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xcc1937f2ff947259f43fa97696fd34145bbb3927",
+     "to": "0xcc1937f2ff947259f43fa97696fd34145bbb3927",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcc1937f2ff947259f43fa97696fd34145bbb3927",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x655f0ab292709405a9dcb4876712aba27fda7c8fba19953f33210eca6b53e624",
+   "sender": {
+    "kind": "safe",
+    "address": "0xe29646591b236b38ef2eb0a1afdd7701217cac02"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xf378708b88841abb63e2316e4fc8f29469bee885",
+     "to": "0xe29646591b236b38ef2eb0a1afdd7701217cac02",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xe29646591b236b38ef2eb0a1afdd7701217cac02",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xe29646591b236b38ef2eb0a1afdd7701217cac02",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x54f5666f"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xe29646591b236b38ef2eb0a1afdd7701217cac02",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x54f5666f"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xe29646591b236b38ef2eb0a1afdd7701217cac02",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x54f5666f"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xe29646591b236b38ef2eb0a1afdd7701217cac02",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x54f5666f"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xe29646591b236b38ef2eb0a1afdd7701217cac02",
+     "to": "0xe29646591b236b38ef2eb0a1afdd7701217cac02",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xe29646591b236b38ef2eb0a1afdd7701217cac02",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xd5a214ab6bcbd19a5627a98f207a99c85288b28f6aa60984604e11e1d6d74550",
+   "sender": {
+    "kind": "safe",
+    "address": "0x95c26cc8c577d00fe4250d42e43fafd3a122d004"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xf378708b88841abb63e2316e4fc8f29469bee885",
+     "to": "0x95c26cc8c577d00fe4250d42e43fafd3a122d004",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x95c26cc8c577d00fe4250d42e43fafd3a122d004",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x95c26cc8c577d00fe4250d42e43fafd3a122d004",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xec554b73"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x95c26cc8c577d00fe4250d42e43fafd3a122d004",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xec554b73"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x95c26cc8c577d00fe4250d42e43fafd3a122d004",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xec554b73"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x95c26cc8c577d00fe4250d42e43fafd3a122d004",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xec554b73"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x95c26cc8c577d00fe4250d42e43fafd3a122d004",
+     "to": "0x95c26cc8c577d00fe4250d42e43fafd3a122d004",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x95c26cc8c577d00fe4250d42e43fafd3a122d004",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xfe1d16af1ad8af334dd46351b8eb5e205f077f95a949b10785727ad5451e85d0",
+   "sender": {
+    "kind": "safe",
+    "address": "0xdc29bd10cb9000dffbb5aacd30606c66f07c866c"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x4767c164333e0745b658e077c4046bbc9dbf9472",
+     "to": "0xdc29bd10cb9000dffbb5aacd30606c66f07c866c",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xdc29bd10cb9000dffbb5aacd30606c66f07c866c",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xdc29bd10cb9000dffbb5aacd30606c66f07c866c",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xf26604b3"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xdc29bd10cb9000dffbb5aacd30606c66f07c866c",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xf26604b3"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xdc29bd10cb9000dffbb5aacd30606c66f07c866c",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xf26604b3"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xdc29bd10cb9000dffbb5aacd30606c66f07c866c",
+     "to": "0xdc29bd10cb9000dffbb5aacd30606c66f07c866c",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xdc29bd10cb9000dffbb5aacd30606c66f07c866c",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xe4903c7de1e36725f0b73ed56b60d341c9905bcaeb535909e10325b85119d817",
+   "sender": {
+    "kind": "safe",
+    "address": "0x4c2b454f7993fb99c998c231498cf6af12d7c983"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x835220e64c39c4e1aca4d9b006098224bc661a50",
+     "to": "0x4c2b454f7993fb99c998c231498cf6af12d7c983",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x4c2b454f7993fb99c998c231498cf6af12d7c983",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x4c2b454f7993fb99c998c231498cf6af12d7c983",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x56621121"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x4c2b454f7993fb99c998c231498cf6af12d7c983",
+     "to": "0x4c2b454f7993fb99c998c231498cf6af12d7c983",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x4c2b454f7993fb99c998c231498cf6af12d7c983",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x83906820060d537a56649662e9d9a11e83528a5a496a1d07bdb93497d18bb4fa",
+   "sender": {
+    "kind": "safe",
+    "address": "0xe4e3eca65460c14a5245b09fee15a92ba09458b6"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x8500ea8a5d8c46304b6dd87fa4ed8fc3183023e0",
+     "to": "0xe4e3eca65460c14a5245b09fee15a92ba09458b6",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xe4e3eca65460c14a5245b09fee15a92ba09458b6",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xe4e3eca65460c14a5245b09fee15a92ba09458b6",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xbea08f62"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xe4e3eca65460c14a5245b09fee15a92ba09458b6",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xbea08f62"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xe4e3eca65460c14a5245b09fee15a92ba09458b6",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xbea08f62"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xe4e3eca65460c14a5245b09fee15a92ba09458b6",
+     "to": "0xe4e3eca65460c14a5245b09fee15a92ba09458b6",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xe4e3eca65460c14a5245b09fee15a92ba09458b6",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x267a8299646929e2c83f4b24a9407ac7adc6147e46dba8d13e69d0d0e1527d8d",
+   "sender": {
+    "kind": "safe",
+    "address": "0xf016e1d45ef23bdd414e7a2e4d46e1b34577b508"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x8500ea8a5d8c46304b6dd87fa4ed8fc3183023e0",
+     "to": "0xf016e1d45ef23bdd414e7a2e4d46e1b34577b508",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xf016e1d45ef23bdd414e7a2e4d46e1b34577b508",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xf016e1d45ef23bdd414e7a2e4d46e1b34577b508",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xdbed0d44"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xf016e1d45ef23bdd414e7a2e4d46e1b34577b508",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xdbed0d44"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xf016e1d45ef23bdd414e7a2e4d46e1b34577b508",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xdbed0d44"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xf016e1d45ef23bdd414e7a2e4d46e1b34577b508",
+     "to": "0xf016e1d45ef23bdd414e7a2e4d46e1b34577b508",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xf016e1d45ef23bdd414e7a2e4d46e1b34577b508",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x1e2fcbf173257a4f01443f7b021115dd160bba0d10ddf5646b97e6bbb922e978",
+   "sender": {
+    "kind": "safe",
+    "address": "0x2bcc4b9babb8e0e31edf076483168adc521f667b"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x884d58567ac8ed6d1ac7b7081c45507d7538f6c3",
+     "to": "0x2bcc4b9babb8e0e31edf076483168adc521f667b",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x2bcc4b9babb8e0e31edf076483168adc521f667b",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x2bcc4b9babb8e0e31edf076483168adc521f667b",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xfc47df06"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x2bcc4b9babb8e0e31edf076483168adc521f667b",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xfc47df06"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x2bcc4b9babb8e0e31edf076483168adc521f667b",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xfc47df06"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x2bcc4b9babb8e0e31edf076483168adc521f667b",
+     "to": "0x2bcc4b9babb8e0e31edf076483168adc521f667b",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x2bcc4b9babb8e0e31edf076483168adc521f667b",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xfd0b683dc32fefd537d751610567e5ac6318212d4e5c8fc273865f34538043ed",
+   "sender": {
+    "kind": "safe",
+    "address": "0x0196b86ed686483887089c6c31167d46f9fae1ab"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x884d58567ac8ed6d1ac7b7081c45507d7538f6c3",
+     "to": "0x0196b86ed686483887089c6c31167d46f9fae1ab",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x0196b86ed686483887089c6c31167d46f9fae1ab",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x0196b86ed686483887089c6c31167d46f9fae1ab",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x4c24ee06"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x0196b86ed686483887089c6c31167d46f9fae1ab",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x4c24ee06"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x0196b86ed686483887089c6c31167d46f9fae1ab",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x4c24ee06"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x0196b86ed686483887089c6c31167d46f9fae1ab",
+     "to": "0x0196b86ed686483887089c6c31167d46f9fae1ab",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x0196b86ed686483887089c6c31167d46f9fae1ab",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x07f718ec33f0829fef759d2dec167a68e97c8c3c90dff35cc5ccd469adda9b4e",
+   "sender": {
+    "kind": "safe",
+    "address": "0xeb15aea72cf51cf8895cd456bb3582540def9292"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x90f1366740b785584d5be03af3ba84c1216ec226",
+     "to": "0xeb15aea72cf51cf8895cd456bb3582540def9292",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xeb15aea72cf51cf8895cd456bb3582540def9292",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xeb15aea72cf51cf8895cd456bb3582540def9292",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x0f32884e"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xeb15aea72cf51cf8895cd456bb3582540def9292",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x0f32884e"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xeb15aea72cf51cf8895cd456bb3582540def9292",
+     "to": "0xeb15aea72cf51cf8895cd456bb3582540def9292",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xeb15aea72cf51cf8895cd456bb3582540def9292",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xee9bef1576cf23617473671491a994af88155e349597d3851f0784209d2bb37b",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb309be6a45a255ca04d245bda9c115f3f3e07239"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x90f1366740b785584d5be03af3ba84c1216ec226",
+     "to": "0xb309be6a45a255ca04d245bda9c115f3f3e07239",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xb309be6a45a255ca04d245bda9c115f3f3e07239",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xb309be6a45a255ca04d245bda9c115f3f3e07239",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x0c5bca4e"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xb309be6a45a255ca04d245bda9c115f3f3e07239",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x0c5bca4e"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xb309be6a45a255ca04d245bda9c115f3f3e07239",
+     "to": "0xb309be6a45a255ca04d245bda9c115f3f3e07239",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xb309be6a45a255ca04d245bda9c115f3f3e07239",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xbc7be43eb69e3000fe6297d61a23e84184d0760a41a29d1c54c9ed7b1865a9a6",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd9db1282552cca70ed72cf0f5a14bb7a99ede1cd"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x90f1366740b785584d5be03af3ba84c1216ec226",
+     "to": "0xd9db1282552cca70ed72cf0f5a14bb7a99ede1cd",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xd9db1282552cca70ed72cf0f5a14bb7a99ede1cd",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xd9db1282552cca70ed72cf0f5a14bb7a99ede1cd",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xc1c6371f"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xd9db1282552cca70ed72cf0f5a14bb7a99ede1cd",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xc1c6371f"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xd9db1282552cca70ed72cf0f5a14bb7a99ede1cd",
+     "to": "0xd9db1282552cca70ed72cf0f5a14bb7a99ede1cd",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xd9db1282552cca70ed72cf0f5a14bb7a99ede1cd",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x8e18038a9e38e0a0c0aaa1841f894dfed9a46382a50b92ce7b2449dc649d3afb",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8c45444888d5aa466467b35da7d215ceecb786d0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x56e975b7d3457408a76fa04ef1126b426f5dde4f",
+     "to": "0x8c45444888d5aa466467b35da7d215ceecb786d0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x8c45444888d5aa466467b35da7d215ceecb786d0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x8c45444888d5aa466467b35da7d215ceecb786d0",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x357f5da7"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x8c45444888d5aa466467b35da7d215ceecb786d0",
+     "to": "0x8c45444888d5aa466467b35da7d215ceecb786d0",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x8c45444888d5aa466467b35da7d215ceecb786d0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x1262e1372a383349fa9ccb048547ae95c92e676f6f26361a72e8fd17fc85a696",
+   "sender": {
+    "kind": "safe",
+    "address": "0x263caccb7c935ead43616a34605d191d86c5bcda"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x98c2ba3a4ef7689e82b679bc5e3c90947b10b324",
+     "to": "0x263caccb7c935ead43616a34605d191d86c5bcda",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x263caccb7c935ead43616a34605d191d86c5bcda",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x263caccb7c935ead43616a34605d191d86c5bcda",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x96a3674a"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x263caccb7c935ead43616a34605d191d86c5bcda",
+     "to": "0x263caccb7c935ead43616a34605d191d86c5bcda",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x263caccb7c935ead43616a34605d191d86c5bcda",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x2d808b9d3fa6f8504a65bbe3fce98f751d122c019edba9a0e65b5cda136d2b6d",
+   "sender": {
+    "kind": "safe",
+    "address": "0xdf02870d82cba90563cfde72b640def6b94d2d1a"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x98c2ba3a4ef7689e82b679bc5e3c90947b10b324",
+     "to": "0xdf02870d82cba90563cfde72b640def6b94d2d1a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xdf02870d82cba90563cfde72b640def6b94d2d1a",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xdf02870d82cba90563cfde72b640def6b94d2d1a",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x5b26c122"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xdf02870d82cba90563cfde72b640def6b94d2d1a",
+     "to": "0xdf02870d82cba90563cfde72b640def6b94d2d1a",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xdf02870d82cba90563cfde72b640def6b94d2d1a",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x2bfdc915c8768e305e88a959fcae6299b4ba3ca1af02de113912f43365e0b45d",
+   "sender": {
+    "kind": "safe",
+    "address": "0x6edc56bdc96db38432cc900d51da03b9a6d29dce"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x9a6400f42a3c0b667bc64f5cc40b9bff5e510022",
+     "to": "0x6edc56bdc96db38432cc900d51da03b9a6d29dce",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x6edc56bdc96db38432cc900d51da03b9a6d29dce",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x6edc56bdc96db38432cc900d51da03b9a6d29dce",
+     "to": "0x6edc56bdc96db38432cc900d51da03b9a6d29dce",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6edc56bdc96db38432cc900d51da03b9a6d29dce",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xa3d621b0797c12daeca891e93458bc3911f0d2ddc2020a99cbd74aed69fe2433",
+   "sender": {
+    "kind": "safe",
+    "address": "0x4c820b2ec883b559af53cd80e0687fde407637d7"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x6be4eab101e44922616efb0b176a28839ba07dd0",
+     "to": "0x4c820b2ec883b559af53cd80e0687fde407637d7",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x4c820b2ec883b559af53cd80e0687fde407637d7",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x4c820b2ec883b559af53cd80e0687fde407637d7",
+     "to": "0x4c820b2ec883b559af53cd80e0687fde407637d7",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x4c820b2ec883b559af53cd80e0687fde407637d7",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xfeca40b3db73eee13c43df74e7d4934857607c2a56a3add5cb7225c8ef6d2036",
+   "sender": {
+    "kind": "safe",
+    "address": "0x900ade7d9bafc70b1472f84854a4061aa0839018"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xc8e4de997cffcf38c951d210ee28ae1d0d43ce12",
+     "to": "0x900ade7d9bafc70b1472f84854a4061aa0839018",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x900ade7d9bafc70b1472f84854a4061aa0839018",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x900ade7d9bafc70b1472f84854a4061aa0839018",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x460e4bae"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x900ade7d9bafc70b1472f84854a4061aa0839018",
+     "to": "0x900ade7d9bafc70b1472f84854a4061aa0839018",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x900ade7d9bafc70b1472f84854a4061aa0839018",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x5f795521a772405e7245d98bf95bf5c216660449f84c6427f43620bac81bf33b",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7528a46a90ecb2d66624e595116a25e355cb29cd"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x6258b0ec94e4fca3450a61d644f240958bbe003e",
+     "to": "0x7528a46a90ecb2d66624e595116a25e355cb29cd",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x7528a46a90ecb2d66624e595116a25e355cb29cd",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x7528a46a90ecb2d66624e595116a25e355cb29cd",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xf9d760ec"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x7528a46a90ecb2d66624e595116a25e355cb29cd",
+     "to": "0x7528a46a90ecb2d66624e595116a25e355cb29cd",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x7528a46a90ecb2d66624e595116a25e355cb29cd",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x3578723667955f06c55bb13fdcdd268b54518d82b952e411e89595686e8e231e",
+   "sender": {
+    "kind": "safe",
+    "address": "0xdc090892e5642aa6c9a325aacfc0f11b49fff967"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x0d3b0ee91249e88938cbc939ef5c3e2a9c645ce3",
+     "to": "0xdc090892e5642aa6c9a325aacfc0f11b49fff967",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xdc090892e5642aa6c9a325aacfc0f11b49fff967",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xdc090892e5642aa6c9a325aacfc0f11b49fff967",
+     "to": "0xdc090892e5642aa6c9a325aacfc0f11b49fff967",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xdc090892e5642aa6c9a325aacfc0f11b49fff967",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x7d6135fe2ea29b8fa2f584332c598d61e9dc2a40762dc7fbd7545cd8cee0bc7a",
+   "sender": {
+    "kind": "safe",
+    "address": "0x470e8fb7ec4971e322f18ad0128683299b064cc7"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xd749a281a7c146ca7375d2a677570d2b5f99bd14",
+     "to": "0x470e8fb7ec4971e322f18ad0128683299b064cc7",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x470e8fb7ec4971e322f18ad0128683299b064cc7",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x470e8fb7ec4971e322f18ad0128683299b064cc7",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x2e7a6273"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x470e8fb7ec4971e322f18ad0128683299b064cc7",
+     "to": "0x470e8fb7ec4971e322f18ad0128683299b064cc7",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x470e8fb7ec4971e322f18ad0128683299b064cc7",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x7874ca1b9c379908339299f12816ae6ac434e1fb28dce8fe99e5e5bd48c22d27",
+   "sender": {
+    "kind": "safe",
+    "address": "0x693622aff06e1a562def413be0effeb2bf9ea957"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xc3694c24ac2f34ad4ea93b0f911756740d0dcc42",
+     "to": "0x693622aff06e1a562def413be0effeb2bf9ea957",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x693622aff06e1a562def413be0effeb2bf9ea957",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x693622aff06e1a562def413be0effeb2bf9ea957",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x8dd8c9f2"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x693622aff06e1a562def413be0effeb2bf9ea957",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x8dd8c9f2"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x693622aff06e1a562def413be0effeb2bf9ea957",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x8dd8c9f2"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x693622aff06e1a562def413be0effeb2bf9ea957",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x8dd8c9f2"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x693622aff06e1a562def413be0effeb2bf9ea957",
+     "to": "0x693622aff06e1a562def413be0effeb2bf9ea957",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x693622aff06e1a562def413be0effeb2bf9ea957",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xab43ec9eb6c4174f20571b9ba9402fecb87a815e264deda31719848db3d3d5eb",
+   "sender": {
+    "kind": "safe",
+    "address": "0xeada392a3b81835fe00588870f6b88f994615d12"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xc3694c24ac2f34ad4ea93b0f911756740d0dcc42",
+     "to": "0xeada392a3b81835fe00588870f6b88f994615d12",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xeada392a3b81835fe00588870f6b88f994615d12",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xeada392a3b81835fe00588870f6b88f994615d12",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x5bb43c92"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xeada392a3b81835fe00588870f6b88f994615d12",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x5bb43c92"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xeada392a3b81835fe00588870f6b88f994615d12",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x5bb43c92"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xeada392a3b81835fe00588870f6b88f994615d12",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x5bb43c92"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xeada392a3b81835fe00588870f6b88f994615d12",
+     "to": "0xeada392a3b81835fe00588870f6b88f994615d12",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xeada392a3b81835fe00588870f6b88f994615d12",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x3c1a82d12ada84763ff175fdec750382c1eda02eca06bbf8c4f02643eeb57c66",
+   "sender": {
+    "kind": "safe",
+    "address": "0x90083db6d1c38b5fc4b5aaa4f22ddc019dfc242c"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xc3694c24ac2f34ad4ea93b0f911756740d0dcc42",
+     "to": "0x90083db6d1c38b5fc4b5aaa4f22ddc019dfc242c",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x90083db6d1c38b5fc4b5aaa4f22ddc019dfc242c",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x90083db6d1c38b5fc4b5aaa4f22ddc019dfc242c",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x1590a62b"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x90083db6d1c38b5fc4b5aaa4f22ddc019dfc242c",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x1590a62b"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x90083db6d1c38b5fc4b5aaa4f22ddc019dfc242c",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x1590a62b"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x90083db6d1c38b5fc4b5aaa4f22ddc019dfc242c",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x1590a62b"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x90083db6d1c38b5fc4b5aaa4f22ddc019dfc242c",
+     "to": "0x90083db6d1c38b5fc4b5aaa4f22ddc019dfc242c",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x90083db6d1c38b5fc4b5aaa4f22ddc019dfc242c",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x472845cfe7170103bd51551399f7fc530e34ffc6f1299be1dd3677ab73e2eeb8",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e9671d6b630c91d8e121584100261a07db5d902"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xc3694c24ac2f34ad4ea93b0f911756740d0dcc42",
+     "to": "0x9e9671d6b630c91d8e121584100261a07db5d902",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e9671d6b630c91d8e121584100261a07db5d902",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x9e9671d6b630c91d8e121584100261a07db5d902",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x64d7d39f"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x9e9671d6b630c91d8e121584100261a07db5d902",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x64d7d39f"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x9e9671d6b630c91d8e121584100261a07db5d902",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x64d7d39f"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e9671d6b630c91d8e121584100261a07db5d902",
+     "to": "0x9e9671d6b630c91d8e121584100261a07db5d902",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x9e9671d6b630c91d8e121584100261a07db5d902",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x0399410213eda4d184a9465db4e8bf63b9eee33ac4ef430b9f613ab6c1307ae6",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1f65d5628b3013146e0d47cfb21f7b15ad9219b7"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x75f58030c190bb4288f56100f0ee49b6eeb4a134",
+     "to": "0x1f65d5628b3013146e0d47cfb21f7b15ad9219b7",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x1f65d5628b3013146e0d47cfb21f7b15ad9219b7",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x1f65d5628b3013146e0d47cfb21f7b15ad9219b7",
+     "to": "0x1f65d5628b3013146e0d47cfb21f7b15ad9219b7",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x1f65d5628b3013146e0d47cfb21f7b15ad9219b7",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x938e71dacd4a258c806904f6487dbc7719fc227e7f7f91b682c5ca44c1c5338c",
+   "sender": {
+    "kind": "safe",
+    "address": "0x299d3a82776b40a4837c7fe0a225dc92e11a932e"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xc3694c24ac2f34ad4ea93b0f911756740d0dcc42",
+     "to": "0x299d3a82776b40a4837c7fe0a225dc92e11a932e",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x299d3a82776b40a4837c7fe0a225dc92e11a932e",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x299d3a82776b40a4837c7fe0a225dc92e11a932e",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x699c6d02"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x299d3a82776b40a4837c7fe0a225dc92e11a932e",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x699c6d02"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x299d3a82776b40a4837c7fe0a225dc92e11a932e",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x699c6d02"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x299d3a82776b40a4837c7fe0a225dc92e11a932e",
+     "to": "0x299d3a82776b40a4837c7fe0a225dc92e11a932e",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x299d3a82776b40a4837c7fe0a225dc92e11a932e",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x336e09b6102d9623bb1b23d4e37c192aff7ae699620b266e1151171cb37cf0f3",
+   "sender": {
+    "kind": "safe",
+    "address": "0x84225f6468e6dd9f3e0e64823c4f4a4d09feb468"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xc3694c24ac2f34ad4ea93b0f911756740d0dcc42",
+     "to": "0x84225f6468e6dd9f3e0e64823c4f4a4d09feb468",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x84225f6468e6dd9f3e0e64823c4f4a4d09feb468",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x84225f6468e6dd9f3e0e64823c4f4a4d09feb468",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x1cd9f65a"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x84225f6468e6dd9f3e0e64823c4f4a4d09feb468",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x1cd9f65a"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x84225f6468e6dd9f3e0e64823c4f4a4d09feb468",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x1cd9f65a"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x84225f6468e6dd9f3e0e64823c4f4a4d09feb468",
+     "to": "0x84225f6468e6dd9f3e0e64823c4f4a4d09feb468",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x84225f6468e6dd9f3e0e64823c4f4a4d09feb468",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x2c547d67eaab329471f525ec20dfa91749cc611155fd082e6c7f33b538afa2c4",
+   "sender": {
+    "kind": "safe",
+    "address": "0x85550106a91430985e1ecb1bf52a642bcdfd1932"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xc3694c24ac2f34ad4ea93b0f911756740d0dcc42",
+     "to": "0x85550106a91430985e1ecb1bf52a642bcdfd1932",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x85550106a91430985e1ecb1bf52a642bcdfd1932",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x85550106a91430985e1ecb1bf52a642bcdfd1932",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x9aafbcb1"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x85550106a91430985e1ecb1bf52a642bcdfd1932",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x9aafbcb1"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x85550106a91430985e1ecb1bf52a642bcdfd1932",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x9aafbcb1"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x85550106a91430985e1ecb1bf52a642bcdfd1932",
+     "to": "0x85550106a91430985e1ecb1bf52a642bcdfd1932",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x85550106a91430985e1ecb1bf52a642bcdfd1932",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xb144095833174743b6f88698fddf050fc043f4ca12a83c545fdb6d7bb4d89fd7",
+   "sender": {
+    "kind": "safe",
+    "address": "0x988f741cecb52d2dde718287340a6e3fe391d649"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x9a02d4f2a5be12dcedcc70c9254692bb26ec9b68",
+     "to": "0x988f741cecb52d2dde718287340a6e3fe391d649",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x988f741cecb52d2dde718287340a6e3fe391d649",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x988f741cecb52d2dde718287340a6e3fe391d649",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x2858dccd"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x988f741cecb52d2dde718287340a6e3fe391d649",
+     "to": "0x988f741cecb52d2dde718287340a6e3fe391d649",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x988f741cecb52d2dde718287340a6e3fe391d649",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x9d7c4fe06af3e28f0ebed87dc93782334e74ddac2c2d23c619435714f7b2e3e1",
+   "sender": {
+    "kind": "safe",
+    "address": "0x226bde983abc5f83275e7c4086a79bc9080deeb3"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x67a89e5bc662428fad309982823e44d75d16c914",
+     "to": "0x226bde983abc5f83275e7c4086a79bc9080deeb3",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x226bde983abc5f83275e7c4086a79bc9080deeb3",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x226bde983abc5f83275e7c4086a79bc9080deeb3",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x1c4cfbc1"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x226bde983abc5f83275e7c4086a79bc9080deeb3",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x1c4cfbc1"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x226bde983abc5f83275e7c4086a79bc9080deeb3",
+     "to": "0x226bde983abc5f83275e7c4086a79bc9080deeb3",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x226bde983abc5f83275e7c4086a79bc9080deeb3",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x906a388a45e9fa2370303e2e102ab2f113cb9e2a143e72da8009f9379ef3fe3f",
+   "sender": {
+    "kind": "safe",
+    "address": "0x4e6b14fa3a6e7942b261afc6b32b8ddb16f03cb6"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xd779332c5a52566dada11a075a735b18daa6c1f4",
+     "to": "0x4e6b14fa3a6e7942b261afc6b32b8ddb16f03cb6",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x4e6b14fa3a6e7942b261afc6b32b8ddb16f03cb6",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x4e6b14fa3a6e7942b261afc6b32b8ddb16f03cb6",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xd4722174"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x4e6b14fa3a6e7942b261afc6b32b8ddb16f03cb6",
+     "to": "0x4e6b14fa3a6e7942b261afc6b32b8ddb16f03cb6",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x4e6b14fa3a6e7942b261afc6b32b8ddb16f03cb6",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xa8a971016e5113b729fe2deca444afe1e36c85a5ed7b7022051abf637a2fb0ed",
+   "sender": {
+    "kind": "safe",
+    "address": "0x044324d8ee214b498391a4f82d88961d089d7c9f"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x81a1d52c965ee1c44365ce4e287844484f3dbb77",
+     "to": "0x044324d8ee214b498391a4f82d88961d089d7c9f",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x044324d8ee214b498391a4f82d88961d089d7c9f",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x044324d8ee214b498391a4f82d88961d089d7c9f",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x9bab2b3c"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x044324d8ee214b498391a4f82d88961d089d7c9f",
+     "to": "0x044324d8ee214b498391a4f82d88961d089d7c9f",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x044324d8ee214b498391a4f82d88961d089d7c9f",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x797786653b447dc41a4fdb7991fdf4bba4f0db724f2dab671a4ee12c5fbe75f9",
+   "sender": {
+    "kind": "safe",
+    "address": "0x0f035e7ff8a21159f10994aa0186449fc852a9e7"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xc28604261c109746c6a18d584a567b52c230d6bb",
+     "to": "0x0f035e7ff8a21159f10994aa0186449fc852a9e7",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x0f035e7ff8a21159f10994aa0186449fc852a9e7",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x0f035e7ff8a21159f10994aa0186449fc852a9e7",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xdb491fd8"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x0f035e7ff8a21159f10994aa0186449fc852a9e7",
+     "to": "0x0f035e7ff8a21159f10994aa0186449fc852a9e7",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x0f035e7ff8a21159f10994aa0186449fc852a9e7",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xe7dfd5470584e9d4223a0c52a02635f80785dfe8f64a26635fcacecc518a09d2",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9db8cb8ddec721aa2ec51e5417af862132e7ba08"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x21bfb64b7d46e77a2407705cdd622ea419ce84cb",
+     "to": "0x9db8cb8ddec721aa2ec51e5417af862132e7ba08",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9db8cb8ddec721aa2ec51e5417af862132e7ba08",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x9db8cb8ddec721aa2ec51e5417af862132e7ba08",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x236f58f3"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x9db8cb8ddec721aa2ec51e5417af862132e7ba08",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x236f58f3"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9db8cb8ddec721aa2ec51e5417af862132e7ba08",
+     "to": "0x9db8cb8ddec721aa2ec51e5417af862132e7ba08",
+     "selector": "0xe318b52b"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x9db8cb8ddec721aa2ec51e5417af862132e7ba08",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0xe318b52b"
+    }
+   ]
+  }
+ ]
+}

@@ -1,17 +1,15 @@
 import type { Reader } from '../chain/reader.ts';
-import type { AbiType } from '../decode/abi.ts';
 import type { Registry } from '../registry.ts';
-import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import type { LeafRule, Quantity, Template } from '../template/template.ts';
-import { effectText, distributionOf, measure, shown, statedEffects, toleranceFinding } from './amounts.ts';
-import type { Difference, Measurement, StatedEffect } from './amounts.ts';
+import type { Template } from '../template/template.ts';
+import { measure, statedEffects } from './amounts.ts';
+import type { Measurement, StatedEffect } from './amounts.ts';
 import { PAGE, ResearchError, SOURCES, search, searchedBy } from './sources.ts';
 import type { Anchor, Ask, Hit, Hits, SourceName } from './sources.ts';
 import type { ReadMessage } from './messages.ts';
 import type { Sampling } from './recording.ts';
-import { brokenRule, constText, functionNames, isOtherOperation, isTime, misfitText, proveParty, shapesOf, studyTx } from './study.ts';
-import type { OutsideKind, PartyProof, Sender, TxStudy } from './study.ts';
+import { proveParty, shapesOf, studyTx } from './study.ts';
+import type { PartyProof, TxStudy } from './study.ts';
 import { checkTrace, holdingTemplateCalls } from './trace.ts';
 import type { TraceSource, TracedTx } from './trace.ts';
 
