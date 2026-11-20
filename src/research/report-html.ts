@@ -97,6 +97,35 @@ const codeWidth = (code: string): number => code.length * 8.4 + 16;
 /** A flow line's mark and the gap after it. */
 const MARK_WIDTH = 24;
 const CAPTION_HEIGHT = 24;
+const CAPTION_LINE = 20;
+
+/** About how many lines a caption's words wrap to in `room` px: each line breaks at a space or before a CJK character, and a code span never breaks. */
+function captionLines(parts: readonly { readonly text: string; readonly code: boolean }[], room: number): number {
+  let lines = 1;
+  let used = 0;
+  let space = 0;
+  for (const part of parts) {
+    for (const piece of part.code ? [part.text] : (part.text.match(/\s+|[\u2e80-\u{10ffff}]|[^\s\u2e80-\u{10ffff}]+/gu) ?? [])) {
+      if (!part.code && /^\s/.test(piece)) {
+        space += textWidth(piece);
+        continue;
+      }
+      const width = part.code ? codeWidth(piece) : textWidth(piece);
+      if (used > 0 && used + space + width > room) {
+        lines += 1;
+        used = width;
+      } else used += space + width;
+      space = 0;
+    }
+  }
+  return lines;
+}
+
+/** A lifeline's node fits its name, up to the spacing between lifelines; the last one has no neighbour to its right, so it always fits. */
+const nodeWidth = (name: string, last: boolean): number => {
+  const fit = Math.max(132, Math.ceil(name.length * 8.4) + 28);
+  return last ? fit : Math.min(SPACING - 16, fit);
+};
 
 type Inside = Extract<Arrow, { kind: 'inside' }>;
 
@@ -130,15 +159,17 @@ function legend(sequence: Sequence, r: R): Html {
 }
 
 function diagram(sequence: Sequence, r: R): Html {
-  const x = (i: number) => FIRST_X + i * SPACING;
+  const lastLine = sequence.lifelines.length - 1;
+  const lastHalf = nodeWidth(sequence.lifelines[lastLine]?.name ?? '', true) / 2;
+  // The last node may be wider than the spacing, so its lifeline moves right until the node clears its neighbour's.
+  const x = (i: number) => FIRST_X + i * SPACING + (i === lastLine && i > 0 ? Math.max(0, Math.ceil(lastHalf - SPACING / 2 + 8)) : 0);
   const marks = new Map(markedLines(sequence).map(({ arrow, mark }) => [arrow, mark]));
   const confirmed = (arrow: Inside) => arrow.seen?.confirmed === true;
   // The tag's box fits its word: 12px text is narrower than textWidth's 14px estimate, which leaves the margin.
   const tagWidth = (arrow: Inside) => (confirmed(arrow) ? 0 : Math.max(AI_TAG_WIDTH, Math.ceil(textWidth(r.w.tag[arrow.text.tag]))) + 8);
-  const captionWidth = (arrow: Inside) =>
-    (marks.has(arrow) ? MARK_WIDTH : 0) + tagWidth(arrow) + aiParts(arrow.text.ai).reduce((w, part) => w + (part.code ? codeWidth(part.text) : textWidth(part.text)), 0);
-  const widest = Math.max(0, ...sequence.arrows.map((arrow) => (arrow.kind === 'inside' ? x(0) + 12 + captionWidth(arrow) + 8 : 0)));
-  const width = Math.max(660, x(sequence.lifelines.length - 1) + FIRST_X, Math.ceil(widest));
+  const lead = (arrow: Inside) => (marks.has(arrow) ? MARK_WIDTH : 0) + tagWidth(arrow);
+  const captionWidth = (arrow: Inside) => lead(arrow) + aiParts(arrow.text.ai).reduce((w, part) => w + (part.code ? codeWidth(part.text) : textWidth(part.text)), 0);
+  const width = Math.max(660, x(lastLine) + Math.max(FIRST_X, Math.ceil(lastHalf) + 12));
   const rows: Html[] = [];
   let y = NODE_TOP + NODE_HEIGHT + 32;
   for (const arrow of sequence.arrows) {
@@ -162,12 +193,13 @@ function diagram(sequence: Sequence, r: R): Html {
       const [from, to] = [x(arrow.from), arrow.to === arrow.from ? x(arrow.from) + 60 : x(arrow.to)];
       const left = Math.max(x(0) + 12, Math.min(Math.min(from, to) + 12, width - 8 - captionWidth(arrow)));
       const mark = marks.get(arrow);
+      const extra = (captionLines(aiParts(arrow.text.ai), width - 8 - left - lead(arrow)) - 1) * CAPTION_LINE;
       rows.push(h`
-    <foreignObject x="${left}" y="${y - 17}" width="${width - left}" height="${CAPTION_HEIGHT}"><div class="cap" data-ai>${mark === undefined ? '' : h`<span class="mark ${confirmed(arrow) ? 'ok' : 'bad'}">${mark}</span>`}${
+    <foreignObject x="${left}" y="${y - 17}" width="${width - left}" height="${CAPTION_HEIGHT + extra}"><div class="cap" data-ai>${mark === undefined ? '' : h`<span class="mark ${confirmed(arrow) ? 'ok' : 'bad'}">${mark}</span>`}${
       confirmed(arrow) ? '' : h`<span class="byai">${r.w.tag[arrow.text.tag]}</span>`
     }<span>${aiProse(arrow.text.ai)}</span></div></foreignObject>
-    <line class="${confirmed(arrow) ? 'inner seen' : 'inner'}" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#head)"/>`);
-      y += 36;
+    <line class="${confirmed(arrow) ? 'inner seen' : 'inner'}" x1="${from}" y1="${y + 10 + extra}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10 + extra}" marker-end="url(#head)"/>`);
+      y += 36 + extra;
     } else {
       rows.push(h`
     <text class="capg" x="${x(0) + 14}" y="${y}">${arrow.text}</text>
@@ -177,7 +209,7 @@ function diagram(sequence: Sequence, r: R): Html {
   }
   const height = y - 6;
   const nodes = sequence.lifelines.map((line, i) => {
-    const w = Math.min(SPACING - 16, Math.max(132, Math.ceil(line.name.length * 8.4) + 28));
+    const w = nodeWidth(line.name, i === lastLine);
     return h`
     <line class="life" x1="${x(i)}" y1="${NODE_TOP + NODE_HEIGHT}" x2="${x(i)}" y2="${height - 8}"/>
     <rect class="node" x="${x(i) - w / 2}" y="${NODE_TOP}" width="${w}" height="${NODE_HEIGHT}" rx="6"/><text class="nodet" x="${x(i)}" y="${NODE_TOP + 20}" text-anchor="middle">${line.name}</text><text class="nodes" x="${x(i)}" y="${NODE_TOP + 36}" text-anchor="middle">${line.role}</text>`;

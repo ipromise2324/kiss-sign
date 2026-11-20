@@ -8,6 +8,7 @@ import type { Registry } from '../src/registry.ts';
 import { STANDARDS } from '../src/research/standards.ts';
 import { NOTES_FILE, notesLanguages, notesPath, readNotes } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
+import { h } from '../src/html.ts';
 import { LANGUAGES, isLanguage } from '../src/language.ts';
 import type { Language } from '../src/language.ts';
 import { OLD_HTML_FILE, generatedHtml, generatedHtmlFile, generatedHtmlPath, htmlDifference, renderPage, writeHtmlPages } from '../src/research/report-html.ts';
@@ -242,6 +243,11 @@ test('AI text is HTML-escaped', async () => {
   const { cut } = withoutAi(html);
   assert.ok(cut.some((element) => element.includes('&#60;b&#62;&#38;&#34;x&#60;/b&#62;')));
   assert.ok(cut.some((element) => element.includes('&#60;script&#62;alert(&#39;x&#39;)&#60;/script&#62;')));
+});
+
+test('a bidirectional, control or invisible character in text the page prints shows as its code point, and tab and newline stay', () => {
+  const shown = h`<td>${'USDC\u202e\u2066evil\u200b\u0007\tok\n'}</td>`.text;
+  assert.equal(shown, '<td>USDC[U+202E][U+2066]evil[U+200B][U+0007]\tok\n</td>');
 });
 
 test('a code span in AI text prints as <code> in prose and as a boxed monospace span in the diagram, escaped', async () => {

@@ -27,7 +27,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-
 a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
 a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
-code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 6px;overflow-wrap:anywhere}
+code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
 .num{font-variant-numeric:tabular-nums}
 .f2{color:var(--fg2)} .f3{color:var(--fg3)}
@@ -60,18 +60,21 @@ b,strong{font-weight:590}
 }
 
 h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:0;overflow-wrap:break-word}
-h1 .byai{vertical-align:6px;margin-left:12px}
+h1 .byai{vertical-align:6px}
+h1 .aiw>:first-child{margin-right:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
 .sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
-.sub .byai,h3 .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
-.checks{list-style:none;margin:28px 0 0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.checks li{display:inline-flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
+:is(.sub,h3,.intro,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
+.verdict .byai{margin-left:8px}
+.checks{list-style:none;margin:28px 0 0;padding:14px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.checks li{display:flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
 .checks .n{color:var(--fg2)}
-@media (max-width:600px){.checks{flex-direction:column}}
+@media (max-width:600px){.checks{grid-template-columns:minmax(0,1fr)}}
 .verdict{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-top:18px;font-size:var(--t-row)}
 .verdict .lbl{color:var(--fg3);flex:none}
-.verdict .i{align-self:center}
+.verdict .i{align-self:flex-start;margin-top:4px}
 .verdict .aiw>span:first-child{flex:1 1 14em}
+@media (max-width:600px){.verdict{display:grid;grid-template-columns:auto auto minmax(0,1fr);row-gap:8px}.verdict .byai{grid-column:3;justify-self:start;margin-left:0}}
 section{scroll-margin-top:24px}
 
 .byai{display:inline-block;font-size:12px;color:var(--fg2);border:1px dashed var(--fg3);border-radius:var(--r);padding:0 6px;line-height:20px;white-space:nowrap;font-weight:400;letter-spacing:0}
@@ -83,7 +86,8 @@ section{scroll-margin-top:24px}
 .tip .bub{position:absolute;left:-8px;top:calc(100% + 8px);width:max-content;max-width:min(320px,calc(100vw - 48px));background:var(--pop);border:1px solid var(--line2);color:var(--fg);font-size:var(--t-small);line-height:1.55;padding:9px 12px;border-radius:var(--r);box-shadow:0 6px 14px var(--shadow);opacity:0;visibility:hidden;transition:opacity .12s ease-out,visibility 0s linear .12s;z-index:5;pointer-events:none;font-weight:400;letter-spacing:0}
 .tip:hover .bub{opacity:1;visibility:visible;transition:opacity .12s ease-out .25s,visibility 0s linear .25s}
 .tip:focus-visible .bub{opacity:1;visibility:visible;transition:none}
-@media (min-width:601px){.checks li:nth-last-child(-n+2) .bub{left:auto;right:-8px}}
+.checks .tip{position:static}
+.checks .tip .bub{left:-8px;max-width:calc(100% + 16px)}
 @media (max-width:600px){.tip{position:static}.tip .bub{left:0;max-width:calc(100vw - 40px)}}
 
 section{border-top:1px solid var(--line2);padding-top:28px}
@@ -128,8 +132,8 @@ svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
 svg .ah{fill:var(--fg)}
 svg .fn{fill:var(--fg);font:400 14px var(--mono)}
 svg .no{fill:var(--fg3);font:400 14px var(--mono)}
-svg .cap{display:flex;align-items:center;gap:8px;height:24px;white-space:nowrap;color:var(--fg2);font:14px/1 var(--sans)}
-svg .cap code{font-size:13px;padding:2px 6px}
+svg .cap{display:flex;align-items:flex-start;gap:8px;padding-top:2px;color:var(--fg2);font:14px/20px var(--sans)}
+svg .cap code{font-size:13px;padding:2px 6px;white-space:nowrap}
 .mark{font-size:17px} .mark.ok{color:var(--ok)} .mark.bad{color:var(--bad)}
 svg .capg{fill:var(--ok);font:590 14px var(--sans)}
 svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
@@ -154,7 +158,7 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .doc{font-size:var(--t-small);color:var(--fg2);margin-top:4px}
 .cdoc{padding:10px 0;border-bottom:1px solid var(--line)}
 .cdoc .doc{margin-top:0}
-.arg{display:grid;grid-template-columns:200px minmax(0,1fr);gap:4px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
+.arg{display:grid;grid-template-columns:248px minmax(0,1fr);gap:4px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
 .arg .nm{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
 .arg .pn{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere}
 .arg .val{min-width:0}
@@ -168,9 +172,9 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .who{display:inline-flex;align-items:center;font-size:var(--t-label);line-height:22px;padding:0 8px;border-radius:var(--r);border:1px solid var(--line2);color:var(--fg3);white-space:nowrap}
 .who.you{color:var(--fg);border-color:var(--fg2);font-weight:590}
 .who.app{color:var(--warn);border-color:rgb(237 161 82 / .45)}
-.parts{grid-column:2;margin-top:12px;border-left:1px solid var(--line2);padding-left:16px}
-.plabel{font-size:var(--t-small);color:var(--fg2);padding:2px 0 8px}
-.part{display:grid;grid-template-columns:132px minmax(0,1fr);gap:2px 16px;padding:10px 0;border-top:1px solid var(--line)}
+.parts{grid-column:1/-1;display:grid;grid-template-columns:subgrid;row-gap:0;margin-top:12px;border-left:1px solid var(--line2);padding-left:12px}
+.plabel{grid-column:1/-1;font-size:var(--t-small);color:var(--fg2);padding:2px 0 8px}
+.part{grid-column:1/-1;display:grid;grid-template-columns:subgrid;row-gap:2px;padding:10px 0;border-top:1px solid var(--line)}
 .part:first-child,.plabel+.part{border-top:0;padding-top:2px}
 .part .pn{font-family:var(--mono);font-size:var(--t-small);color:var(--fg2);overflow-wrap:anywhere}
 .part .pchips{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:6px;font-family:var(--sans)}
@@ -178,12 +182,9 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .part .raw{font-size:var(--t-small)}
 .part .is{font-size:var(--t-small)}
 .part .ai{margin-top:4px}
-.part>.parts{grid-column:1/-1}
 @media (max-width:720px){
   .arg{grid-template-columns:minmax(0,1fr)}
   .arg .nm{flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
-  .parts{grid-column:1}
-  .part{grid-template-columns:minmax(0,1fr)}
 }
 
 .rows{border-top:1px solid var(--line)}
@@ -215,8 +216,8 @@ details.more[open]>summary .chev{transform:rotate(90deg)}
 .aisrcs .lbl{font-size:var(--t-small);color:var(--fg3)}
 .aisrcs .byai{margin-right:8px}
 .aires{margin-left:8px;font-size:var(--t-small);color:var(--fg3)}
-.res{display:inline-flex;gap:6px;align-items:center;margin-left:8px;color:var(--fg2)}
-.res .i{width:14px;height:14px}
+.res{margin-left:8px;color:var(--fg2)}
+.res .i{width:14px;height:14px;vertical-align:-2px;margin-right:6px}
 .confirmed{font-size:var(--t-small);color:var(--fg2)}
 details.fold{border-bottom:1px solid var(--line)}
 details.fold>summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;padding:14px 0;color:var(--fg2);font-size:var(--t-row)}
@@ -228,8 +229,8 @@ details.fold .ad:last-child{border-bottom:0}
 
 .warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
 .pblock{border-top:1px solid var(--line);margin-top:16px}
-.ph{display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
-.ph .pt{font-weight:590;min-width:9em}
+.ph{display:flex;flex-direction:column;gap:4px;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
+.ph .pt{font-weight:590}
 .pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
 .pg .pc{color:var(--fg)}
 .pg .pcalls{margin-bottom:4px}
@@ -300,7 +301,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>Flow <span class="c">2 calls</span></h2>
   <p class="lead">Solid lines are the Safe&#39;s calls, the calls the template binds inside them, and flow lines the program saw in past transactions; dashed lines are AI research not checked; green lines are what you get.</p>
   <div class="diagram">
-  <svg viewBox="0 0 940 372" role="img" aria-labelledby="dt dd">
+  <svg viewBox="0 0 1031 372" role="img" aria-labelledby="dt dd">
     <title id="dt">Transaction flow</title>
     <desc id="dd">Call 1: the Safe calls approve on usdc. Call 2: the Safe calls multicall on bundler3. Result: you get hyperithm-usdc-apex-v2-9e2f.</desc>
     <defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>
@@ -312,8 +313,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <rect class="node" x="404" y="14" width="132" height="44" rx="6"/><text class="nodet" x="470" y="34" text-anchor="middle">bundler3</text><text class="nodes" x="470" y="50" text-anchor="middle">router</text>
     <line class="life" x1="660" y1="58" x2="660" y2="364"/>
     <rect class="node" x="574.5" y="14" width="171" height="44" rx="6"/><text class="nodet" x="660" y="34" text-anchor="middle">general-adapter-1</text><text class="nodes" x="660" y="50" text-anchor="middle">adapter</text>
-    <line class="life" x1="850" y1="58" x2="850" y2="364"/>
-    <rect class="node" x="763" y="14" width="174" height="44" rx="6"/><text class="nodet" x="850" y="34" text-anchor="middle">hyperithm-usdc-apex-v2-9e2f</text><text class="nodes" x="850" y="50" text-anchor="middle">vault</text>
+    <line class="life" x1="891" y1="58" x2="891" y2="364"/>
+    <rect class="node" x="763.5" y="14" width="255" height="44" rx="6"/><text class="nodet" x="891" y="34" text-anchor="middle">hyperithm-usdc-apex-v2-9e2f</text><text class="nodes" x="891" y="50" text-anchor="middle">vault</text>
     <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">approve</text>
     <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#head)"/>
     <text class="no" x="102" y="142">2</text><text class="fn" x="120" y="142">multicall</text>
@@ -322,12 +323,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <line class="nested" x1="470" y1="204" x2="657" y2="204" marker-end="url(#head)"/>
     <text class="fn" x="482" y="230">erc4626Deposit</text>
     <line class="nested" x1="470" y1="240" x2="657" y2="240" marker-end="url(#head)"/>
-    <foreignObject x="236.7999999999995" y="249" width="703.2000000000005" height="24"><div class="cap" data-ai><span class="byai">AI research</span><span>Pulls the amount you type of the asset token from the Safe with <code>transferFrom</code></span></div></foreignObject>
+    <foreignObject x="292" y="249" width="739" height="24"><div class="cap" data-ai><span class="byai">AI research</span><span>Pulls the amount you type of the asset token from the Safe with <code>transferFrom</code></span></div></foreignObject>
     <line class="inner" x1="660" y1="276" x2="283" y2="276" marker-end="url(#head)"/>
-    <foreignObject x="142" y="285" width="798" height="24"><div class="cap" data-ai><span class="byai">AI research</span><span>Deposits the pulled USDC into this vault with <code>deposit</code>, which mints the shares to the Safe</span></div></foreignObject>
-    <line class="inner" x1="660" y1="312" x2="847" y2="312" marker-end="url(#head)"/>
+    <foreignObject x="233" y="285" width="798" height="24"><div class="cap" data-ai><span class="byai">AI research</span><span>Deposits the pulled USDC into this vault with <code>deposit</code>, which mints the shares to the Safe</span></div></foreignObject>
+    <line class="inner" x1="660" y1="312" x2="888" y2="312" marker-end="url(#head)"/>
     <text class="capg" x="104" y="338">you get hyperithm-usdc-apex-v2-9e2f</text>
-    <line class="gain" x1="850" y1="348" x2="93" y2="348" marker-end="url(#head)"/>
+    <line class="gain" x1="891" y1="348" x2="93" y2="348" marker-end="url(#head)"/>
   </svg>
   </div>
   <div class="scrollhint">Scroll the diagram sideways</div>
