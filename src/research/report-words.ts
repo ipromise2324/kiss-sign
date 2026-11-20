@@ -463,6 +463,7 @@ const ZH = {
 
   next: '下一步',
   trial: (vault: boolean): string => `（第一次用這個模板${vault ? '或這個合約' : ''}，先用小額）`,
+  openSources: (addresses: Span): Span[] => ['核准前，打開「', addresses, '」裡每個地址列出的來源：確認每個網域是協議自己的，而且頁面上列著這個地址。'],
   approveSay: '第一次用這個模板，或模板改過之後，先核准它',
   approveThen: (y: Span): Span[] => ['它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 ', y, '。'],
   ownerBook: '先把要加、要移除或要換的簽署人加進地址簿。名字自己取，用小寫英文和 - 連接；地址從聊天以外的來源取得',
@@ -1074,6 +1075,7 @@ const EN: Words = {
 
   next: 'Next steps',
   trial: (vault) => ` (the first time you use this template${vault ? ' or this contract' : ''}, start with a small amount)`,
+  openSources: (addresses) => ['Before you approve, open the sources ', addresses, " lists for each address: check that each domain is the protocol's own and that the page lists this address."],
   approveSay: 'The first time you use this template, or after it changes, approve it',
   approveThen: (y) => ["It prints the template, the commit of main on GitHub and the template's keccak256. Answer ", y, ' only if it is the one you reviewed.'],
   ownerBook: 'First add each signer you will add, remove or replace to your address book. Pick a name in lowercase English joined with -; get the address from a source outside the chat',

@@ -1819,6 +1819,7 @@ function nextSection(context: Context): Section {
     hashes: false,
   });
   const steps: NextStep[] = [
+    ...(context.ledger.entries.length === 0 ? [] : [{ say: w.openSources({ href: anchor('addresses'), label: w.addresses }), command: undefined, then: [], hashes: false }]),
     { say: [w.approveSay], command: `pnpm kiss-sign template approve ${template.id}`, then: [w.approveThen(y)], hashes: false },
     ...(fields.some(([, f]) => f.kind === 'owner') ? [book(w.ownerBook, false)] : []),
     ...(fields.some(([, f]) => f.kind === 'recipient') ? [book(w.recipientBook, true)] : []),
