@@ -239,24 +239,37 @@ function valueLines(row: ArgRow, r: R): Html {
         <div class="ai">${ai(row.ai, r)}</div>`}`;
 }
 
-function partsOf(row: ArgRow, r: R): Html {
+/** A group's rows, the fixed ones folded under one line that counts them; inside a fold every row shows as it is. */
+function grouped(rows: readonly ArgRow[], one: (row: ArgRow, folded: boolean) => Html, folded: boolean, r: R): Html {
+  const shut = folded ? [] : rows.filter((row) => row.fixed);
+  return h`${rows.filter((row) => folded || !row.fixed).map((row) => one(row, folded))}${
+    shut.length === 0
+      ? ''
+      : h`
+      <details class="fixed"><summary>${decor('chev')}${r.w.fixedFold(shut.length)}</summary>${shut.map((row) => one(row, true))}
+      </details>`
+  }`;
+}
+
+function partsOf(row: ArgRow, folded: boolean, r: R): Html {
+  const part = (p: ArgRow, inFold: boolean): Html => h`
+        <div class="part"><div class="pn">${p.name}${p.chips.length === 0 ? '' : h`<div class="pchips">${p.chips.map(chip)}</div>`}</div><div>${valueLines(p, r)}</div>${partsOf(p, inFold, r)}</div>`;
   return h`${row.parts.map(
     (group) => h`
-      <div class="parts">${group.label === undefined ? '' : h`<div class="plabel">${text(group.label)}</div>`}${group.rows.map(
-        (p) => h`
-        <div class="part"><div class="pn">${p.name}${p.chips.length === 0 ? '' : h`<div class="pchips">${p.chips.map(chip)}</div>`}</div><div>${valueLines(p, r)}</div>${partsOf(p, r)}</div>`,
-      )}
+      <div class="parts">${group.label === undefined ? '' : h`<div class="plabel">${text(group.label)}</div>`}${grouped(group.rows, part, folded, r)}
       </div>`,
   )}`;
 }
 
-function argRow(row: ArgRow, r: R): Html {
+function argRow(row: ArgRow, folded: boolean, r: R): Html {
   return h`
     <div class="arg" data-field="${row.key}">
       <div class="nm"><span class="pn">${row.name}</span>${row.chips.map(chip)}</div>
-      <div class="val">${valueLines(row, r)}</div>${partsOf(row, r)}
+      <div class="val">${valueLines(row, r)}</div>${partsOf(row, folded, r)}
     </div>`;
 }
+
+const argRows = (rows: readonly ArgRow[], r: R): Html => grouped(rows, (row, folded) => argRow(row, folded, r), false, r);
 
 function callHead(call: CallBlock): Html {
   const { head } = call;
@@ -283,7 +296,7 @@ function flowBody(flow: Flow, r: R): Html {
       ? ''
       : h`
   <div class="cb">
-    <div class="callh"><span class="what">${r.w.safeTx}</span></div>${flow.safeTx.map((row) => argRow(row, r))}
+    <div class="callh"><span class="what">${r.w.safeTx}</span></div>${argRows(flow.safeTx, r)}
   </div>`
   }
   ${flow.calls.map(
@@ -291,7 +304,7 @@ function flowBody(flow: Flow, r: R): Html {
   <div class="cb">
     <div class="callh"><span class="no">${call.n}</span>${callHead(call)}</div>${call.head.kind === 'fn' ? h`<div class="cdoc">${docLine(call.head.doc, r)}</div>` : ''}${
       call.sends === undefined ? '' : h`<div class="sends">${text(call.sends)}</div>`
-    }${call.args.map((row) => argRow(row, r))}
+    }${argRows(call.args, r)}
   </div>`,
   )}
   <h3>${r.w.afterTx}</h3>${

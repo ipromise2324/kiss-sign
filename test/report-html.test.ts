@@ -553,3 +553,25 @@ test("an instance's context notes show in its section under their titles, each w
   const without = /<section id="vault-[^"]+">.*?<\/section>/s.exec(pages.get(hyperithm())?.html.get(language) ?? '')?.[0] ?? assert.fail('the committed instance section');
   assert.ok(!without.includes('<h3><span class="aiw"'), 'no context heading without context notes');
 });
+
+test('in the call ledger, each group keeps the rows the signer decides open and folds its fixed rows under one line that counts them', () => {
+  for (const language of LANGUAGES) {
+    const html = unescape(pages.get(hyperithm())?.html.get(language) ?? assert.fail('the frozen page'));
+    const flow = /<section id="flow">(.*?)<\/section>/s.exec(html)?.[1] ?? assert.fail(language);
+    const before = (field: string, fold: string): boolean => {
+      const at = flow.indexOf(`data-field="${field}"`);
+      const folded = flow.lastIndexOf('<details class="fixed">', at);
+      return folded !== -1 && flow.indexOf('</details>', folded) > at && flow.slice(folded, at).includes(fold);
+    };
+    const words = WORDS[language];
+    assert.ok(before('1.approve.spender', words.fixedFold(1)), `${language}: the approval's fixed spender folds`);
+    assert.ok(!flow.slice(0, flow.indexOf('data-field="1.approve.value"')).includes('<details class="fixed">'), `${language}: the amount the signer types stays open`);
+    const summaries = [...flow.matchAll(/<details class="fixed"><summary>.*?<\/svg>([^<]+)<\/summary>/g)].map((m) => m[1]);
+    assert.deepEqual(summaries, [words.fixedFold(1), words.fixedFold(1), words.fixedFold(4), words.fixedFold(1), words.fixedFold(4)], language);
+    for (const field of ['token', 'amount', 'vault', 'assets', 'maxSharePriceE27']) {
+      const row = new RegExp(`<div class="part"><div class="pn">${field}<`).exec(flow) ?? assert.fail(`${language}: ${field}`);
+      const shut = flow.lastIndexOf('<details class="fixed">', row.index);
+      assert.ok(shut === -1 || flow.lastIndexOf('</details>', row.index) > shut, `${language}: ${field} stays open`);
+    }
+  }
+});

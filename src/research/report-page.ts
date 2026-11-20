@@ -123,6 +123,8 @@ export type ArgRow = {
   readonly parts: readonly { readonly label: Inline | undefined; readonly rows: readonly ArgRow[] }[];
   /** The nested call's documentation page, on a `bytes` argument the template binds to a call. */
   readonly doc: DocLine | undefined;
+  /** The template fixes it and every part of it, and no documentation page under it failed to pass: the page folds it with its group's other fixed rows. */
+  readonly fixed: boolean;
 };
 
 export type CallHead = { readonly kind: 'fn'; readonly contract: string; readonly fn: string; readonly selector: Hex; readonly doc: DocLine } | { readonly kind: 'no-data'; readonly text: string };
@@ -687,6 +689,7 @@ function marketPartRows(node: ArgNode, market: Market, context: Context): ArgRow
       ai: fieldsNote(context, child.key),
       parts: [],
       doc: undefined,
+      fixed: false,
     };
   });
 }
@@ -709,6 +712,7 @@ function argRow(node: ArgNode, context: Context, withChips: boolean, inMessage =
       ai: fieldsNote(context, node.key),
       parts: markets.map((m) => ({ label: markets.length === 1 ? undefined : [marketWords(m, w), w.marketId, { mono: m.id }], rows: marketPartRows(node, m, context) })),
       doc: undefined,
+      fixed: false,
     };
   }
   const nestedCall = node.rule.kind === 'call';
@@ -716,6 +720,8 @@ function argRow(node: ArgNode, context: Context, withChips: boolean, inMessage =
   const { words } = leaf;
   /** A free member of a signed message is no value of this transaction: the digest fixes it, and no perturbation tries another. */
   const qualifier = inMessage && node.rule.kind === 'free' ? [w.freeMember] : leaf.qualifier;
+  const rows = node.children.map((child) => argRow(child, context, nestedCall, inMessage || node.rule.kind === 'eip712'));
+  const doc = node.rule.kind === 'call' && node.rule.call.encoding === 'call' ? docLine(node.rule.call.fn.signature, context) : undefined;
   return {
     key: node.key,
     name: node.name,
@@ -725,8 +731,9 @@ function argRow(node: ArgNode, context: Context, withChips: boolean, inMessage =
     qualifier,
     id: undefined,
     ai: fieldsNote(context, node.key),
-    parts: node.children.length === 0 ? [] : [{ label: undefined, rows: node.children.map((child) => argRow(child, context, nestedCall, inMessage || node.rule.kind === 'eip712')) }],
-    doc: node.rule.kind === 'call' && node.rule.call.encoding === 'call' ? docLine(node.rule.call.fn.signature, context) : undefined,
+    parts: rows.length === 0 ? [] : [{ label: undefined, rows }],
+    doc,
+    fixed: (rows.length === 0 ? whoOf(node.rule, context.template)?.who === 'fixed' : rows.every((row) => row.fixed)) && (doc === undefined || doc.state === 'ok'),
   };
 }
 
@@ -916,6 +923,7 @@ function ruleRow(key: string, name: string, rule: Rule, context: Context): ArgRo
     ai: undefined,
     parts: [],
     doc: undefined,
+    fixed: who?.who === 'fixed',
   };
 }
 
@@ -930,6 +938,7 @@ const noDataRow = (key: string, w: Words): ArgRow => ({
   ai: undefined,
   parts: [],
   doc: undefined,
+  fixed: true,
 });
 
 function callBlocks(context: Context): CallBlock[] {

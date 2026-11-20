@@ -551,6 +551,7 @@ const ZH = {
   diagramTitle: '交易流程',
   scrollHint: '圖可以左右滑動',
   docs: '文件：',
+  fixedFold: (n: number): string => `${n} 個固定的值；改了任何一個都是 MISMATCH`,
   /** Text around a code span the renderer puts between the two. */
   callsLead: '下面逐一列出交易的每個呼叫。每個參數都寫出由誰決定、它的值或必須符合的規則，以及它的作用。',
   flowLead: '實線是 Safe 發出的呼叫、模板綁定的內部呼叫，和程式在過去交易裡看到的流程線；虛線是還沒核對的 AI 研究；綠線是你得到的。',
@@ -1167,6 +1168,7 @@ const EN: Words = {
   contents: 'Contents',
   diagramTitle: 'Transaction flow',
   scrollHint: 'Scroll the diagram sideways',
+  fixedFold: (n) => `${n} fixed ${plural(n, 'value', 'values')}; any change is a MISMATCH`,
   docs: 'Docs: ',
   callsLead: "The transaction's calls, one by one. Each argument shows who decides it, its value or the rule it must follow, and what it does.",
   flowLead: "Solid lines are the Safe's calls, the calls the template binds inside them, and flow lines the program saw in past transactions; dashed lines are AI research not checked; green lines are what you get.",
