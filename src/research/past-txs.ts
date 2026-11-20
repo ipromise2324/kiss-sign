@@ -41,8 +41,6 @@ export type PastTxsQuery = { readonly template: Template; readonly anchor: Omit<
 export type PastTxsDeps = {
   readonly ask: Ask;
   readonly reader: Reader;
-  /** The reader each anchor party of a covered year is checked through; `reader` when absent. */
-  readonly partyReader?: Reader;
   readonly registry: Registry;
   readonly readMessage: ReadMessage;
   readonly exclude: Address | undefined;
@@ -266,7 +264,7 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
     for (const [hash, sources] of window.found) found.set(hash, sources);
     for (const hit of hits.etherscan) if (hit.emitter !== undefined) emitters.set(hit.hash, (emitters.get(hit.hash) ?? new Set()).add(hit.emitter));
     const hashes = year?.kind === 'covered' ? byBlock([...window.found.keys()], hits) : [...window.found.keys()];
-    const chosen = year?.kind === 'covered' && sampling.kind === 'year' ? await chooseByParty(hashes, hits, partyRule(query.anchor), range.toBlock, deps.partyReader ?? deps.reader, deps.maxTxs) : undefined;
+    const chosen = year?.kind === 'covered' && sampling.kind === 'year' ? await chooseByParty(hashes, hits, partyRule(query.anchor), range.toBlock, deps.reader, deps.maxTxs) : undefined;
     if (chosen !== undefined) byParty = chosen;
     searched.push({ asked, range, found: hashes, sample: chosen?.sample ?? spacedSample(hashes, perWindow) });
   }

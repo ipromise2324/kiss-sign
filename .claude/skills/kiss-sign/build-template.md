@@ -26,10 +26,10 @@ When the program lacks a capability the operation needs, such as a borrow whose 
 - Prefer a generic capability a template declares as data, such as "read this view with these bound arguments before and after the transaction, and require this change", over code for one protocol, so a later operation needs only a template.
 - A change to a file `docs/verdict-core.txt` lists, the code the signing commands run, goes in a pull request of its own: with its tests, no template or registry change and no change to the program gate.
   Merge it as [merge-a-program-change.md](merge-a-program-change.md) says before the template's pull request, which follows on a branch from the new `main`.
-  `pnpm check-push`, CI and `--compare` refuse a branch that mixes them ([The verdict core](../../../docs/design/program-ownership.md#the-verdict-core)).
+  `pnpm check-push` and CI refuse a branch that mixes them ([The verdict core](../../../docs/design/program-ownership.md#the-verdict-core)).
 - Run `pnpm verdict-core` after the change, since `pnpm test` fails when that list is out of date.
 - A change only to research code, such as a report section under `src/research/`, may share the template's pull request, unless `docs/verdict-core.txt` lists the file, as it does `src/research/report-words.ts`, which holds every word of the report, and `source-page.ts`, `api-source.ts` and `github-token.ts`.
-  `scripts/report.ts`, which holds `--compare`, guards that rule and is a gate file, so a change to it goes in a pull request of its own, which the signer merges.
+  `scripts/report.ts` is a gate file, so a change to it goes in a pull request of its own, which the signer merges.
 - Write the code the way the signer's own setup asks, such as their instructions or the development workflow they use; this skill prescribes none.
   Tell the signer you will follow their workflow, not which tool you run.
 
@@ -130,8 +130,7 @@ Keep the final message short and plain.
 2. Then the template, what the card will ask, what will be checked, the findings, and the pull request link.
 3. Then the next steps:
    - Read the report in their language (`report.generated.en.html` or `report.generated.zh-TW.html`, or the one that exists).
-   - Before merging, in a clone on `main`: `git pull`, `git fetch origin <branch>`, then `pnpm report <protocol>/<operation> --compare --data origin/<branch>`, once per report the branch adds or changes, with `--instance-of <instance>` for a per-instance report.
-     It runs main's code on the branch's templates, registry and recordings, reads the facts live again, and prints each that differs from the committed report; it does not search for past transactions again, so it cannot show the search found every one, and it takes each signed message's answer from the recording.
-     It also requires each HTML report to equal, byte for byte, what main's code writes from the recordings and notes.
-     It refuses a branch that changes the verdict core beside a template, the registry or a gate file, and prints `PROGRAM CHANGE` for each program file the branch changes, `gate` among them for a file only the signer merges, and `AI TEXT` for each `notes.json` the branch changes, text no program checks for truth: read those files.
-   - Merge only when it exits 0, printing no difference, and they are satisfied.
+   - For each registry entry the branch adds or changes, open each source the report lists for it, and check that its domain is the protocol's own and that the page lists this address.
+     The recordings were made on your computer and no program reads them again ([Known limits](../../../docs/design/known-limits.md#known-limits)).
+   - Check that its CI jobs pass; a red `program-gate` job, which runs main's code, means the branch also changes the verdict core or the program gate, or a test failed.
+   - Merge when they are satisfied.
