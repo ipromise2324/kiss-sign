@@ -5,10 +5,9 @@ import type { Address, Hex } from '../safe/types.ts';
 import type { LeafRule, Quantity } from '../template/template.ts';
 import { effectText, distributionOf, shown, toleranceFinding } from './amounts.ts';
 import type { Difference, StatedEffect } from './amounts.ts';
-import { WINDOWS, YEAR } from './past-txs.ts';
+import { WINDOWS, YEAR, foundBy } from './past-txs.ts';
 import type { BlockRange, Fit, Misfit, PastTxs, Selection } from './past-txs.ts';
 import { PAGE, SOURCES, searchedBy } from './sources.ts';
-import type { SourceName } from './sources.ts';
 import { brokenRule, constText, functionNames, isOtherOperation, isTime, misfitText } from './study.ts';
 import type { OutsideKind, Sender } from './study.ts';
 
@@ -314,21 +313,17 @@ export function renderPastTxs(run: PastTxs, registry: Registry): string {
     lines.push(`chosen to study: ${chosenText(selection, check.kind === 'checked')}`);
   }
 
-  const bySource = (source: SourceName) => [...run.found].filter(([, s]) => s.includes(source)).length;
-  const only = (source: SourceName) => [...run.found].filter(([, s]) => s.length === 1 && s[0] === source).map(([hash]) => hash);
-  const both = [...run.found].filter(([, s]) => s.length === SOURCES.length).length;
-  const searched = searchedBy(anchor);
-  if (searched.length === SOURCES.length) {
-    lines.push(`sources: alchemy found ${bySource('alchemy')}, etherscan found ${bySource('etherscan')}; both ${both}, only alchemy ${only('alchemy').length}, only etherscan ${only('etherscan').length}`);
-    for (const source of SOURCES) {
-      const hashes = only(source);
-      if (hashes.length > 0) lines.push(`  only ${source}: ${hashes.join(', ')}`);
-    }
-  } else lines.push(`sources: etherscan found ${bySource('etherscan')}; alchemy does not search an event (its eth_getLogs reads at most 10 blocks at a time on the free plan)`);
+  const { only } = run.found;
+  if (searchedBy(anchor).length === SOURCES.length) {
+    const both = run.found.total - only.alchemy.length - only.etherscan.length;
+    lines.push(`sources: alchemy found ${foundBy(run.found, 'alchemy')}, etherscan found ${foundBy(run.found, 'etherscan')}; both ${both}, only alchemy ${only.alchemy.length}, only etherscan ${only.etherscan.length}`);
+    for (const source of SOURCES) if (only[source].length > 0) lines.push(`  only ${source}: ${only[source].join(', ')}`);
+  } else lines.push(`sources: etherscan found ${foundBy(run.found, 'etherscan')}; alchemy does not search an event (its eth_getLogs reads at most 10 blocks at a time on the free plan)`);
   if (run.otherEmitter.length > 0) lines.push(`not studied, the event logged only by another contract than the sender: ${run.otherEmitter.length}, e.g. ${examples(run.otherEmitter)}`);
+  const onlyBy = new Map(SOURCES.flatMap((source) => only[source].map((hash) => [hash, source] as const)));
   const mark = (hash: Hex): string => {
-    const sources = run.found.get(hash) ?? [];
-    return sources.length === searched.length ? hash : `${hash} [only ${sources[0]}]`;
+    const source = onlyBy.get(hash);
+    return source === undefined ? hash : `${hash} [only ${source}]`;
   };
 
   const n = run.studies.length;
