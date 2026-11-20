@@ -123,13 +123,13 @@ The report shows what the transaction will do and where each fact came from. Tex
 
 Under it, each argument says who decides it, down to the steps inside a bundle: you, the program or the template. Fixed values are folded; changing one is a MISMATCH.
 
-![The fields of bundler3.multicall: a bundle of two steps, erc20TransferFrom and erc4626Deposit; the vault you pick, the amount you type, the price ceiling the program computes, and the fixed values folded](docs/readme/report-fields.png)
+![The first step inside bundler3.multicall, erc20TransferFrom: the token follows the vault you pick, the amount is what you type, and the fixed values are folded](docs/readme/report-fields.png)
 
-**The protocol and the instance.** Morpho's TVL, audits and incidents, then this vault's facts from two providers: its factory, size, holders and a year of monthly size. The AI's notes say where your deposit goes and how to get it back.
+**The protocol and the instance.** Morpho's TVL, audits and incidents, then this vault's facts from two providers: its factory, size and holders. Below them come a year of monthly size and the AI's notes on where your deposit goes.
 
-![The Instance section: the factory answers isVaultV2 = true, 6,603,958.14 USDC now, 169 holders, the largest 58.88%, a chart of monthly size, and the AI's note Where deposits go](docs/readme/report-instance.png)
+![The Instance section: the factory answers isVaultV2 = true, 6,603,958.14 USDC now, 169 holders, the largest 58.88% and the top 10 89.19%](docs/readme/report-instance.png)
 
-**Wallet display.** What your hardware wallet will show. Here no ERC-7730 descriptor decodes the batch, so you compare the hash.
+**Wallet display.** What your hardware wallet will show, field by field. Here it shows the Safe transaction going to Safe's MultiSend, but not the 2 calls packed inside, so you compare the hashes on the device with the ones `verify` prints.
 
 **Addresses.** Where each address was found and who owns that site. Sites with one owner count as one place. CoW's settlement contract is in four sources but two places: CoW's GitHub and Immunefi.
 
