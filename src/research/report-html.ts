@@ -104,18 +104,17 @@ type Inside = Extract<Arrow, { kind: 'inside' }>;
 const markOf = (i: number): string => String.fromCodePoint(0x2460 + i);
 
 /** Each flow line the traces were compared with, with its mark. */
-const markedLines = (sequence: Sequence): { readonly arrow: Inside; readonly mark: string }[] =>
-  sequence.arrows.flatMap((arrow) => (arrow.kind === 'inside' && arrow.seen !== undefined ? [arrow] : [])).map((arrow, i) => ({ arrow, mark: markOf(i) }));
+const markedLines = (sequence: Sequence): { readonly arrow: Inside; readonly seen: NonNullable<Inside['seen']>; readonly mark: string }[] =>
+  sequence.arrows.flatMap((arrow) => (arrow.kind === 'inside' && arrow.seen !== undefined ? [{ arrow, seen: arrow.seen }] : [])).map((line, i) => ({ ...line, mark: markOf(i) }));
 
 /** The marks below the diagram: one sentence for the confirmed lines and one for those seen in only some transactions, each with its counts. */
 function legend(sequence: Sequence, r: R): Html {
   const marked = markedLines(sequence);
   const counts = (confirmed: boolean): Span[] =>
     marked
-      .filter(({ arrow }) => arrow.seen?.confirmed === confirmed)
-      .flatMap(({ arrow, mark }, i): Span[] => {
+      .filter(({ seen }) => seen.confirmed === confirmed)
+      .flatMap(({ arrow, seen, mark }, i): Span[] => {
         const source = confirmed ? arrow.text.sources[0] : undefined;
-        const seen = arrow.seen ?? { seen: 0, of: 0 };
         return [...(i === 0 ? [] : [r.w.sep]), source === undefined ? mark : { href: source, label: mark }, ` ${r.w.seenOf(seen.seen, seen.of)}`];
       });
   const lines = [
