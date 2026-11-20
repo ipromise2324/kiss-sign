@@ -288,6 +288,18 @@ test('an AI source sits under its label with its result in words, never with a s
   assert.ok(groups > 0, 'a replayed report has AI sources');
 });
 
+test('every source line and documentation line starts with its result icon, the source and any phrase after it', () => {
+  let lines = 0;
+  for (const [id, { html }] of replayed) {
+    for (const [, line = ''] of html.matchAll(/<(?:span class="srcrow"|span class="site"|div class="doc") data-state="[^"]+">(.*?)<\/span><\/(?:span|div)>/gs)) {
+      lines += 1;
+      assert.match(line, /^<svg class="i [a-z]+" role="img" aria-label="[^"]+"><use href="#[a-z]+"\/><\/svg><span>/, `${id}: ${line.slice(0, 120)}`);
+      assert.equal(line.split('<svg').length - 1, 1, `${id}: one icon on the line`);
+    }
+  }
+  assert.ok(lines > 0, 'a replayed report has source lines');
+});
+
 const STATE_NAMES: Readonly<Record<Language, readonly string[]>> = { en: ['pass', 'attention', 'fail', 'nothing to compare', 'AI judgment'], 'zh-TW': ['通過', '注意', '不通過', '沒資料可比', 'AI 判斷'] };
 
 test("every state icon is an image named in the page's language, and the rest are hidden from screen readers", () => {
@@ -554,8 +566,10 @@ test("an instance's context notes show in its section under their titles, each w
   const language = held[0] as Language;
   const html = renderPage(buildPage(await withFixtures(hyperithm(), inputs), { ...raw, context }, title, language));
   const section = /<section id="vault-[^"]+">.*?<\/section>/s.exec(html)?.[0] ?? assert.fail('an instance section');
-  assert.match(section, /<h3><span class="aiw" data-ai><span>Where deposits go<\/span><span class="byai">[^<]+<\/span><\/span><\/h3>/);
-  assert.match(section, /<p class="intro"><span class="aiw" data-ai><span>The vault lends each deposit on to the markets it allocates to\. <a class="aisrc" href="https:\/\/example\.org\/vault">[^<]+<\/a><\/span><span class="byai">/);
+  assert.match(section, /<div data-ai>\s*<h3><span class="aiw" data-ai><span>Where deposits go<\/span><span class="byai">[^<]+<\/span><\/span><\/h3>/);
+  assert.match(section, /<p class="intro"><span class="aiw" data-ai><span>The vault lends each deposit on to the markets it allocates to\. <a class="aisrc" href="https:\/\/example\.org\/vault">[^<]+<\/a><\/span><\/span><\/p>/);
+  assert.equal(section.split('class="byai"').length - 1, 1, 'one AI tag for the note, on its title');
+  assert.match(section, /<\/p>\s*<\/div>/, 'the note ends inside the block its title tags');
   const without = /<section id="vault-[^"]+">.*?<\/section>/s.exec(pages.get(hyperithm())?.html.get(language) ?? '')?.[0] ?? assert.fail('the committed instance section');
   assert.ok(!without.includes('<h3><span class="aiw"'), 'no context heading without context notes');
 });

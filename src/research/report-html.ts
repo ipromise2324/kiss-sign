@@ -2,7 +2,7 @@ import { existsSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { HTML_LANG, LANGUAGES } from '../language.ts';
 import type { Language } from '../language.ts';
-import type { State } from './ledger.ts';
+import type { Phrase, State } from './ledger.ts';
 import { NOTES_FILE, codeSpans, notesLanguages, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
 import type { AddressRow, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, NewestResult, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, Span, VaultBlock, WalletRows } from './report-page.ts';
@@ -41,11 +41,12 @@ const aiProse = (text: string): Html => h`${aiParts(text).map((part) => (part.co
 /** The renderer's state for one page: its words and its language. */
 type R = { readonly w: Words; readonly language: Language };
 
-/** The only way AI text reaches the page: escaped, with its sources linked and its dashed tag. */
-function ai(note: AiText, r: R): Html {
+/** The only way AI text reaches the page: escaped, with its sources linked and its dashed tag, which `tagged` false leaves to a heading right above it. */
+function ai(note: AiText, r: R, tagged = true): Html {
   const sources = note.sources.map((url, i) => h` <a class="aisrc" href="${url}">${r.w.sourceLink(note.sources.length > 1 ? i + 1 : undefined)}</a>`);
-  const tag = h`<span class="byai">${r.w.tag[note.tag]}</span>`;
-  return note.tag === 'ai' ? h`<span class="aiw" data-ai>${tag}<span>${aiProse(note.ai)}${sources}</span></span>` : h`<span class="aiw" data-ai><span>${aiProse(note.ai)}${sources}</span>${tag}</span>`;
+  const body = h`<span>${aiProse(note.ai)}${sources}</span>`;
+  const tag = tagged ? h`<span class="byai">${r.w.tag[note.tag]}</span>` : '';
+  return note.tag === 'ai' ? h`<span class="aiw" data-ai>${tag}${body}</span>` : h`<span class="aiw" data-ai>${body}${tag}</span>`;
 }
 
 let tips = 0;
@@ -227,10 +228,13 @@ function diagram(sequence: Sequence, r: R): Html {
 const CHIP_CLASS: Readonly<Record<Chip['who'], string>> = { 'you-type': 'who you', 'you-pick': 'who you', computed: 'who', fixed: 'who', free: 'who app', bounded: 'who app' };
 const chip = (c: Chip): Html => h`<span class="${CHIP_CLASS[c.who]}">${c.label}</span>`;
 
+/** A result's phrase, after the source its icon leads. */
+const phrase = (p: Phrase | undefined, r: R): Html => (p === undefined ? h`` : h`<span class="res">${r.w.phrase[p]}</span>`);
+
 const docLine = (doc: DocLine, r: R): Html =>
-  h`<div class="doc" data-state="${doc.state}"><span class="f3">${r.w.docs}</span><a href="${doc.href}">${doc.label}</a><span class="res">${icon(doc.state, r.language)}${doc.phrase === undefined ? '' : r.w.phrase[doc.phrase]}</span>${
+  h`<div class="doc" data-state="${doc.state}">${icon(doc.state, r.language)}<span><span class="f3">${r.w.docs}</span><a href="${doc.href}">${doc.label}</a>${phrase(doc.phrase, r)}${
     doc.note === undefined ? '' : h` <span class="f3">${doc.note}</span>`
-  }</div>`;
+  }</span></div>`;
 
 function valueLines(row: ArgRow, r: R): Html {
   return h`${row.value === undefined ? '' : h`<div class="raw">${row.value}</div>`}<div class="is">${text(row.words)}${
@@ -391,8 +395,10 @@ function vaultBody(block: VaultBlock, r: R): Html {
     </dl>
   </details>`
   }${block.context.map((c) => h`
+  <div data-ai>
   <h3>${ai(c.title, r)}</h3>
-  <p class="intro">${ai(c.note, r)}</p>`)}`;
+  <p class="intro">${ai(c.note, r, false)}</p>
+  </div>`)}`;
 }
 
 /** The AI's text after the sentence shown open, folded under it. */
@@ -473,8 +479,8 @@ function newestLine(newest: NewestResult, r: R): Html {
 }
 
 function sourceLine(line: SourceLine, r: R): Html {
-  return h`<div class="src"><span data-state="${line.state}">${line.href === undefined ? line.label : h`<a href="${line.href}">${line.label}</a>`}<span class="res">${icon(line.state, r.language)}${
-    line.others.length > 0 ? r.w.labelOther(line.others) : line.phrase === undefined ? '' : r.w.phrase[line.phrase]
+  return h`<div class="src"><span class="srcrow" data-state="${line.state}">${icon(line.state, r.language)}<span>${line.href === undefined ? line.label : h`<a href="${line.href}">${line.label}</a>`}${
+    line.others.length > 0 ? h`<span class="res">${r.w.labelOther(line.others)}</span>` : phrase(line.phrase, r)
   }</span></span>${line.site === undefined ? '' : siteLine(line.site, r)}${line.newest === undefined ? '' : newestLine(line.newest, r)}</div>`;
 }
 
