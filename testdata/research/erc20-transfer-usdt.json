@@ -1,0 +1,8327 @@
+{
+ "query": {
+  "template": "erc20/transfer",
+  "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+  "anchor": "any",
+  "head": "26406875",
+  "maxTxs": 240
+ },
+ "head": "26406875",
+ "studiedWith": {
+  "template": "0x73d152f3283d07ac245108b5462c02cedf55bbaf0f5c03fcddcf5cbe8574afc2",
+  "registry": "0xef8f3e37b81e9aa200fd6eea69c84506d53c3374a1ac18f8b598623c42b4d3eb",
+  "study": "0xa3d8a7f49c350a885c28f40368280902337dba93ab55421baa7446e7816dd793"
+ },
+ "search": {
+  "windows": [
+   {
+    "asked": {
+     "fromBlock": "23986201",
+     "toBlock": "23993400"
+    },
+    "range": {
+     "fromBlock": "23993387",
+     "toBlock": "23993400"
+    },
+    "found": 446,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "24205201",
+     "toBlock": "24212400"
+    },
+    "range": {
+     "fromBlock": "24212394",
+     "toBlock": "24212400"
+    },
+    "found": 409,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "24424201",
+     "toBlock": "24431400"
+    },
+    "range": {
+     "fromBlock": "24431394",
+     "toBlock": "24431400"
+    },
+    "found": 361,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "24643201",
+     "toBlock": "24650400"
+    },
+    "range": {
+     "fromBlock": "24650394",
+     "toBlock": "24650400"
+    },
+    "found": 484,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "24862201",
+     "toBlock": "24869400"
+    },
+    "range": {
+     "fromBlock": "24869394",
+     "toBlock": "24869400"
+    },
+    "found": 407,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "25081201",
+     "toBlock": "25088400"
+    },
+    "range": {
+     "fromBlock": "25088394",
+     "toBlock": "25088400"
+    },
+    "found": 274,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "25300201",
+     "toBlock": "25307400"
+    },
+    "range": {
+     "fromBlock": "25307398",
+     "toBlock": "25307400"
+    },
+    "found": 133,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "25519201",
+     "toBlock": "25526400"
+    },
+    "range": {
+     "fromBlock": "25526394",
+     "toBlock": "25526400"
+    },
+    "found": 423,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "25738201",
+     "toBlock": "25745400"
+    },
+    "range": {
+     "fromBlock": "25745394",
+     "toBlock": "25745400"
+    },
+    "found": 387,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "25957201",
+     "toBlock": "25964400"
+    },
+    "range": {
+     "fromBlock": "25964387",
+     "toBlock": "25964400"
+    },
+    "found": 438,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "26176201",
+     "toBlock": "26183400"
+    },
+    "range": {
+     "fromBlock": "26183394",
+     "toBlock": "26183400"
+    },
+    "found": 556,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "26395201",
+     "toBlock": "26402400"
+    },
+    "range": {
+     "fromBlock": "26402394",
+     "toBlock": "26402400"
+    },
+    "found": 320,
+    "studied": 20
+   }
+  ],
+  "perWindow": 20,
+  "found": {
+   "total": 4638,
+   "only": {
+    "alchemy": [],
+    "etherscan": []
+   }
+  },
+  "otherEmitter": []
+ },
+ "studies": [
+  {
+   "kind": "not-studied",
+   "hash": "0x3f9f687c98cf81fe1a3e7e8ab011176568b18e5ba3068e5c7aee8c8e36e7eed1",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xe88184687dea48b7beb3ec49a9a6797adb18b0daf1d3d0acde09529b10b4b9c9",
+   "block": "23993387",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xc94ebb328ac25b95db0e0aa968371885fa516215",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xad3760eb171d492d22b25b71f6d146c783312a55",
+    "24991871497"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xcfd30b9bfb860a17681ade72de05ecdf8070a605a112387d7e393edcec30750f",
+   "block": "23993387",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x38ae22c7dd3e5fa0dee231de6f571f3e5d154827",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xd6e457a2d0bf8ed6695abab0d23b53d04d57c2fe",
+    "1000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x3c75009b24d4318bf3d53a74dfad511d3c98641983eaf10600c9b542fad4e201",
+   "block": "23993388",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x7ffcc04a8d3564ac66f68a80d26b885aa58ec835",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xa1745cc6c418ab12b0d68c414d8e1d4650ae363c",
+    "35000000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x829788087afc8f6254b662c6c50ea52c116808ed3a16af641a23d7e249cf3367",
+   "why": "calls no function the template calls",
+   "to": "0x69c9489d981ed263150e552a032c2db9ee4e5d11",
+   "selector": "0x02000000"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xff9fa51d2d255e04d1ddf40304be765d3df657076cb53f1ad383f83cea62047c",
+   "block": "23993390",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xdd3d72c53ff982ff59853da71158bf1538b3ceee",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xd86de1f39ba2f64e1953e107c35cf51f4b5247b6",
+    "17415222"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8ae7a979da2f4f24975a41abe01060e24c895203d4cf210c0583110b64fa4be9",
+   "block": "23993390",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x6413d7bb79623cb8bbda0ee60a0f48acb35fc384",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x0ad49410c4543431f2021628e418128ddef4abeb",
+    "1403"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x28335d31b5d8eb25525b3ca764d1272c3897a6d7036b594cb4b9e51ed2563c0b",
+   "why": "calls no function the template calls",
+   "to": "0x407c027fd92f809b4b7bb6dfaaa66f056bda9167",
+   "selector": "0x1d946b82"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xe54c000580e2beccc0a614c3a2348fbc797e2c043cca7b475ba400c3222c5351",
+   "block": "23993391",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xbb5f16e137d28cfc9208f515df92398e7a388093",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xe98e9042cee268d5e1a64efeece6b048b4a42615",
+    "50000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3a5e140758ebe38cc6653301f326d3798f5fa92ad17d6a6a4d1a7d0c51bf9e6b",
+   "why": "calls no function the template calls",
+   "to": "0xfaf17849fb05a11a4e233f221bac99ca43fc83f8",
+   "selector": "0x6b13fcb1"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x21431c658049e870d80bf24df57c8b1d806006d9dac563cdfe21314fa61375c3",
+   "why": "calls no function the template calls",
+   "to": "0xf6801d319497789f934ec7f83e142a9536312b08",
+   "selector": "0xf2c42696"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x3f39d4c46e698f4ce7af23f13bdf54bd426b2a21992e2eec24cb3084473dd3a5",
+   "block": "23993393",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x9d2467d21f14def5b5485076b63592a096d4284a",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xf8c3dff828dcae3f29e9e8d66204085bb37b4391",
+    "10000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe87925eebc57ca5fed454421e01348af73e916384e3895f21ef4d61c91eeb93a",
+   "why": "calls no function the template calls",
+   "to": "0x663dc15d3c1ac63ff12e45ab68fea3f0a883c251",
+   "selector": "0x258c16ee"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x31953e512672ff87492579baea992f91648072f449b6bfba17778aee44295df4",
+   "block": "23993394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb283e184e4da3739c49c24787d26d041c5702c20",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xdfaa75323fb721e5f29d43859390f62cc4b600b8",
+    "206795040"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x1db8fdc4d3df5f10ac21649b04b2adae5355ffebacf49efda9fa6ae931b9a91a",
+   "block": "23993396",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x1451337eb23fd356366c556a36b6025cff46306a",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x559432e18b281731c054cd703d4b49872be4ed53",
+    "462000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x137a9e28d1603da5068133edb88c2d287efc147b6ebb1c0287ad1d34b50e3f13",
+   "block": "23993396",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xbb6e3c52595744f3290ced2d925e0c67a21c00e8",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x02a78632215262a94ce8651846e7d22adc98ce3c",
+    "55548800"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x4913cb582f0bd80ca0bc7b6e9d5fde14f1c7c6fa45adc08c76a719c059d7653c",
+   "block": "23993397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x69e0a48b817023d461f25cdfa0ddb1966b3c7a18",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xa9d1e08c7793af67e9d92fe308d5697fb81d3e43",
+    "91593245"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x913147b1276147f6f3d6ab193d2b77a31e827304fcdd80f5c767bb14b2f90df9",
+   "why": "calls no function the template calls",
+   "to": "0xafc9191c0c15ceb01b8fa901e85c32de49720947",
+   "selector": "0x74fa4121"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc6c078dcf1b9e71deafaddeb406cc8bb89c625ff2fcae3be9f4ae8dd13744223",
+   "why": "calls no function the template calls",
+   "to": "0xf6801d319497789f934ec7f83e142a9536312b08",
+   "selector": "0xf2c42696"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x643e8e00f40592547b0f3b5c4b10f2254cca3f9cd08c8ec678d9f21dcbe3e4d4",
+   "why": "calls no function the template calls",
+   "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+   "selector": "0x23b872dd"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x6518c6dd1503e0edb961e8ea9153c43f514fbf35bc52377402707be5b9fa2b53",
+   "block": "24212394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x378263080e04e71028de05069b0b2bee10c29cc5",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xdd3d72c53ff982ff59853da71158bf1538b3ceee",
+    "1500000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x841bc0274465f9ca368dc9cbe2778993324f4b595026014c51864840d7a0ce96",
+   "block": "24212394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xce4b07d7b78402507a3e9eaa816de2a0060751a5",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x96d0471a061593e20f0ebc8c5b8b2d056862aeff",
+    "147999999"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xc0b3e10e5e892a00fba5600ae2c7812cc61fe706099c267fe81df467852160ff",
+   "block": "24212394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x4a9a16755a6bf64291cd2c9eb027b39c129ff58d",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xf7d56faa85c8576f324fdf5bed360d3acb263451",
+    "104610000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x9898c31cc10c09307416d95d1c15c14330e70ab822d7458331d1dcf67344f6e6",
+   "block": "24212394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf2d6379fd745b8111abcefe9bde4d32df69e3c51",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xf5f85ca23d6247d7ae8824197605177a7a8df691",
+    "218"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xba072625e81cabf23d6d57fc5231f8736560311c14316935bdc10367d9b2157d",
+   "block": "24212395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xee2f5529a1f8e2bac71f78b45b909aecf5727793",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x598ac7f5499cb2cf7e15637cfa1258250b016933",
+    "403000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x0b74469b0e936704b7efcf36f976ae3c3a094153a1ddf93e916d97498b5d2ba7",
+   "block": "24212395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x4e2a47b44ecd6280ffcb629560198f179c0781ab",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xa8b2553f32304176be624bc4f58c18ec01051018",
+    "10000000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xc83c7823dbfb8cd6a6e409dcbfe50d9460b43fef1faeb7f715aa63d56d8fc7d0",
+   "block": "24212395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x700074c3005b8a2b7cd8944152514e69753f56ed",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x58a026bf2099ee06d8d8c7e82ac5db7faba7855a",
+    "921"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xccf991eae15e88ce4898bdb05e6b19c7a2d673c87f1ee56cb2ed7fcc424d1ffc",
+   "why": "calls no function the template calls",
+   "to": "0x3d90f66b534dd8482b181e24655a9e8265316be9",
+   "selector": "0x47ee97ff"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf0d563ba14c93f211516509fa3e4c79f05fe10e5f0c8c57f15fc6974feca6945",
+   "why": "calls no function the template calls",
+   "to": "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45",
+   "selector": "0x04e45aaf"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x1cfbd3e4acd07f15d5c585467b574ab65dbfa5156ede3901808599b92ff3955b",
+   "block": "24212396",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x4fa6313dcef7a1410551f190e645c4c19a734eef",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xbd8b5d853dc06ae40cb14057acc0e785ad5b21e3",
+    "1075"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xeeda51fcee8a04a3bf65316637dd4b756f1688a40460e186f8251932b73a3aaf",
+   "block": "24212397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x3c7b4e20e5cc75b6e31b8f3f3218fa42567d358a",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xfac9ba9a1463c4a39a08cf08baedebd5a79bbd37",
+    "50000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x5808a4030a7203611482d6526e9bcc82e026f2f15cc6a6dc634cdfa2ee1db66a",
+   "block": "24212397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x598f62e7f711eacecc48d8ccdccfc89fc475c8fe",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x3882eda88a7a9d4eb097d1d62e86ad51d3e2b985",
+    "100"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x56ddb1fdc19364f6a4f396351f539dcd82d9ba2b8b01559ce561fa74498bec25",
+   "block": "24212397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x07e509bb205c390995b633c3752ff7726913d695",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xcd7868086e071489c7c2b08f2715008bc0b9f2e5",
+    "831"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xc34151f97f0024b6a1c0f0dcc95a3dd0437b7880e96c471474960e30831ed973",
+   "block": "24212397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x67d0f07f6caecced3df466ad4c85f2332eab45a3",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xc50b55351d60c98964e4b7428fc67ce3a98a9444",
+    "320000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xed18c6b606f02ded98a90ccac03ebc1fbf4fb563a019afd141c6bd78e022feeb",
+   "block": "24212398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xdfd5293d8e347dfe59e90efd55b2956a1343963d",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x6febdfda1c967807785e4109ed33e62e5d158ab7",
+    "54330000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x033b98aa9c41e2f5d83d9de05dc48fb999c132286d21a84e0031d04604becb87",
+   "block": "24212398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x4aa4b72bf1c59b2097ccb675f93eb4be6f4e78ae",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x1139ee00953b88b4c9940d5e4dafc275b44a14dc",
+    "139"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xd7969ada7256575c82efb029227b206a4f1a7ee951d85053137672f508c47174",
+   "block": "24212399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb163cd36d22a9ba798a3ee9bc4fd7f182a0331bd",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x8c68072d01bb525ca9f477359313eb8e8ebccd04",
+    "1400000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x40eb8815e0ca3c349a0b18ac050d13d849da4d7e1f35c00bb3f7075a05168149",
+   "why": "calls no function the template calls",
+   "to": "0xd862cdcfeb856c32b3c4f7563f4811d8ddfd42e2",
+   "selector": "0xd4e4634a"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x01d00e182050060a2d1728bc6510bc712be16c2943f557ea1465ce63177ef7a8",
+   "block": "24212400",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x79856658004149e01028e588f0ccb03b4f28a492",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xea98397f5f47e96c4ef76d413e6e95a43aa70f1a",
+    "300"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x13ea01965981597d8453298acfaaa4b36b0837afbc22651e73557ce1720414f7",
+   "block": "24212400",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x061f41af2640b4d69d9662850e9d72b7aba8b6d9",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x41e39b788c786b50b452907fc13f0bfc71232dc7",
+    "10500000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1b919e94a60c3c6d90a93eeb2708cb90bbf2df1f4a61bd5bf8f112e6dbc60aa4",
+   "why": "calls no function the template calls",
+   "to": "0x0000000aa232009084bd71a5797d089aa4edfad4",
+   "selector": "0x09c5eabe"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa2606315510e14ed2960d606b85ad2fbbdb5e82c7f3c8c02164dfb0b2c111f3a",
+   "why": "calls no function the template calls",
+   "to": "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45",
+   "selector": "0x04e45aaf"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x5d96132c2beac7c60947032ae95ccdb40a6a3560b4b67d56395e16505a18f93f",
+   "block": "24431394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x6415a60e4f0e4c1042ea8d1867060f24402c7ffc",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x4cc8b16c5618429a1304cbec0e17e9197e46d036",
+    "1020000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x53792b611ab11a5ae98f8c575eb36e0932b2c0fa05138af84b2e5bcba4d2dae9",
+   "block": "24431395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x559432e18b281731c054cd703d4b49872be4ed53",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x2f175fb99e1a33636ffe5c349604dba045eb7979",
+    "182000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xae9c3cc44e5718116d10585aa82df5f7c224571899f7d827f88d5b3a3ed9d184",
+   "block": "24431395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x58b704065b7aff3ed351052f8560019e05925023",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x1cf85c7b98ab6b460677f1e4c14350ef9d6cc209",
+    "4000000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1a37320d8b8745c7d6f2932860d7e36cb598e6eaec7a4ec062b2623d0d80d41c",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x0b9b1978483a2c457f98bf614c91a7029fb1dc0841ed33fb318b5dce667056b6",
+   "block": "24431396",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x829ddc066185101f997fd20cc7eb5b5145f34c6b",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x580e46c840efb57136eb5bb6bdbf383b0f8594aa",
+    "375198479"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xed788003ac5e1bab6cb618ef13adaa6859ac7461e26f6f840679521162676596",
+   "why": "calls no function the template calls",
+   "to": "0x86f9d049311cb799e3c15b94efa6ca0af240ead5",
+   "selector": "0x9024f15c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9d62d8ac7d89a77da612993d0c64515f48344a32249e3008bc4386e343b30822",
+   "why": "calls no function the template calls",
+   "to": "0x0000000aa232009084bd71a5797d089aa4edfad4",
+   "selector": "0x09c5eabe"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x0b49e6d981399a4802d14d0e4f62617cc898ec4a551bc00deb222033216414c5",
+   "block": "24431397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x0623e81e6ffccbd21b4c4eb22254db5c98eaf030",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x3b060d42a9234c602d633d54b75d00a8d19c7b71",
+    "9367199"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xb176ee54730c08eb19c5fd75ff2788f48e6277e4401a8b00d0f6455f452ec161",
+   "block": "24431397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xc077f69c75602010a05d34ce2efc6fc540e850fe",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x7635e7f06e32c184f5cb73177bcd28616a2351c7",
+    "542489171"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x84f475c7248e220f3e2e4f34fcaa48d228b21e866120c5f3f2b2cc77cb4004f3",
+   "why": "calls no function the template calls",
+   "to": "0xce200515520e0af0738de6034fb223fd2b387c3e",
+   "selector": "0xeabf1ace"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x857797ff26dd74d3fea656359155568e564622140caeb93bd51f160bafdac931",
+   "block": "24431398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa230c8e9b5d3722e573f395a2b6af93ac3d480c2",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xc73c913ec631119b51a4d745381ee85c4c21d77e",
+    "988"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x3b609f98fa9241b543486f561317626a9e8ce3403e9682b14a656b14381a1b32",
+   "block": "24431398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa52c31b643d83b5b198ff3b9e5ce4194cbc510fa",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xa82878bc1c11265b676cd03bb6d4edbdd5a5301c",
+    "100"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x5da750956c19bcc913bba8e95e0da4b400e6ab36b9569fbe9ca25ccf1f64aed7",
+   "block": "24431398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xe1fe016eb2fba65e991bef0c5061a1cef5280181",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xdb9abb3cdce86e4dd52a223b546bbaad3c2a6ce0",
+    "321637767"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x7e98c5152c6a876001125a8243fe656f5e92670f524d4704b3e9bad9e77acfa6",
+   "block": "24431398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf4acb32cf4377e477ad1109974405915cc10045a",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x9daacbbe62c9167fe36e19142d85ec8a61643ffb",
+    "200"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf74c98430b52f2523840e94c5d0612e40ba4daf5c27f7b326eb9c3d49c70ea87",
+   "block": "24431399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x4ccafcd247ffdad9348636842cc3b06bcd359eda",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x8653b4850d2fa6c164c5be35ffc2856cf6d49b2c",
+    "144625000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x502b4254bf83a63aa9b5f00331acd35e5c395348180e8783fbde2a12b2cc115e",
+   "block": "24431400",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xaa8ba7d4611437141192e7ceced531bc0a133efb",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x3d8f7ccdc64f7c3e1e53d257ae6ad8c04947f8b4",
+    "2500000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x415b6af01f68062ba3b81a05e9b80ab921bad5f184a2a0c2f104f00677e9c774",
+   "block": "24431400",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa59942290bb5dc565324029db09d0de08ebd2f3d",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x3b7a5d25514cbc1c61db5e5c06a1195b7b5b7569",
+    "261878000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x4c0ee8c9871551ac2cbe6e41de92afbf078c2471306886c415e3b2da908a05f5",
+   "block": "24431400",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x170e2daa17c1cf35d6c0e764a961f6e1e2073a60",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x3747d727122ef662246a142b14386e453f4c4ac8",
+    "125"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2d5ad64e9b225993eea449826d8e9d8f16608696d5511c95618b2dd7e82c7bd3",
+   "block": "24650394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb8e69ead604a0926d0a74fd51cb98ccc61633f53",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x3f69532b603c5c9b01a75af8976c4c6445c6a1a1",
+    "3000000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xbbf79c328a8daed870d5d747b0e35cba1c5e272e20f8d311357d795a95c1451d",
+   "block": "24650394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x2cfedc8a6b4da46c46a360588a401bcececccccc",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x4edbe5a82bee9897586655fff167647b22e58fc5",
+    "393420000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8a967e77e6b0f30d42d07ef8d1d7fc7968f8b9ce968b1318b16dfd18319b8701",
+   "block": "24650394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x761b2e90634cb1532cc324ae86c0d42112c9c9b6",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x8a68f51f0c9df4682dda1a2f3f05bf9412607c05",
+    "198663656"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa724dd628fc3b015de9f89db1f94003a6a11dddd94f957e4934d6b2cf22a6f3e",
+   "why": "calls no function the template calls",
+   "to": "0x96f28fbe820b15f70dfd587adb8fc3f19bf2096d",
+   "selector": "0x3abb411d"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x1163fbbc119a7448ff1e63b5fbfd7c257336b6ac1dda67d1bcfa3cbd3cd8a577",
+   "block": "24650395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x18e296053cbdf986196903e889b7dca7a73882f6",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x3d0169c4da4558087cdb9487708b29520ef096e7",
+    "1037000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x72003f098afa71e14fa1aee1fef1b064a19f0ad62644c3111ec84aaebb70452a",
+   "block": "24650395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xad4d84a52a7afd72d094d980bec9cb5c7d60edf9",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xedd1ae45b7727fe87bb924abbcbf7a662475f17d",
+    "496"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xebf6d61a75e48a61a817016f5dd6229beb78a443ce62f9d5e7cecaea6ca17b73",
+   "block": "24650396",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x4e612e9bb927e3cd5aadda492d6e847acd5fb4a4",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xa03400e098f4421b34a3a44a1b4e571419517687",
+    "100000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3321f2934d4b6bbb23e3951a75f0b7a459eadc03c0fb6572e1c3df84663f9815",
+   "why": "calls no function the template calls",
+   "to": "0xa0bb1ebf52a9307f30509d3b385754c33b7f2e26",
+   "selector": "0xac9650d8"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xbd567e0bfc63ebb8343dcd504082f6af749dc6ce67ac495fb2c66d53c44e97ec",
+   "block": "24650396",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x559432e18b281731c054cd703d4b49872be4ed53",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xa56c0c60e9ff1d9df5ea55a2c56697750a433c20",
+    "13960000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x38a9d21a122d6c54f013d680f8c67cb4bbc0e368a8e52ac8976bac0b63a55bef",
+   "block": "24650397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb7959cf5f112f27608b9948a7fa5d4a6541d5497",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xf52a3b11b4ea7926445ad40d0a48214b7913c5ec",
+    "59191675"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x9f5bc5cdfefb09361c08065d6849ba4f5f762adb2c1bc3053d534d37a3424c4c",
+   "block": "24650397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb402a7d4a4ff148d0c9578c93539ac4a5f6f66b6",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x39332f90828d50ebaea323b145530158496c06ee",
+    "7000000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xe83c5eaf83ab1da8e24cdf7b6cc7174a75aa95c15b6e14caff1d097529991195",
+   "block": "24650397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xad509c8200bfa776db6bf4408db64d0294d8ce90",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x4963cb671bbedd8a86752fb21c6faa7a574e83bf",
+    "500"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x6a879d6278570d6b5a36cc7576c1b0de8a34fbda2897d54c94798fa0be3ef600",
+   "block": "24650398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa148deb2636d2aef84b2be859b207aef5ab62517",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x0d0707963952f2fba59dd06f2b425ace40b492fe",
+    "33104229828"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xbca3c4d927cda3340bd7aee6e85e07f9935c08a8657a1ad4729f66d97836e430",
+   "block": "24650398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x789bf71c4da7eacbe20751a854f99a97045eb406",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x5da7a24fac3fae8b74df87447930823290d9fd82",
+    "4000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x116da45b8516e3a86fbca46afe087c99af1617955bb2c41f1c670ea6e51a9cb8",
+   "block": "24650398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x8aa8fee47b3905e45976cef3d3de24437515c015",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x2be1495bcba0c3c8f57175c2d6946dca6dff3598",
+    "999"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf7e3c3609aea26246ebc6c78d3fd79489fa665f6ac4fc0c322a3fb17338523d3",
+   "block": "24650399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xaa8ba7d4611437141192e7ceced531bc0a133efb",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x3f361d26947fbaaa4c1651f92ca370d5ef52aa9a",
+    "350000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xb59ad355bdd9ae9fb3f4682cdbfd948950d863921275d10f8c37fc479f23d666",
+   "block": "24650399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb1c3bacd6cf0d8f3e729ea1237d2daf1ee143ca8",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xdad555f1bf55185b0235cc8feee68d2d062e310d",
+    "1054324150"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x809a930bf0e1c24ecf85cd0b41c6ae804773e4abb916198a85cad85c0f219ff0",
+   "block": "24650399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x82b5734ab2edfed7984558320ce2c572f1331be2",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x58b704065b7aff3ed351052f8560019e05925023",
+    "378000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x50216aa492b9ac102c8ffa8dca794723e2e299041d198d49ee2a6a58f84f13d7",
+   "block": "24650400",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x679a3a2504791cb5c274735081211f48138b1a70",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xdd3d72c53ff982ff59853da71158bf1538b3ceee",
+    "30202524"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x09d3e1b1c5a34e90e26f12e8ccbb4f6787b69cb1ce8b1e6e6f45be4131aadb89",
+   "why": "calls no function the template calls",
+   "to": "0x07f6ce0b13477152d9d1a7768d0a8efc1a03133a",
+   "selector": "0xcf51607d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd4fdadc7f40f9eb86af9cc2a0b1378b7beabca45a86eed3155c28b6fd2e86b74",
+   "why": "calls no function the template calls",
+   "to": "0x1f2f10d1c40777ae1da742455c65828ff36df387",
+   "selector": "0x2bbfc9f9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xaa9918881fbea249a88ab693f5514aaca045e938b65ba1227da647ff86657d4a",
+   "why": "calls no function the template calls",
+   "to": "0x0000000000001ff3684f28c67538d4d072c22734",
+   "selector": "0x2213bc0b"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8e8e0dcd9bdf20181716c6e1d7a4f3c802be938e57422eebdd3076ea1f16e3cc",
+   "block": "24869394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xe1fe016eb2fba65e991bef0c5061a1cef5280181",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xc977058e6d6a4c0ad49b93dac48acc07ee7b3963",
+    "70559151"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8b1ef2e4275e30eeb69477af691df145008719f6b8b682d9904ac24042dc47a9",
+   "block": "24869394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf4241da70734375dff580bfeebf4e5b748424575",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x817790401d27ce53d76d43c80339f0e03ca127ed",
+    "806481322"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x51b3213462e26b13082b6f2136a87b52443fdd6b9511766b698a9677ec16eb2f",
+   "block": "24869394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x30385cae35bebf716a79501aaea5a5894555ab6c",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x9ff11afe950b4bf506292be464ea2f512f18e19d",
+    "47000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xd4e1ba0b93433c367a7a05aa6ab8fbe4af9644ae021737ab72f2b84bd6c0c531",
+   "block": "24869395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x559432e18b281731c054cd703d4b49872be4ed53",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x0728acd148231b19c5840330c2db48bfffdc251c",
+    "41580000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa3e3502ad9a47d552ef09dd66f0b3a602ec2a8748a7280a60be1f48b255a45eb",
+   "why": "calls no function the template calls",
+   "to": "0xce5d4aa69bc7fa8ad94a6f9133ec435e8aa00359",
+   "selector": "0x2da03409"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xff47dde86c457e040529e64ec05b7b60719c0d0b1b05f1c915964d0660d730a3",
+   "why": "calls no function the template calls",
+   "to": "0xfaf17849fb05a11a4e233f221bac99ca43fc83f8",
+   "selector": "0x6b13fcb1"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x4cb9c0c0a0fd6e6076008cc55aa745df1d99ae497478711560d5dfb190af4da1",
+   "block": "24869397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x559432e18b281731c054cd703d4b49872be4ed53",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x0c41b9444271e27938593e070f6bb6eac6cde337",
+    "299830000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x5c6d0da1a15bd5b82800857cce5285d16081551b14766e54c3ba9f523afb9242",
+   "block": "24869397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd890cee299b4fbbf091a8a1a959b14ba65db80f8",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x43ba4dc8dcf634e18a4040e45f6ba56bae32ac3c",
+    "175438596"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb133b9ce2c3c381e220618709da46cfb860b99f4670f01a863367d251f66bf49",
+   "why": "calls no function the template calls",
+   "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+   "selector": "0x23b872dd"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x0e7c627413457a438c88c7e53aad39d1c8760f0dd5683235871d5405a51c339d",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.to",
+    "expected": [
+     "usdc",
+     "usdt",
+     "morpho",
+     "cbbtc",
+     "usp",
+     "weeth"
+    ],
+    "actual": "0x7ec8a30a34b86927dc77b302603d1d53e640bef7"
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x6ad418c3128ed3948b9c0d19ec2be0f9d68848c674174065bb2fe09320694414",
+   "block": "24869397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x0aecf37a2118e179bacea59fbab4f52c7467626a",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xb5822199a9823f7f8d61ffa394e1d7dc6d941986",
+    "10222166"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x355c2bd7394a37274989d2b1d415258238b726c2877233fc855665a87f1bf7c4",
+   "why": "calls no function the template calls",
+   "to": "0x3acad81bf4d1b80982cc656ca86231d49f8ba9dd",
+   "selector": "0x2da03409"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2b568d014391e1ea5cfc07d6480babcf5a826f44b74f2ad80dc796c90aae05b2",
+   "block": "24869398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x2cff890f0378a11913b6129b2e97417a2c302680",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x12f8a0385fa86084948bd3a192fd21e21b0bfb66",
+    "4623858"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xc2c6b037bd62a476fa59cfa553af798e80802285dfd41c9328ce0c6eadc6f669",
+   "block": "24869399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x09f96d8da0ac189a1ead263e1ebeb25c76fcb0bc",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x012d9545e76fc3b5d0d889b2128f438068f70b87",
+    "50310000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xea096e6d262de890f914caae0c74f6493a2730d6d2be7ac584019f4d58e5aeba",
+   "why": "calls no function the template calls",
+   "to": "0x5e1f62dac767b0491e3ce72469c217365d5b48cc",
+   "selector": "0xf2c42696"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x7a4c42976111df9aa6304761da176de1d6e15c0acc4b720a55c450c3d1e20749",
+   "block": "24869399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xef8542890e145bfc782e8159e2e3de56deff73b8",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x89f1cb911fec8c058c519110e3c9c7c3a070e34b",
+    "6000000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x4b94efda42b150aa3c28ee8af79b414cf2e0908ecf70b4f53f5c473de57ba315",
+   "block": "24869400",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x0668c9bf6a6936b9eb5a19f61c663070beff2f9b",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xaed3fef4fa26fe68af98e1b134addc9aa9bd728a",
+    "466049245200"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xe72b9d6f4724467c8cc284b4544cc3854471402d1a745cdc03ac5c9021371209",
+   "block": "24869400",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x153754d3cac3a179b0b1b7deec140a09fae67058",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x0c8aa5263afde3c43a0fe88aed2b10ade922e666",
+    "102770000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8d4308ae399a90a48dddf523b92df77f65dcca3534099663bee14991182464ed",
+   "why": "calls no function the template calls",
+   "to": "0xb8506d42ad5fd6a672b42aec94b82846876d458e",
+   "selector": "0x452e3a4f"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x56bfb0ad0868731999f7cb652a8a5075c1c8baefb1e89bfcc50df06183b9bcc6",
+   "block": "25088394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x9a9310be88aecc91ff5ededfacd23a2e0a79d4d7",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x7ab6c736baf1dac266aab43884d82974a9adcccf",
+    "2000000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc68bfa6adadd82ef7284846af4381e0df23133effa707526ac8fc7b299968457",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa154b98e53fc35e1bad1ff758acbc8c629bdcd2b",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.to",
+    "expected": [
+     "usdc",
+     "usdt",
+     "morpho",
+     "cbbtc",
+     "usp",
+     "weeth"
+    ],
+    "actual": "0x19917386eeae67b6ff7ddf07de4019fca40aa4ec"
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf0fbf1dae712b5834a1f113b83b076a04d03ef3651c0c413e341d80b10a13f33",
+   "block": "25088394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x18e296053cbdf986196903e889b7dca7a73882f6",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x8d5ef3171faaa4909654e50da8c21e4e6a7b234f",
+    "1369515100"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x1505d33322d5afa836d5ece4d8f25c0dc9b834f2f7a15b7507608dc1bd3a3cb4",
+   "block": "25088395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x21a31ee1afc51d94c2efccaa2092ad1028285549",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xd9e5de7fac8493b0861541885c1e6894036bcb77",
+    "59000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x070301e93a98321ea038e9ff143f7d449566d34fc6c1e1da2fa12a377d5c4921",
+   "block": "25088395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x0b73d57dc29a251bff138767351ffb9b1cf5f87b",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x3a42785d833bdbc4fa17c23038995599c262b082",
+    "10000291169"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8d0a7b13de3e9d226f880315dee063f8599d05dd5e30d2a2d571df2f3fd19c93",
+   "block": "25088395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xc94ebb328ac25b95db0e0aa968371885fa516215",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xf75dcb23bb5b33b109db527c452cad1d2770c69d",
+    "49341115"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5eed3027399c4d431a9be20838d48323dfc9c7e9b136a219975800e8ad939a9f",
+   "why": "calls no function the template calls",
+   "to": "0x00fe78205f5f0e63b8ad2b2ae5337f538a610e04",
+   "selector": "0x34fcd5be"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xccdc3357436d4e257e75a579ff9636131f687097d6bdcbfecdaad0e7904bed1c",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xab63364d8019b9995a2e749d79e8f72b1d7294cf1998b20b0de373ea953f2642",
+   "block": "25088397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xdfd5293d8e347dfe59e90efd55b2956a1343963d",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xed9d673245982008ffcd5b3d9c4586e35527f8f0",
+    "39500000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xc0806c8dd04fbea116f0b749f05e47e921065b5251dbe8219cfe3446e3929a24",
+   "block": "25088397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd72f096a5ae331ae3a36bcbb83305294fd447b00",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xc3d8acd5141e7a4820ee03134d00c3596af2969a",
+    "5000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x888829c7703efe6618cbdaa8fe9e8234b2b2094a4a019bcbd52350e9838057e9",
+   "block": "25088397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa3af19aa0864df94c1bc578628545bcbba84f223",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x26bb8f4cbcebca5d4ddd41d6ba3f8db8963f0c24",
+    "100000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x3530833662573b19c5ef905a77d6c6cfee1d31cba2191db0173360eb68855a58",
+   "block": "25088398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x6914d5f1f031fe7adf6e51f5ab52033537abcc80",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x559432e18b281731c054cd703d4b49872be4ed53",
+    "96239281"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xd4d226c15e7bb38aa5eb53497382869ea5a25f357aa01f037ff7dad3e1f40f6f",
+   "block": "25088399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xc425213a98099161d9d342d3928190dcfcbb2075",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x18e296053cbdf986196903e889b7dca7a73882f6",
+    "243348800"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xd8e81be2d1cfcacb92fe9f4fa006314649aaff7a429c44e3381067348e495c02",
+   "block": "25088399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x28c6c06298d514db089934071355e5743bf21d60",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xf701d129d1cc83a2bd3160094e1bec9856e1faa9",
+    "12656500000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1b5093b547424461da8101fed289b94cae92a729bf607e2b6817c2934c8fcf11",
+   "why": "calls no function the template calls",
+   "to": "0x663dc15d3c1ac63ff12e45ab68fea3f0a883c251",
+   "selector": "0x4d8160ba"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x1b6da6e793678186366227f5b4462c6319a44b8295f3ff9db6d27101a06d3f97",
+   "block": "25088399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x2d9bfd11880acd27c58d80bf7ca9d738ea8eb4dd",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xb01007916cf90c1610e7429eaee53b2c0a4588a8",
+    "63758017"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdc5c48e58b6fb475457fe2f873993c618e602a3b2751db37bb6b48bd3966e44c",
+   "why": "calls no function the template calls",
+   "to": "0xec2f1e41da9c9b271fe819ac121df17cbc6d2cbb",
+   "selector": "0x395ede4d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xaca5cc95a1d552b27d03463e32208189b764a8a7674ae169a8fd6efe2f04a1da",
+   "why": "calls no function the template calls",
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xad76831e5250d435375eca7293e520e66a3da6e1a03e72f2626ade35741b5061",
+   "block": "25088400",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf0b68eb347460c42001521165cc40305bccb7330",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xa9582afb0b83d071352de70eac63f4bded8dd511",
+    "153974523"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd30cd77ac60eda92a468e9c94137c07c65435fb06c7c6f85d5056ebc0992cde6",
+   "why": "calls no function the template calls",
+   "to": "0x51c72848c68a965f66fa7a88855f9f7784502a7f",
+   "selector": "0x771d503f"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2d527f3be218774f31339786c409803017c1129629d1dcfbd1adf1533cc52f56",
+   "block": "25307398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x18e296053cbdf986196903e889b7dca7a73882f6",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xe51540f72f9bcd25559d7438fd91296f560d8ec4",
+    "113820500"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x642073f3b2af3b27240a04ca72bc9d84589d77a4ba849facbf5f14287d77ad5d",
+   "block": "25307398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x21a31ee1afc51d94c2efccaa2092ad1028285549",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xfd74863ca5c2b31ff6dc12c5d28f1e7ad0736b3d",
+    "50288865"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xd38e322ee2aa77a5b9aa1a909b26612351eecbd3bb9004e4d141ea18d6ed61ea",
+   "block": "25307398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x05d9617595e69ff577076355abc5e7c51ed0bdf3",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xde6752b56a617cae06c9c1c30f2623d44d2c1611",
+    "342075539"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8cfdb6e040d7c3ace4e338180745de89ca971f291b832000b923ec6179f11339",
+   "block": "25307398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb189f556ade6f53042fa2c488c3d884ee5041fae",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x26f066c8d76961cc5c2b0026e9ad857838b183a1",
+    "2000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x9f471a748e683495893ef4945b3b74629b472c1540333cee8a60c161dbed738c",
+   "block": "25307398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x126c894e76364614be1d9bdc6411c68a193a384d",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x25ebd965904e55c39b49b7a32f9151dbe607876d",
+    "90500000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2783f9dd2d6ffea990645018aee5b90a883dd61d30f24a02742815f2030042b2",
+   "why": "calls no function the template calls",
+   "to": "0x00fe78205f5f0e63b8ad2b2ae5337f538a610e04",
+   "selector": "0x34fcd5be"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x360f69eecb5911ae327d2be6b3fda849a57a1134a51a4cf17b9449d5e0ffc1ba",
+   "why": "calls no function the template calls",
+   "to": "0x51c72848c68a965f66fa7a88855f9f7784502a7f",
+   "selector": "0x771d503f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x02f34e51b1450d733568c98f578a3a1d303735526439c411f9df1ba79852e442",
+   "why": "calls no function the template calls",
+   "to": "0x51c72848c68a965f66fa7a88855f9f7784502a7f",
+   "selector": "0x771d503f"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x380e9b387cfc51a0e548a468d1424bd007545585566128748fbce30395d776b1",
+   "block": "25307399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x3d1d8a1d418220fd53c18744d44c182c46f47468",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x7d0d83cd83d74da87ad155d4dd8409d0960623cb",
+    "99600000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x3ad6abdf4f820dc9c4fa9e0216ed980fba43fe6bd43baa763dcca6dcd1ca3138",
+   "block": "25307399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x21a31ee1afc51d94c2efccaa2092ad1028285549",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x721a20084e6fd8d20dd9dffd60a108099c8f0fef",
+    "8882536"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc5c90e315e91b01e08c2d37eb0394ec3b3fff606e2199a5bfd02d0394e3aa955",
+   "why": "calls no function the template calls",
+   "to": "0x00fe78205f5f0e63b8ad2b2ae5337f538a610e04",
+   "selector": "0x34fcd5be"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x27a8359467cd32205ce8ee87f9fb7165d21d81daf2d6c51be7fb98108a43a474",
+   "block": "25307399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x43ef88889e9b756bb82d9dcc564c353ec1adcda6",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xb6a40866b80074e478d349c0aa5ddeb47405fd06",
+    "24394"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc0cdef69c528d082a50ba770b858aa3d0a23702c8039c285860496d883b5c741",
+   "why": "calls no function the template calls",
+   "to": "0x51c72848c68a965f66fa7a88855f9f7784502a7f",
+   "selector": "0xa1c20303"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6c2c666fe4287008955d73c57905e22485181cea51fac6844b850fa7c98cc8c2",
+   "why": "calls no function the template calls",
+   "to": "0x0000000000001ff3684f28c67538d4d072c22734",
+   "selector": "0x2213bc0b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x59d4e21485d56856f525b07d835e55c82398a72c9c7a03bc558ae3acbe3b3930",
+   "why": "calls no function the template calls",
+   "to": "0x6131b5fae19ea4f9d964eac0408e4408b66337b5",
+   "selector": "0xe21fd0e9"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf331bed19cc6105e4f61f2915900b29d4f5eb103340ee35bee739c2c5cb1cfe3",
+   "block": "25307400",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xdd3d72c53ff982ff59853da71158bf1538b3ceee",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x3aeb0c60e3706f7ed34ec56026b63402dfb20f35",
+    "99747296"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9d86f969421c42343c3881c76af18b071e13d08b44a5ab089e1c66b0ec41d0e1",
+   "why": "calls no function the template calls",
+   "to": "0x1a5457923f466d967c5afa7a359ffee967973a3a",
+   "selector": "0x8dff17c5"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xc2617cafb5802d946a465f4e76097ae8f6143cc1e0656579237ee6d50a1c65b4",
+   "block": "25307400",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x9e0ba0645f62a8828d71d40893eb2fb9f6d885b3",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x0c345f183f5465ad09319f16e19f6670d6aef66b",
+    "319128477"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x26404a23a351ab12656e9c05518dfecce5fa3592f3a24a727957c7a87cd2e81b",
+   "block": "25307400",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x3daa559e9f312697384d144ea10fff696b9dd0d2",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x166c1cf12e264772692d37ba603b159867278cc5",
+    "173649733"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb771d9e517640b5ac0961fe06564cf1ef02ae8698812f2ce05c82799ae185624",
+   "why": "calls no function the template calls",
+   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x50bb67c168664206bb188ad2bced1b3ac4ad5e87ce105763ebd185d4a7623f1c",
+   "block": "25526394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd7eac25819f9839e95e8420fc08f0c9963e76c16",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x559432e18b281731c054cd703d4b49872be4ed53",
+    "73964000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xec90b6e923ea6b8ac0464b7a9093778a8dd16766f55262f07280bdd1f6f40c3c",
+   "block": "25526394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa6799ec8eb65ceb0b6fddd9a2132e719c72dc346",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x3ba1be1619e9c93c861a6eb252974274f75b72aa",
+    "800000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x45b74b260e8613a6c0fa69e07e58c093a7730a9fb43dea4b7f52774ae3161219",
+   "why": "calls no function the template calls",
+   "to": "0x009a8dbad7000f0000009b002d050058ca881b57",
+   "selector": "0x01005be0"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xecffb101cdd63fb8e721e9346c71fdf7016f306d44845d719cbc7c86b7e28531",
+   "block": "25526394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb9b5810bf705f049a05fc83d4c34ed1c01e48509",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x8195d3496305d2dbe43b21d51e6cc77b6c9c8364",
+    "1000200000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x4943b2bb77d42b7e11d951f105a012df3f77ea8fcf85fde45c87e8481f134802",
+   "block": "25526395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xe8c1121e3b66289ea0263f954534dead22fd66d5",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x012695e9249ea6549acef02e53240267371dcc53",
+    "19710117"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x626b627f1ccfd1e14dbc231e2f3926fed33fe1bde41fcd5baed465e2513f5721",
+   "block": "25526395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x1ab4973a48dc892cd9971ece8e01dcc7688f8f23",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xa535c458440ee6cbfdb31def4150360749a7eafb",
+    "54760000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xe4af16fea5237a3bdf83b698ede9ac7a039ed341e4c1dc69505a8f78fb022ff5",
+   "block": "25526396",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb026b9e2dbc4266f735b90cace435358b34da32f",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xdd3d72c53ff982ff59853da71158bf1538b3ceee",
+    "25400000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x80588bbd402133a789fc478d4b9827111d045d551f6c363845a6016c9707334f",
+   "block": "25526396",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xec48a8cf7047c8999fcd6eecd513ab6cfd78afda",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xb6a11011822bc6a5d241734b17ae2844bb4790af",
+    "59616000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x04c179f32ff09d1e282361a561070a049f5d3bce5ebfa3fbf12e212d7f7b4c96",
+   "why": "calls no function the template calls",
+   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x845fb1e19c7a9dccee0afce0c1be6fd8afa1262b4fc7da176a684261d21f888f",
+   "block": "25526397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x270cf4c97a12fe1b50250a2fbbb91eba907bb28a",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x53fd864b88d33ec54b683243abd23fcaacb20caf",
+    "100000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xa4d228de2f4309ee71205bd3aef09709f447ebefae5b197c65b65a5a2d8bbcf6",
+   "block": "25526398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x0a9100ff165d3dab0c6172a7a2ad06b2e7ca09a0",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x1d68547244cb3b97f287c3d21c49f47b63699105",
+    "66230946"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xc1566a9f84fe1f3d55c3757bb6b5cc8f0d5b7b64b909649a1713de04bf5b431c",
+   "block": "25526398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd3ab1e7b80a6d575cdd34030343e953cec475afd",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x42ca277cb48c11c55415779b2cbf2ea2509ba97c",
+    "300"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xbfd68b0e85008ba8585e2ddb058a50715c6c86a955eba95619150706f21b41b3",
+   "why": "calls no function the template calls",
+   "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+   "selector": "0x23b872dd"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x4257be0a97e570689aeeb9979cc3ad0901f6fb5122def086c91285e5aa4e09cc",
+   "block": "25526399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x3c159ac2b8b4ae3e3b595dbd76bb5865a9f5124a",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x45854737bc83cee543a1ab56f18e45b750e58437",
+    "1000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xfbac5f3d106234f5ec0d8a0b19d370e95bb5ea5588eb98bc9fa9dce869a8e825",
+   "block": "25526399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xcc028b0f8c2a03d26bd9af8bb9b57f398f24399f",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x0a0f4fbba014ecb75c579a5c936bd30612c293cf",
+    "500"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x5129acea9c52d3c1ee5fd0c0e4f89dca3578e04a2d91b0d56bb2dc854d291be1",
+   "block": "25526399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x330be8e6ad61c4d7cf263c90c401207db60e0b7a",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xf8ca5bd55df0aad2a028fa934bf65f6bb8ddbd3d",
+    "629"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x6c1108f732a2ba2f2f7dbb1e5688937604555c08afa9c2b363ca7d6fc55d8b58",
+   "block": "25526399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x25a2445b5826095380caaa433be46b0eda9b01e3",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x12b7d8661677838f39008746f12ed0320df25303",
+    "182"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x6f8925fc44e056783f401d3990be8274d4e85d7c369b1b046bfdcbcb5050a7e6",
+   "block": "25526400",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x3516c4bba572d54bc57e6fda732dff54dd1ffad7",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x53fb58d1af062814c8917c831d1bddb3c65da828",
+    "100094088443"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8ba923b0cce0b40cc4982d02c7c586f2fe1f7f9d8fa8cf6811a844fe0914c0fd",
+   "block": "25526400",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x564f9435931e50d6a38f75ac118c729d93057a79",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xdb103f612620c80b1a3f48975c45a96902f3bcb8",
+    "155"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x721d8be38edca694d6006e0c3621d168f22064f056bd6684554c097b74f9e582",
+   "why": "calls no function the template calls",
+   "to": "0x51c72848c68a965f66fa7a88855f9f7784502a7f",
+   "selector": "0x771d503f"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x0488e2b9c72eb19345191ab0583fdbb89f2c3ff8f207753d8c6946b1fda66744",
+   "block": "25745394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x7840eaca573f206a5e7347c4aad952b97032e1d2",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x2d4b389a062b7d334bc5d94dee657dc737242685",
+    "38"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4406fbbdb646072f975bfcd3367c38b07518bf6aa84bfa45697c30afeb281461",
+   "why": "calls no function the template calls",
+   "to": "0x6131b5fae19ea4f9d964eac0408e4408b66337b5",
+   "selector": "0xe21fd0e9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdd536206b1cb2ba920b519db0abfe814c8600b77e121faf824cd3fa16f37901a",
+   "why": "calls no function the template calls",
+   "to": "0x173272739bd7aa6e4e214714048a9fe699453059",
+   "selector": "0xcfc32570"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xfa9efe1099781ce23618309bfc563f57c74258fea983a7b1169c6e2127bb5679",
+   "block": "25745395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xdfd5293d8e347dfe59e90efd55b2956a1343963d",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xca6827fab5bef9627d04dd214d25c9b30d66c857",
+    "34600000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xe3954d918b2820b5325e5a4781eb9ca3a0a1830b8ed7776aeef26a973c54e78e",
+   "block": "25745395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x5543f10e8f08fe0a4425ccd1a49b9010f77eeaea",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x6981aa74ad9a0985d0d878f9fba245c4d59cabc2",
+    "30063000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2e3e6e6c63270b1247b7b65ab7b2ab1b2cce48bf1786d57faf041473f35d5b74",
+   "block": "25745396",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x28c6c06298d514db089934071355e5743bf21d60",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xfed7a8a17448f575a9f4b72a4ef03bf78804bfcb",
+    "269600000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xce05cdc395c98fb8086c087873eb852ba45106cea812578adcee7e3a1f5edf0e",
+   "block": "25745396",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x787a86094462760d7d4049d1e1547c8d03ce931e",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x559432e18b281731c054cd703d4b49872be4ed53",
+    "191330000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x792fd51fb9ecb83dbe7638ebc878557c74d51ba29b783d1bbae1ea1b1c27d5c5",
+   "why": "calls no function the template calls",
+   "to": "0xad3b67bca8935cb510c8d18bd45f0b94f54a968f",
+   "selector": "0x146ee74d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7efb14cd4025baeb3017255de821cb2d321735810cb127be07946902c4e2756e",
+   "why": "calls no function the template calls",
+   "to": "0x0439e60f02a8900a951603950d8d4527f400c3f1",
+   "selector": "0x3ce33bff"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x3b95475ee0b2a4108dc9dd4772c4d9fd8a97cacd00e3b229490135631d5fa77d",
+   "block": "25745397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x8eec90769f175bea67765c073be5209acf03c68c",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x766481b396014a567446a1af0fac5e4851b8de5a",
+    "20400000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1b40639c984d65418d0163c8718152ee979c5122ae8ee1d6b4718820a0527646",
+   "why": "calls no function the template calls",
+   "to": "0x00fe78205f5f0e63b8ad2b2ae5337f538a610e04",
+   "selector": "0x34fcd5be"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x72547e4b9ce975c30a8e2dcfad9b614c9fd726f51f3a261b9f7b746aaf94ea39",
+   "why": "calls no function the template calls",
+   "to": "0x03f34be1bf910116595db1b11e9d1b2ca5d59659",
+   "selector": "0xe47d166c"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x0cd95350c9b6a294d86374146a0ef409dec48cbc30258eab594d6005539628ca",
+   "block": "25745398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x1481e58411608b2d628ef305b92b01cf4f83db70",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x3c7201f61c491ae4772138fe150008d546c450d9",
+    "65107499188"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf8bbca2f836960c4a1b92ca7a1080086178cd1ebb9770d609cdac7509045c595",
+   "why": "calls no function the template calls",
+   "to": "0x7d9f4ca54131e588fc1fe577973b55fb11231e76",
+   "selector": "0x6aac3a0b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb5092b6e3c2c22425e4f86cec45fbb7a189022024c2711e854bdca25cf26d4d9",
+   "why": "calls no function the template calls",
+   "to": "0xf56ae3ba27890fb9290337f7611d8c7a8e51e807",
+   "selector": "0x1bb1fe65"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xaf555eb81a3185858ac00b5d98849cc96fcfd2de6f64d954b3f27dfc519624da",
+   "block": "25745399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xbe6b01ad958c427b1722f200fad01ee6715e7323",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xa29f37200bbff21af970ef834360275299cfd447",
+    "10008257"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xa0d0bfe457722a6eb3956d40b99aa8da6610bec6313eb1cb080c9178ef3f7b16",
+   "block": "25745399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x6ef6f626e8dc0eadd4a9546b5a73b21eedc228c2",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x641ad86e09889985b53d2ed6a60594d1539bbd72",
+    "3481750000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x928b9443659f37d792d0cf2a396a39cbd05caf13125669446e19e00549193007",
+   "block": "25745400",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x559432e18b281731c054cd703d4b49872be4ed53",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x96e9ffda89b26de874fdc591723b5900684b6227",
+    "400000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf2496a703134f3fef8b69ca14c549181218f780a63b1042f126f5dc3ae4ee045",
+   "block": "25745400",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf5925b9e2507732ca8a09324ba4dff13acbd8646",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x5c21d745246903c305a088b70d14d5fcaf391992",
+    "960"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0bc4f120b8b0c3c606843955eb802f7ff053ec64859aa052c711c93c3aa36737",
+   "why": "calls no function the template calls",
+   "to": "0x0000000aa232009084bd71a5797d089aa4edfad4",
+   "selector": "0x09c5eabe"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0f05014376917ba1cc82cdd3db3a31e0a1fbe33b70337c1b62bcd98ad1b5a12b",
+   "why": "calls no function the template calls",
+   "to": "0xbd02c51150a4ab6ce97b9de2025644594f3e75b8",
+   "selector": "0x2da03409"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x9c58ba4fe814e162b24234ab815456f40df070bee2a6a870ca8be04a53830120",
+   "block": "25964388",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x28c6c06298d514db089934071355e5743bf21d60",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x1e29c1f18c703263097633f50cc5acfcab72b8e2",
+    "54281000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1c83575253948aa78acef3d5fdb626245e57c7550b0504b74ccd089bc210603b",
+   "why": "calls no function the template calls",
+   "to": "0x00fe78205f5f0e63b8ad2b2ae5337f538a610e04",
+   "selector": "0x34fcd5be"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x40724e695bb6635dd41bbe628b2d123e3aebef1e85b8fe9aefe2180dc04e904a",
+   "block": "25964389",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x307576dd4f73f91bb8c4a2edb762938e8e067d31",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xc1938f858eb0856337e2042278705d4f18667e7e",
+    "422180000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x51adb7eb53b1bf62e3e4fd57da4dc4eb1cbfd44ad7a469a9c7e3bcc71eb84a02",
+   "block": "25964390",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x9696f59e4d72e237be84ffd425dcad154bf96976",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x5ef8c28e284cd14a0d7195de66c4139a00eca9d9",
+    "631423337"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x17b5d1d0df67072708dac1d1ba66b7e437c1f6df96146bbdecf4fd8968ee7203",
+   "why": "calls no function the template calls",
+   "to": "0x445a4c8d99943c0b3a369b48ede4a123e162b0d2",
+   "selector": "0xba61557d"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x49734048da7bc83216e7f011f7b8739f87b3c63915862047dfed281c75a1f4ba",
+   "block": "25964391",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x6e1ce87c65b682fa160dfd7736567c7e332168a3",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xed2ffd2f29151fe16394d5e1686e966efe43240a",
+    "281000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xccc6c60c04ef23ae01c1cf668779004f936fbbcf03deafceccc66f4472d879e3",
+   "block": "25964392",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa79342ce98a31f26a93ee15f5bbc7675c0c718bf",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xd37ac934502619cee14908cef22138f4b98e06b4",
+    "14698784"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x531c02c521d6956f0c39df95c4193285040f4fdd67b1b26bcc7a604dce135c3c",
+   "block": "25964392",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x527408719127a18642774a4d9658bf2968eb8d2d",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x46638686d7b11ae419137e16fff18ce2cd28b7ed",
+    "501000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x142b522259b0ee21820e741560641ab2c2164dc2b29d884720bb0489c8de5f7b",
+   "block": "25964393",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x6cdb7776f6a20b9ed4441b791e9541a6fc04e313",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x58750f01dec1ce3d79c074ab20ce3d1f6a16d4af",
+    "8820239286"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x900c5a80631f6fb8abdc8e8d26097baa2b4b0c82b7ff5d17e05f85d520a40f88",
+   "block": "25964393",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb21b7c28c5befc80d58b326600305cdd62a4a58a",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xeb8a2115d481f4c79772e80054f320b86a67ba06",
+    "38754138"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa8dfde0ac0f3d14f5b5195b71c21af8881940d6f248a12c573d5cd3dbb10e50d",
+   "why": "calls no function the template calls",
+   "to": "0x00fe78205f5f0e63b8ad2b2ae5337f538a610e04",
+   "selector": "0x34fcd5be"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2f5071fb7598bd6289ebbcfff4d54153b7312290901cba42182fd34daf85be0f",
+   "block": "25964395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x7bfabf234ad10741a5161612d3fa3c9f32551678",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xe3478b0bb1a5084567c319096437924948be1964",
+    "984515"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2f9ed9296293a05c653f32bb2db985dd3b98c80194d795caa349e9d662c11fc2",
+   "block": "25964395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x003249d6c050edca51af6abd2338dcc953fe6f11",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x25ae6699677eb6a3a7cb72c4d3a5d25a9609c586",
+    "20106000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xdcb29dae14d229a357c46d838549f432cdeea7e4e9acf6a2635a9c2cc79180aa",
+   "block": "25964396",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x4e314a46d62fc1dbe3083b2b6203aa0ada1e7488",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xc3f9c65b32bac6e2c2e486d19ea2973038d8cbc7",
+    "33000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x7319fa1e45a5462fe1f9bd25b5ae043d21f73f9dcfad5ecef81c85bf683fb7e4",
+   "block": "25964397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf2e8a378e624586bd1cc6313b6cf9aed421d19fb",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xb44d19551beb3b3d3761b36376a96d13f43b8d9a",
+    "13531140"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7095e5eee9b05c8d8fc1bb1507e6ee60c7cd33b2194406c3b7829f5708b1e74b",
+   "why": "calls no function the template calls",
+   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+   "selector": "0x13d79a0b"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x42bfb80aa0b50fe0f898611a0513f9f9c56999e887011fc00ceca59e453e790e",
+   "block": "25964399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x59dca36679feb8ea31311c9dd35a50be7f0cc5ad",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xf60e9f03d1169b25f7532ae27143278fab931afa",
+    "25000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xb7230fbe54bcd7c652fb0ec3815039b609e4675685603b08e666d9a03cb324bd",
+   "block": "25964400",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xad4fa9733ee8e9fed085057e3b7817934ab82410",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xd47a1bdc6872ad2fd16e50149baa9924c653e624",
+    "98019604"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x229b530b88aef57d1a07202846efda006326376845e1fad02b4c795a7c66823c",
+   "why": "calls no function the template calls",
+   "to": "0x0000000aa232009084bd71a5797d089aa4edfad4",
+   "selector": "0x09c5eabe"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xc95ba3a9e0f97ca227b1ea53889fd2cfe70fc742cdc1babae5849247b400b497",
+   "block": "26183394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x3c4ae341850293ce8c717b770cab35d93063d722",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xecce04180c72e38abc66b12da865b2835d55764a",
+    "30827000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8cb089e644f7400b4678a2ac045323991b6f2d665ae6ea20dcd75d289c29748d",
+   "block": "26183394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x838756071bbbf450af5ddf1c7e1b619996da133a",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xed99b5cb529fe3e40af6fa20d8819699e8cec4bb",
+    "150000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xad015e11940499770665164af5fa0967a6036bf9f68270085154bd16796b1ca8",
+   "block": "26183395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x18e296053cbdf986196903e889b7dca7a73882f6",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x413d6a0d048852e43aecf3828f531c1c3ca80bf5",
+    "60000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x978aa103e06b8c4195f4837545bf4bb38629f64358a1a14eed59176648266ff6",
+   "block": "26183395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xda1e6b880c6eba0e4050f7fa76e8ea9b7c9cb381",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x2cff890f0378a11913b6129b2e97417a2c302680",
+    "250000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb03e6ef3c7301cdbd09a30107fe0a7af58ffb95d3a696b424f4bdcd6f8ee9fe0",
+   "why": "calls no function the template calls",
+   "to": "0xce355440c00014a229bbec030a2b8f8eb45a2897",
+   "selector": "0x95991276"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xcee1910a772affff1fafaa21ba303b35773dcdfa7f0a8aff5dac6955edd75599",
+   "block": "26183395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x032ac90516d8d26cfc37eea0fa8ad8d9eccff1ea",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x28c6c06298d514db089934071355e5743bf21d60",
+    "15581000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x4b4bcf7ec4d871497f6dfd97a316cdf2836d8e2ba436ee89817bdfafca009fa9",
+   "block": "26183395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x16267c0d82a6c30f3814c3b4a468ef21eab9f171",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x28c6c06298d514db089934071355e5743bf21d60",
+    "148000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x0fff80a91efa1366ed38767626c5202d52f14463274dc1f4621441ddfc45e13e",
+   "block": "26183395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x39a380df384b5bc5846347af68a2e043d73a8c51",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x28c6c06298d514db089934071355e5743bf21d60",
+    "250200160"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8c41a4fcc2a295e1f3a9239e6fa57ff9cd4eed144e7241c9839d52c70842c06a",
+   "block": "26183396",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x8f8d1206d1bce12ff892731f8a140ed18b93884e",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x199f8047611bb728f29facf9426c453d43e89f61",
+    "17710000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x51774360e70948672da11ecd2eb1979335c97856543d630bd326d8da270ae23e",
+   "block": "26183396",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xdfd5293d8e347dfe59e90efd55b2956a1343963d",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xecf41d4ef205404feed7e1de2df270227c5aa5d4",
+    "30267000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xfa3817dba93ce9f27097143bc6dd371066b6749fecb3e331351bbee4af317436",
+   "block": "26183396",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf731f04ed9cadaff63b67b6083edd3a26a74d85c",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x7d31942d19ebc1afa1a5bf12e9699b3e736a57f6",
+    "26723699"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf595b141fb84d2e11da56d0087f2dfea25886f4a92e05a095c73cf5361aa8283",
+   "block": "26183397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x83501790e04c4d40f70241afe8317c229f5d2a1b",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x62fd2dbf8578a40b0a074ea47490d4d52d50ab4a",
+    "3960451200"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x1f46ab396fc406b6c43318b3135f756416b120a461c723f48bbc497f821b7e79",
+   "block": "26183397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf2472cd8ef9e20555fdd616e4a3304949091ac93",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xbd3c87828a8e252eb11f9d4b6eee8602be8ed7f1",
+    "2298860000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8c5e93f29050e86e42f14f29b2cdd2693f36ee5797317f7614fa04c93da82e66",
+   "block": "26183398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xc6f66858a5edf2076ccea6cbc1c245c53a3c9e4a",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xd47a1bdc6872ad2fd16e50149baa9924c653e624",
+    "36500000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb594ba77cfdefab102bfce72056a723a20f8ad38b752b4845425736ab0a4d150",
+   "why": "calls no function the template calls",
+   "to": "0x68d620815a04c0ce3c3b918f9343faae91c18334",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x58b9e2c11007fb0309337371234285ac0438fc0e28036c65537d72a0cb3b4b52",
+   "block": "26183399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xda8abe0ade050472023a11a6581a5785eff03451",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xebf54288795721e24c9cd43e133f3ab1f58cc3ee",
+    "386000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x136c93286a20cb0daef30b6729ab39588a86e6dfd06f39b8ee22ae3d6dc19d8b",
+   "block": "26183399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x6cf989386b448c9e2f1c7eea2991daaa099a49aa",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xc10b4456892ae81210ae28fff53d1f7af1d52294",
+    "60240000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x835b1896da14f5361ae21c3556e24ab0493662e70bd7f6370ce462845aa4b7dc",
+   "block": "26183399",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x19f8efd491a2740c46f22fb33f53480f038fcdc2",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x5cfb4c2eb42ce42f3ebb06c232a5d229eefdeac7",
+    "1602000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xcaaad399d7cdbd94454ba18532966558beeacd4121ecee752183a6f630b45cc8",
+   "why": "calls no function the template calls",
+   "to": "0x23617e59a5925b2a4bf75d73ff6711cd0b29de85",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x942aa72dea050aad5071bca72fdfe2673c3457497027cdf0fef8776da9b70886",
+   "why": "calls no function the template calls",
+   "to": "0x0000000aa232009084bd71a5797d089aa4edfad4",
+   "selector": "0x09c5eabe"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xcab48f524d9854ced745d50d7361df311ffcce60e28f4ddfcbdcf2cc099bc934",
+   "block": "26402394",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf3e9fdd1ae54e5ad88ee540855f83cf3918f4385",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xf265ed9700424af911da1a1cc7d2f0033725db7f",
+    "124400000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd47e65d918ce614157f0ebbed5e9350a8601bb6c3d5b02b2db22f52a61a16718",
+   "why": "calls no function the template calls",
+   "to": "0xeff6cb8b614999d130e537751ee99724d01aa167",
+   "selector": "0x00000000"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x79fff2110ff25dfab836e7a8ecac13215fcd9f099a92bcd9111a4b1169729995",
+   "block": "26402395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x9c8f1269413a2606bc944da8d0380dcdf06c76e8",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xa9d1e08c7793af67e9d92fe308d5697fb81d3e43",
+    "300000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xe6bbf4d7d11356e41f47d25a744086a7e51cc9a018c26e6f549b95b99eabb0b7",
+   "block": "26402395",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x984f9c897a3235c5267946e2197c760541fcce1d",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xefba0f1dda13f5144bc4d4dcecacdc840266a828",
+    "1602120000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x559b3b524eac6c5353d87319b09aef55ee862aeac52f7f2cef1daefbf6d84bde",
+   "block": "26402396",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf5211492643e17d90689ebc95f25cbae13d389c9",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x179ec9836e951de4a9f4e490f455af7232e34a22",
+    "75520000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x44cf1e4c5aca06316e0eccf34a06bf277082c014658f83873ca153c45e2f6610",
+   "block": "26402396",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd4066e21cbf51b0057c08b77b7ac814b01280cc8",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xa701bb8375603d92d968cbed174ef59e0e665756",
+    "200191583"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xbea07fcddfcf2fca157d033fc84158daa18cec81bf8a777d5c0f65d07e3d1af8",
+   "block": "26402396",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x559432e18b281731c054cd703d4b49872be4ed53",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0xf31732582685e82245a6e66783da11b72a45b4af",
+    "15778000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xe3385dd8f72b9a343dbd19174751eaf6f0792ac26fb250014a841d56f3a60292",
+   "block": "26402396",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x6d8d5c0b5e7e6f599307f27a8131be62003a10fc",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x2cff890f0378a11913b6129b2e97417a2c302680",
+    "2500000000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd840e3350b9e2116f2aec7e2f4b98af58d88b8c0e7643829c6a703718e36c15f",
+   "why": "calls no function the template calls",
+   "to": "0x0000000aa232009084bd71a5797d089aa4edfad4",
+   "selector": "0x09c5eabe"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8ca83e71bf5784ea3358bc110eb42bb7e5598634f1452ad61d6c02ce4dde3abc",
+   "block": "26402397",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x3cf51364202343e47f881ac4979cf21a70d5650a",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x6b4044644bc378b3ce46322bac1bfcac1d92a4bd",
+    "15105000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x95c84fa83afdbd2526a60d243c5f9ab6c498181b7ac7986f17ac8370ad4a9c20",
+   "why": "calls no function the template calls",
+   "to": "0x6ddab021daedcfba8c4e12911b906a69da0e6795",
+   "selector": "0xcf6b6faa"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xb5df09915ecaa79b782593b73780789e4c4ccf901a2d989316080b646d61df4a",
+   "block": "26402398",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf3e9fdd1ae54e5ad88ee540855f83cf3918f4385",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0",
+    "0x49dc05ccb14abfca6d777a5ae5e3b4a3b3e31987",
+    "172640000"
+   ],
+   "outside": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0a99177ca91e779fb8cfa9d3b9aac5de5bf0a186026c7e0c715d7bdcaa88c910",
+   "why": "calls no function the template calls",
+   "to": "0x0729e2a4716d9f7dd17858d5d504426d228697f7",
+   "selector": "0xcd6e13f7"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa05571ac2d837c6622bfa2faa022cf66b63031ac5585f54610818bacc5fc51a5",
+   "why": "calls no function the template calls",
+   "to": "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45",
+   "selector": "0x04e45aaf"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc4d9af4ac3d74c7789bcb8649320d9dea11b8f2fa1974ee9f4e37f9c725f5c84",
+   "why": "calls no function the template calls",
+   "to": "0x23d7df418719db9bcb4fba6c959c278a3f8850a4",
+   "selector": "0x00000000"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x13a378a2ae4654a2101105e6cd6a66948f658ac7bfa046748fcec374c51ab000",
+   "why": "calls no function the template calls",
+   "to": "0xca11bde05977b3631167028862be2a173976ca11",
+   "selector": "0x82ad56cb"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x87aa9b18eca2138b1c60ebcd28231e7391748a131c78f84cf691e8612e14835c",
+   "why": "calls no function the template calls",
+   "to": "0x3e0954d9b32f823aff2f66173ffed5f453dedd93",
+   "selector": "0xc8e0c1d8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xba4c6d55e8d62e5a0d656fe4da88205ae1288c44f8c66f271d816c01a8066d21",
+   "why": "calls no function the template calls",
+   "to": "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45",
+   "selector": "0x5ae401dc"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc94405ba5214f76fbc21cdd496edc58462c2e6b505bdc07a94db63df7ef7d9ba",
+   "why": "calls no function the template calls",
+   "to": "0xb5f650e96ed10184e1be22390fddb0a0c0f024d0",
+   "selector": "0x0d390afd"
+  }
+ ],
+ "measurements": [
+  {
+   "hash": "0xe88184687dea48b7beb3ec49a9a6797adb18b0daf1d3d0acde09529b10b4b9c9",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xcfd30b9bfb860a17681ade72de05ecdf8070a605a112387d7e393edcec30750f",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x3c75009b24d4318bf3d53a74dfad511d3c98641983eaf10600c9b542fad4e201",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xff9fa51d2d255e04d1ddf40304be765d3df657076cb53f1ad383f83cea62047c",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x8ae7a979da2f4f24975a41abe01060e24c895203d4cf210c0583110b64fa4be9",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xe54c000580e2beccc0a614c3a2348fbc797e2c043cca7b475ba400c3222c5351",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x3f39d4c46e698f4ce7af23f13bdf54bd426b2a21992e2eec24cb3084473dd3a5",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x31953e512672ff87492579baea992f91648072f449b6bfba17778aee44295df4",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x1db8fdc4d3df5f10ac21649b04b2adae5355ffebacf49efda9fa6ae931b9a91a",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x137a9e28d1603da5068133edb88c2d287efc147b6ebb1c0287ad1d34b50e3f13",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x4913cb582f0bd80ca0bc7b6e9d5fde14f1c7c6fa45adc08c76a719c059d7653c",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x6518c6dd1503e0edb961e8ea9153c43f514fbf35bc52377402707be5b9fa2b53",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x841bc0274465f9ca368dc9cbe2778993324f4b595026014c51864840d7a0ce96",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xc0b3e10e5e892a00fba5600ae2c7812cc61fe706099c267fe81df467852160ff",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x9898c31cc10c09307416d95d1c15c14330e70ab822d7458331d1dcf67344f6e6",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xba072625e81cabf23d6d57fc5231f8736560311c14316935bdc10367d9b2157d",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x0b74469b0e936704b7efcf36f976ae3c3a094153a1ddf93e916d97498b5d2ba7",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xc83c7823dbfb8cd6a6e409dcbfe50d9460b43fef1faeb7f715aa63d56d8fc7d0",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x1cfbd3e4acd07f15d5c585467b574ab65dbfa5156ede3901808599b92ff3955b",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xeeda51fcee8a04a3bf65316637dd4b756f1688a40460e186f8251932b73a3aaf",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x5808a4030a7203611482d6526e9bcc82e026f2f15cc6a6dc634cdfa2ee1db66a",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x56ddb1fdc19364f6a4f396351f539dcd82d9ba2b8b01559ce561fa74498bec25",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xc34151f97f0024b6a1c0f0dcc95a3dd0437b7880e96c471474960e30831ed973",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xed18c6b606f02ded98a90ccac03ebc1fbf4fb563a019afd141c6bd78e022feeb",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x033b98aa9c41e2f5d83d9de05dc48fb999c132286d21a84e0031d04604becb87",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xd7969ada7256575c82efb029227b206a4f1a7ee951d85053137672f508c47174",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x01d00e182050060a2d1728bc6510bc712be16c2943f557ea1465ce63177ef7a8",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x13ea01965981597d8453298acfaaa4b36b0837afbc22651e73557ce1720414f7",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x5d96132c2beac7c60947032ae95ccdb40a6a3560b4b67d56395e16505a18f93f",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x53792b611ab11a5ae98f8c575eb36e0932b2c0fa05138af84b2e5bcba4d2dae9",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xae9c3cc44e5718116d10585aa82df5f7c224571899f7d827f88d5b3a3ed9d184",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x0b9b1978483a2c457f98bf614c91a7029fb1dc0841ed33fb318b5dce667056b6",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x0b49e6d981399a4802d14d0e4f62617cc898ec4a551bc00deb222033216414c5",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xb176ee54730c08eb19c5fd75ff2788f48e6277e4401a8b00d0f6455f452ec161",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x857797ff26dd74d3fea656359155568e564622140caeb93bd51f160bafdac931",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x3b609f98fa9241b543486f561317626a9e8ce3403e9682b14a656b14381a1b32",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x5da750956c19bcc913bba8e95e0da4b400e6ab36b9569fbe9ca25ccf1f64aed7",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x7e98c5152c6a876001125a8243fe656f5e92670f524d4704b3e9bad9e77acfa6",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xf74c98430b52f2523840e94c5d0612e40ba4daf5c27f7b326eb9c3d49c70ea87",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x502b4254bf83a63aa9b5f00331acd35e5c395348180e8783fbde2a12b2cc115e",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x415b6af01f68062ba3b81a05e9b80ab921bad5f184a2a0c2f104f00677e9c774",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x4c0ee8c9871551ac2cbe6e41de92afbf078c2471306886c415e3b2da908a05f5",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x2d5ad64e9b225993eea449826d8e9d8f16608696d5511c95618b2dd7e82c7bd3",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xbbf79c328a8daed870d5d747b0e35cba1c5e272e20f8d311357d795a95c1451d",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x8a967e77e6b0f30d42d07ef8d1d7fc7968f8b9ce968b1318b16dfd18319b8701",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x1163fbbc119a7448ff1e63b5fbfd7c257336b6ac1dda67d1bcfa3cbd3cd8a577",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x72003f098afa71e14fa1aee1fef1b064a19f0ad62644c3111ec84aaebb70452a",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xebf6d61a75e48a61a817016f5dd6229beb78a443ce62f9d5e7cecaea6ca17b73",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xbd567e0bfc63ebb8343dcd504082f6af749dc6ce67ac495fb2c66d53c44e97ec",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x38a9d21a122d6c54f013d680f8c67cb4bbc0e368a8e52ac8976bac0b63a55bef",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x9f5bc5cdfefb09361c08065d6849ba4f5f762adb2c1bc3053d534d37a3424c4c",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xe83c5eaf83ab1da8e24cdf7b6cc7174a75aa95c15b6e14caff1d097529991195",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x6a879d6278570d6b5a36cc7576c1b0de8a34fbda2897d54c94798fa0be3ef600",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xbca3c4d927cda3340bd7aee6e85e07f9935c08a8657a1ad4729f66d97836e430",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x116da45b8516e3a86fbca46afe087c99af1617955bb2c41f1c670ea6e51a9cb8",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xf7e3c3609aea26246ebc6c78d3fd79489fa665f6ac4fc0c322a3fb17338523d3",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xb59ad355bdd9ae9fb3f4682cdbfd948950d863921275d10f8c37fc479f23d666",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x809a930bf0e1c24ecf85cd0b41c6ae804773e4abb916198a85cad85c0f219ff0",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x50216aa492b9ac102c8ffa8dca794723e2e299041d198d49ee2a6a58f84f13d7",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x8e8e0dcd9bdf20181716c6e1d7a4f3c802be938e57422eebdd3076ea1f16e3cc",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x8b1ef2e4275e30eeb69477af691df145008719f6b8b682d9904ac24042dc47a9",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x51b3213462e26b13082b6f2136a87b52443fdd6b9511766b698a9677ec16eb2f",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xd4e1ba0b93433c367a7a05aa6ab8fbe4af9644ae021737ab72f2b84bd6c0c531",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x4cb9c0c0a0fd6e6076008cc55aa745df1d99ae497478711560d5dfb190af4da1",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x5c6d0da1a15bd5b82800857cce5285d16081551b14766e54c3ba9f523afb9242",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x6ad418c3128ed3948b9c0d19ec2be0f9d68848c674174065bb2fe09320694414",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x2b568d014391e1ea5cfc07d6480babcf5a826f44b74f2ad80dc796c90aae05b2",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xc2c6b037bd62a476fa59cfa553af798e80802285dfd41c9328ce0c6eadc6f669",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x7a4c42976111df9aa6304761da176de1d6e15c0acc4b720a55c450c3d1e20749",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x4b94efda42b150aa3c28ee8af79b414cf2e0908ecf70b4f53f5c473de57ba315",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xe72b9d6f4724467c8cc284b4544cc3854471402d1a745cdc03ac5c9021371209",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x56bfb0ad0868731999f7cb652a8a5075c1c8baefb1e89bfcc50df06183b9bcc6",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xf0fbf1dae712b5834a1f113b83b076a04d03ef3651c0c413e341d80b10a13f33",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x1505d33322d5afa836d5ece4d8f25c0dc9b834f2f7a15b7507608dc1bd3a3cb4",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x070301e93a98321ea038e9ff143f7d449566d34fc6c1e1da2fa12a377d5c4921",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x8d0a7b13de3e9d226f880315dee063f8599d05dd5e30d2a2d571df2f3fd19c93",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xab63364d8019b9995a2e749d79e8f72b1d7294cf1998b20b0de373ea953f2642",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xc0806c8dd04fbea116f0b749f05e47e921065b5251dbe8219cfe3446e3929a24",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x888829c7703efe6618cbdaa8fe9e8234b2b2094a4a019bcbd52350e9838057e9",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x3530833662573b19c5ef905a77d6c6cfee1d31cba2191db0173360eb68855a58",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xd4d226c15e7bb38aa5eb53497382869ea5a25f357aa01f037ff7dad3e1f40f6f",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xd8e81be2d1cfcacb92fe9f4fa006314649aaff7a429c44e3381067348e495c02",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x1b6da6e793678186366227f5b4462c6319a44b8295f3ff9db6d27101a06d3f97",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xad76831e5250d435375eca7293e520e66a3da6e1a03e72f2626ade35741b5061",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x2d527f3be218774f31339786c409803017c1129629d1dcfbd1adf1533cc52f56",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x642073f3b2af3b27240a04ca72bc9d84589d77a4ba849facbf5f14287d77ad5d",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xd38e322ee2aa77a5b9aa1a909b26612351eecbd3bb9004e4d141ea18d6ed61ea",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x8cfdb6e040d7c3ace4e338180745de89ca971f291b832000b923ec6179f11339",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x9f471a748e683495893ef4945b3b74629b472c1540333cee8a60c161dbed738c",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x380e9b387cfc51a0e548a468d1424bd007545585566128748fbce30395d776b1",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x3ad6abdf4f820dc9c4fa9e0216ed980fba43fe6bd43baa763dcca6dcd1ca3138",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x27a8359467cd32205ce8ee87f9fb7165d21d81daf2d6c51be7fb98108a43a474",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xf331bed19cc6105e4f61f2915900b29d4f5eb103340ee35bee739c2c5cb1cfe3",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xc2617cafb5802d946a465f4e76097ae8f6143cc1e0656579237ee6d50a1c65b4",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x26404a23a351ab12656e9c05518dfecce5fa3592f3a24a727957c7a87cd2e81b",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x50bb67c168664206bb188ad2bced1b3ac4ad5e87ce105763ebd185d4a7623f1c",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xec90b6e923ea6b8ac0464b7a9093778a8dd16766f55262f07280bdd1f6f40c3c",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xecffb101cdd63fb8e721e9346c71fdf7016f306d44845d719cbc7c86b7e28531",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x4943b2bb77d42b7e11d951f105a012df3f77ea8fcf85fde45c87e8481f134802",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x626b627f1ccfd1e14dbc231e2f3926fed33fe1bde41fcd5baed465e2513f5721",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xe4af16fea5237a3bdf83b698ede9ac7a039ed341e4c1dc69505a8f78fb022ff5",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x80588bbd402133a789fc478d4b9827111d045d551f6c363845a6016c9707334f",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x845fb1e19c7a9dccee0afce0c1be6fd8afa1262b4fc7da176a684261d21f888f",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xa4d228de2f4309ee71205bd3aef09709f447ebefae5b197c65b65a5a2d8bbcf6",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xc1566a9f84fe1f3d55c3757bb6b5cc8f0d5b7b64b909649a1713de04bf5b431c",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x4257be0a97e570689aeeb9979cc3ad0901f6fb5122def086c91285e5aa4e09cc",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xfbac5f3d106234f5ec0d8a0b19d370e95bb5ea5588eb98bc9fa9dce869a8e825",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x5129acea9c52d3c1ee5fd0c0e4f89dca3578e04a2d91b0d56bb2dc854d291be1",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x6c1108f732a2ba2f2f7dbb1e5688937604555c08afa9c2b363ca7d6fc55d8b58",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x6f8925fc44e056783f401d3990be8274d4e85d7c369b1b046bfdcbcb5050a7e6",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x8ba923b0cce0b40cc4982d02c7c586f2fe1f7f9d8fa8cf6811a844fe0914c0fd",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x0488e2b9c72eb19345191ab0583fdbb89f2c3ff8f207753d8c6946b1fda66744",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xfa9efe1099781ce23618309bfc563f57c74258fea983a7b1169c6e2127bb5679",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xe3954d918b2820b5325e5a4781eb9ca3a0a1830b8ed7776aeef26a973c54e78e",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x2e3e6e6c63270b1247b7b65ab7b2ab1b2cce48bf1786d57faf041473f35d5b74",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xce05cdc395c98fb8086c087873eb852ba45106cea812578adcee7e3a1f5edf0e",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x3b95475ee0b2a4108dc9dd4772c4d9fd8a97cacd00e3b229490135631d5fa77d",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x0cd95350c9b6a294d86374146a0ef409dec48cbc30258eab594d6005539628ca",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xaf555eb81a3185858ac00b5d98849cc96fcfd2de6f64d954b3f27dfc519624da",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xa0d0bfe457722a6eb3956d40b99aa8da6610bec6313eb1cb080c9178ef3f7b16",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x928b9443659f37d792d0cf2a396a39cbd05caf13125669446e19e00549193007",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xf2496a703134f3fef8b69ca14c549181218f780a63b1042f126f5dc3ae4ee045",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x9c58ba4fe814e162b24234ab815456f40df070bee2a6a870ca8be04a53830120",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x40724e695bb6635dd41bbe628b2d123e3aebef1e85b8fe9aefe2180dc04e904a",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x51adb7eb53b1bf62e3e4fd57da4dc4eb1cbfd44ad7a469a9c7e3bcc71eb84a02",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x49734048da7bc83216e7f011f7b8739f87b3c63915862047dfed281c75a1f4ba",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xccc6c60c04ef23ae01c1cf668779004f936fbbcf03deafceccc66f4472d879e3",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x531c02c521d6956f0c39df95c4193285040f4fdd67b1b26bcc7a604dce135c3c",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x142b522259b0ee21820e741560641ab2c2164dc2b29d884720bb0489c8de5f7b",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x900c5a80631f6fb8abdc8e8d26097baa2b4b0c82b7ff5d17e05f85d520a40f88",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x2f5071fb7598bd6289ebbcfff4d54153b7312290901cba42182fd34daf85be0f",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x2f9ed9296293a05c653f32bb2db985dd3b98c80194d795caa349e9d662c11fc2",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xdcb29dae14d229a357c46d838549f432cdeea7e4e9acf6a2635a9c2cc79180aa",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x7319fa1e45a5462fe1f9bd25b5ae043d21f73f9dcfad5ecef81c85bf683fb7e4",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x42bfb80aa0b50fe0f898611a0513f9f9c56999e887011fc00ceca59e453e790e",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xb7230fbe54bcd7c652fb0ec3815039b609e4675685603b08e666d9a03cb324bd",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xc95ba3a9e0f97ca227b1ea53889fd2cfe70fc742cdc1babae5849247b400b497",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x8cb089e644f7400b4678a2ac045323991b6f2d665ae6ea20dcd75d289c29748d",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xad015e11940499770665164af5fa0967a6036bf9f68270085154bd16796b1ca8",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x978aa103e06b8c4195f4837545bf4bb38629f64358a1a14eed59176648266ff6",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xcee1910a772affff1fafaa21ba303b35773dcdfa7f0a8aff5dac6955edd75599",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x4b4bcf7ec4d871497f6dfd97a316cdf2836d8e2ba436ee89817bdfafca009fa9",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x0fff80a91efa1366ed38767626c5202d52f14463274dc1f4621441ddfc45e13e",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x8c41a4fcc2a295e1f3a9239e6fa57ff9cd4eed144e7241c9839d52c70842c06a",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x51774360e70948672da11ecd2eb1979335c97856543d630bd326d8da270ae23e",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xfa3817dba93ce9f27097143bc6dd371066b6749fecb3e331351bbee4af317436",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xf595b141fb84d2e11da56d0087f2dfea25886f4a92e05a095c73cf5361aa8283",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x1f46ab396fc406b6c43318b3135f756416b120a461c723f48bbc497f821b7e79",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x8c5e93f29050e86e42f14f29b2cdd2693f36ee5797317f7614fa04c93da82e66",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x58b9e2c11007fb0309337371234285ac0438fc0e28036c65537d72a0cb3b4b52",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x136c93286a20cb0daef30b6729ab39588a86e6dfd06f39b8ee22ae3d6dc19d8b",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x835b1896da14f5361ae21c3556e24ab0493662e70bd7f6370ce462845aa4b7dc",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xcab48f524d9854ced745d50d7361df311ffcce60e28f4ddfcbdcf2cc099bc934",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x79fff2110ff25dfab836e7a8ecac13215fcd9f099a92bcd9111a4b1169729995",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xe6bbf4d7d11356e41f47d25a744086a7e51cc9a018c26e6f549b95b99eabb0b7",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x559b3b524eac6c5353d87319b09aef55ee862aeac52f7f2cef1daefbf6d84bde",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x44cf1e4c5aca06316e0eccf34a06bf277082c014658f83873ca153c45e2f6610",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xbea07fcddfcf2fca157d033fc84158daa18cec81bf8a777d5c0f65d07e3d1af8",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xe3385dd8f72b9a343dbd19174751eaf6f0792ac26fb250014a841d56f3a60292",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x8ca83e71bf5784ea3358bc110eb42bb7e5598634f1452ad61d6c02ce4dde3abc",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xb5df09915ecaa79b782593b73780789e4c4ccf901a2d989316080b646d61df4a",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  }
+ ],
+ "traces": []
+}

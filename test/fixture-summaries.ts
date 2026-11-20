@@ -9,7 +9,7 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { readRecording } from '../src/chain/bytecode.ts';
 import { loadRegistry } from '../src/registry.ts';
-import { SUMMARIES_DIR, studyRecording, summaryText } from '../src/research/past-txs-summary.ts';
+import { studyRecording, summaryFile } from '../src/research/past-txs-summary.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { pastTxsRegistry } from '../src/research/report.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
@@ -26,6 +26,7 @@ const registry = loadRegistry(root);
 for (const name of names) {
   const recording = readRecording<PastTxsRecording>(join(REPO, 'testdata', 'past-txs', `${name}.json`));
   const summary = await studyRecording(root, recording, pastTxsRegistry(root, registry, recording.query));
-  writeFileSync(join(REPO, SUMMARIES_DIR, `${name}.json`), summaryText(summary));
-  console.log(`wrote ${join(SUMMARIES_DIR, `${name}.json`)}`);
+  const file = summaryFile(name, summary, undefined);
+  writeFileSync(join(REPO, file.path), file.text);
+  console.log(`wrote ${file.path}`);
 }

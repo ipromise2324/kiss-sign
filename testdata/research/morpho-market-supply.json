@@ -1,0 +1,592 @@
+{
+ "query": {
+  "template": "morpho/market-supply",
+  "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+  "anchor": "any",
+  "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+  "maxTxs": 240
+ },
+ "head": "26391005",
+ "studiedWith": {
+  "template": "0x57bcd5a18ce6b7cd7d83048a366998c9820bcd4bc7fb40e74db3767f43bd7296",
+  "registry": "0x095daf1147722e83c357834d143aa919459667684fd664f24063d5973c5122fc",
+  "study": "0xa3d8a7f49c350a885c28f40368280902337dba93ab55421baa7446e7816dd793"
+ },
+ "search": {
+  "windows": [
+   {
+    "asked": {
+     "fromBlock": "23971801",
+     "toBlock": "23979000"
+    },
+    "range": {
+     "fromBlock": "23971801",
+     "toBlock": "23979000"
+    },
+    "found": 0,
+    "studied": 0
+   },
+   {
+    "asked": {
+     "fromBlock": "24190801",
+     "toBlock": "24198000"
+    },
+    "range": {
+     "fromBlock": "24190801",
+     "toBlock": "24198000"
+    },
+    "found": 0,
+    "studied": 0
+   },
+   {
+    "asked": {
+     "fromBlock": "24409801",
+     "toBlock": "24417000"
+    },
+    "range": {
+     "fromBlock": "24409801",
+     "toBlock": "24417000"
+    },
+    "found": 0,
+    "studied": 0
+   },
+   {
+    "asked": {
+     "fromBlock": "24628801",
+     "toBlock": "24636000"
+    },
+    "range": {
+     "fromBlock": "24628801",
+     "toBlock": "24636000"
+    },
+    "found": 0,
+    "studied": 0
+   },
+   {
+    "asked": {
+     "fromBlock": "24847801",
+     "toBlock": "24855000"
+    },
+    "range": {
+     "fromBlock": "24847801",
+     "toBlock": "24855000"
+    },
+    "found": 0,
+    "studied": 0
+   },
+   {
+    "asked": {
+     "fromBlock": "25066801",
+     "toBlock": "25074000"
+    },
+    "range": {
+     "fromBlock": "25066801",
+     "toBlock": "25074000"
+    },
+    "found": 0,
+    "studied": 0
+   },
+   {
+    "asked": {
+     "fromBlock": "25285801",
+     "toBlock": "25293000"
+    },
+    "range": {
+     "fromBlock": "25285801",
+     "toBlock": "25293000"
+    },
+    "found": 0,
+    "studied": 0
+   },
+   {
+    "asked": {
+     "fromBlock": "25504801",
+     "toBlock": "25512000"
+    },
+    "range": {
+     "fromBlock": "25504801",
+     "toBlock": "25512000"
+    },
+    "found": 0,
+    "studied": 0
+   },
+   {
+    "asked": {
+     "fromBlock": "25723801",
+     "toBlock": "25731000"
+    },
+    "range": {
+     "fromBlock": "25723801",
+     "toBlock": "25731000"
+    },
+    "found": 0,
+    "studied": 0
+   },
+   {
+    "asked": {
+     "fromBlock": "25942801",
+     "toBlock": "25950000"
+    },
+    "range": {
+     "fromBlock": "25942801",
+     "toBlock": "25950000"
+    },
+    "found": 0,
+    "studied": 0
+   },
+   {
+    "asked": {
+     "fromBlock": "26161801",
+     "toBlock": "26169000"
+    },
+    "range": {
+     "fromBlock": "26161801",
+     "toBlock": "26169000"
+    },
+    "found": 122,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "26380801",
+     "toBlock": "26388000"
+    },
+    "range": {
+     "fromBlock": "26380801",
+     "toBlock": "26388000"
+    },
+    "found": 406,
+    "studied": 20
+   }
+  ],
+  "perWindow": 20,
+  "found": {
+   "total": 528,
+   "only": {
+    "alchemy": [],
+    "etherscan": []
+   }
+  },
+  "otherEmitter": []
+ },
+ "studies": [
+  {
+   "kind": "misfit",
+   "hash": "0x2d876d7ca936f5ee43512ebf5b0b4bcfd6bd799fe0851ba605c29f0705b5f700",
+   "sender": {
+    "kind": "safe",
+    "address": "0x16d9ba632757914c3a1ba9291f23fa075f24c3bc"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+      "selector": "0xc0229fe8"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x907b28d73650a7ea17d4db7f411d3605a7de82e064ac99ed5722567631e42fbe",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0xc0229fe8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x80611da360c5032bb7a7679092c58e89df3af3687ef461ffe3e2ce798c173c49",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0x827d6bd8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2eb7790f91e12ba70e7b2c9a8b7736d17e6df524b3d8ec21011b086a11b626fd",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0xb1268765"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc63f6bcac69d4a59be68948f8823d131b5d3a9795cb0b5aaf74d901f22972129",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0xb1268765"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xfbc53089d0a55cf634e22c6b99045b164380c41da40094e154041cf03892dd2d",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0xb1268765"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2f82601df5b6acc049147a1161897c18876ba8cc4b8e5aeb8c8e16fa234a6c67",
+   "block": "26163720",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd196148cef1eb7398658b1c75528c324d47658e6",
+    "call": 1
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.blueBundlesV1Supply.marketParams.loanToken",
+    "call.blueBundlesV1Supply.marketParams.collateralToken",
+    "call.blueBundlesV1Supply.marketParams.oracle",
+    "call.blueBundlesV1Supply.marketParams.irm",
+    "call.blueBundlesV1Supply.marketParams.lltv",
+    "call.blueBundlesV1Supply.assets",
+    "call.blueBundlesV1Supply.loanTokenPermit.kind",
+    "call.blueBundlesV1Supply.loanTokenPermit.data",
+    "call.blueBundlesV1Supply.referralFeePct",
+    "call.blueBundlesV1Supply.referralFeeRecipient",
+    "call.blueBundlesV1Supply.deadline"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256",
+    "uint8",
+    "bytes",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+    "0",
+    "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    "0x056b269eb1f75477a8666ae8c7fe01b64dd55ecc",
+    "0x68b4c2b2b2e245ab54a3bd55dfd5a9d84f029c06",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "915000000000000000",
+    "199999319000",
+    "0",
+    "0x",
+    "0",
+    "0x0000000000000000000000000000000000000000",
+    "1791657312"
+   ],
+   "outside": [
+    {
+     "at": "call.blueBundlesV1Supply.marketParams",
+     "kind": "market"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6ed59e0fdd6b6acaf49fd5ee5a235742c9a978977a62c1ee824f090ee584d0f4",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0x827d6bd8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7d5d186b34643ac8b546666bc560fdea9540f4450eff544c45ebf5364446dd47",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0xb1268765"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd129fe67f1685edbfbf458f9b98ca5f609c843d0ccd58363344147766c1d5088",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xe29b7303937fac8f7f24670c7cc08005ac14ebe9",
+    "call": 1
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.blueBundlesV1Supply.loanTokenPermit.kind",
+    "expected": "0",
+    "actual": "2"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9d9f598fce320d6d21d7bcf650b8debf1758ba8738a7b3cdb7a08eb962efd73a",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0xb1268765"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdf55fc945654769dadd53c7316498fb1a59dc68127fe60054b2feae474ad61e2",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0xb1268765"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7d97d9013ef26b5865dffae2eec2558f6ef22c42ee78ca71de32d7fd944c0896",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0x827d6bd8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0377b1354e608984ef4c4cfeeb5c955b51fa41af2a4be7fb9ecb87159e71bc15",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0xb1268765"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xfb4eed039f2d4dbda7a73ad7ca8396ebfe2b4e60c83e83fb4d50db067a6fd920",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0x827d6bd8"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x2c75272313863be5b128d1866487e9839a9a2ed125e0e56e93302ffd8101df4a",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x40534e513df8277870b81e97b5107b3f39de4f15",
+    "call": 1
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.blueBundlesV1Supply.loanTokenPermit.kind",
+    "expected": "0",
+    "actual": "2"
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x147a0f4fcff7bfa31515a84bc1657149aa9ba2c047b6754ea08f894fd7de6fd9",
+   "sender": {
+    "kind": "safe",
+    "address": "0x5435b8b0843206fa8fc99453a3112713e6f0fd46"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+      "selector": "0x827d6bd8"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5432689eb59ef2f2d783ce23e01c1fe745d409402c1cd863e56c1d33a2bd2f2a",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0x827d6bd8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0418cce87bb6b6f07cf8c23d8741d2f4407855a965ac5d2b0dde6b11615d4d6b",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0x827d6bd8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0dee9a31b18dd53df6f6b8b9109753db2d4bc6d7a8d6cfac01ceaf1f62078795",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0xb1268765"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x01cda5fd8586e052ac6f6d8806e075ff822bea4033e6197d1c8ec755d67bd1d6",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0x827d6bd8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd5987d5f22a6f9fbc15f47ffb583df09f3ebfcfa40f33d3e08a70958bc3467d3",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0x827d6bd8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4a0e58d22f7b24bd002b7a35ab136f51bfcfd8023c999437c2c23384c4423bcc",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0xb1268765"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x02cacc791e99512d152ce549cef232dace246a113a4c8ca2310e59dcd619faa0",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0x827d6bd8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3ce9083ab6169a0195cf14ed90de601804722364d39f8665b83a028777a1a8d4",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0xb1268765"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x11df8733266bbaa53fe7d6b6dcfa67d54dd962be294616a420cee6ab18ccfbab",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x815f5bb257e88b67216a344c7c83a3ea4ee74748",
+    "call": 1
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.blueBundlesV1Supply.loanTokenPermit.kind",
+    "expected": "0",
+    "actual": "2"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9368d303b2cc498ee1af52e7e9c9f8c895862df170e41b5e6fe405b9c48d7668",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0xb1268765"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0a21f5cea55f8b68e929cc9cb2371cb3cf0195ccf268adbd852245b0f8a289bd",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0xb1268765"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x73fefa2d4469649330030385c32f040bdc6d3b081b881bdf26d6b3b656c97cb9",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0xb1268765"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc7f28dcbb50e9b03f22cf89062163517a1a0eb5dc8b0c26f1b22aee1749519e2",
+   "why": "calls no function the template calls",
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd270d5063cb8523d788a7e696ab362fa5ca47b385e7b17f9c130740f7f513299",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0xc0229fe8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x13b5a501e0ff7023fc6241f4d931834e31919f296bdcda5b000b98cfa85ac120",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0x827d6bd8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xfb06b6af3848df052657061f6b02ea09632790f05c0872c32b77cc2bb7cab0a4",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0x827d6bd8"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe0f9e7dfda5351d8a799f41d93ba5e8f0ce8bf36efcb2449a360d175fec80d79",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb61f900042a0fcc5d99713d952f4e60b20a920ff",
+    "call": 1
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.blueBundlesV1Supply.loanTokenPermit.kind",
+    "expected": "0",
+    "actual": "1"
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x368e54bdb221041b55ea5583c7bde64bca7489a57bd28a71e812d742d3894aaf",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x2ee7a685bedf18bb2667e4cd7848595e92d68587",
+    "call": 1
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.blueBundlesV1Supply.loanTokenPermit.kind",
+    "expected": "0",
+    "actual": "1"
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x42dd33654c862fee8663cf40e57594eeef6ad1ed0916331a6bf18b036618ced7",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x61f3734fb5177fe61e1d0692c7519c1917b691d4",
+    "call": 1
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.blueBundlesV1Supply.loanTokenPermit.kind",
+    "expected": "0",
+    "actual": "1"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2e5a68b932ce1ce93be7a07cff114276de69a19f3bb6cd93c024cfd347f4c085",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0x827d6bd8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc4e5d48548ef5f64e1ec03b4e3e49102a9231431e015ca40031a3f69fc3fe9fb",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0x827d6bd8"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x6adc75b9a6e900fc741b705a9fe9ff5ea95929607f5ed169c07cf28d9b553932",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x7488837cd413b719c267413e3c445a558587664e",
+    "call": 1
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.blueBundlesV1Supply.loanTokenPermit.kind",
+    "expected": "0",
+    "actual": "1"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd9b6657512fc7aaf2d0f6a1fc5a5c12e1f0d471beee2f959c0f7b4284e50b516",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0xc0229fe8"
+  }
+ ],
+ "measurements": [
+  {
+   "hash": "0x2f82601df5b6acc049147a1161897c18876ba8cc4b8e5aeb8c8e16fa234a6c67",
+   "kind": "unmeasured",
+   "why": "eth_getTransactionReceipt: alchemy failed (unreachable); drpc failed (unreachable)"
+  }
+ ],
+ "traces": []
+}
