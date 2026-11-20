@@ -72,18 +72,10 @@ export type Hit = { readonly hash: Hex; readonly from: Address; readonly to: Add
 
 export type Hits = Readonly<Record<SourceName, readonly Hit[]>>;
 
-const PAGE = 1000;
+export const PAGE = 1000;
 
 export class ResearchError extends Error {
   override name = 'ResearchError';
-}
-
-export class TooManyTransfers extends ResearchError {
-  override name = 'TooManyTransfers';
-
-  constructor(source: SourceName) {
-    super(`${source} lists more than ${PAGE - 1} transfers in the range`);
-  }
 }
 
 const ZERO = `0x${'00'.repeat(20)}` as Address;
@@ -108,7 +100,9 @@ function hitOf(source: SourceName, hash: unknown, from: unknown, to: unknown, bl
   }
 }
 
-async function searchAlchemy(anchor: Anchor, ask: Ask): Promise<Hit[]> {
+type SourceSearch = { readonly kind: 'complete'; readonly hits: readonly Hit[]; readonly pages: number } | { readonly kind: 'overflow' };
+
+async function searchAlchemy(anchor: Anchor, ask: Ask, pages: number): Promise<SourceSearch> {
   if (anchor.token === undefined) throw new ResearchError('alchemy searches the transfers of one token only');
   const base = {
     fromBlock: hex(anchor.fromBlock),
@@ -124,16 +118,26 @@ async function searchAlchemy(anchor: Anchor, ask: Ask): Promise<Hit[]> {
     ...(anchor.from !== undefined ? { fromAddress: anchor.from } : {}),
     ...(anchor.to !== undefined ? { toAddress: anchor.to } : {}),
   };
-  const answer = await ask({ source: 'alchemy', params: base });
-  if (!isRecord(answer) || !Array.isArray(answer.transfers)) throw new ResearchError('alchemy sent no transfer list');
-  if (typeof answer.pageKey === 'string') throw new TooManyTransfers('alchemy');
-  return (answer.transfers as unknown[]).map((t) => {
-    if (!isRecord(t)) throw new ResearchError('alchemy sent a malformed transfer');
-    return hitOf('alchemy', t.hash, t.from, t.to, t.blockNum, undefined);
-  });
+  const transfers: unknown[] = [];
+  let pageKey: string | undefined;
+  for (let page = 1; page <= pages; page++) {
+    const answer = await ask({ source: 'alchemy', params: pageKey === undefined ? base : { ...base, pageKey } });
+    if (!isRecord(answer) || !Array.isArray(answer.transfers)) throw new ResearchError('alchemy sent no transfer list');
+    transfers.push(...(answer.transfers as unknown[]));
+    if (typeof answer.pageKey === 'string') {
+      pageKey = answer.pageKey;
+      continue;
+    }
+    const hits = transfers.map((t) => {
+      if (!isRecord(t)) throw new ResearchError('alchemy sent a malformed transfer');
+      return hitOf('alchemy', t.hash, t.from, t.to, t.blockNum, undefined);
+    });
+    return { kind: 'complete', hits, pages: page };
+  }
+  return { kind: 'overflow' };
 }
 
-async function searchEtherscan(anchor: Anchor, ask: Ask): Promise<Hit[]> {
+async function searchEtherscan(anchor: Anchor, ask: Ask, pages: number): Promise<SourceSearch> {
   const base: Record<string, string> = {
     chainid: '1',
     module: 'logs',
@@ -149,47 +153,76 @@ async function searchEtherscan(anchor: Anchor, ask: Ask): Promise<Hit[]> {
     ...(anchor.from !== undefined && anchor.to !== undefined ? { topic1_2_opr: 'and' } : {}),
     offset: String(PAGE),
   };
-  const answer = await ask({ source: 'etherscan', query: { ...base, page: '1' } });
-  if (!isRecord(answer)) throw new ResearchError('etherscan sent no answer');
-  if (answer.status === '0' && answer.message === 'No records found') return [];
-  if (answer.status !== '1' || !Array.isArray(answer.result)) {
-    throw new ResearchError(`etherscan refused: ${String(answer.message).slice(0, 80)} ${typeof answer.result === 'string' ? answer.result.slice(0, 120) : ''}`.trim());
+  const logs: unknown[] = [];
+  const complete = (pages: number): SourceSearch => {
+    const hits = logs.map((log) => {
+      if (!isRecord(log) || !Array.isArray(log.topics)) throw new ResearchError('etherscan sent a malformed log');
+      const [, from, to] = log.topics as unknown[];
+      const address = (word: unknown) => (typeof word === 'string' ? `0x${word.slice(-40)}` : word === undefined ? ZERO : word);
+      return hitOf('etherscan', log.transactionHash, address(from), address(to), log.blockNumber, anchor.token === undefined ? log.address : undefined);
+    });
+    return { kind: 'complete', hits, pages };
+  };
+  for (let page = 1; page <= pages; page++) {
+    const answer = await ask({ source: 'etherscan', query: { ...base, page: String(page) } });
+    if (!isRecord(answer)) throw new ResearchError('etherscan sent no answer');
+    if (answer.status === '0' && answer.message === 'No records found') return complete(page);
+    if (answer.status !== '1' || !Array.isArray(answer.result)) {
+      throw new ResearchError(`etherscan refused: ${String(answer.message).slice(0, 80)} ${typeof answer.result === 'string' ? answer.result.slice(0, 120) : ''}`.trim());
+    }
+    logs.push(...(answer.result as unknown[]));
+    if (answer.result.length < PAGE) return complete(page);
   }
-  if (answer.result.length >= PAGE) throw new TooManyTransfers('etherscan');
-  return (answer.result as unknown[]).map((log) => {
-    if (!isRecord(log) || !Array.isArray(log.topics)) throw new ResearchError('etherscan sent a malformed log');
-    const [, from, to] = log.topics as unknown[];
-    const address = (word: unknown) => (typeof word === 'string' ? `0x${word.slice(-40)}` : word === undefined ? ZERO : word);
-    return hitOf('etherscan', log.transactionHash, address(from), address(to), log.blockNumber, anchor.token === undefined ? log.address : undefined);
-  });
+  return { kind: 'overflow' };
 }
 
-/** Both sources' anchor transfers. Either source failing stops the search, since one source is no cross-check. */
-export async function searchBoth(anchor: Anchor, ask: Ask): Promise<Hits> {
-  const [alchemy, etherscan] = await Promise.all([searchedBy(anchor).includes('alchemy') ? searchAlchemy(anchor, ask) : [], searchEtherscan(anchor, ask)]);
-  return { alchemy, etherscan };
+/**
+ * Every source that searches the anchor, each paged on its own up to `pages` pages: `covered` when each finished within
+ * them, with the pages each asked; otherwise the sources that did not. Either source failing stops the search, since one
+ * source is no cross-check, unless the other overflowed: the range is then not read at all.
+ */
+export type Search =
+  | { readonly kind: 'covered'; readonly hits: Hits; readonly pages: ReadonlyMap<SourceName, number> }
+  | { readonly kind: 'overflow'; readonly sources: readonly SourceName[] };
+
+export async function search(anchor: Anchor, ask: Ask, pages: number): Promise<Search> {
+  const sources = searchedBy(anchor);
+  const settled = await Promise.allSettled(sources.map((source) => (source === 'alchemy' ? searchAlchemy : searchEtherscan)(anchor, ask, pages)));
+  const over = sources.filter((_, i) => {
+    const one = settled[i];
+    return one?.status === 'fulfilled' && one.value.kind === 'overflow';
+  });
+  if (over.length > 0) return { kind: 'overflow', sources: over };
+  const searches = settled.map((one) => {
+    if (one.status === 'rejected') throw one.reason;
+    return one.value;
+  });
+  const complete = (source: SourceName) => {
+    const found = searches[sources.indexOf(source)];
+    return found?.kind === 'complete' ? found : undefined;
+  };
+  return {
+    kind: 'covered',
+    hits: { alchemy: complete('alchemy')?.hits ?? [], etherscan: complete('etherscan')?.hits ?? [] },
+    pages: new Map(sources.map((source) => [source, complete(source)?.pages ?? 0])),
+  };
 }
 
 export type SourceExchange = { readonly request: SourceRequest; readonly answer: unknown };
 
-/**
- * The answer cut to the fields the search reads, so its replay finds the same transfers and the same overflow. An
- * answer over one page keeps only its length (Etherscan) or its page key (Alchemy): a halved window never reads its
- * transfers, and a busy token's windows halve many times.
- */
 function readFields(request: SourceRequest, answer: unknown): unknown {
-  const { source } = request;
   if (!isRecord(answer)) return answer;
-  if (source === 'alchemy') {
+  if (request.source === 'alchemy') {
     if (!Array.isArray(answer.transfers)) return answer;
     const { transfers, pageKey } = answer;
-    if (typeof pageKey === 'string') return { transfers: [], pageKey };
-    return { transfers: transfers.map((t: unknown) => (isRecord(t) ? { hash: t.hash, from: t.from, to: t.to, blockNum: t.blockNum } : t)) };
+    return {
+      transfers: transfers.map((t: unknown) => (isRecord(t) ? { hash: t.hash, from: t.from, to: t.to, blockNum: t.blockNum } : t)),
+      ...(typeof pageKey === 'string' ? { pageKey } : {}),
+    };
   }
   if (answer.status !== '1' || !Array.isArray(answer.result)) return answer;
   const { status, message, result } = answer;
-  if (result.length >= PAGE) return { status, message, result: result.map(() => ({})) };
-  const emitter = request.source === 'etherscan' && request.query.address === undefined;
+  const emitter = request.query.address === undefined;
   return {
     status,
     message,
@@ -197,6 +230,39 @@ function readFields(request: SourceRequest, answer: unknown): unknown {
       isRecord(log) ? { transactionHash: log.transactionHash, topics: log.topics, blockNumber: log.blockNumber, ...(emitter ? { address: log.address } : {}) } : log,
     ),
   };
+}
+
+const rangeOf = (request: SourceRequest): string =>
+  request.source === 'alchemy' ? `${BigInt(String(request.params.fromBlock))}:${BigInt(String(request.params.toBlock))}` : `${request.query.fromBlock}:${request.query.toBlock}`;
+
+const morePages = (answer: unknown): boolean => isRecord(answer) && (typeof answer.pageKey === 'string' || (Array.isArray(answer.result) && answer.result.length >= PAGE));
+
+function unfinished(exchange: SourceExchange, all: readonly SourceExchange[]): boolean {
+  const { request, answer } = exchange;
+  if (!morePages(answer)) return false;
+  const range = rangeOf(request);
+  return !all.some(({ request: next }) => {
+    if (next.source !== request.source || rangeOf(next) !== range) return false;
+    if (next.source === 'alchemy') return next.params.pageKey === (answer as { pageKey?: unknown }).pageKey;
+    return request.source === 'etherscan' && Number(next.query.page) === Number(request.query.page) + 1;
+  });
+}
+
+function cutUncovered(exchanges: readonly SourceExchange[]): SourceExchange[] {
+  const over = exchanges.filter((e) => unfinished(e, exchanges)).map((e) => e.request);
+  const uncovered = new Set(over.map(rangeOf));
+  const overflowed = new Set(over.map((request) => `${request.source} ${rangeOf(request)}`));
+  return exchanges.map(({ request, answer }) => {
+    if (!uncovered.has(rangeOf(request)) || !isRecord(answer)) return { request, answer };
+    const finished = !overflowed.has(`${request.source} ${rangeOf(request)}`);
+    const { pageKey, status, message, result } = answer;
+    if (request.source === 'alchemy') {
+      if (!Array.isArray(answer.transfers)) return { request, answer };
+      return { request, answer: { transfers: [], ...(!finished && typeof pageKey === 'string' ? { pageKey } : {}) } };
+    }
+    if (!Array.isArray(result)) return { request, answer };
+    return { request, answer: { status, message, result: !finished && morePages(answer) ? result.map(() => ({})) : [] } };
+  });
 }
 
 /** Passes every request through and keeps each answer, cut to what the search reads. */
@@ -208,7 +274,7 @@ export function recordingAsk(inner: Ask): { ask: Ask; exchanges: () => SourceExc
       exchanges.push({ request: req, answer: readFields(req, answer) });
       return answer;
     },
-    exchanges: () => [...exchanges],
+    exchanges: () => cutUncovered(exchanges),
   };
 }
 

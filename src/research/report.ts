@@ -26,10 +26,11 @@ import { GENERATED_FILE, INSTANCE_FOLDER, reportUnit, reportedInstancesIn, sever
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, EffectToken, Quantity, Rule, Template, Tolerance, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording, SiteOwner } from './listings.ts';
 import { checkSources, githubLine, listingsFor, recordedListingReads, sourcePagesOf, sourceSiteLine, trimForRecording, trimSourcePage } from './listings.ts';
-import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from './past-txs.ts';
+import { pastTxs, renderPastTxs } from './past-txs.ts';
 import { factsScope, parseFactsRecording, protocolFacts, replaySources } from './protocol-facts.ts';
 import type { FactReading, FactsScope, ProtocolFacts } from './protocol-facts.ts';
-import type { PastTxs, Sampling } from './past-txs.ts';
+import type { PastTxs } from './past-txs.ts';
+import { YEAR_PAGES, samplingOf } from './recording.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { replayMessages } from './messages.ts';
 import { replayTraces } from './trace.ts';
@@ -593,21 +594,17 @@ function printableQuery(file: string, query: PastTxsRecording['query']): boolean
     block(query.head) &&
     (query.head === undefined || (query.fromBlock === undefined && query.toBlock === undefined)) &&
     (query.wholeYear === undefined || (query.wholeYear === true && query.head !== undefined)) &&
+    (query.yearPages === undefined || (Number.isSafeInteger(query.yearPages) && query.yearPages >= 1 && query.yearPages <= YEAR_PAGES && query.head !== undefined && query.wholeYear === undefined)) &&
     Number.isSafeInteger(query.maxTxs)
   );
 }
 
-export function pastTxsSampling(query: PastTxsRecording['query']): Sampling {
-  if (query.fromBlock !== undefined && query.toBlock !== undefined) return { kind: 'range', range: { fromBlock: BigInt(query.fromBlock), toBlock: BigInt(query.toBlock) } };
-  const spread = { ...DEFAULT_SPREAD, wholeYear: query.wholeYear === true };
-  return query.head === undefined ? spread : { ...spread, head: BigInt(query.head) };
-}
-
 /**
- * Runs the study again on a recording, with the template as it is now. With `live`, the search answers and head block
- * still come from the recording, but each found transaction, its receipt and its sender's code are read again through
- * `live`, so a transaction the chain does not hold as recorded changes the summary. With `liveTraces`, a recorded trace
- * counts only when the transaction is traced again with the same calls, and is UNVERIFIABLE, with why, otherwise.
+ * Runs the study again on a recording, with the template as it is now. With `live`, the search answers, the head block
+ * and each anchor party's reads still come from the recording, so the same transactions are chosen, but each found
+ * transaction, its receipt and its sender's code are read again through `live`, so a transaction the chain does not hold
+ * as recorded changes the summary. With `liveTraces`, a recorded trace counts only when the transaction is traced again
+ * with the same calls, and is UNVERIFIABLE, with why, otherwise.
  */
 export async function summarizePastTxs(repoRoot: string, registry: Registry, file: string, recording: PastTxsRecording, live?: Reader, liveTraces?: TraceSource): Promise<PastTxsSummary> {
   const { query } = recording;
@@ -634,11 +631,12 @@ export async function summarizePastTxs(repoRoot: string, registry: Registry, fil
         ...(query.to === undefined ? {} : { to: query.to as Address }),
         ...(query.event === undefined ? {} : { event: anchorEvent(query.event) }),
       },
-      sampling: pastTxsSampling(query),
+      sampling: samplingOf(query),
     },
     {
       ask: replayAsk(recording.sources),
       reader,
+      partyReader: recorded,
       registry,
       readMessage: replayMessages(recording.messages ?? []),
       exclude: undefined,
