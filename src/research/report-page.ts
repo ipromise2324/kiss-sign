@@ -2,6 +2,7 @@ import { join } from 'node:path';
 import { hexToBytes } from '@noble/hashes/utils.js';
 import { groupedTokens } from '../chain/decimals.ts';
 import { castValue } from '../decode/cast.ts';
+import { OFFICIAL_MULTISEND } from '../decode/multisend.ts';
 import type { AbiParam } from '../decode/abi.ts';
 import { namedSignatureOfAbiEntry, paramName, parseFunctionSignature } from '../decode/abi.ts';
 import { say } from '../language.ts';
@@ -53,7 +54,8 @@ export const entryAnchor = (name: string): Anchor => anchor(`a-${name}`);
 export type Span =
   | string
   | { readonly code: string }
-  | { readonly mono: string }
+  /** `line` puts it on a line of its own, for a list of addresses. */
+  | { readonly mono: string; readonly line?: true }
   | { readonly num: string }
   | { readonly href: HttpsUrl | Anchor; readonly label: string };
 export type Inline = readonly Span[];
@@ -185,13 +187,14 @@ export type ReviewRow = {
   readonly title: string;
   /** The AI review's first sentence, shown open; the rest is folded. */
   readonly conclusion: AiText;
-  /** What the result is about, as the program names it: the entry, source, call or test transaction. */
-  readonly subject: Inline;
+  /** What the result is about beyond the title, as the program names it: the source, span, call or flow line; none when the title says it all. */
+  readonly subject: Inline | undefined;
   readonly why: Inline;
   readonly entry: Anchor | undefined;
-  readonly review: { readonly status: 'confirmed' | 'concern'; readonly text: AiText; readonly recommendation: AiText };
+  /** The AI review after its first sentence, which `conclusion` shows open; none when that sentence is all of it. */
+  readonly review: { readonly status: 'confirmed' | 'concern'; readonly rest: AiText | undefined; readonly recommendation: AiText };
 };
-export type Judgment = { readonly conclusion: AiText; readonly text: AiText; readonly recommendation: AiText };
+export type Judgment = { readonly conclusion: AiText; readonly rest: AiText | undefined; readonly recommendation: AiText };
 
 export type WalletRows = readonly { readonly label: Inline; readonly value: Inline }[] | 'no-descriptor';
 export type WalletCall = { readonly n: number; readonly title: Inline; readonly rows: WalletRows };
@@ -1159,6 +1162,13 @@ function vaultSection(context: Context): Section[] {
 const findingWords = (result: Result, w: Words): { readonly title: string; readonly why: string } =>
   (w.finding as Readonly<Partial<Record<FindingKind, { readonly title: string; readonly why: string }>>>)[result.finding.kind] ?? { title: w.needsReview, why: '' };
 
+/** AI text as its first sentence, shown open, and the rest, folded; the sources go with the rest, or with the sentence when it is all of the text. */
+function splitFirst(text: string, sources: readonly HttpsUrl[] = []): { readonly conclusion: AiText; readonly rest: AiText | undefined } {
+  const first = firstSentence(text);
+  const rest = text.slice(first.length).trim();
+  return rest === '' ? { conclusion: research(first, sources), rest: undefined } : { conclusion: research(first), rest: research(rest, sources) };
+}
+
 /** The text up to its first sentence end outside a code span, or all of it. */
 function firstSentence(text: string): string {
   let at = 0;
@@ -1170,36 +1180,36 @@ function firstSentence(text: string): string {
   return text;
 }
 
-function reviewTitle(result: Result, context: Context): { readonly title: Inline; readonly why: Inline } {
+/** What a result is about beyond its row's title, which already names its kind and its entry or test transaction, and why it is shown. */
+function reviewSubject(result: Result, context: Context): { readonly subject: Inline | undefined; readonly why: Inline } {
   const { w } = context;
   const words = findingWords(result, w);
   if (result.about.kind === 'fixture') {
     const detail = result.finding.kind === 'judged-otherwise' ? ` ${result.finding.detail}` : '';
-    return { title: w.fixtureTitle({ code: result.about.name }, words.title), why: [`${words.why}${detail}`] };
+    return { subject: undefined, why: [`${words.why}${detail}`] };
   }
   if (result.about.kind === 'flow') {
     const counted = result.finding.kind === 'line-not-every' ? ` ${w.seenIn(result.finding.seen, result.finding.of)}` : '';
-    return { title: [w.flowLineTitle(result.about.line, words.title)], why: [`${words.why}${counted}`] };
+    return { subject: [w.flowLine(result.about.line)], why: [`${words.why}${counted}`] };
   }
   if (result.about.kind === 'money') {
     const { call, from, to, kind, others } = result.about.uncovered;
     const counted = result.finding.kind === 'money-uncovered' ? ` ${w.inTransactions(result.finding.transactions)}` : '';
     const outside = others.length === 0 ? '' : ` ${w.outsideRegistry(others.slice(0, 5).map(checksumAddress), others.length)}`;
-    return { title: w.moneyTitle(call, from, to, { code: kind }, words.title), why: [`${words.why}${counted}${outside}`] };
+    return { subject: w.moneySubject(call, from, to, { code: kind }), why: [`${words.why}${counted}${outside}`] };
   }
-  const name = result.about.entry.name;
   const doc = /\/doc\.(0x[0-9a-f]{8})\.(\w+)$/.exec(result.id);
   if (doc !== null) {
     const found = context.inputs.subject.docs.find((d) => d.fn.selector === doc[1]);
     const page = found?.standard === undefined ? w.docsPage : w.standardPage(found.standard.name);
     const why = found?.standard !== undefined && result.finding.kind === 'name-not-on-page' ? w.notInStandard(found.standard.name) : words.why;
-    return { title: w.docTitle(name, page, { code: found?.fn.name ?? (doc[1] as string) }, words.title), why: [why] };
+    return { subject: w.docSubject(page, { code: found?.fn.name ?? (doc[1] as string) }), why: [why] };
   }
   if (result.finding.kind === 'few-confirmations') {
-    return { title: [w.addressConfirmed(name, confirmedWords(result.about.entry, result.finding.by, w, context.registry))], why: [w.fewConfirmationsWhy(MIN_CONFIRMATIONS)] };
+    return { subject: [confirmedWords(result.about.entry, result.finding.by, w, context.registry)], why: [w.fewConfirmationsWhy(MIN_CONFIRMATIONS)] };
   }
   const span = /\/code\.(\d+)$/.exec(result.id);
-  const where = span !== null ? w.span(span[1] as string) : result.id.endsWith('/code.today') ? w.latestBlock : '';
+  const where = span !== null ? w.span(span[1] as string) : result.id.endsWith('/code.today') ? w.latestBlock : undefined;
   const refused =
     result.finding.kind === 'refused'
       ? w.refusedWhy(result.finding.why)
@@ -1209,7 +1219,8 @@ function reviewTitle(result: Result, context: Context): { readonly title: Inline
           ? ` ${(result.others ?? []).map(checksumAddress).join(', ')}`
           : '';
   const source = result.source === undefined ? undefined : sourceWord(result.about.entry, result.source.of, w, context.registry);
-  return { title: [w.resultTitle(name, source, words.title, where)], why: [`${words.why}${refused}`] };
+  const subject = w.resultSubject(source, where);
+  return { subject: subject === undefined ? undefined : [subject], why: [`${words.why}${refused}`] };
 }
 
 function reviewSection(context: Context): Section {
@@ -1218,21 +1229,22 @@ function reviewSection(context: Context): Section {
   const grades = ['key', 'reference'] as const;
   const rows = grades.flatMap((grade) => graded(grade).map((result): ReviewRow => {
     const review = notes.reviews.get(result.id) as Notes['reviews'] extends ReadonlyMap<string, infer R> ? R : never;
-    const { title, why } = reviewTitle(result, context);
+    const { subject, why } = reviewSubject(result, context);
     const plain = findingWords(result, context.w).title;
+    const { conclusion, rest } = splitFirst(review.text);
     return {
       id: result.id,
       state: stateOf(result),
       grade,
       title: `${plain.charAt(0).toUpperCase()}${plain.slice(1)}${result.about.kind === 'entry' ? ` · ${result.about.entry.name}` : result.about.kind === 'fixture' ? ` · ${result.about.name}` : ''}`,
-      conclusion: research(firstSentence(review.text)),
-      subject: title,
+      conclusion,
+      subject,
       why,
       entry: result.about.kind === 'entry' ? entryAnchor(result.about.entry.name) : undefined,
-      review: { status: review.status, text: research(review.text), recommendation: research(review.recommendation) },
+      review: { status: review.status, rest, recommendation: research(review.recommendation) },
     };
   }));
-  const judgments = notes.judgments.map((j) => ({ conclusion: research(firstSentence(j.text)), text: research(j.text, j.sources), recommendation: research(j.recommendation) }));
+  const judgments = notes.judgments.map((j): Judgment => ({ ...splitFirst(j.text, j.sources), recommendation: research(j.recommendation) }));
   const counts = [
     ...grades.flatMap((grade) => (graded(grade).length === 0 ? [] : [{ state: worst(graded(grade)), n: graded(grade).length, grade }])),
     ...(judgments.length === 0 ? [] : [{ state: 'ask' as const, n: judgments.length }]),
@@ -1317,7 +1329,7 @@ function safeTxRows(context: Context, lines: Inline[]): WalletRows {
   const value = (path: (typeof SAFE_TX_FIELDS)[number]): Inline => {
     switch (path) {
       case 'to':
-        return one === undefined ? [w.officialMultiSend] : ruleWords(one.to, context);
+        return one === undefined ? [w.officialMultiSendOf(OFFICIAL_MULTISEND.length), ...OFFICIAL_MULTISEND.map((d): Span => ({ mono: checksumAddress(d.address), line: true }))] : ruleWords(one.to, context);
       case 'value':
         return one === undefined ? [{ mono: '0' }] : ruleWords(one.value, context);
       case 'operation':

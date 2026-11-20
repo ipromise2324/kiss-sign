@@ -68,6 +68,7 @@ a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
+.addr.line{display:block;margin-top:4px}
 .num{font-variant-numeric:tabular-nums}
 .f2{color:var(--fg2)} .f3{color:var(--fg3)}
 b,strong{font-weight:590}
@@ -179,6 +180,8 @@ svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
 svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
 svg .axis{stroke:var(--line2)}
 svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.chart svg{min-width:0}
+@media (max-width:600px){.chart .tick{font-size:18px}.chart .thin{display:none}}
 .legend{list-style:none;margin:10px 0 14px;padding:0;display:flex;flex-direction:column;gap:4px;font-size:var(--t-small);color:var(--fg2)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
@@ -226,6 +229,7 @@ details.fixed>summary::-webkit-details-marker{display:none}
 details.fixed>summary:hover{color:var(--fg)}
 details.fixed[open]>summary .chev{transform:rotate(90deg)}
 .parts>details.fixed{grid-column:1/-1;display:grid;grid-template-columns:subgrid}
+.parts>details.fixed::details-content{display:contents}
 .parts>details.fixed>summary{grid-column:1/-1;padding:10px 0;border-bottom:0;border-top:1px solid var(--line)}
 .parts>details.fixed:first-child>summary,.plabel+details.fixed>summary{border-top:0;padding-top:2px}
 @media (max-width:720px){
@@ -238,6 +242,8 @@ details.fixed[open]>summary .chev{transform:rotate(90deg)}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
+.row .t .grade{font-weight:400;font-size:var(--t-label);color:var(--fg3);margin-right:10px;padding-right:10px;border-right:1px solid var(--line2);vertical-align:1px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .row .meta{font-size:var(--t-row);color:var(--fg2);margin-top:6px}
 .row .meta a{margin-left:8px;color:var(--fg2)}
 .row .rec{font-size:var(--t-row);margin-top:8px}
