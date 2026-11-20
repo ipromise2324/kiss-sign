@@ -12,7 +12,10 @@ export class Html {
 
 type Part = Html | string | number | undefined | false | readonly Part[];
 
-export const escape = (text: string): string => text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+/** Control, bidirectional and invisible characters other than tab and newline, which could hide or reorder what the page shows. */
+const UNSEEN = /[\u0000-\u0008\u000b-\u001f\u007f-\u009f\u00ad\u034f\u061c\u115f\u1160\u180e\u200b-\u200f\u2028-\u202e\u2060-\u206f\u3164\ufe00-\ufe0f\ufeff\uffa0\ufff9-\ufffb\u{e0000}-\u{e007f}\u{e0100}-\u{e01ef}]/gu;
+const codePoint = (c: string): string => `[U+${(c.codePointAt(0) as number).toString(16).toUpperCase().padStart(4, '0')}]`;
+export const escape = (text: string): string => text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`).replace(UNSEEN, codePoint);
 const part = (value: Part): string => (value instanceof Html ? value.text : Array.isArray(value) ? value.map(part).join('') : value === undefined || value === false ? '' : escape(String(value)));
 
 /** The one way markup is built: every interpolated value is escaped unless the renderer made it. */
