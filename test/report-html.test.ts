@@ -12,7 +12,8 @@ import type { Language } from '../src/language.ts';
 import { OLD_HTML_FILE, generatedHtml, generatedHtmlFile, generatedHtmlPath, htmlDifference, htmlDifferences, renderPage, writeHtmlPages } from '../src/research/report-html.ts';
 import { buildPage } from '../src/research/report-page.ts';
 import { loadReport, readDocs, replayInputs, reportDir, templateTargets } from '../src/research/report.ts';
-import type { ReportInputs, ReportTitle } from '../src/research/report.ts';
+import type { PastTxsSummary, ReportInputs, ReportTitle } from '../src/research/report.ts';
+import type { YearSearch } from '../src/research/past-txs.ts';
 import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { NOT_YET_REBUILT, reportedInstances } from '../src/template/vault-reports.ts';
@@ -398,4 +399,32 @@ test('the report list verify reads at the trusted commit holds no report under v
   const at = (folder: string) => [...reportedInstances('morpho/vault-deposit', [`templates/morpho/vault-deposit/${folder}/v/report.generated.md`]).keys()];
   assert.deepEqual(at('vaults'), []);
   assert.deepEqual(at('instances'), ['v']);
+});
+
+test("a paged year's search line says how many transactions with a proven Safe party were studied, and an older recording's says nothing more", async () => {
+  const id = bilingual((dir) => (pages.get(dir)?.inputs.pastTxs.length ?? 0) > 0);
+  const { inputs, title, html } = pages.get(id) ?? assert.fail(id);
+  const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
+  const [first, ...rest] = inputs.pastTxs as [PastTxsSummary, ...PastTxsSummary[]];
+  const withFixtures = { ...inputs, fixtures: await judgeFixtures(ROOT, template, registry), example: firstRecordedTx(ROOT, template, registry) };
+  const covered = (safesFirst: Extract<YearSearch, { kind: 'covered' }>['safesFirst']): YearSearch => ({ kind: 'covered', range: { fromBlock: 1n, toBlock: 2n }, pages: new Map([['alchemy', 2], ['etherscan', 3]]), safesFirst });
+  const checked = { kind: 'checked', noun: 'the address minted to', block: 2n, parties: 30, safes: 20, unreadable: 0 } as const;
+  const searchLine = (language: Language, year: YearSearch | undefined): string => {
+    const page = renderPage(buildPage({ ...withFixtures, pastTxs: [{ ...first, run: { ...first.run, year } }, ...rest] }, notesOf(id), title, language));
+    return /<h3>((?:Search of|搜尋)[^<]*)<\/h3>/.exec(page)?.[1] ?? assert.fail(`${language}: a search line`);
+  };
+  const expected: Readonly<Record<Language, readonly [all: string, some: string, none: string]>> = {
+    en: [', all 17 with a proven Safe party', ', 9 of 20 with a proven Safe party', ', none with a proven Safe party'],
+    'zh-TW': ['，含 Safe 參與方的 17 筆全數研究', '，含 Safe 參與方 20 筆中研究 9 筆', '，沒有 Safe 參與方的交易'],
+  };
+  for (const language of LANGUAGES) {
+    const committed = /<h3>((?:Search of|搜尋)[^<]*)<\/h3>/.exec(html.get(language) ?? assert.fail(language))?.[1] ?? assert.fail(`${language}: a committed search line`);
+    const [all, some, none] = expected[language];
+    assert.equal(searchLine(language, covered({ check: checked, selection: { safes: 17, safesChosen: 17, rest: 40, restChosen: 3 } })), `${committed}${all}`);
+    assert.equal(searchLine(language, covered({ check: checked, selection: { safes: 20, safesChosen: 9, rest: 40, restChosen: 3 } })), `${committed}${some}`);
+    assert.equal(searchLine(language, covered({ check: { ...checked, safes: 0 }, selection: { safes: 0, safesChosen: 0, rest: 40, restChosen: 12 } })), `${committed}${none}`);
+    assert.equal(searchLine(language, covered({ check: { kind: 'not-checked', why: '--from and --to fix both sides of the transfer' }, selection: { safes: 0, safesChosen: 0, rest: 40, restChosen: 12 } })), committed, 'no party checked adds nothing');
+    assert.equal(searchLine(language, covered(undefined)), committed, 'a year asked in one page adds nothing');
+    assert.equal(searchLine(language, undefined), committed, 'a recording of the windows adds nothing');
+  }
 });
