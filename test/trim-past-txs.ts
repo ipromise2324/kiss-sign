@@ -34,7 +34,11 @@ const registry = loadRegistry(root);
 const key = (method: string, params: unknown) => `${method} ${JSON.stringify(params)}`;
 
 for (const name of names) {
-  const recording = readRecording<PastTxsRecording>(join(REPO, RECORDINGS_DIR, `${name}.json`));
+  const { excluded, ...recording } = readRecording<PastTxsRecording>(join(REPO, RECORDINGS_DIR, `${name}.json`));
+  if ((excluded?.found.length ?? 0) + (excluded?.sampled.length ?? 0) > 0) {
+    console.error(`${name}: the recording lists transactions of the configured Safe in excluded, which a committed fixture must not hold`);
+    process.exit(1);
+  }
   const read = new Set<string>();
   const messages = new Set<string>();
   const traced = new Set<string>();
@@ -61,7 +65,6 @@ for (const name of names) {
       exclude: undefined,
       maxTxs: query.maxTxs,
       traces: (hash) => (traced.add(hash), traces(hash)),
-      excludedByRecording: { found: new Set(recording.excluded?.found ?? []), sampled: new Set(recording.excluded?.sampled ?? []) },
     },
   );
   const trimmed: PastTxsRecording = {

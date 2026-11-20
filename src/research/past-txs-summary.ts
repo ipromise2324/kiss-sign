@@ -6,7 +6,7 @@ import type { AbiType } from '../decode/abi.ts';
 import { ATTRIBUTES_PATH, MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, isEntryName } from '../registry.ts';
 import type { Registry } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { TEMPLATES_DIR, loadTemplate } from '../template/template.ts';
+import { TEMPLATES_DIR, cardRefs, loadTemplate, refNames } from '../template/template.ts';
 import type { Template } from '../template/template.ts';
 import { keccakText } from '../verify/verify.ts';
 import { statedEffects } from './amounts.ts';
@@ -121,17 +121,28 @@ const stringsIn = (value: unknown): string[] =>
 
 /**
  * keccak256 of the entries of `registry` a summary's study could read, so adding an unrelated entry keeps it: each entry
- * the template names, each entry whose address occurs anywhere in the summary's results, each market all of whose
- * entries are among those, and the attribute table, as `registry/` holds them, in canonical JSON. `registry` is the one
- * the study read, which for a template reported per vault holds that vault alone of those its field accepts.
+ * the template names, each a card reference can name (a field's scope, the attribute it reads, a market's parts), each the
+ * query's token, --from or --to is, each whose address occurs anywhere in the summary's results, every market when a
+ * card field is one, each market all of whose entries are among those, and the attribute table, as `registry/` holds
+ * them, in canonical JSON. `registry` is the one the study read, which for a template reported per vault holds that
+ * vault alone of those its field accepts.
  */
-export function registryFingerprint(repoRoot: string, registry: Registry, template: string, results: unknown): Hex {
+export function registryFingerprint(repoRoot: string, registry: Registry, query: PastTxsRecording['query'], results: unknown): Hex {
   const contracts = readJson(repoRoot, REGISTRY_PATH, {}) as Record<string, { readonly address?: unknown }>;
   const markets = readJson(repoRoot, MARKETS_PATH, {}) as Record<string, Record<string, unknown>>;
-  const named = new Set(stringsIn(JSON.parse(readFileSync(join(repoRoot, TEMPLATES_DIR, template, 'template.json'), 'utf8'))).filter(isEntryName));
+  const template = loadTemplate(repoRoot, query.template, registry);
+  const anyMarket = [...template.card.values()].some((field) => field.kind === 'market');
+  const marketParts = anyMarket ? [...registry.markets.values()].flatMap((market) => MARKET_ENTRY_PARTS.map((part) => market[part].name)) : [];
+  const queried = [query.token, query.from, query.to].flatMap((address) => (address === undefined ? [] : (registry.byAddress.get(address.toLowerCase() as Address)?.name ?? [])));
+  const named = new Set([
+    ...stringsIn(JSON.parse(readFileSync(join(repoRoot, TEMPLATES_DIR, query.template, 'template.json'), 'utf8'))).filter(isEntryName),
+    ...cardRefs(template).flatMap((ref) => refNames(ref, template, registry)),
+    ...marketParts,
+    ...queried,
+  ]);
   const text = JSON.stringify(results).toLowerCase();
   const kept = [...registry.entries.values()].filter((entry) => named.has(entry.name) || text.includes(entry.address.slice(2))).map((entry) => entry.name);
-  const keptMarkets = [...registry.markets.keys()].filter((name) => MARKET_ENTRY_PARTS.every((part) => kept.includes(String(markets[name]?.[part]))));
+  const keptMarkets = [...registry.markets.keys()].filter((name) => anyMarket || MARKET_ENTRY_PARTS.every((part) => kept.includes(String(markets[name]?.[part]))));
   return keccakText(
     canonicalJson({
       contracts: Object.fromEntries(kept.sort().map((name) => [name, contracts[name]])),
@@ -157,18 +168,18 @@ export function summaryOf(repoRoot: string, registry: Registry, query: PastTxsRe
     measurements: run.measurements,
     traces: run.traces,
   };
-  return { query, head: run.head, studiedWith: studiedWith(repoRoot, registry, query.template, results), ...results };
+  return { query, head: run.head, studiedWith: studiedWith(repoRoot, registry, query, results), ...results };
 }
 
-const studiedWith = (repoRoot: string, registry: Registry, template: string, results: Results): StudiedWith => ({
-  template: templateFingerprint(repoRoot, template),
-  registry: registryFingerprint(repoRoot, registry, template, resultsJson(results)),
+const studiedWith = (repoRoot: string, registry: Registry, query: PastTxsRecording['query'], results: Results): StudiedWith => ({
+  template: templateFingerprint(repoRoot, query.template),
+  registry: registryFingerprint(repoRoot, registry, query, resultsJson(results)),
   study: studyFingerprint(),
 });
 
 /** Each of the summary's hashes that differs from what this checkout gives with `registry`, by what it names. */
 export function staleParts(repoRoot: string, registry: Registry, summary: PastTxsSummary): string[] {
-  const now = studiedWith(repoRoot, registry, summary.query.template, summary);
+  const now = studiedWith(repoRoot, registry, summary.query, summary);
   return [
     ...(now.template === summary.studiedWith.template ? [] : ['template']),
     ...(now.registry === summary.studiedWith.registry ? [] : ['registry entries it reads']),
@@ -192,12 +203,22 @@ function yearJson(year: YearSearch): unknown {
   };
 }
 
+/**
+ * A text the study may have decoded from the chain, such as a signed message's string member: as it is when the
+ * program could have written it (`TEXT`), else its UTF-8 bytes in hex, so a summary holds any string a run can see.
+ */
+const chainTextJson = (text: string): unknown => (TEXT.test(text) ? text : { utf8: `0x${Buffer.from(text, 'utf8').toString('hex')}` });
+
 function studyJson(study: Kept): unknown {
   switch (study.kind) {
-    case 'fit':
-      return { ...study, block: block(study.block), types: study.types.map(canonicalType), time: study.time === undefined ? undefined : block(study.time) };
+    case 'fit': {
+      const values = study.values.map((value, i) => (study.types[i]?.kind === 'string' ? chainTextJson(value) : value));
+      return { ...study, block: block(study.block), types: study.types.map(canonicalType), values, time: study.time === undefined ? undefined : block(study.time) };
+    }
     case 'misfit':
-      return study.reason.kind === 'late' ? { ...study, reason: { ...study.reason, seconds: block(study.reason.seconds) } } : study;
+      if (study.reason.kind === 'late') return { ...study, reason: { ...study.reason, seconds: block(study.reason.seconds) } };
+      if (study.reason.kind === 'field') return { ...study, reason: { ...study.reason, expected: chainTextJson(study.reason.expected), actual: chainTextJson(study.reason.actual) } };
+      return study;
     default:
       return study;
   }
@@ -240,6 +261,7 @@ const ADDRESS = /^0x[0-9a-f]{40}$/;
 const SELECTOR = /^0x[0-9a-f]{8}$/;
 const DECIMAL = /^(0|[1-9][0-9]*)$/;
 const SIGNED = /^(0|-?[1-9][0-9]*)$/;
+const UTF8 = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true });
 
 type Json = Readonly<Record<string, unknown>>;
 
@@ -266,7 +288,18 @@ function parser(file: string) {
   const count = (at: string, raw: unknown): number => (Number.isSafeInteger(raw) && (raw as number) >= 0 ? (raw as number) : fail(at, 'not a count'));
   const oneOf = <T extends string>(options: readonly T[]) => (at: string, raw: unknown): T => (options as readonly unknown[]).includes(raw) ? (raw as T) : fail(at, `not one of ${options.join(', ')}`);
   const optional = <T>(at: string, raw: unknown, read: (at: string, raw: unknown) => T): T | undefined => (raw === undefined ? undefined : read(at, raw));
-  return { fail, object, list, hash, address, text, path, selector, decimal, signed, count, oneOf, optional };
+  const chainText = (at: string, raw: unknown): string => {
+    if (typeof raw === 'string') return text(at, raw);
+    const hex = matching(/^0x([0-9a-f]{2})*$/, 'hex bytes')(`${at}.utf8`, object(at, raw, ['utf8']).utf8);
+    let decoded: string;
+    try {
+      decoded = UTF8.decode(Buffer.from(hex.slice(2), 'hex'));
+    } catch {
+      return fail(`${at}.utf8`, 'not UTF-8');
+    }
+    return TEXT.test(decoded) ? fail(`${at}.utf8`, 'text of the characters the program writes, kept as it is') : decoded;
+  };
+  return { fail, object, list, hash, address, text, chainText, path, selector, decimal, signed, count, oneOf, optional };
 }
 
 type Parser = ReturnType<typeof parser>;
@@ -316,7 +349,7 @@ function parseReason(p: Parser, at: string, raw: unknown): MisfitReason {
     }
     case 'field': {
       const o = p.object(at, raw, ['kind', 'at', 'expected', 'actual']);
-      return { kind, at: p.path(`${at}.at`, o.at), expected: p.text(`${at}.expected`, o.expected), actual: p.text(`${at}.actual`, o.actual) };
+      return { kind, at: p.path(`${at}.at`, o.at), expected: p.chainText(`${at}.expected`, o.expected), actual: p.chainText(`${at}.actual`, o.actual) };
     }
     case 'differs': {
       const o = p.object(at, raw, ['kind', 'at', 'other']);
@@ -346,12 +379,12 @@ function parseType(p: Parser, at: string, raw: unknown): AbiType {
 
 /** A leaf's value as `leafValue` writes it for its type; an address-word leaf holds the address it carries. */
 function checkValue(p: Parser, at: string, raw: unknown, type: AbiType): string {
+  if (type.kind === 'string') return p.chainText(at, raw);
   const pattern =
     type.kind === 'uint' ? DECIMAL
     : type.kind === 'int' ? SIGNED
     : type.kind === 'address' ? ADDRESS
     : type.kind === 'bool' ? /^(true|false)$/
-    : type.kind === 'string' ? TEXT
     : /^0x([0-9a-f]{2})*$/;
   return typeof raw === 'string' && pattern.test(raw) ? raw : p.fail(at, `not a ${canonicalType(type)} value`);
 }
@@ -520,9 +553,16 @@ export function parseSummary(file: string, text: string): PastTxsSummary {
     total: p.count('search.found.total', f.total),
     only: Object.fromEntries(SOURCES.map((source) => [source, p.list(`search.found.only.${source}`, only[source], p.hash)])) as Record<SourceName, Hex[]>,
   };
+  if (SOURCES.reduce((n, source) => n + found.only[source].length, 0) > found.total) p.fail('search.found.only', 'more hashes than the search found');
   const head = p.optional('head', o.head, p.decimal);
   if ((head === undefined) !== (query.fromBlock !== undefined)) p.fail('head', 'kept for a year or windows search, and only for one');
   if (query.head !== undefined && head !== BigInt(query.head)) p.fail('head', "not the query's head");
+  const studies = p.list('studies', o.studies, (a, x) => parseStudy(p, a, x));
+  const fits = new Set(studies.flatMap((study) => (study.kind === 'fit' ? [study.hash] : [])));
+  const measurements = p.list('measurements', o.measurements, (a, x) => parseMeasurement(p, a, x));
+  measurements.forEach(([hash], i) => fits.has(hash) || p.fail(`measurements[${i}].hash`, 'not a transaction that fit'));
+  const traces = p.list('traces', o.traces, (a, x) => parseTraced(p, a, x));
+  traces.forEach(({ hash }, i) => fits.has(hash) || p.fail(`traces[${i}].hash`, 'not a transaction that fit'));
   return {
     query,
     head,
@@ -537,15 +577,36 @@ export function parseSummary(file: string, text: string): PastTxsSummary {
       found,
       otherEmitter: p.list('search.otherEmitter', s.otherEmitter, p.hash),
     },
-    studies: p.list('studies', o.studies, (a, x) => parseStudy(p, a, x)),
-    measurements: new Map(p.list('measurements', o.measurements, (a, x) => parseMeasurement(p, a, x))),
-    traces: p.list('traces', o.traces, (a, x) => parseTraced(p, a, x)),
+    studies,
+    measurements: new Map(measurements),
+    traces,
   };
+}
+
+/**
+ * The text `--record` and `--restudy` write for `summary` at `testdata/research/<name>.json`, refused before anything is
+ * written when it would not read back as the same summary, or holds `safe`'s address.
+ */
+export function summaryFile(name: string, summary: PastTxsSummary, safe: Address | undefined): { readonly path: string; readonly text: string } {
+  const path = join(SUMMARIES_DIR, `${name}.json`);
+  const text = summaryText(summary);
+  try {
+    if (summaryText(parseSummary(path, text)) !== text) throw new SummaryError(`${path}: reads back as another summary`);
+  } catch (error) {
+    throw new SummaryError(`${(error as Error).message}; nothing written`);
+  }
+  if (safe !== undefined && text.toLowerCase().includes(safe.slice(2).toLowerCase())) throw new SummaryError(`${path}: holds the configured Safe's address; nothing written`);
+  return { path, text };
 }
 
 /** The run a summary holds, rebuilt with the template it was studied with, for the renderers to print. */
 export function runOf(summary: PastTxsSummary, template: Template): PastTxs {
   const { query } = summary;
+  const effects = statedEffects(template);
+  for (const [hash, m] of summary.measurements) {
+    const beyond = m.kind === 'measured' ? m.differences.find((d) => d.effect >= effects.length) : undefined;
+    if (beyond !== undefined) throw new SummaryError(`the measurement of ${hash} names effect ${beyond.effect}, and the template states ${effects.length}`);
+  }
   return {
     query: {
       template,
@@ -557,7 +618,7 @@ export function runOf(summary: PastTxsSummary, template: Template): PastTxs {
     studies: summary.studies,
     shapes: shapesOf(template),
     excluded: { found: new Set(), sampled: new Set() },
-    effects: statedEffects(template),
+    effects,
     measurements: summary.measurements,
     traces: summary.traces,
   };

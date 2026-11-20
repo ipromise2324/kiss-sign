@@ -8,6 +8,7 @@ import { httpsTransport } from '../src/chain/rpc.ts';
 import { loadStoredConfig } from '../src/config.ts';
 import { kissSignHome } from '../src/keys.ts';
 import { loadRegistry } from '../src/registry.ts';
+import type { Registry } from '../src/registry.ts';
 import { WINDOWS, pastTxs } from '../src/research/past-txs.ts';
 import { renderPastTxs } from '../src/research/past-txs-render.ts';
 import { ANCHOR_KINDS, anchorEvent, liveAsk, recordingAsk } from '../src/research/sources.ts';
@@ -15,11 +16,13 @@ import type { AnchorEvent, AnchorKind } from '../src/research/sources.ts';
 import { liveMessages, recordingMessages } from '../src/research/messages.ts';
 import { httpsMessage } from '../src/verify/messages.ts';
 import { DEFAULT_SAMPLING, YEAR_PAGES, samplingFields, samplingOf, scrubRecording } from '../src/research/recording.ts';
-import { RECORDINGS_DIR, SUMMARIES_DIR, parseSummary, studyRecording, summaryText } from '../src/research/past-txs-summary.ts';
-import { pastTxsRegistry } from '../src/research/report.ts';
+import { RECORDINGS_DIR, SUMMARIES_DIR, parseSummary, studyRecording, summaryFile } from '../src/research/past-txs-summary.ts';
+import type { PastTxsSummary } from '../src/research/past-txs-summary.ts';
+import { ReportError, pastTxsRegistry } from '../src/research/report.ts';
 import { drpcTraces } from '../src/research/trace.ts';
 import type { PastTxsRecording, Sampling } from '../src/research/recording.ts';
 import { parseAddress } from '../src/safe/types.ts';
+import type { Address } from '../src/safe/types.ts';
 import { loadTemplate } from '../src/template/template.ts';
 import { readRecording, recordingText } from '../src/chain/bytecode.ts';
 import { unreadRefusal } from '../src/chain/https.ts';
@@ -137,9 +140,32 @@ const { values: flags, positionals } = parseArgs({
   },
 });
 
+/** The configured Safe, whose address no file this command writes may hold. */
+function configuredSafe(): Address | undefined {
+  const safe = loadStoredConfig(kissSignHome(process.env))?.safe;
+  if (safe === undefined) console.error(`no Safe configured in ${kissSignHome(process.env)}, so nothing is excluded`);
+  return safe;
+}
+
+function checkedSummary(name: string, summary: PastTxsSummary, safe: Address | undefined): { readonly path: string; readonly text: string } {
+  try {
+    return summaryFile(name, summary, safe);
+  } catch (error) {
+    console.error((error as Error).message);
+    process.exit(1);
+  }
+}
+
+function writeSummary({ path, text }: { readonly path: string; readonly text: string }): string {
+  mkdirSync(join(ROOT, SUMMARIES_DIR), { recursive: true });
+  writeFileSync(join(ROOT, path), text);
+  return path;
+}
+
 if (flags.restudy === true) {
   const names = positionals.length > 0 ? positionals : readdirSync(join(ROOT, RECORDINGS_DIR)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -'.json'.length)).sort();
   const registry = loadRegistry(ROOT);
+  const safe = configuredSafe();
   for (const name of names) {
     const path = join(ROOT, RECORDINGS_DIR, `${name}.json`);
     if (!/^[a-z0-9-]+$/.test(name) || !existsSync(path)) {
@@ -148,8 +174,7 @@ if (flags.restudy === true) {
     }
     const recording = readRecording(path) as PastTxsRecording;
     const summary = await studyRecording(ROOT, recording, pastTxsRegistry(ROOT, registry, recording.query));
-    writeFileSync(join(ROOT, SUMMARIES_DIR, `${name}.json`), summaryText(summary));
-    console.log(`wrote ${join(SUMMARIES_DIR, `${name}.json`)}`);
+    console.log(`wrote ${writeSummary(checkedSummary(name, summary, safe))}`);
   }
   process.exit(0);
 }
@@ -203,13 +228,29 @@ function recordedSearch(name: string): Sampling {
   return { ...sampling, head: summary.head };
 }
 
-const registry = loadRegistry(ROOT);
+const fullRegistry = loadRegistry(ROOT);
+const token = flags.token === undefined ? undefined : (fullRegistry.entries.get(flags.token)?.address ?? parseAddress('--token', flags.token));
+const from = flags.from === undefined ? undefined : (fullRegistry.entries.get(flags.from)?.address ?? parseAddress('--from', flags.from));
+const to = flags.to === undefined ? undefined : (fullRegistry.entries.get(flags.to)?.address ?? parseAddress('--to', flags.to));
+const registry = studyRegistry();
 const template = loadTemplate(ROOT, templateId, registry);
-const token = flags.token === undefined ? undefined : (registry.entries.get(flags.token)?.address ?? parseAddress('--token', flags.token));
-const from = flags.from === undefined ? undefined : (registry.entries.get(flags.from)?.address ?? parseAddress('--from', flags.from));
-const to = flags.to === undefined ? undefined : (registry.entries.get(flags.to)?.address ?? parseAddress('--to', flags.to));
-const exclude = loadStoredConfig(kissSignHome(process.env))?.safe;
-if (exclude === undefined) console.error(`no Safe configured in ${kissSignHome(process.env)}, so nothing is excluded`);
+const exclude = configuredSafe();
+
+/**
+ * The registry the report reads this search's summary with, which for a template reported per vault holds that vault
+ * alone of those its field accepts, so the run printed here is the one --record commits. A search --record cannot
+ * commit is refused before any read; one that writes nothing falls back to the whole registry.
+ */
+function studyRegistry(): Registry {
+  try {
+    return pastTxsRegistry(ROOT, fullRegistry, { template: templateId as string, ...(token === undefined ? {} : { token }), anchor: kind as AnchorKind, maxTxs });
+  } catch (error) {
+    if (!(error instanceof ReportError)) throw error;
+    if (flags.record === undefined) return fullRegistry;
+    console.error(`--record ${flags.record}: ${error.message}`);
+    process.exit(64);
+  }
+}
 
 const endpoints = mainnetEndpoints(process.env);
 const chain = recordingTransport(httpsTransport(), endpoints);
@@ -263,14 +304,10 @@ if (flags.record !== undefined) {
     exclude === undefined ? [] : [exclude],
     run.excluded,
   );
-  const summary = summaryText(await studyRecording(ROOT, fixture, pastTxsRegistry(ROOT, registry, fixture.query)));
-  if (exclude !== undefined && summary.toLowerCase().includes(exclude.slice(2).toLowerCase())) throw new Error("the summary holds the configured Safe's address; nothing written");
+  const summary = checkedSummary(flags.record, await studyRecording(ROOT, fixture, registry), exclude);
   const full = join(ROOT, RECORDINGS_DIR, `${flags.record}.json`);
-  const out = join(ROOT, SUMMARIES_DIR, `${flags.record}.json`);
   mkdirSync(join(full, '..'), { recursive: true });
-  mkdirSync(join(out, '..'), { recursive: true });
   writeFileSync(full, recordingText(fixture, 1));
-  writeFileSync(out, summary);
   console.log(`wrote ${full}: ${fixture.sources.length} source answers, ${fixture.exchanges.length} chain requests, ${fixture.traces?.length ?? 0} call traces`);
-  console.log(`wrote ${out}`);
+  console.log(`wrote ${writeSummary(summary)}`);
 }

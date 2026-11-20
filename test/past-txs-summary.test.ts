@@ -5,13 +5,15 @@ import { dirname, join, normalize } from 'node:path';
 import { after, test } from 'node:test';
 import { readRecording } from '../src/chain/bytecode.ts';
 import { loadRegistry } from '../src/registry.ts';
+import type { Difference } from '../src/research/amounts.ts';
 import { foundBy } from '../src/research/past-txs.ts';
 import { renderPastTxs } from '../src/research/past-txs-render.ts';
-import { STUDY_FILES, SUMMARIES_DIR, parseSummary, runOf, staleParts, studyRecording, summaryText } from '../src/research/past-txs-summary.ts';
+import { STUDY_FILES, SUMMARIES_DIR, parseSummary, runOf, staleParts, studyRecording, summaryFile, summaryText } from '../src/research/past-txs-summary.ts';
+import type { PastTxsSummary } from '../src/research/past-txs-summary.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { replayPastTxs } from '../src/research/recording.ts';
 import { pastTxsRegistry, summarizePastTxs } from '../src/research/report.ts';
-import type { Hex } from '../src/safe/types.ts';
+import type { Address, Hex } from '../src/safe/types.ts';
 import { loadTemplate } from '../src/template/template.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
@@ -96,6 +98,60 @@ test('a summary studied with another template, other registry entries it reads, 
 
   const otherCode = { ...summary, studiedWith: { ...summary.studiedWith, study: `0x${'00'.repeat(32)}` as Hex } };
   assert.throws(() => summarizePastTxs(root, loadRegistry(root), file, otherCode), refused('study code'));
+});
+
+test('a summary is refused when an entry joins the scope of a card field its template names, though no studied transaction holds its address', () => {
+  const root = scratchRepo();
+  const file = join(SUMMARIES_DIR, 'erc20-transfer-usdc.json');
+  const summary = parseSummary(file, readFileSync(join(ROOT, file), 'utf8'));
+  const stale = () => staleParts(root, pastTxsRegistry(root, loadRegistry(root), summary.query), summary);
+  assert.deepEqual(stale(), []);
+  const contracts = join(root, 'registry', 'contracts.json');
+  const raw = JSON.parse(readFileSync(contracts, 'utf8')) as Record<string, Record<string, unknown>>;
+  writeFileSync(contracts, JSON.stringify({ ...raw, 'unrelated-token': { ...(raw.usdc as Record<string, unknown>), address: `0x${'7e'.repeat(20)}` } }, null, 2));
+  assert.deepEqual(stale(), ['registry entries it reads'], 'the token field of erc20/transfer can now name the new token');
+});
+
+test('a summary holds a string decoded from the chain whatever its characters, and reads back as the same summary', async () => {
+  const summary = await studyRecording(ROOT, deposit, registry);
+  const misfit = summary.studies.find((s) => s.kind === 'misfit');
+  assert.ok(misfit !== undefined && misfit.kind === 'misfit');
+  for (const actual of ['<b>2</b>', '`x` | [a](https://example.com)', 'line\nbreak', '名稱 ✓']) {
+    const edited: PastTxsSummary = { ...summary, studies: [{ ...misfit, reason: { kind: 'field', at: 'call.x', expected: 'Wrapped Ether', actual } }, ...summary.studies] };
+    const { text } = summaryFile('morpho-vault-deposit', edited, undefined);
+    assert.deepEqual(parseSummary('testdata/research/morpho-vault-deposit.json', text), edited, actual);
+  }
+  const plain = JSON.parse(summaryText(summary)) as { studies: unknown[] };
+  const encoded = { ...plain, studies: [{ kind: 'misfit', hash: FIT, sender: { kind: 'safe', address: `0x${'11'.repeat(20)}` }, reason: { kind: 'field', at: 'call.x', expected: '1', actual: { utf8: '0x32' } } }, ...plain.studies] };
+  assert.throws(() => parseSummary('testdata/research/edited.json', JSON.stringify(encoded)), /studies\[0\]\.reason\.actual\.utf8: text of the characters the program writes, kept as it is/);
+});
+
+test('a summary is refused before it is written when it would not read back, or holds the configured Safe', async () => {
+  const summary = await studyRecording(ROOT, deposit, registry);
+  const odd: PastTxsSummary = { ...summary, studies: [{ kind: 'unreadable', hash: FIT as Hex, reason: 'eth_call: <b>no</b>' }, ...summary.studies] };
+  assert.throws(() => summaryFile('morpho-vault-deposit', odd, undefined), /^SummaryError: testdata\/research\/morpho-vault-deposit\.json: studies\[0\]\.reason: not text of the characters the program writes; nothing written$/);
+  const sender = summary.studies.find((s) => s.kind === 'fit')?.sender.address as Address;
+  assert.throws(() => summaryFile('morpho-vault-deposit', summary, sender), /^SummaryError: testdata\/research\/morpho-vault-deposit\.json: holds the configured Safe's address; nothing written$/);
+  assert.doesNotThrow(() => summaryFile('morpho-vault-deposit', summary, `0x${'7e'.repeat(20)}` as Address));
+});
+
+test('a summary whose amounts, traces or one-source hashes name transactions it does not hold is refused', () => {
+  type Raw = { search: { found: { total: number; only: Record<string, string[]> } }; measurements: { hash: string }[]; traces: { hash: string }[]; studies: { kind: string; hash: string }[] };
+  const committed = (name: string) => readFileSync(join(ROOT, SUMMARIES_DIR, `${name}.json`), 'utf8');
+  const refused = (edited: unknown, why: RegExp) => assert.throws(() => parseSummary('testdata/research/edited.json', JSON.stringify(edited)), why);
+  const transfer = JSON.parse(committed('erc20-transfer-usdc')) as Raw;
+  const owner = JSON.parse(committed('safe-add-owner')) as Raw;
+  const unfit = (raw: Raw) => raw.studies.find((s) => s.kind !== 'fit')?.hash;
+  assert.ok(transfer.measurements.length > 0 && owner.traces.length > 0);
+  refused({ ...transfer, measurements: [{ ...transfer.measurements[0], hash: unfit(transfer) }] }, /measurements\[0\]\.hash: not a transaction that fit/);
+  refused({ ...owner, traces: [{ ...owner.traces[0], hash: unfit(owner) }] }, /traces\[0\]\.hash: not a transaction that fit/);
+  refused({ ...transfer, search: { ...transfer.search, found: { ...transfer.search.found, total: 0, only: { ...transfer.search.found.only, alchemy: [FIT] } } } }, /search\.found\.only: more hashes than the search found/);
+
+  const summary = parseSummary('testdata/research/erc20-transfer-usdc.json', committed('erc20-transfer-usdc'));
+  const [hash, measured] = [...summary.measurements].find(([, m]) => m.kind === 'measured' && m.differences.length > 0) ?? [];
+  assert.ok(hash !== undefined && measured?.kind === 'measured');
+  const beyond = { ...summary, measurements: new Map([[hash, { ...measured, differences: [{ ...(measured.differences[0] as Difference), effect: 9 }] }]]) };
+  assert.throws(() => runOf(beyond, loadTemplate(ROOT, summary.query.template, registry)), /names effect 9, and the template states 1$/);
 });
 
 test('every committed past-txs summary names a template and was studied with its template, registry entries and study code as this checkout holds them', () => {

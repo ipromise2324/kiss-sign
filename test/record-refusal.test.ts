@@ -111,6 +111,15 @@ test('past-txs --record writes the study when every read is answered, and nothin
   assertRefused(runOffline('past-txs.ts', args, 'research', network, seed), 'drpc eth_getTransactionByHash: unreachable');
 });
 
+test('past-txs --record of a template reported per vault refuses a search anchored on no registry entry before any read', () => {
+  const args = ['morpho/vault-deposit', '--token', `0x${'7e'.repeat(20)}`, '--anchor', 'mint', '--record', 'offline'];
+  const run = runOffline('past-txs.ts', args, 'research', { exchanges: [] });
+  assert.equal(run.status, 64, run.stderr + run.stdout);
+  assert.match(run.stderr, /^--record offline: morpho\/vault-deposit is reported per vault, and the search anchors on no registry entry$/m);
+  assert.doesNotMatch(run.stderr, /got no answer/);
+  assert.deepEqual(run.written, []);
+});
+
 test('record-abi-case writes the case when every read is answered, and nothing when Etherscan gives no answer', () => {
   const recorded = readRecording<AbiCase>(join(ROOT, 'testdata', 'abi', 'usdc.json'));
   const block = { number: `0x${BigInt(recorded.block.number).toString(16)}`, hash: recorded.block.hash };
