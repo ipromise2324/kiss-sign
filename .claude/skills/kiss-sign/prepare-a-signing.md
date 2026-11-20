@@ -28,4 +28,4 @@ Tell the signer to add it in their own terminal with `pnpm kiss-sign book add <n
 
 If the signer uses it, remind them to run the `./check.sh` command `verify` prints after `MATCH`, `--hints` included, from `ipromise2324/kiss-sign-check` on their independent computer, which runs no AI and no kiss-sign.
 They compare its hashes with the hardware wallet, its page's 比對清單 row by row with the one on `verify`'s page, and its decoded calls with what they meant to do.
-Never offer to run it or to write its `known-addresses.txt`.
+Never offer to run it.

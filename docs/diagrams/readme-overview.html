@@ -213,7 +213,14 @@ Promise.all([document.fonts.ready, new Promise((ok) => (document.readyState === 
       draw(`M${x - 8} ${y2 - 11 + rnd()} L${x} ${y2} L${x + 8} ${y2 - 11 + rnd()}`, ink, 2.6);
     }
   });
-  [['s1', 's2'], ['s2', 's3'], ['s3', 's4'], ['s4', 's5'], ['s5', 's6'], ['report', 'merge']].forEach(([a, b]) => arrow(a, b));
+  [['s1', 's2'], ['s2', 's3'], ['s3', 's4'], ['s4', 's5'], ['s5', 's6']].forEach(([a, b]) => {
+    const ra = document.getElementById(a).getBoundingClientRect(), rb = document.getElementById(b).getBoundingClientRect();
+    const t = document.querySelector(`#${a} .t`).getBoundingClientRect();
+    const x1 = ra.right + 6 + scrollX, x2 = rb.left - 6 + scrollX, y = t.top + t.height / 2 + scrollY, s = 12;
+    draw(`M${x1} ${y + rnd()} L${x2} ${y}`, ink, 2.6);
+    draw(`M${x2 - s} ${y - s * 0.6 + rnd()} L${x2} ${y} L${x2 - s} ${y + s * 0.6 + rnd()}`, ink, 2.6);
+  });
+  arrow('report', 'merge');
   {
     const steps = document.querySelector('.steps').getBoundingClientRect(), rb = document.getElementById('report').getBoundingClientRect();
     const y = steps.bottom + 14 + scrollY, l = steps.left + 24 + scrollX, r = steps.right - 24 + scrollX, mid = (l + r) / 2;

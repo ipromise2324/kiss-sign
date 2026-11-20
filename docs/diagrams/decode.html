@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Decoding by hand</title>
+<!-- Source of docs/readme/decode.png: sh docs/diagrams/crop.sh docs/diagrams/decode.html .wrap 0 docs/readme/decode.png 1200
+     Both are real runs on another Safe's Morpho deposit (nonce 20); each long hex value keeps its start and end around a "…", and a "…" line stands for lines left out; the undecoded second call is shown whole. -->
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0d1117; }
+.wrap { width: 1140px; display: grid; gap: 20px; }
+.win { border: 1px solid #30363d; border-radius: 10px; overflow: hidden; background: #0b0e13; }
+.bar { height: 34px; background: #161b22; border-bottom: 1px solid #30363d; display: flex; align-items: center; gap: 8px; padding: 0 14px; }
+.bar i { width: 12px; height: 12px; border-radius: 50%; background: #30363d; display: block; }
+.bar span { margin-left: 10px; color: #9198a1; font: 13px -apple-system, Helvetica, Arial, sans-serif; }
+pre { color: #c9d1d9; font: 12.5px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; padding: 14px 18px; white-space: pre-wrap; word-break: break-all; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="win"><div class="bar"><i></i><i></i><i></i><span>1. Compute the hashes with safe-tx-hashes</span></div><pre>$ ./safe_hashes.sh --network ethereum --address 0x4F6981AD898c3296C0FFC5afd44Af4281f7ebF9B --nonce 20
+…
+To: 0x9641d764fc13c8B624c04430C7356C1C7C8102e2
+…
+Data: 0x8d80ff0a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000…00000000
+Operation: Delegatecall (trusted delegatecall)
+…
+Method: multiSend
+…
+    &quot;valueDecoded&quot;: [
+…
+        &quot;to&quot;: &quot;0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&quot;,
+…
+          &quot;method&quot;: &quot;approve&quot;,
+…
+              &quot;value&quot;: &quot;0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0&quot;
+…
+              &quot;value&quot;: &quot;10001000000&quot;
+…
+      {
+        &quot;operation&quot;: 0,
+        &quot;to&quot;: &quot;0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245&quot;,
+        &quot;value&quot;: &quot;0&quot;,
+        &quot;data&quot;: &quot;0x374f435d00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000001800000000000000000000000004a6c312ec70e8747a587ee860a0353cd42be0ae000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064d96ca0b9000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000004a6c312ec70e8747a587ee860a0353cd42be0ae000000000000000000000000000000000000000000000000000000002541b2640000000000000000000000000000000000000000000000000000000000000000000000000000000004a6c312ec70e8747a587ee860a0353cd42be0ae000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000846ef5eeae000000000000000000000000777791c4d6dc2ce140d00d2828a7c93503c6777700000000000000000000000000000000000000000000000000000002541b26400000000000000000000000000000000000000000000000000003bf2eee0fbaca0000000000000000000000004f6981ad898c3296c0ffc5afd44af4281f7ebf9b000000000000000000000000000000000000000000000000000000006915469b25afea44&quot;,
+        &quot;dataDecoded&quot;: null
+…
+&gt; Hashes:
+Domain hash: 0x435F508C2DAADCD9E47D062385F88785E87FD428FE66214DD1CE06026AAF130E
+Message hash: 0xF7F0CC7F831B82E63988FEBF02F0F6C6F30F3F7E1C7C99D92E238364128F7C13
+Safe transaction hash: 0xda44113d1fa93aa491fd93713d7aaa0ea34ceb28414cbe4ee1d32d796c1342f3
+
+IMPORTANT: The decoded &quot;Method&quot; and &quot;Parameters&quot; are provided by the Safe transaction service API and are not verified by this script. Always independently decode the transaction &quot;Data&quot; yourself before you sign!</pre></div>
+<div class="win"><div class="bar"><i></i><i></i><i></i><span>2. Decode the data yourself with cast</span></div><pre>$ PACKED=$(cast decode-calldata &quot;multiSend(bytes)&quot; $DATA)
+$ echo op=${PACKED:2:2} to=0x${PACKED:4:40} value=$(cast to-dec 0x${PACKED:44:64}) length=$(cast to-dec 0x${PACKED:108:64})
+op=00 to=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48 value=0 length=76
+$ echo op=${PACKED:324:2} to=0x${PACKED:326:40} value=$(cast to-dec 0x${PACKED:366:64}) length=$(cast to-dec 0x${PACKED:430:64})
+op=00 to=0x6566194141eefa99af43bb5aa71460ca2dc90245 value=0 length=812
+$ CALL1=0x${PACKED:172:152}; CALL2=0x${PACKED:494:1624}
+$ cast decode-calldata &quot;approve(address,uint256)&quot; $CALL1
+0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0
+10001000000 [1e10]
+$ BUNDLE=$(cast decode-calldata --json &quot;multicall((address,bytes,uint256,bool,bytes32)[])&quot; $CALL2)
+$ jq -r &#x27;.data[0][] | &quot;to=&quot; + .[0] + &quot;  value=&quot; + .[2] + &quot;  skipRevert=&quot; + (.[3]|tostring) + &quot;  selector=&quot; + .[1][0:10]&#x27; &lt;&lt;&lt; $BUNDLE
+to=0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0  value=0  skipRevert=false  selector=0xd96ca0b9
+to=0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0  value=0  skipRevert=false  selector=0x6ef5eeae
+$ cast decode-calldata &quot;erc20TransferFrom(address,address,uint256)&quot; $(jq -r &#x27;.data[0][0][1]&#x27; &lt;&lt;&lt; $BUNDLE)
+0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0
+10001000000 [1e10]
+$ cast decode-calldata &quot;erc4626Deposit(address,uint256,uint256,address)&quot; $(jq -r &#x27;.data[0][1][1]&#x27; &lt;&lt;&lt; $BUNDLE)
+0x777791C4d6DC2CE140D00D2828a7C93503c67777
+10001000000 [1e10]
+1054633213541066 [1.054e15]
+0x4F6981AD898c3296C0FFC5afd44Af4281f7ebF9B</pre></div>
+</div>
+</body>
+</html>
