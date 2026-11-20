@@ -4,12 +4,12 @@ import type { ProviderName } from '../chain/providers.ts';
 import type { MessageExchange } from './messages.ts';
 import type { SourceExchange } from './sources.ts';
 import type { RecordedTrace } from './trace.ts';
-import type { ExcludedHashes } from './past-txs.ts';
+import type { BlockRange, ExcludedHashes } from './past-txs.ts';
 import type { Hex } from '../safe/types.ts';
 
 /** One `past-txs --record` run: its query, every search answer, and every chain read with each provider's answer. */
 export type PastTxsRecording = {
-  /** Without `fromBlock` and `toBlock`, the run used the default spread of windows. */
+  /** Which search the run made is `samplingOf(query)`. */
   readonly query: {
     readonly template: string;
     /** Absent only for an event each Safe logs about itself. */
@@ -22,8 +22,10 @@ export type PastTxsRecording = {
     readonly fromBlock?: string;
     readonly toBlock?: string;
     readonly head?: string;
-    /** The run asked the whole year first; absent in a recording made before it did. */
+    /** The run asked the whole year in one page first; absent in a recording made before it did, or after it paged. */
     readonly wholeYear?: true;
+    /** The run paged the whole year up to this many pages per source and checked each anchor party for a Safe. */
+    readonly yearPages?: number;
     readonly maxTxs: number;
   };
   readonly sources: readonly SourceExchange[];
@@ -36,6 +38,44 @@ export type PastTxsRecording = {
   /** Each traced transaction's calls from drpc, cut down; absent in a recording from before traces. */
   readonly traces?: readonly RecordedTrace[];
 };
+
+/** The most pages of 1,000 a run asks each source for the year; Etherscan refuses a page beyond 10,000 results. */
+export const YEAR_PAGES = 10;
+
+/**
+ * The search a run makes. `year`: the last year, placed by the head block, paged up to `pages` pages per source, and
+ * when every source finished within them each anchor party is checked for a Safe and the Safes' transactions studied
+ * first; otherwise the windows. `range`: one block range given by hand, refused when it holds more than a page.
+ * `old-year` (the year in one page, no party check) and `old-windows` (the windows alone) only replay recordings made
+ * before the year was paged.
+ */
+export type Sampling =
+  | { readonly kind: 'year'; readonly head?: bigint; readonly pages: number }
+  | { readonly kind: 'old-year'; readonly head?: bigint }
+  | { readonly kind: 'old-windows'; readonly head?: bigint }
+  | { readonly kind: 'range'; readonly range: BlockRange };
+
+export const DEFAULT_SAMPLING: Extract<Sampling, { readonly kind: 'year' }> = { kind: 'year', pages: YEAR_PAGES };
+
+type SamplingFields = Pick<PastTxsRecording['query'], 'fromBlock' | 'toBlock' | 'head' | 'wholeYear' | 'yearPages'>;
+
+/** The search a recording's query made, so a replay or `--same-windows-as` makes it again; never a newer one. */
+export function samplingOf(query: SamplingFields): Sampling {
+  if (query.fromBlock !== undefined && query.toBlock !== undefined) return { kind: 'range', range: { fromBlock: BigInt(query.fromBlock), toBlock: BigInt(query.toBlock) } };
+  const head = query.head === undefined ? {} : { head: BigInt(query.head) };
+  if (query.yearPages !== undefined) return { kind: 'year', pages: query.yearPages, ...head };
+  return { kind: query.wholeYear === true ? 'old-year' : 'old-windows', ...head };
+}
+
+/** The query fields that record `sampling` as run from `head`. */
+export function samplingFields(sampling: Sampling, head: bigint | undefined): SamplingFields {
+  if (sampling.kind === 'range') return { fromBlock: sampling.range.fromBlock.toString(), toBlock: sampling.range.toBlock.toString() };
+  return {
+    ...(head === undefined ? {} : { head: head.toString() }),
+    ...(sampling.kind === 'old-year' ? { wholeYear: true as const } : {}),
+    ...(sampling.kind === 'year' ? { yearPages: sampling.pages } : {}),
+  };
+}
 
 const mentions = (value: unknown, needles: readonly string[]): boolean => {
   const text = JSON.stringify(value).toLowerCase();

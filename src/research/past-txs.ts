@@ -6,27 +6,23 @@ import type { Address, Hex } from '../safe/types.ts';
 import type { LeafRule, Quantity, Template } from '../template/template.ts';
 import { effectText, distributionOf, measure, shown, statedEffects, toleranceFinding } from './amounts.ts';
 import type { Difference, Measurement, StatedEffect } from './amounts.ts';
-import { ResearchError, SOURCES, TooManyTransfers, searchBoth, searchedBy } from './sources.ts';
-import type { Anchor, Ask, Hits, SourceName } from './sources.ts';
+import { PAGE, ResearchError, SOURCES, search, searchedBy } from './sources.ts';
+import type { Anchor, Ask, Hit, Hits, SourceName } from './sources.ts';
 import type { ReadMessage } from './messages.ts';
-import { brokenRule, constText, functionNames, isOtherOperation, isTime, misfitText, shapesOf, studyTx } from './study.ts';
-import type { OutsideKind, Sender, TxStudy } from './study.ts';
+import type { Sampling } from './recording.ts';
+import { brokenRule, constText, functionNames, isOtherOperation, isTime, misfitText, proveParty, shapesOf, studyTx } from './study.ts';
+import type { OutsideKind, PartyProof, Sender, TxStudy } from './study.ts';
 import { checkTrace, holdingTemplateCalls } from './trace.ts';
 import type { TraceSource, TracedTx } from './trace.ts';
 
 export type BlockRange = { readonly fromBlock: bigint; readonly toBlock: bigint };
 
 /**
- * `spread`: with `wholeYear`, the last year in one request to each source first, searched instead of the windows when
- * every answer fits one page; then `count` windows of up to `blocks` blocks each, evenly spaced over the last year and
- * placed by the head block alone. A window whose transfers do not fit one page of a source is halved until they do.
- * `range`: one window the caller chose, refused when it holds more than a page.
+ * The windows a year search falls back to: `count` windows of up to `blocks` blocks each, evenly spaced over the last
+ * year and placed by the head block alone. A window whose transfers do not fit one page of a source is halved until
+ * they do.
  */
-export type Sampling =
-  | { readonly kind: 'spread'; readonly count: number; readonly blocks: bigint; readonly head?: bigint; readonly wholeYear: boolean }
-  | { readonly kind: 'range'; readonly range: BlockRange };
-
-export const DEFAULT_SPREAD: Extract<Sampling, { readonly kind: 'spread' }> = { kind: 'spread', count: 12, blocks: 7200n, wholeYear: true };
+export const WINDOWS = { count: 12, blocks: 7200n } as const;
 
 const YEAR = (365n * 24n * 60n * 60n) / 12n;
 const FINALITY = 64n;
@@ -45,10 +41,15 @@ export type PastTxsQuery = { readonly template: Template; readonly anchor: Omit<
 export type PastTxsDeps = {
   readonly ask: Ask;
   readonly reader: Reader;
+  /** The reader each anchor party of a covered year is checked through; `reader` when absent. */
+  readonly partyReader?: Reader;
   readonly registry: Registry;
   readonly readMessage: ReadMessage;
   readonly exclude: Address | undefined;
-  /** The most transactions studied in a run, shared evenly between the windows; below one per window none is studied. */
+  /**
+   * The most transactions studied in a run: in the windows, shared evenly between them, and below one per window none;
+   * in a covered paged year, chosen by `safesFirst`; in a year a recording asked in one page, taken evenly.
+   */
   readonly maxTxs: number;
   /** Each transaction's call trace; without it, nothing is traced. */
   readonly traces?: TraceSource;
@@ -64,8 +65,49 @@ type Kept = Exclude<TxStudy, { kind: 'excluded' }>;
 /** One window as searched, `asked` before any halving: `found` transactions after exclusion, of which `studied` were read. */
 export type WindowRun = { readonly asked: BlockRange; readonly range: BlockRange; readonly found: number; readonly studied: number };
 
-/** The whole-year request a spread run asks first: `covered` when every source's answer fit one page, so it replaced the windows. */
-export type YearSearch = { readonly range: BlockRange; readonly covered: boolean };
+/** Which address of an anchor hit is the party that would be a Safe doing the operation, or why none is. */
+export type PartyRule = { readonly kind: 'side'; readonly side: 'from' | 'to' | 'emitter'; readonly noun: string } | { readonly kind: 'none'; readonly why: string };
+
+function partyRule(anchor: Omit<Anchor, keyof BlockRange>): PartyRule {
+  switch (anchor.kind) {
+    case 'mint':
+      return { kind: 'side', side: 'to', noun: 'the address minted to' };
+    case 'burn':
+      return { kind: 'side', side: 'from', noun: 'the address burned from' };
+    case 'any':
+      if (anchor.from !== undefined && anchor.to !== undefined) return { kind: 'none', why: '--from and --to fix both sides of the transfer' };
+      return anchor.from === undefined ? { kind: 'side', side: 'from', noun: 'the address the token moved out of' } : { kind: 'side', side: 'to', noun: 'the address the token moved into' };
+    case 'event':
+      return anchor.token === undefined
+        ? { kind: 'side', side: 'emitter', noun: 'the contract that logged the event' }
+        : { kind: 'none', why: 'a named contract\'s event has no party of fixed meaning' };
+  }
+}
+
+/** The anchor parties of a covered year, each read once at `block` for whether it is a Safe. */
+export type PartyCheck =
+  | { readonly kind: 'not-checked'; readonly why: string }
+  | { readonly kind: 'checked'; readonly noun: string; readonly block: bigint; readonly parties: number; readonly safes: number; readonly unreadable: number };
+
+/**
+ * How many of the year's transactions had a proven Safe party, and how many of each kind were studied, counted as the
+ * year's window line counts its found and studied: after leaving out those that touch the configured Safe.
+ */
+export type Selection = { readonly safes: number; readonly safesChosen: number; readonly rest: number; readonly restChosen: number };
+
+/**
+ * The year search a run asks first: `covered` when every source finished within `pages` pages, so it replaced the
+ * windows, with the pages each source asked and, for a paged year, its party check; otherwise the sources that did not.
+ */
+export type YearSearch =
+  | {
+      readonly kind: 'covered';
+      readonly range: BlockRange;
+      readonly pages: ReadonlyMap<SourceName, number>;
+      /** Absent for a recording that asked the year in one page, before parties were checked. */
+      readonly safesFirst: { readonly check: PartyCheck; readonly selection: Selection } | undefined;
+    }
+  | { readonly kind: 'overflow'; readonly range: BlockRange; readonly pages: number; readonly sources: readonly SourceName[] };
 
 export type PastTxs = {
   readonly query: PastTxsQuery;
@@ -119,15 +161,6 @@ async function inPool<T, R>(items: readonly T[], width: number, run: (item: T) =
   return results;
 }
 
-async function searchYear(anchor: PastTxsQuery['anchor'], range: BlockRange, ask: Ask): Promise<Hits | undefined> {
-  try {
-    return await searchBoth({ ...anchor, ...range }, ask);
-  } catch (error) {
-    if (error instanceof TooManyTransfers) return undefined;
-    throw error;
-  }
-}
-
 function byBlock(hashes: readonly Hex[], hits: Hits): Hex[] {
   const first = new Map<Hex, bigint>();
   for (const hit of SOURCES.flatMap((source) => hits[source])) {
@@ -138,53 +171,104 @@ function byBlock(hashes: readonly Hex[], hits: Hits): Hex[] {
   return [...hashes].sort((a, b) => (at(a) < at(b) ? -1 : at(a) > at(b) ? 1 : 0));
 }
 
-async function searchWindow(anchor: PastTxsQuery['anchor'], range: BlockRange, sampling: Sampling['kind'], ask: Ask): Promise<{ range: BlockRange; hits: Hits }> {
-  for (;;) {
-    try {
-      return { range, hits: await searchBoth({ ...anchor, ...range }, ask) };
-    } catch (error) {
-      if (!(error instanceof TooManyTransfers)) throw error;
-      if (sampling === 'range' || range.fromBlock === range.toBlock) throw new ResearchError(`${error.message}; narrow the block range`);
-      range = { fromBlock: range.toBlock - (range.toBlock - range.fromBlock + 1n) / 2n + 1n, toBlock: range.toBlock };
-    }
+type Searched = { readonly asked: BlockRange; readonly range: BlockRange; readonly hits: Hits };
+
+async function searchWindow(anchor: PastTxsQuery['anchor'], asked: BlockRange, halve: boolean, ask: Ask): Promise<Searched> {
+  for (let range = asked; ; range = { fromBlock: range.toBlock - (range.toBlock - range.fromBlock + 1n) / 2n + 1n, toBlock: range.toBlock }) {
+    const found = await search({ ...anchor, ...range }, ask, 1);
+    if (found.kind === 'covered') return { asked, range, hits: found.hits };
+    if (!halve || range.fromBlock === range.toBlock) throw new ResearchError(`${found.sources[0]} lists more than ${PAGE - 1} transfers in the range; narrow the block range`);
   }
 }
 
 const spacedSample = <T>(items: readonly T[], cap: number): T[] =>
   items.length <= cap ? [...items] : Array.from({ length: cap }, (_, i) => items[Math.floor((i * items.length) / cap)] as T);
 
+function safesFirst<T>(safes: readonly T[], rest: readonly T[], maxTxs: number): { readonly safes: T[]; readonly rest: T[] } {
+  const restFloor = Math.min(rest.length, Math.ceil(maxTxs / 4));
+  const chosen = spacedSample(safes, maxTxs - restFloor);
+  return { safes: chosen, rest: spacedSample(rest, maxTxs - chosen.length) };
+}
+
+const PROBE_WIDTH = 8;
+
+async function chooseByParty(
+  hashes: readonly Hex[],
+  hits: Hits,
+  rule: PartyRule,
+  at: bigint,
+  reader: Reader,
+  maxTxs: number,
+): Promise<{ sample: Hex[]; check: PartyCheck; safeTxs: ReadonlySet<Hex> }> {
+  const kept = new Set(hashes);
+  const partiesOf = new Map<Hex, Set<Address>>();
+  const sideOf = (hit: Hit): Address | undefined => (rule.kind === 'none' ? undefined : rule.side === 'emitter' ? hit.emitter : hit[rule.side]);
+  for (const hit of SOURCES.flatMap((source) => hits[source])) {
+    const party = sideOf(hit);
+    if (!kept.has(hit.hash) || party === undefined || party === ZERO) continue;
+    partiesOf.set(hit.hash, (partiesOf.get(hit.hash) ?? new Set()).add(party));
+  }
+  const parties = [...new Set([...partiesOf.values()].flatMap((set) => [...set]))].sort();
+  const proofs = new Map<Address, PartyProof>();
+  if (parties.length > 0) {
+    const block = await reader.block(at);
+    const read = block.kind === 'unverifiable' ? parties.map((): PartyProof => ({ kind: 'unreadable', reason: block.reason })) : await inPool(parties, PROBE_WIDTH, (party) => proveParty(reader, party, block.value));
+    parties.forEach((party, i) => proofs.set(party, read[i] as PartyProof));
+  }
+  const isSafe = (hash: Hex) => [...(partiesOf.get(hash) ?? [])].some((party) => proofs.get(party)?.kind === 'safe');
+  const [safeTxs, rest] = [hashes.filter(isSafe), hashes.filter((hash) => !isSafe(hash))];
+  const chosen = safesFirst(safeTxs, rest, maxTxs);
+  const picked = new Set([...chosen.safes, ...chosen.rest]);
+  const proofCount = (kind: PartyProof['kind']) => [...proofs.values()].filter((p) => p.kind === kind).length;
+  return {
+    sample: hashes.filter((hash) => picked.has(hash)),
+    check: rule.kind === 'none' ? { kind: 'not-checked', why: rule.why } : { kind: 'checked', noun: rule.noun, block: at, parties: parties.length, safes: proofCount('safe'), unreadable: proofCount('unreadable') },
+    safeTxs: new Set(safeTxs),
+  };
+}
+
+const yearPages = (sampling: Exclude<Sampling, { kind: 'range' }>): number | undefined =>
+  sampling.kind === 'year' ? sampling.pages : sampling.kind === 'old-year' ? 1 : undefined;
+
 export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<PastTxs> {
   const { sampling } = query;
-  let ranges: BlockRange[];
-  let head: bigint | undefined;
+  const head = sampling.kind === 'range' ? undefined : (sampling.head ?? (await chainHead(deps.reader)));
   let year: YearSearch | undefined;
-  let yearHits: Hits | undefined;
-  if (sampling.kind === 'range') ranges = [sampling.range];
+  let windowed: Searched[] | undefined;
+  if (sampling.kind === 'range') windowed = [await searchWindow(query.anchor, sampling.range, false, deps.ask)];
   else {
-    head = sampling.head ?? (await chainHead(deps.reader));
-    ranges = spreadWindows(head, sampling.count, sampling.blocks);
-    if (sampling.wholeYear) {
-      const top = (ranges.at(-1) as BlockRange).toBlock;
+    const spread = spreadWindows(head as bigint, WINDOWS.count, WINDOWS.blocks);
+    const pages = yearPages(sampling);
+    if (pages !== undefined) {
+      const top = (spread.at(-1) as BlockRange).toBlock;
       const range = { fromBlock: top - YEAR + 1n, toBlock: top };
-      yearHits = await searchYear(query.anchor, range, deps.ask);
-      year = { range, covered: yearHits !== undefined };
-      if (yearHits !== undefined) ranges = [range];
+      const found = await search({ ...query.anchor, ...range }, deps.ask, pages);
+      if (found.kind === 'covered') {
+        year = { kind: 'covered', range, pages: found.pages, safesFirst: undefined };
+        windowed = [{ asked: range, range, hits: found.hits }];
+      } else year = { kind: 'overflow', range, pages, sources: found.sources };
+    }
+    if (windowed === undefined) {
+      windowed = [];
+      for (const asked of spread) windowed.push(await searchWindow(query.anchor, asked, true, deps.ask));
     }
   }
-  const perWindow = Math.floor(deps.maxTxs / ranges.length);
+  const perWindow = Math.floor(deps.maxTxs / windowed.length);
   const found = new Map<Hex, SourceName[]>();
   const excludedFound = new Set<Hex>();
   const excludedSampled = new Set<Hex>();
   const emitters = new Map<Hex, Set<Address>>();
   const searched: { asked: BlockRange; range: BlockRange; found: Hex[]; sample: Hex[] }[] = [];
-  for (const asked of ranges) {
-    const { range, hits } = yearHits === undefined ? await searchWindow(query.anchor, asked, sampling.kind, deps.ask) : { range: asked, hits: yearHits };
+  let byParty: { check: PartyCheck; safeTxs: ReadonlySet<Hex> } | undefined;
+  for (const { asked, range, hits } of windowed) {
     const window = hashesBySource(hits, deps.exclude, deps.excludedByRecording?.found ?? new Set());
     for (const hash of window.excluded) excludedFound.add(hash);
     for (const [hash, sources] of window.found) found.set(hash, sources);
     for (const hit of hits.etherscan) if (hit.emitter !== undefined) emitters.set(hit.hash, (emitters.get(hit.hash) ?? new Set()).add(hit.emitter));
-    const hashes = yearHits === undefined ? [...window.found.keys()] : byBlock([...window.found.keys()], hits);
-    searched.push({ asked, range, found: hashes, sample: spacedSample(hashes, perWindow) });
+    const hashes = year?.kind === 'covered' ? byBlock([...window.found.keys()], hits) : [...window.found.keys()];
+    const chosen = year?.kind === 'covered' && sampling.kind === 'year' ? await chooseByParty(hashes, hits, partyRule(query.anchor), range.toBlock, deps.partyReader ?? deps.reader, deps.maxTxs) : undefined;
+    if (chosen !== undefined) byParty = chosen;
+    searched.push({ asked, range, found: hashes, sample: chosen?.sample ?? spacedSample(hashes, perWindow) });
   }
   const shapes = shapesOf(query.template);
   const token = query.anchor.token?.toLowerCase() as Address | undefined;
@@ -209,7 +293,16 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
   const measurements = new Map(fits.flatMap((fit, i) => (measured[i] === undefined ? [] : [[fit.hash, measured[i]] as const])));
   const traces = deps.traces === undefined ? [] : await traceExact(query.template, fits, deps.traces, deps.reader, deps.registry);
   const kept = (hashes: readonly Hex[]) => hashes.filter((hash) => !excludedFound.has(hash) && !excludedSampled.has(hash)).length;
-  const windows = searched.map(({ asked, range, found, sample }) => ({ asked, range, found: kept(found), studied: kept(sample.filter((hash) => !otherEmitter.includes(hash))) }));
+  const studiedOf = (sample: readonly Hex[]) => sample.filter((hash) => !otherEmitter.includes(hash));
+  const windows = searched.map(({ asked, range, found, sample }) => ({ asked, range, found: kept(found), studied: kept(studiedOf(sample)) }));
+  if (year?.kind === 'covered' && byParty !== undefined) {
+    const { check, safeTxs } = byParty;
+    const { found: hashes, sample } = searched[0] as (typeof searched)[number];
+    const isSafe = (hash: Hex) => safeTxs.has(hash);
+    const [safes, safesChosen] = [kept(hashes.filter(isSafe)), kept(studiedOf(sample).filter(isSafe))];
+    const selection = { safes, safesChosen, rest: kept(hashes) - safes, restChosen: kept(studiedOf(sample)) - safesChosen };
+    year = { ...year, safesFirst: { check, selection } };
+  }
   const excluded = { found: excludedFound, sampled: excludedSampled };
   return { query, head, year, windows, perWindow, found, studies, shapes, excluded, otherEmitter, effects, measurements, traces };
 }
@@ -485,6 +578,18 @@ function renderTraces(lines: string[], run: PastTxs): void {
   for (const [reason, hashes] of why) lines.push(`  UNVERIFIABLE, ${reason}: ${hashes.length}, e.g. ${examples(hashes)}`);
 }
 
+function chosenText({ safes, safesChosen, rest, restChosen }: Selection, checked: boolean): string {
+  const some = (chosen: number, of: number, noun: string) => `${chosen === of ? 'all ' : `${chosen} of `}${plural(of, noun)}`;
+  const others =
+    rest === 0 ? `no ${checked ? 'other ' : ''}transaction`
+    : !checked ? some(restChosen, rest, 'transaction')
+    : restChosen === rest ? `all ${plural(rest, 'other')}`
+    : `${restChosen} of the other ${rest}`;
+  const withSafe = safes === 0 ? 'no transaction with a proven Safe party' : `${some(safesChosen, safes, 'transaction')} with a proven Safe party`;
+  const evenly = safesChosen + restChosen > 0 ? ', taken evenly in block order' : '';
+  return `${checked ? `${withSafe}, and ${others}` : others}${evenly}`;
+}
+
 /** What a reader of the report sees. Never names the configured Safe, and names no other sender either. */
 export function renderPastTxs(run: PastTxs, registry: Registry): string {
   const { anchor, template, sampling } = run.query;
@@ -496,15 +601,32 @@ export function renderPastTxs(run: PastTxs, registry: Registry): string {
   if (anchor.kind === 'event') lines.push(`anchor: ${anchor.event?.signature} logged by ${of}`);
   else lines.push(`anchor: Transfer of ${of} ${{ mint: 'minted (from the zero address)', burn: 'burned (to the zero address)', any: moved }[anchor.kind]}`);
   const { year } = run;
-  if (year?.covered === true) {
-    lines.push(`whole year: blocks ${year.range.fromBlock} to ${year.range.toBlock}, every source's answer in one page, so the search covers the year with no gap; at most ${run.perWindow} studied, taken evenly in block order`);
-  } else if (sampling.kind === 'spread') {
-    if (year !== undefined) lines.push(`whole year: blocks ${year.range.fromBlock} to ${year.range.toBlock} hold more than one page of a source, so the windows are searched`);
-    lines.push(`windows: ${sampling.count} of up to ${sampling.blocks} blocks, one every ${YEAR / BigInt(sampling.count)} blocks over the last year; at most ${run.perWindow} studied per window`);
+  const blocks = (range: BlockRange) => `blocks ${range.fromBlock} to ${range.toBlock}`;
+  if (year?.kind === 'covered' && year.safesFirst === undefined) {
+    lines.push(`whole year: ${blocks(year.range)}, every source's answer in one page, so the search covers the year with no gap; at most ${run.perWindow} studied, taken evenly in block order`);
+  } else if (year?.kind === 'covered') {
+    const pages = [...year.pages].map(([source, n]) => `${source} in ${plural(n, 'page')}`).join(' and ');
+    lines.push(`whole year: ${blocks(year.range)}, ${pages} of up to ${PAGE}, so the search covers the year with no gap`);
+  } else if (sampling.kind !== 'range') {
+    if (year !== undefined) {
+      const over = year.pages === 1 ? 'more than one page of a source' : `more than ${year.pages} pages of ${PAGE} in ${year.sources.join(' and ')}`;
+      lines.push(`whole year: ${blocks(year.range)} hold ${over}, so the windows are searched`);
+    }
+    lines.push(`windows: ${WINDOWS.count} of up to ${WINDOWS.blocks} blocks, one every ${YEAR / BigInt(WINDOWS.count)} blocks over the last year; at most ${run.perWindow} studied per window`);
   } else lines.push('windows: one block range given by hand');
   for (const { asked, range, found, studied } of run.windows) {
     const halved = asked.fromBlock === range.fromBlock ? '' : `; halved, too many transfers in ${asked.fromBlock} to ${asked.toBlock}, so ${asked.fromBlock} to ${range.fromBlock - 1n} not searched`;
-    lines.push(`  blocks ${range.fromBlock} to ${range.toBlock}: ${found} found, ${studied} studied${halved}`);
+    lines.push(`  ${blocks(range)}: ${found} found, ${studied} studied${halved}`);
+  }
+  if (year?.kind === 'covered' && year.safesFirst !== undefined) {
+    const { check, selection } = year.safesFirst;
+    const unreadable = check.kind === 'checked' && check.unreadable > 0 ? `, ${check.unreadable} unreadable` : '';
+    lines.push(
+      check.kind === 'checked'
+        ? `anchor parties, ${check.noun}: ${check.parties}, read at block ${check.block}: ${plural(check.safes, 'proven Safe')}${unreadable}`
+        : `anchor parties: not checked, ${check.why}`,
+    );
+    lines.push(`chosen to study: ${chosenText(selection, check.kind === 'checked')}`);
   }
 
   const bySource = (source: SourceName) => [...run.found].filter(([, s]) => s.includes(source)).length;
