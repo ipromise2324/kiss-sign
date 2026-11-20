@@ -233,7 +233,7 @@ A focusable `span` (tabindex 0) holding the info icon and a `role="tooltip"` bub
 A definition list of hairline rows: label (Ink 2), value (Ink), and an optional 14px Ink 3 note, right-aligned, used by 交易後 and 過去交易 for the rule or count behind a value. A 14px Ink 3 sub-line may sit under a value. The protocol and wallet tables drop the note column; a row that groups others (a market, a call) nests them in its value behind a 1px Strong Hairline rule, 16px in, each a 96px Ink 2 label beside its value. Sources are never repeated per row: the protocol table names them once in a 14px Ink 3 line under it.
 
 ### Review Row
-A 22px icon column and a content column: the grade and a 590 title naming the kind of result in plain words and, for a result about a registry entry, the entry's name after a middle dot, with no address, hash or code; then one line, the AI's status (AI 已確認 or AI 有疑慮) and the first sentence of its review with the AI tag.
+A 22px icon column and a content column: the grade and a 590 title naming the kind of result in plain words and, for a result about a registry entry or a recorded test transaction, its name after a middle dot, with no address, hash or code; then one line, the AI's status (AI 已確認 or AI 有疑慮) and the first sentence of its review with the AI tag.
 Everything else folds under an Ink 3 細節 summary with a chevron: what the result is about as the program names it (the entry, source, call or test transaction), an Ink 2 line saying why, ending in a 看來源 link to the entry's address row, the rest of the AI's review, and the "建議" line.
 The icon, grade, title and conclusion never fold, so no result is hidden. Hover fills Row Hover.
 An AI judgment row shows its first sentence open and folds the rest with its 建議 the same way.
