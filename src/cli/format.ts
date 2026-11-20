@@ -149,9 +149,9 @@ export const BOX_WIDTH = WIDTH - 2;
 
 export const text = (lines: readonly string[]): string => lines.map((line) => `${line}\n`).join('');
 
-const MARKED: Readonly<Record<string, keyof Paint>> = { FINDING: 'bad', DIFFERS: 'bad', 'PROGRAM CHANGE': 'bad', UNVERIFIABLE: 'warn', 'AI TEXT': 'warn', NOTE: 'dim', PASS: 'ok' };
+const MARKED: Readonly<Record<string, keyof Paint>> = { FINDING: 'bad', UNVERIFIABLE: 'warn', NOTE: 'dim', PASS: 'ok' };
 
 /** Colours the verdict words a research script prints, such as FINDING and PASS, leaving the text itself unchanged. */
 export function markWords(text: string, p: Paint): string {
-  return text.replace(/\b(FINDING|DIFFERS|PROGRAM CHANGE|UNVERIFIABLE|AI TEXT|NOTE|PASS)\b/g, (word) => p[MARKED[word] ?? 'heading'](word));
+  return text.replace(/\b(FINDING|UNVERIFIABLE|NOTE|PASS)\b/g, (word) => p[MARKED[word] ?? 'heading'](word));
 }
