@@ -27,10 +27,13 @@ import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
+import { repoWithFrozenReports } from './frozen-reports.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
 const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
+const FROZEN = repoWithFrozenReports();
+const frozenRegistry = loadRegistry(FROZEN);
 const target = { template: 'morpho/market-supply' };
 let inputs: HtmlInputs;
 let title: ReportTitle;
@@ -42,11 +45,11 @@ let depositNotes: unknown;
 let depositTitle: ReportTitle;
 
 before(async () => {
-  const compilers = await warmCompilers(reportCases(ROOT, registry, [target, deposit]));
-  const depositReplayed = await replayInputs(ROOT, registry, deposit, compilers, loadPublicSuffixList());
+  const compilers = await warmCompilers([...reportCases(ROOT, registry, [target]), ...reportCases(FROZEN, frozenRegistry, [deposit])]);
+  const depositReplayed = await replayInputs(FROZEN, frozenRegistry, deposit, compilers, loadPublicSuffixList());
   const depositTemplate = depositReplayed.inputs.subject.kind === 'template' ? depositReplayed.inputs.subject.template : assert.fail('a template report');
-  depositInputs = { ...depositReplayed.inputs, fixtures: await judgeFixtures(ROOT, depositTemplate, registry), example: firstRecordedTx(ROOT, depositTemplate, depositReplayed.inputs.registry) };
-  depositNotes = readNotes(ROOT, deposit.template, registry.entries.get(deposit.instance));
+  depositInputs = { ...depositReplayed.inputs, fixtures: await judgeFixtures(FROZEN, depositTemplate, frozenRegistry), example: firstRecordedTx(FROZEN, depositTemplate, depositReplayed.inputs.registry) };
+  depositNotes = readNotes(FROZEN, deposit.template, frozenRegistry.entries.get(deposit.instance));
   depositTitle = depositReplayed.title;
   depositPage = buildPage(depositInputs, depositNotes, depositTitle, 'zh-TW');
   const replayed = await replayInputs(ROOT, registry, target, compilers, loadPublicSuffixList());
@@ -180,7 +183,7 @@ test('a container prints its summary in place of the hex and nests its parts; a 
   assert.equal(plain(data(first).words), 'erc20TransferFrom (0xd96ca0b9)');
   assert.equal(plain(data(second).words), 'erc4626Deposit (0x6ef5eeae)');
 
-  const adapter = (registry.entries.get('general-adapter-1') ?? assert.fail('general-adapter-1')).address;
+  const adapter = (frozenRegistry.entries.get('general-adapter-1') ?? assert.fail('general-adapter-1')).address;
   const leaf = (item: ArgRow | undefined, name: string): string | undefined => rows(item ?? assert.fail('an item')).find((p) => p.name === name)?.value?.cast;
   assert.equal(leaf(first, 'to')?.toLowerCase(), adapter);
   assert.equal(leaf(first, 'value'), '0');
@@ -325,7 +328,7 @@ test('the wallet rows match a descriptor by each array item, by argument name wi
   };
   assert.equal(rowsOf(depositInputs, 1), 'no-descriptor');
   assert.deepEqual(rowsOf(depositInputs, 2), [['bundle.[0].data', '呼叫 erc20TransferFrom，參數見流程'], ['bundle.[1].data', '呼叫 erc4626Deposit，參數見流程']]);
-  const usdc = registry.entries.get('usdc') ?? assert.fail('usdc');
+  const usdc = frozenRegistry.entries.get('usdc') ?? assert.fail('usdc');
   const field = (path: string) => ({ kind: 'field', path, format: 'raw', visible: 'always' }) as const;
   const usdtLike = { kind: 'calldata', functions: [{ selector: '0x095ea7b3', signature: 'approve(address,uint256)', fields: [field('_spender'), field('_value')], notShown: [] }] } as unknown as EntryReport['descriptors'][number];
   const reports = [...depositInputs.erc7730.reports, { entry: usdc, factory: undefined, index: undefined, eip712Index: [], descriptors: [usdtLike] }];
@@ -334,7 +337,7 @@ test('the wallet rows match a descriptor by each array item, by argument name wi
 
 test("a per-vault report shows its vault as the card's value, with or without a test transaction", () => {
   const vault = (page: Page) => arg(page, '2.multicall.bundle').parts.flatMap((g) => g.rows)[1]?.parts.flatMap((g) => g.rows).find((r) => r.name === 'data')?.parts.flatMap((g) => g.rows).find((r) => r.name === 'vault');
-  const hyperithm = registry.entries.get('hyperithm-usdc-apex-v2-9e2f') ?? assert.fail('the vault');
+  const hyperithm = frozenRegistry.entries.get('hyperithm-usdc-apex-v2-9e2f') ?? assert.fail('the vault');
   for (const page of [depositPage, buildPage({ ...depositInputs, example: undefined }, depositNotes, depositTitle, 'zh-TW')]) {
     const row = vault(page) ?? assert.fail('the vault row');
     assert.equal(row.value?.cast.toLowerCase(), hyperithm.address);
@@ -406,10 +409,10 @@ test('the vault its factory alone confirms is the one 待確認; every address r
 
 test("a Vault V2's market adapter is confirmed by the protocol API and, as one place, by its factory, the vault that names it and its own answer", { timeout: 600_000 }, async () => {
   const revoke = { template: 'morpho/vault-v2-revoke', instance: 'acuto-usdc-v2-4a57' };
-  const replayed = await replayInputs(ROOT, registry, revoke, await warmCompilers(reportCases(ROOT, registry, [revoke])), loadPublicSuffixList());
+  const replayed = await replayInputs(FROZEN, frozenRegistry, revoke, await warmCompilers(reportCases(FROZEN, frozenRegistry, [revoke])), loadPublicSuffixList());
   const revokeTemplate = replayed.inputs.subject.kind === 'template' ? replayed.inputs.subject.template : assert.fail('a template report');
-  const of = { ...replayed.inputs, fixtures: await judgeFixtures(ROOT, revokeTemplate, registry), example: firstRecordedTx(ROOT, revokeTemplate, replayed.inputs.registry) };
-  const page = buildPage(of, readNotes(ROOT, revoke.template, registry.entries.get(revoke.instance)), replayed.title, 'zh-TW');
+  const of = { ...replayed.inputs, fixtures: await judgeFixtures(FROZEN, revokeTemplate, frozenRegistry), example: firstRecordedTx(FROZEN, revokeTemplate, replayed.inputs.registry) };
+  const page = buildPage(of, readNotes(FROZEN, revoke.template, frozenRegistry.entries.get(revoke.instance)), replayed.title, 'zh-TW');
   assert.ok(!body(page, 'review').rows.some((r) => r.id.startsWith('acuto-usdc-v2-4a57-market-adapter/')), 'the adapter is not for the signer');
   const { open, folded } = body(page, 'addresses');
   const adapter = [...open, ...folded].find((r) => r.name === 'acuto-usdc-v2-4a57-market-adapter') ?? assert.fail('the adapter row');
@@ -427,7 +430,7 @@ test('each past-transactions recording names the entry its search anchored on', 
 });
 
 test('a mint of a token that is not a vault is a mint, not a deposit', () => {
-  const usdc = registry.entries.get('usdc') ?? assert.fail('usdc');
+  const usdc = frozenRegistry.entries.get('usdc') ?? assert.fail('usdc');
   const pastTxs = depositInputs.pastTxs.map((r) => ({ ...r, query: { ...r.query, token: usdc.address } }));
   const page = buildPage({ ...depositInputs, pastTxs }, depositNotes, depositTitle, 'zh-TW');
   for (const r of body(page, 'past').recordings) assert.match(r.count, /^搜尋 usdc 的鑄造，/);

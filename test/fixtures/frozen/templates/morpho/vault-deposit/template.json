@@ -1,0 +1,175 @@
+{
+  "id": "morpho/vault-deposit",
+  "card": {
+    "vault": {
+      "kind": "contract",
+      "registryKind": "vault",
+      "defillama": "morpho-blue"
+    },
+    "amount": {
+      "kind": "amount",
+      "of": "vault.asset"
+    },
+    "min-shares": {
+      "kind": "amount",
+      "of": "vault",
+      "computed": {
+        "read": {
+          "to": {
+            "card": "vault"
+          },
+          "function": "previewDeposit(uint256 assets) returns (uint256 shares)",
+          "args": {
+            "assets": {
+              "card": "amount"
+            }
+          }
+        },
+        "bound": "floor",
+        "default": {
+          "bps": 3,
+          "source": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/blue-sdk/src/constants.ts#L24"
+        },
+        "margin": {
+          "bps": 7,
+          "why": {
+            "en": "The Morpho app reads its own preview when it builds the transaction, accrued two hours ahead (computeVaultMaxSharePrice and computeVaultMaxShareAllowance in packages/morpho-sdk/src/helpers/slippage.ts at the same commit). The share price moves between this card and then, up with interest or down with a Vault V2 fee, and with the default alone a move against the card makes the app's own transaction MISMATCH. 0.07% more covers about three days of a vault earning 8% a year.",
+            "zh-TW": "Morpho app 在組交易時會自己讀一次預覽，並把利息先算到兩小時後（同一個 commit 的 packages/morpho-sdk/src/helpers/slippage.ts 裡的 computeVaultMaxSharePrice 和 computeVaultMaxShareAllowance）。從填這張卡片到那時，每股價格會變動：有利息時上升，有 Vault V2 手續費時下降；只用預設值的話，價格往不利於卡片的方向一動，app 自己組的交易就會 MISMATCH。多 0.07% 大約夠一個年化 8% 的金庫三天的變動。"
+          }
+        }
+      }
+    }
+  },
+  "calls": [
+    {
+      "to": {
+        "card": "vault.asset"
+      },
+      "value": {
+        "const": "0"
+      },
+      "function": "approve(address spender, uint256 value)",
+      "args": {
+        "spender": {
+          "contract": "general-adapter-1"
+        },
+        "value": {
+          "card": "amount"
+        }
+      },
+      "trailer": {
+        "maxBytes": 12,
+        "why": {
+          "en": "the Morpho app appends a 4-byte timestamp and one or two 4-byte origin tags (morpho-org/sdks, addTransactionMetadata); approve reads only its two arguments",
+          "zh-TW": "Morpho app 會在後面附上 4 bytes 的時間戳記和一到兩個 4 bytes 的來源標記（morpho-org/sdks，addTransactionMetadata）；approve 只讀它的兩個引數"
+        }
+      }
+    },
+    {
+      "to": {
+        "contract": "bundler3"
+      },
+      "value": {
+        "const": "0"
+      },
+      "function": "multicall((address to, bytes data, uint256 value, bool skipRevert, bytes32 callbackHash)[] bundle)",
+      "args": {
+        "bundle": {
+          "items": [
+            {
+              "fields": {
+                "to": {
+                  "contract": "general-adapter-1"
+                },
+                "data": {
+                  "call": {
+                    "function": "erc20TransferFrom(address token, address receiver, uint256 amount)",
+                    "args": {
+                      "token": {
+                        "card": "vault.asset"
+                      },
+                      "receiver": {
+                        "contract": "general-adapter-1"
+                      },
+                      "amount": {
+                        "card": "amount"
+                      }
+                    }
+                  }
+                },
+                "value": {
+                  "const": "0"
+                },
+                "skipRevert": {
+                  "const": "false"
+                },
+                "callbackHash": {
+                  "const": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                }
+              }
+            },
+            {
+              "fields": {
+                "to": {
+                  "contract": "general-adapter-1"
+                },
+                "data": {
+                  "call": {
+                    "function": "erc4626Deposit(address vault, uint256 assets, uint256 maxSharePriceE27, address receiver)",
+                    "args": {
+                      "vault": {
+                        "card": "vault"
+                      },
+                      "assets": {
+                        "card": "amount"
+                      },
+                      "maxSharePriceE27": {
+                        "maxSharePrice": {
+                          "assets": "card.amount",
+                          "shares": "card.min-shares"
+                        }
+                      },
+                      "receiver": {
+                        "safe": true
+                      }
+                    }
+                  }
+                },
+                "value": {
+                  "const": "0"
+                },
+                "skipRevert": {
+                  "const": "false"
+                },
+                "callbackHash": {
+                  "const": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "trailer": {
+        "maxBytes": 12,
+        "why": {
+          "en": "the Morpho app appends a 4-byte timestamp and one or two 4-byte origin tags (morpho-org/sdks, addTransactionMetadata); Bundler3.multicall reads only its bundle argument",
+          "zh-TW": "Morpho app 會在後面附上 4 bytes 的時間戳記和一到兩個 4 bytes 的來源標記（morpho-org/sdks，addTransactionMetadata）；Bundler3.multicall 只讀它的 bundle 引數"
+        }
+      }
+    }
+  ],
+  "effects": {
+    "gives": [
+      {
+        "token": "card.vault.asset",
+        "amount": "card.amount"
+      }
+    ],
+    "gets": [
+      {
+        "token": "card.vault",
+        "amount": "positive"
+      }
+    ]
+  }
+}
