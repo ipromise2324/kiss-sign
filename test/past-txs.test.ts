@@ -12,7 +12,7 @@ import type { Exchange } from '../src/chain/recording.ts';
 import type { Transport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import type { Registry } from '../src/registry.ts';
-import { pastTxs } from '../src/research/past-txs.ts';
+import { foundBy, pastTxs } from '../src/research/past-txs.ts';
 import { renderPastTxs, spreadOf } from '../src/research/past-txs-render.ts';
 import { DEFAULT_SAMPLING, YEAR_PAGES, samplingFields, samplingOf, scrubRecording } from '../src/research/recording.ts';
 import { replayMessages } from '../src/research/messages.ts';
@@ -183,7 +183,7 @@ test('a recording keeps only what the search reads, so a busy token\'s halved wi
     const recorded = recorder.exchanges();
     assert.equal(renderPastTxs(await study(replayAsk(recorded)), registry), renderPastTxs(run, registry));
     assert.match(renderPastTxs(run, registry), /halved, too many transfers in 26373601 to 26380800/);
-    const hits = [...run.found.values()].reduce((n, sources) => n + sources.length, 0);
+    const hits = foundBy(run.found, 'alchemy') + foundBy(run.found, 'etherscan');
     assert.ok(JSON.stringify(recorded).length < recorded.length * 3_000 + hits * 300, `${JSON.stringify(recorded).length} bytes for ${recorded.length} answers and ${hits} transfers`);
   }
 });

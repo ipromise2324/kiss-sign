@@ -109,6 +109,15 @@ export type YearSearch =
     }
   | { readonly kind: 'overflow'; readonly range: BlockRange; readonly pages: number; readonly sources: readonly SourceName[] };
 
+/**
+ * What the search found, the configured Safe's transactions left out: how many, and when both sources searched, the
+ * hashes only one of them found. A transaction found by every source that searched is not listed.
+ */
+export type Found = { readonly total: number; readonly only: Readonly<Record<SourceName, readonly Hex[]>> };
+
+/** How many transactions `source` found: all but those only another source found. */
+export const foundBy = (found: Found, source: SourceName): number => found.total - SOURCES.filter((s) => s !== source).reduce((n, s) => n + found.only[s].length, 0);
+
 export type PastTxs = {
   readonly query: PastTxsQuery;
   readonly head: bigint | undefined;
@@ -116,8 +125,7 @@ export type PastTxs = {
   readonly year: YearSearch | undefined;
   readonly windows: readonly WindowRun[];
   readonly perWindow: number;
-  /** Each kept transaction with the sources that found it. */
-  readonly found: ReadonlyMap<Hex, readonly SourceName[]>;
+  readonly found: Found;
   readonly studies: readonly Kept[];
   readonly shapes: ReturnType<typeof shapesOf>;
   /** Transactions left out because they touch the configured Safe. Never printed. */
@@ -304,7 +312,9 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
     year = { ...year, safesFirst: { check, selection } };
   }
   const excluded = { found: excludedFound, sampled: excludedSampled };
-  return { query, head, year, windows, perWindow, found, studies, shapes, excluded, otherEmitter, effects, measurements, traces };
+  const both = searchedBy(query.anchor).length === SOURCES.length;
+  const only = (source: SourceName) => (both ? [...found].filter(([, s]) => s.length === 1 && s[0] === source).map(([hash]) => hash) : []);
+  return { query, head, year, windows, perWindow, found: { total: found.size, only: { alchemy: only('alchemy'), etherscan: only('etherscan') } }, studies, shapes, excluded, otherEmitter, effects, measurements, traces };
 }
 
 /**
