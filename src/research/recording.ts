@@ -55,7 +55,7 @@ export type Sampling =
   | { readonly kind: 'old-windows'; readonly head?: bigint }
   | { readonly kind: 'range'; readonly range: BlockRange };
 
-export const DEFAULT_SAMPLING: Sampling = { kind: 'year', pages: YEAR_PAGES };
+export const DEFAULT_SAMPLING: Extract<Sampling, { readonly kind: 'year' }> = { kind: 'year', pages: YEAR_PAGES };
 
 type SamplingFields = Pick<PastTxsRecording['query'], 'fromBlock' | 'toBlock' | 'head' | 'wholeYear' | 'yearPages'>;
 

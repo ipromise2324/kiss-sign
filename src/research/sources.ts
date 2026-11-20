@@ -252,16 +252,18 @@ function unfinished(exchange: SourceExchange, all: readonly SourceExchange[]): b
 }
 
 /**
- * In a range some source did not finish, every page that says more follow keeps only that: its page key (Alchemy) or
- * its length (Etherscan). The search never reads such a range's transfers, and a busy token's year and halved windows
+ * In a range some source did not finish, every page keeps no transfer, only whether more follow: its page key (Alchemy)
+ * or its length (Etherscan). The search never reads such a range's transfers, and a busy token's year and halved windows
  * would otherwise hold thousands.
  */
 function cutUncovered(exchanges: readonly SourceExchange[]): SourceExchange[] {
   const uncovered = new Set(exchanges.filter((e) => unfinished(e, exchanges)).map((e) => rangeOf(e.request)));
   return exchanges.map(({ request, answer }) => {
-    if (!uncovered.has(rangeOf(request)) || !morePages(answer)) return { request, answer };
-    const { pageKey, status, message, result } = answer as Record<string, unknown>;
-    return { request, answer: request.source === 'alchemy' ? { transfers: [], pageKey } : { status, message, result: (result as unknown[]).map(() => ({})) } };
+    if (!uncovered.has(rangeOf(request)) || !isRecord(answer)) return { request, answer };
+    const { pageKey, status, message, result } = answer;
+    if (request.source === 'alchemy') return { request, answer: { transfers: [], ...(typeof pageKey === 'string' ? { pageKey } : {}) } };
+    if (!Array.isArray(result)) return { request, answer };
+    return { request, answer: { status, message, result: morePages(answer) ? result.map(() => ({})) : [] } };
   });
 }
 
