@@ -43,15 +43,19 @@ an event (--anchor event), as one of the two forms above.
                           (the contract logging the event)
   change a Safe itself:   --anchor event --event 'AddedOwner(address)'
                           (any contract logging it; studied only where the sending Safe did)
-It first asks each source for the whole last year, placed by the head block; when every answer
-fits in one page it studies at most --max-txs of those transactions, taken evenly in block order.
+It first pages each source through the whole last year, placed by the head block, up to
+${YEAR_PAGES} pages of 1000. When every source finishes within them, it reads each anchor party once at
+the year's last block for a Safe: the address minted to, burned from, the side --from or --to
+leaves open, or the contract that logged an event with no --token. It studies every transaction
+with a Safe party, leaving at least a quarter of --max-txs to the rest, and fills the remaining
+places from the rest, each taken evenly in block order.
 Otherwise it searches 12 windows of up to 7200 blocks spread over the year, and studies at most
 --max-txs (at least 12) transactions shared evenly between them. A window with more transfers
 than one page of a source is halved until they fit, and the report names the blocks left out.
 --same-windows-as places the year and the windows by the head block
-testdata/research/<recording>.json keeps instead of today's, and asks the whole year first only
-when that recording did, so a run again searches the same blocks. --from-block and --to-block
-replace the year and the windows with one range.
+testdata/research/<recording>.json keeps instead of today's, and searches as that recording did,
+so a run again searches the same blocks. --from-block and --to-block replace the year and the
+windows with one range.
 Both Alchemy (alchemy_getAssetTransfers) and Etherscan (logs) search each window for a Transfer;
 each transaction says which found it. Only Etherscan searches an event: Alchemy's eth_getLogs
 reads at most 10 blocks at a time on the free plan.
@@ -84,7 +88,8 @@ Options:
                                  windows, at least 1 with --from-block and --to-block.
   --from-block, --to-block <n>   Search one block range in place of the windows, for debugging
                                  the search; a template's research never passes them.
-  --same-windows-as <recording>  Search the windows of testdata/research/<recording>.json again.
+  --same-windows-as <recording>  Search the year or windows of testdata/research/<recording>.json
+                                 again.
   --record <name>                Write testdata/research/<name>.json; nothing is written when a
                                  read got no answer.
 
