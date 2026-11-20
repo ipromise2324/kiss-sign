@@ -103,12 +103,12 @@ The new instance's `--record` reads that shared part live again, since its repor
 1. Research the new instance's address, and every entry it names that no report names yet, such as its asset, as [addresses.md](addresses.md) says, its observations in the instance's own `notes.json` before any check.
    Prove its factory when the entry has a `factory` attribute, and read its evidence ([An instance a template is reported per](addresses.md#contracts-that-need-more)).
 2. Run `pnpm past-txs <protocol>/<operation>` anchored on the instance with the transfer or event the operation itself makes, such as `--token <vault> --anchor mint` for a vault deposit ([Study past transactions](build-template.md#study-past-transactions)), with no block range and `--record <name>`, and note the counts by sender type.
-   The instance's report includes only the recordings whose `--token` is the instance itself, so anchor on it, never on its asset.
+   The instance's report includes only the past-txs summaries whose `--token` is the instance itself, so anchor on it, never on its asset.
 3. Before recording, write the instance's own `docs.json` when a function's page is specific to this report, such as a page that names the instance, its asset or another contract only this report covers: `--record` reads and checks those pages.
    Then run `pnpm report <protocol>/<operation> --instance-of <instance> --record`.
 4. Complete the instance's own `notes.json` ([An instance's notes](notes-and-reviews.md#an-instances-notes)), then run `pnpm report <protocol>/<operation> --instance-of <instance> --render`.
    Change no template text and no other instance's notes; the template's hash does not change, so the signer approves nothing again.
-5. Open a pull request with the registry change, the instance's folder, its recordings and the past-transactions recording ([Open the pull request](build-template.md#open-the-pull-request)), and tell the signer ([Tell the signer](build-template.md#tell-the-signer)).
+5. Open a pull request with the registry change, the instance's folder, its recordings and the past-transactions summary ([Open the pull request](build-template.md#open-the-pull-request)), and tell the signer ([Tell the signer](build-template.md#tell-the-signer)).
 
 ## Add a registry entry
 
