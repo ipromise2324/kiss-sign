@@ -1212,7 +1212,7 @@ function reviewSection(context: Context): Section {
       id: result.id,
       state: stateOf(result),
       grade,
-      title: `${plain.charAt(0).toUpperCase()}${plain.slice(1)}`,
+      title: `${plain.charAt(0).toUpperCase()}${plain.slice(1)}${result.about.kind === 'entry' ? ` · ${result.about.entry.name}` : ''}`,
       conclusion: research(firstSentence(review.text)),
       subject: title,
       why,

@@ -458,8 +458,8 @@ async function tracedPage(language: Language): Promise<string> {
 
 test('a traced flow line carries a short mark in the diagram, and one legend under it explains the marks with their counts', async () => {
   const expected: Readonly<Record<Language, readonly [confirmed: RegExp, partial: RegExp]>> = {
-    en: [/^Confirmed two ways: .*\(<a href="https:[^"]+">①<\/a> 8 of 8\), and the AI read the contract's source\.$/, /^Seen in the call traces of only some past transactions \(② 3 of 8\), so not confirmed\.$/],
-    'zh-TW': [/^兩邊都確認：.*（<a href="https:[^"]+">①<\/a> 8 筆中 8 筆），AI 也讀過合約原始碼。$/, /^程式只在部分過去交易的呼叫追蹤裡看到這條線（② 8 筆中 3 筆），所以還不算確認。$/],
+    en: [/^Confirmed two ways: .*\(<a href="https:[^"]+">①<\/a> 8 of 8\), and the AI read the contract's source; the words beside each line are the AI's\.$/, /^Seen in the call traces of only some past transactions \(② 3 of 8\), so not confirmed\.$/],
+    'zh-TW': [/^兩邊都確認：.*（<a href="https:[^"]+">①<\/a> 8 筆中 8 筆），AI 也讀過合約原始碼；每條線旁的說明是 AI 寫的。$/, /^程式只在部分過去交易的呼叫追蹤裡看到這條線（② 8 筆中 3 筆），所以還不算確認。$/],
   };
   for (const language of LANGUAGES) {
     const html = unescape(await tracedPage(language));
@@ -502,7 +502,7 @@ test('each To review item shows its state, grade, plain title and one-line concl
   }
   const frozen = unescape(pages.get(hyperithm())?.html.get('en') ?? assert.fail('the frozen page'));
   const row = /<div class="row" data-state="warn" data-grade="key"[^>]*>(.*?)<details/s.exec(frozen)?.[1] ?? assert.fail('the key row');
-  assert.match(row, /Address confirmed in too few places<\/div>/);
+  assert.match(row, /Address confirmed in too few places · hyperithm-usdc-apex-v2-9e2f<\/div>/, 'the title names the entry');
   assert.match(row, /AI has concerns<\/span>.*The program's only check is the factory: VaultV2Factory answers <code>isVaultV2<\/code> = true\.<\/span>/s);
   assert.doesNotMatch(row, /AI opened the vault's page/, 'the rest of the review is folded');
 });
