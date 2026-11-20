@@ -194,7 +194,7 @@ A two-column page, max 1180px, with 20px side padding (respecting safe-area inse
 
 Property rows are a three-column grid: label (min 140px, 24%), value (fluid), source (auto, right-aligned). Argument rows are a two-column grid: name and who-decides chip (248px), value (fluid); at 720px and below the chip sits beside the name above the value. At 600px and below the label moves to its own line above value and source. The check strip is a grid of equal columns at least 250px wide with 10px / 28px gaps, and a single column at 600px; each item's tooltip opens within its own column. The wallet section is one property table, one row for the Safe transaction (`SafeTx`) and one per call, which follows the property rows' 600px rule. The diagram keeps a 660px minimum width and scrolls horizontally inside its frame, with a "scroll" hint shown at 700px and below.
 
-Order inside the page follows the signer: title, check strip and verdict; flow and its parameters; protocol; in a per-instance report, the instance (實例); items to review; wallet display; addresses; past transactions; signing steps.
+Order inside the page follows the signer: title, check strip and verdict; items to review, so the one finding that matters sits under the verdict; flow and its parameters; protocol; in a per-instance report, the instance (實例); wallet display; addresses; past transactions; signing steps.
 
 ## Elevation & Depth
 

@@ -1955,7 +1955,7 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
     ledger,
     comparison,
   };
-  const sections = [flowSection(context), ...protocolSections(context), ...vaultSection(context), reviewSection(context), walletSection(context), ...addressSection(context), pastSection(context), nextSection(context)];
+  const sections = [reviewSection(context), flowSection(context), ...protocolSections(context), ...vaultSection(context), walletSection(context), ...addressSection(context), pastSection(context), nextSection(context)];
   const sources = [...title.sources, 'testdata/perturb', 'testdata/safe-tx', join(TEMPLATES_DIR, template.id, NOTES_FILE), ...(subject.vault === undefined ? [] : [join(subject.dir, NOTES_FILE)])];
   return {
     language,

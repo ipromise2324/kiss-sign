@@ -102,9 +102,9 @@ test('the page of morpho/market-supply puts its sections in the signer order', {
   const page = pageOf(inputs);
   assert.deepEqual(
     page.sections.map((s) => s.anchor),
-    ['flow', 'protocol-morpho-blue', 'review', 'wallet', 'addresses', 'past', 'next'],
+    ['review', 'flow', 'protocol-morpho-blue', 'wallet', 'addresses', 'past', 'next'],
   );
-  assert.deepEqual(page.sections[0]?.count, { kind: 'text', text: '2 個呼叫' });
+  assert.deepEqual(page.sections[1]?.count, { kind: 'text', text: '2 個呼叫' });
 });
 
 test('each argument says who decides it and prints what cast decode-calldata prints', () => {
@@ -734,7 +734,7 @@ async function bareCase(id: string): Promise<Page> {
 
 test('an ETH transfer: no address section or address strip lines, its to/value/data rules in words, and a wallet line for a call with no data', async () => {
   const page = await bareCase('eth/transfer');
-  assert.deepEqual(page.sections.map((s) => s.anchor), ['flow', 'review', 'wallet', 'past', 'next']);
+  assert.deepEqual(page.sections.map((s) => s.anchor), ['review', 'flow', 'wallet', 'past', 'next']);
   assert.deepEqual(page.header.strip.map((s) => [s.line, s.state, s.count]), [['params', 'na', '沒有測試'], ['providers', 'ok', undefined]]);
   assert.match(page.header.strip[0]?.explain ?? '', /^模板沒有不限的參數/);
   const { flow } = body(page, 'flow');
