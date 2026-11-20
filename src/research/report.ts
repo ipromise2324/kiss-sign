@@ -600,10 +600,11 @@ function printableQuery(file: string, query: PastTxsRecording['query']): boolean
 }
 
 /**
- * Runs the study again on a recording, with the template as it is now. With `live`, the search answers and head block
- * still come from the recording, but each found transaction, its receipt and its sender's code are read again through
- * `live`, so a transaction the chain does not hold as recorded changes the summary. With `liveTraces`, a recorded trace
- * counts only when the transaction is traced again with the same calls, and is UNVERIFIABLE, with why, otherwise.
+ * Runs the study again on a recording, with the template as it is now. With `live`, the search answers, the head block
+ * and each anchor party's reads still come from the recording, so the same transactions are chosen, but each found
+ * transaction, its receipt and its sender's code are read again through `live`, so a transaction the chain does not hold
+ * as recorded changes the summary. With `liveTraces`, a recorded trace counts only when the transaction is traced again
+ * with the same calls, and is UNVERIFIABLE, with why, otherwise.
  */
 export async function summarizePastTxs(repoRoot: string, registry: Registry, file: string, recording: PastTxsRecording, live?: Reader, liveTraces?: TraceSource): Promise<PastTxsSummary> {
   const { query } = recording;
@@ -635,6 +636,7 @@ export async function summarizePastTxs(repoRoot: string, registry: Registry, fil
     {
       ask: replayAsk(recording.sources),
       reader,
+      partyReader: recorded,
       registry,
       readMessage: replayMessages(recording.messages ?? []),
       exclude: undefined,
