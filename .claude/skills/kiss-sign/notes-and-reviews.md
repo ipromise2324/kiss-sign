@@ -33,7 +33,9 @@ The exact shape and every limit are in step 6 of [First time an operation is don
 - `judgments`: at most four, each with a `recommendation`.
 - `reviews`: below.
 - `pastTxsConclusion`, optional: one line of at most 200 on what the past transactions with other shapes teach.
-- `context`, optional and only in an instance's `notes.json`: at most four notes `{ "title", "text", "sources" }`, a title of at most 40 and a text of at most 1,000, each with at least one source, on what the signer may want to know about the instance, such as where the vault sends a deposit and why; the program shows them in the Instance section and refuses them in the template's file.
+- `context`, optional and only in an instance's `notes.json`: at most four notes `{ "title", "text", "sources" }`, a title of at most 40 and a text of at most 400, each with at least one source, on what the signer may want to know about the instance, such as where the vault sends a deposit and why; the program shows them in the Instance section and refuses them in the template's file.
+  Lead the text with the conclusion the signer needs, such as "a deposit stays in the vault until an allocator lends it out".
+  Put the evidence, such as function names, block numbers, the vault's history and full addresses, in `sources`, not in the text.
 - `entries`, by registry name: `role`, one line, and `sources`, each source you checked by hand as `{ "text", "url", "result": "pass" | "attention" | "fail" }`.
 - `fields`: a text for every argument, tuple part, array item, nested call's argument, packed part and signed-message member, by the HTML report's field key, such as `1.approve.spender` or `2.blueBundlesV1Supply.marketParams.oracle`.
 - A note is `{ "text", "sources"? }` with https URLs.
