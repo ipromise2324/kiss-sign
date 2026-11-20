@@ -5,11 +5,11 @@ import { join } from 'node:path';
 import { before, test } from 'node:test';
 import { loadRegistry, pageUrlsOf } from '../src/registry.ts';
 import { STANDARDS } from '../src/research/standards.ts';
-import { NOTES_FILE, notesChanges, notesLanguages, notesPath, readNotes } from '../src/research/notes.ts';
+import { NOTES_FILE, notesLanguages, notesPath, readNotes } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { LANGUAGES, isLanguage } from '../src/language.ts';
 import type { Language } from '../src/language.ts';
-import { OLD_HTML_FILE, generatedHtml, generatedHtmlFile, generatedHtmlPath, htmlDifference, htmlDifferences, renderPage, writeHtmlPages } from '../src/research/report-html.ts';
+import { OLD_HTML_FILE, generatedHtml, generatedHtmlFile, generatedHtmlPath, htmlDifference, renderPage, writeHtmlPages } from '../src/research/report-html.ts';
 import { buildPage } from '../src/research/report-page.ts';
 import { loadReport, readDocs, replayInputs, reportDir, templateTargets } from '../src/research/report.ts';
 import type { PastTxsSummary, ReportInputs, ReportTitle } from '../src/research/report.ts';
@@ -281,7 +281,7 @@ test("every state icon is an image named in the page's language, and the rest ar
   }
 });
 
-test('--compare prints the first line where a committed HTML report differs, naming the file', () => {
+test('a committed HTML report that differs is named with its first differing line', () => {
   const file = generatedHtmlFile('en');
   assert.equal(htmlDifference(file, 'a\nb', 'a\nb'), undefined);
   assert.equal(htmlDifference(file, 'a\nb ok', 'a\nb FINDING'), 'report.generated.en.html line 2: committed "b ok", the program writes "b FINDING"');
@@ -302,21 +302,6 @@ test('--render writes a page only in the languages the notes hold and removes on
   assert.equal(readFileSync(join(dir, 'report.generated.zh-TW.html'), 'utf8'), 'zh');
   assert.deepEqual(writeHtmlPages(dir, new Map([['en', 'en'], ['zh-TW', 'zh']])), []);
   assert.deepEqual(readdirSync(dir).sort(), ['report.generated.en.html', 'report.generated.zh-TW.html']);
-});
-
-test('--compare flags a page committed in a language the notes do not hold, and one missing in a language they hold', () => {
-  const zhOnly = new Map<Language, string>([['zh-TW', 'zh']]);
-  assert.deepEqual(htmlDifferences(folder({ 'report.generated.zh-TW.html': 'zh' }), zhOnly), [{ file: 'report.generated.zh-TW.html', difference: undefined }]);
-  const extra = htmlDifferences(folder({ 'report.generated.zh-TW.html': 'zh', 'report.generated.en.html': 'en' }), zhOnly);
-  assert.match(extra.find((d) => d.file === 'report.generated.en.html')?.difference ?? '', /is committed but no notes\.json holds text in its language/);
-  const missing = htmlDifferences(folder({ 'report.generated.en.html': 'en' }), new Map<Language, string>([['en', 'en'], ['zh-TW', 'zh']]));
-  assert.match(missing.find((d) => d.file === 'report.generated.zh-TW.html')?.difference ?? '', /no committed report\.generated\.zh-TW\.html/);
-  assert.deepEqual(htmlDifferences(folder({}), undefined), []);
-  assert.match(htmlDifferences(folder({ [OLD_HTML_FILE]: 'x' }), undefined)[0]?.difference ?? '', /still committed/);
-});
-
-test('--compare names every notes.json a branch changes, as text the AI wrote', () => {
-  assert.deepEqual(notesChanges(['src/x.ts', 'templates/morpho/market-supply/notes.json', 'templates/morpho/market-supply/report.generated.html', 'templates/notes.json']), ['templates/morpho/market-supply/notes.json']);
 });
 
 const nextSteps = (html: string): string => {

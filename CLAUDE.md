@@ -36,7 +36,7 @@ Every command below but `pnpm install`, `pnpm test` and `pnpm typecheck` prints 
 - `pnpm record-safe-tx`, `pnpm record-safe-proxy`, `pnpm record-abi-case`: record a Safe transaction, Safe proxy or ABI-proof fixture into `testdata/`.
 - `pnpm simulate <safe-tx fixture>`: simulates an executed Safe transaction and prints its effects.
 - `pnpm perturb <safe-tx fixture> --card '<card json>'`: changes each free field and simulates every copy.
-- `pnpm report <protocol>/<operation>`: prints, records, renders or compares a template's generated report.
+- `pnpm report <protocol>/<operation>`: prints, records or renders a template's generated report.
 
 ### Signing
 

@@ -9,7 +9,7 @@ import { DEFILLAMA_PROTOCOLS, parseCoinGeckoCoins, parseDefiLlamaProtocols, sour
 import { DEFILLAMA_HACKS, FactsRecordingError, factsRecording, factsScope, parseFactsRecording, protocolFacts, replaySources } from '../src/research/protocol-facts.ts';
 import type { FactsRecording, FactsSources, ProtocolFacts } from '../src/research/protocol-facts.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
-import { compareReports, entriesOf, loadReport, renderReport, reportRecordingPath } from '../src/research/report.ts';
+import { entriesOf, loadReport, renderReport, reportRecordingPath } from '../src/research/report.ts';
 import type { ReportRecording } from '../src/research/report.ts';
 import type { Hex } from '../src/safe/types.ts';
 import { NO_SITE_LISTINGS } from '../src/research/site-listings.ts';
@@ -124,15 +124,6 @@ test('a protocol DefiLlama does not list once prints as not read, and so do its 
   const twice = [...RAW_PROTOCOLS, { ...RAW_PROTOCOLS[1], id: '9' }];
   assert.match(section(await protocolFacts(scope, registry, rawSources([RAW_PROTOCOLS[0]]))), /\| `morpho-blue` \| not read: DefiLlama lists no protocol morpho-blue \| \| \| \| \|\n[^]*\| `morpho-blue` \| not read \| \|/);
   assert.match(section(await protocolFacts(scope, registry, rawSources(twice))), /not read: DefiLlama lists 2 protocols with slug morpho-blue/);
-});
-
-test('--compare sets aside DefiLlama\'s TVL but not a fact read at the recorded block', async () => {
-  const facts = await protocolFacts(scope, registry, replaySources(recorded));
-  const moved = await protocolFacts(scope, registry, rawSources([{ ...RAW_PROTOCOLS[1], tvl: 1, chainTvls: { Ethereum: 1 } }], RAW_HACKS));
-  const base = await protocolFacts(scope, registry, rawSources());
-  assert.deepEqual(compareReports(section(base), section(moved)), []);
-  const differences = compareReports(section(facts), section({ ...facts, readings: facts.readings.map((r) => ({ ...r, read: { kind: 'unread', why: 'x' } })) }));
-  assert.ok(differences.some((d) => d.includes('usdc-cbbtc-86')), differences.join('\n'));
 });
 
 test('a recording without the section prints that the facts were not read; a malformed section is refused', () => {

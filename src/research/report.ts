@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import type { Reader } from '../chain/reader.ts';
 import { replayReader, trimBlockAnswers } from '../chain/recording.ts';
 import type { Exchange } from '../chain/recording.ts';
-import type { BlockRef, BlockTag } from '../chain/types.ts';
+import type { BlockRef } from '../chain/types.ts';
 import { ABI_CASES_DIR, loadAbiCases, replayAbiCase } from '../contracts/abi-case.ts';
 import type { AbiCase } from '../contracts/abi-case.ts';
 import { pinOf, readRunningCode, readRunningCodeAt, samePin } from '../contracts/code.ts';
@@ -34,7 +34,6 @@ import { YEAR_PAGES, samplingOf } from './recording.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { replayMessages } from './messages.ts';
 import { replayTraces } from './trace.ts';
-import type { TraceSource } from './trace.ts';
 import { pathText } from './api-source.ts';
 import { provenanceRepositories } from './npm-package.ts';
 import { gradedFindings, weightOf } from './grades.ts';
@@ -53,7 +52,6 @@ import type { Standard } from './standards.ts';
 import type { AnchorKind } from './sources.ts';
 import { readRecording } from '../chain/bytecode.ts';
 import { WORDS, toleranceSpan } from './report-words.ts';
-import type { Split } from '../verdict-core.ts';
 
 /** A template, with the one instance its report covers when it is reported per instance, and the folder its files sit in. */
 export type Subject = { readonly kind: 'template'; readonly template: Template; readonly docs: readonly DocLink[]; readonly vault: RegistryEntry | undefined; readonly dir: string };
@@ -599,28 +597,9 @@ function printableQuery(file: string, query: PastTxsRecording['query']): boolean
   );
 }
 
-/**
- * Runs the study again on a recording, with the template as it is now. With `live`, the search answers, the head block
- * and each anchor party's reads still come from the recording, so the same transactions are chosen, but each found
- * transaction, its receipt and its sender's code are read again through `live`, so a transaction the chain does not hold
- * as recorded changes the summary. With `liveTraces`, a recorded trace counts only when the transaction is traced again
- * with the same calls, and is UNVERIFIABLE, with why, otherwise.
- */
-export async function summarizePastTxs(repoRoot: string, registry: Registry, file: string, recording: PastTxsRecording, live?: Reader, liveTraces?: TraceSource): Promise<PastTxsSummary> {
+/** Runs the study again on a recording, with the template as it is now. */
+export async function summarizePastTxs(repoRoot: string, registry: Registry, file: string, recording: PastTxsRecording): Promise<PastTxsSummary> {
   const { query } = recording;
-  const recordedTraces = replayTraces(recording.traces);
-  const traces: TraceSource =
-    liveTraces === undefined
-      ? recordedTraces
-      : async (hash) => {
-          const kept = await recordedTraces(hash);
-          if (kept === undefined) return undefined;
-          const now = await liveTraces(hash);
-          if (JSON.stringify(now) === JSON.stringify(kept)) return kept;
-          return { kind: 'unreadable', why: now === undefined ? 'drpc gives no trace now' : 'drpc now traces it otherwise than the recording' };
-        };
-  const recorded = replayReader(recording.exchanges);
-  const reader: Reader = live === undefined ? recorded : { ...live, blockNumber: () => recorded.blockNumber() };
   const run = await pastTxs(
     {
       template: loadTemplate(repoRoot, query.template, registry),
@@ -635,13 +614,12 @@ export async function summarizePastTxs(repoRoot: string, registry: Registry, fil
     },
     {
       ask: replayAsk(recording.sources),
-      reader,
-      partyReader: recorded,
+      reader: replayReader(recording.exchanges),
       registry,
       readMessage: replayMessages(recording.messages ?? []),
       exclude: undefined,
       maxTxs: query.maxTxs,
-      traces,
+      traces: replayTraces(recording.traces),
       excludedByRecording: { found: new Set(recording.excluded?.found ?? []), sampled: new Set(recording.excluded?.sampled ?? []) },
     },
   );
@@ -1156,8 +1134,6 @@ function fenced(text: string): string[] {
 /** The `pnpm report` arguments that name a subject's report. */
 export const reportArgs = (subject: Subject): string => `${subject.template.id}${subject.vault === undefined ? '' : ` --instance-of ${subject.vault.name}`}`;
 
-export const compareCommand = (subject: Subject): string => `pnpm report ${reportArgs(subject)} --compare`;
-
 const usdText = (usd: number | undefined): string => (usd === undefined ? 'none given' : Math.round(usd).toString());
 
 function amountText(amount: bigint, token: 'eth' | Address, facts: ProtocolFacts, registry: Registry): string {
@@ -1413,7 +1389,7 @@ export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
   const out: string[] = [
     `# Generated evidence: ${subject.template.id}`,
     '',
-    `Written by ${code(title.command)} from ${title.sources.map(code).join(', ')}. The listings and pages were read on ${inputs.fetched}. ${code('pnpm test')} computes it again from these files and fails on any difference: every section is recomputed from the recorded answers except the vault evidence, which is stored as ${code('pnpm instance-evidence')} printed it. The recordings were made on the AI's computer; ${code(compareCommand(subject))} reads the listings, pages, ABI proofs, code spans, ERC-7730 attestations and DefiLlama's protocol entries and hacks live, reads each vault again at the blocks its evidence names and each protocol fact and token's decimals at the block it was read at, fetches each recorded past transaction again by hash, and prints each fact that differs. It does not search for past transactions again, so it cannot show that a search found every one. Text from outside the program appears only as identifiers: a contract name Etherscan gives, printed only when it is a Solidity identifier, and the file paths, field paths and format names ${code('pnpm erc7730')} prints. The URLs come from the registry and ${code(DOCS_FILE)}, in RFC 3986 characters only. Text the AI wrote appears only where a row says it was written by the AI in the template. Do not edit this file.`,
+    `Written by ${code(title.command)} from ${title.sources.map(code).join(', ')}. The listings and pages were read on ${inputs.fetched}. ${code('pnpm test')} computes it again from these files and fails on any difference: every section is recomputed from the recorded answers except the vault evidence, which is stored as ${code('pnpm instance-evidence')} printed it. The recordings were made on the AI's computer, and no program reads their answers live again. Text from outside the program appears only as identifiers: a contract name Etherscan gives, printed only when it is a Solidity identifier, and the file paths, field paths and format names ${code('pnpm erc7730')} prints. The URLs come from the registry and ${code(DOCS_FILE)}, in RFC 3986 characters only. Text the AI wrote appears only where a row says it was written by the AI in the template. Do not edit this file.`,
     '',
   ];
   const ledger = judge(inputs, inputs.fixtures);
@@ -1426,7 +1402,7 @@ export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
 
   const vaults = evidenceEntries(subject);
   if (vaults.length > 0) {
-    out.push('## Vaults', '', `For each vault, the stored output of ${code('pnpm instance-evidence')}, not recomputed by ${code('pnpm test')}; ${code('pnpm report --compare')} reads it again at the blocks it names.`, '');
+    out.push('## Vaults', '', `For each vault, the stored output of ${code('pnpm instance-evidence')}, not recomputed by ${code('pnpm test')}.`, '');
     for (const vault of vaults) {
       const text = inputs.vaults.get(vault.name) ?? 'not read';
       if (!VAULT_TEXT.test(text)) throw new ReportError(`the stored vault evidence of ${vault.name} holds a character ${code('pnpm instance-evidence')} never prints`);
@@ -1528,129 +1504,4 @@ export async function replayInputs(
   const sources = [...inputsFiles, recordingPath, ABI_CASES_DIR, ...pastRecordings.map((p) => p.file)];
   const command = `pnpm report ${reportArgs(subject)} --record`;
   return { inputs, title: { command, sources } };
-}
-
-/**
- * Where a fact sits in a report: its heading, then a table row's first cell and the column, or for a text line, the
- * nearest line above it at the left margin, such as the ERC-7730 entry an attestation belongs to.
- */
-type Facts = { readonly cells: Map<string, string>; readonly lines: Map<string, string[]> };
-
-/**
- * What changes between two honest reads: the block an answer was read at, and DefiLlama's TVL. A vault's evidence and
- * the protocol facts are read again at their own blocks.
- */
-const IGNORED_COLUMNS = new Set(['Block', 'TVL (USD, DefiLlama)', 'Ethereum TVL (USD, DefiLlama)']);
-const atBlock = (line: string): string => line.replace(/\bblock \d+/g, 'block N');
-
-function factsOf(markdown: string): Facts {
-  const cells = new Map<string, string>();
-  const lines = new Map<string, string[]>();
-  const addLine = (key: string, line: string) => lines.set(key, [...(lines.get(key) ?? []), section === 'Vaults' ? line : atBlock(line)]);
-  let section = '';
-  let heading = '';
-  let columns: string[] | undefined;
-  let inFence = false;
-  let margin = '';
-  const rows = markdown.split('\n');
-  for (let i = 0; i < rows.length; i++) {
-    const line = rows[i] as string;
-    if (inFence) {
-      if (line === '```') inFence = false;
-      else {
-        if (!line.startsWith(' ')) margin = line;
-        addLine(line.startsWith(' ') ? `${heading} › ${atBlock(margin)}` : heading, line);
-      }
-      continue;
-    }
-    columns = line.startsWith('|') ? columns : undefined;
-    if (line.startsWith('```')) [inFence, margin] = [true, ''];
-    else if (line.startsWith('#')) {
-      heading = line.replace(/^#+ /, '');
-      if (line.startsWith('## ')) section = heading;
-    } else if (line.startsWith('|') && columns === undefined) {
-      columns = splitRow(line);
-      i++;
-    } else if (line.startsWith('|') && columns !== undefined) {
-      const row = splitRow(line);
-      let key = `${heading} › ${row[0]}`;
-      for (let n = 2; cells.has(`${key} › ${columns[1]}`); n++) key = `${heading} › ${row[0]} (${n})`;
-      row.forEach((value, j) => {
-        const column = columns?.[j] ?? `column ${j + 1}`;
-        if (j > 0 && !IGNORED_COLUMNS.has(column)) cells.set(`${key} › ${column}`, value);
-      });
-    } else if (line !== '' && !line.startsWith('Written by ')) addLine(heading, line);
-  }
-  return { cells, lines };
-}
-
-const splitRow = (row: string): string[] => row.split(/(?<!\\)\|/).slice(1, -1).map((c) => c.trim());
-
-/**
- * Each fact that differs between the committed report and one read live: every table cell but the block an ABI proof
- * was read at, every text line with block numbers set aside, and every line of a vault's evidence exactly, since the
- * live report reads each vault at the blocks the committed one names (`vaultsAt`). Empty when they agree.
- */
-export function compareReports(committed: string, live: string): string[] {
-  const [was, now] = [factsOf(committed), factsOf(live)];
-  const out: string[] = [];
-  for (const key of new Set([...was.cells.keys(), ...now.cells.keys()])) {
-    const [a, b] = [was.cells.get(key), now.cells.get(key)];
-    if (a !== b) out.push(`${key}: committed ${a ?? 'absent'}, live ${b ?? 'absent'}`);
-  }
-  for (const key of new Set([...was.lines.keys(), ...now.lines.keys()])) {
-    const remaining = [...(now.lines.get(key) ?? [])];
-    for (const line of was.lines.get(key) ?? []) {
-      const at = remaining.indexOf(line);
-      if (at === -1) out.push(`${key} › only committed: ${line}`);
-      else remaining.splice(at, 1);
-    }
-    for (const line of remaining) out.push(`${key} › only live: ${line}`);
-  }
-  return out;
-}
-
-/** The block each vault's evidence in a report was read at, by vault name: its `latest block` line. */
-function vaultBlocks(markdown: string): Map<string, bigint> {
-  const blocks = new Map<string, bigint>();
-  let section = '';
-  let vault: string | undefined;
-  for (const line of markdown.split('\n')) {
-    if (line.startsWith('## ')) section = line.slice(3);
-    else if (line.startsWith('### ')) vault = section === 'Vaults' ? /^### `([a-z0-9.-]+)`$/.exec(line)?.[1] : undefined;
-    const latest = /^latest block (\d+) 0x[0-9a-f]{64}$/.exec(line);
-    if (vault !== undefined && latest !== null && !blocks.has(vault)) blocks.set(vault, BigInt(latest[1] as string));
-  }
-  return blocks;
-}
-
-/**
- * Each vault's evidence read again as of the block the committed report names for it, so every number, date and the
- * holder count can be compared exactly; at the latest block for a vault the report names no block for.
- */
-export async function vaultsAt(
-  committed: string,
-  vaults: readonly RegistryEntry[],
-  read: (vault: RegistryEntry, at: BlockTag) => Promise<string>,
-): Promise<Map<string, string>> {
-  const blocks = vaultBlocks(committed);
-  const texts = new Map<string, string>();
-  for (const vault of vaults) texts.set(vault.name, await read(vault, blocks.get(vault.name) ?? 'latest'));
-  return texts;
-}
-
-/** `--compare`'s program lines: the verdict core apart from the rest, so the signer sees whether merging changes what `verify` checks, and the program gate, which only the signer merges. */
-export function programChangeLines(head: string, split: Split): string[] {
-  const list = (paths: readonly string[]) => paths.map((path) => `  ${path}`);
-  return [
-    ...(split.core.length === 0
-      ? []
-      : [`PROGRAM CHANGE  verdict core: ${head} changes ${split.core.length} file(s) the signing commands run, or the check that keeps them apart; merging it changes what verify checks for every signing:`, ...list(split.core)]),
-    ...(split.other.length === 0
-      ? []
-      : [`PROGRAM CHANGE  not the verdict: ${head} changes ${split.other.length} other file(s) outside templates/, registry/ and testdata/, such as research tools and docs, which no signing runs:`, ...list(split.other)]),
-    ...(split.gate.length === 0
-      ? []
-      : [`PROGRAM CHANGE  gate: ${head} changes ${split.gate.length} file(s) of the program gate, the canaries of docs/canaries.txt, the files they import or read, or the code that enforces the rules; only the signer merges it:`, ...list(split.gate)]),
-  ];
 }

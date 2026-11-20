@@ -199,7 +199,7 @@ async function holderCount(reader: Reader, alchemy: AlchemyCall, vault: Address,
   return { kind: 'read', value: { block: at.number, candidates: candidates.value.length, holders: held.length, supply: supply.value, largestBalances: held.slice(0, 10) } };
 }
 
-/** The evidence as of block `at`: the latest block, or the block a report names, so `--compare` can read it again. */
+/** The evidence as of block `at`. */
 export async function gatherVaultEvidence(
   reader: Reader,
   alchemy: AlchemyCall,
@@ -312,7 +312,7 @@ export function factoryAnswer(text: string | undefined, vault: RegistryEntry, re
 
 /**
  * What `pnpm instance-evidence` prints: a vault that names a factory is read only after that factory answers that it
- * created the vault, since the numbers come from the vault's own code. Everything is read as of one block, `at`.
+ * created the vault, since the numbers come from the vault's own code. Everything is read as of one block, the latest.
  * `read` is false when nothing was read.
  */
 export async function vaultEvidenceText(
@@ -320,11 +320,10 @@ export async function vaultEvidenceText(
   alchemy: AlchemyCall,
   registry: Registry,
   vault: RegistryEntry,
-  at: BlockTag = 'latest',
 ): Promise<{ readonly read: boolean; readonly text: string }> {
   const size = sizeOf(vault, registry);
   if (size === undefined) return { read: false, text: `REFUSED ${vault.name} declares no size, nor does a factory it names; nothing to read` };
-  const block = await reader.block(at);
+  const block = await reader.block('latest');
   if (block.kind === 'unverifiable') return { read: false, text: `UNVERIFIABLE ${block.reason}` };
   const lines: string[] = [];
   if (vault.attributes.factory === undefined) {
