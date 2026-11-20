@@ -125,7 +125,7 @@ Under it, each argument says who decides it, down to the steps inside a bundle: 
 
 ![The first step inside bundler3.multicall, erc20TransferFrom: the token follows the vault you pick, the amount is what you type, and the fixed values are folded](docs/readme/report-fields.png)
 
-**The protocol and the instance.** Morpho's TVL, audits and incidents, then this vault's facts from two providers: its factory, size and holders. Below them come a year of monthly size and the AI's notes on where your deposit goes.
+**The protocol and the instance.** The protocol's TVL, audits and incidents, then facts about the one contract you use, each read from two providers. For this vault: the factory that made it, its size and its holders, then a year of monthly size and the AI's notes on where your deposit goes.
 
 ![The Instance section: the factory answers isVaultV2 = true, 6,603,958.14 USDC now, 169 holders, the largest 58.88% and the top 10 89.19%](docs/readme/report-instance.png)
 
@@ -133,7 +133,7 @@ Under it, each argument says who decides it, down to the steps inside a bundle: 
 
 ![CoW's settlement contract: two GitHub pages and the npm SDK, all CoW's GitHub, count as one place; Immunefi is the second](docs/readme/report-address.png)
 
-Weak evidence is shown, not hidden. The Hyperithm vault is confirmed only by its factory, so it is flagged.
+Weak evidence is shown, not hidden. Here the Hyperithm vault is confirmed only by its factory, so it is flagged.
 
 ![The Hyperithm vault confirmed only by its factory, flagged with low confidence](docs/readme/report-address-flagged.png)
 
@@ -150,9 +150,9 @@ A changed template has a new hash, so `verify` refuses it until you approve it a
 
 ### 3. Fill a card
 
-In your own terminal, pick the vault from a list with full addresses and type the amount. Values the protocol's app fills in by itself, such as the minimum shares, are computed from an on-chain read, the app's default slippage and a small margin the template states (0.10% in all for a Morpho deposit). The card is sealed under its hash before you see any transaction.
+In your own terminal, answer what the template asks: pick each contract, such as a token, a recipient or a vault, from a list with full addresses, and type each amount. You never type a value the protocol's app fills in by itself, such as a minimum amount to receive: the program computes it from an on-chain read, the app's default slippage and a small margin the template states. The card is sealed under its hash before you see any transaction.
 
-![pnpm kiss-sign card new morpho/vault-deposit: the vault is picked by number from a list with full addresses, the amount typed in whole tokens, the minimum shares computed from previewDeposit at a block where Alchemy and drpc agree, and the card sealed](docs/readme/card-new.png)
+![A card for a Morpho vault deposit, pnpm kiss-sign card new morpho/vault-deposit: the vault is picked by number from a list with full addresses, the amount typed in whole tokens, the minimum shares computed from previewDeposit at a block where Alchemy and drpc agree, and the card sealed](docs/readme/card-new.png)
 
 ### 4. Verify on your computer, and check on a second one
 
@@ -162,7 +162,7 @@ Propose the transaction in the Safe web app as usual. Then, on your computer:
 pnpm kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>
 ```
 
-On the second computer, run the command `verify` prints after `MATCH`:
+On the second computer, where you installed [kiss-sign-check](https://github.com/ipromise2324/kiss-sign-check), run the command `verify` prints after `MATCH`:
 
 ```sh
 ./check.sh <nonce> --hints '…'   # --hints only when the template reads bytes no ABI describes
@@ -176,7 +176,7 @@ First the hashes. They must be identical on both pages and on your hardware wall
 
 ![The hash rows of both pages side by side: safeTxHash, domain hash and message hash, the same on kiss-sign verify and on check.sh](docs/readme/compare-hashes.png)
 
-Then every call, row by row, down to the calls inside a batch: both sides split Bundler3's `multicall` into the token transfer and the vault deposit it runs. Every column must be identical except the names on the right, which only kiss-sign writes, from its registry:
+Then every call, row by row, down to the calls inside a batch. In this deposit both sides split Bundler3's `multicall` into the token transfer and the vault deposit it runs. Every column must be identical except the names on the right, which only kiss-sign writes, from its registry:
 
 ![Some rows of call #3 on both pages side by side: the Bundler3 multicall, then its two inner calls, erc20TransferFrom of 1000611448606 and erc4626Deposit into the Hyperithm vault for the Safe, the same on both sides; only kiss-sign's side names the vault and the amounts in the last column](docs/readme/compare-multicall.png)
 
