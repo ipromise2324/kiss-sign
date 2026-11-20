@@ -252,18 +252,25 @@ function unfinished(exchange: SourceExchange, all: readonly SourceExchange[]): b
 }
 
 /**
- * In a range some source did not finish, every page keeps no transfer, only whether more follow: its page key (Alchemy)
- * or its length (Etherscan). The search never reads such a range's transfers, and a busy token's year and halved windows
- * would otherwise hold thousands.
+ * In a range some source did not finish, every page keeps no transfer: the source that did not finish keeps only that
+ * more follow, its page key (Alchemy) or its length (Etherscan), and a source that finished keeps empty pages that read
+ * as finished, so a replay finds the same overflow without reading a transfer. The search never reads such a range's
+ * transfers, and a busy token's year and halved windows would otherwise hold thousands. An error is kept whole.
  */
 function cutUncovered(exchanges: readonly SourceExchange[]): SourceExchange[] {
-  const uncovered = new Set(exchanges.filter((e) => unfinished(e, exchanges)).map((e) => rangeOf(e.request)));
+  const over = exchanges.filter((e) => unfinished(e, exchanges)).map((e) => e.request);
+  const uncovered = new Set(over.map(rangeOf));
+  const overflowed = new Set(over.map((request) => `${request.source} ${rangeOf(request)}`));
   return exchanges.map(({ request, answer }) => {
     if (!uncovered.has(rangeOf(request)) || !isRecord(answer)) return { request, answer };
+    const finished = !overflowed.has(`${request.source} ${rangeOf(request)}`);
     const { pageKey, status, message, result } = answer;
-    if (request.source === 'alchemy') return { request, answer: { transfers: [], ...(typeof pageKey === 'string' ? { pageKey } : {}) } };
+    if (request.source === 'alchemy') {
+      if (!Array.isArray(answer.transfers)) return { request, answer };
+      return { request, answer: { transfers: [], ...(!finished && typeof pageKey === 'string' ? { pageKey } : {}) } };
+    }
     if (!Array.isArray(result)) return { request, answer };
-    return { request, answer: { status, message, result: morePages(answer) ? result.map(() => ({})) : [] } };
+    return { request, answer: { status, message, result: !finished && morePages(answer) ? result.map(() => ({})) : [] } };
   });
 }
 
