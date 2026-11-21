@@ -391,7 +391,7 @@ test('card new lists a vault with the factory that created it, takes amounts in 
     made.stdout,
     new RegExp(`│   vault +steakhouse-prime-usdc-v2-0f51  ${STEAKHOUSE}\\n│   amount +5 usdc\\n│ +5000000 base units\\n│   min-shares +4\\.8951 steakhouse-prime-usdc-v2-0f51\\n│ +4895100000000000000 base units\\n│\\n│ chain reads at block ${HEAD}, where alchemy and drpc agree\\n`),
   );
-  assert.match(made.stdout, /\n    margin +The Morpho app reads its own preview when it builds the transaction/);
+  assert.match(made.stdout, /\n    margin +The Morpho app prices the deposit again when it builds the transaction/);
   assert.equal(made.stdout.match(/5000000 base units/g)?.length, 1, 'the amount is shown in base units once, in the card');
   assert.equal(made.asked.length, 3);
   assert.equal(made.asked[2], 'Is this what you mean to do? [y/N] ');
@@ -406,8 +406,8 @@ test('a zh-TW home shows the template\'s margin reason in Traditional Chinese an
   const english = await run(['card', 'new', 'morpho/vault-deposit'], en, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'y'], mainnet());
   const chinese = await run(['card', 'new', 'morpho/vault-deposit'], zh, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'y'], mainnet());
   assert.equal(chinese.code, 0, chinese.stderr);
-  assert.match(chinese.stdout, /\n    緩衝 +Morpho app 在組交易時會自己讀一次預覽/);
-  assert.doesNotMatch(chinese.stdout, /The Morpho app reads/);
+  assert.match(chinese.stdout, /\n    緩衝 +Morpho app 組交易時會重新計算一次存款價格/);
+  assert.doesNotMatch(chinese.stdout, /The Morpho app prices/);
   const hash = (stdout: string, word: string) => new RegExp(`${word} (0x[0-9a-f]{64})`).exec(stdout)?.[1];
   assert.equal(hash(chinese.stdout, '已密封卡片'), hash(english.stdout, 'Sealed card'));
 });
@@ -428,11 +428,11 @@ test('a reason the template holds only in another language is shown in that lang
   const en = freshHome();
   configure(en);
   const zhOnly = await run(['card', 'new', 'morpho/vault-deposit'], en, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'n'], { ...mainnet(), repoRoot: reasonsClone((both) => ({ 'zh-TW': both['zh-TW'] })) });
-  assert.match(zhOnly.stdout, /\n    margin +Morpho app 在組交易時會自己讀一次預覽/);
+  assert.match(zhOnly.stdout, /\n    margin +Morpho app 組交易時會重新計算一次存款價格/);
   const zh = freshHome();
   configure(zh, 'zh-TW');
   const plain = await run(['card', 'new', 'morpho/vault-deposit'], zh, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'n'], { ...mainnet(), repoRoot: reasonsClone((both) => both.en) });
-  assert.match(plain.stdout, /\n    緩衝 +The Morpho app reads its own preview/);
+  assert.match(plain.stdout, /\n    緩衝 +The Morpho app prices the deposit again/);
 });
 
 test('card new reads a computed field\'s inner read first, here the Safe\'s share balance for a withdrawal of all', async () => {
@@ -702,7 +702,7 @@ test('card new takes a Vault V2 cap as max or in whole tokens and a relative cap
   assert.equal(made.code, 0, made.stderr);
   assert.equal(made.asked[2], 'absolute-cap (whole usdc, 6 decimals, or max): ');
   assert.equal(made.asked[3], 'relative-cap (a percent, 100 at most, such as 100 or 35.5): ');
-  assert.ok(made.stdout.includes('\n    max  Vault V2 stores an absolute cap in 128 bits'), made.stdout);
+  assert.ok(made.stdout.includes('\n    max  2^128-1 is the largest absolute cap Vault V2 can store; '), made.stdout);
   assert.match(made.stdout, /│   absolute-cap +340,282,366,920,938,463,463,374,607,431,768\.211455 usdc\n│ +340282366920938463463374607431768211455 base units\n/, made.stdout);
   assert.match(made.stdout, /│   relative-cap +35\.5%\n│ +355000000000000000 base units, 100% being 10\^18\n/, made.stdout);
   assert.match(made.stdout, /Sealed card 0x[0-9a-f]{64}/);

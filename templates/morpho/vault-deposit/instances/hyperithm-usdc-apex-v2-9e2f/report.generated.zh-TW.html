@@ -578,7 +578,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="wallet">
   <h2>錢包顯示 <span class="c">ERC-7730 描述檔</span></h2>
-  <p class="lead">這筆 Safe 交易用 MultiSend 打包 2 個呼叫，沒有描述檔解得開 Safe 的 MultiSend，所以請比對裝置上的 hash 和 <code>verify</code> 印的 safeTxHash。</p>
+  <p class="lead">這筆 Safe 交易用 MultiSend 打包 2 個呼叫，沒有描述檔解得開打包在裡面的呼叫，所以請比對裝置上的 domain hash 和 message hash，跟 <code>verify</code> 產生的頁面上的是否一樣。</p>
   <dl class="props two">
     <div><dt>Safe 交易（SafeTx）</dt><dd>
       <dl class="nest flat">
@@ -644,26 +644,26 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>過去交易</h2>
-  <p class="lead">過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 <span class="num">8</span> 筆：Safe <span class="num">6</span> 筆（2 個 Safe）、EOA <span class="num">2</span> 筆（2 個地址，各自送模板的一個呼叫）。這些交易全部成功執行：它們是從 hyperithm-usdc-apex-v2-9e2f 鑄造（存款）時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0xd448dfb4d2e4d7aa35ddf928b0b631ade94c518e29d1637cd9f851a0046b476b">0xd448dfb4…</a>、<a href="https://etherscan.io/tx/0xbbcae7b746b4e3e6c9cb56ed15301e39a7f32b4eb5ea55dcda4c1f7a6de17704">0xbbcae7b7…</a>、<a href="https://etherscan.io/tx/0x148c5f1ba184ae9d5541e066595cb20618e40b3b825317c7d12aff0b69c99686">0x148c5f1b…</a>。</p>
+  <p class="lead">過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 <span class="num">8</span> 筆：Safe <span class="num">6</span> 筆（2 個 Safe）、EOA <span class="num">2</span> 筆（2 個地址，各自送模板的一個呼叫）。這些交易全部成功執行：它們是從 hyperithm-usdc-apex-v2-9e2f 鑄造（存款）時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0x18fe76a5514052197b663bbcc8af770bcf9b53721cabbacf81298da2b0c6dc66">0x18fe76a5…</a>、<a href="https://etherscan.io/tx/0xbbcae7b746b4e3e6c9cb56ed15301e39a7f32b4eb5ea55dcda4c1f7a6de17704">0xbbcae7b7…</a>、<a href="https://etherscan.io/tx/0x8243b00308694a896022c9dc2147c751d06cbf4f26e85beba27fcde5af46bad0">0x8243b003…</a>。</p>
   <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 <span class="num">24</span> 筆跟你這筆不一樣：形狀一樣、但有地址不在 registry 裡的 <span class="num">0</span> 筆，形狀不同的 <span class="num">24</span> 筆</span></summary>
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 <span class="num">34</span> 筆跟你這筆不一樣：形狀一樣、但有地址不在 registry 裡的 <span class="num">0</span> 筆，形狀不同的 <span class="num">34</span> 筆</span></summary>
   <p class="intro"><span class="aiw" data-ai><span>做法不同的其他 Safe 只呼叫 <code>multicall</code>，同一筆交易裡沒有 <code>approve</code>，用的是先前給的授權。EOA 多半把 USDC 的 <code>permit</code> 放進 bundle，取代另外的 <code>approve</code>。</span><span class="byai">AI 研究</span></span></p>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
-  <h3>搜尋 hyperithm-usdc-apex-v2-9e2f 的鑄造（存款），找到 7009 筆，研究 240 筆，含證實為 Safe 的參與方的 17 筆全數研究</h3>
-  <p class="lead">記錄在 <code>testdata/research/morpho-vault-deposit-v2.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">7009 = 7009</span>）。</p>
+  <h3>搜尋 hyperithm-usdc-apex-v2-9e2f 的鑄造（存款），找到 7016 筆，研究 240 筆，含證實為 Safe 的參與方的 17 筆全數研究</h3>
+  <p class="lead">記錄在 <code>testdata/research/morpho-vault-deposit-v2.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">7016 = 7016</span>）。</p>
   <div class="pblock">
     <div class="ph"><span class="pt">Safe</span><span><span class="num">12</span> 筆用了這個操作的呼叫（8 個 Safe），<span class="num">6</span> 筆跟模板一模一樣。</span></div>
     <div class="pg"><span class="pc num">6 筆</span><div><div class="pcalls"><code>bundler3.multicall</code></div><div>呼叫跟模板不同，模板是 <code>approve → multicall</code><span class="f3">，來自 6 個地址</span></div>
       <div class="pex">例：<a href="https://etherscan.io/tx/0x54579efd411964b4bab3c16a18d15928e688e18647f0167e1fde4b8fc0956541">0x54579efd…</a>、<a href="https://etherscan.io/tx/0x18fb9bc20f2db2c0310a029301e01ad3e1564e4ec88c5b2469bf7e70c8388b5b">0x18fb9bc2…</a>、<a href="https://etherscan.io/tx/0xac9058632b750b6804d85b5c8c0a7e14d15e0b25df30c2572808e09383d0dbf2">0xac905863…</a></div></div></div>
   </div>
   <div class="pblock">
-    <div class="ph"><span class="pt">EOA 直接呼叫 multicall</span><span><span class="num">20</span> 筆用了這個操作的呼叫（17 個地址），<span class="num">2</span> 筆跟模板一模一樣。</span></div>
-    <div class="pg"><span class="pc num">17 筆</span><div><div class="pcalls"><code>usdc.permit → general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit</code></div><div><code>bundle</code> 有 3 項，模板是 2 項<span class="f3">，來自 14 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x64e706c964f9b5f2178ccf4feca7684e7a31ef0a0a1c74f87217b2a2cf226923">0x64e706c9…</a>、<a href="https://etherscan.io/tx/0x42c7586b70cf68a93e209a469b1be8c1b2180ac40ea6a569b78ff2f2d4781ce8">0x42c7586b…</a>、<a href="https://etherscan.io/tx/0x1ab7f518153e5e10885b7b9f0f09b53056c3174266ae688d76c63c8e59367be7">0x1ab7f518…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit → general-adapter-1.erc20Transfer → general-adapter-1.erc20Transfer</code></div><div><code>bundle</code> 有 4 項，模板是 2 項<span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x0a20e92838cf8e0bab4cc2d6060d14c0434d4ae5828666b3aba2eb3a7b0eb318">0x0a20e928…</a></div></div></div>
+    <div class="ph"><span class="pt">EOA 直接呼叫 multicall</span><span><span class="num">30</span> 筆用了這個操作的呼叫（21 個地址），<span class="num">2</span> 筆跟模板一模一樣。</span></div>
+    <div class="pg"><span class="pc num">27 筆</span><div><div class="pcalls"><code>usdc.permit → general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit</code></div><div><code>bundle</code> 有 3 項，模板是 2 項<span class="f3">，來自 18 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xbc15c4f4d2a14780a802a50fa6cdc42c66e980927ba490d84c72867bf9a64b6a">0xbc15c4f4…</a>、<a href="https://etherscan.io/tx/0x0fde9bac7eac3568c1283b699a90bca469ed149f6abfccd68bcb6616404e15ad">0x0fde9bac…</a>、<a href="https://etherscan.io/tx/0xe3554a16e165ba3574d4f1c06454e027a45c5c3e7c27ccebdce9378b08a16c28">0xe3554a16…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>usdc.permit → general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit → general-adapter-1.erc20Transfer → general-adapter-1.erc20Transfer</code></div><div><code>bundle</code> 有 5 項，模板是 2 項<span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xe8256e38c735e24627ebab929771ac5ad1a8938facf6bd4fda9c5b32a92385d7">0xe8256e38…</a></div></div></div>
   </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 208 筆是別的操作，不列入：<code>hyperithm-usdc-apex-v2-9e2f.multicall</code> 186 筆、<code>0x48b415841165304f7EfaA7D5dD5FC65cc7B4bd8e.0x26f3525e</code> 5 筆、<code>hyperithm-usdc-apex-v2-9e2f.deposit</code> 4 筆、<code>0xA99d875b78336cc2E5252b8A94463CFbB04A9120.deposit</code> 4 筆，還有別的。</span></div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 198 筆是別的操作，不列入：<code>hyperithm-usdc-apex-v2-9e2f.multicall</code> 177 筆、<code>0x48b415841165304f7EfaA7D5dD5FC65cc7B4bd8e.0x26f3525e</code> 5 筆、<code>0x7583D7f36635E5642713ACCBdEd717ca59fdad07.0x0af210a1</code> 3 筆、<code>hyperithm-usdc-apex-v2-9e2f.forceDeallocate</code> 3 筆，還有別的。</span></div>
   </details>
 </section>
 
