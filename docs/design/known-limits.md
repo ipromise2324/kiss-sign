@@ -189,6 +189,7 @@ Part of [the kiss-sign design](../design.md).
   The walk follows one such selector, so a fallback that delegates only for some selectors it compares, such as only for `transfer`, or that copies a slot's value through branches on it, passes, and so does a named function of the proven ABI whose own body delegates, as each function of a Compound-style delegator does: a call to it runs code that is neither proven nor pinned.
   A beacon proxy's code is not walked.
   A fallback that forwards a call with CALL to an address from storage, as Synthetix's `ProxyERC20` does, is not a delegation and is not refused, though the ABI proven is still only the forwarder's.
+  A word the walk neither folds nor knows, and that state did not choose, counts as a word of the call's data, so a constant address passed through arithmetic the walk does not fold, such as ADD, or written to memory at an offset that is not a constant and read back from there, passes as the call's data: code built to hide a delegation this way is not refused.
   Code that can delegate and whose dispatcher jumps to computed targets, as a Vyper jump table may, is refused as `fallback-unfollowable`.
   The walk computes no hash, so a ZeppelinOS proxy whose compiler hashes the slot's name at run time, as solc 0.4 does, is refused although `locate` finds it; no registry contract is one.
 - The probe of a declared `implementationRead` shows that the declared code runs as the proxy, not that the proxy's one delegation goes to it directly.

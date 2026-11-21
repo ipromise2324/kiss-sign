@@ -521,6 +521,51 @@ test('an EIP-1967 implementation that itself delegates its fallback to an addres
   assert.deepEqual(refused, { why: 'unknown-delegator', at: implementation, pc: 156 });
 });
 
+const IMPLEMENTATION = `0x${'1e'.repeat(20)}` as Address;
+const word = (value: bigint | string): string => (typeof value === 'bigint' ? value.toString(16) : value.slice(2)).padStart(64, '0');
+
+/** An EIP-1967 proxy at UNKNOWN whose implementation has no fallback of its own. */
+async function proveProxy(code: string): Promise<AbiProof | AbiRefusal> {
+  const fixture = load('bundler3');
+  const reader = abiCaseReader(fixture, [
+    { method: 'getCode', args: [UNKNOWN], value: `0x${code}` },
+    { method: 'getStorageAt', args: [UNKNOWN, `0x${EIP1967_IMPLEMENTATION_SLOT.toString(16)}`], value: `0x${word(IMPLEMENTATION)}` },
+    { method: 'getCode', args: [IMPLEMENTATION], value: '0x00' },
+    ...noSlots(UNKNOWN),
+  ]);
+  return proveAbi(reader, UNKNOWN, abiCaseBlock(fixture), { etherscan: abiCaseEtherscan({}), compilers });
+}
+
+/**
+ * A fallback that copies the 32 bytes after its last opcode to memory at `to`, runs `then`, and delegates the call to
+ * the code at the address in the storage slot that memory word 0 names, as solc compiles a proxy that keeps its slot in
+ * its code.
+ */
+function slotFromCode(copied: string, to = '5f', then = ''): string {
+  const ops = (from: number) => `5f5f365f602060${from.toString(16).padStart(2, '0')}${to}39${then}5f51545af400`;
+  return `${ops(ops(0).length / 2)}${copied}`;
+}
+
+test('a proxy that copies its EIP-1967 slot out of its own code delegates through that slot alone, so the proof goes on to the implementation', async () => {
+  assert.deepEqual(refusal(await proveProxy(slotFromCode(word(EIP1967_IMPLEMENTATION_SLOT)))), { why: 'not-on-etherscan', at: IMPLEMENTATION });
+});
+
+test('a proxy whose copied word is another slot, or lies elsewhere than where its MLOAD reads, is refused', async () => {
+  assert.equal(refusal(await proveProxy(slotFromCode(word(EIP1967_BEACON_SLOT)))).why, 'unknown-delegator');
+  assert.equal(refusal(await proveProxy(slotFromCode(word(EIP1967_IMPLEMENTATION_SLOT), '6001'))).why, 'unknown-delegator');
+});
+
+test('a proxy whose copied slot is overwritten before its MLOAD, by the call data or one byte, is refused', async () => {
+  for (const then of ['60015f601f37', '365f5f37', '60ff601f53']) {
+    assert.equal(refusal(await proveProxy(slotFromCode(word(EIP1967_IMPLEMENTATION_SLOT), '5f', then))).why, 'unknown-delegator', then);
+  }
+});
+
+test('a fallback that delegates to a constant address it stores in memory or copies out of its own code is refused', async () => {
+  assert.equal(refusal(await proveUnknown(`73${'be'.repeat(20)}5f52${DELEGATE_TO_MEMORY_WORD_0}`)).why, 'unknown-delegator');
+  assert.equal(refusal(await proveUnknown(`6020600f5f39${DELEGATE_TO_MEMORY_WORD_0}${word(`0x${'be'.repeat(20)}`)}`)).why, 'unknown-delegator');
+});
+
 test('an address with no code is refused', async () => {
   const fixture = load('bundler3');
   const empty = `0x${'e0'.repeat(20)}` as Address;
