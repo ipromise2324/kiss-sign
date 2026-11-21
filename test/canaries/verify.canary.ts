@@ -114,7 +114,8 @@ test('verify refuses a sealed card whose computed floor is 0 before it reads the
   for (const language of ['en', 'zh-TW'] as const) {
     const { base, repo, home } = setUp(undefined, true, language);
     write(join(repo, 'templates', template.id, 'template.json'), readFileSync(join(ROOT, 'templates', template.id, 'template.json'), 'utf8'));
-    write(join(repo, 'registry', 'contracts.json'), readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8'));
+    for (const file of ['contracts.json', 'attributes.json']) write(join(repo, 'registry', file), readFileSync(join(ROOT, 'registry', file), 'utf8'));
+    git(repo, 'add', 'registry');
     git(repo, 'commit', '--quiet', '-am', 'the current template');
     git(repo, 'push', '--quiet', join(base, 'origin.git'), 'main');
     write(join(home, 'cards', `${hash}.json`), text);

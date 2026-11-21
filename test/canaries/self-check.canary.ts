@@ -373,7 +373,8 @@ test('template approve names the template, the main commit and its subject, and 
   const path = 'templates/morpho/vault-deposit/template.json';
   const text = readFileSync(join(ROOT, path), 'utf8');
   write(clone, path, text);
-  write(clone, 'registry/contracts.json', readFileSync(join(ROOT, 'registry/contracts.json'), 'utf8'));
+  for (const file of ['registry/contracts.json', 'registry/attributes.json']) write(clone, file, readFileSync(join(ROOT, file), 'utf8'));
+  git(clone, 'add', 'registry');
   git(clone, 'commit', '--quiet', '-am', 'feat(morpho): deposit into a vault (#7)');
   git(clone, 'push', '--quiet', origin, 'main');
   const commit = git(clone, 'rev-parse', 'HEAD').trim();

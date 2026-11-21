@@ -14,7 +14,6 @@ import { EIP1967_IMPLEMENTATION_SLOT } from '../src/contracts/proxy.ts';
 import { parseFunctionSignature } from '../src/decode/abi.ts';
 import { decodeCall, encodeCall, wholeRegion } from '../src/decode/codec.ts';
 import type { AbiValue } from '../src/decode/codec.ts';
-import { parseRegistry } from '../src/registry.ts';
 import type { RegistryEntry } from '../src/registry.ts';
 import { checksumAddress } from '../src/safe/types.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
@@ -23,6 +22,7 @@ import { checkCode } from '../src/verify/code.ts';
 import { evaluate } from '../src/verify/verify.ts';
 import type { VerdictFile } from '../src/verify/verify.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
+import { parseRegistryAt } from './registry-at.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const REGISTRY = JSON.parse(readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8')) as Record<string, Record<string, unknown>>;
@@ -112,7 +112,7 @@ const TODAY_PIN = {
 };
 
 function registryWith(liquidity: Record<string, unknown>, more: Record<string, Record<string, unknown>> = {}) {
-  return parseRegistry({ ...REGISTRY, ...more, liquidity: { address: PROXY, kind: 'lending', source: 'https://docs.example.org/liquidity', routes: ROUTING, ...liquidity } });
+  return parseRegistryAt(ROOT, { ...REGISTRY, ...more, liquidity: { address: PROXY, kind: 'lending', source: 'https://docs.example.org/liquidity', routes: ROUTING, ...liquidity } });
 }
 
 const LIQUIDITY = registryWith({ code: { ...TODAY_PIN, from: 100 } }).entries.get('liquidity') as RegistryEntry;

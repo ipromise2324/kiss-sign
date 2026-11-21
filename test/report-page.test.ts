@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { before, test } from 'node:test';
 import type { AbiRefusal } from '../src/contracts/prove.ts';
 import { parseFunctionSignature } from '../src/decode/abi.ts';
-import { MARKETS_PATH, REGISTRY_PATH, loadRegistry, parseRegistry } from '../src/registry.ts';
+import { MARKETS_PATH, REGISTRY_PATH, loadRegistry } from '../src/registry.ts';
 import { weightOf } from '../src/research/grades.ts';
 import type { Grade } from '../src/research/grades.ts';
 import { forSigner, judge, stateOf, strip, worst } from '../src/research/ledger.ts';
@@ -30,6 +30,7 @@ import type { Template } from '../src/template/template.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
 import { repoWithFrozenReports } from './frozen-reports.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
+import { parseRegistryAt } from './registry-at.ts';
 
 const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
@@ -843,7 +844,7 @@ function withLiquidityLayer(today: TodayCheck | undefined, { pinned = true }: { 
     ...(pinned ? { code: { hash: `0x${'52'.repeat(32)}`, routes: [{ address: ROUTED_TO, hash: ROUTE_HASH, selectors: ['0x00000002', '0x00000001'] }], from: 100 } } : {}),
   };
   raw['blue-bundles-v1'] = { ...raw['blue-bundles-v1'], dependsOn: ['liquidity-layer'] };
-  const withLayer = parseRegistry(raw, JSON.parse(readFileSync(join(ROOT, MARKETS_PATH), 'utf8')));
+  const withLayer = parseRegistryAt(ROOT, raw, JSON.parse(readFileSync(join(ROOT, MARKETS_PATH), 'utf8')));
   return {
     ...inputs,
     registry: withLayer,
