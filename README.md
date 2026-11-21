@@ -63,6 +63,11 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 
   kiss-sign needs no descriptor. Your wallet only has to show the hashes.
 
+- **Signing gets safer in three ways: harden, diversify and bound.** Hardening makes a failure less likely. Diversifying adds independent parts, so no single one is enough. Bounding makes a failure survivable. kiss-sign hardens and diversifies:
+  - **Harden.** It checks the exact bytes against what you meant before you sign, not after.
+  - **Diversify.** No single part decides: your card and the AI's template, two RPC providers, an address confirmed in two independent places, and a second computer with no AI that decodes the same transaction.
+  - **Bound.** kiss-sign does not limit what a signed transaction can do. Pair it with limits on your Safe, such as a timelock, a spending limit or monitoring.
+
 ## Install
 
 > [!CAUTION]
