@@ -497,7 +497,7 @@ function abiFinding(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefin
   const verdict = pinVerdict(entry, proof);
   if (verdict !== 'PASS') return verdict === 'FINDING' ? { kind: 'proof-not-pin' } : { kind: 'not-pinned' };
   if (missing.length > 0) return { kind: 'fn-not-in-abi', signatures: missing };
-  return proof.metadataHashMasked ? { kind: 'metadata-differs' } : { kind: 'agrees' };
+  return proof.metadataHashMasked || proof.extension?.metadataHashMasked === true ? { kind: 'metadata-differs' } : { kind: 'agrees' };
 }
 
 /** The entry's ABI result, and `<name>/abi.calls` when a proof that is not of the pin also lacks a function the template uses. */

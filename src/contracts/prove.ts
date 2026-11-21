@@ -2,6 +2,7 @@ import type { ProviderName } from '../chain/providers.ts';
 import type { Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
 import type { ProxyDeclaration } from '../registry.ts';
+import { AbiSignatureError, selectorOf, signatureOfAbiEntry } from '../decode/abi.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { keccakCode, readRunningCode } from './code.ts';
 import type { CodeRefusal } from './code.ts';
@@ -12,7 +13,22 @@ import type { EtherscanGet, VerifiedSource } from './etherscan.ts';
 
 export type AbiEntry = Readonly<Record<string, unknown>> & { readonly type: string };
 
-/** The ABI that solc gave for source whose compiled code equals the code at `proven`, except at masked positions. */
+/** The extension an implementation hands a call it has no function for to, proven as the implementation is. */
+export type ExtensionProof = {
+  readonly address: Address;
+  readonly codeHash: Hex;
+  readonly compiler: string;
+  readonly contractPath: string;
+  readonly contractName: string;
+  readonly immutablesMasked: number;
+  readonly librariesMasked: number;
+  readonly metadataHashMasked: boolean;
+};
+
+/**
+ * The ABI that solc gave for source whose compiled code equals the code at `proven`, except at masked positions, and
+ * after it the functions of the extension that code hands a call it has no function for to, when it has one.
+ */
 export type AbiProof = {
   readonly kind: 'proven';
   readonly address: Address;
@@ -33,6 +49,7 @@ export type AbiProof = {
   readonly librariesMasked: number;
   /** True when the metadata hash in the trailer differs: the source compiles to the same code but is not the deployed text. */
   readonly metadataHashMasked: boolean;
+  readonly extension?: ExtensionProof;
 };
 
 export type Refusal =
@@ -44,7 +61,8 @@ export type Refusal =
   | { readonly why: 'compiler-missing'; readonly path: string }
   | { readonly why: 'compiler-hash-mismatch'; readonly path: string; readonly expected: string; readonly actual: string }
   | { readonly why: 'compile-failed'; readonly errors: readonly string[] }
-  | { readonly why: 'bytecode-mismatch'; readonly at: Address; readonly detail: string };
+  | { readonly why: 'bytecode-mismatch'; readonly at: Address; readonly detail: string }
+  | { readonly why: 'selector-clash'; readonly at: Address; readonly selector: Hex };
 
 export type AbiRefusal = { readonly kind: 'refused'; readonly address: Address; readonly block: BlockRef; readonly refusal: Refusal };
 
@@ -75,7 +93,7 @@ export function describeRefusal(refusal: Refusal): string {
     case 'no-code':
       return `${refusal.at} has no code`;
     case 'chained-proxy':
-      return `the implementation ${refusal.at} is itself a proxy`;
+      return `${refusal.at}, code a call runs, is itself a proxy or an EIP-7702 delegation`;
     case 'multicall-no-code':
       return 'Multicall3 has no code at this block, so the routes cannot be read';
     case 'routes-reverted':
@@ -100,6 +118,8 @@ export function describeRefusal(refusal: Refusal): string {
       return `solc reported errors: ${refusal.errors.join(' | ')}`;
     case 'bytecode-mismatch':
       return `the compiled code differs from the code at ${refusal.at}: ${refusal.detail}`;
+    case 'selector-clash':
+      return `the implementation and its extension ${refusal.at} have different functions with the selector ${refusal.selector}`;
   }
 }
 
@@ -250,19 +270,54 @@ async function sourceOf(deps: ProveDeps, address: Address): Promise<VerifiedSour
   return lookup.source;
 }
 
+type ProvenCode = { readonly source: VerifiedSource; readonly compiled: Compiled; readonly metadataHashMasked: boolean };
+
+async function proveCode(deps: ProveDeps, at: Address, code: Hex): Promise<ProvenCode> {
+  const source = await sourceOf(deps, at);
+  const compiled = compile(source, deps.compilers, code);
+  return { source, compiled, metadataHashMasked: compare(compiled, code, at) };
+}
+
+function signatureOfEntry(entry: AbiEntry): string {
+  try {
+    return signatureOfAbiEntry(entry);
+  } catch (error) {
+    if (error instanceof AbiSignatureError) return malformedOutput('has a malformed function entry');
+    throw error;
+  }
+}
+
+/**
+ * The implementation's ABI with its extension's functions after it. A call with a selector the implementation's own
+ * functions hold runs that function, so an extension function with the same signature, such as a getter both inherit,
+ * is not listed again, and one with another signature under the same selector is refused.
+ */
+function withExtension(abi: readonly AbiEntry[], extension: readonly AbiEntry[], at: Address): AbiEntry[] {
+  const own = new Map(abi.filter((entry) => entry.type === 'function').map((entry) => [selectorOf(signatureOfEntry(entry)), signatureOfEntry(entry)]));
+  const added = extension.filter((entry) => {
+    if (entry.type !== 'function') return false;
+    const signature = signatureOfEntry(entry);
+    const selector = selectorOf(signature);
+    const ownSignature = own.get(selector);
+    if (ownSignature !== undefined && ownSignature !== signature) refuse({ why: 'selector-clash', at, selector });
+    return ownSignature === undefined;
+  });
+  return [...abi, ...added];
+}
+
 /**
  * Proves the ABI of the code a call to `address` runs at `block`: Etherscan's verified source, compiled with a pinned solc, must
- * give the code both providers read. Every failure is a refusal, never a guess.
+ * give the code both providers read, and so must the extension's when that code hands calls to one. Every failure is
+ * a refusal, never a guess.
  */
 export async function proveAbi(reader: Reader, address: Address, block: BlockRef, deps: ProveDeps, declared: ProxyDeclaration = {}): Promise<AbiProof | AbiRefusal> {
   try {
     const read = await readRunningCode(reader, address, block, declared);
     if (read.kind === 'refused') return refuse(read.refusal);
-    const { own, proxy, runs: code } = read.code;
+    const { own, proxy, runs: code, extension } = read.code;
     const proven = proxy.kind === 'none' ? address : proxy.implementation;
-    const source = await sourceOf(deps, proven);
-    const compiled = compile(source, deps.compilers, code);
-    const metadataHashMasked = compare(compiled, code, proven);
+    const { source, compiled, metadataHashMasked } = await proveCode(deps, proven, code);
+    const extended = extension === undefined ? undefined : { extension, ...(await proveCode(deps, extension.address, extension.code)) };
     return {
       kind: 'proven',
       address,
@@ -275,11 +330,25 @@ export async function proveAbi(reader: Reader, address: Address, block: BlockRef
       compiler: source.compilerVersion,
       contractPath: source.contractPath,
       contractName: source.contractName,
-      abi: compiled.abi,
+      abi: extended === undefined ? compiled.abi : withExtension(compiled.abi, extended.compiled.abi, extended.extension.address),
       source: 'etherscan',
       immutablesMasked: compiled.immutables.length,
       librariesMasked: compiled.libraries.length,
       metadataHashMasked,
+      ...(extended === undefined
+        ? {}
+        : {
+            extension: {
+              address: extended.extension.address,
+              codeHash: keccakCode(extended.extension.code),
+              compiler: extended.source.compilerVersion,
+              contractPath: extended.source.contractPath,
+              contractName: extended.source.contractName,
+              immutablesMasked: extended.compiled.immutables.length,
+              librariesMasked: extended.compiled.libraries.length,
+              metadataHashMasked: extended.metadataHashMasked,
+            },
+          }),
     };
   } catch (error) {
     if (error instanceof Refused) return { kind: 'refused', address, block, refusal: error.refusal };

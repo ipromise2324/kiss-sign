@@ -121,5 +121,5 @@ test('a new pin is written in version order', () => {
   assert.equal(change.kind, 'written');
   const versions = [...(change.kind === 'written' ? change.text : '').matchAll(/^ {2}'([^']+)': \{$/gm)].map((match) => match[1]);
   const from = versions.indexOf('0.7.3+commit.9bfce1f6');
-  assert.deepEqual(versions.slice(from, from + 4), ['0.7.3+commit.9bfce1f6', '0.7.6+commit.7338295f', '0.8.4+commit.c7e474f2', '0.8.17+commit.8df45f5f']);
+  assert.deepEqual(versions.slice(from, from + 4), ['0.7.3+commit.9bfce1f6', '0.7.6+commit.7338295f', '0.8.4+commit.c7e474f2', '0.8.15+commit.e14f2714']);
 });

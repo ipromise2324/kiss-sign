@@ -5,7 +5,7 @@ import type { BlockRef } from '../chain/types.ts';
 import type { ImplementationRead, ProxyDeclaration } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { fallbackDelegation, fallbackSelector } from './delegate.ts';
-import type { Unfollowable } from './delegate.ts';
+import type { Fallback, Unfollowable } from './delegate.ts';
 
 export const EIP1967_IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbcn;
 export const EIP1967_BEACON_SLOT = 0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50n;
@@ -120,6 +120,9 @@ const unverifiable = (read: Read<unknown> & { kind: 'unverifiable' }): Located =
 });
 const refused = (refusal: ProxyRefusal): Located => ({ kind: 'refused', refusal });
 
+const refusalOf = (address: Address, fallback: Exclude<Fallback, { kind: 'fixed' }>): ProxyRefusal =>
+  fallback.kind === 'unresolved' ? { why: 'fallback-unfollowable', at: address, pc: fallback.pc, cause: fallback.why } : { why: 'unknown-delegator', at: address, pc: fallback.pc };
+
 /**
  * Code may hand a call it has no function for to code it does not run itself: an address it reads from state, as
  * the FLUID token's delegator does, or a constant. That code is neither proven nor pinned, so it is refused. A known
@@ -128,14 +131,18 @@ const refused = (refusal: ProxyRefusal): Located => ({ kind: 'refused', refusal 
 export function unknownDelegation(address: Address, code: Hex, allowed: readonly bigint[] = [], sites: readonly number[] = []): ProxyRefusal | undefined {
   if (!mayDelegate(code)) return undefined;
   const fallback = fallbackDelegation(code, allowed, sites);
-  switch (fallback.kind) {
-    case 'fixed':
-      return undefined;
-    case 'delegates':
-      return { why: 'unknown-delegator', at: address, pc: fallback.pc };
-    case 'unresolved':
-      return { why: 'fallback-unfollowable', at: address, pc: fallback.pc, cause: fallback.why };
-  }
+  return fallback.kind === 'fixed' ? undefined : refusalOf(address, fallback);
+}
+
+/**
+ * The one constant address an implementation hands a call it has no function for to, as Compound III's Comet hands
+ * it to its extension, or undefined when it hands such a call to nothing but itself or the call's data. Its code hash
+ * fixes that address. Any other delegation is refused as `unknownDelegation` refuses it.
+ */
+export function extensionOf(implementation: Address, code: Hex): Address | ProxyRefusal | undefined {
+  if (!mayDelegate(code)) return undefined;
+  const fallback = fallbackDelegation(code);
+  return fallback.kind === 'fixed' ? undefined : fallback.kind === 'extends' ? fallback.target : refusalOf(implementation, fallback);
 }
 
 function delegatingOnlyAs(address: Address, code: Hex, proxy: Proxy, routed: boolean, allowed: readonly bigint[] = []): Located {

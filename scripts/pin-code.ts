@@ -7,7 +7,7 @@ import { describeRefusal } from '../src/contracts/prove.ts';
 import { mergeRegistry } from '../src/history/load.ts';
 import { kissSignHome } from '../src/keys.ts';
 import { REGISTRY_PATH, attributesText, registryFromTexts, unreachedSeeds } from '../src/registry.ts';
-import type { CodePin, CodePins, CodeSpan, ProxyDeclaration, Route } from '../src/registry.ts';
+import type { CodePin, CodePins, CodeSpan, PinnedCode, ProxyDeclaration, Route } from '../src/registry.ts';
 import { checksumAddress, parseAddress } from '../src/safe/types.ts';
 import { exitOnHelp } from '../src/script-help.ts';
 
@@ -15,8 +15,9 @@ const USAGE = 'usage: pnpm pin-code [<registry name>...] [--history]';
 const HELP = `${USAGE}
 
 Reads, through both providers at one agreed block, each entry's code and, behind a proxy, its
-implementation and that code, and for an entry with routes each implementation its seeds reach,
-with that code and the selectors it serves. It writes their keccak256 into the entry's code and
+implementation and that code, with the extension the implementation hands a call it has no
+function for to, if any, and that code, and for an entry with routes each implementation its
+seeds reach, with that code and the selectors it serves. It writes their keccak256 into the entry's code and
 prints each pin as new, unchanged, or CHANGED with the old pin. It refuses an entry one of whose
 seeds routes nowhere. For an entry with no pin, a pin with no from, or a changed pin, it then
 searches the blocks back to the deployment for each change of that code, writes the first block of
@@ -52,9 +53,12 @@ const parse = () => registryFromTexts(flags.history ? mergeRegistry(readFileSync
 const recorded = parse();
 
 const routeJson = ({ address, hash, selectors }: Route) => ({ address: checksumAddress(address), hash, selectors });
+const pinnedJson = ({ address, hash }: PinnedCode) => ({ address: checksumAddress(address), hash });
 const pinJson = (pin: CodePin) => ({
   hash: pin.hash,
-  ...(pin.implementation === undefined ? {} : { implementation: { address: checksumAddress(pin.implementation.address), hash: pin.implementation.hash } }),
+  ...(pin.implementation === undefined
+    ? {}
+    : { implementation: { ...pinnedJson(pin.implementation), ...(pin.implementation.extension === undefined ? {} : { extension: pinnedJson(pin.implementation.extension) }) } }),
   ...(pin.routes === undefined ? {} : { routes: pin.routes.map(routeJson) }),
 });
 const codeJson = ({ earlier, current }: CodePins) => ({
@@ -66,6 +70,7 @@ const pinText = (pin: CodePin) =>
   [
     pin.hash,
     ...(pin.implementation === undefined ? [] : [`implementation ${checksumAddress(pin.implementation.address)} ${pin.implementation.hash}`]),
+    ...(pin.implementation?.extension === undefined ? [] : [`extension ${checksumAddress(pin.implementation.extension.address)} ${pin.implementation.extension.hash}`]),
     ...(pin.routes === undefined ? [] : [`routes ${pin.routes.length === 0 ? 'none' : pin.routes.map((r) => `${checksumAddress(r.address)} ${r.hash} (${r.selectors.length} selectors)`).join(', ')}`]),
   ].join(', ');
 

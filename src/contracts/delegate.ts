@@ -1,13 +1,15 @@
-import type { Hex } from '../safe/types.ts';
+import type { Address, Hex } from '../safe/types.ts';
 
 /**
  * What a call that names no function of the code runs. `delegates` is a DELEGATECALL or CALLCODE on its way whose
- * target may be anything but the contract's own address, a word of the call's data, or the value of a storage slot
- * the caller allows: a constant, another slot, or anything else state chose. `unresolved` is a path the walk cannot
- * follow.
+ * target may be anything but the contract's own address, a word of the call's data, the value of a storage slot the
+ * caller allows, or one constant address: another slot, anything else state chose, or a second constant. `extends`
+ * is code whose only such delegations go to `target`, a constant its code hash fixes, first at `pc`. `unresolved` is
+ * a path the walk cannot follow.
  */
 export type Fallback =
   | { readonly kind: 'fixed' }
+  | { readonly kind: 'extends'; readonly target: Address; readonly pc: number }
   | { readonly kind: 'delegates'; readonly pc: number }
   | { readonly kind: 'unresolved'; readonly pc: number; readonly why: Unfollowable };
 
@@ -34,6 +36,7 @@ const fromState = (w: Word): boolean => w.kind === 'slot' || w.kind === 'state';
 const valueOf = (w: Word): bigint | undefined => (w.kind === 'constant' ? w.value : undefined);
 
 const MAX_STATES = 200_000;
+const ADDRESS_LIMIT = 1n << 160n;
 const MAX_STACK = 1024;
 const WORD = (1n << 256n) - 1n;
 const LOW_224 = (1n << 224n) - 1n;
@@ -178,19 +181,46 @@ const STATE_READ_OPERANDS: ReadonlyMap<number, number> = new Map([
   [CREATE2, 4],
 ]);
 
-type Effect = { readonly operands: number; readonly writesStateToMemory: boolean };
+/** `writes` names the operands of a copy that give the first byte of memory it writes and how many bytes. */
+type Effect = { readonly operands: number; readonly writesStateToMemory: boolean; readonly writes?: { readonly at: number; readonly size: number } };
 
 /** Opcodes that push nothing. A copy with an operand state chose may also write bytes state chose. */
 const EFFECTS: ReadonlyMap<number, Effect> = new Map<number, Effect>([
-  [CALLDATACOPY, { operands: 3, writesStateToMemory: false }],
-  [CODECOPY, { operands: 3, writesStateToMemory: false }],
-  [EXTCODECOPY, { operands: 4, writesStateToMemory: true }],
-  [RETURNDATACOPY, { operands: 3, writesStateToMemory: true }],
+  [CALLDATACOPY, { operands: 3, writesStateToMemory: false, writes: { at: 0, size: 2 } }],
+  [CODECOPY, { operands: 3, writesStateToMemory: false, writes: { at: 0, size: 2 } }],
+  [EXTCODECOPY, { operands: 4, writesStateToMemory: true, writes: { at: 1, size: 3 } }],
+  [RETURNDATACOPY, { operands: 3, writesStateToMemory: true, writes: { at: 0, size: 2 } }],
   [POP, { operands: 1, writesStateToMemory: false }],
   [SSTORE, { operands: 2, writesStateToMemory: false }],
   [TSTORE, { operands: 2, writesStateToMemory: false }],
-  [MCOPY, { operands: 3, writesStateToMemory: false }],
+  [MCOPY, { operands: 3, writesStateToMemory: false, writes: { at: 0, size: 2 } }],
 ]);
+
+/**
+ * The words of memory a path knows, by the constant offset each starts at: each was written whole, by an MSTORE of a
+ * constant or a CODECOPY of 32 bytes of the code, and no write since can have reached any of its bytes.
+ */
+type Words = ReadonlyMap<bigint, bigint>;
+const NO_WORDS: Words = new Map();
+
+/** What a path still knows after a write of `size` bytes at `at`: a write whose place or size is not a constant may reach anything. */
+function overwritten(words: Words, at: Word, size: Word): Words {
+  const length = valueOf(size);
+  if (length === 0n || words.size === 0) return words;
+  const start = valueOf(at);
+  if (start === undefined || length === undefined) return NO_WORDS;
+  const kept = [...words].filter(([offset]) => offset + 32n <= start || offset >= start + length);
+  return kept.length === words.size ? words : new Map(kept);
+}
+
+const holding = (words: Words, at: bigint, value: bigint): Words => new Map([...overwritten(words, constant(at), constant(32n)), [at, value]]);
+
+/** The 32 bytes of the code from `offset`, as CODECOPY gives them: zero past its end. */
+function codeWord(bytes: Uint8Array, offset: bigint): bigint {
+  let value = 0n;
+  for (let i = offset; i < offset + 32n; i++) value = (value << 8n) | BigInt(i < BigInt(bytes.length) ? (bytes[Number(i)] ?? 0) : 0);
+  return value;
+}
 
 const HALTS: ReadonlySet<number> = new Set([STOP, RETURN, REVERT, INVALID, SELFDESTRUCT]);
 
@@ -223,12 +253,12 @@ function compute(op: number, operands: readonly Word[], selector: bigint): Word 
   return operands.some(fromState) ? STATE : CALL_DATA;
 }
 
-type State = { readonly pc: number; readonly stack: readonly Word[] };
+type State = { readonly pc: number; readonly stack: readonly Word[]; readonly words: Words };
 
 function tag(w: Word): string {
   switch (w.kind) {
     case 'constant':
-      return w.value.toString(16);
+      return `#${w.value.toString(16)}`;
     case 'slot':
       return `k${w.slot.toString(16)}`;
     case 'self':
@@ -242,7 +272,11 @@ function tag(w: Word): string {
   }
 }
 
-const keyOf = ({ pc, stack }: State): string => `${pc}:${stack.map(tag).join(',')}`;
+const keyOf = ({ pc, stack, words }: State): string =>
+  `${pc}:${stack.map(tag).join(',')}:${[...words]
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .map(([offset, value]) => `${offset.toString(16)}=${value.toString(16)}`)
+    .join(',')}`;
 
 class Unresolved extends Error {
   readonly pc: number;
@@ -276,10 +310,11 @@ function parse(code: Hex): Code {
 }
 
 /**
- * Walks every path a call with `selector` can take, keeping memory as one flag: whether a word state chose was ever
- * written to it. A jump must go to a constant, a branch on a constant takes only its side, and past `MAX_STATES` the
- * walk gives up. Returns where a DELEGATECALL or CALLCODE aims at code `allowed` does not cover, if anywhere, and
- * whether memory came to hold a word state chose.
+ * Walks every path a call with `selector` can take, keeping memory as the words each path knows and one flag for all
+ * paths: whether a word state chose was ever written to it. A jump must go to a constant, a branch on a constant
+ * takes only its side, and past `MAX_STATES` the walk gives up. Returns where a DELEGATECALL or CALLCODE aims at code
+ * `allowed` does not cover and that is not the first constant address such a call aims at, if anywhere, that constant
+ * and where, and whether memory came to hold a word state chose.
  */
 function walk(
   code: Code,
@@ -287,11 +322,12 @@ function walk(
   allowed: readonly bigint[],
   sites: readonly number[],
   memoryFromState: boolean,
-): { readonly delegates: number | undefined; readonly memoryFromState: boolean } {
+): { readonly delegates: number | undefined; readonly extension: { readonly target: bigint; readonly pc: number } | undefined; readonly memoryFromState: boolean } {
   const { bytes, jumpdests } = code;
   const covered = (target: Word): boolean =>
     target.kind === 'self' || target.kind === 'call' || target.kind === 'first-word' || (target.kind === 'slot' && allowed.includes(target.slot));
   let memory = memoryFromState;
+  let extension: { readonly target: bigint; readonly pc: number } | undefined;
   const seen = new Set<string>();
   const queue: State[] = [];
   const enqueue = (state: State) => {
@@ -301,15 +337,16 @@ function walk(
     seen.add(key);
     queue.push(state);
   };
-  enqueue({ pc: 0, stack: [] });
+  enqueue({ pc: 0, stack: [], words: NO_WORDS });
   for (let next = queue.pop(); next !== undefined; next = queue.pop()) {
     const stack = [...next.stack];
+    let { words } = next;
     const take = (n: number): Word[] | undefined => (stack.length < n ? undefined : stack.splice(stack.length - n, n).reverse());
     const push = (word: Word): boolean => stack.push(word) <= MAX_STACK;
     const jumpTo = (target: Word, at: number): State | undefined => {
       const to = valueOf(target);
       if (to === undefined) throw new Unresolved(at, 'dynamic-jump');
-      return to < BigInt(bytes.length) && jumpdests.has(Number(to)) ? { pc: Number(to), stack: [...stack] } : undefined;
+      return to < BigInt(bytes.length) && jumpdests.has(Number(to)) ? { pc: Number(to), stack: [...stack], words } : undefined;
     };
     let pc = next.pc;
     while (pc < bytes.length) {
@@ -358,7 +395,7 @@ function walk(
           const to = jumpTo(target, at);
           if (to !== undefined) enqueue(to);
         }
-        if (taken === undefined || taken === 0n) enqueue({ pc, stack: [...stack] });
+        if (taken === undefined || taken === 0n) enqueue({ pc, stack: [...stack], words });
         break;
       }
       if (HALTS.has(op)) break;
@@ -382,13 +419,19 @@ function walk(
       }
       if (op === MLOAD || op === KECCAK256) {
         const operands = take(op === MLOAD ? 1 : 2);
-        if (operands === undefined || !push(memory || operands.some(fromState) ? STATE : CALL_DATA)) break;
+        if (operands === undefined) break;
+        const offset = valueOf(operands[0] as Word);
+        const known = op === MLOAD && offset !== undefined ? words.get(offset) : undefined;
+        if (!push(known !== undefined ? constant(known) : memory || operands.some(fromState) ? STATE : CALL_DATA)) break;
         continue;
       }
       if (op === MSTORE || op === MSTORE8) {
         const operands = take(2);
         if (operands === undefined) break;
+        const [offset, value] = operands as [Word, Word];
         if (operands.some(fromState)) memory = true;
+        const [at, stored] = [valueOf(offset), valueOf(value)];
+        words = op === MSTORE && at !== undefined && stored !== undefined ? holding(words, at, stored) : overwritten(words, offset, constant(op === MSTORE ? 32n : 1n));
         continue;
       }
       const stateRead = STATE_READ_OPERANDS.get(op);
@@ -401,6 +444,11 @@ function walk(
         const operands = take(effect.operands);
         if (operands === undefined) break;
         if (effect.writesStateToMemory || operands.some(fromState)) memory = true;
+        if (effect.writes !== undefined) words = overwritten(words, operands[effect.writes.at] as Word, operands[effect.writes.size] as Word);
+        if (op === CODECOPY) {
+          const [to, from, size] = operands.map(valueOf);
+          if (to !== undefined && from !== undefined && size === 32n) words = holding(words, to, codeWord(bytes, from));
+        }
         continue;
       }
       if (op >= LOG0 && op <= LOG4) {
@@ -410,15 +458,22 @@ function walk(
       if (op === CALL || op === CALLCODE || op === DELEGATECALL || op === STATICCALL) {
         const operands = take(op === CALL || op === CALLCODE ? 7 : 6);
         if (operands === undefined) break;
-        if ((op === DELEGATECALL || op === CALLCODE) && !covered(operands[1] as Word) && !sites.includes(at)) return { delegates: at, memoryFromState: memory };
-        if (valueOf(operands[operands.length - 1] as Word) !== 0n) memory = true;
+        const target = operands[1] as Word;
+        if ((op === DELEGATECALL || op === CALLCODE) && !covered(target) && !sites.includes(at)) {
+          const to = valueOf(target);
+          if (to === undefined || to >= ADDRESS_LIMIT || (extension !== undefined && extension.target !== to)) return { delegates: at, extension, memoryFromState: memory };
+          extension ??= { target: to, pc: at };
+        }
+        const [returnAt, returnSize] = operands.slice(-2) as [Word, Word];
+        if (valueOf(returnSize) !== 0n) memory = true;
+        words = overwritten(words, returnAt, returnSize);
         if (!push(STATE)) break;
         continue;
       }
       throw new Unresolved(at, 'unknown-opcode');
     }
   }
-  return { delegates: undefined, memoryFromState: memory };
+  return { delegates: undefined, extension, memoryFromState: memory };
 }
 
 function unpushedSelector(parsed: Code): bigint {
@@ -434,7 +489,8 @@ export const fallbackSelector = (code: Hex): Hex => `0x${unpushedSelector(parse(
  * Follows a call with `fallbackSelector`, so it matches no function and takes the fallback (or the receive function,
  * or a revert). `allowed` names the storage slots a known proxy keeps its implementation in, and `sites` the byte
  * offsets of delegations another check has accounted for. Memory starts as holding nothing state chose; when a walk
- * finds it can, the walk runs again with memory counted as state's from the start.
+ * finds it can, the walk runs again with memory counted as state's from the start. Whether code may hand calls to
+ * the one constant address of `extends` is its caller's to decide.
  */
 export function fallbackDelegation(code: Hex, allowed: readonly bigint[] = [], sites: readonly number[] = []): Fallback {
   const parsed = parse(code);
@@ -444,7 +500,10 @@ export function fallbackDelegation(code: Hex, allowed: readonly bigint[] = [], s
     for (;;) {
       const run = walk(parsed, selector, allowed, sites, memoryFromState);
       if (run.delegates !== undefined) return { kind: 'delegates', pc: run.delegates };
-      if (run.memoryFromState === memoryFromState) return { kind: 'fixed' };
+      if (run.memoryFromState === memoryFromState) {
+        const { extension } = run;
+        return extension === undefined ? { kind: 'fixed' } : { kind: 'extends', target: `0x${extension.target.toString(16).padStart(40, '0')}` as Address, pc: extension.pc };
+      }
       memoryFromState = run.memoryFromState;
     }
   } catch (error) {

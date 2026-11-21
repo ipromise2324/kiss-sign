@@ -1,12 +1,13 @@
 import type { ResolvedCard } from '../card.ts';
 import type { Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
-import { keccakCode, readRoutes } from '../contracts/code.ts';
+import { keccakCode, readExtension, readRoutes } from '../contracts/code.ts';
+import type { Extension } from '../contracts/code.ts';
 import { describeRefusal } from '../contracts/prove.ts';
-import { locate, unknownDelegation } from '../contracts/proxy.ts';
+import { locate } from '../contracts/proxy.ts';
 import type { Proxy } from '../contracts/proxy.ts';
 import { MARKET_ENTRY_PARTS, pinAt } from '../registry.ts';
-import type { CodePin, Registry, RegistryEntry, Route } from '../registry.ts';
+import type { CodePin, ImplementationPin, Registry, RegistryEntry, Route } from '../registry.ts';
 import type { SafeTx } from '../safe/types.ts';
 import { callRules, cardRefs, namedEffectTokens, rulesUnder } from '../template/template.ts';
 import type { Template } from '../template/template.ts';
@@ -97,8 +98,22 @@ async function compareImplementation(reader: Reader, proxy: Proxy, pin: CodePin,
   if (runs.kind === 'unverifiable') return unverifiable(runs.reason);
   const runsHash = keccakCode(runs.value);
   if (runsHash !== was.hash) return mismatch(`${where}'s implementation ${was.address} has code hash ${runsHash} ${block}, the registry pins ${was.hash}`);
-  const delegation = unknownDelegation(was.address, runs.value);
-  return delegation === undefined ? PASS : mismatch(`${where} ${block}: ${describeRefusal(delegation)}`);
+  const read = await readExtension(reader, was.address, runs.value, at);
+  if (read.kind === 'refused') {
+    const detail = `${where} ${block}: ${describeRefusal(read.refusal)}`;
+    return read.refusal.why === 'unverifiable' ? unverifiable(detail) : mismatch(detail);
+  }
+  return compareExtension(read.extension, was, where, block);
+}
+
+function compareExtension(now: Extension | undefined, implementation: ImplementationPin, where: string, block: string): ChainCheck {
+  const was = implementation.extension;
+  const of = `${where}'s implementation ${implementation.address}`;
+  if (now === undefined) return was === undefined ? PASS : mismatch(`${of} no longer hands a call it has no function for to ${was.address} ${block}, the registry pins that extension`);
+  if (was === undefined) return mismatch(`${of} hands a call it has no function for to ${now.address} ${block}, the registry pins no extension`);
+  if (now.address !== was.address) return mismatch(`${of} hands a call it has no function for to ${now.address} ${block}, the registry pins ${was.address}`);
+  const hash = keccakCode(now.code);
+  return hash === was.hash ? PASS : mismatch(`${where}'s extension ${now.address} has code hash ${hash} ${block}, the registry pins ${was.hash}`);
 }
 
 function routeDifferences(pinned: readonly Route[], read: readonly Route[], where: string, block: string): string[] {
