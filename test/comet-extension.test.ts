@@ -102,6 +102,20 @@ test('an extension that hands a call on again, or has no code, is refused, so th
   ]);
 });
 
+test('verify and pin-code refuse an implementation that is a minimal proxy, and an extension that is one or an EIP-7702 delegation', async () => {
+  const clone = `0x363d3d373d3d3d363d73${EXTENSION.slice(2)}5af43d82803e903d91602b57fd5bf3` as Hex;
+  const chained = `${IMPLEMENTATION}, code a call runs, is itself a proxy or an EIP-7702 delegation`;
+  assert.equal(await refused({ [IMPLEMENTATION]: clone }), chained);
+  const clonePin = { ...PIN, implementation: { ...PIN.implementation, hash: keccakCode(clone) } };
+  assert.deepEqual(await findings(clonePin, { [IMPLEMENTATION]: clone }), [`${where} ${block}: ${chained}`]);
+  for (const code of [`0xef0100${OTHER.slice(2)}`, `0x363d3d373d3d3d363d73${OTHER.slice(2)}5af43d82803e903d91602b57fd5bf3`] as Hex[]) {
+    const extended = `${EXTENSION}, code a call runs, is itself a proxy or an EIP-7702 delegation`;
+    assert.equal(await refused({ [EXTENSION]: code }), extended);
+    const pin = { ...PIN, implementation: { ...PIN.implementation, extension: { address: EXTENSION, hash: keccakCode(code) } } };
+    assert.deepEqual(await findings(pin, { [EXTENSION]: code }), [`${where} ${block}: ${extended}`]);
+  }
+});
+
 test('an implementation that hands calls to two constant addresses is refused; one address at two places is one extension', async () => {
   const delegateTo = (address: Address) => `5f5f365f73${address.slice(2)}5af450`;
   const two = `0x${delegateTo(EXTENSION)}${delegateTo(OTHER)}00` as Hex;

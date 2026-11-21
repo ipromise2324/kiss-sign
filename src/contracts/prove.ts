@@ -93,7 +93,7 @@ export function describeRefusal(refusal: Refusal): string {
     case 'no-code':
       return `${refusal.at} has no code`;
     case 'chained-proxy':
-      return `the implementation ${refusal.at} is itself a proxy`;
+      return `${refusal.at}, code a call runs, is itself a proxy or an EIP-7702 delegation`;
     case 'multicall-no-code':
       return 'Multicall3 has no code at this block, so the routes cannot be read';
     case 'routes-reverted':

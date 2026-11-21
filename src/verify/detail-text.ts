@@ -95,7 +95,7 @@ const FLOOR: readonly Shape[] = [
 
 const REFUSAL: readonly Shape[] = [
   shape(`(${ADDRESS}) has no code`, (address) => `${address} 沒有程式碼`),
-  shape(`the implementation (${ADDRESS}) is itself a proxy`, (address) => `實作 ${address} 本身也是 proxy`),
+  shape(`(${ADDRESS}), code a call runs, is itself a proxy or an EIP-7702 delegation`, (address) => `呼叫會執行的程式碼 ${address} 本身也是 proxy 或 EIP-7702 委派`),
   shape('both the EIP-1967 implementation and beacon slots are set, so which code runs is unknown', () => 'EIP-1967 的 implementation 和 beacon 兩個 slot 都有設定，所以不知道會執行哪份程式碼'),
   shape('an EIP-1967 slot is set, but the code has no DELEGATECALL, so it does not run that implementation', () => '設定了 EIP-1967 slot，但程式碼沒有 DELEGATECALL，所以不會執行那個實作'),
   shape(`(${ADDRESS}) hands a call it has no function for, at byte (\\d+) of its code, to code the program neither proves nor pins`, (address, pc) =>

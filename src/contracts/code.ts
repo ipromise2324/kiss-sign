@@ -130,20 +130,26 @@ export async function readRoutes(reader: Reader, proxy: Address, routing: Select
   return { kind: 'read', routes };
 }
 
+const EIP7702_DESIGNATOR = '0xef0100';
+const runsElsewhere = (code: Hex): boolean => minimalProxyTarget(code) !== undefined || safeProxyFactory(code) !== undefined;
+
 export type ExtensionRead = { readonly kind: 'read'; readonly extension: Extension | undefined } | { readonly kind: 'refused'; readonly refusal: CodeRefusal };
 
 /**
- * The extension of the implementation at `implementation`, whose code is `runs`, at `at`, if it has one. The code
- * there must exist and hand a call it has no function for to nothing but itself or the call's data, so the extension
- * is the last code a call can reach.
+ * The extension of the implementation at `implementation`, whose code is `runs`, at `at`, if it has one. An
+ * implementation that is itself a minimal or Safe proxy is refused, as is an extension that is one or an EIP-7702
+ * delegation, whose code runs elsewhere. The extension's code must exist and hand a call it has no function for to
+ * nothing but itself or the call's data, so the extension is the last code a call can reach.
  */
 export async function readExtension(reader: Reader, implementation: Address, runs: Hex, at: BlockRef): Promise<ExtensionRead> {
   const refused = (refusal: CodeRefusal): ExtensionRead => ({ kind: 'refused', refusal });
+  if (runsElsewhere(runs)) return refused({ why: 'chained-proxy', at: implementation });
   const address = extensionOf(implementation, runs);
   if (typeof address === 'object') return refused(address);
   if (address === undefined) return { kind: 'read', extension: undefined };
   const code = await codeAt(reader, address, at);
   if (typeof code !== 'string') return refused(code);
+  if (runsElsewhere(code) || code.startsWith(EIP7702_DESIGNATOR)) return refused({ why: 'chained-proxy', at: address });
   const further = unknownDelegation(address, code);
   return further === undefined ? { kind: 'read', extension: { address, code } } : refused(further);
 }
@@ -160,7 +166,6 @@ export async function readRunningCode(reader: Reader, address: Address, at: Bloc
   if (proxy.kind !== 'none') {
     const code = await codeAt(reader, proxy.implementation, at);
     if (typeof code !== 'string') return refused(code);
-    if (minimalProxyTarget(code) !== undefined || safeProxyFactory(code) !== undefined) return refused({ why: 'chained-proxy', at: proxy.implementation });
     const read = await readExtension(reader, proxy.implementation, code, at);
     if (read.kind === 'refused') return refused(read.refusal);
     running = { own, proxy, runs: code, ...(read.extension === undefined ? {} : { extension: read.extension }) };

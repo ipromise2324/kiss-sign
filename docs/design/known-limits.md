@@ -192,6 +192,7 @@ Part of [the kiss-sign design](../design.md).
   A word the walk neither folds nor knows, and that state did not choose, counts as a word of the call's data, so a constant address passed through arithmetic the walk does not fold, such as ADD, or written to memory at an offset that is not a constant and read back from there, passes as the call's data: code built to hide a delegation this way is not refused.
   Code that can delegate and whose dispatcher jumps to computed targets, as a Vyper jump table may, is refused as `fallback-unfollowable`.
   The walk computes no hash, so a ZeppelinOS proxy whose compiler hashes the slot's name at run time, as solc 0.4 does, is refused although `locate` finds it; no registry contract is one.
+  An extension's address is the constant the walk of the one selector it follows finds; code that computes the constant from the selector could hand a real function's selector to another address, which no pin holds, as a fallback that delegates only for some selectors already can.
 - The probe of a declared `implementationRead` shows that the declared code runs as the proxy, not that the proxy's one delegation goes to it directly.
   That delegation may go to a contract whose code no pin holds, which hands the call on to the declared implementation by its own DELEGATECALL, or reads the replaced code with EXTCODECOPY and returns its word, and does something else for other selectors; the probe passes and that contract is neither proven nor pinned.
   A proxy built to hide code this way is not told apart from Aragon's.
