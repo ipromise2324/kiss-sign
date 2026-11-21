@@ -554,6 +554,11 @@ test('a fallback the walk cannot follow to its delegatecall is refused, with whe
   assert.deepEqual(refusal(await proveUnknown('620fffff5b600190038060045700305af4')), { why: 'fallback-unfollowable', at: UNKNOWN, pc: 4, cause: 'too-many-states' });
 });
 
+test('a path whose word is the constant 0xc or 0xa is walked apart from one whose word is the call data or the contract itself', async () => {
+  const merging = (word: string) => `600c5f5234600e57${word}60155600${'5b600435601556'}5b6024575f5f5f5f6001545af4005b00`;
+  for (const word of ['5f51', '600c']) assert.equal(refusal(await proveUnknown(merging(word))).why, 'unknown-delegator', word);
+});
+
 test('an EIP-1967 implementation that itself delegates its fallback to an address in its storage is refused', async () => {
   const fixture = load('morpho-token-eip1967');
   const delegator = load('fluid-token').reads.find((read) => read.method === 'getCode')!.value;

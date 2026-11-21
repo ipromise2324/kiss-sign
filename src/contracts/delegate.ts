@@ -258,7 +258,7 @@ type State = { readonly pc: number; readonly stack: readonly Word[]; readonly wo
 function tag(w: Word): string {
   switch (w.kind) {
     case 'constant':
-      return w.value.toString(16);
+      return `#${w.value.toString(16)}`;
     case 'slot':
       return `k${w.slot.toString(16)}`;
     case 'self':
