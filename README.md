@@ -63,6 +63,10 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 
   kiss-sign needs no descriptor. Your wallet only has to show the hashes.
 
+- **What kiss-sign adds.** Kirk Baird's talk [Why Blockchain Security Has Failed: Single Points of Failure](https://www.youtube.com/watch?v=J9q6FMKIQrw&t=163s) names three ways to reduce risk: harden, diversify and bound. kiss-sign does the first two; bound, how much a transaction can lose, depends on what you choose to sign, such as the amount.
+  - **Harden.** The web app flags general risks: unverified contracts, new or lookalike addresses, known threats. kiss-sign checks what you meant: every byte against your card and the template, each address against the protocol's own sources, each contract's code against the code you reviewed.
+  - **Diversify.** Not only the web app's word: your computer, two RPC providers, your hardware wallet's hashes and, ideally, a second computer must agree.
+
 ## Install
 
 > [!CAUTION]
@@ -87,7 +91,7 @@ You need:
 - Free [Alchemy](https://dashboard.alchemy.com/) and [Etherscan](https://etherscan.io/myapikey) keys. A GitHub token is optional: a fine-grained, read-only one for public repositories raises GitHub's hourly limit when you build or review templates.
 - A hardware wallet that shows a Safe transaction's domain hash and message hash, or its safeTxHash.
 
-**Language.** English (`en`, the default) or Traditional Chinese (`zh-TW`). Change it later with `pnpm kiss-sign init --language zh-TW`. It sets which HTML report your AI gives you, the terminal text, `verify`'s page and `pnpm history`; addresses, hashes and verdict words stay the same, and so do verdicts. Give `./check.sh init` on the second computer the same language, or the comparison rows differ.
+**Language.** English (`en`, the default) or Traditional Chinese (`zh-TW`); change it with `pnpm kiss-sign init --language zh-TW`. It changes only the text you read, never a verdict. Give `./check.sh init` on the second computer the same language, so the comparison rows match.
 
 ### A second, clean computer: kiss-sign-check (strongly recommended)
 
@@ -97,35 +101,49 @@ To install it, follow the [kiss-sign-check README](https://github.com/ipromise23
 
 ## How it works
 
-The pictures below come from one real run: another Safe's deposit of 1,000,611.448606 USDC into a Morpho vault, the Hyperithm USDC Apex vault.
+The pictures below come from real reports kiss-sign generated from other Safes' transactions.
 
 ### 1. Tell your AI what you want
 
-In Claude Code, from the clone, say it in one sentence: "deposit 1,000,611.448606 USDC into Morpho's Hyperithm USDC Apex vault". If no template covers it yet, the AI builds one with the [kiss-sign skill](.claude/skills/kiss-sign/SKILL.md) and opens a pull request with a generated report.
+Open an AI coding agent, such as Claude Code or Codex, in the clone and say it in one sentence: "deposit 1,000,611.448606 USDC into Morpho's Hyperithm USDC Apex vault". If no template covers it yet, the AI builds one by following the [kiss-sign skill](.claude/skills/kiss-sign/SKILL.md) and opens a pull request with a generated report. Claude Code loads the skill by itself; point another agent at that file.
 
 ![Claude Code opened in the kiss-sign clone, with the intent typed at its prompt: I want to deposit 1,000,611.448606 USDC into Morpho's Hyperithm USDC Apex vault](docs/readme/intent.png)
 
 ### 2. Review the report and merge
 
-The report shows what the transaction will do and where every fact came from. Text the AI wrote is marked `AI`; everything else the program read or checked.
+The report shows what the transaction will do and where each fact came from. Text the AI wrote is marked `AI`; the program read or checked the rest. Read it top to bottom.
 
-**The call flow.** Which contract the Safe calls, in which order, and what comes back. The Safe's own calls are the template's, which the program checks. The calls inside them are the AI's, from reading the source, and the program checks each against the call traces of other senders' past transactions: a line seen in every one is drawn solid, confirmed two ways.
+**The top.** A summary, the program's checks and the AI's advice. Here one check needs attention: 4 of 5 addresses are confirmed in two places.
 
-![The call flow in the report: the Safe approves USDC to general-adapter-1, then calls bundler3.multicall, which pulls the USDC and deposits it, and the vault shares come back to the Safe](docs/readme/report-flow.png)
+![The top of the report: the title, the summary of the two calls, six checks with Address sources 4 / 5 marked for attention, and the AI's advice](docs/readme/report-top.png)
 
-**Every field.** Each argument is fixed by the template, filled from your card, or, like a deadline or a route, left to the protocol's app within limits the template states.
+**To review.** What needs your attention, each with the AI's conclusion. Open Details for the reasons and the advice.
 
-![The fields of usdc.approve in the report: value is the amount you fill in, and spender, under the opened fold of fixed values, is fixed to general-adapter-1 with its full address](docs/readme/report-fields.png)
+![The To review section: one key item, the vault's address confirmed in too few places, and three AI judgments, each with Details folded](docs/readme/report-review.png)
 
-**Every address.** Each place it was found, whether that site belongs to the protocol, and whether the newest version still lists it. This crop is from the CoW swap report. CoW's settlement contract is found in four sources, but places count by who owns them: two GitHub pages and the SDK all belong to CoW's GitHub organization, so with Immunefi it is confirmed in two places.
+**The flow.** A diagram of where your tokens go: which contracts the Safe calls, which contracts those call in turn, and what comes back to the Safe. A solid line is a call the AI read in the contract's source and the program also saw in other senders' past transactions.
 
-![An address the report confirmed in two places: two pages on CoW's GitHub and CoW's SDK on npm, which count as one place, CoW's GitHub organization, each still listing it at the newest version; and Immunefi's bug bounty scope. The deployer shares no other confirmed contract, so it counts for nothing](docs/readme/report-address.png)
+![The call flow: the Safe approves USDC to general-adapter-1 and calls bundler3.multicall; the adapter pulls the USDC and deposits it into the vault, lines seen in 8 of 8 past transactions; the shares come back to the Safe](docs/readme/report-flow.png)
 
-Weak evidence is shown, not hidden. The Hyperithm vault was confirmed only by its factory, so the report flags it and lists it under To review, with the AI's suggestion: open the vault from the Morpho app's list, compare the address, and send a small amount first.
+Under it, each argument says who decides it, down to the steps inside a bundle: you, the program or the template. Fixed values are folded; changing one is a MISMATCH.
 
-![An address confirmed in only one place, the factory, flagged with low confidence: the Morpho app page is not read because its URL holds the address, CoinGecko had nothing to compare, Immunefi's scope does not list it, and no deployer was proven](docs/readme/report-address-flagged.png)
+![The first step inside bundler3.multicall, erc20TransferFrom: the token follows the vault you pick, the amount is what you type, and the fixed values are folded](docs/readme/report-fields.png)
 
-You review an operation once. After that you review only what changes: another vault's report, a registry pull request, or a changed template. Merging is your confirmation. Then approve the template on your own computer, which records its hash so `verify` refuses any other version:
+**The protocol and the instance.** The protocol's TVL, audits and incidents, then facts about the one contract you use, each read from two providers. For this vault: the factory that made it, its size and its holders, then a year of monthly size and the AI's notes on where your deposit goes.
+
+![The Instance section: the factory answers isVaultV2 = true, 6,603,958.14 USDC now, 169 holders, the largest 58.88% and the top 10 89.19%](docs/readme/report-instance.png)
+
+**Addresses.** Where each address was found and who owns that site. Sites with one owner count as one place. CoW's settlement contract is in four sources but two places: CoW's GitHub and Immunefi.
+
+![CoW's settlement contract: two GitHub pages and the npm SDK, all CoW's GitHub, count as one place; Immunefi is the second](docs/readme/report-address.png)
+
+Weak evidence is shown, not hidden. Here the Hyperithm vault is confirmed only by its factory, so it is flagged.
+
+![The Hyperithm vault confirmed only by its factory, flagged with low confidence](docs/readme/report-address-flagged.png)
+
+**Past transactions.** Other senders' executed transactions of this operation: here 8 match the template exactly.
+
+You review an operation once. After that you review only what is new or changed: a report for another contract the template can call, a registry pull request, or a changed template. Merging is your confirmation. Then approve the template on your own computer, which records its hash so `verify` refuses any other version:
 
 ```sh
 git pull
@@ -136,9 +154,13 @@ A changed template has a new hash, so `verify` refuses it until you approve it a
 
 ### 3. Fill a card
 
-In your own terminal, pick the vault from a list with full addresses and type the amount. Values the protocol's app fills in by itself, such as the minimum shares, are computed from an on-chain read, the app's default slippage and a small margin the template states (0.10% in all for a Morpho deposit). The card is sealed under its hash before you see any transaction.
+In your own terminal, answer what the template asks: pick each contract, such as a token, a recipient or a vault, from a list with full addresses, and type each amount. You never type a value the protocol's app fills in by itself, such as a minimum amount to receive: the program computes it from an on-chain read, the app's default slippage and a small margin the template states.
 
-![pnpm kiss-sign card new morpho/vault-deposit: the vault is picked by number from a list with full addresses, the amount typed in whole tokens, the minimum shares computed from previewDeposit at a block where Alchemy and drpc agree, and the card sealed](docs/readme/card-new.png)
+![pnpm kiss-sign card new morpho/vault-deposit: the vault picked by number from a list with full addresses, the amount typed in whole tokens, and the minimum shares computed from previewDeposit with the protocol's default slippage and the template's margin](docs/readme/card-fill.png)
+
+Then it prints the whole card and asks you to confirm it. Type `y` only if every line is what you mean to do. The card is sealed under its hash before you see any transaction.
+
+![The card printed for confirmation: the Safe, the vault with its full address, the amount and the minimum shares in whole tokens and base units, read at a block where Alchemy and drpc agree; y typed, and the sealed card's hash](docs/readme/card-confirm.png)
 
 ### 4. Verify on your computer, and check on a second one
 
@@ -148,7 +170,7 @@ Propose the transaction in the Safe web app as usual. Then, on your computer:
 pnpm kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>
 ```
 
-On the second computer, run the command `verify` prints after `MATCH`:
+On the second computer, where you installed [kiss-sign-check](https://github.com/ipromise2324/kiss-sign-check), run the command `verify` prints after `MATCH`:
 
 ```sh
 ./check.sh <nonce> --hints '…'   # --hints only when the template reads bytes no ABI describes
@@ -162,7 +184,7 @@ First the hashes. They must be identical on both pages and on your hardware wall
 
 ![The hash rows of both pages side by side: safeTxHash, domain hash and message hash, the same on kiss-sign verify and on check.sh](docs/readme/compare-hashes.png)
 
-Then every call, row by row, down to the calls inside a batch: both sides split Bundler3's `multicall` into the token transfer and the vault deposit it runs. Every column must be identical except the names on the right, which only kiss-sign writes, from its registry:
+Then every call, row by row, down to the calls inside a batch. In this deposit both sides split Bundler3's `multicall` into the token transfer and the vault deposit it runs. Every column must be identical except the names on the right, which only kiss-sign writes, from its registry:
 
 ![Some rows of call #3 on both pages side by side: the Bundler3 multicall, then its two inner calls, erc20TransferFrom of 1000611448606 and erc4626Deposit into the Hyperithm vault for the Safe, the same on both sides; only kiss-sign's side names the vault and the amounts in the last column](docs/readme/compare-multicall.png)
 
