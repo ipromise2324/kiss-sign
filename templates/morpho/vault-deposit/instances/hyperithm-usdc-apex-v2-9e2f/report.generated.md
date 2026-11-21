@@ -25,7 +25,7 @@ Key: it bears on whether an address or its code is the protocol's real one and d
 | --- | --- |
 | `vault` | a registry `vault` of the DefiLlama protocol `morpho-blue`, picked by number from the list below |
 | `amount` | an integer in base units of the `asset` of the card's `vault` |
-| `min-shares` | nothing: computed by `card new` in base units of the card's `vault`, `previewDeposit(uint256)` on the card's `vault` of the card's `amount`, less 10 bps and rounded down: the protocol's default of 3 bps, from https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/blue-sdk/src/constants.ts#L24, plus a margin of 7 bps, written by the AI in the template: The Morpho app reads its own preview when it builds the transaction, accrued two hours ahead (computeVaultMaxSharePrice and computeVaultMaxShareAllowance in packages/morpho-sdk/src/helpers/slippage.ts at the same commit). The share price moves between this card and then, up with interest or down with a Vault V2 fee, and with the default alone a move against the card makes the app's own transaction MISMATCH. 0.07% more covers about three days of a vault earning 8% a year.; in Traditional Chinese: Morpho app 在組交易時會自己讀一次預覽，並把利息先算到兩小時後（同一個 commit 的 packages/morpho-sdk/src/helpers/slippage.ts 裡的 computeVaultMaxSharePrice 和 computeVaultMaxShareAllowance）。從填這張卡片到那時，每股價格會變動：有利息時上升，有 Vault V2 手續費時下降；只用預設值的話，價格往不利於卡片的方向一動，app 自己組的交易就會 MISMATCH。多 0.07% 大約夠一個年化 8% 的金庫三天的變動。 |
+| `min-shares` | nothing: computed by `card new` in base units of the card's `vault`, `previewDeposit(uint256)` on the card's `vault` of the card's `amount`, less 10 bps and rounded down: the protocol's default of 3 bps, from https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/blue-sdk/src/constants.ts#L24, plus a margin of 7 bps, written by the AI in the template: The Morpho app prices the deposit again when it builds the transaction. If the share price moves against the card meanwhile, the default alone makes it MISMATCH. 0.07% more covers 3 days at 8% a year.; in Traditional Chinese: Morpho app 組交易時會重新計算一次存款價格。若期間每股價格往不利於卡片的方向變動，只用預設值的話，app 自己組的交易就會 MISMATCH。多 0.07% 大約夠年化 8% 的金庫三天的變動。 |
 
 `vault` can name:
 
@@ -214,21 +214,19 @@ Recorded with `pnpm past-txs morpho/vault-deposit --token 0x093272c07700d3ca5301
 ```text
 past transactions for morpho/vault-deposit
 anchor: Transfer of hyperithm-usdc-apex-v2-9e2f 0x093272C07700d3cA5301C3Bf9B3A392624179E2F minted (from the zero address)
-whole year: blocks 23824801 to 26452800, alchemy in 8 pages and etherscan in 8 pages of up to 1000, so the search covers the year with no gap
-  blocks 23824801 to 26452800: 7009 found, 240 studied
-anchor parties, the address minted to: 340, read at block 26452800: 9 proven Safes
-chosen to study: all 17 transactions with a proven Safe party, and 223 of the other 6992, taken evenly in block order
-sources: alchemy found 7009, etherscan found 7009; both 7009, only alchemy 0, only etherscan 0
+whole year: blocks 23832001 to 26460000, alchemy in 8 pages and etherscan in 8 pages of up to 1000, so the search covers the year with no gap
+  blocks 23832001 to 26460000: 7016 found, 240 studied
+anchor parties, the address minted to: 340, read at block 26460000: 9 proven Safes
+chosen to study: all 17 transactions with a proven Safe party, and 223 of the other 6999, taken evenly in block order
+sources: alchemy found 7016, etherscan found 7016; both 7016, only alchemy 0, only etherscan 0
 senders, of 240 transactions studied:
-  proven Safe: 13, from 9 Safes
+  proven Safe: 12, from 8 Safes
   contract, not a proven Safe: 0, from 0 contracts
-  EOA calling a function of the template directly: 20, from 17 EOAs
-  neither: 207
-    207 calls no function the template calls (called 0xac9650d8 in 185, 0x6e553f65 in 8, 0x26f3525e in 5, 0xbaae8abf in 2, …)
+  EOA calling a function of the template directly: 30, from 21 EOAs
+  neither: 198
+    198 calls no function the template calls (called 0xac9650d8 in 177, 0x26f3525e in 5, 0x6e553f65 in 3, 0x0af210a1 in 3, …)
 call traces, from drpc, of the transactions exactly the template: 8 transactions, 8 checked against the receipt both providers agree on
 by proven Safes, the whole template in one transaction:
-another operation, making none of the template's calls: 1 transaction from 1 Safe; not counted below
-  e.g. 0xa756af45570a3aef9fff2c4f07834ade5d175798b2fb470838bb8fb696c02695: calls hyperithm-usdc-apex-v2-9e2f.0xac9650d8
 fit the template's shape: 6 transactions from 2 Safes; misfits: 6 from 6 Safes
 fields, over the 6 fitting transactions:
   multiSend[0].to  [card vault.asset]
@@ -278,7 +276,7 @@ misfits, by reason:
     e.g. 0x54579efd411964b4bab3c16a18d15928e688e18647f0167e1fde4b8fc0956541, 0x18fb9bc20f2db2c0310a029301e01ad3e1564e4ec88c5b2469bf7e70c8388b5b, 0xac9058632b750b6804d85b5c8c0a7e14d15e0b25df30c2572808e09383d0dbf2
 examples that fit: 0x4f64d35c66e20f5956956db7a8d2eff3515c8ce177fb7fe5c302020ad7679a2f, 0x92c3e36dcaf900f1f5f836b5e9968296c173aea4200351b16f913deb79b40ad4, 0x7667a60ff42625518a709b06a447e9dac326f87e6731d065463c244585066521
 by EOAs, call 2 of 2 (multicall) as its own transaction:
-fit the call's shape: 2 transactions from 2 EOAs; misfits: 18 from 15 EOAs
+fit the call's shape: 2 transactions from 2 EOAs; misfits: 28 from 19 EOAs
 fields, over the 2 fitting transactions:
   call.to  [contract bundler3]
     equalled contract bundler3 in 2 of 2 (2 EOAs); values: bundler3 in 2
@@ -291,7 +289,7 @@ fields, over the 2 fitting transactions:
   call.multicall.bundle[0].data.erc20TransferFrom.receiver  [contract general-adapter-1]
     equalled contract general-adapter-1 in 2 of 2 (2 EOAs); values: general-adapter-1 in 2
   call.multicall.bundle[0].data.erc20TransferFrom.amount  [card amount]
-    same as the other leaves bound to card amount in 2 of 2; values: 10000000284 in 1, 46350405309 in 1
+    same as the other leaves bound to card amount in 2 of 2; values: 500000 in 1, 266000000000 in 1
   call.multicall.bundle[0].value  [const 0]
     equalled const 0 in 2 of 2 (2 EOAs); values: 0 in 2
   call.multicall.bundle[0].skipRevert  [const false]
@@ -303,9 +301,9 @@ fields, over the 2 fitting transactions:
   call.multicall.bundle[1].data.erc4626Deposit.vault  [card vault]
     same as the other leaves bound to card vault in 2 of 2; values: hyperithm-usdc-ape…(12.5 bytes) in 2
   call.multicall.bundle[1].data.erc4626Deposit.assets  [card amount]
-    same as the other leaves bound to card amount in 2 of 2; values: 10000000284 in 1, 46350405309 in 1
+    same as the other leaves bound to card amount in 2 of 2; values: 500000 in 1, 266000000000 in 1
   call.multicall.bundle[1].data.erc4626Deposit.maxSharePriceE27  [max share price, against card amount per card min-shares]
-    values: 1032701323024012 in 1, 1056646027842705 in 1
+    values: 1025301984655499 in 1, 1046643790553793 in 1
   call.multicall.bundle[1].data.erc4626Deposit.receiver  [the sender]
     equalled the sender in 2 of 2 (2 EOAs); values: the sender in 2
   call.multicall.bundle[1].value  [const 0]
@@ -315,11 +313,11 @@ fields, over the 2 fitting transactions:
   call.multicall.bundle[1].callbackHash  [const 0x0000000000000000000000000000000000000000000000000000000000000000]
     equalled const 0x0000000000000000000000000000000000000000000000000000000000000000 in 2 of 2 (2 EOAs); values: 0x0000000000000000…(32 bytes) in 2
 misfits, by reason:
-  17 from 14 EOAs: call.multicall.bundle: expected 2 items, got 3 items, calling usdc.0xd505accf, general-adapter-1.erc20TransferFrom, general-adapter-1.erc4626Deposit
-    e.g. 0x64e706c964f9b5f2178ccf4feca7684e7a31ef0a0a1c74f87217b2a2cf226923, 0x42c7586b70cf68a93e209a469b1be8c1b2180ac40ea6a569b78ff2f2d4781ce8, 0x1ab7f518153e5e10885b7b9f0f09b53056c3174266ae688d76c63c8e59367be7
-  1 from 1 EOA: call.multicall.bundle: expected 2 items, got 4 items, calling general-adapter-1.erc20TransferFrom, general-adapter-1.erc4626Deposit, general-adapter-1.0x3790767d, general-adapter-1.0x3790767d
-    e.g. 0x0a20e92838cf8e0bab4cc2d6060d14c0434d4ae5828666b3aba2eb3a7b0eb318
-examples that fit: 0x148c5f1ba184ae9d5541e066595cb20618e40b3b825317c7d12aff0b69c99686, 0xd448dfb4d2e4d7aa35ddf928b0b631ade94c518e29d1637cd9f851a0046b476b
+  27 from 18 EOAs: call.multicall.bundle: expected 2 items, got 3 items, calling usdc.0xd505accf, general-adapter-1.erc20TransferFrom, general-adapter-1.erc4626Deposit
+    e.g. 0xbc15c4f4d2a14780a802a50fa6cdc42c66e980927ba490d84c72867bf9a64b6a, 0x0fde9bac7eac3568c1283b699a90bca469ed149f6abfccd68bcb6616404e15ad, 0xe3554a16e165ba3574d4f1c06454e027a45c5c3e7c27ccebdce9378b08a16c28
+  1 from 1 EOA: call.multicall.bundle: expected 2 items, got 5 items, calling usdc.0xd505accf, general-adapter-1.erc20TransferFrom, general-adapter-1.erc4626Deposit, general-adapter-1.0x3790767d, general-adapter-1.0x3790767d
+    e.g. 0xe8256e38c735e24627ebab929771ac5ad1a8938facf6bd4fda9c5b32a92385d7
+examples that fit: 0x2e4435eca72c2efeee2b60a0edad3c5849620ba1eafa75d113725484520dd8a2, 0x18fe76a5514052197b663bbcc8af770bcf9b53721cabbacf81298da2b0c6dc66
 ```
 
 ## ERC-7730
