@@ -63,10 +63,10 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 
   kiss-sign needs no descriptor. Your wallet only has to show the hashes.
 
-- **Signing gets safer in three ways: harden, diversify and bound**, a lens from Kirk Baird's talk [Why Blockchain Security Has Failed: Single Points of Failure](https://www.youtube.com/watch?v=J9q6FMKIQrw&t=163s). Compared with signing in the Safe web app alone:
-  - **Harden: checks the web app does not do.** kiss-sign holds every byte to the card you sealed, confirms each address in two places the protocol controls, checks that each contract's code is still the code you reviewed, and decodes each call with an ABI it compiled from the verified source. The web app can simulate a transaction; kiss-sign also compares the result with what you meant.
-  - **Diversify: no single part can fool you.** The web app is one source; when it is tampered with, as at Bybit, every signer sees the same lie. With kiss-sign, your own computer, two RPC providers, a second computer with no AI and your hardware wallet must all agree.
-  - **Bound: mostly outside kiss-sign.** How much a signed transaction can lose depends on what it does: the amount you send, and the limits of the protocol you send it to, such as a vault's caps and timelocks. kiss-sign shows such limits in the report but does not set them.
+- **Harden, diversify, bound.** Kirk Baird's [three ways to make security safer](https://www.youtube.com/watch?v=J9q6FMKIQrw&t=163s), against signing in the Safe web app alone:
+  - **Harden.** kiss-sign checks what the web app does not: every byte against your card, each address in two places, each contract's code and ABI.
+  - **Diversify.** Not one source the attacker can tamper with, as at Bybit: your computer, two RPC providers, a second computer and your hardware wallet must agree.
+  - **Bound.** How much a transaction can lose depends on what you send and the protocol's limits. kiss-sign shows those limits but does not set them.
 
 ## Install
 
