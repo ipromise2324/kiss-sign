@@ -145,8 +145,9 @@ Each picture is drawn from an HTML source in `docs/diagrams/`, and `sh docs/diag
    - **Register:** each verified contract goes into the contract registry under a name.
      A Morpho Blue market goes into the markets table under a name, after its contracts (see [Markets](data-shapes.md#markets)).
    - **Pin the code:** the program (`pnpm pin-code`) reads, through both providers at one block they agree on, the code at each registry address and writes its keccak256 into the entry's `code`.
-     Behind a proxy it also writes the implementation the proxy delegates to and that implementation's code hash.
-     The proxy is found the way `pnpm prove-abi` finds it, so the pin names the same code the ABI proof compiled: its `hash` is the proof's `proxyCodeHash` for a proxy and its `codeHash` otherwise, and the implementation's `hash` is the proof's `codeHash`.
+     Behind a proxy it also writes the implementation the proxy delegates to and that implementation's code hash, and, for an implementation with an extension (see Establish the ABI), the extension's address and code hash under the implementation's `extension`, as `{ "address", "hash", "extension": { "address", "hash" } }`; the parser refuses any other key there.
+     The proxy is found the way `pnpm prove-abi` finds it, so the pin names the same code the ABI proof compiled: its `hash` is the proof's `proxyCodeHash` for a proxy and its `codeHash` otherwise, the implementation's `hash` is the proof's `codeHash`, and the extension's is the `codeHash` of the proof's extension.
+     An extension added, gone or at another address, or another extension code hash, makes another pin, so `pnpm pin-code` walks its history into spans like the implementation's.
      Immutables are part of the deployed code, so two vaults from one factory can have different pins.
      The pin goes into the same pull request as the entry, and every signing compares it again (see [Engine checks that every template gets](engine-and-chain.md#engine-checks-that-every-template-gets)).
      The pin also records when each code ran.
@@ -217,9 +218,15 @@ Each picture is drawn from an HTML source in `docs/diagrams/`, and `sh docs/diag
    So a proxy whose compiler copies its slot out of its own code before it reads it, as solc 0.8.15 does in the OpenZeppelin TransparentUpgradeableProxy of Compound III's markets, delegates through that slot.
    For every other word of memory it keeps only whether a word state chose was ever written to it.
    A DELEGATECALL or CALLCODE on such a path whose target is a constant, a slot, or anything else state chose is the refusal; only the contract's own address, a word of the call's data, for an EIP-1967 or ZeppelinOS proxy the value of the slot it was found by, and, for an entry that declares `implementationRead`, the one place its probe shows reaches the declared implementation pass (see Declare the implementation read).
+   An implementation behind a proxy may also hand such a call to one constant address, its extension, as Compound III's Comet hands every call its own functions do not take to the `CometExt` it keeps as an immutable.
+   The implementation's code hash fixes that address, so the extension is read, proven and pinned with the implementation; the ABI proof masks immutables, so the program takes the address from the code the walk reads, never from the source.
+   The extension must have code, and the walk of its own code must find no delegation but to itself or the call's data, so a call goes no further; a minimal proxy or any other proxy there is refused.
+   Delegations to two different constant addresses, to a constant wider than an address, from a proxy's own code, and from a contract that is no proxy stay refused: the shape Compound III needs is one extension behind a proxy, and a pin names one.
+   `pnpm prove-abi` compiles the extension's verified source and compares it with the extension's code as it does the implementation's, and the extension's functions join the proven ABI after the implementation's.
+   A call whose selector the implementation's own functions hold runs the implementation's function, so an extension function with the same canonical signature, such as the storage getters both of Comet's contracts inherit, is not listed again, and one with another signature under the same selector is refused (`selector-clash`).
    A jump to a target that is not a constant, an opcode the walk does not know, or more than 200,000 states are refused too (`fallback-unfollowable`), since what that path runs is then unknown.
    The walk enters no named function, so a `multicall` that delegates to the contract itself passes.
-   An implementation behind a proxy is walked the same way, by `pnpm prove-abi`, `pnpm pin-code` and every signing.
+   An implementation behind a proxy, and its extension, are walked the same way, by `pnpm prove-abi`, `pnpm pin-code` and every signing.
    A compiler is added to the pins only by `pnpm pin-solc <version>`, which writes the pin when the sha256 soliditylang's `bin/list.json` gives equals the sha256 of the `soljson.js` asset of the same GitHub release, downloaded and hashed on its own, and, from 0.6.2 on, the one `wasm/list.json` gives; it refuses any other answer.
    A new pin is a program change, so the pull request that needs it says so to the signer.
    The pin is what keeps a hostile compiler out.

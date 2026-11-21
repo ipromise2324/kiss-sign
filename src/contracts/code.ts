@@ -7,9 +7,9 @@ import type { BlockRef } from '../chain/types.ts';
 import type { AbiFunction, AbiType } from '../decode/abi.ts';
 import { decodeValues, encodeCall } from '../decode/codec.ts';
 import type { AbiValue } from '../decode/codec.ts';
-import type { CodePin, CodePins, CodeSpan, ProxyDeclaration, Route, SelectorRouting } from '../registry.ts';
+import type { CodePin, CodePins, CodeSpan, PinnedCode, ProxyDeclaration, Route, SelectorRouting } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { locate, minimalProxyTarget, safeProxyFactory, unknownDelegation } from './proxy.ts';
+import { extensionOf, locate, minimalProxyTarget, safeProxyFactory, unknownDelegation } from './proxy.ts';
 import type { Proxy, ProxyRefusal } from './proxy.ts';
 
 /** `call` and `detail` hold only function names, selectors and addresses. */
@@ -21,8 +21,14 @@ export type RoutesRefusal =
 
 export type CodeRefusal = ProxyRefusal | RoutesRefusal | { readonly why: 'no-code'; readonly at: Address } | { readonly why: 'chained-proxy'; readonly at: Address };
 
-/** The code at an address, and the code a call to it runs: the implementation's behind a proxy, else its own. */
-export type RunningCode = { readonly own: Hex; readonly proxy: Proxy; readonly runs: Hex; readonly routes?: readonly Route[] };
+/** The code at the one constant address an implementation hands a call it has no function for to. */
+export type Extension = { readonly address: Address; readonly code: Hex };
+
+/**
+ * The code at an address, and the code a call to it runs: the implementation's behind a proxy, with its extension if
+ * it has one, else its own.
+ */
+export type RunningCode = { readonly own: Hex; readonly proxy: Proxy; readonly runs: Hex; readonly extension?: Extension; readonly routes?: readonly Route[] };
 
 export type CodeRead = { readonly kind: 'read'; readonly code: RunningCode } | { readonly kind: 'refused'; readonly refusal: CodeRefusal };
 
@@ -124,6 +130,24 @@ export async function readRoutes(reader: Reader, proxy: Address, routing: Select
   return { kind: 'read', routes };
 }
 
+export type ExtensionRead = { readonly kind: 'read'; readonly extension: Extension | undefined } | { readonly kind: 'refused'; readonly refusal: CodeRefusal };
+
+/**
+ * The extension of the implementation at `implementation`, whose code is `runs`, at `at`, if it has one. The code
+ * there must exist and hand a call it has no function for to nothing but itself or the call's data, so the extension
+ * is the last code a call can reach.
+ */
+export async function readExtension(reader: Reader, implementation: Address, runs: Hex, at: BlockRef): Promise<ExtensionRead> {
+  const refused = (refusal: CodeRefusal): ExtensionRead => ({ kind: 'refused', refusal });
+  const address = extensionOf(implementation, runs);
+  if (typeof address === 'object') return refused(address);
+  if (address === undefined) return { kind: 'read', extension: undefined };
+  const code = await codeAt(reader, address, at);
+  if (typeof code !== 'string') return refused(code);
+  const further = unknownDelegation(address, code);
+  return further === undefined ? { kind: 'read', extension: { address, code } } : refused(further);
+}
+
 /** `declared` is how the entry at `address` says its proxy names the code it runs, when it says so. */
 export async function readRunningCode(reader: Reader, address: Address, at: BlockRef, declared: ProxyDeclaration = {}): Promise<CodeRead> {
   const refused = (refusal: CodeRefusal): CodeRead => ({ kind: 'refused', refusal });
@@ -132,24 +156,26 @@ export async function readRunningCode(reader: Reader, address: Address, at: Bloc
   const located = await locate(reader, address, own, at, declared);
   if (located.kind === 'refused') return refused(located.refusal);
   const { proxy } = located;
-  let runs = own;
+  let running: RunningCode = { own, proxy, runs: own };
   if (proxy.kind !== 'none') {
     const code = await codeAt(reader, proxy.implementation, at);
     if (typeof code !== 'string') return refused(code);
     if (minimalProxyTarget(code) !== undefined || safeProxyFactory(code) !== undefined) return refused({ why: 'chained-proxy', at: proxy.implementation });
-    const delegation = unknownDelegation(proxy.implementation, code);
-    if (delegation !== undefined) return refused(delegation);
-    runs = code;
+    const read = await readExtension(reader, proxy.implementation, code, at);
+    if (read.kind === 'refused') return refused(read.refusal);
+    running = { own, proxy, runs: code, ...(read.extension === undefined ? {} : { extension: read.extension }) };
   }
-  if (declared.routes === undefined) return { kind: 'read', code: { own, proxy, runs } };
+  if (declared.routes === undefined) return { kind: 'read', code: running };
   const routes = await readRoutes(reader, address, declared.routes, at);
-  return routes.kind === 'refused' ? routes : { kind: 'read', code: { own, proxy, runs, routes: routes.routes } };
+  return routes.kind === 'refused' ? routes : { kind: 'read', code: { ...running, routes: routes.routes } };
 }
 
-export function pinOf({ own, proxy, runs, routes }: RunningCode): CodePin {
+export function pinOf({ own, proxy, runs, extension, routes }: RunningCode): CodePin {
   const hash = keccakCode(own);
   const routed = routes === undefined ? {} : { routes };
-  return proxy.kind === 'none' ? { hash, ...routed } : { hash, implementation: { address: proxy.implementation, hash: keccakCode(runs) }, ...routed };
+  if (proxy.kind === 'none') return { hash, ...routed };
+  const extended = extension === undefined ? {} : { extension: { address: extension.address, hash: keccakCode(extension.code) } };
+  return { hash, implementation: { address: proxy.implementation, hash: keccakCode(runs), ...extended }, ...routed };
 }
 
 const sameRoute = (a: Route, b: Route | undefined): boolean =>
@@ -158,8 +184,10 @@ const sameRoute = (a: Route, b: Route | undefined): boolean =>
 const sameRoutes = (a: readonly Route[] | undefined, b: readonly Route[] | undefined): boolean =>
   a === undefined || b === undefined ? a === b : a.length === b.length && a.every((route, i) => sameRoute(route, b[i]));
 
+const samePinned = (a: PinnedCode | undefined, b: PinnedCode | undefined): boolean => a?.address === b?.address && a?.hash === b?.hash;
+
 export const samePin = (a: CodePin, b: CodePin): boolean =>
-  a.hash === b.hash && a.implementation?.address === b.implementation?.address && a.implementation?.hash === b.implementation?.hash && sameRoutes(a.routes, b.routes);
+  a.hash === b.hash && samePinned(a.implementation, b.implementation) && samePinned(a.implementation?.extension, b.implementation?.extension) && sameRoutes(a.routes, b.routes);
 
 /** The spans the walk read, and why it stopped: the block before the first span holds no code it can pin, or that span starts at block 0. */
 export type CodeHistory =

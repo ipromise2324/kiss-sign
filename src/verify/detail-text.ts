@@ -158,6 +158,18 @@ const DETAIL: readonly Shape[] = [
   shape(`(${NAMED})'s implementation (${ADDRESS}) has code hash (0x[0-9a-f]{64}) ${BLOCK}, the registry pins (0x[0-9a-f]{64})`, (entry, address, hash, block, pin) =>
     `${entry} 的實作 ${address} 在區塊 ${block} 的程式碼 hash 是 ${hash}，登記表釘選的是 ${pin}`,
   ),
+  shape(`(${NAMED})'s implementation (${ADDRESS}) hands a call it has no function for to (${ADDRESS}) ${BLOCK}, the registry pins no extension`, (entry, address, extension, block) =>
+    `${entry} 的實作 ${address} 在區塊 ${block} 把沒有對應函式的呼叫交給 ${extension}，登記表沒有釘選任何擴充合約`,
+  ),
+  shape(`(${NAMED})'s implementation (${ADDRESS}) hands a call it has no function for to (${ADDRESS}) ${BLOCK}, the registry pins (${ADDRESS})`, (entry, address, extension, block, pin) =>
+    `${entry} 的實作 ${address} 在區塊 ${block} 把沒有對應函式的呼叫交給 ${extension}，登記表釘選的是 ${pin}`,
+  ),
+  shape(`(${NAMED})'s implementation (${ADDRESS}) no longer hands a call it has no function for to (${ADDRESS}) ${BLOCK}, the registry pins that extension`, (entry, address, extension, block) =>
+    `${entry} 的實作 ${address} 在區塊 ${block} 不再把沒有對應函式的呼叫交給 ${extension}，登記表釘選的是那個擴充合約`,
+  ),
+  shape(`(${NAMED})'s extension (${ADDRESS}) has code hash (0x[0-9a-f]{64}) ${BLOCK}, the registry pins (0x[0-9a-f]{64})`, (entry, address, hash, block, pin) =>
+    `${entry} 的擴充合約 ${address} 在區塊 ${block} 的程式碼 hash 是 ${hash}，登記表釘選的是 ${pin}`,
+  ),
   shape(`(${NAMED}) routes selectors to (${ADDRESS}) ${BLOCK}, an implementation the registry does not pin`, (entry, address, block) => `${entry} 在區塊 ${block} 把 selector 轉給 ${address}，登記表沒有釘選這個實作`),
   shape(`(${NAMED}) routes no seed to (${ADDRESS}) ${BLOCK}, an implementation the registry pins`, (entry, address, block) => `${entry} 在區塊 ${block} 沒有把任何 seed 轉給登記表釘選的實作 ${address}`),
   shape(`(${NAMED})'s routed implementation (${ADDRESS}) has code hash (0x[0-9a-f]{64}) ${BLOCK}, the registry pins (0x[0-9a-f]{64})`, (entry, address, hash, block, pin) =>

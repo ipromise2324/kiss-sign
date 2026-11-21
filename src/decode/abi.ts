@@ -209,13 +209,15 @@ export function parseViewSignature(text: string): { readonly fn: AbiFunction; re
 
 type JsonParam = { readonly name?: unknown; readonly type?: unknown; readonly components?: unknown };
 
-function jsonType(param: JsonParam): string {
+function jsonType(param: JsonParam, component: (param: JsonParam) => string = jsonParam): string {
   if (typeof param.type !== 'string') throw new AbiSignatureError('an ABI parameter without a type');
   const tuple = /^tuple((\[[0-9]*\])*)$/.exec(param.type);
   if (tuple === null) return param.type;
   if (!Array.isArray(param.components)) throw new AbiSignatureError('a tuple without components');
-  return `(${(param.components as JsonParam[]).map(jsonParam).join(',')})${tuple[1] ?? ''}`;
+  return `(${(param.components as JsonParam[]).map((item) => component(item)).join(',')})${tuple[1] ?? ''}`;
 }
+
+const canonicalJsonType = (param: JsonParam): string => jsonType(param, canonicalJsonType);
 
 function jsonParam(param: JsonParam): string {
   const name = typeof param.name === 'string' && param.name !== '' ? ` ${param.name}` : '';
@@ -226,4 +228,10 @@ function jsonParam(param: JsonParam): string {
 export function namedSignatureOfAbiEntry(entry: Readonly<Record<string, unknown>>): string {
   if (typeof entry.name !== 'string' || !Array.isArray(entry.inputs)) throw new AbiSignatureError('not a function entry');
   return `${entry.name}(${(entry.inputs as JsonParam[]).map(jsonParam).join(',')})`;
+}
+
+/** The canonical signature of a function entry of a solc ABI, from the types solc gives its inputs. */
+export function signatureOfAbiEntry(entry: Readonly<Record<string, unknown>>): string {
+  if (typeof entry.name !== 'string' || !Array.isArray(entry.inputs)) throw new AbiSignatureError('not a function entry');
+  return `${entry.name}(${(entry.inputs as JsonParam[]).map(canonicalJsonType).join(',')})`;
 }

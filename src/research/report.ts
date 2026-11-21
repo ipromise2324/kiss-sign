@@ -16,7 +16,7 @@ import type { Compilers } from '../contracts/solc.ts';
 import { AbiSignatureError, canonicalType, namedSignatureOfAbiEntry, paramName, parseFunctionSignature } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam } from '../decode/abi.ts';
 import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, pageUrlsOf, parseHttpsUrl, sizeOf } from '../registry.ts';
-import type { CodePin, HttpsUrl, Registry, RegistryEntry, Route, SelectorRouting } from '../registry.ts';
+import type { CodePin, HttpsUrl, PinnedCode, Registry, RegistryEntry, Route, SelectorRouting } from '../registry.ts';
 import { wholeTokens } from '../chain/decimals.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
@@ -957,10 +957,13 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
 const routesText = (routes: readonly Route[]): string =>
   `routes ${routes.length === 0 ? 'none' : routes.map((route) => `${code(checksumAddress(route.address))} ${code(route.hash)} (${route.selectors.length} selectors)`).join(', ')}`;
 
+const extensionText = ({ address, hash }: PinnedCode): string => `extension ${code(checksumAddress(address))} ${code(hash)}`;
+
 function pinText(pin: CodePin): string {
   return [
     code(pin.hash),
     ...(pin.implementation === undefined ? [] : [`implementation ${code(checksumAddress(pin.implementation.address))} ${code(pin.implementation.hash)}`]),
+    ...(pin.implementation?.extension === undefined ? [] : [extensionText(pin.implementation.extension)]),
     ...(pin.routes === undefined ? [] : [routesText(pin.routes)]),
   ].join('; ');
 }
@@ -1042,23 +1045,33 @@ function spanRows(entry: RegistryEntry, verdicts: readonly SpanCheck[] | undefin
   const name = `| ${code(entry.name)} |`;
   if (entry.code === undefined) return [`${name} | not pinned | | |`];
   return [...entry.code.earlier, entry.code.current].map(({ from, pin }, i) => {
-    const implementation = pin.implementation === undefined ? 'none' : `${code(checksumAddress(pin.implementation.address))} ${code(pin.implementation.hash)}`;
+    const extension = pin.implementation?.extension === undefined ? '' : `; ${extensionText(pin.implementation.extension)}`;
+    const implementation = pin.implementation === undefined ? 'none' : `${code(checksumAddress(pin.implementation.address))} ${code(pin.implementation.hash)}${extension}`;
     const routes = pin.routes === undefined ? '' : `; ${routesText(pin.routes)}`;
     return `${name} ${from} | ${code(pin.hash)} | ${implementation}${routes} | ${verdicts?.[i]?.text ?? 'not read'} |`;
   });
 }
 
-/** The pin names the code the proof compiled: the proxy's code and its implementation's, or the contract's own. */
+/** The pin names the code the proof compiled: the proxy's code, its implementation's and any extension's, or the contract's own. */
 export function pinVerdict(entry: RegistryEntry, proof: AbiProof): string {
   const pin = entry.code?.current.pin;
   if (pin === undefined) return 'not pinned';
   const same = (a: string, b: string | undefined) => a.toLowerCase() === b?.toLowerCase();
+  const extension = pin.implementation?.extension;
+  const sameExtension =
+    extension === undefined ? proof.extension === undefined : proof.extension !== undefined && same(extension.address, proof.extension.address) && same(extension.hash, proof.extension.codeHash);
   const matches =
     proof.proxy.kind === 'none'
       ? pin.implementation === undefined && same(pin.hash, proof.codeHash)
-      : pin.implementation !== undefined && same(pin.hash, proof.proxyCodeHash) && same(pin.implementation.address, proof.proven) && same(pin.implementation.hash, proof.codeHash);
+      : pin.implementation !== undefined &&
+        same(pin.hash, proof.proxyCodeHash) &&
+        same(pin.implementation.address, proof.proven) &&
+        same(pin.implementation.hash, proof.codeHash) &&
+        sameExtension;
   return matches ? 'PASS' : 'FINDING';
 }
+
+const identifier = (name: string): string => (/^[A-Za-z_$][A-Za-z0-9_$]{0,63}$/.test(name) ? code(name) : 'a name that is not a Solidity identifier');
 
 function abiRow(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, unused: boolean, subject: Subject, registry: Registry): string {
   const name = `| ${code(entry.name)} | ${code(checksumAddress(entry.address))} |`;
@@ -1066,9 +1079,13 @@ function abiRow(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, 
   if (entry.routes !== undefined) return `${name} not provable: a selector-routed proxy, whose calls run in the implementations its routes reach; its routes are pinned above | | | | | | | |`;
   if (proof === undefined) return `${name} not read | | | | | | | |`;
   if (proof.kind === 'refused') return `${name} REFUSED: ${code(proof.refusal.why)}${proof.refusal.why === 'compiler-not-pinned' ? ` solc ${code(proof.refusal.version)}` : ''} | | | | | | | ${proof.block.number} |`;
-  const proxy = proof.proxy.kind === 'none' ? 'none' : `${proof.proxy.kind}, implementation ${code(checksumAddress(proof.proven))}`;
-  const contract = /^[A-Za-z_$][A-Za-z0-9_$]{0,63}$/.test(proof.contractName) ? code(proof.contractName) : 'a name that is not a Solidity identifier';
-  const metadata = proof.metadataHashMasked ? '; FINDING: the metadata hash differs, so the verified source is not the deployed text and its parameter names are not proven' : '';
+  const extension = proof.extension === undefined ? '' : `, extension ${code(checksumAddress(proof.extension.address))} (${identifier(proof.extension.contractName)})`;
+  const proxy = proof.proxy.kind === 'none' ? 'none' : `${proof.proxy.kind}, implementation ${code(checksumAddress(proof.proven))}${extension}`;
+  const contract = identifier(proof.contractName);
+  const metadata =
+    proof.metadataHashMasked || proof.extension?.metadataHashMasked === true
+      ? '; FINDING: the metadata hash differs, so the verified source is not the deployed text and its parameter names are not proven'
+      : '';
   const masked = `${proof.immutablesMasked} immutable, ${proof.librariesMasked} library spans masked${metadata}`;
   const fns = functionsOn(subject, registry).get(entry.name) ?? [];
   const missing = missingFromAbi(subject, registry, entry, proof);

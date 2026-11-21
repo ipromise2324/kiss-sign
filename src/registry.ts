@@ -169,11 +169,16 @@ export type SdkPackage = { readonly package: string; readonly version: string; r
 /** Every page that lists the entry's address: its `source`, then each of `moreSources`. */
 export const pageUrlsOf = (entry: RegistryEntry): readonly HttpsUrl[] => [entry.source, ...(entry.moreSources ?? []).map((page) => page.url)];
 
+/** An address and the keccak256 of the runtime code there. */
+export type PinnedCode = { readonly address: Address; readonly hash: Hex };
+
 /**
- * keccak256 of the runtime code at the address, behind a proxy the implementation it delegates to and its code's, and
- * for an entry with `routes`, its routes sorted by address.
+ * keccak256 of the runtime code at the address, behind a proxy the implementation it delegates to and its code's, with
+ * the extension that implementation hands a call it has no function for to, if any, and for an entry with `routes`,
+ * its routes sorted by address.
  */
-export type CodePin = { readonly hash: Hex; readonly implementation?: { readonly address: Address; readonly hash: Hex }; readonly routes?: readonly Route[] };
+export type ImplementationPin = PinnedCode & { readonly extension?: PinnedCode };
+export type CodePin = { readonly hash: Hex; readonly implementation?: ImplementationPin; readonly routes?: readonly Route[] };
 
 /** A pin and the first block whose state held its code. It holds until the block before the next span's `from`. */
 export type CodeSpan = { readonly from: bigint; readonly pin: CodePin };
@@ -516,15 +521,17 @@ function codePinOf(path: string, value: Record<string, unknown>, routed: boolean
   const routes = value.routes === undefined ? {} : { routes: routesOf(`${path}.routes`, value.routes) };
   if (value.implementation === undefined) return { hash, ...routes };
   const implementation = record(`${path}.implementation`, value.implementation);
-  onlyKeys(`${path}.implementation`, implementation, ['address', 'hash']);
-  return {
-    hash,
-    implementation: {
-      address: parsed(() => parseAddress(`${path}.implementation.address`, implementation.address)),
-      hash: hash32(`${path}.implementation.hash`, implementation.hash),
-    },
-    ...routes,
-  };
+  onlyKeys(`${path}.implementation`, implementation, ['address', 'hash', 'extension']);
+  const pinned = pinnedCodeOf(`${path}.implementation`, implementation);
+  if (implementation.extension === undefined) return { hash, implementation: pinned, ...routes };
+  const at = `${path}.implementation.extension`;
+  const extension = record(at, implementation.extension);
+  onlyKeys(at, extension, ['address', 'hash']);
+  return { hash, implementation: { ...pinned, extension: pinnedCodeOf(at, extension) }, ...routes };
+}
+
+function pinnedCodeOf(path: string, value: Record<string, unknown>): PinnedCode {
+  return { address: parsed(() => parseAddress(`${path}.address`, value.address)), hash: hash32(`${path}.hash`, value.hash) };
 }
 
 /** `from` may be absent only on a pin with no earlier ones, as `pnpm pin-code` wrote before it read ranges: it holds from block 0. */

@@ -9,7 +9,7 @@ import { test } from 'node:test';
 import type { Read } from '../src/chain/reader.ts';
 import { namedSignatureOfAbiEntry, parseFunctionSignature } from '../src/decode/abi.ts';
 import { abiCaseBlock, abiCaseReader, abiCaseEtherscan } from '../src/contracts/abi-case.ts';
-import type { AbiCase } from '../src/contracts/abi-case.ts';
+import type { AbiCase, RecordedRead } from '../src/contracts/abi-case.ts';
 import { describeRefusal, proveAbi } from '../src/contracts/prove.ts';
 import type { AbiProof, AbiRefusal, Refusal } from '../src/contracts/prove.ts';
 import { EIP1967_BEACON_SLOT, EIP1967_IMPLEMENTATION_SLOT, ZEPPELINOS_IMPLEMENTATION_SLOT } from '../src/contracts/proxy.ts';
@@ -253,6 +253,16 @@ const CASES = [
     immutables: 0,
     uses: ['multiSend(bytes transactions)'],
   },
+  {
+    name: 'compound-v3-cusdcv3',
+    proxy: 'eip1967',
+    proven: '0x0b07565a8ef48170e15918b251ebd95109b23255',
+    contract: 'contracts/CometWithExtendedAssetList.sol:CometWithExtendedAssetList',
+    compiler: '0.8.15+commit.e14f2714',
+    functions: 84,
+    immutables: 70,
+    uses: ['supply(address asset,uint256 amount)', 'withdraw(address asset,uint256 amount)', 'allow(address manager,bool isAllowed_)'],
+  },
 ] as const;
 
 /** Etherscan's source for these compiles to the code on chain except the metadata hash. */
@@ -306,6 +316,38 @@ for (const expected of CASES) {
     }
   });
 }
+
+const COMET = load('compound-v3-cusdcv3');
+const COMET_EXTENSION = '0xa70a0227028ad005f4fc9376a82cd1462e3aaedc' as Address;
+
+test("Comet's implementation hands a call it has no function for to its extension, whose source is proven too and whose functions join the ABI once each", async () => {
+  const proof = proven(await proveAbi(abiCaseReader(COMET), COMET.address, abiCaseBlock(COMET), { etherscan: abiCaseEtherscan(COMET.etherscan), compilers }));
+  assert.deepEqual(proof.extension, {
+    address: COMET_EXTENSION,
+    codeHash: codeHashOf(COMET, COMET_EXTENSION),
+    compiler: '0.8.15+commit.e14f2714',
+    contractPath: 'contracts/CometExtAssetList.sol',
+    contractName: 'CometExtAssetList',
+    immutablesMasked: 3,
+    librariesMasked: 0,
+    metadataHashMasked: false,
+  });
+  const names = proof.abi.filter((entry) => entry.type === 'function').map((entry) => parseFunctionSignature(namedSignatureOfAbiEntry(entry)).signature);
+  assert.deepEqual(
+    names.filter((signature) => signature === 'hasPermission(address,address)'),
+    ['hasPermission(address,address)'],
+    'a getter both contracts inherit is listed once, as the implementation answers it',
+  );
+  assert.equal(new Set(names).size, names.length);
+});
+
+test("Comet's extension must be proven like its implementation: no verified source, or another source, is refused", async () => {
+  const prove = (etherscan: Record<string, EtherscanAnswer>) => proveAbi(abiCaseReader(COMET), COMET.address, abiCaseBlock(COMET), { etherscan: abiCaseEtherscan(etherscan), compilers });
+  const implementationOnly = Object.fromEntries(Object.entries(COMET.etherscan).filter(([address]) => address !== COMET_EXTENSION));
+  assert.deepEqual(refusal(await prove(implementationOnly)), { why: 'not-on-etherscan', at: COMET_EXTENSION });
+  const swapped = refusal(await prove({ ...COMET.etherscan, [COMET_EXTENSION]: COMET.etherscan['0x0b07565a8ef48170e15918b251ebd95109b23255'] as EtherscanAnswer }));
+  assert.deepEqual(swapped.why === 'bytecode-mismatch' ? swapped.at : swapped, COMET_EXTENSION);
+});
 
 test('a proxy names its implementation, and a Safe proxy names its factory', async () => {
   const safe = load('safe-proxy-1-3-0');
@@ -524,16 +566,17 @@ test('an EIP-1967 implementation that itself delegates its fallback to an addres
 const IMPLEMENTATION = `0x${'1e'.repeat(20)}` as Address;
 const word = (value: bigint | string): string => (typeof value === 'bigint' ? value.toString(16) : value.slice(2)).padStart(64, '0');
 
-/** An EIP-1967 proxy at UNKNOWN whose implementation has no fallback of its own. */
-async function proveProxy(code: string): Promise<AbiProof | AbiRefusal> {
+/** An EIP-1967 proxy at UNKNOWN whose implementation, by default, has no fallback of its own. */
+async function proveProxy(code: string, implementation = '0x00', more: RecordedRead[] = [], etherscan: Record<string, EtherscanAnswer> = {}): Promise<AbiProof | AbiRefusal> {
   const fixture = load('bundler3');
   const reader = abiCaseReader(fixture, [
     { method: 'getCode', args: [UNKNOWN], value: `0x${code}` },
     { method: 'getStorageAt', args: [UNKNOWN, `0x${EIP1967_IMPLEMENTATION_SLOT.toString(16)}`], value: `0x${word(IMPLEMENTATION)}` },
-    { method: 'getCode', args: [IMPLEMENTATION], value: '0x00' },
+    { method: 'getCode', args: [IMPLEMENTATION], value: implementation },
+    ...more,
     ...noSlots(UNKNOWN),
   ]);
-  return proveAbi(reader, UNKNOWN, abiCaseBlock(fixture), { etherscan: abiCaseEtherscan({}), compilers });
+  return proveAbi(reader, UNKNOWN, abiCaseBlock(fixture), { etherscan: abiCaseEtherscan(etherscan), compilers });
 }
 
 /**
@@ -564,6 +607,33 @@ test('a proxy whose copied slot is overwritten before its MLOAD, by the call dat
 test('a fallback that delegates to a constant address it stores in memory or copies out of its own code is refused', async () => {
   assert.equal(refusal(await proveUnknown(`73${'be'.repeat(20)}5f52${DELEGATE_TO_MEMORY_WORD_0}`)).why, 'unknown-delegator');
   assert.equal(refusal(await proveUnknown(`6020600f5f39${DELEGATE_TO_MEMORY_WORD_0}${word(`0x${'be'.repeat(20)}`)}`)).why, 'unknown-delegator');
+});
+
+const SOLC_0_8_15 = '0.8.15+commit.e14f2714';
+
+/** One Solidity file as Etherscan answers it, unoptimized, and the runtime code solc compiles it to. */
+function verified(name: string, source: string): { readonly answer: EtherscanAnswer; readonly code: string } {
+  const load = compilers(SOLC_0_8_15);
+  if (load.kind !== 'loaded') return assert.fail(`solc ${SOLC_0_8_15} is ${load.kind}`);
+  const input = { language: 'Solidity', sources: { [`${name}.sol`]: { content: source } }, settings: { optimizer: { enabled: false, runs: 200 }, outputSelection: { [`${name}.sol`]: { [name]: ['evm.deployedBytecode.object'] } } } };
+  const output = JSON.parse(load.solc.compile(JSON.stringify(input)));
+  const item = { SourceCode: source, CompilerType: 'solc', CompilerVersion: `v${SOLC_0_8_15}`, ContractName: name, ContractFileName: '', OptimizationUsed: '0', Runs: '200', EVMVersion: 'Default' };
+  return { answer: { status: 200, body: { status: '1', message: 'OK', result: [item] } }, code: `0x${output.contracts[`${name}.sol`][name].evm.deployedBytecode.object}` };
+}
+
+test("an extension function that shares a selector with another of the implementation's functions is refused, since a call with it runs the implementation's", async () => {
+  const extension = `0x${'00'.repeat(19)}ee` as Address;
+  const implementation = verified(
+    'Impl',
+    'pragma solidity 0.8.15;\ncontract Impl {\n  function burn(uint256) external {}\n  fallback() external {\n    (bool ok, ) = address(uint160(0xee)).delegatecall(msg.data);\n    require(ok);\n  }\n}\n',
+  );
+  const clashing = verified('Ext', 'pragma solidity 0.8.15;\ncontract Ext {\n  function collate_propagate_storage(bytes16) external {}\n}\n');
+  const plain = verified('Ext', 'pragma solidity 0.8.15;\ncontract Ext {\n  function mint(uint256) external {}\n}\n');
+  const prove = (ext: { answer: EtherscanAnswer; code: string }) =>
+    proveProxy(slotFromCode(word(EIP1967_IMPLEMENTATION_SLOT)), implementation.code, [{ method: 'getCode', args: [extension], value: ext.code }], { [IMPLEMENTATION]: implementation.answer, [extension]: ext.answer });
+  assert.deepEqual(refusal(await prove(clashing)), { why: 'selector-clash', at: extension, selector: '0x42966c68' });
+  const names = proven(await prove(plain)).abi.flatMap((entry) => (entry.type === 'function' ? [namedSignatureOfAbiEntry(entry)] : []));
+  assert.deepEqual(names, ['burn(uint256)', 'mint(uint256)']);
 });
 
 test('an address with no code is refused', async () => {

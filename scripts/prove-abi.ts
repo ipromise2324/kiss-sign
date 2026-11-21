@@ -13,7 +13,10 @@ const HELP = `${USAGE}
 
 Proves a contract's ABI live and prints the proof. Etherscan's verified source, compiled with a
 pinned solc, must give the code both providers read at the latest block; behind a proxy it proves
-the implementation. A masked metadata hash prints as FINDING. A solc that is not pinned is refused,
+the implementation. An implementation that hands a call it has no function for to one constant
+address, its extension, has that extension's source proven the same way, and the extension's
+functions join the ABI; one with a selector of the implementation's own is refused. A masked
+metadata hash prints as FINDING. A solc that is not pinned is refused,
 naming pnpm pin-solc. A registry entry with routes prints NOT PROVABLE, since its calls run in the
 implementations its routes reach (pnpm pin-code pins those). For an entry with implementationRead
 it finds the implementation through those views and accepts it only when a call to the proxy's
@@ -66,10 +69,20 @@ const lines = [
   ...(proof.proxy.kind === 'none' ? [] : [`implementation ${checksumAddress(proof.proven)}`, `proxyCodeHash  ${proof.proxyCodeHash}`]),
   `compiler       solc ${proof.compiler}`,
   `contract       ${proof.contractPath}:${proof.contractName}`,
-  `functions      ${proof.abi.filter((entry) => entry.type === 'function').length}`,
+  `functions      ${proof.abi.filter((entry) => entry.type === 'function').length}${proof.extension === undefined ? '' : ', the extension\'s included'}`,
   `codeHash       ${proof.codeHash}`,
   `masked         ${proof.immutablesMasked} immutable spans, ${proof.librariesMasked} library spans${proof.metadataHashMasked ? ', the metadata hash' : ''}`,
   ...(proof.metadataHashMasked ? ['FINDING        the metadata hash differs: the verified source is not the deployed text, so its parameter names are not proven'] : []),
+  ...(proof.extension === undefined
+    ? []
+    : [
+        `extension      ${checksumAddress(proof.extension.address)}`,
+        `  compiler     solc ${proof.extension.compiler}`,
+        `  contract     ${proof.extension.contractPath}:${proof.extension.contractName}`,
+        `  codeHash     ${proof.extension.codeHash}`,
+        `  masked       ${proof.extension.immutablesMasked} immutable spans, ${proof.extension.librariesMasked} library spans${proof.extension.metadataHashMasked ? ', the metadata hash' : ''}`,
+        ...(proof.extension.metadataHashMasked ? ["FINDING        the extension's metadata hash differs: its verified source is not the deployed text, so its parameter names are not proven"] : []),
+      ]),
   `took           ${seconds}s`,
 ];
 console.log(lines.join('\n'));
