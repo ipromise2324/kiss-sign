@@ -1,0 +1,76 @@
+{
+  "title": { "en": "Supply USDC to a Compound III market (Comet)" },
+  "summary": {
+    "en": "The Safe first approves the market you pick for exactly the amount you type, then calls `supply` on that market with its base token and the same amount. The market pulls the tokens with `transferFrom` and raises the Safe's supply balance, which earns interest. Compound's app asks only for the market and the amount, so the card asks only those. Both calls go in one Safe transaction, so no allowance stays open."
+  },
+  "protocols": {
+    "compound-v3": {
+      "intro": {
+        "en": "Compound III (Comet): one lending market per base token. Suppliers of the base token earn interest from borrowers, who post other tokens as collateral."
+      },
+      "audits": {
+        "text": {
+          "en": "OpenZeppelin audited Comet from May 13 to June 14, 2022, and ChainSecurity also audited Comet. Certora audited the 2026 service patch, which governance deployed on Linea and Scroll; the AI found no audit report that names the exact CometWithExtendedAssetList build this market runs now."
+        },
+        "sources": [
+          "https://www.openzeppelin.com/news/compound-iii-audit",
+          "https://reports.chainsecurity.com/Compound/ChainSecurity_Compound_Comet_Audit.pdf",
+          "https://www.comp.xyz/t/comet-v3-service-patch-v1-2-1/7865"
+        ]
+      },
+      "incidents": []
+    }
+  },
+  "judgments": [
+    {
+      "text": {
+        "en": "Your USDC is lent to borrowers, so a collateral that fails can cost suppliers. In November 2025 deUSD and sdeUSD, collateral in this market, lost their liquidity, and Compound paused withdrawals and borrows here from November 4 until November 6. In November 2026 governance set tBTC's borrow factor in this market to 0 after Threshold paused tBTC redemptions."
+      },
+      "sources": [
+        "https://www.comp.xyz/t/gauntlet-pausing-ethereum-usdc-usds-and-usdt-comets/7326",
+        "https://www.tally.xyz/gov/compound/proposal/622",
+        "https://etherscan.io/tx/0xaaaf346a5a06619834d66cfee9fdaabc82686dba6a758e9a336ff99742499219"
+      ],
+      "recommendation": {
+        "en": "Supply only what you can leave in the market through a pause, and check the market's collateral list in Compound's app first."
+      }
+    },
+    {
+      "text": {
+        "en": "Compound governance deploys a new implementation for each change to the market's settings: 62 implementations since 2022, 10 of them new in the last year, the latest at block 26,364,909 on 2026-11-07. After each one, verify gives MISMATCH until a pull request pins the new code."
+      },
+      "sources": [
+        "https://etherscan.io/address/0xc3d688B66703497DAA19211EEdff47f25384cdc3#events"
+      ],
+      "recommendation": {
+        "en": "If verify gives MISMATCH for the code pin, do not sign; wait until the new pin is merged."
+      }
+    },
+    {
+      "text": {
+        "en": "The Safes that supplied in the study sent `supply` alone, spending an allowance of about 2^256 they had given earlier. This template needs the exact approval and the supply in one Safe transaction, so a supply-alone transaction gives MISMATCH, and an unlimited approval in its own transaction does too."
+      },
+      "sources": [
+        "https://etherscan.io/tx/0x3dce1bd786bccd1af6b70c9852477a994b90fae2f4e708c627ebb679dd6e849b",
+        "https://docs.compound.xyz/collateral-and-borrowing/"
+      ],
+      "recommendation": {
+        "en": "Propose the approval and the supply together as one batch, such as in the Safe Transaction Builder, not as two transactions."
+      }
+    }
+  ],
+  "fields": {
+    "1.approve.spender": {
+      "en": "The contract allowed to pull USDC from the Safe, fixed as the market you pick. In call 2 the market pulls exactly this amount with `transferFrom`."
+    },
+    "1.approve.value": {
+      "en": "The allowance's cap, equal to the amount you supply. Call 2 uses all of it, so the allowance is back to 0 after the transaction."
+    },
+    "2.supply.asset": {
+      "en": "The token supplied, fixed as the market's base token, USDC for cUSDCv3. Supplying another token the market takes would add collateral instead, which earns no interest."
+    },
+    "2.supply.amount": {
+      "en": "The amount supplied, equal to the card's amount. If the Safe has a USDC borrow in this market, the supply first repays it, and the Safe's supply balance rises by less."
+    }
+  }
+}

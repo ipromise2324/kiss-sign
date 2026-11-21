@@ -1,0 +1,42 @@
+{
+  "id": "compound/supply",
+  "card": {
+    "market": { "kind": "contract", "registryKind": "vault", "defillama": "compound-v3" },
+    "amount": { "kind": "amount", "of": "market.baseToken" }
+  },
+  "calls": [
+    {
+      "to": { "card": "market.baseToken" },
+      "value": { "const": "0" },
+      "function": "approve(address spender, uint256 value)",
+      "args": {
+        "spender": { "card": "market" },
+        "value": { "card": "amount" }
+      }
+    },
+    {
+      "to": { "card": "market" },
+      "value": { "const": "0" },
+      "function": "supply(address asset, uint256 amount)",
+      "args": {
+        "asset": { "card": "market.baseToken" },
+        "amount": { "card": "amount" }
+      }
+    }
+  ],
+  "effects": {
+    "gives": [{ "token": "card.market.baseToken", "amount": "card.amount" }],
+    "gets": [
+      {
+        "token": "card.market",
+        "amount": "card.amount",
+        "tolerance": {
+          "less": 2,
+          "why": { "en": "Comet rounds the supply down twice, to principal and back. In 113 USDC supplies studied, the balance rose 1 unit less than the amount in 91 and 2 less in 21; the other one repaid a borrow.",
+            "zh-TW": "Comet 存入時會往下取整兩次：換成本金、再換回餘額。研究的 113 筆 USDC 存入裡，餘額比金額少 1 單位的有 91 筆、少 2 單位的有 21 筆；剩下一筆是先還了借款。"
+          }
+        }
+      }
+    ]
+  }
+}
