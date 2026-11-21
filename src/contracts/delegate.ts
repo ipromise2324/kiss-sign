@@ -1,13 +1,15 @@
-import type { Hex } from '../safe/types.ts';
+import type { Address, Hex } from '../safe/types.ts';
 
 /**
  * What a call that names no function of the code runs. `delegates` is a DELEGATECALL or CALLCODE on its way whose
- * target may be anything but the contract's own address, a word of the call's data, or the value of a storage slot
- * the caller allows: a constant, another slot, or anything else state chose. `unresolved` is a path the walk cannot
- * follow.
+ * target may be anything but the contract's own address, a word of the call's data, the value of a storage slot the
+ * caller allows, or one constant address: another slot, anything else state chose, or a second constant. `extends`
+ * is code whose only such delegations go to `target`, a constant its code hash fixes, first at `pc`. `unresolved` is
+ * a path the walk cannot follow.
  */
 export type Fallback =
   | { readonly kind: 'fixed' }
+  | { readonly kind: 'extends'; readonly target: Address; readonly pc: number }
   | { readonly kind: 'delegates'; readonly pc: number }
   | { readonly kind: 'unresolved'; readonly pc: number; readonly why: Unfollowable };
 
@@ -34,6 +36,7 @@ const fromState = (w: Word): boolean => w.kind === 'slot' || w.kind === 'state';
 const valueOf = (w: Word): bigint | undefined => (w.kind === 'constant' ? w.value : undefined);
 
 const MAX_STATES = 200_000;
+const ADDRESS_LIMIT = 1n << 160n;
 const MAX_STACK = 1024;
 const WORD = (1n << 256n) - 1n;
 const LOW_224 = (1n << 224n) - 1n;
@@ -310,7 +313,8 @@ function parse(code: Hex): Code {
  * Walks every path a call with `selector` can take, keeping memory as the words each path knows and one flag for all
  * paths: whether a word state chose was ever written to it. A jump must go to a constant, a branch on a constant
  * takes only its side, and past `MAX_STATES` the walk gives up. Returns where a DELEGATECALL or CALLCODE aims at code
- * `allowed` does not cover, if anywhere, and whether memory came to hold a word state chose.
+ * `allowed` does not cover and that is not the first constant address such a call aims at, if anywhere, that constant
+ * and where, and whether memory came to hold a word state chose.
  */
 function walk(
   code: Code,
@@ -318,11 +322,12 @@ function walk(
   allowed: readonly bigint[],
   sites: readonly number[],
   memoryFromState: boolean,
-): { readonly delegates: number | undefined; readonly memoryFromState: boolean } {
+): { readonly delegates: number | undefined; readonly extension: { readonly target: bigint; readonly pc: number } | undefined; readonly memoryFromState: boolean } {
   const { bytes, jumpdests } = code;
   const covered = (target: Word): boolean =>
     target.kind === 'self' || target.kind === 'call' || target.kind === 'first-word' || (target.kind === 'slot' && allowed.includes(target.slot));
   let memory = memoryFromState;
+  let extension: { readonly target: bigint; readonly pc: number } | undefined;
   const seen = new Set<string>();
   const queue: State[] = [];
   const enqueue = (state: State) => {
@@ -453,7 +458,12 @@ function walk(
       if (op === CALL || op === CALLCODE || op === DELEGATECALL || op === STATICCALL) {
         const operands = take(op === CALL || op === CALLCODE ? 7 : 6);
         if (operands === undefined) break;
-        if ((op === DELEGATECALL || op === CALLCODE) && !covered(operands[1] as Word) && !sites.includes(at)) return { delegates: at, memoryFromState: memory };
+        const target = operands[1] as Word;
+        if ((op === DELEGATECALL || op === CALLCODE) && !covered(target) && !sites.includes(at)) {
+          const to = valueOf(target);
+          if (to === undefined || to >= ADDRESS_LIMIT || (extension !== undefined && extension.target !== to)) return { delegates: at, extension, memoryFromState: memory };
+          extension ??= { target: to, pc: at };
+        }
         const [returnAt, returnSize] = operands.slice(-2) as [Word, Word];
         if (valueOf(returnSize) !== 0n) memory = true;
         words = overwritten(words, returnAt, returnSize);
@@ -463,7 +473,7 @@ function walk(
       throw new Unresolved(at, 'unknown-opcode');
     }
   }
-  return { delegates: undefined, memoryFromState: memory };
+  return { delegates: undefined, extension, memoryFromState: memory };
 }
 
 function unpushedSelector(parsed: Code): bigint {
@@ -479,7 +489,8 @@ export const fallbackSelector = (code: Hex): Hex => `0x${unpushedSelector(parse(
  * Follows a call with `fallbackSelector`, so it matches no function and takes the fallback (or the receive function,
  * or a revert). `allowed` names the storage slots a known proxy keeps its implementation in, and `sites` the byte
  * offsets of delegations another check has accounted for. Memory starts as holding nothing state chose; when a walk
- * finds it can, the walk runs again with memory counted as state's from the start.
+ * finds it can, the walk runs again with memory counted as state's from the start. Whether code may hand calls to
+ * the one constant address of `extends` is its caller's to decide.
  */
 export function fallbackDelegation(code: Hex, allowed: readonly bigint[] = [], sites: readonly number[] = []): Fallback {
   const parsed = parse(code);
@@ -489,7 +500,10 @@ export function fallbackDelegation(code: Hex, allowed: readonly bigint[] = [], s
     for (;;) {
       const run = walk(parsed, selector, allowed, sites, memoryFromState);
       if (run.delegates !== undefined) return { kind: 'delegates', pc: run.delegates };
-      if (run.memoryFromState === memoryFromState) return { kind: 'fixed' };
+      if (run.memoryFromState === memoryFromState) {
+        const { extension } = run;
+        return extension === undefined ? { kind: 'fixed' } : { kind: 'extends', target: `0x${extension.target.toString(16).padStart(40, '0')}` as Address, pc: extension.pc };
+      }
       memoryFromState = run.memoryFromState;
     }
   } catch (error) {
