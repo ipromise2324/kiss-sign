@@ -312,3 +312,22 @@ test('a free number may be declared a time, and only a number may', () => {
     (error: unknown) => error instanceof TemplateError && error.path.endsWith('fields.appData.free') && /a time is a number of seconds/.test(error.message),
   );
 });
+
+test('every committed template keeps each reason card new prints, a max\'s and a margin\'s, to at most 200 characters per language', () => {
+  const root = join(import.meta.dirname, '..', 'templates');
+  const files = readdirSync(root, { recursive: true, encoding: 'utf8' }).filter((path) => path.endsWith('template.json') && !path.includes('instances'));
+  assert.ok(files.length > 0);
+  const long: string[] = [];
+  for (const file of files) {
+    const card: Record<string, any> = JSON.parse(readFileSync(join(root, file), 'utf8')).card ?? {};
+    for (const [name, field] of Object.entries(card)) {
+      for (const [at, why] of [['max.why', field?.max?.why], ['computed.margin.why', field?.computed?.margin?.why]] as const) {
+        if (why === undefined) continue;
+        for (const [language, written] of Object.entries(typeof why === 'string' ? { en: why } : why)) {
+          if ((written as string).length > 200) long.push(`${file}: card.${name}.${at}.${language} has ${(written as string).length}`);
+        }
+      }
+    }
+  }
+  assert.deepEqual(long, []);
+});
