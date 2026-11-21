@@ -3,9 +3,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { readRecording } from '../src/chain/bytecode.ts';
+import type { Reader } from '../src/chain/reader.ts';
 import { abiCaseBlock, abiCaseReader } from '../src/contracts/abi-case.ts';
 import type { AbiCase, RecordedRead } from '../src/contracts/abi-case.ts';
-import { keccakCode, pinOf, readRunningCode } from '../src/contracts/code.ts';
+import { keccakCode, pinOf, readCodeHistory, readRunningCode } from '../src/contracts/code.ts';
 import { describeRefusal } from '../src/contracts/prove.ts';
 import type { AbiProof } from '../src/contracts/prove.ts';
 import { parseRegistry } from '../src/registry.ts';
@@ -120,4 +121,29 @@ test("the report's check that the pin names the code the ABI proof compiled cove
   assert.equal(pinVerdict(cometWith({ ...PIN, implementation: bare }), compiled), 'FINDING');
   assert.equal(pinVerdict(cometWith(PIN), proof({ address: EXTENSION, codeHash: `0x${'ab'.repeat(32)}` })), 'FINDING');
   assert.equal(pinVerdict(cometWith(PIN), proof(undefined)), 'FINDING');
+});
+
+test('pin-code finds the block an implementation started handing calls to another extension, so each extension starts a span', async () => {
+  const clone = `0x${'c1'.repeat(20)}` as Address;
+  const delegateTo = (address: Address) => `0x5f5f365f5f73${address.slice(2)}5af400` as Hex;
+  const codeAt = (address: Address, n: bigint): Hex => {
+    if (n < 100n) return '0x' as Hex;
+    if (address === clone) return `0x363d3d373d3d3d363d73${IMPLEMENTATION.slice(2)}5af43d82803e903d91602b57fd5bf3` as Hex;
+    return address === IMPLEMENTATION ? delegateTo(n < 250n ? EXTENSION : OTHER) : ('0x6000' as Hex);
+  };
+  const agreed = <T>(value: T) => ({ kind: 'agreed', value, providers: fixture.providers }) as const;
+  const reader = {
+    providers: fixture.providers,
+    block: async (n: bigint) => agreed({ number: n, hash: `0x${'00'.repeat(32)}` as Hex }),
+    getCode: async (address: Address, ref: { readonly number: bigint }) => agreed(codeAt(address, ref.number)),
+  } as unknown as Reader;
+  const pin = (extension: Address) => ({
+    hash: keccakCode(codeAt(clone, 400n)),
+    implementation: { address: IMPLEMENTATION, hash: keccakCode(delegateTo(extension)), extension: { address: extension, hash: keccakCode('0x6000' as Hex) } },
+  });
+  assert.deepEqual(await readCodeHistory(reader, clone, 400n, pin(OTHER)), {
+    kind: 'read',
+    pins: { earlier: [{ from: 100n, pin: pin(EXTENSION) }], current: { from: 250n, pin: pin(OTHER) } },
+    before: { why: 'no-code', at: clone },
+  });
 });
