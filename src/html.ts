@@ -107,7 +107,8 @@ h1 .aiw>:first-child{margin-right:12px}
 :is(.sub,h3,.intro,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
 .verdict .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.checks li{display:flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
+.checks li{display:flex;align-items:flex-start;gap:8px;font-size:var(--t-row);position:relative}
+.checks li>.i{margin-top:4px}
 .checks .n{color:var(--fg2)}
 @media (max-width:600px){.checks{grid-template-columns:minmax(0,1fr)}}
 .verdict{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-top:18px;font-size:var(--t-row)}
