@@ -309,8 +309,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">At each signing, the program checks that every contract the card uses still runs the code it was researched with. An upgrade or a replacement is stopped. Signing does not touch fluid-lending-factory; only the report compares its code. No ABI proof compares the code fluid-liquidity runs today, so the report reads it at the latest block and compares it with the current code pin. fluid-liquidity: it routes each call by function selector to its own implementation; each implementation the seeds reach, with its function list, is checked the same way, and one no seed reaches is not checked.</span></span></li>
     <li data-state="ok" data-line="params"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Parameter checks <span class="n num">2 / 2</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">The program changed every bound argument of 2 test transactions one by one, and each must become a MISMATCH; an argument that takes any value must give the same result with another value.</span></span></li>
+    <li data-state="ok" data-line="trace"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Call traces <span class="n num">2 / 2</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">The program looks for each of the AI&#39;s flow lines in the call traces of past transactions, and checks that the template or a flow line explains every call inside that moves money; 2 of 2 passed. The traces come from drpc alone; their token transfers and approvals are checked against the receipt both providers agree on.</span></span></li>
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Two providers
-      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">Every chain read asks two providers; when they disagree, there is no result. Three research reads have one source, and none of them reaches a verdict: past transactions&#39; call traces (drpc), the search for past transactions (a transaction either Alchemy or Etherscan finds counts; only Etherscan searches for an event), and the addresses that ever received a vault&#39;s shares (Alchemy; each one&#39;s balance is still read through both).</span></span></li>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Every chain read asks two providers; when they disagree, there is no result. Three research reads have one source, and none of them reaches a verdict: past transactions&#39; call traces (drpc), the search for past transactions (a transaction either Alchemy or Etherscan finds counts; only Etherscan searches for an event), and the addresses that ever received a vault&#39;s shares (Alchemy; each one&#39;s balance is still read through both).</span></span></li>
   </ul>
   <div class="verdict" data-state="ok"><span class="lbl">Advice</span><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span class="aiw" data-ai><span>Usable. The tokens are actually held in Fluid&#39;s Liquidity contract, and at every signing the program checks that its code is unchanged. Send a small amount the first time.</span><span class="byai">AI research: be careful</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
@@ -334,16 +336,16 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span><code>deposit</code> sets no minimum shares.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>Every EOA that deposited by calling an fToken directly over the past year used this two-argument version; none used the version with <code>minAmountOut_</code>. By the contract&#39;s design, the fToken&#39;s exchange price comes from Liquidity&#39;s interest accrual and only rises, never falls, so it is hard to push the price up at the moment you deposit. <a class="aisrc" href="https://docs.fluid.io/autogenerated-docs/protocols/lending/fToken/main.sol/abstract.fTokenActions.html">source</a></span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>In the past transactions studied, every direct deposit into an fToken, by Safes and EOAs alike, used this two-argument version; none called the version with <code>minAmountOut_</code>. By the contract&#39;s design, the fToken&#39;s exchange price comes from Liquidity&#39;s interest accrual and only rises, so it is hard to push the price up at the moment you deposit. <a class="aisrc" href="https://docs.fluid.io/autogenerated-docs/protocols/lending/fToken/main.sol/abstract.fTokenActions.html">source</a></span><span class="byai">AI research</span></span></div>
           <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. If it matters to you, after verify check the number of shares the Safe actually received.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>fUSDC held about 283 million USDC a year ago, about 314 million in 2026-01, and about 135 million now.</span><span class="byai">AI research</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>fUSDC has existed for more than a year and is large.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>From 2026-05 to 06 it lost about 83 million in one month, at the same time as the reward private key incident (Fluid says the lending pools were not affected). 2,128 addresses hold it, and the top 10 hold 39.24%. <a class="aisrc" href="https://docs.fluid.io/autogenerated-docs/protocols/lending/fToken/main.sol/abstract.fTokenActions.html">source</a></span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>This pool has existed for more than a year. Fluid&#39;s withdrawal limits may delay a large withdrawal, so before you deposit, plan when you will withdraw.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>Over the year it shrank to about half of its 2026-01 peak and has held near that size since mid-2026; no holder owns a large part. The program&#39;s figures are in the Instance section. <a class="aisrc" href="https://docs.fluid.io/integrate/understanding-fluid-key-concepts-and-practices.html#withdrawal-limits">source</a></span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Before you deposit, plan when you will withdraw: a large withdrawal can be delayed by Fluid&#39;s withdrawal limits.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
   </div>
@@ -353,31 +355,35 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>Flow <span class="c">2 calls</span></h2>
   <p class="lead">Solid lines are the Safe&#39;s calls, the calls the template binds inside them, and flow lines the program saw in past transactions; dashed lines are AI research not checked; green lines are what you get.</p>
   <div class="diagram">
-  <svg viewBox="0 0 750 340" role="img" aria-labelledby="dt dd">
+  <svg viewBox="0 0 750 320" role="img" aria-labelledby="dt dd">
     <title id="dt">Transaction flow</title>
     <desc id="dd">Call 1: the Safe calls approve on usdc. Call 2: the Safe calls deposit on fluid-fusdc. Result: you get fluid-fusdc.</desc>
     <defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>
-    <line class="life" x1="90" y1="58" x2="90" y2="332"/>
+    <line class="life" x1="90" y1="58" x2="90" y2="312"/>
     <rect class="node" x="24" y="14" width="132" height="44" rx="6"/><text class="nodet" x="90" y="34" text-anchor="middle">your Safe</text><text class="nodes" x="90" y="50" text-anchor="middle">sender</text>
-    <line class="life" x1="280" y1="58" x2="280" y2="332"/>
+    <line class="life" x1="280" y1="58" x2="280" y2="312"/>
     <rect class="node" x="214" y="14" width="132" height="44" rx="6"/><text class="nodet" x="280" y="34" text-anchor="middle">usdc</text><text class="nodes" x="280" y="50" text-anchor="middle">token</text>
-    <line class="life" x1="470" y1="58" x2="470" y2="332"/>
+    <line class="life" x1="470" y1="58" x2="470" y2="312"/>
     <rect class="node" x="404" y="14" width="132" height="44" rx="6"/><text class="nodet" x="470" y="34" text-anchor="middle">fluid-fusdc</text><text class="nodes" x="470" y="50" text-anchor="middle">vault</text>
-    <line class="life" x1="660" y1="58" x2="660" y2="332"/>
+    <line class="life" x1="660" y1="58" x2="660" y2="312"/>
     <rect class="node" x="583" y="14" width="154" height="44" rx="6"/><text class="nodet" x="660" y="34" text-anchor="middle">fluid-liquidity</text><text class="nodes" x="660" y="50" text-anchor="middle">lending contract</text>
     <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">approve</text>
     <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#head)"/>
     <text class="no" x="102" y="142">2</text><text class="fn" x="120" y="142">deposit</text>
     <line class="call" x1="90" y1="156" x2="467" y2="156" marker-end="url(#head)"/>
-    <foreignObject x="353.6" y="177" width="396.4" height="44"><div class="cap" data-ai><span class="byai">AI research</span><span>The deposited USDC is held in Liquidity</span></div></foreignObject>
-    <line class="inner" x1="470" y1="224" x2="657" y2="224" marker-end="url(#head)"/>
-    <foreignObject x="102" y="233" width="648" height="44"><div class="cap" data-ai><span class="byai">AI research</span><span>The fToken pulls USDC from the Safe with <code>transferFrom</code> through the Liquidity contract</span></div></foreignObject>
-    <line class="inner" x1="470" y1="280" x2="283" y2="280" marker-end="url(#head)"/>
-    <text class="capg" x="104" y="306">you get fluid-fusdc</text>
-    <line class="gain" x1="470" y1="316" x2="93" y2="316" marker-end="url(#head)"/>
+    <foreignObject x="103.59999999999991" y="177" width="646.4000000000001" height="24"><div class="cap" data-ai><span class="mark ok">①</span><span>The fToken sends the deposit to Liquidity with <code>operate</code>, where the USDC is held</span></div></foreignObject>
+    <line class="inner seen" x1="470" y1="204" x2="657" y2="204" marker-end="url(#head)"/>
+    <foreignObject x="102" y="213" width="648" height="44"><div class="cap" data-ai><span class="mark ok">②</span><span>In Liquidity&#39;s callback the fToken pulls the USDC from the Safe into Liquidity with <code>transferFrom</code></span></div></foreignObject>
+    <line class="inner seen" x1="470" y1="260" x2="283" y2="260" marker-end="url(#head)"/>
+    <text class="capg" x="104" y="286">you get fluid-fusdc</text>
+    <line class="gain" x1="470" y1="296" x2="93" y2="296" marker-end="url(#head)"/>
   </svg>
   </div>
   <div class="scrollhint">Scroll the diagram sideways; fluid-liquidity is at the far right</div>
+  <ul class="legend">
+    <li data-state="ok">Confirmed two ways: the program saw the line in the call traces of past transactions (<a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/contracts/protocols/lending/fToken/main.sol#L289">①</a> 116 of 116, <a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/contracts/protocols/lending/fToken/main.sol#L676">②</a> 116 of 116), and the AI read the contract&#39;s source; the words beside each line are the AI&#39;s.</li>
+  </ul>
+  <p class="lead">A call trace shows only the path past transactions took; a contract may take another path on other state, and what protects you at signing is the effects check.</p>
   <div class="key">
     <span class="k0">Who decides</span>
     <span><span class="who you">you type</span>typed at each signing</span>
@@ -426,7 +432,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>fluid-lending</h2>
   <p class="intro"><span class="aiw" data-ai><span>The lending pools of Fluid (by the Instadapp team): deposit USDC or USDT to get fTokens. The assets are held together in Fluid&#39;s Liquidity contract and lent to Fluid&#39;s borrowing vaults.</span><span class="byai">AI research</span></span></p>
   <dl class="props two">
-    <div><dt>TVL</dt><dd><span><span class="num">$588.81 M</span></span><span class="sub2">on Ethereum <span class="num">$420.83 M</span></span></dd></div>
+    <div><dt>TVL</dt><dd><span><span class="num">$589.57 M</span></span><span class="sub2">on Ethereum <span class="num">$418.54 M</span></span></dd></div>
     <div><dt>Listed</dt><dd><span><span class="num">2024-02-25</span></span><span class="sub2">the date DefiLlama first listed it</span></dd></div>
     <div><dt>proxy</dt><dd><span>2 contracts</span><span class="sub2">read from the code pin</span>
       <dl class="nest">
@@ -439,59 +445,71 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div><dt><span class="num">2026-05-31</span></dt><dd><span class="num">$215.00 K</span><span class="sub2"><span class="aiw" data-ai><span>On 2026-05-27 the proposer and approver private keys of Fluid&#39;s reward distribution system were stolen, and the attacker paid out rewards of about 125,000 FLUID and 52,000 GHO, about 215,000 US dollars. Fluid disclosed it only on 2026-05-31, saying the lending pools, the vaults and user deposits were not affected. The AI found no formal post-mortem. <a class="aisrc" href="https://x.com/0xfluid/status/2061124908277538827">source 1</a> <a class="aisrc" href="https://protos.com/rough-weekend-for-defi-four-hacks-three-outages-one-warning/">source 2</a></span><span class="byai">AI research</span></span></span></dd></div>
       </dl></dd></div>
   </dl>
-  <p class="srcline">On 2026-11-17 the program read <a href="https://defillama.com/protocol/fluid-lending">DefiLlama</a>, <a href="https://defillama.com/hacks">DefiLlama hacks</a> and the chain. What is tagged AI research, the AI looked up.</p>
+  <p class="srcline">On 2026-11-22 the program read <a href="https://defillama.com/protocol/fluid-lending">DefiLlama</a>, <a href="https://defillama.com/hacks">DefiLlama hacks</a> and the chain. What is tagged AI research, the AI looked up.</p>
 </section>
 
 <section id="vault-fluid-fusdc">
   <h2>Instance</h2>
   <p class="lead"><a href="#a-fluid-fusdc">fluid-fusdc</a>: the recorded output of <code>pnpm instance-evidence</code>. Every number was asked of two providers; only the list of addresses that ever received shares comes from Alchemy alone. No conversion to US dollars here.</p>
   <dl class="props">
-    <div><dt>Factory</dt><dd>fluid-lending-factory answers <code>computeToken(usdc,&#34;fToken&#34;)</code> = 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33</dd><dd class="src">block 26436951</dd></div>
-    <div><dt>totalAssets now</dt><dd><span class="num">141,979,963.17 usdc</span></dd><dd class="src">2026-11-17, block 26436951</dd></div>
-    <div><dt>Holders</dt><dd><span class="num">2176</span> addresses hold shares, of <span class="num">11016</span> that ever received them</dd><dd class="src"></dd></div>
-    <div><dt>Largest holder</dt><dd><span class="num">9.10%</span></dd><dd class="src">of all shares</dd></div>
-    <div><dt>Top 10</dt><dd><span class="num">37.93%</span></dd><dd class="src">of all shares</dd></div>
+    <div><dt>Factory</dt><dd>fluid-lending-factory answers <code>computeToken(usdc,&#34;fToken&#34;)</code> = 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33</dd><dd class="src">block 26469848</dd></div>
+    <div><dt>totalAssets now</dt><dd><span class="num">144,152,795.68 usdc</span></dd><dd class="src">2026-11-22, block 26469848</dd></div>
+    <div><dt>Holders</dt><dd><span class="num">2279</span> addresses hold shares, of <span class="num">11146</span> that ever received them</dd><dd class="src"></dd></div>
+    <div><dt>Largest holder</dt><dd><span class="num">8.98%</span></dd><dd class="src">of all shares</dd></div>
+    <div><dt>Top 10</dt><dd><span class="num">33.00%</span></dd><dd class="src">of all shares</dd></div>
   </dl>
   <h3>Monthly totalAssets</h3>
   <div class="diagram chart">
   <svg viewBox="0 0 660 198" role="img" aria-labelledby="vt vd">
     <title id="vt">Monthly totalAssets</title>
-    <desc id="vd">13 months, 2025-11-21 to 2026-11-17, highest 318,963,517.99 usdc</desc>
-    <text class="tick" x="16" y="18">highest 318,963,517.99 usdc</text>
+    <desc id="vd">13 months, 2025-11-25 to 2026-11-22, highest 326,794,640.01 usdc</desc>
+    <text class="tick" x="16" y="18">highest 326,794,640.01 usdc</text>
     <line class="axis" x1="16" y1="150" x2="644" y2="150"/>
-    <rect class="bar" x="25.7" y="45" width="29.0" height="105"><title>2025-11-21: 289,134,742.69 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">Nov</text><text class="tick" x="40.2" y="188" text-anchor="middle">2025</text>
-    <rect class="bar" x="74.0" y="42" width="29.0" height="108"><title>2025-12-21: 297,445,155.59 usdc</title></rect><text class="tick thin" x="88.5" y="168" text-anchor="middle">Dec</text>
-    <rect class="bar" x="122.3" y="34" width="29.0" height="116"><title>2026-01-20: 318,963,517.99 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">Jan</text><text class="tick" x="136.8" y="188" text-anchor="middle">2026</text>
-    <rect class="bar" x="170.6" y="68" width="29.0" height="82"><title>2026-02-19: 225,474,164.48 usdc</title></rect><text class="tick thin" x="185.1" y="168" text-anchor="middle">Feb</text>
-    <rect class="bar" x="218.9" y="59" width="29.0" height="91"><title>2026-03-21: 249,911,532.12 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">Mar</text>
-    <rect class="bar" x="267.2" y="92" width="29.0" height="58"><title>2026-04-21: 159,702,358.37 usdc</title></rect><text class="tick thin" x="281.7" y="168" text-anchor="middle">Apr</text>
-    <rect class="bar" x="315.5" y="76" width="29.0" height="74"><title>2026-05-21: 202,662,215.2 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">May</text>
-    <rect class="bar" x="363.8" y="108" width="29.0" height="42"><title>2026-06-20: 114,170,806.11 usdc</title></rect><text class="tick thin" x="378.3" y="168" text-anchor="middle">Jun</text>
-    <rect class="bar" x="412.1" y="99" width="29.0" height="51"><title>2026-07-20: 140,377,325.63 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">Jul</text>
-    <rect class="bar" x="460.4" y="95" width="29.0" height="55"><title>2026-08-19: 151,226,487.48 usdc</title></rect><text class="tick thin" x="474.9" y="168" text-anchor="middle">Aug</text>
-    <rect class="bar" x="508.7" y="94" width="29.0" height="56"><title>2026-09-18: 154,602,869.8 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">Sep</text>
-    <rect class="bar" x="557.0" y="100" width="29.0" height="50"><title>2026-10-18: 136,112,470.57 usdc</title></rect><text class="tick thin" x="571.5" y="168" text-anchor="middle">Oct</text>
-    <rect class="bar last" x="605.4" y="98" width="29.0" height="52"><title>2026-11-17: 141,979,963.17 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">Nov</text>
+    <rect class="bar" x="25.7" y="49" width="29.0" height="101"><title>2025-11-25: 284,788,209.51 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">Nov</text><text class="tick" x="40.2" y="188" text-anchor="middle">2025</text>
+    <rect class="bar" x="74.0" y="55" width="29.0" height="95"><title>2025-12-26: 268,052,559.59 usdc</title></rect><text class="tick thin" x="88.5" y="168" text-anchor="middle">Dec</text>
+    <rect class="bar" x="122.3" y="34" width="29.0" height="116"><title>2026-01-25: 326,794,640.01 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">Jan</text><text class="tick" x="136.8" y="188" text-anchor="middle">2026</text>
+    <rect class="bar" x="170.6" y="70" width="29.0" height="80"><title>2026-02-24: 224,290,502.81 usdc</title></rect><text class="tick thin" x="185.1" y="168" text-anchor="middle">Feb</text>
+    <rect class="bar" x="218.9" y="81" width="29.0" height="69"><title>2026-03-26: 193,278,580.87 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">Mar</text>
+    <rect class="bar" x="267.2" y="88" width="29.0" height="62"><title>2026-04-25: 174,406,535.13 usdc</title></rect><text class="tick thin" x="281.7" y="168" text-anchor="middle">Apr</text>
+    <rect class="bar" x="315.5" y="77" width="29.0" height="73"><title>2026-05-25: 204,802,467.63 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">May</text>
+    <rect class="bar" x="363.8" y="107" width="29.0" height="43"><title>2026-06-24: 122,067,614.6 usdc</title></rect><text class="tick thin" x="378.3" y="168" text-anchor="middle">Jun</text>
+    <rect class="bar" x="412.1" y="101" width="29.0" height="49"><title>2026-07-24: 139,237,308.06 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">Jul</text>
+    <rect class="bar" x="460.4" y="96" width="29.0" height="54"><title>2026-08-24: 152,033,110.52 usdc</title></rect><text class="tick thin" x="474.9" y="168" text-anchor="middle">Aug</text>
+    <rect class="bar" x="508.7" y="101" width="29.0" height="49"><title>2026-09-23: 136,692,814.9 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">Sep</text>
+    <rect class="bar" x="557.0" y="103" width="29.0" height="47"><title>2026-10-23: 133,662,657.9 usdc</title></rect><text class="tick thin" x="571.5" y="168" text-anchor="middle">Oct</text>
+    <rect class="bar last" x="605.4" y="99" width="29.0" height="51"><title>2026-11-22: 144,152,795.68 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">Nov</text>
   </svg>
   </div>
   <details class="fold">
     <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Figures for 13 months</summary>
     <dl class="props">
-      <div><dt class="num">2025-11-21</dt><dd class="num">289,134,742.69 usdc</dd></div>
-      <div><dt class="num">2025-12-21</dt><dd class="num">297,445,155.59 usdc</dd></div>
-      <div><dt class="num">2026-01-20</dt><dd class="num">318,963,517.99 usdc</dd></div>
-      <div><dt class="num">2026-02-19</dt><dd class="num">225,474,164.48 usdc</dd></div>
-      <div><dt class="num">2026-03-21</dt><dd class="num">249,911,532.12 usdc</dd></div>
-      <div><dt class="num">2026-04-21</dt><dd class="num">159,702,358.37 usdc</dd></div>
-      <div><dt class="num">2026-05-21</dt><dd class="num">202,662,215.2 usdc</dd></div>
-      <div><dt class="num">2026-06-20</dt><dd class="num">114,170,806.11 usdc</dd></div>
-      <div><dt class="num">2026-07-20</dt><dd class="num">140,377,325.63 usdc</dd></div>
-      <div><dt class="num">2026-08-19</dt><dd class="num">151,226,487.48 usdc</dd></div>
-      <div><dt class="num">2026-09-18</dt><dd class="num">154,602,869.8 usdc</dd></div>
-      <div><dt class="num">2026-10-18</dt><dd class="num">136,112,470.57 usdc</dd></div>
-      <div><dt class="num">2026-11-17</dt><dd class="num">141,979,963.17 usdc</dd></div>
+      <div><dt class="num">2025-11-25</dt><dd class="num">284,788,209.51 usdc</dd></div>
+      <div><dt class="num">2025-12-26</dt><dd class="num">268,052,559.59 usdc</dd></div>
+      <div><dt class="num">2026-01-25</dt><dd class="num">326,794,640.01 usdc</dd></div>
+      <div><dt class="num">2026-02-24</dt><dd class="num">224,290,502.81 usdc</dd></div>
+      <div><dt class="num">2026-03-26</dt><dd class="num">193,278,580.87 usdc</dd></div>
+      <div><dt class="num">2026-04-25</dt><dd class="num">174,406,535.13 usdc</dd></div>
+      <div><dt class="num">2026-05-25</dt><dd class="num">204,802,467.63 usdc</dd></div>
+      <div><dt class="num">2026-06-24</dt><dd class="num">122,067,614.6 usdc</dd></div>
+      <div><dt class="num">2026-07-24</dt><dd class="num">139,237,308.06 usdc</dd></div>
+      <div><dt class="num">2026-08-24</dt><dd class="num">152,033,110.52 usdc</dd></div>
+      <div><dt class="num">2026-09-23</dt><dd class="num">136,692,814.9 usdc</dd></div>
+      <div><dt class="num">2026-10-23</dt><dd class="num">133,662,657.9 usdc</dd></div>
+      <div><dt class="num">2026-11-22</dt><dd class="num">144,152,795.68 usdc</dd></div>
     </dl>
   </details>
+  <div data-ai>
+  <h3><span class="aiw" data-ai><span>Where deposits go</span><span class="byai">AI research</span></span></h3>
+  <p class="intro"><span class="aiw" data-ai><span>Your USDC does not stay in fUSDC: in the same transaction it goes to Fluid&#39;s Liquidity contract, which holds the deposits of every Fluid market and lends them to Fluid&#39;s borrowing vaults and DEX pools. fUSDC only keeps account of your share. <a class="aisrc" href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/contracts/protocols/lending/fToken/main.sol#L289">source 1</a> <a class="aisrc" href="https://docs.fluid.io/integrate/understanding-fluid-key-concepts-and-practices.html#user-definition">source 2</a></span></span></p>
+  </div>
+  <div data-ai>
+  <h3><span class="aiw" data-ai><span>Getting the USDC back</span><span class="byai">AI research</span></span></h3>
+  <p class="intro"><span class="aiw" data-ai><span>A large withdrawal can be delayed: Liquidity lets fUSDC take out only part of its deposits at a time, a limit that grows back over time, and only what borrowers have not borrowed. A small withdrawal under the base limit is not throttled. <a class="aisrc" href="https://docs.fluid.io/integrate/understanding-fluid-key-concepts-and-practices.html#withdrawal-limits">source 1</a> <a class="aisrc" href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/contracts/liquidity/adminModule/main.sol#L596">source 2</a></span></span></p>
+  </div>
+  <div data-ai>
+  <h3><span class="aiw" data-ai><span>Who can change it</span><span class="byai">AI research</span></span></h3>
+  <p class="intro"><span class="aiw" data-ai><span>Liquidity&#39;s code and its admins are changed by Instadapp governance through a timelock with a 1-day delay. The admins it names can change the withdrawal limits and the interest rates at once, and its guardians can pause deposits and withdrawals of a token at once. <a class="aisrc" href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/contracts/liquidity/adminModule/main.sol#L72-L102">source 1</a> <a class="aisrc" href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/contracts/liquidity/adminModule/main.sol#L1373-L1386">source 2</a> <a class="aisrc" href="https://etherscan.io/address/0x2386DC45AdDed673317eF068992F19421B481F4c#readContract">source 3</a></span></span></p>
+  </div>
 </section>
 
 <section id="wallet">
@@ -516,7 +534,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="addresses">
-  <h2>Addresses <span class="c">4</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Each address must be confirmed in at least two places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
+  <h2>Addresses <span class="c">4</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t7"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t7" role="tooltip">Each address must be confirmed in at least two places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
   <div class="rows">
     <details class="fold">
       <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>4 more addresses have no result for you to review</summary>
@@ -533,7 +551,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md">github.com/Instadapp/fluid-contracts-public/…/deployments.md</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to fluid-lending (compared with <a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a>, <a href="https://github.com/instadapp">GitHub verified domains</a>)</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>newest version (main) lists it too</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/fToken_fUSDC.json">github.com/Instadapp/fluid-contracts-public/…/fToken_fUSDC.json</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to fluid-lending (compared with <a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a>, <a href="https://github.com/instadapp">GitHub verified domains</a>)</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>newest version (main) lists it too</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://docs.fluid.io/fluid-integration/lending/read/lending-tokens.html">docs.fluid.io/fluid-integration/lending/read</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to fluid-lending (compared with <a href="https://defillama.com/protocol/fluid-lending">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a>)</span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>CoinGecko<span class="res">nothing to compare</span></span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>factory</span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span><a href="https://immunefi.com/bug-bounty/instadapp/">Immunefi bug bounty scope</a><span class="res">address not listed</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>deployer<span class="res">not proven</span></span></span></div></div>
         <div class="confirmed">Confirmed in 3 places: official page + github.com/Instadapp/fluid-contracts-public/…/fToken_fUSDC.json (github.com/instadapp), docs.fluid.io/fluid-integration/lending/read, factory</div>
-        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 1 place · AI judgment: no problem</summary>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 4 places · AI judgment: no problem</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Fluid&#39;s GitHub deployments list (deployments.md, at commit 404d73f, still on main) gives this address for fToken_fUSDC on mainnet, and the file fToken_fUSDC.json gives it as address <a class="aisrc" href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Fluid&#39;s docs page of lending tokens lists fUSDC with this address <a class="aisrc" href="https://docs.fluid.io/fluid-integration/lending/read/lending-tokens.html">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>The LendingFactory&#39;s <code>computeToken</code> answers this address for the asset and the name fToken <a class="aisrc" href="https://etherscan.io/address/0x54B91A0D94cb471F37f949c60F7Fa7935b551D03#readContract">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
           <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: verified contract name fToken. Its creation transaction was sent by 0x8e7fb4d4fabc504a4ad73d44e09080cb68960098 and deployed it through CREATE3 <a class="aisrc" href="https://etherscan.io/tx/0x3771681407c5f5d10c779a2bc685470c559652d83eb69d86b3af68ae7c6e0494">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
         </details></div>
     </div>
@@ -542,7 +563,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div><span class="nm">fluid-lending-factory</span><span class="role"><span class="aiw" data-ai><span>Fluid&#39;s lending pool factory, which computes each asset&#39;s official fToken address with <code>computeToken</code></span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
       <div class="body"><span class="addr">0x54B91A0D94cb471F37f949c60F7Fa7935b551D03</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md">github.com/Instadapp/fluid-contracts-public/…/deployments.md</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to fluid-lending (compared with <a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a>, <a href="https://github.com/instadapp">GitHub verified domains</a>)</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>newest version (main) lists it too</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/LendingFactory.json">github.com/Instadapp/fluid-contracts-public/…/LendingFactory.json</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to fluid-lending (compared with <a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a>, <a href="https://github.com/instadapp">GitHub verified domains</a>)</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>newest version (main) lists it too</span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span><a href="https://immunefi.com/bug-bounty/instadapp/">Immunefi bug bounty scope</a><span class="res">address not listed</span></span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://etherscan.io/address/0x0ed35b1609ec45c7079e80d11149a52717e4859a">deployer 0x0Ed35B1609Ec45c7079E80d11149a52717e4859A, which also deployed fluid-liquidity</a></span></span></div></div>
-        <div class="confirmed">Confirmed in 2 places: official page + github.com/Instadapp/fluid-contracts-public/…/LendingFactory.json (github.com/instadapp), deployer</div></div>
+        <div class="confirmed">Confirmed in 2 places: official page + github.com/Instadapp/fluid-contracts-public/…/LendingFactory.json (github.com/instadapp), deployer</div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 1 place · AI judgment: no problem</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: verified contract name FluidLendingFactory. Its creation transaction was sent by 0x0Ed35B1609Ec45c7079E80d11149a52717e4859A through the public CREATE2 deployer 0x4e59b44847b379578588920cA78FbF26c0B4956C; the same account deployed Liquidity <a class="aisrc" href="https://etherscan.io/tx/0x1e8de8090fc65fc3e491c6069151b7be23dddf7e211ff9bacc8c1cfcf33082dd">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+        </details></div>
     </div>
     <div class="ad" id="a-fluid-liquidity" data-state="ok">
       <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
@@ -567,24 +591,24 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>Past transactions</h2>
-  <p class="lead">In past records, <span class="num">97</span> transactions match the template exactly, made the way yours is: Safe <span class="num">1</span> (1 Safe), EOA <span class="num">96</span> (87 addresses, each sending one call of the template). All of them succeeded: they were found through the event logs of fluid-fusdc mint (deposit), and a failed transaction leaves no such log. The latest 3 exact matches: <a href="https://etherscan.io/tx/0x65e8a75ca2a4d4f09052428a7b2de41d46c55ea3c04d43208dcb163a10366430">0x65e8a75c…</a>, <a href="https://etherscan.io/tx/0x5c8e02c495cf31e9d7cc4a46ed2eb4664544071e61520ca2dd0d3a600189958a">0x5c8e02c4…</a>, <a href="https://etherscan.io/tx/0x699557e62adab4d3465ec69cb6a275c1f124999515cf007b9bf7bcc92b6f8586">0x699557e6…</a>.</p>
+  <p class="lead">In past records, <span class="num">116</span> transactions match the template exactly, made the way yours is: Safe <span class="num">3</span> (3 Safes), EOA <span class="num">113</span> (110 addresses, each sending one call of the template). All of them succeeded: they were found through the event logs of fluid-fusdc mint (deposit), and a failed transaction leaves no such log. The latest 3 exact matches: <a href="https://etherscan.io/tx/0xed828af255bbd7f5d0122f885295f59b18cfca86dca3d4c2799ec7825198857e">0xed828af2…</a>, <a href="https://etherscan.io/tx/0x71f1180c86c7c49410622d417abecf59cb0225b23b53b22e7b0b2de02c7bad86">0x71f1180c…</a>, <a href="https://etherscan.io/tx/0xbf2bc618c0d4df15a803ed30d467e3d5813b0e705725527bd4217ebcfbfeefd4">0xbf2bc618…</a>.</p>
   <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span><span class="num">43</span> more differ from yours: <span class="num">0</span> have the same shape but with an address outside the registry, <span class="num">43</span> have another shape</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>The only Safe transaction that does not fit calls <code>deposit</code> on another contract, which then deposits into fUSDC. That is not the Fluid app&#39;s route.</span><span class="byai">AI research</span></span></p>
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span><span class="num">45</span> more differ from yours: <span class="num">0</span> have the same shape but with an address outside the registry, <span class="num">45</span> have another shape</span></summary>
+  <p class="intro"><span class="aiw" data-ai><span>The one Safe that deposited another way, and 44 of the EOAs, called <code>deposit</code> on Fluid Lite&#39;s USDC vault (0x273DA948ACa9261043fbdb2a857BC255ECC29012), which then deposits into fUSDC; that is another product, not this template&#39;s route.</span><span class="byai">AI research</span></span></p>
   <p class="lead">Only transactions that used this operation&#39;s calls count. An exact match has the template&#39;s calls and argument positions, meets every rule the transaction itself can show (such as where the sender goes, or a fixed value), and uses a contract the template allows wherever the template binds a registry contract. Same shape but a market, token, vault or address outside the registry means the calls, argument positions and those rules are the same, but an address or market is not in the registry; the kind is named when the record shows it, otherwise only address. The rest are grouped by reason, each with up to 3 examples.</p>
-  <h3>Search of fluid-fusdc mint (deposit): 512 found, 237 studied</h3>
-  <p class="lead">Recorded in <code>testdata/research/fluid-vault-deposit-fusdc.json</code>. Alchemy and Etherscan found exactly the same (<span class="num">512 = 512</span>).</p>
+  <h3>Search of fluid-fusdc mint (deposit): 588 found, 240 studied</h3>
+  <p class="lead">Recorded in <code>testdata/research/fluid-vault-deposit-fusdc.json</code>. Alchemy and Etherscan found exactly the same (<span class="num">588 = 588</span>).</p>
   <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">2</span> transactions used this operation&#39;s calls (2 Safes); <span class="num">1</span> matches the template exactly.</span></div>
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">4</span> transactions used this operation&#39;s calls (4 Safes); <span class="num">3</span> match the template exactly.</span></div>
     <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x273DA948ACa9261043fbdb2a857BC255ECC29012.deposit</code></div><div>The calls differ from the template, which is <code>approve → deposit</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x1128c3ee12632db7a14da947d8aa884874ba97d387d1d1624c5f6d9d442de475">0x1128c3ee…</a></div></div></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x076b3296600dbb62a0d775c743d25c034096d7825503eb02032affdf644d83b4">0x076b3296…</a></div></div></div>
   </div>
   <div class="pblock">
-    <div class="ph"><span class="pt">EOA calls deposit directly</span><span><span class="num">138</span> transactions used this operation&#39;s calls (127 addresses); <span class="num">96</span> match the template exactly.</span></div>
-    <div class="pg"><span class="pc num">42</span><div><div>The called contract is <span class="addr">0x273DA948ACa9261043fbdb2a857BC255ECC29012</span>, not the template&#39;s fluid-fusdc<span class="f3">, from 40 addresses</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xc414006cb6065dea598827193afd72f685a4571a81bcd0b31db5924218d5812d">0xc414006c…</a>, <a href="https://etherscan.io/tx/0xd1e82a6ce311fc25d147208029cd79b5617aa6cfe028c303495c4b17768350d5">0xd1e82a6c…</a>, <a href="https://etherscan.io/tx/0xd4f717913232cdc84898369963e6a76fb4783fff45f7f214caf8d664842703d8">0xd4f71791…</a></div></div></div>
+    <div class="ph"><span class="pt">EOA calls deposit directly</span><span><span class="num">157</span> transactions used this operation&#39;s calls (154 addresses); <span class="num">113</span> match the template exactly.</span></div>
+    <div class="pg"><span class="pc num">44</span><div><div>The called contract is <span class="addr">0x273DA948ACa9261043fbdb2a857BC255ECC29012</span>, not the template&#39;s fluid-fusdc<span class="f3">, from 44 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x3bcc6aac4eaa60573f0cc961c88445d30df4896be482b3deaaa7399565c0125f">0x3bcc6aac…</a>, <a href="https://etherscan.io/tx/0x3391b5f146423e7e155da481541c481b3128e009e957e779d291222e6d266754">0x3391b5f1…</a>, <a href="https://etherscan.io/tx/0x0f158d9a5d4aa3a79044d15ee305c159cec3ecab84af7982903e72b84203dea9">0x0f158d9a…</a></div></div></div>
   </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>97 more are other operations, not counted: <code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 15, <code>0x18f1FAC179feB0ee44F339a616feFb979A6961BE.0x248b1701</code> 6, <code>0x3f04b65Ddbd87f9CE0A2e7Eb24d80e7fb87625b5.0x230ae89c</code> 5, <code>0x3f04b65Ddbd87f9CE0A2e7Eb24d80e7fb87625b5.mint</code> 5, and others.</span></div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>79 more are other operations, not counted: <code>0xB0f56BB0bf13ee05FeF8cD2d8DF5FfdFcAC7a74f.0xbaae8abf</code> 8, <code>0xD0F2812F57D284c0d30Ddd8f73b146Ef0cD5a25c.0x2be01190</code> 6, <code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 5, <code>0x3f04b65Ddbd87f9CE0A2e7Eb24d80e7fb87625b5.0x230ae89c</code> 4, and others.</span></div>
   </details>
 </section>
 
@@ -623,7 +647,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<footer class="foot">Written by <code>pnpm report fluid/vault-deposit --instance-of fluid-fusdc --record</code> from <code>templates/fluid/vault-deposit/template.json</code>, <code>templates/fluid/vault-deposit/docs.json</code>, <code>templates/fluid/vault-deposit/instances/fluid-fusdc/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/fluid-vault-deposit/fluid-fusdc.json</code>, <code>testdata/abi</code>, <code>testdata/research/fluid-vault-deposit-fusdc.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/fluid/vault-deposit/notes.json</code>, <code>templates/fluid/vault-deposit/instances/fluid-fusdc/notes.json</code>; the data was read on 2026-11-17. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
+<footer class="foot">Written by <code>pnpm report fluid/vault-deposit --instance-of fluid-fusdc --record</code> from <code>templates/fluid/vault-deposit/template.json</code>, <code>templates/fluid/vault-deposit/docs.json</code>, <code>templates/fluid/vault-deposit/instances/fluid-fusdc/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/fluid-vault-deposit/fluid-fusdc.json</code>, <code>testdata/abi</code>, <code>testdata/research/fluid-vault-deposit-fusdc.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/fluid/vault-deposit/notes.json</code>, <code>templates/fluid/vault-deposit/instances/fluid-fusdc/notes.json</code>; the data was read on 2026-11-22. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
 
 </div>
 </div>
