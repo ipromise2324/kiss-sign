@@ -4,165 +4,178 @@
   "token": "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
   "anchor": "any",
   "to": "0x000000000004444c5dc75cb358380d2e3de08a90",
-  "head": "26427898",
+  "head": "26469877",
+  "yearPages": 10,
   "maxTxs": 240
  },
- "head": "26427898",
+ "head": "26469877",
  "studiedWith": {
   "template": "0x69d730527fc7f792d52a9c3c63241fd5b3eec8d96f9aeeb3d10ad5fdf139933c",
   "registry": "0xffc52eac1513801ed2139179b87eb5be781df2fe5486a720bbd95bd95b39efef",
   "study": "0xcc2d6f848cc7b0bc15af6b5c995c62c939021dfd4c6a622f5f935cb2c85ec225"
  },
  "search": {
+  "year": {
+   "kind": "overflow",
+   "range": {
+    "fromBlock": "23839201",
+    "toBlock": "26467200"
+   },
+   "pages": 10,
+   "sources": [
+    "alchemy",
+    "etherscan"
+   ]
+  },
   "windows": [
    {
     "asked": {
-     "fromBlock": "24007801",
-     "toBlock": "24015000"
+     "fromBlock": "24051001",
+     "toBlock": "24058200"
     },
     "range": {
-     "fromBlock": "24007801",
-     "toBlock": "24015000"
+     "fromBlock": "24051001",
+     "toBlock": "24058200"
     },
-    "found": 157,
+    "found": 73,
     "studied": 20
    },
    {
     "asked": {
-     "fromBlock": "24226801",
-     "toBlock": "24234000"
+     "fromBlock": "24270001",
+     "toBlock": "24277200"
     },
     "range": {
-     "fromBlock": "24226801",
-     "toBlock": "24234000"
+     "fromBlock": "24270001",
+     "toBlock": "24277200"
     },
-    "found": 154,
+    "found": 205,
     "studied": 20
    },
    {
     "asked": {
-     "fromBlock": "24445801",
-     "toBlock": "24453000"
+     "fromBlock": "24489001",
+     "toBlock": "24496200"
     },
     "range": {
-     "fromBlock": "24445801",
-     "toBlock": "24453000"
+     "fromBlock": "24489001",
+     "toBlock": "24496200"
     },
-    "found": 394,
+    "found": 251,
     "studied": 20
    },
    {
     "asked": {
-     "fromBlock": "24664801",
-     "toBlock": "24672000"
+     "fromBlock": "24708001",
+     "toBlock": "24715200"
     },
     "range": {
-     "fromBlock": "24664801",
-     "toBlock": "24672000"
+     "fromBlock": "24708001",
+     "toBlock": "24715200"
     },
-    "found": 384,
+    "found": 202,
     "studied": 20
    },
    {
     "asked": {
-     "fromBlock": "24883801",
-     "toBlock": "24891000"
+     "fromBlock": "24927001",
+     "toBlock": "24934200"
     },
     "range": {
-     "fromBlock": "24883801",
-     "toBlock": "24891000"
-    },
-    "found": 332,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "25102801",
-     "toBlock": "25110000"
-    },
-    "range": {
-     "fromBlock": "25102801",
-     "toBlock": "25110000"
-    },
-    "found": 86,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "25321801",
-     "toBlock": "25329000"
-    },
-    "range": {
-     "fromBlock": "25321801",
-     "toBlock": "25329000"
-    },
-    "found": 233,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "25540801",
-     "toBlock": "25548000"
-    },
-    "range": {
-     "fromBlock": "25540801",
-     "toBlock": "25548000"
+     "fromBlock": "24927001",
+     "toBlock": "24934200"
     },
     "found": 182,
     "studied": 20
    },
    {
     "asked": {
-     "fromBlock": "25759801",
-     "toBlock": "25767000"
+     "fromBlock": "25146001",
+     "toBlock": "25153200"
     },
     "range": {
-     "fromBlock": "25759801",
-     "toBlock": "25767000"
+     "fromBlock": "25146001",
+     "toBlock": "25153200"
     },
-    "found": 30,
+    "found": 140,
     "studied": 20
    },
    {
     "asked": {
-     "fromBlock": "25978801",
-     "toBlock": "25986000"
+     "fromBlock": "25365001",
+     "toBlock": "25372200"
     },
     "range": {
-     "fromBlock": "25978801",
-     "toBlock": "25986000"
+     "fromBlock": "25365001",
+     "toBlock": "25372200"
     },
-    "found": 52,
+    "found": 111,
     "studied": 20
    },
    {
     "asked": {
-     "fromBlock": "26197801",
-     "toBlock": "26205000"
+     "fromBlock": "25584001",
+     "toBlock": "25591200"
     },
     "range": {
-     "fromBlock": "26197801",
-     "toBlock": "26205000"
+     "fromBlock": "25584001",
+     "toBlock": "25591200"
     },
-    "found": 89,
+    "found": 185,
     "studied": 20
    },
    {
     "asked": {
-     "fromBlock": "26416801",
-     "toBlock": "26424000"
+     "fromBlock": "25803001",
+     "toBlock": "25810200"
     },
     "range": {
-     "fromBlock": "26416801",
-     "toBlock": "26424000"
+     "fromBlock": "25803001",
+     "toBlock": "25810200"
     },
-    "found": 74,
+    "found": 166,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "26022001",
+     "toBlock": "26029200"
+    },
+    "range": {
+     "fromBlock": "26022001",
+     "toBlock": "26029200"
+    },
+    "found": 247,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "26241001",
+     "toBlock": "26248200"
+    },
+    "range": {
+     "fromBlock": "26241001",
+     "toBlock": "26248200"
+    },
+    "found": 106,
+    "studied": 20
+   },
+   {
+    "asked": {
+     "fromBlock": "26460001",
+     "toBlock": "26467200"
+    },
+    "range": {
+     "fromBlock": "26460001",
+     "toBlock": "26467200"
+    },
+    "found": 65,
     "studied": 20
    }
   ],
   "perWindow": 20,
   "found": {
-   "total": 2167,
+   "total": 1933,
    "only": {
     "alchemy": [],
     "etherscan": []
@@ -173,1695 +186,1683 @@
  "studies": [
   {
    "kind": "not-studied",
-   "hash": "0xa7c6dd8239fa21b420225a050ff50ddb65efb04d57fee6709ad0a86d033b12a2",
+   "hash": "0xa4fba03d5c2e593b0ba4fccdf133db44ebf6a8830af92e7daf1310666ff8005b",
    "why": "calls no function the template calls",
-   "to": "0xa69babef1ca67a37ffaf7a485dfff3382056e78c",
-   "selector": "0x78e111f6"
+   "to": "0x0d05a7d3448512b78fa8a9e46c4872c88c4a0d05",
+   "selector": "0x84a7f3dd"
   },
   {
    "kind": "not-studied",
-   "hash": "0xe9beec90a408feec4defca3b4f4ae906aa5b8d1604595f1d2fd303b585453e9b",
+   "hash": "0xf5c2c52aa87b740e9d6b6f788f472b125b5cb9a9e9d5397a021a0ab02f0c5e98",
+   "why": "calls no function the template calls",
+   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe307f5cb6564f794703ee285528169c4e52e1cccb0e64be36ff042df543d739f",
+   "why": "calls no function the template calls",
+   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
+   "selector": "0xa0000000"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5100130cf2a8c67b8ecf68447ed5e7a2ee973bfb01fd4e258831bb92356de145",
+   "why": "calls no function the template calls",
+   "to": "0xaf682de1f2e6f710731121a05a44cb3c1b511f7d",
+   "selector": "0x12aa3caf"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x15edcff9fa648ba413d58346dd37fb124ad5e53b66d780720a2def01fbbf0273",
+   "why": "calls no function the template calls",
+   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa464299f8ff4956f981c114a578c720b4f5bebbb10c5f1011bda194258a2ec0f",
+   "why": "calls no function the template calls",
+   "to": "0xaf682de1f2e6f710731121a05a44cb3c1b511f7d",
+   "selector": "0x12aa3caf"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x37513bc9aa50906fbee661f1b29c5e3ca81ac58d3cf2b1c078477590076cd1f2",
+   "why": "calls no function the template calls",
+   "to": "0xaf682de1f2e6f710731121a05a44cb3c1b511f7d",
+   "selector": "0x12aa3caf"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc1e8ae9ef9aa847c2149d57be083407c0b50ac5a9455bf51303e86dbf1831157",
+   "why": "calls no function the template calls",
+   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x525799533561c907f777fe62710488ce8e5dc58c98c747a8d7e22c7ce143c45b",
    "why": "calls no function the template calls",
    "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
    "selector": "0x4cf3fe9c"
   },
   {
    "kind": "not-studied",
-   "hash": "0x1b8df507185c859cecaff82581e6e9cfbdbf6b687f6ab4989dfcec5d92b5dd84",
+   "hash": "0x5e967c7f5b6096986d9b29539c7e1970ff85039221ac0eaa434ac0326b236964",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9367fc9abfa852815fc171706b9b9c65d5fb38a9a1f8d0ec98e0b8b6bbf53d5b",
+   "why": "calls no function the template calls",
+   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
+   "selector": "0xa0000000"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x95e156cbb63bb6d706c2dbdf00eaa8de1dff4aad479ac073a31bc5316a8262d8",
+   "why": "calls no function the template calls",
+   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc6719c178159d5768d70f4379730b812d861457b0ff0f60c5873ebbd6ccd5886",
+   "why": "calls no function the template calls",
+   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
+   "selector": "0xa0000000"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa93594e3f330ee89c60cb856519eaa2729ce43bbe64176066ffe5b3060c068eb",
+   "why": "calls no function the template calls",
+   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xba1247e8786a81228c0eb5bd2069e7d25452f34d78df81156e660581039e85bc",
+   "why": "calls no function the template calls",
+   "to": "0xb8506d42ad5fd6a672b42aec94b82846876d458e",
+   "selector": "0x452e3a4f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1ce417182df035e68bdca9e9c7b1609afde7d43a6885a0ac032cb02b2531e0f3",
+   "why": "calls no function the template calls",
+   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
+   "selector": "0xa0000000"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x594cc3c5034b815e396a881eb08d837696449ef878ace8031db4e61ccaabefa8",
+   "why": "calls no function the template calls",
+   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x69a517bef7df2236fda4e35290c2d1bae300ea2a5335d19b6f8524512d4e7bc5",
+   "why": "calls no function the template calls",
+   "to": "0xdf16ee894bfb1182bb3a2cd8b9810df14be104d3",
+   "selector": "0x99e1d016"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xed9861d67a42280542a1a3530fa9980c894efee868d61c243ae69266f2eb28e4",
    "why": "calls no function the template calls",
    "to": "0x2d83ff1cb1c79c68fe530d35f439a92a645faded",
    "selector": "0x07ed2379"
   },
   {
    "kind": "not-studied",
-   "hash": "0xe063b129132596b331b59aa041ac01600f91f5afb7b3756ef63e1dc546c79285",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa6dfb2d0feead2c5eabb0d5a392cd008291ed1a2b4326d75e699889268f63ba1",
-   "why": "calls no function the template calls",
-   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf65f5f880fcdc15a0b396b587c009f944b9155ebc52f0fae65d586d57aeb0a59",
-   "why": "calls no function the template calls",
-   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
-   "selector": "0x000000c3"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x677f7392e09cd53d2b45820522def958ead648ccbeeced0a4e9f1464a0dd25a0",
-   "why": "calls no function the template calls",
-   "to": "0xa69babef1ca67a37ffaf7a485dfff3382056e78c",
-   "selector": "0x78e111f6"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xba3204e0deecbafa933150770b9328e823a000c9ace01eaa8c35606664a60fd2",
-   "why": "calls no function the template calls",
-   "to": "0x3057fe9ce0785055d546e974befa47b5e9f0cccc",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf7baa9ceefb9ac2f6ff6d0c069ff28173178ed932779151411c844e2b42324ab",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xdfae0b13aa20f22448ac7233c193ec458e1b89eb56fbe368047c1e0ff701a5cd",
-   "why": "calls no function the template calls",
-   "to": "0x3057fe9ce0785055d546e974befa47b5e9f0cccc",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4c6040cb97af5c8672cf9d7b446d193e26d65776fc95c1f3cb0a7f1c9567d4ee",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x11c0382a2a15f7451cc96487dae95bc7ea6983adb1cef0852a1fb25966ca4156",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x876ad89ea48829a75c393f10373a706d47afcc393e57b245d9f63da9a7bfad20",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd95ef07d36398068a01e80d3bb972e3b0157a1e37b14fb17f453a045d3b505af",
-   "why": "calls no function the template calls",
-   "to": "0xa69babef1ca67a37ffaf7a485dfff3382056e78c",
-   "selector": "0x78e111f6"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe697e8057c38a2ecdccd4e7eebe6106b270cb6a285dece41c0bec34b2cafbee9",
-   "why": "calls no function the template calls",
-   "to": "0x89c6340b1a1f4b25d36cd8b063d49045caf3f818",
-   "selector": "0xd7a08473"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x8b5deefd4e94da397757cb57a1bfe94cfca951723a857994ed329819c4a17fbc",
-   "why": "calls no function the template calls",
-   "to": "0xa69babef1ca67a37ffaf7a485dfff3382056e78c",
-   "selector": "0x78e111f6"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x6f36ac46e9d94dbe523035ddac3c0c84669020eb1345d06728f318b1b1f2409d",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc0694f85f03919531aee721791bf0de90777f566204bee780472b18e8c5ec98e",
-   "why": "calls no function the template calls",
-   "to": "0xa69babef1ca67a37ffaf7a485dfff3382056e78c",
-   "selector": "0x78e111f6"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x88f41cbd9efb4c39eee6c3a15fc72ed42b6432115858b79b9f968d73c2437fd5",
-   "why": "calls no function the template calls",
-   "to": "0xa69babef1ca67a37ffaf7a485dfff3382056e78c",
-   "selector": "0x78e111f6"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x975ffafa0914dd1f2607f2e950589381b8e350eee47bebff43e9463d01005a50",
-   "why": "calls no function the template calls",
-   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
-   "selector": "0x000000c3"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x58ee439b0f6df60bbb7b3192a55baeba5b9365641eaae7419a56643fc43050bd",
-   "why": "calls no function the template calls",
-   "to": "0x555ce236c0220695b68341bc48c68d52210cc35b",
-   "selector": "0x99e1d016"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf9e614bdfccc836156cdd65fc831d5d125b5bc8fa133310560fb9e42b56554e2",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xfa859464e632275b9c2d3ab68360cd59be21936d9d9223ea02ee70415b9cf8b7",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x87326b500d2a7751fc8d6cae6f753659b311d1c850d258ff132662d7fc07281b",
-   "why": "calls no function the template calls",
-   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
-   "selector": "0x000000c3"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5308d706bf28d6c9a2bdf095dca72d60a29215708efc68055d374dc69c9132ff",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x98a151c1a2484d2909866fb49a0439fdbcfb8e151cc42c6348bb5ffbc81039f7",
-   "why": "calls no function the template calls",
-   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
-   "selector": "0x000000c3"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb82de2139f3cb8028f00c489477c3aa79cec76efe5e3bd0eeb7789400c05ffd6",
+   "hash": "0xcdcca0af04ea4e84c12ca27cb4144ff88fef615c3ac32f05f7170f2d38e7acc4",
    "why": "calls no function the template calls",
    "to": "0xb300000b72deaeb607a12d5f54773d1c19c7028d",
    "selector": "0x810c705b"
   },
   {
    "kind": "not-studied",
-   "hash": "0xe83e577699ff2324411a1fd5a485bda8b47e16150cbc2d1bc78fb4197f2d8347",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xece88ea3fcd1dc42ba2496b71634ead79483b24159c489ab0eb48bb535933c8d",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x412577571ebe45484242649069105e9a00bb3737e0c03d1fd0f52ca57f57900f",
-   "why": "calls no function the template calls",
-   "to": "0xb6f54caed61c318027c022c47b94baf139a99dab",
-   "selector": "0x02d40171"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9fbfa1f4eb48be1ce98e05034cd00c44386fec6e018f80066c7611a2cc285c09",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xad13f3b3781f575fdcaab32734bca91fd47c01fb73f063645a3f97e618d426d3",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5509c6bbfbd9b62558fb076c4e466be2bff9d8a0c06d8e2fe63bfc56c3fd7caa",
-   "why": "calls no function the template calls",
-   "to": "0x3057fe9ce0785055d546e974befa47b5e9f0cccc",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf5e9402cd988a7e0122144f6b3dd363d90ac3f4a8167b203abbbde8d5d9986af",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x80324ff25b73f9db818278347051fa0d7ec25f70ccddbf683a375e040770be16",
-   "why": "calls no function the template calls",
-   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
-   "selector": "0x000000c3"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xea9674873a4270a744b9374edce439309ac9b0177dfac5d8440bb0c666b34412",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x1204dc333082fa7d8cbbe16a629d2c14479ead5f751500703d04e4fcec97fbaa",
-   "why": "calls no function the template calls",
-   "to": "0x00000f91109c4d0007e90000d9facad5298a0cac",
-   "selector": "0x03f00ab9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb946553d251d0255dfaa8a9d016cf53f7ee5f3c2d71656e95cf0721aea20e10a",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb8d5986afdf653425f560735b2f32e8ab1dc6f250083074baaa65edafc0764b8",
-   "why": "calls no function the template calls",
-   "to": "0x5e1f62dac767b0491e3ce72469c217365d5b48cc",
-   "selector": "0xf2c42696"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x461ff255a8caea30bfd454782442fdc4f3061bf5c9b45703c5ef32d78880f072",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x27f868b20646d62fe3658b44dc785d5bc410b0a7414a3dc6563759ed0aea67aa",
-   "why": "calls no function the template calls",
-   "to": "0x41a9eb398518d2487301c61d2b33e4e966a9f1dd",
-   "selector": "0x2f82b89a"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x12a56cf0f6685e772420cb81377d324d26d8e709e8011073f660b4e4874c6c2a",
-   "why": "calls no function the template calls",
-   "to": "0x888888888889758f76e7103c6cbf23abbf58f946",
-   "selector": "0xa373cf1a"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x2e629462790315f53d93fdcac315b16c60ae89005044c5328624695589917246",
-   "why": "calls no function the template calls",
-   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
-   "selector": "0xa0000000"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x35153f0cdd16f1178e0d182629590e206f9be812031ef5cf2843d82e786aae90",
-   "why": "calls no function the template calls",
-   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
-   "selector": "0x000000c3"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf0b856b5616f30edf06012d41e5f20110822eebe55c6830e19a1beba9e51f240",
-   "why": "calls no function the template calls",
-   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
-   "selector": "0x70000000"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbbe34b47a381f1a213f5e6dd1dc27d79e573e5ff7af244915736c5ea8a43c70d",
-   "why": "calls no function the template calls",
-   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
-   "selector": "0x70000000"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc5ce9e777523b3e438c2712d24735702845c4918fcd69d6be114ad2d670f8836",
-   "why": "calls no function the template calls",
-   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
-   "selector": "0xa0000000"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x88b476dd0cc6770b5faf5c5053da14e4d10fcb6019a5c58ba8c289cae374531a",
-   "why": "calls no function the template calls",
-   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
-   "selector": "0xa0000000"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x239e7e8b0638a52c8155ba67ed07e5cb5098e75646f615a22dbf735334466787",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4f3bc22951b7575f13f54426cce7f52e7fd6297c1b8dd79f83bc9c1264d22934",
-   "why": "calls no function the template calls",
-   "to": "0x510945293ca62752157088159ac8d9d2b01f70ae",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9f280cf68a5b6dd51d381df13ce175e5f2bcf8c42d9cb3c443e38c80c713dbcc",
-   "why": "calls no function the template calls",
-   "to": "0x3057fe9ce0785055d546e974befa47b5e9f0cccc",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbcdab6e2b51122e881bcf2e98a1085bc7d78599b08b77df6ccf6ab886d5d6620",
-   "why": "calls no function the template calls",
-   "to": "0xd226997439ecfbeff8e110c8c78c8a7eefd19f89",
-   "selector": "0x01040103"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3175777ed5cc53163bc7a8398855fb2b062a9bb3106e41abb4de92f9e35128a3",
-   "why": "calls no function the template calls",
-   "to": "0xa7da6e61a9e00a023dac739b4236d62a0d922155",
-   "selector": "0x03570281"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9042fa121cc5775e3e2493d86bf0177f93e115f43b51b68085721d5862aaffc8",
-   "why": "calls no function the template calls",
-   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
-   "selector": "0xa0000000"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc531f77c5260ff0afd542e4da57897d46c490cad7d128cffcc8c5550be8f4072",
-   "why": "calls no function the template calls",
-   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7fb90603727fad60f1abcc169eebdd4af1624fdf32c3dbfa862b25a34a0c7fa2",
-   "why": "calls no function the template calls",
-   "to": "0x2d83ff1cb1c79c68fe530d35f439a92a645faded",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x81d3d0e423e249f8a52a3c37cb47f3e16e517c25527820eb5ecd58e8339dee49",
-   "why": "calls no function the template calls",
-   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
-   "selector": "0x000000c3"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x117a8a741e6b2caafa30d1e5c414475a7aa661abc06fcdcbaa9ffeac6794bf90",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x33ceb60327533908a380bc6da42f75f584813b2818e5d3ac28e9615cb9f4a3cb",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xdf34d01b9ea582df335cd7ac39e3bbbca482d98ecb591b54e9b854447fad322f",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb0ca90455f553c51b14dcfbeb7c5e640e2354b9735b64467eada7a21479f236f",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x669dc5b6"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3b515879f964f8395f388b5070ec285c3873aded61c4386656caf58ffbf37640",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x94b97e109b1b605bd8bddd4d34bb85362ea3faceca145ccb1d77a3f366383732",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x382fdfa3383c85f630c75df08ffb06cf2d0feedde96b1320d14f7d79be28d1a8",
-   "why": "calls no function the template calls",
-   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xcfc503ade8c1031f8324db5bfd2864f80fe911333d7765317c8f1416ff512f22",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x870740aa6e3f9e372de41eb49749bdb0b9b24964139ffcbe7a8f14d3cb3f5aba",
-   "why": "calls no function the template calls",
-   "to": "0x0000000000001ff3684f28c67538d4d072c22734",
-   "selector": "0x2213bc0b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc54788352204e472b476f7c0b45e4dcebcc0614c7783fdc06e8aad241fa2ec24",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x669dc5b6"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x170449d721a026dbc91bb83c69394a8a087dfdb7ca982e3d8706b45daf2c1e09",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x8beb287026feac6ae7bd5d82ad371f359e098d5b2f81346dd403d0b0b357bf96",
-   "why": "calls no function the template calls",
-   "to": "0x92eae2d4f34f17eb32bf390af5019a37d375418e",
-   "selector": "0xc3e51dcb"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa95c5f7dee2d548d44c6d8e4a95c7167549570e4393cb3a7a809123ad87f3b10",
-   "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
-   "selector": "0x000000c3"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x046b0d5f4043f4b8d1fd3b5d80aac1cae97edd16e243fca26ca5f88fd81fbad7",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7dd1bd55c45f0583a11562408e27ab69d338e074c80633d09efbe7be11d39cc2",
-   "why": "calls no function the template calls",
-   "to": "0x6131b5fae19ea4f9d964eac0408e4408b66337b5",
-   "selector": "0xe21fd0e9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc12a5fba5441bbb63ad6a71a600bd700892f69b0ce7577d7324f5e90664b3be1",
-   "why": "calls no function the template calls",
-   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
-   "selector": "0x1fad948c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xce9c4172fe51eebde82f298aa0456c517c089869b8dc5628759e298c52a6e257",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa4f5ac5d55ff3fc6abcc1d6c09986181c9b180e796ecbdf4714c042385c10467",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb7169035b08842c517e7a8ecc2d64625a0858072c159c9c0ea2505af32cb58b4",
-   "why": "calls no function the template calls",
-   "to": "0xf23203b6c920a77f3a19dc864c44757f7e0dd1a7",
-   "selector": "0xbaae8abf"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3598d51b8b57984451f26dc1fd566bdf2347bc4aaaf09b35701622294bdef954",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x669dc5b6"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7f141cc09f5827d1a84b1d15a6b305c24a455fb33ec711e224afc003ac89ca52",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x72662cb619a044fd2121f7a0d19e5607e5748333f86568e41713c311f82e0d02",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x0a2ad57d5b41cb94ffa5138d23370165fb2fc5d453e86daf02f8701e38ec04ea",
-   "why": "calls no function the template calls",
-   "to": "0x6131b5fae19ea4f9d964eac0408e4408b66337b5",
-   "selector": "0xe21fd0e9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x00b47b640ccebc0f3e99bfbc48d4015b76bcd9c12e1326fd877db3d65eadc637",
-   "why": "calls no function the template calls",
-   "to": "0x888888888889758f76e7103c6cbf23abbf58f946",
-   "selector": "0xc81f847a"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x116cf5df71773188c108cc398a1123afaf389ce476dc3749a586baaef1fe3f6c",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x730e8bc60c773c03365efab1376e4c0610e5767f62fd2a84727a2e567deeb430",
-   "why": "calls no function the template calls",
-   "to": "0x00000000008d5f1200332af8a6813cb8377b5bfd",
-   "selector": "0x00000011"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x570767b887e7b220dab38162c6ea28156268eeb4a7d7fa122c61acfc52beb295",
-   "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
-   "selector": "0x000000c3"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x44653fc664d2205a6f1317f2d4f9ecd13e2ae39fcc5408d74d959d310103a74b",
-   "why": "calls no function the template calls",
-   "to": "0xeff6cb8b614999d130e537751ee99724d01aa167",
-   "selector": "0x95305e90"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe78dcf7b8d4570110635f82a71b1ac4ea76bb008555aa20fc5a5cb1a43d4670b",
-   "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
-   "selector": "0x000000c3"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x6b3176cb2987041ef0d185396bacc7b04eb07020a8709acb4b059d6ec5759b28",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x670ebab910bed7ea2829f849538b83aad9622e06ef03dc5d344c790598dc56be",
-   "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
-   "selector": "0xa0000000"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x85a2c8ea93b7c025f9f1f77099793e989c011fa07730392fa1855369379f4852",
-   "why": "calls no function the template calls",
-   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x368a344210d97d49d8793854e5305b9ef7d9495da18399857071b91862f8d0ee",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3fd7b74423ee051b58979bdbdd0c670576b385971b9830bf2f83335bb9071ccc",
-   "why": "calls no function the template calls",
-   "to": "0xdce096360f44ee2a29da9158cb8078f9052878b3",
-   "selector": "0x009f091c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbaf4fd2fe7944412101419afedf30276f4aa2525b21579a2e72b546cee20110e",
-   "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
-   "selector": "0x000000c3"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbe2f845445be9be0a3969f11f7b8cc47227947272abf35075bd1bdff0b8c4be9",
-   "why": "calls no function the template calls",
-   "to": "0x4f169c3a6545ce65ecb26502218f90eed610bebf",
-   "selector": "0xbaae8abf"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc98235c47fa01b0b8d1903ccf7aba65a66356f311505c114ca667e431b8c97da",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x6fc45a1e770f31fa0e534d8f5d088e50fcfc428efab9e0709258b119a9c9aebb",
-   "why": "calls no function the template calls",
-   "to": "0xeae599c8e6bf3c38bd6aa74bdb7eb3d12ae7e5a2",
-   "selector": "0x07360008"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x1ec879f0bd45f13e82fb1886ec4483be500b658a513318f23f8f21eded053e20",
-   "why": "calls no function the template calls",
-   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x0255156c0f27ccd9ec6b8c80ed92a9e19eac5b8a9549429af7870064cb0c3623",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7a479e377b90b98ff7a0ff515a6d1f1f5c5fa15e72ae6a2cda83236e97ee79b7",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa68189330f8d0ebb32b673d8ef206ed6f38ea7cefb4e8c6e071d35ec495112aa",
-   "why": "calls no function the template calls",
-   "to": "0x0f60670907d9690e05ee9f4be336aa9967c49832",
-   "selector": "0xde0171ed"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7d532b1872ddef276802e0a7b09cff35eb4094774d461521d9ca26cdc3ca4aeb",
-   "why": "calls no function the template calls",
-   "to": "0x5e1f62dac767b0491e3ce72469c217365d5b48cc",
-   "selector": "0xf2c42696"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf496acea3eabdf09259d61634b56a51a2e7c735a4777bc2ecafe48550185f958",
-   "why": "calls no function the template calls",
-   "to": "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae",
-   "selector": "0xa3443faa"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xac8ba7b62eb07253f332102f091df744fba51096c860e8c8f9e9dfb37f2b9a3e",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xcc03057d1ebe6d0c9e60b7a4023b07de3c84a12940d67ebfa03d6f41bcaff289",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x1575e582253fa6a1b2ee11d2e31c1822cc17a7e8e37d34ad34c4aed8905a207b",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa0f79b6b9eb4b6a648f6a9691eefa05c45ec655c296b1256739df1f44f63bc94",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xef27f8cb29ae851460a547bfb1c57a7783e0fb2eda5a6cb3417245c56bb34995",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x333d3cbdfb6771721e830e0e2ea9d47b37265c75e91117c2da241a130caf0370",
-   "why": "calls no function the template calls",
-   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
-   "selector": "0x1fad948c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x2a840a70601dae8669a9e65316d0909c7a18f18ccf97c281a2524e44e8bc7000",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7b40a35c8a62d7f1400076a8609335deda194896a1cabacce9574922c92b1037",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xfd02f550179b3262bef1b9e85b99a7d6fc4ca32b3a9d11c9c97c9f161df407da",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x999a51b248ade58d89a775bbd0d67e9f45f59182eaa7dc3ce5fa648698156e3c",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe9b7a902ca149abcf580e59cfde0ad79e2d3d1422f8b208b345489dc054ba527",
-   "why": "calls no function the template calls",
-   "to": "0xb222da0f9c22ad2addcb0b0d6b150f398e44157a",
-   "selector": "0xef4d7b75"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd077e400abd13fe0ac22a4916fb332c099819743375da2fa0ad2c88b1f66820d",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc1f73b5011ed5dc6d9af12174ebff8a78e8fb2bcd3ee47f0a0e05d6a429487aa",
-   "why": "calls no function the template calls",
-   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5b2a7edcc8bf6fee5d181016985c0bdbb7fef0dbb26e2b82d2c39c6c8915424b",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x761a0ae414d01fd3adec40ed58f7cdc156a89c9ae6a1025a168865089e1854bd",
-   "why": "calls no function the template calls",
-   "to": "0x0000000000001ff3684f28c67538d4d072c22734",
-   "selector": "0x2213bc0b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7a8a355e04a4996b7ff31710054d12510674e06d454dd6b37f30b3ebe401d1a4",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc7d612c8b5f67b9dc4b9e51e935bbe90dc60fa9e4dc760ca059bcbcd4c3faa16",
-   "why": "calls no function the template calls",
-   "to": "0xfcc92310a0587f5af26d99331b334cc5345469c2",
-   "selector": "0x00224baf"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x477affc4e2dc4bb99208ebc2e2996f1fefa7771c8793a7d1bd66825243e806e6",
-   "why": "calls no function the template calls",
-   "to": "0x6a000f20005980200259b80c5102003040001068",
-   "selector": "0xe3ead59e"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x1fce66bdf6b3119492759a8711926d5ddbee27021dffbdbc5a06d92d58da84f2",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe9289127a3ce361b78b8b635e84f002996675d7ffeb33546929d5bc5ade42ae8",
-   "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
-   "selector": "0x000000c3"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x1d5865592e2052fc88b47393e95fde0b02ead97fb94b2c67fd905dfa76b976da",
-   "why": "calls no function the template calls",
-   "to": "0xad3b67bca8935cb510c8d18bd45f0b94f54a968f",
-   "selector": "0x146ee74d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5e5496414ac9b065e2989d66e1c1f4143c6961b704e6c7202f106c4f4f2bf520",
-   "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
-   "selector": "0xa0000000"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xfa8d450bc21ae527d2e509fc5746122d4741e27b467209f85e980054e9216d1e",
-   "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
-   "selector": "0x000000c3"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3438d8ec676c1a82bf570d5f3b24a63213c5ebdad2628e80601cdd275384eee7",
-   "why": "calls no function the template calls",
-   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
-   "selector": "0x1fad948c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbb98de4c8b78bee025a5a1bc873e7269ea3963a335076d67f456dfb3c4f85ec5",
-   "why": "calls no function the template calls",
-   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5aaea1ecaaa80da3dc3a2f4c967deb9b54ae3d931711a0bf5cbe052b8d24bfba",
-   "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
-   "selector": "0x70000000"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xac83fd64ab2eb0e17553a22cc3e80b88fd72cfa63642afb2b0f99fcc389a5546",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x072347073942f174c84794f6fa43cff0f7e2ac1a5fbb8ac76b576f7a148edbbb",
-   "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
-   "selector": "0x70000000"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3a13fbb524709a182fa018e39dbc443f4d244f73148fa9ab1c756b38acee48a0",
-   "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
-   "selector": "0x000000c3"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x8188f9fc4464f21d7779e79c44bca788cf1951369df2cfbb37a6d630b8f09f5b",
-   "why": "calls no function the template calls",
-   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xfd92324866d544f2d940e4f6c8961abaa33cd87e0397dcb1a423a4c19d64c5bf",
-   "why": "calls no function the template calls",
-   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe21ba76ec15c185fa33a7cb2165f0d31444daf132d35414afd15fb76c73ad8d7",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xecc818d2281f444c72354b3bff38ba628e57a74153fe3493cd7b1f6b8557e5a6",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x13530574c992fee1c67fd276ad92bef858d4d268d079b0b3a5b3473f0f9f8242",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf1c71569debbe58145c0f7c4d0f352c98a3749105f57141230deafdc0cd86fb1",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x6d385c751df5950988b0adfb4f012360f1fd2582de7912f4fbcddcee08c57ca3",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x129bd3ea4b429b264aeb6ef2e6fe5a1b39e5f4b71820e9f455234e4ed0e44737",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbd46d74b836664faec90874cd120a92fa1f536cae958940408fead44fd88860d",
+   "hash": "0x16942396ce3f85ce515576d66a2eba11f01203c1902070d2b8a73bceac0e8e0d",
    "why": "calls no function the template calls",
    "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
    "selector": "0xdd46508f"
   },
   {
    "kind": "not-studied",
-   "hash": "0x7a35648dbf8913760816a5a1a419db4128da028ff35d59d22be57317e1af6d74",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe8db83514694bc99f9d396d90cdd2c9ef07f224d857d990313eff0b586c95892",
-   "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
-   "selector": "0x000000c3"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x17af481d178d60cd19395f9d7f4daae4ce20f85985ec4b6c39b0d865935984d2",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x209d089d75f8d7b34b596106374f6b82bfbc36dc0020218ad960f36513cbf2de",
-   "why": "calls no function the template calls",
-   "to": "0x00000f91109c4d0007e90000d9facad5298a0cac",
-   "selector": "0x0053be41"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc652a534d538b02920c8eb1fcf16ff93e9329c89b06562f4253daf11f15f95b8",
-   "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
-   "selector": "0x000000c3"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x2f0ed7768a24d5232ee27c8d10fe9b7859af72774f6dad9cfd26dc95ea88f6c8",
-   "why": "calls no function the template calls",
-   "to": "0x00000f91109c4d0007e90000d9facad5298a0cac",
-   "selector": "0x0053be41"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x59e3f629f2e692ef82e818e03baf5e93fd116ac5a9dbfcbc0264556bfbe55bbe",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa86a0ca8d8302e93a8c5701a62719b07955e7df06fc2af147fc50c6e3e7b2103",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x65cfcd339aa1262802305f6f20712e5132a0644b6beca65befa170c00b8f5996",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd3fce96197d0e4ebac5b995a4f28fff06c218f1735b37658453cad366e7caff3",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa071b33f7f11b591b9e8f042f24d0520777d8cbd8d99fb59c6de594d9b964e77",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb801fbd1156d08af56519867a941fb62ffcd4f0665e8b0189fe96d61ddb0a7e2",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x322dd9453fd2b8e2de89d5fb080dc8b0cf5c4671389534336939beefb0c9d595",
-   "why": "calls no function the template calls",
-   "to": "0x00000f91109c4d0007e90000d9facad5298a0cac",
-   "selector": "0x0053be41"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x45bbf8590a208e81beba8eace3f37fa37cf8c988d06549263beb0b4747718dfd",
-   "why": "calls no function the template calls",
-   "to": "0x00000f91109c4d0007e90000d9facad5298a0cac",
-   "selector": "0x0053be41"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x449402ab86227133cc73a8da4918ec06aceaaba6983978555b6de86f08076903",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7ef8706721c540a184a0d0cc40a7345fe9ee1c164a2b438c13085a0eb96f0b48",
-   "why": "calls no function the template calls",
-   "to": "0x69460570c93f9de5e2edbc3052bf10125f0ca22d",
-   "selector": "0xb25b1c31"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x832593a55d2599300c44fc6282a3e8617b2a64972f0c5ffbc0776eeaadf6cd29",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x98604db0c7de2a5648aad7fd96822f69b1606b6324f43363123eb82e4df96205",
+   "hash": "0x0c9da5e0d4f5d65351a2c67cd0a1dcca6c07be798fd55c4b0f464f0d7b4d986b",
    "why": "calls no function the template calls",
    "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
    "selector": "0x4cf3fe9c"
   },
   {
    "kind": "not-studied",
-   "hash": "0xefaa85803c5fe69644a4f4f45730faf42307314c316f6fd069941869c2fb5768",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x2d42ec65dfc5b1b7db74cad4ad9d4bae21a6d82f6cf423c070fbf504b47e10d0",
-   "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
-   "selector": "0x000000c3"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9ce9331f92209d9e48a74b60d8846d06e06b993155fec798039e5b9269f75d6b",
-   "why": "calls no function the template calls",
-   "to": "0x25e891b2db10826874ea3d26c3d8903835dcafb5",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xece60152ae61c5c5513c952ed4c98dcf4be799a8c36ea1344b44233a52b479fa",
-   "why": "calls no function the template calls",
-   "to": "0x950fd558f47e234a2fde23b7d61f7ccdbcb4a86f",
-   "selector": "0xdd225095"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x2815d907dfb7ae96fb50f34f77ab11c1232dace90211b0dd1f4513afd6e02188",
-   "why": "calls no function the template calls",
-   "to": "0x0000000000be226afde21672a5e4adc45692e69d",
-   "selector": "0x000a0000"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa7d2d21c206ecfdf0d0fada221b145f9d2772feab125f486e0f5782c8b08c6d7",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa1df86a19d31af3ffd6326738636716a85d9701d95f1b74027cfee81c01e463b",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x82f7f8f31a283ee1aedc3cb4698ad10ac7baa28ed674dec56f04bd9235f2381f",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x485bf4f26ffd830a9b10328e701f2f984695f22e1c686ce4275c0aec3c855db1",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x92b23fae2f9ad146864cecc01fd3a3fe2c5de700b4674115f13d7c9b822c6eea",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7c1653e1818009a2e88bbd12a3681571605d98c7aa67264a369fd2f3eeeddc7e",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9b116d3fdc0aad40c693c9c488ae9166b5c394e7ff8e47e11950973c3a078c4d",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3c19ac93af9c0d453a9365c9f6611bc8b8224863f220f7b8cf97f7a6c95e0128",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc4c5ca7ebebd424ca9c78784594bf2af1e46b7e59fa9f9eb0a502a7ea1a82d02",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9b7d59ee9902f4f036e91e4193e656674a38ee80ccb720339f105885b0d31607",
-   "why": "calls no function the template calls",
-   "to": "0x950fd558f47e234a2fde23b7d61f7ccdbcb4a86f",
-   "selector": "0xdd225095"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc00cd09ec8a88615bfab653e2b431dd67396d5442fa6fc3db07b60ce3b486824",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xedd2d8dc18bdbe1ef64c87638837b1e93257475f7cd4340d093e8af5fe2ccf13",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbdcc7c62f534b8d2078f9874e3f1668291eab947d835e250ed02e0dd20aa19dc",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5df4e439cf5b0fcd8a11b8e6eda2f7320afc8b93f35cf3564ca51e0cfce2354b",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc793527b884429d030ec00d59c1cf90519eed469d19b4ef26cf0af5d6e44745f",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x737e8b846704eb7d1a985f9a79a69d42c78f0e5cb258e144b26af79a7b624d12",
-   "why": "calls no function the template calls",
-   "to": "0x140022b7000081000001094700609300d2187dab",
-   "selector": "0xd001ea3b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd7fa27df1e7e3cd95ebe7fc0229cab5b8d69051eac5c6c014e70c3403adec086",
-   "why": "calls no function the template calls",
-   "to": "0x6352a56caadc4f1e25cd6c75970fa768a3304e64",
-   "selector": "0x90411a32"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd904a7ae47706bcf85a46521395e922aab0bba5907a762c52bae6c94720ff03e",
-   "why": "calls no function the template calls",
-   "to": "0x140022b7000081000001094700609300d2187dab",
-   "selector": "0xd6def1ca"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa2793a5544b3f023145688183620909d173f0d0e89b4686092e226d04ee1789e",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb2fb0b0afe400a346e75f801957984d3d225abab7bc6656fb5eb9627e6800e7f",
-   "why": "calls no function the template calls",
-   "to": "0x4a00d2e63732932d00f3005c006141fe85000000",
-   "selector": "0x4b0ad851"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe290eada461333081b609eb07ba44942abb920d3cc71763a38869cb5c6b299d2",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xaea47cceb680d0150f27b5d9e72d4c5277c1aba27f292cffa64292b303cee4c8",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x66cefcf2c1b89d8fbf56499f95d80ad3725b1eb0bbf43640bde257e111f89c09",
-   "why": "calls no function the template calls",
-   "to": "0x4563b9378b4ed1f35b3107d1d8e14c25a05898a4",
-   "selector": "0xfd3ad6d4"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xad2127b7249c043c3ec72f8bbe8673a038557a955afd648e0af897544160ff73",
-   "why": "calls no function the template calls",
-   "to": "0x4563b9378b4ed1f35b3107d1d8e14c25a05898a4",
-   "selector": "0xfd3ad6d4"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5d2f0736774164bf753853cc0dd87981038a3f9606827a0dc8fc8717d8698936",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x2cbb88c619274fcb1e23930c308ed1ec4c51c3d9edbcdb86b8b5dedafc235d17",
-   "why": "calls no function the template calls",
-   "to": "0xeff6cb8b614999d130e537751ee99724d01aa167",
-   "selector": "0xa41e223e"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x2857a29cac7953e7b5463aafcda9dad88762254313fe9eff744598162fd70e2d",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x12de07d933d908194122e1979eaf8cd367c336c8263c584653117e8b951431a5",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb0dc136a824ea82491eb4a0e9b8e5f758cc5b546e61b056b585d5df4a830fd22",
-   "why": "calls no function the template calls",
-   "to": "0x3057fe9ce0785055d546e974befa47b5e9f0cccc",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9bfa2e0b783fc7dc3a5237d7e8d8e15914222c74687cfe4ef598b541966a9166",
-   "why": "calls no function the template calls",
-   "to": "0x140022b7000081000001094700609300d2187dab",
-   "selector": "0xd01663d6"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9a7bbc2f760f6cd74efbb69174d749f20d26d076f88b297bbc1391b8ad11fd5c",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x502a8a0dbfb0bc458a301f1c74cb17c9f529743a1fe79effc50e49c2ae2a9f97",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf8f6bf6ae2deeb199c44111c30aa8a4f038edee7f1c5ff1c8146d21726e30c90",
-   "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
-   "selector": "0x000000c3"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xdf3b84b500aae174de7434364b8a8657bd5460f0d31fe48d7bbd65ce7ae5a8ae",
+   "hash": "0x705249a1678233c75f083a54186fae1b34d30448bab202763ff9467f2b10eee7",
    "why": "calls no function the template calls",
    "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
    "selector": "0x13d79a0b"
   },
   {
    "kind": "not-studied",
-   "hash": "0xc6fba56c9eed79bde083c04660ee9dd4cf96a75049ded14cdd25fcbd718a6ef8",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x63d435e5f770c966cd8aa9872c2cdccd95c4957509f102bc1ede0b40be556e5f",
+   "hash": "0xc1cd57f0c95bcec0aa11761b677bbf793fbf1266d64b6f19bf7367c65be76736",
    "why": "calls no function the template calls",
    "to": "0x111111125421ca6dc452d289314280a0f8842a65",
    "selector": "0x07ed2379"
   },
   {
    "kind": "not-studied",
-   "hash": "0xc5387b73802a382c2db460bfe65c390664798256ee7096318501fbd4e9672dbc",
+   "hash": "0x6134a34eef30748dfce7ad25e9f54bdde7fb316238a3a655dce843aa557e0341",
    "why": "calls no function the template calls",
-   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
-   "selector": "0x765e827f"
+   "to": "0x00000000008d5f1200332af8a6813cb8377b5bfd",
+   "selector": "0xf497df75"
   },
   {
    "kind": "not-studied",
-   "hash": "0x1030c822a03d945dbbd6dfcbfa537027adc1bb2e61c60c8befdf7d869166ee99",
+   "hash": "0x51d944217fd2ecc941138f871c8898c8c016a73d8f8fe10e239688672b5c6b5e",
    "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "to": "0x5e1f62dac767b0491e3ce72469c217365d5b48cc",
+   "selector": "0xf2c42696"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb2097fe548e59589a8df32b65276065bf6eb70b04b96947828b58400e6f6ed52",
+   "why": "calls no function the template calls",
+   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x431c162d740d0df473dc56d437ecfd4386ee7e9fc43860a45cf04b44bf27348a",
+   "why": "calls no function the template calls",
+   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xde3d4f12d871f5f1b864f02dacb3a3f5bc4305811e5d1b630fdf4b0031b1367a",
+   "why": "calls no function the template calls",
+   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5e63bedf03b245b3812bb263364d77cc9f24ea59ce4c7eb9f47a91f05e2d8507",
+   "why": "calls no function the template calls",
+   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
    "selector": "0x000000c3"
   },
   {
    "kind": "not-studied",
-   "hash": "0x31098d2fb22546edd60a160577e643def4d7e603980d5f2f9a721dd35c9ae071",
+   "hash": "0x149d5a864f0802b0f844bb45867cea0f37654658fd12da1ed761c3bf1978ed47",
    "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
+   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+   "selector": "0x13d79a0b"
   },
   {
    "kind": "not-studied",
-   "hash": "0x2f2d56a49f47bbae4fad4f1e6ed9a3fde84adfb36b86f85acf7158825dfb9afb",
+   "hash": "0x355b80ef84ed2a8e427d69b999f2f780024e41e1c7187166578ef8ff1b3d02ee",
    "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x98f76248686c51e97863a36acfc9e36c274b3c9baa866b65b71f6ffdb84b1ee8",
+   "why": "calls no function the template calls",
+   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9870761775c925e1bbd722b73731ab3d93a5863eaf49716680cdae010f9c66ce",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2abdef97d70a3862187b25e9bba31cdfe7829380328d3fa88f657c003794ebce",
+   "why": "calls no function the template calls",
+   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x649a85aa6a67c93428ee0aee2e0b7a00209c110de5146d88839d38cc5747ea0d",
+   "why": "calls no function the template calls",
+   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+   "selector": "0x13d79a0b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x12b291c0271b77f3df1435d9d0f2de474d9deb5aacd1525af14ae17460e66465",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x879d24c667f39a51ae0915257b3d66214df4e4ce643b8256fb050640838743b1",
+   "why": "calls no function the template calls",
+   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdbec97183d1a0c2822d176f77518b88dcf6b0a37924f3e95f7d73aad16bfaf39",
+   "why": "calls no function the template calls",
+   "to": "0x663dc15d3c1ac63ff12e45ab68fea3f0a883c251",
+   "selector": "0xc7a76969"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8b98a8d7a067564b209e69e7b554b8d28e451fd98e2a34efd90618dbb8853e53",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0df6625915b9189fc393b722b22103061ce870384b023d96e5dbb2c3167fc939",
+   "why": "calls no function the template calls",
+   "to": "0x3980daa7eaad0b7e0c53cfc5c2760037270da54d",
+   "selector": "0x13d79a0b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xfa685ab144b840cbeca92d124c95b769e2269cd0a34fb5e1dd1a3438b5b7489d",
+   "why": "calls no function the template calls",
+   "to": "0x2e6e879648293e939aa68ba4c6c129a1be733bda",
+   "selector": "0x4302e56d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2fdc32eaa1e4a205570c649c643f8364cdaaaf254feb369b5d82fd26aeb80e89",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x016a4810a5ba5d34cf611d9b18014cedf646d6dfdaf0689c975f04cb46ce4be0",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa1fac95c5d7c102fe500465f9a82ef40aafc5efc112298496a872d9c523ea26b",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5bfd00fb763d537d6fb95d8d7acc8d5218700e391a9d19608c1989eb25071c85",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe07554f1aec5c6bdc1051c6c63e2898fc061aab601af1152e9a04024084b1546",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3b31842d59d0c3512cc37cd1e0e682c276bb7f6cbe4e39b275f3a9ff48b2c794",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xfec883d89b22e24f9c764037ca0bee81eebf72711769b681cbbdc28e5aa13e03",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8fdeaf33375b6b7841abba34c94e1964d12175a8217c378c9a06f6cbb0ab8be4",
+   "why": "calls no function the template calls",
+   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdf37ce1706f435c2e180b378d0742f099988e82ac74563765f7f39a57e4e55a8",
+   "why": "calls no function the template calls",
+   "to": "0xae68b7117be0026cbd4366303f74eecbb19e4042",
+   "selector": "0xe4a9b20e"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5d3134cedbc8504bf441832ddd5b4042ad97d57cd62fd758f0a321c3445a3654",
+   "why": "calls no function the template calls",
+   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
+   "selector": "0x70000000"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xfa796a8d790cd74f5d0eff695de33871a8e2839f2725319e15b80c80fced25a0",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x66fdf9300aebcfb1aa53816495c1786ee696baf2c57517cf34b5297c857ee2b3",
+   "why": "calls no function the template calls",
+   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
    "selector": "0x000000c3"
   },
   {
    "kind": "not-studied",
-   "hash": "0x05d3a44260f5675913d8e6bee353b32504f49cf4447c1e7f09ab684411eaa7d0",
+   "hash": "0x9b0a8c2850f96c1077eccb932777b8b0f60f24f488556b3eed9adcbdf5475e94",
    "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
-   "selector": "0x000000c3"
+   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
+   "selector": "0xdd46508f"
   },
   {
    "kind": "not-studied",
-   "hash": "0xe5d2751a843fdc65d341c238c573c21ba5a1c633a7f8731a7cb6e7cd2ba5d0b1",
-   "why": "calls no function the template calls",
-   "to": "0x6a000f20005980200259b80c5102003040001068",
-   "selector": "0xe3ead59e"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x071ddb3f768f83dfee6c49e68a85f72f4ab7978d4b8cea2b8dc180f07ea32d79",
+   "hash": "0xe27723da9aef02d686b33372030effe3d65283c1903eba744642840ce5789e83",
    "why": "calls no function the template calls",
    "to": "0xeff6cb8b614999d130e537751ee99724d01aa167",
    "selector": "0x95305e90"
   },
   {
    "kind": "not-studied",
-   "hash": "0x129e502a3e7d060559e6eb7aebc4c06625a43e262f6013bc398283122acfb316",
+   "hash": "0x6c60366aec4e5a6b832e07089bd46f99c55f215ac809bd824f0957da1a422053",
    "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
+   "to": "0xfbd4cdb413e45a52e2c8312f670e9ce67e794c37",
+   "selector": "0xa0000000"
   },
   {
    "kind": "not-studied",
-   "hash": "0xc114722479c685223be82ad40dc97f116c297d5b008db5c33305d1f2fda3acf8",
+   "hash": "0x5f81b97c4d1e3f0714625e6c14a0339a2686a1cbba18efb30ffe8370a9341e7a",
    "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
-   "selector": "0x000000c3"
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
   },
   {
    "kind": "not-studied",
-   "hash": "0xa82240658cc6b7e7e908ea0da6c26a57f7202be92d5e0b1ea881542e23e24cf0",
+   "hash": "0x70dcf9bae1d62124f52214c49f74b815bbc0680a89a075787776ffd2ff2884ec",
    "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
-   "selector": "0x000000c3"
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
   },
   {
    "kind": "not-studied",
-   "hash": "0x93e3cb31ff42def22debc4bb7769fff99e50a4c437ea7430d0d309c3e7c10b58",
-   "why": "calls no function the template calls",
-   "to": "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae",
-   "selector": "0xaf7060fd"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9d35968cbd82f4313def4ea4a62243ec9b0d40cec41a3688806c097340a2e179",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9a0c8676175a581f819e6813422ebb2beff02ee507d03a65abadfbf4d500ccaf",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x809cdfa848b0adb49627599f1960293c072b8dfa7361f7965109d96211356333",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe804b5302442c450a7f900c3459132fd704eda27ca2e0fcf5814e3f1ee6390a5",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf9b01a365ee8605e91e24f25dc403de4d62a362882a640f3475ab70343b2af1a",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xfb652a1919daf7cfc1af428b16ae02917412551b5860e08ae2192f7122775c7c",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbfc17aecc425e2d654c2def41a2abdc96373d0e5bc961e5e2f370880fae309ae",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x2558fccda98cdc30f08927c275d616f7ae67e202432fb14d12b0f3c8c68bc1d5",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4ab117d2c1baaf8ae665c1cb1712f286e4137ab85457eefb3a949bc724ef6ae0",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7eeef02b894e2084702d7de3c3794486c61c71ce87a6930dac5729d60ca30b24",
+   "hash": "0xd3fefd2fc749c8e9ed192b31da30b3c648ee2ac0a49350c84496d426179c46bf",
    "why": "calls no function the template calls",
    "to": "0x111111125421ca6dc452d289314280a0f8842a65",
    "selector": "0x07ed2379"
   },
   {
    "kind": "not-studied",
-   "hash": "0xd60409bad35e4ebda7ee41e782915f88ae05fac9b719bd4ce0236dbcf5f8b9a0",
+   "hash": "0x414fb35e100e98f0663f6526dc5cd4af4ae722882947c396f97b044effb3a1f9",
+   "why": "calls no function the template calls",
+   "to": "0xaf682de1f2e6f710731121a05a44cb3c1b511f7d",
+   "selector": "0x12aa3caf"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5301a97a66a699c32d6e6678001cc5622d10f02671873f3dbbca10659b4f367a",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x669dc5b6"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x24ffe78264e5b214c8e5fd4643317c1622bfb4d7f16d770ec0342e9569167b9b",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x853e9bc9cdbc6acfc49393d2536b9dc56139c7610298dcddb8d99fc7a2130750",
    "why": "calls no function the template calls",
    "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
    "selector": "0x70521ae9"
   },
   {
    "kind": "not-studied",
-   "hash": "0x5b61f4b741804c037889c9441caf515164fc73faf5361dd1be9174747f0c4d57",
+   "hash": "0xd542d8b6f12434804a09b6c8c5a382f8460e6881ea584b768824aa58434e77a4",
    "why": "calls no function the template calls",
-   "to": "0xac6bca0bb66d4587171cfc77b19e5e68f74de55e",
-   "selector": "0x34246468"
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
   },
   {
    "kind": "not-studied",
-   "hash": "0x1a8b9cba0b8ef65776136e05a388bfeb9198126f3be0c005db9e4dde3d42b7a4",
-   "why": "calls no function the template calls",
-   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x370861fdb3e076a2ba8f82744d9d937ad8799b4e89f0a6aaef44cf8aecbea7ad",
-   "sender": {
-    "kind": "safe",
-    "address": "0x96307abd00708aecc8f555fdc1ede96e9d3a2aa0"
-   },
-   "reason": {
-    "kind": "foreign-delegatecall"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x326e1b33d36526c745ff9858af7de3041309cf7c1ab6c78c8bfa2338224ff66d",
-   "why": "calls no function the template calls",
-   "to": "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae",
-   "selector": "0x4666fc80"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd3a3a32542deb6f3ac0deedc1b5d610a8495c12285fb06904963682d68521a7a",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x388c5210c32b2fa9b3b25391fbff6e112e9bbe2f605840884c12fe970ee45277",
-   "why": "calls no function the template calls",
-   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
-   "selector": "0x70521ae9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x2b741b64091511389b7e0844fa6350af8f79f01627236c1b45b449d07948b145",
+   "hash": "0xa264956e24995332d3eee339998675cf39e16c4a07288a46949a3362a8d61d48",
    "why": "calls no function the template calls",
    "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
    "selector": "0x5f575529"
   },
   {
-   "kind": "misfit",
-   "hash": "0xb443796b72b0b14c5a5471657b1c4034ea62edef5eb571fa1b8eecce00823275",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x1aac6d3312e7743a33e8eec8e4c714c1f9b7f44f",
-    "call": 0
-   },
-   "reason": {
-    "kind": "items",
-    "at": "call.execute.inputs",
-    "expected": 1,
-    "got": 4
-   }
+   "kind": "not-studied",
+   "hash": "0x73f13452e73e4dc1e516d8f50274ba7ca6d7b8f6a23be9d577bd4bc97fb2f575",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
   },
   {
    "kind": "not-studied",
-   "hash": "0xc1bad964390765ae060d01fd4cf261cd2a787b1f0ec646636d87e1ba9c2fe924",
+   "hash": "0x90960ce77318ae3fd312cd00d1763dd4314eec864a9642f0f70f547e85a9896f",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2968bf9b9b12eb1c3aab26cd5d0c0e810f46192612bfd48f3eaa8d9685dd3171",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x91e1461244becbdc33868fc18f2a42851660f154dbd1d757668bfff68678a187",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x88bfe83f3c03edfb4d70f2bb72ea888bbfe6647c91c2344e97684e6ecee3622a",
    "why": "calls no function the template calls",
    "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
    "selector": "0x70521ae9"
   },
   {
    "kind": "not-studied",
-   "hash": "0x4b5d1e3a6821de5a580b8687baaf2a8c2b36200ccb738624a3479f23b26b93ad",
+   "hash": "0x8f14fd37ed04ee6c3299ade472a88deed5108bca0c460cbc2c28ae2a7ec42f12",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9db8b26f29468380673eb9f7b7ebfe9f13d01d7d5f74639eab498c8990aa0ff0",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9009bb64c0065c2376beb00e6386771fb3673a4b9f22d8c2f490d71861ec296b",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x66d94d583d60d2214fa415bdf7d6090be4234b01816b2b877dcec90df8328dce",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x669dc5b6"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2ecbaddb04e42a5ac403e6bf2af2becece6e6fbacb530e9e67b8d760115624fd",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x361210af525f5a8f92e1b7c416d0c71d3e8448462b23ba1b3ab5bb3ac9ecd503",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd602496cbe31a9276d908fa9bcc33149048c2e7e09cbdfaef4ffa0813cb63d60",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x59315c273a9fd3cf2af4c68991a572311c05db3b28242230752091e3780306dd",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x18ac9f3fe5b4f27fc512b7e9c064e34d8072e20a5581510a6565a951efa64c34",
+   "why": "calls no function the template calls",
+   "to": "0x3057fe9ce0785055d546e974befa47b5e9f0cccc",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb8b62d1f4e85f5978a5b4189a641375fa75fac2034abeceadfafa43409e904f3",
+   "why": "calls no function the template calls",
+   "to": "0xaf682de1f2e6f710731121a05a44cb3c1b511f7d",
+   "selector": "0x12aa3caf"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xeca7bd0b7b960f44d3f84cab6d3f3dd0e6f9584b80f2216a7222053111c71abf",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0xa0000000"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3749e378beb0cb2051aca6563a4abaab64854fbcdbc2da9d9345cf1c3cf0c1fd",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x538b6780dc182d12d9a53f4fbc153edaf983769ec50d8c029c4f76b67fee9667",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1f53b1f96fe2bf199392c2b3f99fddc2e9c30e78b8c38f677c672b0c176bd753",
+   "why": "calls no function the template calls",
+   "to": "0x0f60670907d9690e05ee9f4be336aa9967c49832",
+   "selector": "0xde0171ed"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x636d69ae5b8120ce96293b17ab6d9113130995d56ca38dce5d6f274dde5c485f",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0xa0000000"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6cb164203ec89255a95deaac7e9cac329f3bca8cb22b9520e53dab34584d5c0c",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0xa0000000"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa2511224b6da4ca4fc153aa852618c1569825ffc58c9dbe88b73a5b475fc67a6",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd441d72027971ce5828ba4527827a2d588e18a5ac89cf16c00883c8f12f077d9",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x521f89199f016faf7a8ac2c056a16f99602ec65167e0eca06f6deb20fbbbcbbf",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe245864446a4060642eb7a58d6fbc58f855abae016931cb868f7f70d9745f5f3",
+   "why": "calls no function the template calls",
+   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x395c5eed8a94b2407e6f8875ef20e7d89ad0f6d7b9dfcb9ab3ad0eb3f986d0f8",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb3bd7017d3e2039c6dc87f21da5105b4bdbcabdd039f45d2ba6e3eb97a215ac9",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x06af927477272e3fa617ee99f1590ae290b024eb7ca0cdd0a4e66dae5237666e",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x94c3438d813e0e3428d5dd89ff56a1184d6e187f7438991ce0fe3b1439f8345c",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc834898bb1937d4e7abc58a2cb69ff421f10e4e90c5803b631b46d2637837296",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x924f4ac368da6f5a486dc0b09219be74fb0d91791456c2223daca8e4a6508eaf",
+   "why": "calls no function the template calls",
+   "to": "0xb300000b72deaeb607a12d5f54773d1c19c7028d",
+   "selector": "0x810c705b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xaf78a871aaf57f8e18d0c88c837593674d09aeeeb9f87ae6da0bdab4b620ffc7",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa8f8b8d5a52dba653b015409832204ee1754de0b20d8a69224b1fafb0b1c89bf",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6d35b7ca225ff43896565f61c8def39414d5075d354f9be25e87f45a9026c49b",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x87cde5a3de33c5eca781e18d7aef586ced23e608976fc5baf31b820af2c1078b",
+   "why": "calls no function the template calls",
+   "to": "0x28b1dc1a5e3699a428bc51d234dfab7c9cb2a183",
+   "selector": "0xf2c42696"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xad6572943a289691dbea0e868defc42cac22f7cf9f897f0c1f5d8619a0c16b9a",
+   "why": "calls no function the template calls",
+   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3a2bdecd78a18fabe272129131de3937aaf9ce13e27afce56c6f86202193102e",
+   "why": "calls no function the template calls",
+   "to": "0x1f2f10d1c40777ae1da742455c65828ff36df387",
+   "selector": "0x2bad1b01"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x85792d853865ce584b490aa41324966f6886b8be36a9f06a41b67c41018f0016",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf29969e2635e195a912130ced741d7e257b95c0f1d7cbb286ee0d4a95dbda3fd",
+   "why": "calls no function the template calls",
+   "to": "0x0000000000001ff3684f28c67538d4d072c22734",
+   "selector": "0x2213bc0b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x89005a2ab2fb831551d4849c5889e833e7e2358e0925685609f4e44c54cfbdfc",
+   "why": "calls no function the template calls",
+   "to": "0xe9ee83723d3147a2f17b337ccc6d39ae49348805",
+   "selector": "0x99e1d016"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x56a8944b53b9845909121ac9f606c939db856ba47dd1ce446fe6e12b12fe2749",
+   "why": "calls no function the template calls",
+   "to": "0x0000000000001ff3684f28c67538d4d072c22734",
+   "selector": "0x2213bc0b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x165509b401e4054cb0c45c0c7cb7487e4d5728dcc00abf077837058d237b9840",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb312b06c5ba097474003d052b88512c83bfc273cdfd8c8418c1d68b5817e56e6",
+   "why": "calls no function the template calls",
+   "to": "0xfcc92310a0587f5af26d99331b334cc5345469c2",
+   "selector": "0x00224baf"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7a41c9aa4245568ac47bf0d9aa19e518f04e66653bcd3765d07c4c4ae06bb7f5",
+   "why": "calls no function the template calls",
+   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xaccf26a8747e3e7573c1d63b164c5cdc808b5f1f3056dedeb1ceb6d24884a9e0",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x853c47f33b8ebece81d78d9b3ac13f6b016ec3cb1afabba6fae029cf01ae04ea",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0xa0000000"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf818b3b0f4e037c61bba99e51bea73066960e9bd77e655cc66b413b687b19608",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xeff2c7981312439acabbc027ee9ed4c0fe901c5bba6e417c387276cf9db7429e",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0xa0000000"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xeaf0655cca3075c91c7f35a174324d65cde3e7727f21f3784f61acd3fa7ebb66",
+   "why": "calls no function the template calls",
+   "to": "0x6352a56caadc4f1e25cd6c75970fa768a3304e64",
+   "selector": "0x90411a32"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xcd0487c0bf7decf849cf482e309a6a9de2cdecf985e45b60ed905a5ecbf8bc7a",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa78311ee659fd0a18941d4ef41f8447ccd8a66ca8172b5a59625e8321a28db65",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0b1b3e697115184bfcbb34082cb3dd3e6a1a477e3a06c13c06960b3b8e2bc85f",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9120c99941949337cc2491734556006bb4ccb22787c9041c78108b6b641eda64",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0xa0000000"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2d14865211383098be8e53e316e74bad1ca26b7151989f3984e4086e86581ace",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1e84e27c04958a3e1c6ad038ce9ddb01bfdcde6b3d4a53cf72d4089582989583",
+   "why": "calls no function the template calls",
+   "to": "0xeff6cb8b614999d130e537751ee99724d01aa167",
+   "selector": "0x95305e90"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xabb9071df5f16d7e0a1fb51aa18c2312244dfacd566b31f25af4ba3970d2608e",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7a7cd2503f75a291412be2df4f887e3784b0f793bfef03ec46569da18f5d64c0",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc00c03b490408b0401a7b534f5209724e6272c4fa3fd70da707e0ae314db56d9",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7e69341da677ea2f71f2b719ffdf2d21bb5ae3eda9671a1636be5725811bad79",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdadc2da274bbc943d6e08f50f23048416f5b1c754c35195eeca6008e63021d7b",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xbb5255a0e4bc79fe4b2ce7b28b2b6b1998639eb7437fd1d800a74d59b77ffbeb",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4df5f88244fc81d63acb5144452c9da86dfa8168500a75583272102a4a3ba8b5",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x74832b1b406f325e4f05345a2284ee3d724136deda0064b7dbbc0e9bf992b0aa",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xbf43f2b4a1b73872b9d9cdeef605f89135c585add9417c362cbeaa9f0432a065",
+   "why": "calls no function the template calls",
+   "to": "0x2d83ff1cb1c79c68fe530d35f439a92a645faded",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x85ec4c11b85439c7dcbf1b4508fcb3f48bd0107703c7229668239ad18f8df12d",
+   "why": "calls no function the template calls",
+   "to": "0x663dc15d3c1ac63ff12e45ab68fea3f0a883c251",
+   "selector": "0xc7a76969"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa9c1a29d9291cbe98d0b72d19f847de10c33c202747e8a1ab4719243349c92f4",
+   "why": "calls no function the template calls",
+   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x30cf505853e9c4a03c3abfa4aa47dcf3d2e47f4f3236381932e07e98211809a7",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0eb5500bae7bc9faf33260e51106c26fdc1ad4cc6faacb4b872e52bdfa2bf797",
+   "why": "calls no function the template calls",
+   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf6e8a65b833a5e30ada87434cb38e1faf212fd99fbe88a9e7377eb3bf0017a96",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x000aeaafc078d69d0f26bec7b26a65cf8a3bd4432c72822354dc13ab09526a86",
+   "why": "calls no function the template calls",
+   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5b46c9384835608d131143e80a78ef04c5794dc4d035c6efaccaabe4207f03cb",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa0e9d4c99280d9c92c21a7a0a637506e45a198391a6c775daa2e0b9d662f05f1",
+   "why": "calls no function the template calls",
+   "to": "0x42e213a3ad048e899b89ea8cb11d21bc97b84748",
+   "selector": "0x2b66c821"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe1800221667fc1994fde87d1e46f8356324da6838b35b82b1bc6947495379ffe",
+   "why": "calls no function the template calls",
+   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
+   "selector": "0xdd46508f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4dc53765a258cb5c121ed5736e30d4c2218988ff7476a519aa8f39b65eff030e",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc43826129d9f36132289d9ba0a5fe1d36395b72a604582bd66c2a679375ec13b",
+   "why": "calls no function the template calls",
+   "to": "0x00000f91109c4d0007e90000d9facad5298a0cac",
+   "selector": "0x0053be41"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc8d7e0925c9cfb06dbfeab1ae0a83e4337d18ae6fb2d8bb998161e78e0ce8556",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xad87425a4ea941a4d25e66099bc8ec78fff3d0866f2e1e898305fd3b3679f169",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x99b9ce925c1d3dcdadbe383f361c0b5852a3c8c6300cdfa724d39002d99e1fd9",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5b8cea7ffe8370cef6050d04e326238708beb31fabf882094556c467b120a99c",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa4f95721149bad74cf8d6f606bf6da2ec72a4f5684cae8bfe5b453e472cdd09d",
+   "why": "calls no function the template calls",
+   "to": "0x0000000000001ff3684f28c67538d4d072c22734",
+   "selector": "0x2213bc0b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1b25e999113b7682d78de699e175bcd85f983d62004309f558640934f13f4322",
+   "why": "calls no function the template calls",
+   "to": "0x04ce218ead72401702dd5f3e56cedb7d2d477777",
+   "selector": "0x295f0582"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xaef32b9762a7730ee07d5d68124d36432b9219358d7970716ab12879cb2a5b64",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xec5c490677cdf2ec79cfcfced50f460073bd2890078040d16f91025dc88900ee",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x14dc044668b4339ab44c06147d73269aafee759ce5c407eb1c72e103b4c7d11f",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc282567280e968c0f3d6a4d3da984c458fa3216eb149f00175ea56985dcc782d",
+   "why": "calls no function the template calls",
+   "to": "0xa40672a7e8e659e868de0be06a60ffd23e549c66",
+   "selector": "0x88b97778"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x82e29b785924a287d8ac70ca91728acb537bc62d3c9e7f1d289cbf75c646291f",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xed2780dfdffaf2d5ec7fb395a3295f99301c002e1aad92b7958785b3fadda7d8",
+   "why": "calls no function the template calls",
+   "to": "0x99e66f3ce49266bd04a64d989ea63df0b8f43b80",
+   "selector": "0x03140314"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0c769b2a250b0413efb025c57d3e77cda9eb532f818371002305819429825d78",
+   "why": "calls no function the template calls",
+   "to": "0x5ffd71ada755cb2e0635adda04fde47a56fc4dc1",
+   "selector": "0x55f86501"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd4ff543ff5e9db1dc1dff16c7f7ca44cdace15e7ba10414bcdc77c0168e9cb18",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x68a2cf36ce2b1fea346ddb8ff1ed711c271c11409f13bb2520e2964e395855a8",
+   "why": "calls no function the template calls",
+   "to": "0xa0f1c3ad83e07d97b5e7030e177718be175275ea",
+   "selector": "0x12aa3caf"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa9cbd14eabe4b2870ddeb9d8268735a2456cd0e940614b2bab13b58ab004f234",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x91b14d52a906f1d7345d1395bbd86eeb94e8e5b434e4370935f7c913ee0b8ded",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x39917bf9e5ee35c0144480f637c6304877cca86ed7c5a2aae3218ca2722eaa84",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x571ee14b566d28803846acbf61f2dcb18afa86e98e1c757a1eeec93afd6dd03c",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x56ba7bfb949d17b92ac2fc6ddf02718a5e08c0c61f18c93677671ff5573f5769",
+   "why": "calls no function the template calls",
+   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
+   "selector": "0xdd46508f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7579acf5f8a19cbce95da757b2e531d77a74755f858fbb33e489b77ee77c39bc",
+   "why": "calls no function the template calls",
+   "to": "0x93c30e6e09f698cfea99b09b5166ed90cfaedd17",
+   "selector": "0x0fe20a3f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x14de26a6bd56e87f4bfe0a96046eb62d653658e389ce5dc9b245b473efaf4793",
+   "why": "calls no function the template calls",
+   "to": "0x950fd558f47e234a2fde23b7d61f7ccdbcb4a86f",
+   "selector": "0xdd225095"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe3a67d7c18e6ecbf90b35b616f8a794d4f21954d2a0931e66595732b992bd262",
+   "why": "calls no function the template calls",
+   "to": "0x93c30e6e09f698cfea99b09b5166ed90cfaedd17",
+   "selector": "0x0fe20a3f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x73bccc392049b9df9673215788c0b7f6d12b4e3f55be7bd563c9d390a4e18c1f",
+   "why": "calls no function the template calls",
+   "to": "0x950fd558f47e234a2fde23b7d61f7ccdbcb4a86f",
+   "selector": "0xdd225095"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x515ae617f8cd1af7e021d1bb144b89a07048a79fd8ef432d80154dc0e5741347",
+   "why": "calls no function the template calls",
+   "to": "0x93c30e6e09f698cfea99b09b5166ed90cfaedd17",
+   "selector": "0x0fe20a3f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xacd53a5b310ad2c16be32b9a46268f88708fd0d8e2ea4e6a0d6e72fa90313d42",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x06198d1e65701c19a7654f2c3d16726088e25f61728415803e32a8ba362ad9ae",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2e771924534a70a4db0901beaaf7afb24a60d0ca97fab40462f75e6151036883",
+   "why": "calls no function the template calls",
+   "to": "0x93c30e6e09f698cfea99b09b5166ed90cfaedd17",
+   "selector": "0x0fe20a3f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd5b578c440e2a2691aed2c67fd34019cf78bb24d24bd29bd66c50cb940be6269",
+   "why": "calls no function the template calls",
+   "to": "0x1f2f10d1c40777ae1da742455c65828ff36df387",
+   "selector": "0x2b60f165"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa2e7e36395e6f093d6ef73c24dd66298b8a1d167d20e11e2bda51d7edc77d548",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6e4a6f0eec603d92439eb8729749995e0ce408fed137d39452fb55744cdb6d2f",
+   "why": "calls no function the template calls",
+   "to": "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae",
+   "selector": "0x5fd9ae2e"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8bd976ff4369980119b43b568c5853f26882c0e0ece73e330ed0ce3c2f3e02cb",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xaf101a36111fcf91e01a8f03b0b9192eb532f1b1c8ebb46b8ac3a5e0e1b92555",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7035fe5c6a26b2cf1b4ce042087b5e43c018bd20e567162f4e494982c870b814",
+   "why": "calls no function the template calls",
+   "to": "0x1d4c96ec9dfdaa9493165da397c7dfdf7e771169",
+   "selector": "0x0ab35bb0"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x10756c07417c7303beb7a9a011f48114d3ca1469a128167309d4364c5cc47c64",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xfac9d3540bd104967b9dd3d18612407dc1ed2829d7a99393b657fa1bb7b2f5ac",
+   "why": "calls no function the template calls",
+   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
+   "selector": "0x4cf3fe9c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x85e3fadffd9862f37165d59d697900eb5013d312a066e205844b6d54d50ee69b",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7c0746de85c332d5530d8007c96f0df7ea7a551f849fb3c3dfeae017cb59f4e0",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x537b183670ca937aa00bdf5deebed940b684002d9164244a70f1cae87acc636a",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x79e967e2319f864102be27264f2e5baf9f9f84666c6ff54559d48650c6c94991",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x066d3959738997d70a5d828379621d6157535a458067577f34c10264c2e16cb6",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x381ba786d8677c5fa87576493d51a9e6a633deb553042f645b20cb6111d72ef3",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xcf393b3a9ac47de6fd4106c0a268fde96c84cd3c4528971068bbc8c482d4926e",
+   "why": "calls no function the template calls",
+   "to": "0xeff6cb8b614999d130e537751ee99724d01aa167",
+   "selector": "0x95305e90"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa641dc9bfed7cab5cd09acbcfaba73f63c87929b467123f20ca7e1059a691d84",
+   "why": "calls no function the template calls",
+   "to": "0x950fd558f47e234a2fde23b7d61f7ccdbcb4a86f",
+   "selector": "0xdd225095"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1d4bc511afba5aa5c8ad51eb7ae56473b52803590a55b7c03bc7164c3af488a6",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf3e400951ef559849a6e91788a09e99447246d067dbbcf27c4992e3442050932",
+   "why": "calls no function the template calls",
+   "to": "0xeff6cb8b614999d130e537751ee99724d01aa167",
+   "selector": "0x95305e90"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3e022bc5a685169ae8e10878a5c7cdb69a9ed2f25aa8a1ca07f819c5b99893a9",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe92eb96b6c5e2f158e02696a508bcf2e003ccf4d3bb896fa4d8e64b2326222da",
+   "why": "calls no function the template calls",
+   "to": "0xeff6cb8b614999d130e537751ee99724d01aa167",
+   "selector": "0x95305e90"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf10c713a54e7e900eecc8a20733320e84e2270be8a943e57373599c17f886091",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x042bc3cd81a8d42198d62cda5fe6cdbb014e9b10c12cb168bec76b5354087fab",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9e10844b2d069b078b04ebbc4b5e588389855fa19ab976abc7d5e6cf8f0719dc",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8ea35b7c7c5ae3ab408c717da6dafb0c0994ed9264f34e6e45792695c45c3986",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4dae3d62186277b30b1184dff1a387646f0a328d0ac3723a05a22128bd55af89",
+   "why": "calls no function the template calls",
+   "to": "0x149d330c8b9352573d17bc184b7a426ea020b38e",
+   "selector": "0x256ccc8e"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe6893dc9451bd029835fcf650a54d6fcc49da7661afd68a728e34074f689f53d",
+   "why": "calls no function the template calls",
+   "to": "0xc5a8ee0e31870aaa7d5cf885aadf9b1f9d77086f",
+   "selector": "0x4c3f521d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x93a3af7eb5510a839319af8f6ac48f91c6dcd77c9a8a5bc2417b31db2e5f6dc5",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1d2a566388b652963d2e41fcc6df7205d2919c5c50fcf8961cb398821ac31eb6",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x035c03411440289c78da0cc8a484d25054811ff4e0cdba2dd47beaaff12edf05",
+   "why": "calls no function the template calls",
+   "to": "0x6a000f20005980200259b80c5102003040001068",
+   "selector": "0x0d893d62"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8c52156e19d05a77ebbd7aa54c0b243ea07268b031d7747d81989247346912bd",
+   "why": "calls no function the template calls",
+   "to": "0x6aba0315493b7e6989041c91181337b662fb1b90",
+   "selector": "0x25356bc7"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x15396dd5bab398a687ab9301328369a6f727136d27ab42ace20c8e8fcb1c359a",
+   "why": "calls no function the template calls",
+   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+   "selector": "0x13d79a0b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe2b0bd9204dd3b78617e80a51a3810cd03fc349b4aa193c0e6a84d6d6cff9138",
+   "why": "calls no function the template calls",
+   "to": "0x3e8282bd1bfabd23249701e978e9db3df3d7073a",
+   "selector": "0x95305e90"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe386a7fa80bc63ebab12607e21ebc3024d850baaf487af8a7a736e137c47c214",
+   "why": "calls no function the template calls",
+   "to": "0x93c30e6e09f698cfea99b09b5166ed90cfaedd17",
+   "selector": "0x0fe20a3f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2de53244b470b982517ecee930d1f93a813fe7fc0546a0779f6e678650b11f82",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdc3076545d2371df791a105585b50672d6aebcd7564b3e7858f660dfaf6ba511",
+   "why": "calls no function the template calls",
+   "to": "0x009a8dbad7000f0000009b002d050058ca881b57",
+   "selector": "0x0100afe0"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xeb28b682785374fc01d83b1bfa06a3ab003460b59e8fc52cfa59996b5739b793",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc981dcf030945d90e81242439c9da1855162ab9dade0fbb94371ad91fc2a1205",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdebd1900b2bea66ea3bfe64f8a5e011f73acd0d108c00ebe615c4ba30bc5e902",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x541377d030b988aa73c9d9c987431fb9c1a0cc15fec790cbd1547c2bbbbe7cab",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x42f0f5bdbc3994c6547df97950c01b5a1cc64b9a7ff3641e99ec4772b22f1baa",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0100791d73286a4e5826499c90aa1f594b8b2dc7580ce784ab0576ff760c8e81",
    "why": "calls no function the template calls",
    "to": "0x4ecef7bd1ed0c9f64a3a5c1a785a3bb39dc5df6a",
    "selector": "0x87e05e5a"
   },
   {
    "kind": "not-studied",
-   "hash": "0x6a3833493a7ea8067e0006c3b2adcb9b3dd744ccfca36631505c7f100f555149",
-   "why": "calls no function the template calls",
-   "to": "0x02e5be68d46dac0b524905bff209cf47ee6db2a9",
-   "selector": "0x2894adf9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x6af5df4e711cedbca7d0ddb03be087008a3a89a6cafe36e64b6ef22ca8403984",
-   "why": "calls no function the template calls",
-   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
-   "selector": "0x000000c3"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa55035089bf9a03ac595d7d3a25c5e9b57d582443e4b9697ce9b30a445e670de",
+   "hash": "0xb4034b013bdb54a1152dbd50786bf802524764c9493e67f8d303e55eb93e8658",
    "why": "calls no function the template calls",
    "to": "0xeff6cb8b614999d130e537751ee99724d01aa167",
    "selector": "0x95305e90"
   },
   {
    "kind": "not-studied",
-   "hash": "0xf0dc4f84b60fa3d7394f738c36535778a5a8938233649293a0fba76850719da7",
+   "hash": "0xd1d5eb455be2b29dca0dba9d369ddd3bef750a8388dbbd68f7634b7328464957",
+   "why": "calls no function the template calls",
+   "to": "0x3e8282bd1bfabd23249701e978e9db3df3d7073a",
+   "selector": "0x95305e90"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x635f52da5c02a95c7ad4608c6b20e466b53512ec19051de511bc973ea5b65446",
    "why": "calls no function the template calls",
    "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
    "selector": "0x000000c3"
   },
   {
    "kind": "not-studied",
-   "hash": "0xeac68a4cec67094a3c719dd89bf823f6bde3d6578645a3c3da7d2458744dfe47",
+   "hash": "0x08635f5f419e04bfd6f0385b8919ece53795b81ed797f6b32eeb8b8fd9d674fb",
+   "why": "calls no function the template calls",
+   "to": "0xeff6cb8b614999d130e537751ee99724d01aa167",
+   "selector": "0x95305e90"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xcd7cd6f59e619b59a7f2495a3cdb2d69bd4f68df56f5ba61ed116971be6d02a6",
    "why": "calls no function the template calls",
    "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
    "selector": "0x000000c3"
   },
   {
    "kind": "not-studied",
-   "hash": "0x3123e27dc784bb6d86630a601cdf74760821c79436ae751969737bea8d5ad427",
+   "hash": "0x4a9634d125acb1258d4aa427da73bb51104d6fc8df311587a7c105fa3615daa2",
+   "why": "calls no function the template calls",
+   "to": "0x009a8dbad7000f0000009b002d050058ca881b57",
+   "selector": "0x0100afe0"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xcbcb2bd6bec94ec9c4b563674bb5f7ffc24a999c37f3f538f2d5756007154b08",
+   "why": "calls no function the template calls",
+   "to": "0x009a8dbad7000f0000009b002d050058ca881b57",
+   "selector": "0x0100afe0"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x580809c29f474414f6e21ff821720b0ff8488667d56041eb986e3b4d7609720b",
+   "why": "calls no function the template calls",
+   "to": "0xeff6cb8b614999d130e537751ee99724d01aa167",
+   "selector": "0x95305e90"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x13e019da1d17ee649f45c02c0d43ffe2b33119f7b74cef1c04984bc494e7ef8c",
+   "why": "calls no function the template calls",
+   "to": "0xbdb3ba9ffe392549e1f8658dd2630c141fdf47b6",
+   "selector": "0x000000c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x09ba47a63f3b07a5626635329a08023ff075712e87dd647f2c1206f6f66b62cc",
+   "why": "calls no function the template calls",
+   "to": "0x07964f135f276412b3182a3b2407b8dd45000000",
+   "selector": "0xd808d889"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x50055a88d0073b6062ad4dbb6f98c81cabb34c8e7b804a50997a305b06abc059",
+   "why": "calls no function the template calls",
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x15ad986ebddca2b305de05f2e2be5af726358c523e0b6623428f260967cc9eab",
+   "why": "calls no function the template calls",
+   "to": "0x003baa012aa04d61f5af86115819d31ce6163854",
+   "selector": "0xa5000002"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf5d4618b10ebc8c04b15243f8a105076eb7ba52c9d5258be1a13c424be8c0588",
+   "why": "calls no function the template calls",
+   "to": "0x149e280cc6597a461eab7db69c66a5c09a04caa5",
+   "selector": "0x3100db41"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9eb2418aaa88e5541edffb7a7cb8813ae0a7736b6d24021d489d0b65521ce994",
+   "why": "calls no function the template calls",
+   "to": "0x3e8282bd1bfabd23249701e978e9db3df3d7073a",
+   "selector": "0x95305e90"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8105e3b2fa289cb7835ef693763d328e65ac02fbafec957a7b5302e71a135ef3",
+   "why": "calls no function the template calls",
+   "to": "0xeff6cb8b614999d130e537751ee99724d01aa167",
+   "selector": "0x95305e90"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0732bedae5fd11a77d5bcbc59ce02fec1545898536786df4a308a2c29bb90a84",
+   "why": "calls no function the template calls",
+   "to": "0xeff6cb8b614999d130e537751ee99724d01aa167",
+   "selector": "0x95305e90"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xddd060c07b2a1e812182a0c83cb17f9d2cdee6d769cadc90034bc1cd79902759",
    "why": "calls no function the template calls",
    "to": "0x111111125421ca6dc452d289314280a0f8842a65",
    "selector": "0x07ed2379"
   },
   {
    "kind": "not-studied",
-   "hash": "0x786a80e523469ea1e0e77745877291c2db55c5531f7c8dbdaed0adf94d8d8999",
+   "hash": "0x69438946aaec9cf79c7b56b32529b8e015ec21f4d2e0eb2576a351e6b36a9f08",
    "why": "calls no function the template calls",
-   "to": "0x9b1303ebf09bc51b7fac376c9e421e8daae63b82",
-   "selector": "0xdd225095"
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
   },
   {
    "kind": "not-studied",
-   "hash": "0x3679a4e5f32a5858ad757192dad7750b88ac3f6a392fb4bef270440ce3df0185",
+   "hash": "0xa1e20361dbc436142cdf59be76d97f9e407bb81c4934327b1b5d2223a98de92f",
    "why": "calls no function the template calls",
-   "to": "0xec4fb7e7c35c241e1138a2d8cfbb09f3ad1ccb22",
-   "selector": "0x00000009"
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
   },
   {
    "kind": "not-studied",
-   "hash": "0xe5e25ce9e27421e17555364427ceb24d3387318e3794892cd1556ad5deff7668",
+   "hash": "0xc10d4518f9012b885d8c2537d0d2c24a23ec53fea26a1eb90f0c1be2e2ff9e02",
    "why": "calls no function the template calls",
-   "to": "0xa5d87aab3b1818ba74875db0e69ae91588de004f",
-   "selector": "0x61461954"
+   "to": "0xd1c6aca7ea7ed44e1873dafa054c28ceb690c7eb",
+   "selector": "0x9eb723c7"
   },
   {
    "kind": "not-studied",
-   "hash": "0x56308bd8ba9d16d1ad31f26104e9b3f0ba18c251e39ba8f2d61a1f03401e5e24",
+   "hash": "0x639ed9d48b59264c70cae1cb5d6da0d21a0f6df0bb67030a5ee171988d7a1f6d",
    "why": "calls no function the template calls",
-   "to": "0x4b0ff2a5f9f367d4f4a31ecf4b1c8441b3d0bbc7",
-   "selector": "0x2523c148"
+   "to": "0x8eed5e28216c0bc6f817df40ae6ca11c2294cc1c",
+   "selector": "0xd7a08473"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x510aff3f3a0ee9becd1cbd65a4d04bbce2af33c96de7871ab37a702cea8ef584",
+   "why": "calls no function the template calls",
+   "to": "0xe41698520e4817b55c1841859a36847d50f0c82f",
+   "selector": "0x00000000"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8061fb7a577a8ccf9f1bdce54b5d3d3600c6438180e066d2fe51ebd61eca919f",
+   "why": "calls no function the template calls",
+   "to": "0x278d858f05b94576c1e6f73285886876ff6ef8d2",
+   "selector": "0x70521ae9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x98164c2fc0b6332ef28585eadf5676be56592c3acf66cb3564b8d26975e4dda4",
+   "why": "calls no function the template calls",
+   "to": "0x1b6257cae4192e62b629efca21771be3d759183d",
+   "selector": "0x9be111d1"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x12959c54d779f6bfb5d03fc8d61cc9741c40ee60b39f0f4e4ed7f040b939d06b",
+   "why": "calls no function the template calls",
+   "to": "0xe41698520e4817b55c1841859a36847d50f0c82f",
+   "selector": "0x00000000"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0c0b500bb9f80fcd7bf774896ef73a3f8feb305408ada0bce25e0d3c21f3476a",
+   "why": "calls no function the template calls",
+   "to": "0xe41698520e4817b55c1841859a36847d50f0c82f",
+   "selector": "0x00000000"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3120150c9c1d3e396865959981fa062c7194ae7bb6022143c9ebaac043980ab6",
+   "why": "calls no function the template calls",
+   "to": "0x8feab81d36e7576107d5de0758c1b839be31b4f6",
+   "selector": "0xf2c42696"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4f309f68a13b3bd89b7ee0744628dfdd10e3d80d73b17de47097f8f9007ec857",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x56c7e39f129bfe2c539989c28e917d259754a2024963a3852ef0970d4586477c",
+   "why": "calls no function the template calls",
+   "to": "0xe41698520e4817b55c1841859a36847d50f0c82f",
+   "selector": "0x00000000"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x74bbf2f694698638958dd03e0572f0fc571a90bbca22223509efd8440128c581",
+   "why": "calls no function the template calls",
+   "to": "0xeff6cb8b614999d130e537751ee99724d01aa167",
+   "selector": "0x95305e90"
   }
  ],
  "measurements": [],
