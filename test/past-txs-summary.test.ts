@@ -101,6 +101,18 @@ test('a summary studied with another template, other registry entries it reads, 
   assert.throws(() => summarizePastTxs(root, loadRegistry(root), file, otherCode), refused('study code'));
 });
 
+test('a summary keeps when the attribute table gains an attribute no entry it reads carries, and is refused when a row it reads changes', async () => {
+  const root = scratchRepo();
+  const before = loadRegistry(root);
+  const summary = await studyRecording(root, deposit, before);
+  const attributes = join(root, 'registry', 'attributes.json');
+  const table = JSON.parse(readFileSync(attributes, 'utf8')) as Record<string, string>;
+  writeFileSync(attributes, JSON.stringify({ ...table, unusedtoken: 'token' }, null, 2));
+  assert.deepEqual(staleParts(root, loadRegistry(root), summary), []);
+  writeFileSync(attributes, JSON.stringify({ ...table, asset: 'factory' }, null, 2));
+  assert.deepEqual(staleParts(root, before, summary), ['registry entries it reads']);
+});
+
 test('a summary is refused when an entry joins the scope of a card field its template names, though no studied transaction holds its address', () => {
   const root = scratchRepo();
   const file = join(SUMMARIES_DIR, 'erc20-transfer-usdc.json');
