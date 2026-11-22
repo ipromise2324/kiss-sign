@@ -8,7 +8,7 @@ import { replayMessages } from './messages.ts';
 import type { MessageExchange } from './messages.ts';
 import { pastTxs } from './past-txs.ts';
 import type { BlockRange, ExcludedHashes, PastTxs, PastTxsQuery } from './past-txs.ts';
-import { anchorEvent, replayAsk } from './sources.ts';
+import { RANGE_PAGES, anchorEvent, replayAsk } from './sources.ts';
 import type { AnchorKind, SourceExchange } from './sources.ts';
 import { replayTraces } from './trace.ts';
 import type { RecordedTrace } from './trace.ts';
@@ -28,10 +28,12 @@ export type PastTxsRecording = {
     readonly fromBlock?: string;
     readonly toBlock?: string;
     readonly head?: string;
-    /** The run asked the whole year in one page first; absent in a recording made before it did, or after it paged. */
+    /** Legacy: the run asked the whole year in one page first, else searched the windows. */
     readonly wholeYear?: true;
-    /** The run paged the whole year up to this many pages per source and checked each anchor party for a Safe. */
+    /** Legacy: the run paged the whole year up to this many pages per source, else searched the windows. */
     readonly yearPages?: number;
+    /** The run paged back from the year's last block, newest first, until the year was read or its ranges took this many pages. */
+    readonly maxPages?: number;
     readonly maxTxs: number;
   };
   readonly sources: readonly SourceExchange[];
@@ -45,30 +47,41 @@ export type PastTxsRecording = {
   readonly traces?: readonly RecordedTrace[];
 };
 
-/** The most pages of 1,000 a run asks each source for the year; Etherscan refuses a page beyond 10,000 results. */
-export const YEAR_PAGES = 10;
+/** Legacy: the most pages of 1,000 a recording made before the newest-first search asked each source for the year. */
+export const YEAR_PAGES = RANGE_PAGES;
 
 /**
- * The search a run makes. `year`: the last year, placed by the head block, paged up to `pages` pages per source, and
- * when every source finished within them each anchor party is checked for a Safe and the Safes' transactions studied
- * first; otherwise the windows. `range`: one block range given by hand, refused when it holds more than a page.
- * `old-year` (the year in one page, no party check) and `old-windows` (the windows alone) only replay recordings made
- * before the year was paged.
+ * The pages of 1,000 a newest-first search's block ranges may take, each counted by the source that took the most: about
+ * 30,000 transfers, 25 seconds of search and 2 minutes of party reads for USDC moving into Uniswap's PoolManager.
+ */
+export const MAX_PAGES = 50;
+/** The fewest a query may hold: the whole year, asked first, may take `RANGE_PAGES` and not finish. */
+export const MIN_PAGES = 2 * RANGE_PAGES;
+
+/**
+ * The search a run makes. `recent`: back from the year's last block, placed by the head block, newest first, until the
+ * year is read or its ranges have taken `maxPages` pages; each anchor party is checked for a Safe and the Safes'
+ * transactions studied first. `range`: one block range given by hand, refused when it holds more than a page.
+ * Legacy until every summary is recorded again, these only replay older recordings: `year` (the year paged up to
+ * `pages` pages, else the windows), `old-year` (the year in one page, no party check) and `old-windows` (the windows
+ * alone).
  */
 export type Sampling =
+  | { readonly kind: 'recent'; readonly head?: bigint; readonly maxPages: number }
   | { readonly kind: 'year'; readonly head?: bigint; readonly pages: number }
   | { readonly kind: 'old-year'; readonly head?: bigint }
   | { readonly kind: 'old-windows'; readonly head?: bigint }
   | { readonly kind: 'range'; readonly range: BlockRange };
 
-export const DEFAULT_SAMPLING: Extract<Sampling, { readonly kind: 'year' }> = { kind: 'year', pages: YEAR_PAGES };
+export const DEFAULT_SAMPLING: Extract<Sampling, { readonly kind: 'recent' }> = { kind: 'recent', maxPages: MAX_PAGES };
 
-type SamplingFields = Pick<PastTxsRecording['query'], 'fromBlock' | 'toBlock' | 'head' | 'wholeYear' | 'yearPages'>;
+type SamplingFields = Pick<PastTxsRecording['query'], 'fromBlock' | 'toBlock' | 'head' | 'wholeYear' | 'yearPages' | 'maxPages'>;
 
 /** The search a recording's query made, so a replay or `--same-windows-as` makes it again; never a newer one. */
 export function samplingOf(query: SamplingFields): Sampling {
   if (query.fromBlock !== undefined && query.toBlock !== undefined) return { kind: 'range', range: { fromBlock: BigInt(query.fromBlock), toBlock: BigInt(query.toBlock) } };
   const head = query.head === undefined ? {} : { head: BigInt(query.head) };
+  if (query.maxPages !== undefined) return { kind: 'recent', maxPages: query.maxPages, ...head };
   if (query.yearPages !== undefined) return { kind: 'year', pages: query.yearPages, ...head };
   return { kind: query.wholeYear === true ? 'old-year' : 'old-windows', ...head };
 }
@@ -80,6 +93,7 @@ export function samplingFields(sampling: Sampling, head: bigint | undefined): Sa
     ...(head === undefined ? {} : { head: head.toString() }),
     ...(sampling.kind === 'old-year' ? { wholeYear: true as const } : {}),
     ...(sampling.kind === 'year' ? { yearPages: sampling.pages } : {}),
+    ...(sampling.kind === 'recent' ? { maxPages: sampling.maxPages } : {}),
   };
 }
 

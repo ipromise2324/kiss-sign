@@ -17,7 +17,7 @@ import type { Body, HtmlInputs, Page } from '../src/research/report-page.ts';
 import { WORDS } from '../src/research/report-words.ts';
 import { loadReport, readDocs, replayInputs, reportDir, templateTargets } from '../src/research/report.ts';
 import type { PastTxsSection, ReportInputs, ReportTitle } from '../src/research/report.ts';
-import type { YearSearch } from '../src/research/past-txs.ts';
+import type { Coverage, SearchRun, YearSearch } from '../src/research/past-txs.ts';
 import { judgeFixtures } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { NOT_YET_REBUILT, reportedInstances } from '../src/template/vault-reports.ts';
@@ -459,7 +459,7 @@ test("a paged year's search line says how many transactions with a proven Safe p
   const covered = (safesFirst: Extract<YearSearch, { kind: 'covered' }>['safesFirst']): YearSearch => ({ kind: 'covered', range: { fromBlock: 1n, toBlock: 2n }, pages: new Map([['alchemy', 2], ['etherscan', 3]]), safesFirst });
   const checked = { kind: 'checked', noun: 'the address minted to', block: 2n, parties: 30, safes: 20, unreadable: 0 } as const;
   const searchLine = (language: Language, year: YearSearch | undefined): string => {
-    const page = renderPage(buildPage({ ...judged, pastTxs: [{ ...first, run: { ...first.run, year } }, ...rest] }, notesOf(id), title, language));
+    const page = renderPage(buildPage({ ...judged, pastTxs: [{ ...first, run: { ...first.run, search: { kind: 'windows', year, windows: [], perWindow: 0 } } }, ...rest] }, notesOf(id), title, language));
     return /<h3>((?:Search of|搜尋)[^<]*)<\/h3>/.exec(page)?.[1] ?? assert.fail(`${language}: a search line`);
   };
   const expected: Readonly<Record<Language, readonly [all: string, some: string, none: string]>> = {
@@ -475,6 +475,43 @@ test("a paged year's search line says how many transactions with a proven Safe p
     assert.equal(searchLine(language, covered({ check: { kind: 'not-checked', why: '--from and --to fix both sides of the transfer' }, selection: { safes: 0, safesChosen: 0, rest: 40, restChosen: 12 } })), committed, 'no party checked adds nothing');
     assert.equal(searchLine(language, covered(undefined)), committed, 'a year asked in one page adds nothing');
     assert.equal(searchLine(language, undefined), committed, 'a recording of the windows adds nothing');
+  }
+});
+
+test("a newest-first search's lead says which blocks it read whole and their dates, and when the cap stopped it, that the year's older transactions were not searched", async () => {
+  const id = bilingual((dir) => (pages.get(dir)?.inputs.pastTxs.length ?? 0) > 0);
+  const { inputs, title } = pages.get(id) ?? assert.fail(id);
+  const [first, ...rest] = inputs.pastTxs as [PastTxsSection, ...PastTxsSection[]];
+  const judged = await withFixtures(id, inputs);
+  const safesFirst = { check: { kind: 'not-checked', why: '--from and --to fix both sides of the transfer' }, selection: { safes: 0, safesChosen: 0, rest: 40, restChosen: 12 } } as const;
+  const lead = (language: Language, coverage: Coverage | undefined): string => {
+    const search: SearchRun = coverage === undefined ? { kind: 'windows', year: undefined, windows: [], perWindow: 0 } : { kind: 'newest-first', coverage, safesFirst };
+    const page = renderPage(buildPage({ ...judged, pastTxs: [{ ...first, run: { ...first.run, search } }, ...rest] }, notesOf(id), title, language));
+    return /<h3>(?:Search of|搜尋)[^<]*<\/h3>\s*<p class="lead">([^\n]*)<\/p>/.exec(page)?.[1] ?? assert.fail(`${language}: a search lead`);
+  };
+  const time = { from: 1_789_280_000n, to: 1_790_000_000n };
+  const recent: Coverage = { kind: 'recent', range: { fromBlock: 26378401n, toBlock: 26438400n }, pages: 50, time };
+  const year: Coverage = { kind: 'year', range: { fromBlock: 23810401n, toBlock: 26438400n }, pages: 12, time: { from: 1_758_464_000n, to: 1_790_000_000n } };
+  const expected: Readonly<Record<Language, readonly [recent: string, year: string, timeless: string]>> = {
+    en: [
+      'Every transaction from block 26378401 (2026-09-13) to block 26438400 (2026-09-21) was searched, newest first, 60000 blocks, about 8.3 days, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched.',
+      'Every transaction of the last year was searched, from block 23810401 (2025-09-21) to block 26438400 (2026-09-21), with no gap.',
+      'Every transaction from block 26378401 to block 26438400 was searched, newest first, 60000 blocks, with no gap;',
+    ],
+    'zh-TW': [
+      '從最新的區塊往回，搜尋了區塊 26378401（2026-09-13）到區塊 26438400（2026-09-21）的每一筆交易，共 60000 個區塊，約 8.3 天，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。',
+      '搜尋了最近一年的每一筆交易，從區塊 23810401（2025-09-21）到區塊 26438400（2026-09-21），沒有遺漏。',
+      '從最新的區塊往回，搜尋了區塊 26378401到區塊 26438400的每一筆交易，共 60000 個區塊，沒有遺漏；',
+    ],
+  };
+  for (const language of LANGUAGES) {
+    const [withCap, whole, timeless] = expected[language];
+    const older = lead(language, undefined);
+    assert.ok(lead(language, recent).includes(withCap), `${language}: ${lead(language, recent)}`);
+    assert.ok(lead(language, year).includes(whole), `${language}: ${lead(language, year)}`);
+    assert.ok(lead(language, { ...recent, time: undefined }).includes(timeless), `${language}: ${lead(language, { ...recent, time: undefined })}`);
+    assert.equal(lead(language, recent).replace(withCap, '').replace(/\s+/g, ' '), older.replace(/\s+/g, ' '), 'the sentence is all a newest-first search adds');
+    assert.doesNotMatch(older, /newest first|往回/, 'an older recording of the windows says nothing of its range');
   }
 });
 

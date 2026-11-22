@@ -1,5 +1,7 @@
 {
-  "title": { "en": "Supply USDC to a Compound III market (Comet)" },
+  "title": {
+    "en": "Supply USDC to a Compound III market (Comet)"
+  },
   "summary": {
     "en": "The Safe first approves the market you pick for exactly the amount you type, then calls `supply` on that market with its base token and the same amount. The market pulls the tokens with `transferFrom` and raises the Safe's supply balance, which earns interest. Compound's app asks only for the market and the amount, so the card asks only those. Both calls go in one Safe transaction, so no allowance stays open."
   },
@@ -24,10 +26,12 @@
   "judgments": [
     {
       "text": {
-        "en": "Your USDC is lent to borrowers, so a collateral that fails can cost suppliers. In November 2025 deUSD and sdeUSD, collateral in this market, lost their liquidity, and Compound paused withdrawals and borrows here from November 4 until November 6. In November 2026 governance set tBTC's borrow factor in this market to 0 after Threshold paused tBTC redemptions."
+        "en": "Your USDC is lent to borrowers, so a collateral that fails can cost suppliers. In November 2025 deUSD and sdeUSD, collateral in this market, lost their liquidity, and Compound paused withdrawals and borrows here from November 4 until November 6. In April 2026, after the KelpDAO rsETH exploit, governance set rsETH's supply cap in this market from 750 to 0 (proposal 568). In November 2026 governance set tBTC's borrow factor in this market to 0 after Threshold paused tBTC redemptions."
       },
       "sources": [
         "https://www.comp.xyz/t/gauntlet-pausing-ethereum-usdc-usds-and-usdt-comets/7326",
+        "https://www.tally.xyz/gov/compound/proposal/568",
+        "https://etherscan.io/tx/0xb389fde297c1dfe69d8a4b642e608767842d8d0b0b2b2a5e796874857c527f9b#eventlog",
         "https://www.tally.xyz/gov/compound/proposal/622",
         "https://etherscan.io/tx/0xaaaf346a5a06619834d66cfee9fdaabc82686dba6a758e9a336ff99742499219"
       ],
@@ -44,19 +48,6 @@
       ],
       "recommendation": {
         "en": "If verify gives MISMATCH for the code pin, do not sign; wait until the new pin is merged."
-      }
-    },
-    {
-      "text": {
-        "en": "The Safes in the study sent `supply` alone, spending an unlimited allowance given earlier. Two other Safes batched the exact approval and the supply, as this template needs; the tests use three such transactions. A supply alone, or an unlimited approval, gives MISMATCH."
-      },
-      "sources": [
-        "https://etherscan.io/tx/0x3dce1bd786bccd1af6b70c9852477a994b90fae2f4e708c627ebb679dd6e849b",
-        "https://etherscan.io/tx/0xd75f4bb616835cc11c0d8e5969f703c0ffeb884215b7d1d56fc172268e993053",
-        "https://docs.compound.xyz/collateral-and-borrowing/"
-      ],
-      "recommendation": {
-        "en": "Propose the approval and the supply together as one batch, such as in the Safe Transaction Builder, not as two transactions."
       }
     }
   ],
