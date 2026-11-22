@@ -978,10 +978,10 @@ const spread = (every: bigint): Mint[] => {
 
 /**
  * Both sources over `listed` for any block range, in ascending block order as each lists: Alchemy by page key, Etherscan
- * by page number. With `etherscanDrops`, Etherscan leaves the last log out of its first page of every range, so that page
- * holds 999 though more follow, as it did for USDC moving into Uniswap's PoolManager.
+ * by page number. With `etherscanDrops`, Etherscan leaves the last log out of the first page of every range, or out of
+ * every page, so that page holds 999 though more follow, as it did for USDC moving into Uniswap's PoolManager.
  */
-function rangeAsk(listed: readonly Mint[], options: { etherscanDrops?: boolean } = {}): { ask: Ask; asked: SourceRequest[] } {
+function rangeAsk(listed: readonly Mint[], options: { etherscanDrops?: 'first page' | 'every page' } = {}): { ask: Ask; asked: SourceRequest[] } {
   const asked: SourceRequest[] = [];
   const within = (from: bigint, to: bigint) => listed.filter((m) => m.block >= from && m.block <= to);
   const ask: Ask = async (request) => {
@@ -994,7 +994,7 @@ function rangeAsk(listed: readonly Mint[], options: { etherscanDrops?: boolean }
     }
     const of = within(BigInt(request.query.fromBlock as string), BigInt(request.query.toBlock as string));
     const page = Number(request.query.page);
-    const result = of.slice((page - 1) * 1000, page * 1000 - (options.etherscanDrops === true && page === 1 ? 1 : 0)).map((m) => ({ transactionHash: m.hash, topics: [etherscanBase.topic0, word(m.from), word(m.to)], blockNumber: hexBlock(m.block) }));
+    const result = of.slice((page - 1) * 1000, page * 1000 - (options.etherscanDrops === 'every page' || (options.etherscanDrops === 'first page' && page === 1) ? 1 : 0)).map((m) => ({ transactionHash: m.hash, topics: [etherscanBase.topic0, word(m.from), word(m.to)], blockNumber: hexBlock(m.block) }));
     return result.length === 0 ? { status: '0', message: 'No records found', result: [] } : { status: '1', message: 'OK', result };
   };
   return { ask, asked };
@@ -1029,7 +1029,7 @@ test('a year busier than the page cap is read newest first down to where the cap
 
 test("a page of Etherscan's listing holding fewer than 1000 is not its end in a newest-first search", async () => {
   const listed = mints(2500);
-  const text = renderPastTxs(await newestRun(rangeAsk(listed, { etherscanDrops: true }).ask, chain().reader), registry);
+  const text = renderPastTxs(await newestRun(rangeAsk(listed, { etherscanDrops: 'first page' }).ask, chain().reader), registry);
   assert.match(text, new RegExp(`^sources: alchemy found 2500, etherscan found 2499; both 2499, only alchemy 1, only etherscan 0\\n {2}only alchemy: ${(listed[999] as Mint).hash}$`, 'm'));
 });
 
@@ -1050,6 +1050,19 @@ test('a newest-first recording replays the same run from its answers, asking not
   assert.equal(summaryText(parseSummary('year.json', text)), text);
   assert.deepEqual(JSON.parse(text).search.coverage, { kind: 'recent', range: { fromBlock: '26378356', toBlock: '26438400' }, pages: 20, time: { from: String(timeOf(26378356n)), to: String(timeOf(26438400n)) } });
   assert.match(summarizePastTxs(ROOT, registry, 'year.json', summary).text, /^newest first: blocks 26378356 to 26438400 \(2026-09-13 to 2026-09-21, 8\.3 days\), every transaction in them; the search stopped at its cap of 20 pages/m);
+});
+
+test("a newest-first recording replays the same run and summary when a range runs over in both sources and Etherscan's last page asked holds fewer than 1000", async () => {
+  const listed = spread(10n);
+  const recorder = recordingAsk(rangeAsk(listed, { etherscanDrops: 'every page' }).ask);
+  const onChain = chain();
+  const live = await newestRun(recorder.ask, onChain.reader, 20, { maxTxs: 12 });
+  const recorded: PastTxsRecording = { query: { template: 'morpho/vault-deposit', token: VAULT, anchor: 'mint', ...samplingFields(live.query.sampling, live.head), maxTxs: 12 }, sources: recorder.exchanges(), providers: [], exchanges: onChain.exchanges() };
+  const replayed = await newestRun(replayAsk(recorded.sources), replayReader(recorded.exchanges), 20, { maxTxs: 12 });
+  assert.equal(renderPastTxs(replayed, registry), renderPastTxs(live, registry));
+  assert.match(renderPastTxs(live, registry), /^sources: alchemy found (\d+), etherscan found \d+; both \d+, only alchemy [1-9]\d*, /m, 'etherscan left logs out of its short pages');
+  const summary = JSON.parse(summaryText(await studyRecording(ROOT, recorded, registry))) as { search: { coverage: unknown } };
+  assert.deepEqual(summary.search.coverage, JSON.parse(JSON.stringify(live.search, (_, v: unknown) => (typeof v === 'bigint' ? String(v) : v))).coverage);
 });
 
 test('a newest-first summary is refused when its range does not end on the block the head places, a recent one starts at the year or took other than the cap, or its query holds another cap', async () => {
