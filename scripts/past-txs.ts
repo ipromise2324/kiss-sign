@@ -11,11 +11,11 @@ import { loadRegistry } from '../src/registry.ts';
 import type { Registry } from '../src/registry.ts';
 import { WINDOWS, pastTxs } from '../src/research/past-txs.ts';
 import { renderPastTxs } from '../src/research/past-txs-render.ts';
-import { ANCHOR_KINDS, anchorEvent, liveAsk, recordingAsk } from '../src/research/sources.ts';
+import { ANCHOR_KINDS, RANGE_PAGES, anchorEvent, liveAsk, recordingAsk } from '../src/research/sources.ts';
 import type { AnchorEvent, AnchorKind } from '../src/research/sources.ts';
 import { liveMessages, recordingMessages } from '../src/research/messages.ts';
 import { httpsMessage } from '../src/verify/messages.ts';
-import { DEFAULT_SAMPLING, YEAR_PAGES, samplingFields, samplingOf, scrubRecording } from '../src/research/recording.ts';
+import { DEFAULT_SAMPLING, MAX_PAGES, samplingFields, samplingOf, scrubRecording } from '../src/research/recording.ts';
 import { RECORDINGS_DIR, SUMMARIES_DIR, parseSummary, studyRecording, summaryFile } from '../src/research/past-txs-summary.ts';
 import type { PastTxsSummary } from '../src/research/past-txs-summary.ts';
 import { ReportError, pastTxsRegistry } from '../src/research/report.ts';
@@ -50,23 +50,25 @@ an event (--anchor event), as one of the two forms above.
                           (the contract logging the event)
   change a Safe itself:   --anchor event --event 'AddedOwner(address)'
                           (any contract logging it; studied only where the sending Safe did)
-It first pages each source through the whole last year, placed by the head block, up to
-${YEAR_PAGES} pages of 1000. When every source finishes within them, it reads each anchor party once at
-the year's last block for a Safe: the address minted to, burned from, the side --from or --to
-leaves open, or the contract that logged an event with no --token. It studies every transaction
-with a Safe party, leaving the rest Math.ceil(--max-txs / 4) places, and fills the remaining
-places from the rest, each taken evenly in block order. When an adapter or bundler moves the
-token, the party checked is that contract, so no Safe is found and the choice is the even sample.
-Otherwise it searches 12 windows of up to 7200 blocks spread over the year, and studies at most
---max-txs (at least 12) transactions shared evenly between them. A window with more transfers
-than one page of a source is halved until they fit, and the report names the blocks left out.
---same-windows-as places the year and the windows by the head block the summary
-testdata/research/<name>.json keeps instead of today's, and searches as that run did, so a run
-again searches the same blocks. --from-block and --to-block replace the year and the
-windows with one range.
-Both Alchemy (alchemy_getAssetTransfers) and Etherscan (logs) search each window for a Transfer;
-each transaction says which found it. Only Etherscan searches an event: Alchemy's eth_getLogs
-reads at most 10 blocks at a time on the free plan.
+It reads every transaction of the anchor in one block range that ends 64 blocks below the head
+and reaches back, newest first, to the start of the last year or until its block ranges have
+taken ${MAX_PAGES} pages of 1000, each range counted by the source that took the most. It asks the whole
+year first, then, when a range holds more than ${RANGE_PAGES} pages, a shorter one ending on the same
+block, and after each range every source finished, the range below it. Alchemy
+(alchemy_getAssetTransfers) and Etherscan (logs) search each range for a Transfer, and a range
+counts only when both finished it; each transaction says which found it. Only Etherscan searches
+an event: Alchemy's eth_getLogs reads at most 10 blocks at a time on the free plan. The report
+says which blocks were read and, when the cap stopped the search, that the year's older
+transactions were not. It reads each anchor party once at the range's last block for a Safe: the
+address minted to, burned from, the side --from or --to leaves open, or the contract that logged
+an event with no --token. It studies every transaction with a Safe party, leaving the rest
+Math.ceil(--max-txs / 4) places, and fills the remaining places from the rest, each taken evenly
+in block order. When an adapter or bundler moves the token, the party checked is that contract,
+so no Safe is found and the choice is the even sample.
+--same-windows-as places the search by the head block the summary testdata/research/<name>.json
+keeps instead of today's, and searches as that run did, so a run again reads the same blocks; a
+summary recorded before this search replays its year and 12 windows. --from-block and --to-block
+replace the search with one range.
 A signed message the template names by its digest, such as a CoW order, is read from the
 template's lookup.
 For each free number the template leaves, and each withinSeconds time it bounds, it prints the
@@ -102,12 +104,11 @@ Options:
   --anchor mint|burn|any|event   Which Transfer marks a transaction, or the event.
   --from, --to <name | address>  With --anchor any: only transfers out of, or into, the address.
   --event '<signature>'          With --anchor event: the event signature.
-  --max-txs <n>                  Transactions to study, 240 unless given, at least 12 across the
-                                 windows, at least 1 with --from-block and --to-block.
-  --from-block, --to-block <n>   Search one block range in place of the windows, for debugging
-                                 the search; a template's research never passes them.
-  --same-windows-as <name>       Search the year or windows of testdata/research/<name>.json
-                                 again.
+  --max-txs <n>                  Transactions to study, 240 unless given, at least 12 without
+                                 --from-block and --to-block, at least 1 with them.
+  --from-block, --to-block <n>   Search one block range in place of the program's search, for
+                                 debugging the search; a template's research never passes them.
+  --same-windows-as <name>       Search the blocks testdata/research/<name>.json searched again.
   --record <name>                Write .cache/past-txs/<name>.json and testdata/research/<name>.json;
                                  nothing is written when a read got no answer.
   --restudy [<name>...]          Rewrite each testdata/research/<name>.json from
