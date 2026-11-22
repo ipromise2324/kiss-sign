@@ -1491,7 +1491,7 @@ function addressSection(context: Context): Section[] {
       aiSources: (note?.sources ?? []).map((s) => ({ text: research(s.text, [s.url], 'ai'), result: s.result })),
     };
   };
-  const { open, folded } = addressRows(ledger);
+  const { open, folded } = addressRows(ledger, (entry) => (notes.entries?.get(entry.name)?.sources ?? []).some((s) => s.result !== 'pass'));
   return [
     {
       anchor: anchor('addresses'),

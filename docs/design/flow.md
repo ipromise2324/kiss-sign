@@ -520,7 +520,7 @@ Each picture is drawn from an HTML source in `docs/diagrams/`, and `sh docs/diag
      When the `SafeTx` row is described, a last line tells the signer, on a Ledger, to turn on the Ethereum app's setting "Transaction hash": with a descriptor applied, the device shows the domain hash and the message hash only when it is on, and comparing those hashes is the check kiss-sign relies on, whatever the decoded fields show.
      **地址.**
      One row per registry entry the operation can touch; a template that touches none has no 地址 section.
-     Entries with a result for the signer come first and open; the rest fold into one row that names their count.
+     Entries with a result for the signer, or with an AI source (below) the AI judged 要注意 or 有問題, come first and open; the rest fold into one row that names their count.
      Each entry shows its icon, its name, the AI's `role`, its confidence as text, its full address, and its sources.
      First the program's, one line per source compared (the source page, each of `moreSources`, the protocol API, CoinGecko, for a vault with a `factory` 工廠, then 漏洞賞金 for an entry with `immunefi`, the SDK package by its name and version for one with `sdk`, and 部署者 naming the deployer's address and the other entries it deployed), each led by its result icon and linked.
      A page is named by its host and leading path; two pages of one entry that would share that name, such as two files of one GitHub repository, each add their file name, here and in the confirmations line.

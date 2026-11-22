@@ -293,6 +293,20 @@ test('an AI source sits under its label with its result in words, never with a s
   assert.deepEqual([...seen].sort(), [false, true], 'replayed reports hold a closed and an open AI fold');
 });
 
+test('an address whose program results all pass stays open when an AI source needs attention', async () => {
+  const id = bilingual();
+  const { inputs, title } = pages.get(id) ?? assert.fail(id);
+  const raw = notesOf(id) as { entries?: Record<string, { sources?: unknown[] }> } & Record<string, unknown>;
+  const folded = (html: string): string => /<details class="fold">\s*<summary>.*?<\/summary>(.*?)\n {4}<\/details>/s.exec(html)?.[1] ?? '';
+  const before = renderPage(buildPage(await withFixtures(id, inputs), raw, title, 'en'));
+  const name = /<div class="ad" id="a-([^"]+)"/.exec(folded(before))?.[1] ?? assert.fail(`${id}: no folded address`);
+  const attention = { text: both('The protocol site lists another address'), url: 'https://example.org/', result: 'attention' };
+  const entries = { ...raw.entries, [name]: { ...raw.entries?.[name], sources: [...(raw.entries?.[name]?.sources ?? []), attention] } };
+  const html = renderPage(buildPage(await withFixtures(id, inputs), { ...raw, entries }, title, 'en'));
+  assert.ok(html.includes(`id="a-${name}"`), `${id}: ${name} has its row`);
+  assert.ok(!folded(html).includes(`id="a-${name}"`), `${id}: ${name} sits inside the folded addresses`);
+});
+
 test('an after-the-transaction row shows its AI reason in a block of its own under the row, not in its right-aligned note', async () => {
   const id = bilingual();
   const { inputs, title } = pages.get(id) ?? assert.fail(id);

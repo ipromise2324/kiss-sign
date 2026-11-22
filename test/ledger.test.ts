@@ -682,8 +682,8 @@ test('the strip counts addresses and recorded transactions, each by the worst of
 test('待確認 lists red before amber, and an entry with no result for the signer folds', () => {
   const ledger = ledgerOf({ page: { kind: 'unread', why: 'timeout' }, spans: [{ kind: 'finding', text: '' }] });
   assert.deepEqual(forSigner(ledger).map((r) => r.id), ['vault/code.1', 'vault/address']);
-  assert.deepEqual(addressRows(ledger).open.map((e) => e.name), ['vault']);
-  assert.deepEqual(addressRows(ledgerOf({})).folded.map((e) => e.name), ['vault']);
+  assert.deepEqual(addressRows(ledger, () => false).open.map((e) => e.name), ['vault']);
+  assert.deepEqual(addressRows(ledgerOf({}), () => false).folded.map((e) => e.name), ['vault']);
   assert.deepEqual(forSigner(ledgerOf({})), []);
 });
 
@@ -715,7 +715,7 @@ test('morpho/market-supply from its recordings: the three oracles confirmed in o
     ['metadata-differs', 'na'],
     ['metadata-differs', 'na'],
   ]);
-  const rows = addressRows(ledger);
+  const rows = addressRows(ledger, () => false);
   assert.deepEqual(rows.open.map((e) => e.name), ['morpho-oracle-cbbtc-usdc-86', 'morpho-oracle-usp-usdc', 'morpho-oracle-weeth-usdc-86']);
   assert.equal(rows.folded.length, 7);
   assert.deepEqual(
