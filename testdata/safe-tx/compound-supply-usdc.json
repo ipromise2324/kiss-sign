@@ -1,0 +1,111 @@
+{
+  "chainId": 1,
+  "safe": "0x5bf8586d1fa8de579d384a1786f7c46835dae5a4",
+  "block": 23598024,
+  "providers": [
+    "alchemy",
+    "drpc"
+  ],
+  "chain": {
+    "version": "1.4.1",
+    "domainSeparator": "0x831fa73b632b9237b97def653205780244d3c55cf8f6f61c1df007fc7eb296a2",
+    "transactionHash": "0x8cb7e894001910a24156cfc8bcf86c0d756ae5f82ae9875f47c7011a02dca2f4"
+  },
+  "service": {
+    "safe": "0x5BF8586D1fa8de579d384a1786F7C46835daE5a4",
+    "to": "0x9641d764fc13c8B624c04430C7356C1C7C8102e2",
+    "value": "0",
+    "data": "0x8d80ff0a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000013200a0b86991c6218b36c1d19d4a2e9eb0ce3606eb4800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000044095ea7b3000000000000000000000000c3d688b66703497daa19211eedff47f25384cdc30000000000000000000000000000000000000000000000000000001234a95ae000c3d688b66703497daa19211eedff47f25384cdc300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000044f2b9fdb8000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000001234a95ae00000000000000000000000000000",
+    "operation": 1,
+    "gasToken": "0x0000000000000000000000000000000000000000",
+    "safeTxGas": "0",
+    "baseGas": "0",
+    "gasPrice": "0",
+    "refundReceiver": "0x0000000000000000000000000000000000000000",
+    "nonce": "8",
+    "executionDate": "2025-10-17T14:37:11Z",
+    "submissionDate": "2025-10-17T14:30:14.348524Z",
+    "modified": "2025-10-17T14:37:11Z",
+    "blockNumber": 23598024,
+    "transactionHash": "0x199780852ec745a106d83b9dc85de7fca1b8b95799ab0b0fd887c8768b0a5058",
+    "safeTxHash": "0x8cb7e894001910a24156cfc8bcf86c0d756ae5f82ae9875f47c7011a02dca2f4",
+    "proposer": "0xB0c795851975bC2b143E9678257A2Cfb2f29302a",
+    "proposedByDelegate": null,
+    "executor": "0xB0c795851975bC2b143E9678257A2Cfb2f29302a",
+    "isExecuted": true,
+    "isSuccessful": true,
+    "ethGasPrice": "1913383080",
+    "maxFeePerGas": "1997431666",
+    "maxPriorityFeePerGas": "168172418",
+    "gasUsed": 152245,
+    "fee": "291303007014600",
+    "payment": null,
+    "origin": "{\"url\": \"https://apps-portal.safe.global/tx-builder\", \"name\": \"Transaction Builder\", \"note\": null}",
+    "dataDecoded": {
+      "method": "multiSend",
+      "parameters": [
+        {
+          "name": "transactions",
+          "type": "bytes",
+          "value": "0x00a0b86991c6218b36c1d19d4a2e9eb0ce3606eb4800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000044095ea7b3000000000000000000000000c3d688b66703497daa19211eedff47f25384cdc30000000000000000000000000000000000000000000000000000001234a95ae000c3d688b66703497daa19211eedff47f25384cdc300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000044f2b9fdb8000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000001234a95ae0",
+          "valueDecoded": [
+            {
+              "operation": 0,
+              "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+              "value": "0",
+              "data": "0x095ea7b3000000000000000000000000c3d688b66703497daa19211eedff47f25384cdc30000000000000000000000000000000000000000000000000000001234a95ae0",
+              "dataDecoded": {
+                "method": "approve",
+                "parameters": [
+                  {
+                    "name": "spender",
+                    "type": "address",
+                    "value": "0xc3d688B66703497DAA19211EEdff47f25384cdc3"
+                  },
+                  {
+                    "name": "value",
+                    "type": "uint256",
+                    "value": "78192925408"
+                  }
+                ]
+              }
+            },
+            {
+              "operation": 0,
+              "to": "0xc3d688B66703497DAA19211EEdff47f25384cdc3",
+              "value": "0",
+              "data": "0xf2b9fdb8000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000001234a95ae0",
+              "dataDecoded": {
+                "method": "supply",
+                "parameters": [
+                  {
+                    "name": "asset",
+                    "type": "address",
+                    "value": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+                  },
+                  {
+                    "name": "amount",
+                    "type": "uint256",
+                    "value": "78192925408"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "confirmationsRequired": 1,
+    "confirmations": [
+      {
+        "owner": "0xB0c795851975bC2b143E9678257A2Cfb2f29302a",
+        "submissionDate": "2025-10-17T14:37:11Z",
+        "transactionHash": null,
+        "signature": "0x000000000000000000000000b0c795851975bc2b143e9678257a2cfb2f29302a000000000000000000000000000000000000000000000000000000000000000001",
+        "signatureType": "APPROVED_HASH"
+      }
+    ],
+    "trusted": true,
+    "signatures": "0x000000000000000000000000b0c795851975bc2b143e9678257a2cfb2f29302a000000000000000000000000000000000000000000000000000000000000000001"
+  }
+}
