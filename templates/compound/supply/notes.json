@@ -48,10 +48,11 @@
     },
     {
       "text": {
-        "en": "The Safes that supplied in the study sent `supply` alone, spending an allowance of about 2^256 they had given earlier. This template needs the exact approval and the supply in one Safe transaction, so a supply-alone transaction gives MISMATCH, and an unlimited approval in its own transaction does too."
+        "en": "The Safes in the study sent `supply` alone, spending an unlimited allowance given earlier. Two other Safes batched the exact approval and the supply, as this template needs; the tests use three such transactions. A supply alone, or an unlimited approval, gives MISMATCH."
       },
       "sources": [
         "https://etherscan.io/tx/0x3dce1bd786bccd1af6b70c9852477a994b90fae2f4e708c627ebb679dd6e849b",
+        "https://etherscan.io/tx/0xd75f4bb616835cc11c0d8e5969f703c0ffeb884215b7d1d56fc172268e993053",
         "https://docs.compound.xyz/collateral-and-borrowing/"
       ],
       "recommendation": {

@@ -45,7 +45,7 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "Safes supplied with `supply` alone after an earlier unlimited approval; none batched the exact approval. One EOA's supply repaid a borrow first, so its balance rose 5,501.99 USDC less, which verify gives MISMATCH."
+    "en": "The Safes found supplied with `supply` alone after an earlier unlimited approval; none of them batched the exact approval. One EOA's supply repaid a borrow first, so its balance rose 5,501.99 USDC less, which verify gives MISMATCH."
   },
   "entries": {
     "compound-v3-cusdcv3": {
