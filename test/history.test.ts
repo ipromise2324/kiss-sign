@@ -49,7 +49,7 @@ function setUp(name: string | Record<string, unknown>[], cards: Record<number, u
   const repo = join(base, 'repo');
   git(base, 'init', '--quiet', '--bare', '--initial-branch=main', origin);
   git(base, 'clone', '--quiet', origin, repo);
-  for (const path of ['templates/morpho/vault-deposit/template.json', 'registry/contracts.json']) {
+  for (const path of ['templates/morpho/vault-deposit/template.json', 'registry/contracts.json', 'registry/attributes.json']) {
     write(join(repo, path), readFileSync(join(ROOT, path), 'utf8'));
   }
   git(repo, 'add', '-A');

@@ -9,12 +9,12 @@ import type { AbiCase, RecordedRead } from '../src/contracts/abi-case.ts';
 import { keccakCode, pinOf, readCodeHistory, readRunningCode } from '../src/contracts/code.ts';
 import { describeRefusal } from '../src/contracts/prove.ts';
 import type { AbiProof } from '../src/contracts/prove.ts';
-import { parseRegistry } from '../src/registry.ts';
 import { pinVerdict } from '../src/research/report.ts';
 import type { RegistryEntry } from '../src/registry.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { checkCode } from '../src/verify/code.ts';
 import { detailText } from '../src/verify/detail-text.ts';
+import { parseRegistryAt } from './registry-at.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const fixture = readRecording(join(ROOT, 'testdata', 'abi', 'compound-v3-cusdcv3.json')) as AbiCase;
@@ -33,7 +33,7 @@ const PIN = {
 };
 
 const cometWith = (code: Record<string, unknown>): RegistryEntry =>
-  parseRegistry({ ...REGISTRY, 'comet-usdc': { address: COMET, kind: 'lending', source: 'https://docs.example.org/comet', code } }).entries.get('comet-usdc')!;
+  parseRegistryAt(ROOT, { ...REGISTRY, 'comet-usdc': { address: COMET, kind: 'lending', source: 'https://docs.example.org/comet', code } }).entries.get('comet-usdc')!;
 const chainWith = (codes: Readonly<Record<string, Hex>>) => abiCaseReader(fixture, Object.entries(codes).map(([address, value]): RecordedRead => ({ method: 'getCode', args: [address], value })));
 const refused = async (codes: Readonly<Record<string, Hex>>): Promise<string> => {
   const read = await readRunningCode(chainWith(codes), COMET, at);
