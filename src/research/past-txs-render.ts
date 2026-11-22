@@ -5,8 +5,8 @@ import type { Address, Hex } from '../safe/types.ts';
 import type { LeafRule, Quantity } from '../template/template.ts';
 import { effectText, distributionOf, shown, toleranceFinding } from './amounts.ts';
 import type { Difference, StatedEffect } from './amounts.ts';
-import { WINDOWS, YEAR, foundBy } from './past-txs.ts';
-import type { BlockRange, Fit, Misfit, PastTxs, Selection } from './past-txs.ts';
+import { WINDOWS, YEAR, foundBy, yearBefore } from './past-txs.ts';
+import type { BlockRange, Coverage, Fit, Misfit, PastTxs, SafesFirst, Selection } from './past-txs.ts';
 import { PAGE, SOURCES, searchedBy } from './sources.ts';
 import { brokenRule, constText, functionNames, isOtherOperation, isTime, misfitText } from './study.ts';
 import type { OutsideKind, Sender } from './study.ts';
@@ -274,6 +274,21 @@ function chosenText({ safes, safesChosen, rest, restChosen }: Selection, checked
   return `${checked ? `${withSafe}, and ${others}` : others}${evenly}`;
 }
 
+const dateOf = (seconds: bigint): string => new Date(Number(seconds) * 1000).toISOString().slice(0, 10);
+
+/** How long `seconds` is, in days, or in hours below a day. */
+const lengthText = (seconds: bigint): string => {
+  const days = Number(seconds) / 86400;
+  return days >= 1 ? `${days.toFixed(1)} days` : `${(days * 24).toFixed(1)} hours`;
+};
+
+/** The range a newest-first search read completely, its dates and length, and why it starts where it does. */
+function coverageText({ kind, range, pages, time }: Coverage, head: bigint): string {
+  const when = time === undefined ? '' : ` (${dateOf(time.from)} to ${dateOf(time.to)}, ${lengthText(time.to - time.from)})`;
+  if (kind === 'year') return `whole year, newest first: blocks ${range.fromBlock} to ${range.toBlock}${when}, in ${plural(pages, 'page')} of up to ${PAGE}, so the search covers the year with no gap`;
+  return `newest first: blocks ${range.fromBlock} to ${range.toBlock}${when}, every transaction in them; the search stopped at its cap of ${plural(pages, 'page')} of up to ${PAGE}, so blocks ${yearBefore(head).fromBlock} to ${range.fromBlock - 1n} of the last year are not searched`;
+}
+
 /** What a reader of the report sees. Never names the configured Safe, and names no other sender either. */
 export function renderPastTxs(run: PastTxs, registry: Registry): string {
   const { anchor, template, sampling } = run.query;
@@ -284,26 +299,36 @@ export function renderPastTxs(run: PastTxs, registry: Registry): string {
   lines.push(`past transactions for ${template.id}`);
   if (anchor.kind === 'event') lines.push(`anchor: ${anchor.event?.signature} logged by ${of}`);
   else lines.push(`anchor: Transfer of ${of} ${{ mint: 'minted (from the zero address)', burn: 'burned (to the zero address)', any: moved }[anchor.kind]}`);
-  const { year } = run;
   const blocks = (range: BlockRange) => `blocks ${range.fromBlock} to ${range.toBlock}`;
-  if (year?.kind === 'covered' && year.safesFirst === undefined) {
-    lines.push(`whole year: ${blocks(year.range)}, every source's answer in one page, so the search covers the year with no gap; at most ${run.perWindow} studied, taken evenly in block order`);
-  } else if (year?.kind === 'covered') {
-    const pages = [...year.pages].map(([source, n]) => `${source} in ${plural(n, 'page')}`).join(' and ');
-    lines.push(`whole year: ${blocks(year.range)}, ${pages} of up to ${PAGE}, so the search covers the year with no gap`);
-  } else if (sampling.kind !== 'range') {
-    if (year !== undefined) {
-      const over = year.pages === 1 ? 'more than one page of a source' : `more than ${year.pages} pages of ${PAGE} in ${year.sources.join(' and ')}`;
-      lines.push(`whole year: ${blocks(year.range)} hold ${over}, so the windows are searched`);
+  const search = run.search;
+  let chosen: SafesFirst | undefined;
+  if (search.kind === 'newest-first') {
+    lines.push(coverageText(search.coverage, run.head as bigint));
+    const { selection } = search.safesFirst;
+    lines.push(`  ${blocks(search.coverage.range)}: ${run.found.total} found, ${selection.safesChosen + selection.restChosen} studied`);
+    chosen = search.safesFirst;
+  } else {
+    const { year } = search;
+    if (year?.kind === 'covered' && year.safesFirst === undefined) {
+      lines.push(`whole year: ${blocks(year.range)}, every source's answer in one page, so the search covers the year with no gap; at most ${search.perWindow} studied, taken evenly in block order`);
+    } else if (year?.kind === 'covered') {
+      const pages = [...year.pages].map(([source, n]) => `${source} in ${plural(n, 'page')}`).join(' and ');
+      lines.push(`whole year: ${blocks(year.range)}, ${pages} of up to ${PAGE}, so the search covers the year with no gap`);
+    } else if (sampling.kind !== 'range') {
+      if (year !== undefined) {
+        const over = year.pages === 1 ? 'more than one page of a source' : `more than ${year.pages} pages of ${PAGE} in ${year.sources.join(' and ')}`;
+        lines.push(`whole year: ${blocks(year.range)} hold ${over}, so the windows are searched`);
+      }
+      lines.push(`windows: ${WINDOWS.count} of up to ${WINDOWS.blocks} blocks, one every ${YEAR / BigInt(WINDOWS.count)} blocks over the last year; at most ${search.perWindow} studied per window`);
+    } else lines.push('windows: one block range given by hand');
+    for (const { asked, range, found, studied } of search.windows) {
+      const halved = asked.fromBlock === range.fromBlock ? '' : `; halved, too many transfers in ${asked.fromBlock} to ${asked.toBlock}, so ${asked.fromBlock} to ${range.fromBlock - 1n} not searched`;
+      lines.push(`  ${blocks(range)}: ${found} found, ${studied} studied${halved}`);
     }
-    lines.push(`windows: ${WINDOWS.count} of up to ${WINDOWS.blocks} blocks, one every ${YEAR / BigInt(WINDOWS.count)} blocks over the last year; at most ${run.perWindow} studied per window`);
-  } else lines.push('windows: one block range given by hand');
-  for (const { asked, range, found, studied } of run.windows) {
-    const halved = asked.fromBlock === range.fromBlock ? '' : `; halved, too many transfers in ${asked.fromBlock} to ${asked.toBlock}, so ${asked.fromBlock} to ${range.fromBlock - 1n} not searched`;
-    lines.push(`  ${blocks(range)}: ${found} found, ${studied} studied${halved}`);
+    if (year?.kind === 'covered') chosen = year.safesFirst;
   }
-  if (year?.kind === 'covered' && year.safesFirst !== undefined) {
-    const { check, selection } = year.safesFirst;
+  if (chosen !== undefined) {
+    const { check, selection } = chosen;
     const unreadable = check.kind === 'checked' && check.unreadable > 0 ? `, ${check.unreadable} unreadable` : '';
     lines.push(
       check.kind === 'checked'

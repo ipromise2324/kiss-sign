@@ -4,7 +4,7 @@ import type { Address, Hex } from '../safe/types.ts';
 import type { Template } from '../template/template.ts';
 import { measure, statedEffects } from './amounts.ts';
 import type { Measurement, StatedEffect } from './amounts.ts';
-import { PAGE, ResearchError, SOURCES, search, searchedBy } from './sources.ts';
+import { PAGE, RANGE_PAGES, ResearchError, SOURCES, search, searchedBy } from './sources.ts';
 import type { Anchor, Ask, Hit, Hits, SourceName } from './sources.ts';
 import type { ReadMessage } from './messages.ts';
 import type { Sampling } from './recording.ts';
@@ -16,9 +16,9 @@ import type { TraceSource, TracedTx } from './trace.ts';
 export type BlockRange = { readonly fromBlock: bigint; readonly toBlock: bigint };
 
 /**
- * The windows a year search falls back to: `count` windows of up to `blocks` blocks each, evenly spaced over the last
- * year and placed by the head block alone. A window whose transfers do not fit one page of a source is halved until
- * they do.
+ * Legacy until every summary is recorded again: the windows a recording made before the newest-first search fell back
+ * to, `count` windows of up to `blocks` blocks each, evenly spaced over the last year and placed by the head block
+ * alone. A window whose transfers do not fit one page of a source is halved until they do.
  */
 export const WINDOWS = { count: 12, blocks: 7200n } as const;
 
@@ -36,6 +36,12 @@ export function spreadWindows(head: bigint, count: number, blocks: bigint): Bloc
 
 export type PastTxsQuery = { readonly template: Template; readonly anchor: Omit<Anchor, keyof BlockRange>; readonly sampling: Sampling };
 
+/** The block a newest-first search ends on: the head less the blocks a reorganization could still replace. */
+export const searchTop = (head: bigint): bigint => head - FINALITY;
+
+/** The last year a newest-first search from `head` pages back through. */
+export const yearBefore = (head: bigint): BlockRange => ({ fromBlock: searchTop(head) - YEAR + 1n, toBlock: searchTop(head) });
+
 export type PastTxsDeps = {
   readonly ask: Ask;
   readonly reader: Reader;
@@ -43,8 +49,9 @@ export type PastTxsDeps = {
   readonly readMessage: ReadMessage;
   readonly exclude: Address | undefined;
   /**
-   * The most transactions studied in a run: in the windows, shared evenly between them, and below one per window none;
-   * in a covered paged year, chosen by `safesFirst`; in a year a recording asked in one page, taken evenly.
+   * The most transactions studied in a run: in a newest-first search or a covered paged year, chosen by `safesFirst`;
+   * in the windows, shared evenly between them, and below one per window none; in a year a recording asked in one page,
+   * taken evenly.
    */
   readonly maxTxs: number;
   /** Each transaction's call trace; without it, nothing is traced. */
@@ -94,8 +101,33 @@ export type PartyCheck =
 export type Selection = { readonly safes: number; readonly safesChosen: number; readonly rest: number; readonly restChosen: number };
 
 /**
- * The year search a run asks first: `covered` when every source finished within `pages` pages, so it replaced the
- * windows, with the pages each source asked and, for a paged year, its party check; otherwise the sources that did not.
+ * The one block range a newest-first search read completely, ending on `searchTop(head)`, and why it starts where it
+ * does: `year` when it reached the year's first block, `recent` when the page cap stopped it first. `pages` counts the
+ * pages its block ranges took, each the pages of the source that took the most, those of a range that held too many to
+ * finish included; `time` is the time of the range's first and last block.
+ */
+export type Coverage = {
+  readonly kind: 'year' | 'recent';
+  readonly range: BlockRange;
+  readonly pages: number;
+  readonly time: { readonly from: bigint; readonly to: bigint } | undefined;
+};
+
+/** The anchor party check and the choice it made. */
+export type SafesFirst = { readonly check: PartyCheck; readonly selection: Selection };
+
+/**
+ * What a run searched: `newest-first`, one range read completely; `windows`, legacy until every summary is recorded
+ * again, the year a recording asked first, else its windows or a block range given by hand.
+ */
+export type SearchRun =
+  | { readonly kind: 'newest-first'; readonly coverage: Coverage; readonly safesFirst: SafesFirst }
+  | { readonly kind: 'windows'; readonly year: YearSearch | undefined; readonly windows: readonly WindowRun[]; readonly perWindow: number };
+
+/**
+ * Legacy until every summary is recorded again, the year a recording asked first: `covered` when every source finished
+ * within `pages` pages, so it replaced the windows, with the pages each source asked and, for a paged year, its party
+ * check; otherwise the sources that did not.
  */
 export type YearSearch =
   | {
@@ -103,7 +135,7 @@ export type YearSearch =
       readonly range: BlockRange;
       readonly pages: ReadonlyMap<SourceName, number>;
       /** Absent for a recording that asked the year in one page, before parties were checked. */
-      readonly safesFirst: { readonly check: PartyCheck; readonly selection: Selection } | undefined;
+      readonly safesFirst: SafesFirst | undefined;
     }
   | { readonly kind: 'overflow'; readonly range: BlockRange; readonly pages: number; readonly sources: readonly SourceName[] };
 
@@ -119,10 +151,7 @@ export const foundBy = (found: Found, source: SourceName): number => found.total
 export type PastTxs = {
   readonly query: PastTxsQuery;
   readonly head: bigint | undefined;
-  /** Absent for a block range, and for a recording made before the whole year was asked first. */
-  readonly year: YearSearch | undefined;
-  readonly windows: readonly WindowRun[];
-  readonly perWindow: number;
+  readonly search: SearchRun;
   readonly found: Found;
   readonly studies: readonly Kept[];
   readonly shapes: ReturnType<typeof shapesOf>;
@@ -181,7 +210,7 @@ type Searched = { readonly asked: BlockRange; readonly range: BlockRange; readon
 
 async function searchWindow(anchor: PastTxsQuery['anchor'], asked: BlockRange, halve: boolean, ask: Ask): Promise<Searched> {
   for (let range = asked; ; range = { fromBlock: range.toBlock - (range.toBlock - range.fromBlock + 1n) / 2n + 1n, toBlock: range.toBlock }) {
-    const found = await search({ ...anchor, ...range }, ask, 1);
+    const found = await search({ ...anchor, ...range }, ask, 1, 'short');
     if (found.kind === 'covered') return { asked, range, hits: found.hits };
     if (!halve || range.fromBlock === range.toBlock) throw new ResearchError(`${found.sources[0]} lists more than ${PAGE - 1} transfers in the range; narrow the block range`);
   }
@@ -233,22 +262,86 @@ async function chooseByParty(
   };
 }
 
-const yearPages = (sampling: Exclude<Sampling, { kind: 'range' }>): number | undefined =>
+const yearPages = (sampling: Extract<Sampling, { kind: 'year' | 'old-year' | 'old-windows' }>): number | undefined =>
   sampling.kind === 'year' ? sampling.pages : sampling.kind === 'old-year' ? 1 : undefined;
+
+/** The pages of `PAGE` a newest-first range is sized to hold, fewer than `RANGE_PAGES` so a busier stretch still fits. */
+const FILL_PAGES = 5n;
+/**
+ * The pages the first range below a year that held more is sized to hold: the year's listing reached only its oldest
+ * blocks, and an operation is often busier now than a year ago.
+ */
+const FIRST_PAGES = 1n;
+/** How many times longer than the last a range may grow. */
+const GROWTH = 8n;
+
+const smaller = (a: bigint, b: bigint): bigint => (a < b ? a : b);
+const larger = (a: bigint, b: bigint): bigint => (a > b ? a : b);
+
+type NewestFirst = { readonly kind: Coverage['kind']; readonly range: BlockRange; readonly pages: number; readonly hits: Hits };
+
+/**
+ * Pages back from the year's last block, newest first, one block range below the other, until the year is read or the
+ * ranges have taken `maxPages` pages, each range counted by the source that took the most. Every source searches each
+ * range as `search` does, so a range counts only when every source finished it. The first range is the whole year; a
+ * range that held more is asked again shorter, sized by the block its listing reached, and each next range is sized by
+ * how many the last one held, and fitted to the pages left, one kept for Etherscan's empty last page.
+ */
+async function newestFirst(anchor: PastTxsQuery['anchor'], year: BlockRange, maxPages: number, ask: Ask): Promise<NewestFirst> {
+  const hits: Record<SourceName, Hit[]> = { alchemy: [], etherscan: [] };
+  let used = 0;
+  let toBlock = year.toBlock;
+  let span = year.toBlock - year.fromBlock + 1n;
+  while (toBlock >= year.fromBlock && used < maxPages) {
+    const allowed = Math.min(RANGE_PAGES, maxPages - used);
+    const fitted = allowed > FILL_PAGES ? span : larger(1n, (span * BigInt(allowed - 1)) / FILL_PAGES);
+    const fromBlock = larger(year.fromBlock, toBlock - fitted + 1n);
+    const asked = toBlock - fromBlock + 1n;
+    const found = await search({ ...anchor, fromBlock, toBlock }, ask, allowed, 'empty');
+    used += found.kind === 'covered' ? Math.max(...found.pages.values()) : allowed;
+    if (found.kind === 'covered') {
+      for (const source of SOURCES) hits[source].push(...found.hits[source]);
+      const most = BigInt(Math.max(...SOURCES.map((source) => found.hits[source].length)));
+      span = most === 0n ? asked * GROWTH : smaller(asked * GROWTH, larger(1n, (asked * FILL_PAGES * BigInt(PAGE)) / most));
+      toBlock = fromBlock - 1n;
+    } else {
+      const listed = found.reached === undefined || found.reached < fromBlock ? asked : found.reached - fromBlock + 1n;
+      const fill = asked === year.toBlock - year.fromBlock + 1n ? FIRST_PAGES : FILL_PAGES;
+      span = larger(1n, smaller(asked / 2n, (listed * fill) / BigInt(allowed)));
+    }
+  }
+  if (toBlock === year.toBlock) throw new ResearchError(`no block range ending at block ${year.toBlock} was searched completely within ${maxPages} pages of a source`);
+  return { kind: toBlock < year.fromBlock ? 'year' : 'recent', range: { fromBlock: toBlock + 1n, toBlock: year.toBlock }, pages: used, hits };
+}
+
+async function timesOf(reader: Reader, range: BlockRange): Promise<Coverage['time']> {
+  const time = async (number: bigint) => {
+    const block = await reader.block(number);
+    if (block.kind === 'unverifiable') return undefined;
+    const header = await reader.header(block.value);
+    return header.kind === 'unverifiable' ? undefined : header.value.time;
+  };
+  const [from, to] = [await time(range.fromBlock), await time(range.toBlock)];
+  return from === undefined || to === undefined ? undefined : { from, to };
+}
 
 export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<PastTxs> {
   const { sampling } = query;
   const head = sampling.kind === 'range' ? undefined : (sampling.head ?? (await chainHead(deps.reader)));
   let year: YearSearch | undefined;
   let windowed: Searched[] | undefined;
+  let newest: NewestFirst | undefined;
   if (sampling.kind === 'range') windowed = [await searchWindow(query.anchor, sampling.range, false, deps.ask)];
-  else {
+  else if (sampling.kind === 'recent') {
+    newest = await newestFirst(query.anchor, yearBefore(head as bigint), sampling.maxPages, deps.ask);
+    windowed = [{ asked: newest.range, range: newest.range, hits: newest.hits }];
+  } else {
     const spread = spreadWindows(head as bigint, WINDOWS.count, WINDOWS.blocks);
     const pages = yearPages(sampling);
     if (pages !== undefined) {
       const top = (spread.at(-1) as BlockRange).toBlock;
       const range = { fromBlock: top - YEAR + 1n, toBlock: top };
-      const found = await search({ ...query.anchor, ...range }, deps.ask, pages);
+      const found = await search({ ...query.anchor, ...range }, deps.ask, pages, 'short');
       if (found.kind === 'covered') {
         year = { kind: 'covered', range, pages: found.pages, safesFirst: undefined };
         windowed = [{ asked: range, range, hits: found.hits }];
@@ -271,8 +364,9 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
     for (const hash of window.excluded) excludedFound.add(hash);
     for (const [hash, sources] of window.found) found.set(hash, sources);
     for (const hit of hits.etherscan) if (hit.emitter !== undefined) emitters.set(hit.hash, (emitters.get(hit.hash) ?? new Set()).add(hit.emitter));
-    const hashes = year?.kind === 'covered' ? byBlock([...window.found.keys()], hits) : [...window.found.keys()];
-    const chosen = year?.kind === 'covered' && sampling.kind === 'year' ? await chooseByParty(hashes, hits, partyRule(query.anchor), range.toBlock, deps.reader, deps.maxTxs) : undefined;
+    const hashes = newest !== undefined || year?.kind === 'covered' ? byBlock([...window.found.keys()], hits) : [...window.found.keys()];
+    const chosen =
+      newest !== undefined || (year?.kind === 'covered' && sampling.kind === 'year') ? await chooseByParty(hashes, hits, partyRule(query.anchor), range.toBlock, deps.reader, deps.maxTxs) : undefined;
     if (chosen !== undefined) byParty = chosen;
     searched.push({ asked, range, found: hashes, sample: chosen?.sample ?? spacedSample(hashes, perWindow) });
   }
@@ -301,18 +395,22 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
   const kept = (hashes: readonly Hex[]) => hashes.filter((hash) => !excludedFound.has(hash) && !excludedSampled.has(hash)).length;
   const studiedOf = (sample: readonly Hex[]) => sample.filter((hash) => !otherEmitter.includes(hash));
   const windows = searched.map(({ asked, range, found, sample }) => ({ asked, range, found: kept(found), studied: kept(studiedOf(sample)) }));
-  if (year?.kind === 'covered' && byParty !== undefined) {
+  let chosen: SafesFirst | undefined;
+  if (byParty !== undefined) {
     const { check, safeTxs } = byParty;
     const { found: hashes, sample } = searched[0] as (typeof searched)[number];
     const isSafe = (hash: Hex) => safeTxs.has(hash);
     const [safes, safesChosen] = [kept(hashes.filter(isSafe)), kept(studiedOf(sample).filter(isSafe))];
-    const selection = { safes, safesChosen, rest: kept(hashes) - safes, restChosen: kept(studiedOf(sample)) - safesChosen };
-    year = { ...year, safesFirst: { check, selection } };
+    chosen = { check, selection: { safes, safesChosen, rest: kept(hashes) - safes, restChosen: kept(studiedOf(sample)) - safesChosen } };
+    if (year?.kind === 'covered') year = { ...year, safesFirst: chosen };
   }
+  const searchRun: SearchRun =
+    newest === undefined ? { kind: 'windows', year, windows, perWindow }
+    : { kind: 'newest-first', coverage: { kind: newest.kind, range: newest.range, pages: newest.pages, time: await timesOf(deps.reader, newest.range) }, safesFirst: chosen as SafesFirst };
   const excluded = { found: excludedFound, sampled: excludedSampled };
   const both = searchedBy(query.anchor).length === SOURCES.length;
   const only = (source: SourceName) => (both ? [...found].filter(([, s]) => s.length === 1 && s[0] === source).map(([hash]) => hash) : []);
-  return { query, head, year, windows, perWindow, found: { total: found.size, only: { alchemy: only('alchemy'), etherscan: only('etherscan') } }, studies, shapes, excluded, otherEmitter, effects, measurements, traces };
+  return { query, head, search: searchRun, found: { total: found.size, only: { alchemy: only('alchemy'), etherscan: only('etherscan') } }, studies, shapes, excluded, otherEmitter, effects, measurements, traces };
 }
 
 /**
