@@ -42,7 +42,7 @@ import type { ReportInputs, ReportTitle } from './report.ts';
 import { WORDS } from './report-words.ts';
 import { compareFlow } from './trace.ts';
 import type { FlowComparison, TracedTx } from './trace.ts';
-import type { SafeParties, Words } from './report-words.ts';
+import type { SafeParties, SearchSpan, Words } from './report-words.ts';
 
 declare const anchorBrand: unique symbol;
 /** An id the page itself gives an element: a section, or an address row (`a-<registry name>`). A link names only these or an HttpsUrl. */
@@ -1579,10 +1579,17 @@ function misfitWords(reason: MisfitReason, template: string, registry: Registry,
   }
 }
 
-function safeParties(year: PastTxs['year']): SafeParties | undefined {
-  if (year?.kind !== 'covered' || year.safesFirst?.check.kind !== 'checked') return undefined;
-  const { safes, safesChosen } = year.safesFirst.selection;
-  return { found: safes, studied: safesChosen };
+function safeParties(search: PastTxs['search']): SafeParties | undefined {
+  const chosen = search.kind === 'newest-first' ? search.safesFirst : search.year?.kind === 'covered' ? search.year.safesFirst : undefined;
+  if (chosen?.check.kind !== 'checked') return undefined;
+  return { found: chosen.selection.safes, studied: chosen.selection.safesChosen };
+}
+
+/** The range a newest-first search read, as the report states it; nothing for a legacy windows search. */
+function searchSpan(search: PastTxs['search']): SearchSpan | undefined {
+  if (search.kind !== 'newest-first') return undefined;
+  const { kind, range, pages, time } = search.coverage;
+  return { kind, from: range.fromBlock, to: range.toBlock, time, cap: pages };
 }
 
 function pastSection(context: Context): Section {
@@ -1682,10 +1689,14 @@ function pastSection(context: Context): Section {
     ];
     const [alchemy, etherscan] = [foundBy(run.found, 'alchemy'), foundBy(run.found, 'etherscan')];
     const same = run.found.only.alchemy.length + run.found.only.etherscan.length === 0;
+    const span = searchSpan(run.search);
     return {
       file,
-      count: w.searchCount(query.token === undefined ? SELF_LOGGED : nameOf(query.token), anchorWords(query, query.token === undefined ? undefined : registry.byAddress.get(query.token.toLowerCase() as Address), w), run.found.total, run.studies.length, safeParties(run.year)),
-      search: query.anchor === 'event' ? w.searchEtherscanOnly({ num: `${etherscan}` }) : w.searchSame(same, { num: `${alchemy} ${same ? '=' : '≠'} ${etherscan}` }),
+      count: w.searchCount(query.token === undefined ? SELF_LOGGED : nameOf(query.token), anchorWords(query, query.token === undefined ? undefined : registry.byAddress.get(query.token.toLowerCase() as Address), w), run.found.total, run.studies.length, safeParties(run.search)),
+      search: [
+        ...(span === undefined ? [] : [w.searchSpan(span)]),
+        ...(query.anchor === 'event' ? w.searchEtherscanOnly({ num: `${etherscan}` }) : w.searchSame(same, { num: `${alchemy} ${same ? '=' : '≠'} ${etherscan}` })),
+      ],
       blocks,
       others,
     };
