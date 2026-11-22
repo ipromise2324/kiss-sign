@@ -9,7 +9,7 @@ import { replayReader } from '../src/chain/recording.ts';
 import type { Exchange } from '../src/chain/recording.ts';
 import { checkFloor, standingSpenders } from '../src/floor/floor.ts';
 import { checkSimulatedFloor } from '../src/floor/simulated.ts';
-import { loadRegistry, parseRegistry } from '../src/registry.ts';
+import { loadRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
 import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
 import { judgeEffects, keptSeen } from '../src/simulate/effects.ts';
@@ -22,6 +22,7 @@ import type { FieldCheck } from '../src/template/check.ts';
 import { checkMutations } from '../src/template/mutation.ts';
 import { TemplateError, loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
+import { parseRegistryAt } from './registry-at.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const load = (dir: string, name: string) => JSON.parse(readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8'));
@@ -226,7 +227,7 @@ test('an unlimited kept allowance needs a registry spender that declares a stand
   refused((t) => (t.effects.approves[0].via = 'erc20'), /universal-router-2\.1\.2 declares no standing allowance through erc20/);
   const raw = JSON.parse(readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8'));
   delete raw['universal-router-2.1.2'].standingAllowance;
-  assert.throws(() => parseTemplate(allow, parseRegistry(raw)), /declares no standing allowance through permit2/);
+  assert.throws(() => parseTemplate(allow, parseRegistryAt(ROOT, raw)), /declares no standing allowance through permit2/);
 });
 
 test('a trailer over 19 bytes is allowed only on a call to a registry contract that declares it ignores trailing calldata', () => {
@@ -234,7 +235,7 @@ test('a trailer over 19 bytes is allowed only on a call to a registry contract t
   assert.doesNotThrow(() => parseTemplate(swap, registry));
   const raw = JSON.parse(readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8'));
   delete raw['universal-router-2.1.2'].ignoresTrailer;
-  assert.throws(() => parseTemplate(swap, parseRegistry(raw)), /an integer from 1 to 19; more only on a call to a registry contract that declares ignoresTrailer/);
+  assert.throws(() => parseTemplate(swap, parseRegistryAt(ROOT, raw)), /an integer from 1 to 19; more only on a call to a registry contract that declares ignoresTrailer/);
 });
 
 test('a route claim needs every token the Safe gets bounded, since another pool gives another price', () => {

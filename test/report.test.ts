@@ -10,7 +10,7 @@ import type { Reader } from '../src/chain/reader.ts';
 import type { Transport } from '../src/chain/rpc.ts';
 import type { BlockRef, BlockTag } from '../src/chain/types.ts';
 import { keccakCode } from '../src/contracts/code.ts';
-import { REGISTRY_PATH, loadRegistry, parseRegistry } from '../src/registry.ts';
+import { REGISTRY_PATH, loadRegistry } from '../src/registry.ts';
 import type { Registry } from '../src/registry.ts';
 import { parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf } from '../src/research/listings.ts';
 import { chainAt } from '../src/research/erc7730.ts';
@@ -50,6 +50,7 @@ import { readRecording } from '../src/chain/bytecode.ts';
 import { NO_SITE_LISTINGS } from '../src/research/site-listings.ts';
 import { studyRecording } from '../src/research/past-txs-summary.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
+import { parseRegistryAt } from './registry-at.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
@@ -168,7 +169,7 @@ test("each entry's code pin prints with its implementation, and a proof of other
   const bundler3 = registry.entries.get('bundler3')!;
   const raw = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8'));
   raw['usdc'].code = { hash: raw['usdc'].code.hash, implementation: raw['usdc'].code.implementation };
-  const reg = parseRegistry(raw);
+  const reg = parseRegistryAt(ROOT, raw);
   const usdc = reg.entries.get('usdc')!;
   const spans = await checkSpans(replayReader([]), [usdc]);
   const unranged = loadReport(ROOT, reg, TARGET);
@@ -199,7 +200,7 @@ test('the report prints every code span, and an earlier span whose code the chai
   const forged = keccakCode('0x6066' as Hex);
   const raw = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8'));
   raw['bundler3'].code = { hash: keccakCode('0x6002' as Hex), from: 250, earlier: [{ from: 100, hash: forged }] };
-  const reg = parseRegistry(raw);
+  const reg = parseRegistryAt(ROOT, raw);
   const { subject, registry: seen } = loadReport(ROOT, reg, TARGET);
   const bundler3 = [reg.entries.get('bundler3')!];
   const report = async (early: Hex) => quick(recording.pages, new Map(), subject, undefined, undefined, await checkSpans(chainReader(early), bundler3), seen);
@@ -228,7 +229,7 @@ function withDependency(): Registry {
   const raw = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8'));
   raw['liquidity'] = { address: `0x${'52'.repeat(20)}`, kind: 'lending', source: 'https://docs.example.org/liquidity', code: { hash: keccakCode('0x6002' as Hex), from: 250 } };
   raw['bundler3'] = { ...raw['bundler3'], dependsOn: ['liquidity'] };
-  return parseRegistry(raw);
+  return parseRegistryAt(ROOT, raw);
 }
 
 const serving =
@@ -293,7 +294,7 @@ test('a selector-routed proxy a call targets is not provable, and the report rea
     routes: { implementationOf: 'getSigsImplementation(bytes4)', selectorsOf: 'getImplementationSigs(address)', seeds: ['0x00000001'] },
     code: { hash: raw['bundler3'].code.hash, routes: [{ address: implementation, hash: `0x${'0a'.repeat(32)}`, selectors: ['0x00000001'] }], from: 100 },
   };
-  const { subject, registry: seen } = loadReport(ROOT, parseRegistry(raw), TARGET);
+  const { subject, registry: seen } = loadReport(ROOT, parseRegistryAt(ROOT, raw), TARGET);
   const text = quick(recording.pages, new Map(), subject, undefined, undefined, undefined, seen);
   assert.match(text, /^\| `bundler3` \| `0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245` \| not provable: a selector-routed proxy, whose calls run in the implementations its routes reach; its routes are pinned above \|/m);
   assert.match(text, /^\| `bundler3` \| not read \| {2}\|$/m);
@@ -376,8 +377,8 @@ test('a docs.json or registry URL holding a character outside RFC 3986, or one M
     assert.throws(() => parseDocs({ ...valid, 'approve(address,uint256)': { ...approve, url } }, template, registry), /approve\(address,uint256\)\.url is not an https URL/, url);
   }
   const raw = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8')) as Record<string, Record<string, unknown>>;
-  assert.throws(() => parseRegistry({ ...raw, usdc: { ...raw.usdc, source: EVIL_URL } }), /usdc\.source: not an https URL/);
-  assert.equal(parseRegistry(raw).entries.size, registry.entries.size);
+  assert.throws(() => parseRegistryAt(ROOT, { ...raw, usdc: { ...raw.usdc, source: EVIL_URL } }), /usdc\.source: not an https URL/);
+  assert.equal(parseRegistryAt(ROOT, raw).entries.size, registry.entries.size);
 });
 
 test('text the AI wrote in the template prints escaped and labelled as written by the AI in the template', () => {
@@ -571,7 +572,7 @@ test('a market field lists every market with its id, lltv and parts, binds each 
     'adaptive-curve-irm': { address: '0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC', kind: 'irm', source },
   };
   const id = '0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64';
-  const reg = parseRegistry({ ...contracts, ...added }, {
+  const reg = parseRegistryAt(ROOT, { ...contracts, ...added }, {
     'usdc-cbbtc-86': { lending: 'morpho-blue', loanToken: 'usdc', collateralToken: 'cbbtc', oracle: 'morpho-oracle-cbbtc-usdc-86', irm: 'adaptive-curve-irm', lltv: '860000000000000000', id },
   });
   const template = parseTemplate(
@@ -682,7 +683,7 @@ test('a per-vault report refuses a registry whose kept entry depends on another 
   const raw = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8'));
   raw['bundler3'] = { ...raw['bundler3'], dependsOn: ['hyperithm-usdc-apex-v2-9e2f'] };
   assert.throws(
-    () => loadReport(ROOT, parseRegistry(raw), TARGET),
+    () => loadReport(ROOT, parseRegistryAt(ROOT, raw), TARGET),
     (e: unknown) => e instanceof ReportError && e.message === 'hyperithm-usdc-apex-v2-9e2f is another vault the field accepts, but a registry entry the report keeps names it',
   );
 });

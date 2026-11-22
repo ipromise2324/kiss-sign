@@ -7,7 +7,7 @@ import { resolveCard } from '../src/card.ts';
 import type { Card, ResolvedCard } from '../src/card.ts';
 import { replayReader } from '../src/chain/recording.ts';
 import type { Exchange } from '../src/chain/recording.ts';
-import { REGISTRY_PATH, parseRegistry } from '../src/registry.ts';
+import { REGISTRY_PATH } from '../src/registry.ts';
 import { regionBytes } from '../src/decode/codec.ts';
 import { unwrapSafeTx } from '../src/decode/multisend.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
@@ -24,6 +24,7 @@ import { TemplateError, loadTemplate, parseTemplate } from '../src/template/temp
 import type { Template } from '../src/template/template.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
+import { parseRegistryAt } from './registry-at.ts';
 
 const ROOT = repoWithTestFixtures();
 const load = (dir: string, name: string) => readRecording<any>(join(ROOT, 'testdata', dir, `${name}.json`));
@@ -31,7 +32,7 @@ const REWARD_TOKENS_OUTSIDE_REGISTRY = {
   aethusde: { address: '0x3a4de44B29995a3D8Cd02d46243E1563E55bCc8b', kind: 'token', source: 'https://aave.com/docs/resources/addresses' },
   fxn: { address: '0x365AccFCa291e7D3914637ABf1F7635dB165Bb09', kind: 'token', source: 'https://github.com/AladdinDAO/aladdin-v3-contracts/blob/main/scripts/utils/tokens.ts' },
 };
-const registry = parseRegistry({ ...JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8')), ...REWARD_TOKENS_OUTSIDE_REGISTRY });
+const registry = parseRegistryAt(ROOT, { ...JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8')), ...REWARD_TOKENS_OUTSIDE_REGISTRY });
 const IDS = ['fluid/rewards-claim', 'fluid/vault-withdraw', 'merkl/claim', 'cctp/receive'];
 const templates = new Map<string, Template>(IDS.map((id) => [id, loadTemplate(ROOT, id, registry)]));
 const OTHER = '0x1111111111111111111111111111111111111111' as Address;

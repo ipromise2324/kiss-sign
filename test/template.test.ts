@@ -8,12 +8,13 @@ import { AddressBookError, loadAddressBook, parseAddressBook, saveAddressBook } 
 import { CardError, cardsDir, loadSealed, parseCard, resolveCard, sealCard } from '../src/card.ts';
 import type { Card, CardContext, ResolvedCard } from '../src/card.ts';
 import { OFFICIAL_MULTISEND } from '../src/decode/multisend.ts';
-import { RegistryError, loadRegistry, parseRegistry } from '../src/registry.ts';
+import { RegistryError, loadRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
 import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
 import { checkTemplateFields } from '../src/template/check.ts';
 import type { FieldCheck, Finding } from '../src/template/check.ts';
 import { TemplateError, loadTemplate, parseTemplate } from '../src/template/template.ts';
+import { parseRegistryAt } from './registry-at.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const fixture = JSON.parse(readFileSync(join(ROOT, 'testdata', 'safe-tx', 'morpho-vault-deposit.json'), 'utf8'));
@@ -283,7 +284,7 @@ test('the registry lists exactly the official MultiSend deployments, and refuses
   assert.deepEqual(multisends, OFFICIAL_MULTISEND.map((d) => d.address).sort());
   const raw = JSON.parse(readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8'));
   raw['steakhouse-prime-usdc-v2-0f51'].attributes.asset = 'bundler3';
-  assert.throws(() => parseRegistry(raw), (error: unknown) => error instanceof RegistryError && error.path === 'steakhouse-prime-usdc-v2-0f51.attributes.asset');
+  assert.throws(() => parseRegistryAt(ROOT, raw), (error: unknown) => error instanceof RegistryError && error.path === 'steakhouse-prime-usdc-v2-0f51.attributes.asset');
 });
 
 test('the address book saves and loads, and refuses a bad checksum', () => {
