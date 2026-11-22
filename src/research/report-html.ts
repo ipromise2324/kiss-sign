@@ -5,7 +5,7 @@ import type { Language } from '../language.ts';
 import type { Phrase, State } from './ledger.ts';
 import { NOTES_FILE, codeSpans, notesLanguages, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
-import type { AddressRow, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, NewestResult, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, Span, VaultBlock, WalletRows } from './report-page.ts';
+import type { AddressRow, AiSource, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, NewestResult, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, Span, VaultBlock, WalletRows } from './report-page.ts';
 import { CSS, Html, SYMBOLS, escape, h, icon } from '../html.ts';
 import { WORDS } from './report-words.ts';
 import type { Words } from './report-words.ts';
@@ -317,7 +317,7 @@ function flowBody(flow: Flow, r: R): Html {
   <p class="lead">${r.w.noAssets}</p>`
       : h`
   <dl class="props">${flow.after.map((row) => h`
-    <div><dt>${text(row.label)}</dt><dd class="${row.gains ? 'pos' : ''}">${text(row.value)}</dd><dd class="src">${text(row.note)}${row.ai === undefined ? '' : h` ${ai(row.ai, r)}`}</dd></div>`)}
+    <div><dt>${text(row.label)}</dt><dd class="${row.gains ? 'pos' : ''}">${text(row.value)}</dd><dd class="src">${text(row.note)}</dd>${row.ai === undefined ? '' : h`<div class="ai">${ai(row.ai, r)}</div>`}</div>`)}
   </dl>`
   }`;
 }
@@ -494,13 +494,19 @@ function addressRow(row: AddressRow, r: R): Html {
       <div class="body"><span class="addr">${row.address}</span>
         <div class="srcs">${row.sources.map((line) => sourceLine(line, r))}</div>
         <div class="confirmed">${row.confirmed}</div>${row.codeLines.map((line) => h`
-        <div class="confirmed">${text(line)}</div>`)}${
-          row.aiSources.length === 0
-            ? ''
-            : h`
-        <div class="aisrcs"><span class="lbl">${r.w.aiChecked}</span>${row.aiSources.map((s) => h`<span>${ai(s.text, r)}<span class="aires">${r.w.aiResult[s.result]}</span></span>`)}</div>`
-        }</div>
+        <div class="confirmed">${text(line)}</div>`)}${row.aiSources.length === 0 ? '' : aiChecked(row.aiSources, r)}</div>
     </div>`;
+}
+
+/** The AI's own sources for an address, folded under their count and worst judgment; a judgment other than a pass opens the fold. */
+function aiChecked(sources: readonly AiSource[], r: R): Html {
+  const judgment = (['fail', 'attention'] as const).find((result) => sources.some((s) => s.result === result)) ?? 'pass';
+  return h`
+        <details class="aisrcs"${judgment === 'pass' ? '' : h` open`}><summary>${decor('chev')}${r.w.aiChecked(sources.length, r.w.aiResult[judgment])}</summary>${sources.map(
+          (s) => h`
+          <div>${ai(s.text, r)}<span class="aires">${r.w.aiResult[s.result]}</span></div>`,
+        )}
+        </details>`;
 }
 
 function addressBody(body: Extract<Body, { kind: 'addresses' }>, r: R): Html {

@@ -102,13 +102,13 @@ section>h2 .c{font-weight:400;font-size:var(--t-small);color:var(--fg3);letter-s
 h3{font-size:16px;font-weight:590;margin:36px 0 10px}
 
 .props{margin:0;font-size:var(--t-row);border-top:1px solid var(--line)}
-.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) auto;gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) fit-content(45%);gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
 .props dt,.props dd{margin:0}
 .props dt{color:var(--fg2)}
 .props dd.src{text-align:right;font-size:var(--t-small);color:var(--fg3)}
 .props .sub2{display:block;font-size:var(--t-small);color:var(--fg3);margin-top:2px}
 .props .pos{color:var(--ok)}
-@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) auto}.props dt{grid-column:1/-1}}
+@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) fit-content(55%)}.props dt{grid-column:1/-1}}
 .props.two>div{grid-template-columns:minmax(140px,24%) minmax(0,1fr)}
 .nest{margin:10px 0 0;border-left:1px solid var(--line2);padding-left:16px}
 .nest.flat{margin-top:0}
@@ -172,8 +172,9 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .arg .raw{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere;line-height:1.5}
 .arg .is{color:var(--fg);font-size:var(--t-row);margin-top:4px}
 .arg .is .f3{font-size:var(--t-small)}
-.arg .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
-.arg .ai .byai{flex:none}
+:is(.arg,.props) .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
+:is(.arg,.props) .ai .byai{flex:none}
+.props>div>.ai{grid-column:1/-1;margin-top:6px}
 .who{display:inline-flex;align-items:center;font-size:var(--t-label);line-height:22px;padding:0 8px;border-radius:var(--r);border:1px solid var(--line2);color:var(--fg3);white-space:nowrap}
 .who.you{color:var(--fg);border-color:var(--fg2);font-weight:590}
 .who.app{color:var(--warn);border-color:rgb(237 161 82 / .45)}
@@ -229,8 +230,12 @@ details.more[open]>summary .chev{transform:rotate(90deg)}
 .ad .srcrow>.i{width:14px;height:14px;margin-top:5px}
 .site{display:flex;gap:6px;align-items:flex-start;padding-left:22px;font-size:var(--t-small);color:var(--fg2)}
 .ad .site .i{width:14px;height:14px;margin-top:3px;flex:none}
-.aisrcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
-.aisrcs .lbl{font-size:var(--t-small);color:var(--fg3)}
+.aisrcs{font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
+.aisrcs>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;font-size:var(--t-small);color:var(--fg3)}
+.aisrcs>summary::-webkit-details-marker{display:none}
+.aisrcs>summary:hover{color:var(--fg)}
+.aisrcs[open]>summary .chev{transform:rotate(90deg)}
+.aisrcs>div{margin-top:6px;overflow-wrap:anywhere}
 .aisrcs .byai{margin-right:8px}
 .aires{margin-left:8px;font-size:var(--t-small);color:var(--fg3)}
 .res{margin-left:10px;color:var(--fg2)}

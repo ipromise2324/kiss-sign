@@ -102,13 +102,13 @@ section>h2 .c{font-weight:400;font-size:var(--t-small);color:var(--fg3);letter-s
 h3{font-size:16px;font-weight:590;margin:36px 0 10px}
 
 .props{margin:0;font-size:var(--t-row);border-top:1px solid var(--line)}
-.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) auto;gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) fit-content(45%);gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
 .props dt,.props dd{margin:0}
 .props dt{color:var(--fg2)}
 .props dd.src{text-align:right;font-size:var(--t-small);color:var(--fg3)}
 .props .sub2{display:block;font-size:var(--t-small);color:var(--fg3);margin-top:2px}
 .props .pos{color:var(--ok)}
-@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) auto}.props dt{grid-column:1/-1}}
+@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) fit-content(55%)}.props dt{grid-column:1/-1}}
 .props.two>div{grid-template-columns:minmax(140px,24%) minmax(0,1fr)}
 .nest{margin:10px 0 0;border-left:1px solid var(--line2);padding-left:16px}
 .nest.flat{margin-top:0}
@@ -172,8 +172,9 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .arg .raw{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere;line-height:1.5}
 .arg .is{color:var(--fg);font-size:var(--t-row);margin-top:4px}
 .arg .is .f3{font-size:var(--t-small)}
-.arg .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
-.arg .ai .byai{flex:none}
+:is(.arg,.props) .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
+:is(.arg,.props) .ai .byai{flex:none}
+.props>div>.ai{grid-column:1/-1;margin-top:6px}
 .who{display:inline-flex;align-items:center;font-size:var(--t-label);line-height:22px;padding:0 8px;border-radius:var(--r);border:1px solid var(--line2);color:var(--fg3);white-space:nowrap}
 .who.you{color:var(--fg);border-color:var(--fg2);font-weight:590}
 .who.app{color:var(--warn);border-color:rgb(237 161 82 / .45)}
@@ -229,8 +230,12 @@ details.more[open]>summary .chev{transform:rotate(90deg)}
 .ad .srcrow>.i{width:14px;height:14px;margin-top:5px}
 .site{display:flex;gap:6px;align-items:flex-start;padding-left:22px;font-size:var(--t-small);color:var(--fg2)}
 .ad .site .i{width:14px;height:14px;margin-top:3px;flex:none}
-.aisrcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
-.aisrcs .lbl{font-size:var(--t-small);color:var(--fg3)}
+.aisrcs{font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
+.aisrcs>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;font-size:var(--t-small);color:var(--fg3)}
+.aisrcs>summary::-webkit-details-marker{display:none}
+.aisrcs>summary:hover{color:var(--fg)}
+.aisrcs[open]>summary .chev{transform:rotate(90deg)}
+.aisrcs>div{margin-top:6px;overflow-wrap:anywhere}
 .aisrcs .byai{margin-right:8px}
 .aires{margin-left:8px;font-size:var(--t-small);color:var(--fg3)}
 .res{margin-left:10px;color:var(--fg2)}
@@ -477,7 +482,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 circle-usdc（<a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a> 對照）</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x95ba4cf87d6723ad9c0db21737d862be80e93911">部署者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911</a><span class="res">沒有已確認的合約同一個部署者</span></span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div>
-        <div class="aisrcs"><span class="lbl">AI 補查</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911 <a class="aisrc" href="https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></span></div></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 1 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911 <a class="aisrc" href="https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        </details></div>
     </div>
     <div class="ad" id="a-usdt" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
@@ -485,7 +492,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0xdAC17F958D2ee523a2206206994597C13D831ec7</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://tether.to/en/supported-protocols/">tether.to/en/supported-protocols</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 tether（<a href="https://defillama.com/protocol/tether">DefiLlama</a> 對照）</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/tether">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x36928500bc1dcd7af6a2b4008875cc336b927d57">部署者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57</a><span class="res">沒有已確認的合約同一個部署者</span></span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div>
-        <div class="aisrcs"><span class="lbl">AI 補查</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57 <a class="aisrc" href="https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></span></div></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 1 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57 <a class="aisrc" href="https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        </details></div>
     </div>
     <div class="ad" id="a-morpho" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
@@ -493,7 +502,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0x58D97B57BB95320F9a05dC918Aef65434969c2B2</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a> 對照）</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x937ce2d6c488b361825d2db5e8a70e26d48afed5">部署者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5</a><span class="res">沒有已確認的合約同一個部署者</span></span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div>
-        <div class="aisrcs"><span class="lbl">AI 補查</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 ERC1967Proxy，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5 <a class="aisrc" href="https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></span></div></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 1 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 ERC1967Proxy，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5 <a class="aisrc" href="https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        </details></div>
     </div>
     <div class="ad" id="a-cbbtc" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
@@ -501,7 +512,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">github.com/coinbase/agentkit</a></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/coinbase">DefiLlama</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（main）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/coinbase-wrapped-btc">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>部署者<span class="res">證明不了是誰部署</span></span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div>
-        <div class="aisrcs"><span class="lbl">AI 補查</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 FiatTokenProxy，創建者 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05 <a class="aisrc" href="https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></span></div></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 1 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 FiatTokenProxy，創建者 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05 <a class="aisrc" href="https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        </details></div>
     </div>
     <div class="ad" id="a-gpv2-settlement" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
@@ -509,7 +522,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0x9008D19f58AAbD9eD0D60971565AA8510560ab41</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json">github.com/cowprotocol/contracts</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 cowswap（<a href="https://immunefi.com/bug-bounty/cowprotocol/">Immunefi</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（main）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts">github.com/cowprotocol/cow-sdk</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 cowswap（<a href="https://immunefi.com/bug-bounty/cowprotocol/">Immunefi</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（main）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://immunefi.com/bug-bounty/cowprotocol/">Immunefi 漏洞賞金範圍</a></span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.npmjs.com/package/@cowprotocol/sdk-config/v/2.11.2">npm @cowprotocol/sdk-config@2.11.2</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 cowswap（<a href="https://immunefi.com/bug-bounty/cowprotocol/">Immunefi</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（npm 2.11.2）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x7eabac82da8ea6ac980d619cb562a9924d1e3baa">部署者 0x7EAbac82dA8ea6Ac980d619Cb562a9924d1E3bAa</a><span class="res">沒有已確認的合約同一個部署者</span></span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁 + github.com/cowprotocol/cow-sdk + npm @cowprotocol/sdk-config@2.11.2 (github.com/cowprotocol)、Immunefi 漏洞賞金範圍</div>
-        <div class="aisrcs"><span class="lbl">AI 補查</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 GPv2Settlement，創建者 0x7eabac82dA8eA6AC980D619Cb562a9924D1e3bAa，創建交易就是 networks.json 記的部署交易 <a class="aisrc" href="https://etherscan.io/address/0x9008D19f58AAbD9eD0D60971565AA8510560ab41#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></span><span><span class="aiw" data-ai><span class="byai">AI</span><span>docs.cow.fi 的核心合約頁列出這個地址，標示不可升級（頁面的地址在 GitHub 連結旁，程式對不上名稱） <a class="aisrc" href="https://docs.cow.fi/cow-protocol/reference/contracts/core">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></span></div></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 2 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 GPv2Settlement，創建者 0x7eabac82dA8eA6AC980D619Cb562a9924D1e3bAa，創建交易就是 networks.json 記的部署交易 <a class="aisrc" href="https://etherscan.io/address/0x9008D19f58AAbD9eD0D60971565AA8510560ab41#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>docs.cow.fi 的核心合約頁列出這個地址，標示不可升級（頁面的地址在 GitHub 連結旁，程式對不上名稱） <a class="aisrc" href="https://docs.cow.fi/cow-protocol/reference/contracts/core">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        </details></div>
     </div>
     <div class="ad" id="a-usp" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
