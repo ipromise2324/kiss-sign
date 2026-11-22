@@ -275,7 +275,7 @@ const AI_SOURCE: Readonly<Record<Language, { readonly summary: (n: number) => st
   'zh-TW': { summary: (n) => `AI 補查 ${n} 處 · `, judgments: ['AI 判斷：沒問題', 'AI 判斷：要注意', 'AI 判斷：有問題'] },
 };
 
-test('the AI sources fold under their count and worst judgment, open only when a judgment is not a pass, with no state icon among the program sources', () => {
+test('an AI source sits under its label with its result in words, never with a state icon among the program sources', () => {
   const seen = new Set<boolean>();
   for (const [id, { language, html }] of replayed) {
     for (const [srcs] of html.matchAll(/<div class="srcs">.*?<\/div>\n/gs)) assert.ok(!srcs.includes('data-ai'), `${id}: AI text among the program sources`);
