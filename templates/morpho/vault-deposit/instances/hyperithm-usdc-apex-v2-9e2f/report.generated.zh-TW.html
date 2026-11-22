@@ -102,13 +102,13 @@ section>h2 .c{font-weight:400;font-size:var(--t-small);color:var(--fg3);letter-s
 h3{font-size:16px;font-weight:590;margin:36px 0 10px}
 
 .props{margin:0;font-size:var(--t-row);border-top:1px solid var(--line)}
-.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) auto;gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) fit-content(45%);gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
 .props dt,.props dd{margin:0}
 .props dt{color:var(--fg2)}
 .props dd.src{text-align:right;font-size:var(--t-small);color:var(--fg3)}
 .props .sub2{display:block;font-size:var(--t-small);color:var(--fg3);margin-top:2px}
 .props .pos{color:var(--ok)}
-@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) auto}.props dt{grid-column:1/-1}}
+@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) fit-content(55%)}.props dt{grid-column:1/-1}}
 .props.two>div{grid-template-columns:minmax(140px,24%) minmax(0,1fr)}
 .nest{margin:10px 0 0;border-left:1px solid var(--line2);padding-left:16px}
 .nest.flat{margin-top:0}
@@ -172,8 +172,9 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .arg .raw{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere;line-height:1.5}
 .arg .is{color:var(--fg);font-size:var(--t-row);margin-top:4px}
 .arg .is .f3{font-size:var(--t-small)}
-.arg .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
-.arg .ai .byai{flex:none}
+:is(.arg,.props) .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
+:is(.arg,.props) .ai .byai{flex:none}
+.props>div>.ai{grid-column:1/-1;margin-top:6px}
 .who{display:inline-flex;align-items:center;font-size:var(--t-label);line-height:22px;padding:0 8px;border-radius:var(--r);border:1px solid var(--line2);color:var(--fg3);white-space:nowrap}
 .who.you{color:var(--fg);border-color:var(--fg2);font-weight:590}
 .who.app{color:var(--warn);border-color:rgb(237 161 82 / .45)}
@@ -229,8 +230,12 @@ details.more[open]>summary .chev{transform:rotate(90deg)}
 .ad .srcrow>.i{width:14px;height:14px;margin-top:5px}
 .site{display:flex;gap:6px;align-items:flex-start;padding-left:22px;font-size:var(--t-small);color:var(--fg2)}
 .ad .site .i{width:14px;height:14px;margin-top:3px;flex:none}
-.aisrcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
-.aisrcs .lbl{font-size:var(--t-small);color:var(--fg3)}
+.aisrcs{font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
+.aisrcs>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;font-size:var(--t-small);color:var(--fg3)}
+.aisrcs>summary::-webkit-details-marker{display:none}
+.aisrcs>summary:hover{color:var(--fg)}
+.aisrcs[open]>summary .chev{transform:rotate(90deg)}
+.aisrcs>div{margin-top:6px;overflow-wrap:anywhere}
 .aisrcs .byai{margin-right:8px}
 .aires{margin-left:8px;font-size:var(--t-small);color:var(--fg3)}
 .res{margin-left:10px;color:var(--fg2)}
@@ -607,7 +612,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0x093272C07700d3cA5301C3Bf9B3A392624179E2F</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span><a href="https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex">app.morpho.org/ethereum/vault</a><span class="res">網址含地址</span></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a> 對照）</span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>CoinGecko<span class="res">沒資料可比</span></span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>工廠</span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>部署者<span class="res">證明不了是誰部署</span></span></span></div></div>
         <div class="confirmed">只在 1 個地方確認：工廠</div>
-        <div class="aisrcs"><span class="lbl">AI 補查</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Morpho 的 API（api.morpho.org/graphql）以策展人 0x75178137D3B4B9A0F771E0e149b00fB8167BA325 篩選鏈 1 的 <code>vaultV2s</code>，回答這個地址是 Hyperithm USDC Apex（hyperUSDCa），已上架。這是搜尋，不算一個來源 <a class="aisrc" href="https://api.morpho.org/graphql">來源</a></span></span><span class="aires">AI 判斷：要注意</span></span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：已驗證合約 VaultV2，在區塊 23,666,454 經由工廠 0xA1D94F746dEfa1928926b84fB2596c06926C0405 建立 <a class="aisrc" href="https://etherscan.io/address/0x093272C07700d3cA5301C3Bf9B3A392624179E2F#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Hyperithm 自己的網站沒有列出任何 Morpho vault 或 vault 地址 <a class="aisrc" href="https://www.hyperithm.com">來源</a></span></span><span class="aires">AI 判斷：要注意</span></span></div></div>
+        <details class="aisrcs" open><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 3 處 · AI 判斷：要注意</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Morpho 的 API（api.morpho.org/graphql）以策展人 0x75178137D3B4B9A0F771E0e149b00fB8167BA325 篩選鏈 1 的 <code>vaultV2s</code>，回答這個地址是 Hyperithm USDC Apex（hyperUSDCa），已上架。這是搜尋，不算一個來源 <a class="aisrc" href="https://api.morpho.org/graphql">來源</a></span></span><span class="aires">AI 判斷：要注意</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：已驗證合約 VaultV2，在區塊 23,666,454 經由工廠 0xA1D94F746dEfa1928926b84fB2596c06926C0405 建立 <a class="aisrc" href="https://etherscan.io/address/0x093272C07700d3cA5301C3Bf9B3A392624179E2F#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Hyperithm 自己的網站沒有列出任何 Morpho vault 或 vault 地址 <a class="aisrc" href="https://www.hyperithm.com">來源</a></span></span><span class="aires">AI 判斷：要注意</span></div>
+        </details></div>
     </div>
     <details class="fold">
       <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>另外 4 個地址都沒有要你看的結果</summary>

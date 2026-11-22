@@ -102,13 +102,13 @@ section>h2 .c{font-weight:400;font-size:var(--t-small);color:var(--fg3);letter-s
 h3{font-size:16px;font-weight:590;margin:36px 0 10px}
 
 .props{margin:0;font-size:var(--t-row);border-top:1px solid var(--line)}
-.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) auto;gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) fit-content(45%);gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
 .props dt,.props dd{margin:0}
 .props dt{color:var(--fg2)}
 .props dd.src{text-align:right;font-size:var(--t-small);color:var(--fg3)}
 .props .sub2{display:block;font-size:var(--t-small);color:var(--fg3);margin-top:2px}
 .props .pos{color:var(--ok)}
-@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) auto}.props dt{grid-column:1/-1}}
+@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) fit-content(55%)}.props dt{grid-column:1/-1}}
 .props.two>div{grid-template-columns:minmax(140px,24%) minmax(0,1fr)}
 .nest{margin:10px 0 0;border-left:1px solid var(--line2);padding-left:16px}
 .nest.flat{margin-top:0}
@@ -172,8 +172,9 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .arg .raw{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere;line-height:1.5}
 .arg .is{color:var(--fg);font-size:var(--t-row);margin-top:4px}
 .arg .is .f3{font-size:var(--t-small)}
-.arg .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
-.arg .ai .byai{flex:none}
+:is(.arg,.props) .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
+:is(.arg,.props) .ai .byai{flex:none}
+.props>div>.ai{grid-column:1/-1;margin-top:6px}
 .who{display:inline-flex;align-items:center;font-size:var(--t-label);line-height:22px;padding:0 8px;border-radius:var(--r);border:1px solid var(--line2);color:var(--fg3);white-space:nowrap}
 .who.you{color:var(--fg);border-color:var(--fg2);font-weight:590}
 .who.app{color:var(--warn);border-color:rgb(237 161 82 / .45)}
@@ -229,8 +230,12 @@ details.more[open]>summary .chev{transform:rotate(90deg)}
 .ad .srcrow>.i{width:14px;height:14px;margin-top:5px}
 .site{display:flex;gap:6px;align-items:flex-start;padding-left:22px;font-size:var(--t-small);color:var(--fg2)}
 .ad .site .i{width:14px;height:14px;margin-top:3px;flex:none}
-.aisrcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
-.aisrcs .lbl{font-size:var(--t-small);color:var(--fg3)}
+.aisrcs{font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
+.aisrcs>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;font-size:var(--t-small);color:var(--fg3)}
+.aisrcs>summary::-webkit-details-marker{display:none}
+.aisrcs>summary:hover{color:var(--fg)}
+.aisrcs[open]>summary .chev{transform:rotate(90deg)}
+.aisrcs>div{margin-top:6px;overflow-wrap:anywhere}
 .aisrcs .byai{margin-right:8px}
 .aires{margin-left:8px;font-size:var(--t-small);color:var(--fg3)}
 .res{margin-left:10px;color:var(--fg2)}
@@ -400,7 +405,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/gnosis_safe.json">github.com/safe-global/safe-deployments</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 safe（<a href="https://defillama.com/protocol/safe">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/safe">CoinGecko</a>、<a href="https://github.com/safe-global">GitHub 驗證網域</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（main）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py">github.com/safe-global/safe-cli</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 safe（<a href="https://defillama.com/protocol/safe">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/safe">CoinGecko</a>、<a href="https://github.com/safe-global">GitHub 驗證網域</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（main）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://etherscan.io/address/0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26">部署者 0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26，也部署了 safe-1.4.1</a></span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁 + github.com/safe-global/safe-cli (github.com/safe-global)、部署者</div>
-        <div class="aisrcs"><span class="lbl">AI 補查</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 GnosisSafe，由 Arachnid 的 deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26 <a class="aisrc" href="https://etherscan.io/address/0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></span></div></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 1 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 GnosisSafe，由 Arachnid 的 deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26 <a class="aisrc" href="https://etherscan.io/address/0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        </details></div>
     </div>
     <div class="ad" id="a-safe-1.4.1" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
@@ -408,7 +415,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0x41675C099F32341bf84BFc5382aF534df5C7461a</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.4.1/safe.json">github.com/safe-global/safe-deployments</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 safe（<a href="https://defillama.com/protocol/safe">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/safe">CoinGecko</a>、<a href="https://github.com/safe-global">GitHub 驗證網域</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（main）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py">github.com/safe-global/safe-cli</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 safe（<a href="https://defillama.com/protocol/safe">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/safe">CoinGecko</a>、<a href="https://github.com/safe-global">GitHub 驗證網域</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（main）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://docs.safe.global/advanced/erc-4337/guides/permissionless-detailed">docs.safe.global/advanced/erc-4337/guides</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 safe（<a href="https://defillama.com/protocol/safe">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/safe">CoinGecko</a> 對照）</span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26">部署者 0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26</a><span class="res">沒有已確認的合約同一個部署者</span></span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁 + github.com/safe-global/safe-cli (github.com/safe-global)、docs.safe.global/advanced/erc-4337/guides</div>
-        <div class="aisrcs"><span class="lbl">AI 補查</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 Safe，由 Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26 <a class="aisrc" href="https://etherscan.io/address/0x41675C099F32341bf84BFc5382aF534df5C7461a#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></span></div></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 1 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 Safe，由 Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26 <a class="aisrc" href="https://etherscan.io/address/0x41675C099F32341bf84BFc5382aF534df5C7461a#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        </details></div>
     </div>
     </details>
   </div>

@@ -102,13 +102,13 @@ section>h2 .c{font-weight:400;font-size:var(--t-small);color:var(--fg3);letter-s
 h3{font-size:16px;font-weight:590;margin:36px 0 10px}
 
 .props{margin:0;font-size:var(--t-row);border-top:1px solid var(--line)}
-.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) auto;gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) fit-content(45%);gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
 .props dt,.props dd{margin:0}
 .props dt{color:var(--fg2)}
 .props dd.src{text-align:right;font-size:var(--t-small);color:var(--fg3)}
 .props .sub2{display:block;font-size:var(--t-small);color:var(--fg3);margin-top:2px}
 .props .pos{color:var(--ok)}
-@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) auto}.props dt{grid-column:1/-1}}
+@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) fit-content(55%)}.props dt{grid-column:1/-1}}
 .props.two>div{grid-template-columns:minmax(140px,24%) minmax(0,1fr)}
 .nest{margin:10px 0 0;border-left:1px solid var(--line2);padding-left:16px}
 .nest.flat{margin-top:0}
@@ -172,8 +172,9 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .arg .raw{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere;line-height:1.5}
 .arg .is{color:var(--fg);font-size:var(--t-row);margin-top:4px}
 .arg .is .f3{font-size:var(--t-small)}
-.arg .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
-.arg .ai .byai{flex:none}
+:is(.arg,.props) .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
+:is(.arg,.props) .ai .byai{flex:none}
+.props>div>.ai{grid-column:1/-1;margin-top:6px}
 .who{display:inline-flex;align-items:center;font-size:var(--t-label);line-height:22px;padding:0 8px;border-radius:var(--r);border:1px solid var(--line2);color:var(--fg3);white-space:nowrap}
 .who.you{color:var(--fg);border-color:var(--fg2);font-weight:590}
 .who.app{color:var(--warn);border-color:rgb(237 161 82 / .45)}
@@ -229,8 +230,12 @@ details.more[open]>summary .chev{transform:rotate(90deg)}
 .ad .srcrow>.i{width:14px;height:14px;margin-top:5px}
 .site{display:flex;gap:6px;align-items:flex-start;padding-left:22px;font-size:var(--t-small);color:var(--fg2)}
 .ad .site .i{width:14px;height:14px;margin-top:3px;flex:none}
-.aisrcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
-.aisrcs .lbl{font-size:var(--t-small);color:var(--fg3)}
+.aisrcs{font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
+.aisrcs>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;font-size:var(--t-small);color:var(--fg3)}
+.aisrcs>summary::-webkit-details-marker{display:none}
+.aisrcs>summary:hover{color:var(--fg)}
+.aisrcs[open]>summary .chev{transform:rotate(90deg)}
+.aisrcs>div{margin-top:6px;overflow-wrap:anywhere}
 .aisrcs .byai{margin-right:8px}
 .aires{margin-left:8px;font-size:var(--t-small);color:var(--fg3)}
 .res{margin-left:10px;color:var(--fg2)}
@@ -554,7 +559,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime">docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to kpk (compared with <a href="https://defillama.com/protocol/kpk">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/kpk">CoinGecko</a>)</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/kpk-usdc-prime">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>factory</span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>Immunefi bug bounty scope<span class="res">address not listed</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>deployer<span class="res">not proven</span></span></span></div></div>
         <div class="confirmed">Confirmed in 3 places: official page, CoinGecko, factory</div>
-        <div class="aisrcs"><span class="lbl">AI also checked</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>KPK&#39;s docs page for USDC Prime lists this vault, its Markets V1 Adapter 0x1d511811ACA9d8817a3e50F29CadFf6243A02902 and its curator Safe, the vault&#39;s <code>curator</code> read on chain <a class="aisrc" href="https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime">source</a></span></span><span class="aires">AI judgment: no problem</span></span><span><span class="aiw" data-ai><span class="byai">AI</span><span>The vault&#39;s <code>owner</code> read on chain, 0x8b884f80B3B839F52b6cE168f133e7a5D1f0A537, is the Security Council Safe KPK&#39;s Morpho docs page names <a class="aisrc" href="https://docs.kpk.io/vaults/vaults/morpho">source</a></span></span><span class="aires">AI judgment: no problem</span></span></div></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 2 places · AI judgment: no problem</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>KPK&#39;s docs page for USDC Prime lists this vault, its Markets V1 Adapter 0x1d511811ACA9d8817a3e50F29CadFf6243A02902 and its curator Safe, the vault&#39;s <code>curator</code> read on chain <a class="aisrc" href="https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>The vault&#39;s <code>owner</code> read on chain, 0x8b884f80B3B839F52b6cE168f133e7a5D1f0A537, is the Security Council Safe KPK&#39;s Morpho docs page names <a class="aisrc" href="https://docs.kpk.io/vaults/vaults/morpho">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+        </details></div>
     </div>
     <div class="ad" id="a-kpk-usdc-prime-v2-9ee6-market-adapter" data-state="ok">
       <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>

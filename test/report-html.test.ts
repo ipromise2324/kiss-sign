@@ -269,23 +269,44 @@ test('a code span in AI text prints as <code> in prose and as a boxed monospace 
   assert.deepEqual([...caption.matchAll(/<code>([^<]*)<\/code>/g)].map((m) => m[1]), ['erc20TransferFrom', 'erc4626Deposit']);
 });
 
-const AI_SOURCE: Readonly<Record<Language, { readonly label: string; readonly result: RegExp }>> = {
-  en: { label: 'AI also checked', result: /<span class="aires">AI judgment: (no problem|needs attention|problem)<\/span>/ },
-  'zh-TW': { label: 'AI 補查', result: /<span class="aires">AI 判斷：(沒問題|要注意|有問題)<\/span>/ },
+/** The AI's sources' summary line and each source's judgment, worst last, in each language. */
+const AI_SOURCE: Readonly<Record<Language, { readonly summary: (n: number) => string; readonly judgments: readonly [string, string, string] }>> = {
+  en: { summary: (n) => `AI also checked ${n} ${n === 1 ? 'place' : 'places'} · `, judgments: ['AI judgment: no problem', 'AI judgment: needs attention', 'AI judgment: problem'] },
+  'zh-TW': { summary: (n) => `AI 補查 ${n} 處 · `, judgments: ['AI 判斷：沒問題', 'AI 判斷：要注意', 'AI 判斷：有問題'] },
 };
 
-test('an AI source sits under its label with its result in words, never with a state icon among the program sources', () => {
-  let groups = 0;
+test('the AI sources fold under their count and worst judgment, open only when a judgment is not a pass, with no state icon among the program sources', () => {
+  const seen = new Set<boolean>();
   for (const [id, { language, html }] of replayed) {
     for (const [srcs] of html.matchAll(/<div class="srcs">.*?<\/div>\n/gs)) assert.ok(!srcs.includes('data-ai'), `${id}: AI text among the program sources`);
-    for (const [group] of html.matchAll(/<div class="aisrcs">.*?<\/div>/gs)) {
-      groups += 1;
-      assert.ok(group.startsWith(`<div class="aisrcs"><span class="lbl">${AI_SOURCE[language].label}</span>`), id);
-      assert.ok(!group.includes('<svg') && !group.includes('data-state'), `${id}: an AI source with a state mark`);
-      assert.match(group, AI_SOURCE[language].result, id);
+    for (const [, open, summary = '', body = ''] of html.matchAll(/<details class="aisrcs"( open)?><summary>(.*?)<\/summary>(.*?)<\/details>/gs)) {
+      const { judgments } = AI_SOURCE[language];
+      const each = [...body.matchAll(/<span class="aires">([^<]*)<\/span>/g)].map(([, words]) => judgments.indexOf(words ?? ''));
+      assert.ok(each.length > 0 && each.every((rank) => rank >= 0), `${id}: an AI source without its judgment in words`);
+      const worst = Math.max(...each);
+      assert.equal(summary.replace(/<svg[^>]*>.*?<\/svg>/, ''), `${AI_SOURCE[language].summary(each.length)}${judgments[worst]}`, id);
+      assert.equal(open !== undefined, worst > 0, `${id}: the fold is open exactly when a judgment is not a pass`);
+      assert.ok(!body.includes('<svg') && !body.includes('data-state'), `${id}: an AI source with a state mark`);
+      seen.add(open !== undefined);
     }
   }
-  assert.ok(groups > 0, 'a replayed report has AI sources');
+  assert.deepEqual([...seen].sort(), [false, true], 'replayed reports hold a closed and an open AI fold');
+});
+
+test('an after-the-transaction row shows its AI reason in a block of its own under the row, not in its right-aligned note', async () => {
+  const id = bilingual();
+  const { inputs, title } = pages.get(id) ?? assert.fail(id);
+  const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
+  const [gives, ...rest] = template.effects.gives;
+  assert.ok(gives !== undefined, `${id}: the Safe gives a token`);
+  const why = 'Rounding can leave the balance one unit off';
+  const subject = { ...inputs.subject, template: { ...template, effects: { ...template.effects, gives: [{ ...gives, tolerance: { less: 1n, more: 0n, why: both(why) } }, ...rest] } } };
+  const html = renderPage(buildPage(await withFixtures(id, { ...inputs, subject }), notesOf(id), title, 'en'));
+  const after = html.slice(html.indexOf('<dl class="props">'));
+  const row = after.slice(0, after.indexOf('</dl>')).split('<div><dt>').find((r) => r.includes(why)) ?? assert.fail(`${id}: no row holds the reason`);
+  const note = /<dd class="src">.*?<\/dd>/s.exec(row)?.[0] ?? assert.fail(`${id}: a row without its note`);
+  assert.ok(!note.includes('data-ai'), `${id}: AI text inside the right-aligned note`);
+  assert.ok(row.trimEnd().endsWith(`</dd><div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>${why}</span></span></div></div>`), row);
 });
 
 test('every source line and documentation line starts with its result icon, the source and any phrase after it', () => {
