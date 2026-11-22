@@ -291,7 +291,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="Contents">
   <h2>Contents</h2>
-  <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>2</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">2</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>1</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">2</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
 </nav>
 
 <div class="main">
@@ -314,12 +314,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="ok"><span class="lbl">Advice</span><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span class="aiw" data-ai><span>Moves no asset, but changes who controls this Safe: confirm you are removing the right person and that enough signers remain.</span><span class="byai">AI research: be careful</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
-    <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>2</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">2</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+    <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>1</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">2</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
   </details>
 </header>
 
 <section id="review">
-  <h2>To review <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>2</span></span></h2>
+  <h2>To review <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>1</span></span></h2>
   <p class="lead">The AI checked each item first and gives its advice.</p>
   <div class="rows">
     <div class="row">
@@ -328,14 +328,6 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
           <div class="rec"><span class="aiw" data-ai><span>With the threshold set to the number left, losing one key leaves the Safe unable to act ever again.</span><span class="byai">AI research</span></span></div>
           <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Leave some margin in the threshold: for example, 2 when 3 signers remain.</span><span class="byai">AI research</span></span></div>
-        </details></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>When the Safe web app&#39;s &#34;Manage signers&#34; changes several things at once, it wraps several calls in a MultiSend.</span><span class="byai">AI research</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>A kiss-sign card accepts only one signer or threshold change, so such a batch transaction gives MISMATCH.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Change one thing at a time, one transaction per change.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
   </div>
@@ -459,7 +451,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <p class="lead">In past records, <span class="num">64</span> transactions match the template exactly, made the way yours is: Safe <span class="num">64</span> (64 Safes), EOA <span class="num">0</span>. All of them succeeded: they were found through the event logs of Safe RemovedOwner, and a failed transaction leaves no such log. The latest 3 exact matches: <a href="https://etherscan.io/tx/0xa0f4bec5b169a5d00373a1a16caf8016f1a2b18434b225ea2237d4b4659fc027">0xa0f4bec5…</a>, <a href="https://etherscan.io/tx/0xc1daaa3cb5e1cfdd4530ea80b79f02f71d9f39ebff78e617791fbd2bd8044a56">0xc1daaa3c…</a>, <a href="https://etherscan.io/tx/0xc5a1e82393af6179654d6dbb918700cbecf8518f401d6599dd998df27e8c4c13">0xc5a1e823…</a>.</p>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span><span class="num">19</span> more differ from yours: <span class="num">0</span> have the same shape but with an address outside the registry, <span class="num">19</span> have another shape</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>Every misfit batches several owner changes, some with enableModule, which kiss-sign refuses. A removal of one owner through MultiSend 1.5.0 fits.</span><span class="byai">AI research</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>Every misfit batches <code>removeOwner</code> with more calls in one MultiSend: mostly <code>swapOwner</code>, or more <code>removeOwner</code> calls; a few add <code>enableModule</code>, another contract&#39;s ownership transfer or a USDC transfer. A card holds one change, so verify refuses such a batch; make each change its own transaction. A single removal inside MultiSend 1.5.0 fits.</span><span class="byai">AI research</span></span></p>
   <p class="lead">Only transactions that used this operation&#39;s calls count. An exact match has the template&#39;s calls and argument positions, meets every rule the transaction itself can show (such as where the sender goes, or a fixed value), and uses a contract the template allows wherever the template binds a registry contract. Same shape but a market, token, vault or address outside the registry means the calls, argument positions and those rules are the same, but an address or market is not in the registry; the kind is named when the record shows it, otherwise only address. The rest are grouped by reason, each with up to 3 examples.</p>
   <h3>Search of Safe RemovedOwner: 15923 found, 238 studied, 206 of 15891 with a proven Safe party</h3>
   <p class="lead">Recorded in <code>testdata/research/safe-remove-owner.json</code>. Every transaction of the last year was searched, from block 23843856 (2025-11-21) to block 26471855 (2026-11-22), with no gap. Only Etherscan searches an event, and found <span class="num">15923</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
