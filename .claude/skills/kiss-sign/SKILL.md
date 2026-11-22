@@ -88,7 +88,7 @@ One report covers one concrete operation: for a template reported per instance, 
 2. **Research the addresses.** For each contract the operation touches, find and check the address yourself in every place you can, write what you saw as `entries.<name>.sources` in `notes.json`, record in the registry each place the program can read, and only then run the program's checks ([addresses.md](addresses.md)).
 3. **Establish the ABI.** Take function signatures only from a proven ABI ([how](build-template.md#establish-the-abi)).
 4. **Draft the template.** Start from the nearest existing template and bind every argument ([how](build-template.md#draft-the-template)).
-5. **Study past transactions.** Run `pnpm past-txs` with the program's own search, the whole last year first and otherwise 12 windows, and read every misfit and every balance difference ([how](build-template.md#study-past-transactions)).
+5. **Study past transactions.** Run `pnpm past-txs` with the program's own search, every transaction from the newest block back through the last year or as far as its page cap reaches, and read every misfit and every balance difference ([how](build-template.md#study-past-transactions)).
 6. **Check the protocol's health.** Hacks, audits, upgrades, admin changes, paused contracts, each with a URL ([how](build-template.md#check-the-protocols-health)).
 7. **Generate the report.** Write `docs.json`, then `pnpm report ... --record` ([how](build-template.md#generate-the-report)).
 8. **Write the notes and reviews.** Complete `notes.json` around your step 2 observations, write a review of every result the signer must look at against the result as printed, then `pnpm report ... --render` ([notes-and-reviews.md](notes-and-reviews.md)).
