@@ -397,7 +397,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
   <div class="scrollhint">Scroll the diagram sideways; compound-v3-cusdcv3 is at the far right</div>
   <ul class="legend">
-    <li data-state="ok">Confirmed two ways: the program saw the line in the call traces of past transactions (<a href="https://github.com/compound-finance/comet/blob/f766f51583c23acc33b2a7824654ef2029a96804/contracts/CometWithExtendedAssetList.sol#L754-L778">①</a> 114 of 114), and the AI read the contract&#39;s source; the words beside each line are the AI&#39;s.</li>
+    <li data-state="ok">Confirmed two ways: the program saw the line in the call traces of past transactions (<a href="https://github.com/compound-finance/comet/blob/f766f51583c23acc33b2a7824654ef2029a96804/contracts/CometWithExtendedAssetList.sol#L754-L778">①</a> 85 of 85), and the AI read the contract&#39;s source; the words beside each line are the AI&#39;s.</li>
   </ul>
   <p class="lead">A call trace shows only the path past transactions took; a contract may take another path on other state, and what protects you at signing is the effects check.</p>
   <div class="key">
@@ -445,13 +445,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>compound-v3</h2>
   <p class="intro"><span class="aiw" data-ai><span>Compound III (Comet): one lending market per base token. Suppliers of the base token earn interest from borrowers, who post other tokens as collateral.</span><span class="byai">AI research</span></span></p>
   <dl class="props two">
-    <div><dt>TVL</dt><dd><span><span class="num">$1.03 B</span></span><span class="sub2">on Ethereum <span class="num">$955.67 M</span></span></dd></div>
+    <div><dt>TVL</dt><dd><span><span class="num">$1.05 B</span></span><span class="sub2">on Ethereum <span class="num">$971.32 M</span></span></dd></div>
     <div><dt>Listed</dt><dd><span><span class="num">2022-09-14</span></span><span class="sub2">the date DefiLlama first listed it</span></dd></div>
     <div><dt>proxy</dt><dd><span>a proxy; its implementation can change</span><span class="sub2"><a href="#a-compound-v3-cusdcv3">compound-v3-cusdcv3</a>, read from the code pin</span></dd></div>
     <div><dt>Audits</dt><dd><span class="aiw" data-ai><span>OpenZeppelin audited Comet from May 13 to June 14, 2022, and ChainSecurity also audited Comet. Certora audited the 2026 service patch, which governance deployed on Linea and Scroll; the AI found no audit report that names the exact CometWithExtendedAssetList build this market runs now. <a class="aisrc" href="https://www.openzeppelin.com/news/compound-iii-audit">source 1</a> <a class="aisrc" href="https://reports.chainsecurity.com/Compound/ChainSecurity_Compound_Comet_Audit.pdf">source 2</a> <a class="aisrc" href="https://www.comp.xyz/t/comet-v3-service-patch-v1-2-1/7865">source 3</a></span><span class="byai">AI research</span></span></dd></div>
     <div><dt>Incidents</dt><dd><span>0</span><span class="sub2">DefiLlama hacks listed under this protocol or its parent</span></dd></div>
   </dl>
-  <p class="srcline">On 2026-11-21 the program read <a href="https://defillama.com/protocol/compound-v3">DefiLlama</a>, <a href="https://defillama.com/hacks">DefiLlama hacks</a> and the chain. What is tagged AI research, the AI looked up.</p>
+  <p class="srcline">On 2026-11-22 the program read <a href="https://defillama.com/protocol/compound-v3">DefiLlama</a>, <a href="https://defillama.com/hacks">DefiLlama hacks</a> and the chain. What is tagged AI research, the AI looked up.</p>
 </section>
 
 <section id="vault-compound-v3-cusdcv3">
@@ -459,47 +459,47 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <p class="lead"><a href="#a-compound-v3-cusdcv3">compound-v3-cusdcv3</a>: the recorded output of <code>pnpm instance-evidence</code>. Every number was asked of two providers; only the list of addresses that ever received shares comes from Alchemy alone. No conversion to US dollars here.</p>
   <dl class="props">
     <div><dt>Factory</dt><dd>no registered factory; no factory vouches for its code</dd><dd class="src"></dd></div>
-    <div><dt>totalSupply now</dt><dd><span class="num">343,732,828.79 usdc</span></dd><dd class="src">2026-11-21, block 26465011</dd></div>
+    <div><dt>totalSupply now</dt><dd><span class="num">343,926,228.21 usdc</span></dd><dd class="src">2026-11-22, block 26471041</dd></div>
     <div><dt>Holders</dt><dd>could not be read</dd><dd class="src"></dd></div>
   </dl>
   <h3>Monthly totalAssets</h3>
   <div class="diagram chart">
   <svg viewBox="0 0 660 198" role="img" aria-labelledby="vt vd">
     <title id="vt">Monthly totalAssets</title>
-    <desc id="vd">13 months, 2025-11-25 to 2026-11-21, highest 427,713,748.08 usdc</desc>
-    <text class="tick" x="16" y="18">highest 427,713,748.08 usdc</text>
+    <desc id="vd">13 months, 2025-11-25 to 2026-11-22, highest 425,921,579.23 usdc</desc>
+    <text class="tick" x="16" y="18">highest 425,921,579.23 usdc</text>
     <line class="axis" x1="16" y1="150" x2="644" y2="150"/>
-    <rect class="bar" x="25.7" y="37" width="29.0" height="113"><title>2025-11-25: 415,548,198.24 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">Nov</text><text class="tick" x="40.2" y="188" text-anchor="middle">2025</text>
-    <rect class="bar" x="74.0" y="34" width="29.0" height="116"><title>2025-12-25: 427,713,748.08 usdc</title></rect><text class="tick thin" x="88.5" y="168" text-anchor="middle">Dec</text>
-    <rect class="bar" x="122.3" y="38" width="29.0" height="112"><title>2026-01-24: 414,695,285.25 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">Jan</text><text class="tick" x="136.8" y="188" text-anchor="middle">2026</text>
-    <rect class="bar" x="170.6" y="46" width="29.0" height="104"><title>2026-02-23: 382,701,659.15 usdc</title></rect><text class="tick thin" x="185.1" y="168" text-anchor="middle">Feb</text>
-    <rect class="bar" x="218.9" y="48" width="29.0" height="102"><title>2026-03-25: 374,593,414.15 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">Mar</text>
-    <rect class="bar" x="267.2" y="44" width="29.0" height="106"><title>2026-04-24: 391,170,244.74 usdc</title></rect><text class="tick thin" x="281.7" y="168" text-anchor="middle">Apr</text>
-    <rect class="bar" x="315.5" y="60" width="29.0" height="90"><title>2026-05-25: 332,819,914.51 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">May</text>
-    <rect class="bar" x="363.8" y="61" width="29.0" height="89"><title>2026-06-24: 326,953,722.37 usdc</title></rect><text class="tick thin" x="378.3" y="168" text-anchor="middle">Jun</text>
-    <rect class="bar" x="412.1" y="56" width="29.0" height="94"><title>2026-07-24: 345,983,119.89 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">Jul</text>
-    <rect class="bar" x="460.4" y="54" width="29.0" height="96"><title>2026-08-23: 354,904,174.6 usdc</title></rect><text class="tick thin" x="474.9" y="168" text-anchor="middle">Aug</text>
-    <rect class="bar" x="508.7" y="47" width="29.0" height="103"><title>2026-09-22: 378,418,307.35 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">Sep</text>
-    <rect class="bar" x="557.0" y="45" width="29.0" height="105"><title>2026-10-22: 388,540,562.76 usdc</title></rect><text class="tick thin" x="571.5" y="168" text-anchor="middle">Oct</text>
-    <rect class="bar last" x="605.4" y="57" width="29.0" height="93"><title>2026-11-21: 343,732,828.79 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">Nov</text>
+    <rect class="bar" x="25.7" y="37" width="29.0" height="113"><title>2025-11-25: 414,350,519.93 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">Nov</text><text class="tick" x="40.2" y="188" text-anchor="middle">2025</text>
+    <rect class="bar" x="74.0" y="34" width="29.0" height="116"><title>2025-12-26: 425,921,579.23 usdc</title></rect><text class="tick thin" x="88.5" y="168" text-anchor="middle">Dec</text>
+    <rect class="bar" x="122.3" y="38" width="29.0" height="112"><title>2026-01-25: 412,829,302.98 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">Jan</text><text class="tick" x="136.8" y="188" text-anchor="middle">2026</text>
+    <rect class="bar" x="170.6" y="46" width="29.0" height="104"><title>2026-02-24: 382,604,848.23 usdc</title></rect><text class="tick thin" x="185.1" y="168" text-anchor="middle">Feb</text>
+    <rect class="bar" x="218.9" y="48" width="29.0" height="102"><title>2026-03-26: 375,226,071.72 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">Mar</text>
+    <rect class="bar" x="267.2" y="47" width="29.0" height="103"><title>2026-04-25: 379,735,178.67 usdc</title></rect><text class="tick thin" x="281.7" y="168" text-anchor="middle">Apr</text>
+    <rect class="bar" x="315.5" y="59" width="29.0" height="91"><title>2026-05-25: 333,006,661.73 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">May</text>
+    <rect class="bar" x="363.8" y="61" width="29.0" height="89"><title>2026-06-25: 326,800,830.53 usdc</title></rect><text class="tick thin" x="378.3" y="168" text-anchor="middle">Jun</text>
+    <rect class="bar" x="412.1" y="56" width="29.0" height="94"><title>2026-07-25: 345,766,674.03 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">Jul</text>
+    <rect class="bar" x="460.4" y="53" width="29.0" height="97"><title>2026-08-24: 354,921,691.02 usdc</title></rect><text class="tick thin" x="474.9" y="168" text-anchor="middle">Aug</text>
+    <rect class="bar" x="508.7" y="48" width="29.0" height="102"><title>2026-09-23: 376,197,046.41 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">Sep</text>
+    <rect class="bar" x="557.0" y="44" width="29.0" height="106"><title>2026-10-23: 387,874,726.78 usdc</title></rect><text class="tick thin" x="571.5" y="168" text-anchor="middle">Oct</text>
+    <rect class="bar last" x="605.4" y="56" width="29.0" height="94"><title>2026-11-22: 343,926,228.21 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">Nov</text>
   </svg>
   </div>
   <details class="fold">
     <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Figures for 13 months</summary>
     <dl class="props">
-      <div><dt class="num">2025-11-25</dt><dd class="num">415,548,198.24 usdc</dd></div>
-      <div><dt class="num">2025-12-25</dt><dd class="num">427,713,748.08 usdc</dd></div>
-      <div><dt class="num">2026-01-24</dt><dd class="num">414,695,285.25 usdc</dd></div>
-      <div><dt class="num">2026-02-23</dt><dd class="num">382,701,659.15 usdc</dd></div>
-      <div><dt class="num">2026-03-25</dt><dd class="num">374,593,414.15 usdc</dd></div>
-      <div><dt class="num">2026-04-24</dt><dd class="num">391,170,244.74 usdc</dd></div>
-      <div><dt class="num">2026-05-25</dt><dd class="num">332,819,914.51 usdc</dd></div>
-      <div><dt class="num">2026-06-24</dt><dd class="num">326,953,722.37 usdc</dd></div>
-      <div><dt class="num">2026-07-24</dt><dd class="num">345,983,119.89 usdc</dd></div>
-      <div><dt class="num">2026-08-23</dt><dd class="num">354,904,174.6 usdc</dd></div>
-      <div><dt class="num">2026-09-22</dt><dd class="num">378,418,307.35 usdc</dd></div>
-      <div><dt class="num">2026-10-22</dt><dd class="num">388,540,562.76 usdc</dd></div>
-      <div><dt class="num">2026-11-21</dt><dd class="num">343,732,828.79 usdc</dd></div>
+      <div><dt class="num">2025-11-25</dt><dd class="num">414,350,519.93 usdc</dd></div>
+      <div><dt class="num">2025-12-26</dt><dd class="num">425,921,579.23 usdc</dd></div>
+      <div><dt class="num">2026-01-25</dt><dd class="num">412,829,302.98 usdc</dd></div>
+      <div><dt class="num">2026-02-24</dt><dd class="num">382,604,848.23 usdc</dd></div>
+      <div><dt class="num">2026-03-26</dt><dd class="num">375,226,071.72 usdc</dd></div>
+      <div><dt class="num">2026-04-25</dt><dd class="num">379,735,178.67 usdc</dd></div>
+      <div><dt class="num">2026-05-25</dt><dd class="num">333,006,661.73 usdc</dd></div>
+      <div><dt class="num">2026-06-25</dt><dd class="num">326,800,830.53 usdc</dd></div>
+      <div><dt class="num">2026-07-25</dt><dd class="num">345,766,674.03 usdc</dd></div>
+      <div><dt class="num">2026-08-24</dt><dd class="num">354,921,691.02 usdc</dd></div>
+      <div><dt class="num">2026-09-23</dt><dd class="num">376,197,046.41 usdc</dd></div>
+      <div><dt class="num">2026-10-23</dt><dd class="num">387,874,726.78 usdc</dd></div>
+      <div><dt class="num">2026-11-22</dt><dd class="num">343,926,228.21 usdc</dd></div>
     </dl>
   </details>
 </section>
@@ -561,30 +561,36 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>Past transactions</h2>
-  <p class="lead">In past records, <span class="num">114</span> transactions match the template exactly, made the way yours is: Safe <span class="num">0</span>, EOA <span class="num">114</span> (91 addresses, each sending one call of the template). All of them succeeded: they were found through the event logs of compound-v3-cusdcv3 mint (deposit), and a failed transaction leaves no such log. The latest 3 exact matches: <a href="https://etherscan.io/tx/0xf9db23b211ba0e62ab590b09f4b2bcee53f9a21ac93c8465f65a7be110d0360e">0xf9db23b2…</a>, <a href="https://etherscan.io/tx/0x5d952c4e6df126fa99f9c1b33d6a74f75d69dd0c53e24398aab5a8acc4cc5d51">0x5d952c4e…</a>, <a href="https://etherscan.io/tx/0x3036dc23dc129c8f2fd8d1f06d7f7234a357f2b1507396c3f1a4b322e9282920">0x3036dc23…</a>.</p>
+  <p class="lead">In past records, <span class="num">85</span> transactions match the template exactly, made the way yours is: Safe <span class="num">2</span> (2 Safes), EOA <span class="num">83</span> (82 addresses, each sending one call of the template). All of them succeeded: they were found through the event logs of compound-v3-cusdcv3 mint (deposit), and a failed transaction leaves no such log. The latest 3 exact matches: <a href="https://etherscan.io/tx/0x0ed042ba6bf0237fe6ff3b6aeb692725f98fee91066a51eeae0ed96e24c8f629">0x0ed042ba…</a>, <a href="https://etherscan.io/tx/0x68e8d982a71005c1cb65188752bee3e9b2b14a573687d8e02fc6d176d83da97a">0x68e8d982…</a>, <a href="https://etherscan.io/tx/0xcaffc59c958f94826a064ef9e07265b6c20a14c10f8ac76bbf2b1b894c217740">0xcaffc59c…</a>.</p>
   <p class="lead">Each transaction that fits the template was run again alone on its parent block, with the sender&#39;s and the receiver&#39;s balances read just before and after it, and compared with the amount it states. Shown only for an effect that declares a tolerance, or whose balances did not all move by exactly the stated amount.</p>
   <div class="pblock">
     <div class="ph"><span class="pt"><code>gets card.amount of card.market</code></span><span>The template&#39;s tolerance: up to 2 base units lower, 0 higher</span></div>
-    <div class="pg"><span class="pc num">113</span><div><div>compound-v3-cusdcv3 (0 from Safes, 113 from EOAs)</div>
-      <div class="pex">Sender: <span class="num">5501993690 base units lower</span> in 1, <span class="num">2 base units lower</span> in 21, <span class="num">1 base unit lower</span> in 91</div></div></div>
-    <div class="warnline"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg><span>FINDING: A sender&#39;s balance ended up to 5501993690 base units lower than stated, beyond the template&#39;s tolerance; such a transaction to sign would be MISMATCH.</span></div>
-    <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>1 more could not be measured (the run alone failed, its logs differed from the executed one, or a read got no answer).</span></div>
+    <div class="pg"><span class="pc num">85</span><div><div>compound-v3-cusdcv3 (2 from Safes, 83 from EOAs)</div>
+      <div class="pex">Sender: <span class="num">2 base units lower</span> in 15, <span class="num">1 base unit lower</span> in 70</div></div></div>
   </div>
   <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span><span class="num">3</span> more differ from yours: <span class="num">0</span> have the same shape but with an address outside the registry, <span class="num">3</span> have another shape</span></summary>
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span><span class="num">77</span> more differ from yours: <span class="num">0</span> have the same shape but with an address outside the registry, <span class="num">77</span> have another shape</span></summary>
   <p class="intro"><span class="aiw" data-ai><span>The Safes found supplied with <code>supply</code> alone after an earlier unlimited approval; none of them batched the exact approval. One EOA&#39;s supply repaid a borrow first, so its balance rose 5,501.99 USDC less, which verify gives MISMATCH.</span><span class="byai">AI research</span></span></p>
   <p class="lead">Only transactions that used this operation&#39;s calls count. An exact match has the template&#39;s calls and argument positions, meets every rule the transaction itself can show (such as where the sender goes, or a fixed value), and uses a contract the template allows wherever the template binds a registry contract. Same shape but a market, token, vault or address outside the registry means the calls, argument positions and those rules are the same, but an address or market is not in the registry; the kind is named when the record shows it, otherwise only address. The rest are grouped by reason, each with up to 3 examples.</p>
-  <h3>Search of compound-v3-cusdcv3 mint (deposit): 442 found, 355 studied</h3>
-  <p class="lead">Recorded in <code>testdata/research/compound-supply.json</code>. Alchemy and Etherscan found exactly the same (<span class="num">442 = 442</span>).</p>
+  <h3>Search of compound-v3-cusdcv3 mint (deposit): 9261 found, 480 studied, all 218 with a proven Safe party</h3>
+  <p class="lead">Recorded in <code>testdata/research/compound-supply.json</code>. Every transaction of the last year was searched, from block 23842922 (2025-11-20) to block 26470921 (2026-11-22), with no gap. Alchemy and Etherscan found exactly the same (<span class="num">9261 = 9261</span>).</p>
   <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">3</span> transactions used this operation&#39;s calls (3 Safes); <span class="num">0</span> match the template exactly.</span></div>
-    <div class="pg"><span class="pc num">3</span><div><div class="pcalls"><code>compound-v3-cusdcv3.supply</code></div><div>The calls differ from the template, which is <code>approve → supply</code><span class="f3">, from 3 addresses</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x47c1a4a23fd9b596788b19cd9fd4e9fa27618a036d22cb79b3b1dec78467b188">0x47c1a4a2…</a>, <a href="https://etherscan.io/tx/0x265880a8c16c13287d6a9f0b30f9d4daf90e4dec8101ab393d90a18f98032d4c">0x265880a8…</a>, <a href="https://etherscan.io/tx/0x3dce1bd786bccd1af6b70c9852477a994b90fae2f4e708c627ebb679dd6e849b">0x3dce1bd7…</a></div></div></div>
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">79</span> transactions used this operation&#39;s calls (39 Safes); <span class="num">2</span> match the template exactly.</span></div>
+    <div class="pg"><span class="pc num">60</span><div><div class="pcalls"><code>compound-v3-cusdcv3.supply</code></div><div>The calls differ from the template, which is <code>approve → supply</code><span class="f3">, from 26 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x5ed2186f607698726d09382fbc0c0dcef0ced036669ee34dc4b1ec5019abdcf6">0x5ed2186f…</a>, <a href="https://etherscan.io/tx/0xaaba193a087a477a90f16405ec256a727201820d16a79c09e716a79bfdc1106b">0xaaba193a…</a>, <a href="https://etherscan.io/tx/0x0158e4f5fc9dd517c289cd7c7c19f56372e0fa0beec6e24855b4d32a42b28fcd">0x0158e4f5…</a></div></div></div>
+    <div class="pg"><span class="pc num">12</span><div><div>A delegatecall to a contract that is not the official MultiSend<span class="f3">, from 8 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x5f058d8ad4d0e2fcd6e6cd7416f5c12a92ed76375a7f405352b39ed09560526b">0x5f058d8a…</a>, <a href="https://etherscan.io/tx/0xb14fe5931e421197e7472195fdb678d613369294beb449715e800b6a8cb1fd20">0xb14fe593…</a>, <a href="https://etherscan.io/tx/0xbbf06f458c86ea834347325e97ba10db9c5f4ed553689dd3ed6bfb3d3ef2be34">0xbbf06f45…</a></div></div></div>
+    <div class="pg"><span class="pc num">3</span><div><div class="pcalls"><code>0x8E5ce3c78D099667499aceD49B4D5E3D21c81510.0x6a761202 → usdc.approve → compound-v3-cusdcv3.supply</code></div><div>The calls differ from the template, which is <code>approve → supply</code><span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x7ab2382f83b2f6d0df204d0ddd0a131e74a362d0274dcc5593184168e45193aa">0x7ab2382f…</a>, <a href="https://etherscan.io/tx/0x421d37f137a65b098a08ccba382618b32158d840366c3632e04750ca11877197">0x421d37f1…</a>, <a href="https://etherscan.io/tx/0xa856766fbe8dbbc40ca1b97eeabf3f9fff3683f40df0b7c7c4ca5d611ed6e679">0xa856766f…</a></div></div></div>
+    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>usdc.approve → compound-v3-cusdcv3.supply → compound-v3-cusdcv3.transfer → compound-v3-cusdcv3.transfer → compound-v3-cusdcv3.transfer → compound-v3-cusdcv3.transfer → compound-v3-cusdcv3.transfer → compound-v3-cusdcv3.transfer → compound-v3-cusdcv3.transfer → 0x58E081F6E487A0D079AA13650D4A054CDa466760.0x8129fc1c → 0xdD6Af3d2e90b28D65c9B7ceD14E43dd74D42b163.0x8129fc1c → 0xfeC92867A779349D3656dAb755c868Ea5b60c950.0x8129fc1c → 0xeE04A53B49AC597b654D850348b408b0a28dF28b.0x8129fc1c → 0x2b6e9060B0530cea158208d5da595A58B0058119.0x8129fc1c → 0xC09DE718e3d8Aa834539711A85E03933E69d613F.0x8129fc1c → 0x817A43eAb1FBa57988A4F4B9d246A902855688C7.0x8129fc1c</code></div><div>The calls differ from the template, which is <code>approve → supply</code><span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x79cd605220e51649c8055fccf8afcd22044bfc5f42e2010f662ff5a3c61f6555">0x79cd6052…</a></div></div></div>
+    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x6B175474E89094C44Da98b954EedeAC495271d0F.approve → 0xf6e72Db5454dd049d0788e411b06CfAF16853042.0x8d7ef9bb → usdc.approve → compound-v3-cusdcv3.supply</code></div><div>The calls differ from the template, which is <code>approve → supply</code><span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x4a2bbdda41e98aa51a14264fb499efedd6eaadfa73ce9b7dad64d2dad82e4d34">0x4a2bbdda…</a></div></div></div>
   </div>
   <div class="pblock">
-    <div class="ph"><span class="pt">EOA calls supply directly</span><span><span class="num">114</span> transactions used this operation&#39;s calls (91 addresses); <span class="num">114</span> match the template exactly.</span></div>
+    <div class="ph"><span class="pt">EOA calls supply directly</span><span><span class="num">83</span> transactions used this operation&#39;s calls (82 addresses); <span class="num">83</span> match the template exactly.</span></div>
   </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>238 more are other operations, not counted: <code>0xB9E62Cb9b4cE8ec13c886FaE67369Da417EE2714.0x6e553f65</code> 124, <code>0x7251FEbEABB01eC9dE53ECe7a96f1C951F886Dd2.0xec5b999d</code> 23, <code>0xc2d0D6C49979703C524Be2D21776C4874C92180e.0x3a3b18e0</code> 20, <code>0x27F2f159Fe990Ba83D57f39Fd69661764BEbf37a.0x2e1a7d4d</code> 7, and others.</span></div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>318 more are other operations, not counted: <code>0xB9E62Cb9b4cE8ec13c886FaE67369Da417EE2714.0x6e553f65</code> 73, <code>0xc2d0D6C49979703C524Be2D21776C4874C92180e.0x3a3b18e0</code> 27, <code>compound-v3-cusdcv3.transfer</code> 26, <code>0x00000000005aD9ce1f5035FD62CA96CEf16AdAAF.0x8f5c3522</code> 21, and others.</span></div>
   </details>
 </section>
 
@@ -624,7 +630,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<footer class="foot">Written by <code>pnpm report compound/supply --instance-of compound-v3-cusdcv3 --record</code> from <code>templates/compound/supply/template.json</code>, <code>templates/compound/supply/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/compound-supply/compound-v3-cusdcv3.json</code>, <code>testdata/abi</code>, <code>testdata/research/compound-supply.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/compound/supply/notes.json</code>, <code>templates/compound/supply/instances/compound-v3-cusdcv3/notes.json</code>; the data was read on 2026-11-21. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
+<footer class="foot">Written by <code>pnpm report compound/supply --instance-of compound-v3-cusdcv3 --record</code> from <code>templates/compound/supply/template.json</code>, <code>templates/compound/supply/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/compound-supply/compound-v3-cusdcv3.json</code>, <code>testdata/abi</code>, <code>testdata/research/compound-supply.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/compound/supply/notes.json</code>, <code>templates/compound/supply/instances/compound-v3-cusdcv3/notes.json</code>; the data was read on 2026-11-22. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
 
 </div>
 </div>
