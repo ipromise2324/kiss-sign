@@ -11,8 +11,9 @@ import type { Template } from '../template/template.ts';
 import { keccakText } from '../verify/verify.ts';
 import { statedEffects } from './amounts.ts';
 import type { Difference, Measurement } from './amounts.ts';
-import type { Found, Kept, PastTxs, PartyCheck, Selection, WindowRun, YearSearch } from './past-txs.ts';
-import { YEAR_PAGES, anchorOf, replayPastTxs, samplingOf } from './recording.ts';
+import { searchTop, yearBefore } from './past-txs.ts';
+import type { Coverage, Found, Kept, PastTxs, PartyCheck, SafesFirst, SearchRun, Selection, WindowRun, YearSearch } from './past-txs.ts';
+import { MAX_PAGES, MIN_PAGES, YEAR_PAGES, anchorOf, replayPastTxs, samplingOf } from './recording.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { ANCHOR_KINDS, SOURCES, anchorEvent } from './sources.ts';
 import type { SourceName } from './sources.ts';
@@ -38,16 +39,10 @@ export type StudiedWith = {
 export type PastTxsSummary = {
   /** Printed as the command that made it; `--same-windows-as` reads its sampling. */
   readonly query: PastTxsRecording['query'];
-  /** The head block the year and windows were placed by, so `--same-windows-as` needs no replay; absent for a block range. */
+  /** The head block the search was placed by, so `--same-windows-as` needs no replay; absent for a block range. */
   readonly head: bigint | undefined;
   readonly studiedWith: StudiedWith;
-  readonly search: {
-    readonly year: YearSearch | undefined;
-    readonly windows: readonly WindowRun[];
-    readonly perWindow: number;
-    readonly found: Found;
-    readonly otherEmitter: readonly Hex[];
-  };
+  readonly search: { readonly run: SearchRun; readonly found: Found; readonly otherEmitter: readonly Hex[] };
   readonly studies: readonly Kept[];
   readonly measurements: ReadonlyMap<Hex, Measurement>;
   readonly traces: readonly TracedTx[];
@@ -169,7 +164,7 @@ type Results = Omit<PastTxsSummary, 'query' | 'head' | 'studiedWith'>;
 /** The summary of a run, with what it was studied with in this checkout. */
 export function summaryOf(repoRoot: string, registry: Registry, query: PastTxsRecording['query'], run: PastTxs): PastTxsSummary {
   const results: Results = {
-    search: { year: run.year, windows: run.windows, perWindow: run.perWindow, found: run.found, otherEmitter: run.otherEmitter },
+    search: { run: run.search, found: run.found, otherEmitter: run.otherEmitter },
     studies: run.studies,
     measurements: run.measurements,
     traces: run.traces,
@@ -196,16 +191,26 @@ export function staleParts(repoRoot: string, registry: Registry, summary: PastTx
 const block = (n: bigint): string => n.toString();
 const rangeJson = (range: { readonly fromBlock: bigint; readonly toBlock: bigint }) => ({ fromBlock: block(range.fromBlock), toBlock: block(range.toBlock) });
 
+const safesFirstJson = ({ check, selection }: SafesFirst) => ({ check: check.kind === 'checked' ? { ...check, block: block(check.block) } : check, selection });
+
 function yearJson(year: YearSearch): unknown {
   if (year.kind === 'overflow') return { kind: 'overflow', range: rangeJson(year.range), pages: year.pages, sources: year.sources };
   const { safesFirst } = year;
+  return { kind: 'covered', range: rangeJson(year.range), pages: Object.fromEntries(year.pages), ...(safesFirst === undefined ? {} : { safesFirst: safesFirstJson(safesFirst) }) };
+}
+
+function searchJson(run: SearchRun): object {
+  if (run.kind === 'windows') {
+    return {
+      ...(run.year === undefined ? {} : { year: yearJson(run.year) }),
+      windows: run.windows.map((w) => ({ asked: rangeJson(w.asked), range: rangeJson(w.range), found: w.found, studied: w.studied })),
+      perWindow: run.perWindow,
+    };
+  }
+  const { kind, range, pages, time } = run.coverage;
   return {
-    kind: 'covered',
-    range: rangeJson(year.range),
-    pages: Object.fromEntries(year.pages),
-    ...(safesFirst === undefined
-      ? {}
-      : { safesFirst: { check: safesFirst.check.kind === 'checked' ? { ...safesFirst.check, block: block(safesFirst.check.block) } : safesFirst.check, selection: safesFirst.selection } }),
+    coverage: { kind, range: rangeJson(range), pages, ...(time === undefined ? {} : { time: { from: block(time.from), to: block(time.to) } }) },
+    safesFirst: safesFirstJson(run.safesFirst),
   };
 }
 
@@ -233,9 +238,7 @@ function studyJson(study: Kept): unknown {
 function resultsJson(results: Results): unknown {
   return {
     search: {
-      ...(results.search.year === undefined ? {} : { year: yearJson(results.search.year) }),
-      windows: results.search.windows.map((w) => ({ asked: rangeJson(w.asked), range: rangeJson(w.range), found: w.found, studied: w.studied })),
-      perWindow: results.search.perWindow,
+      ...searchJson(results.search.run),
       found: results.search.found,
       otherEmitter: results.search.otherEmitter,
     },
@@ -477,6 +480,24 @@ function parseRange(p: Parser, at: string, raw: unknown) {
   return range.fromBlock <= range.toBlock ? range : p.fail(at, 'ends before it starts');
 }
 
+function parseSafesFirst(p: Parser, at: string, raw: unknown): SafesFirst {
+  const s = p.object(at, raw, ['check', 'selection']);
+  const checked = p.oneOf(['checked', 'not-checked'] as const)(`${at}.check.kind`, (s.check as Json | undefined)?.kind);
+  let check: PartyCheck;
+  if (checked === 'not-checked') check = { kind: checked, why: p.text(`${at}.check.why`, p.object(`${at}.check`, s.check, ['kind', 'why']).why) };
+  else {
+    const c = p.object(`${at}.check`, s.check, ['kind', 'noun', 'block', 'parties', 'safes', 'unreadable']);
+    check = { kind: checked, noun: p.text(`${at}.check.noun`, c.noun), block: p.decimal(`${at}.check.block`, c.block), parties: p.count(`${at}.check.parties`, c.parties), safes: p.count(`${at}.check.safes`, c.safes), unreadable: p.count(`${at}.check.unreadable`, c.unreadable) };
+  }
+  const n = p.object(`${at}.selection`, s.selection, ['safes', 'safesChosen', 'rest', 'restChosen']);
+  const selection: Selection = { safes: p.count(`${at}.selection.safes`, n.safes), safesChosen: p.count(`${at}.selection.safesChosen`, n.safesChosen), rest: p.count(`${at}.selection.rest`, n.rest), restChosen: p.count(`${at}.selection.restChosen`, n.restChosen) };
+  return { check, selection };
+}
+
+const parsePages = (p: Parser, at: string, raw: unknown): Map<SourceName, number> =>
+  new Map(Object.entries(p.object(at, raw, [], SOURCES)).map(([name, n]) => [name as SourceName, p.count(`${at}.${name}`, n)]));
+
+/** Legacy until every summary is recorded again: the year a recording asked before its windows. */
 function parseYear(p: Parser, at: string, raw: unknown): YearSearch {
   const kind = p.oneOf(['covered', 'overflow'] as const)(`${at}.kind`, (raw as Json | undefined)?.kind);
   const source = p.oneOf(SOURCES);
@@ -485,21 +506,29 @@ function parseYear(p: Parser, at: string, raw: unknown): YearSearch {
     return { kind, range: parseRange(p, `${at}.range`, o.range), pages: p.count(`${at}.pages`, o.pages), sources: p.list(`${at}.sources`, o.sources, source) };
   }
   const o = p.object(at, raw, ['kind', 'range', 'pages'], ['safesFirst']);
-  const pages = new Map(Object.entries(p.object(`${at}.pages`, o.pages, [], SOURCES)).map(([name, n]) => [name as SourceName, p.count(`${at}.pages.${name}`, n)]));
-  const safesFirst = p.optional(`${at}.safesFirst`, o.safesFirst, (a, x) => {
-    const s = p.object(a, x, ['check', 'selection']);
-    const checked = p.oneOf(['checked', 'not-checked'] as const)(`${a}.check.kind`, (s.check as Json | undefined)?.kind);
-    let check: PartyCheck;
-    if (checked === 'not-checked') check = { kind: checked, why: p.text(`${a}.check.why`, p.object(`${a}.check`, s.check, ['kind', 'why']).why) };
-    else {
-      const c = p.object(`${a}.check`, s.check, ['kind', 'noun', 'block', 'parties', 'safes', 'unreadable']);
-      check = { kind: checked, noun: p.text(`${a}.check.noun`, c.noun), block: p.decimal(`${a}.check.block`, c.block), parties: p.count(`${a}.check.parties`, c.parties), safes: p.count(`${a}.check.safes`, c.safes), unreadable: p.count(`${a}.check.unreadable`, c.unreadable) };
-    }
-    const n = p.object(`${a}.selection`, s.selection, ['safes', 'safesChosen', 'rest', 'restChosen']);
-    const selection: Selection = { safes: p.count(`${a}.selection.safes`, n.safes), safesChosen: p.count(`${a}.selection.safesChosen`, n.safesChosen), rest: p.count(`${a}.selection.rest`, n.rest), restChosen: p.count(`${a}.selection.restChosen`, n.restChosen) };
-    return { check, selection };
+  return { kind, range: parseRange(p, `${at}.range`, o.range), pages: parsePages(p, `${at}.pages`, o.pages), safesFirst: p.optional(`${at}.safesFirst`, o.safesFirst, (a, x) => parseSafesFirst(p, a, x)) };
+}
+
+/**
+ * The range a newest-first search read, held to what the search can give: it ends on the block the head places, starts
+ * on the year's first block for `year` and after it for `recent`, and took at most `maxPages` pages, and for `recent`
+ * exactly that many, since only the cap stops a search short of the year.
+ */
+function parseCoverage(p: Parser, at: string, raw: unknown, head: bigint, maxPages: number): Coverage {
+  const o = p.object(at, raw, ['kind', 'range', 'pages'], ['time']);
+  const kind = p.oneOf(['year', 'recent'] as const)(`${at}.kind`, o.kind);
+  const range = parseRange(p, `${at}.range`, o.range);
+  const year = yearBefore(head);
+  if (range.toBlock !== searchTop(head)) p.fail(`${at}.range.toBlock`, `not ${searchTop(head)}, the block the head places`);
+  if (kind === 'year' ? range.fromBlock !== year.fromBlock : range.fromBlock <= year.fromBlock) p.fail(`${at}.range.fromBlock`, kind === 'year' ? `not ${year.fromBlock}, the year's first block` : `not after ${year.fromBlock}, the year's first block`);
+  const pages = p.count(`${at}.pages`, o.pages);
+  if (pages > maxPages || (kind === 'recent' && pages !== maxPages)) p.fail(`${at}.pages`, kind === 'recent' ? `not ${maxPages}, the cap that stops a search short of the year` : `more than ${maxPages}, the cap`);
+  const time = p.optional(`${at}.time`, o.time, (a, x) => {
+    const t = p.object(a, x, ['from', 'to']);
+    const times = { from: p.decimal(`${a}.from`, t.from), to: p.decimal(`${a}.to`, t.to) };
+    return times.from <= times.to ? times : p.fail(a, 'ends before it starts');
   });
-  return { kind, range: parseRange(p, `${at}.range`, o.range), pages, safesFirst };
+  return { kind, range, pages, time };
 }
 
 function canonicalEvent(signature: string): boolean {
@@ -515,7 +544,7 @@ function parseQuery(file: string, raw: unknown): PastTxsRecording['query'] {
   const query = raw as PastTxsRecording['query'];
   const address = (v: unknown) => typeof v === 'string' && /^0x[0-9a-fA-F]{40}$/.test(v);
   const block = (v: unknown) => v === undefined || (typeof v === 'string' && /^\d+$/.test(v));
-  const keys = ['template', 'token', 'anchor', 'from', 'to', 'event', 'fromBlock', 'toBlock', 'head', 'wholeYear', 'yearPages', 'maxTxs'];
+  const keys = ['template', 'token', 'anchor', 'from', 'to', 'event', 'fromBlock', 'toBlock', 'head', 'wholeYear', 'yearPages', 'maxPages', 'maxTxs'];
   const printable =
     typeof raw === 'object' &&
     raw !== null &&
@@ -535,6 +564,7 @@ function parseQuery(file: string, raw: unknown): PastTxsRecording['query'] {
     (query.head === undefined || (query.fromBlock === undefined && query.toBlock === undefined)) &&
     (query.wholeYear === undefined || (query.wholeYear === true && query.head !== undefined)) &&
     (query.yearPages === undefined || (Number.isSafeInteger(query.yearPages) && query.yearPages >= 1 && query.yearPages <= YEAR_PAGES && query.head !== undefined && query.wholeYear === undefined)) &&
+    (query.maxPages === undefined || (Number.isSafeInteger(query.maxPages) && query.maxPages >= MIN_PAGES && query.maxPages <= MAX_PAGES && query.head !== undefined && query.wholeYear === undefined && query.yearPages === undefined)) &&
     Number.isSafeInteger(query.maxTxs);
   if (!printable) throw new SummaryError(`${file}: its name or query holds a value \`pnpm past-txs --record\` never writes`);
   return query;
@@ -552,7 +582,8 @@ export function parseSummary(file: string, text: string): PastTxsSummary {
   const o = p.object('summary', raw, ['query', 'studiedWith', 'search', 'studies', 'measurements', 'traces'], ['head']);
   const query = parseQuery(file, o.query);
   const w = p.object('studiedWith', o.studiedWith, ['template', 'registry', 'study']);
-  const s = p.object('search', o.search, ['windows', 'perWindow', 'found', 'otherEmitter'], ['year']);
+  const newest = query.maxPages !== undefined;
+  const s = newest ? p.object('search', o.search, ['coverage', 'safesFirst', 'found', 'otherEmitter']) : p.object('search', o.search, ['windows', 'perWindow', 'found', 'otherEmitter'], ['year']);
   const f = p.object('search.found', s.found, ['total', 'only']);
   const only = p.object('search.found.only', f.only, SOURCES);
   const found: Found = {
@@ -574,12 +605,21 @@ export function parseSummary(file: string, text: string): PastTxsSummary {
     head,
     studiedWith: { template: p.hash('studiedWith.template', w.template), registry: p.hash('studiedWith.registry', w.registry), study: p.hash('studiedWith.study', w.study) },
     search: {
-      year: p.optional('search.year', s.year, (a, x) => parseYear(p, a, x)),
-      windows: p.list('search.windows', s.windows, (a, x): WindowRun => {
-        const r = p.object(a, x, ['asked', 'range', 'found', 'studied']);
-        return { asked: parseRange(p, `${a}.asked`, r.asked), range: parseRange(p, `${a}.range`, r.range), found: p.count(`${a}.found`, r.found), studied: p.count(`${a}.studied`, r.studied) };
-      }),
-      perWindow: p.count('search.perWindow', s.perWindow),
+      run: newest
+        ? {
+            kind: 'newest-first',
+            coverage: parseCoverage(p, 'search.coverage', s.coverage, head as bigint, query.maxPages as number),
+            safesFirst: parseSafesFirst(p, 'search.safesFirst', s.safesFirst),
+          }
+        : {
+            kind: 'windows',
+            year: p.optional('search.year', s.year, (a, x) => parseYear(p, a, x)),
+            windows: p.list('search.windows', s.windows, (a, x): WindowRun => {
+              const r = p.object(a, x, ['asked', 'range', 'found', 'studied']);
+              return { asked: parseRange(p, `${a}.asked`, r.asked), range: parseRange(p, `${a}.range`, r.range), found: p.count(`${a}.found`, r.found), studied: p.count(`${a}.studied`, r.studied) };
+            }),
+            perWindow: p.count('search.perWindow', s.perWindow),
+          },
       found,
       otherEmitter: p.list('search.otherEmitter', s.otherEmitter, p.hash),
     },
@@ -620,7 +660,9 @@ export function runOf(summary: PastTxsSummary, template: Template): PastTxs {
       sampling: samplingOf(query),
     },
     head: summary.head,
-    ...summary.search,
+    search: summary.search.run,
+    found: summary.search.found,
+    otherEmitter: summary.search.otherEmitter,
     studies: summary.studies,
     shapes: shapesOf(template),
     excluded: { found: new Set(), sampled: new Set() },

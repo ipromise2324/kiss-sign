@@ -74,6 +74,9 @@ export type Hits = Readonly<Record<SourceName, readonly Hit[]>>;
 
 export const PAGE = 1000;
 
+/** The most pages of `PAGE` one range is paged through: Etherscan refuses a page beyond its first 10,000 results. */
+export const RANGE_PAGES = 10;
+
 export class ResearchError extends Error {
   override name = 'ResearchError';
 }
@@ -100,7 +103,13 @@ function hitOf(source: SourceName, hash: unknown, from: unknown, to: unknown, bl
   }
 }
 
-type SourceSearch = { readonly kind: 'complete'; readonly hits: readonly Hit[]; readonly pages: number } | { readonly kind: 'overflow' };
+/** `reached`: the block of the last entry the source listed before it stopped, in ascending block order. */
+type SourceSearch = { readonly kind: 'complete'; readonly hits: readonly Hit[]; readonly pages: number } | { readonly kind: 'overflow'; readonly reached: bigint | undefined };
+
+const blockOf = (entry: unknown, key: 'blockNum' | 'blockNumber'): bigint | undefined => {
+  const raw = isRecord(entry) ? entry[key] : undefined;
+  return typeof raw === 'string' && /^0x[0-9a-fA-F]+$/.test(raw) ? BigInt(raw) : undefined;
+};
 
 async function searchAlchemy(anchor: Anchor, ask: Ask, pages: number): Promise<SourceSearch> {
   if (anchor.token === undefined) throw new ResearchError('alchemy searches the transfers of one token only');
@@ -134,10 +143,17 @@ async function searchAlchemy(anchor: Anchor, ask: Ask, pages: number): Promise<S
     });
     return { kind: 'complete', hits, pages: page };
   }
-  return { kind: 'overflow' };
+  return { kind: 'overflow', reached: blockOf(transfers.at(-1), 'blockNum') };
 }
 
-async function searchEtherscan(anchor: Anchor, ask: Ask, pages: number): Promise<SourceSearch> {
+/**
+ * When Etherscan has finished a range: `empty`, at the first page that lists nothing, since a page in the middle of a
+ * listing can hold fewer than `PAGE`; `short`, legacy until every summary is recorded again, at the first page holding
+ * fewer than `PAGE`, as the recordings made before the newest-first search were.
+ */
+export type EtherscanEnd = 'empty' | 'short';
+
+async function searchEtherscan(anchor: Anchor, ask: Ask, pages: number, end: EtherscanEnd): Promise<SourceSearch> {
   const base: Record<string, string> = {
     chainid: '1',
     module: 'logs',
@@ -171,28 +187,29 @@ async function searchEtherscan(anchor: Anchor, ask: Ask, pages: number): Promise
       throw new ResearchError(`etherscan refused: ${String(answer.message).slice(0, 80)} ${typeof answer.result === 'string' ? answer.result.slice(0, 120) : ''}`.trim());
     }
     logs.push(...(answer.result as unknown[]));
-    if (answer.result.length < PAGE) return complete(page);
+    if (end === 'empty' ? answer.result.length === 0 : answer.result.length < PAGE) return complete(page);
   }
-  return { kind: 'overflow' };
+  return { kind: 'overflow', reached: blockOf(logs.at(-1), 'blockNumber') };
 }
 
 /**
  * Every source that searches the anchor, each paged on its own up to `pages` pages: `covered` when each finished within
- * them, with the pages each asked; otherwise the sources that did not. Either source failing stops the search, since one
- * source is no cross-check, unless the other overflowed: the range is then not read at all.
+ * them, with the pages each asked; otherwise the sources that did not, and the lowest block one of them listed last.
+ * Either source failing stops the search, since one source is no cross-check, unless the other overflowed: the range is
+ * then not read at all.
  */
 export type Search =
   | { readonly kind: 'covered'; readonly hits: Hits; readonly pages: ReadonlyMap<SourceName, number> }
-  | { readonly kind: 'overflow'; readonly sources: readonly SourceName[] };
+  | { readonly kind: 'overflow'; readonly sources: readonly SourceName[]; readonly reached: bigint | undefined };
 
-export async function search(anchor: Anchor, ask: Ask, pages: number): Promise<Search> {
+export async function search(anchor: Anchor, ask: Ask, pages: number, end: EtherscanEnd): Promise<Search> {
   const sources = searchedBy(anchor);
-  const settled = await Promise.allSettled(sources.map((source) => (source === 'alchemy' ? searchAlchemy : searchEtherscan)(anchor, ask, pages)));
-  const over = sources.filter((_, i) => {
-    const one = settled[i];
-    return one?.status === 'fulfilled' && one.value.kind === 'overflow';
-  });
-  if (over.length > 0) return { kind: 'overflow', sources: over };
+  const settled = await Promise.allSettled(sources.map((source) => (source === 'alchemy' ? searchAlchemy(anchor, ask, pages) : searchEtherscan(anchor, ask, pages, end))));
+  const overflowed = settled.flatMap((one, i) => (one.status === 'fulfilled' && one.value.kind === 'overflow' ? [{ source: sources[i] as SourceName, reached: one.value.reached }] : []));
+  if (overflowed.length > 0) {
+    const reached = overflowed.map((o) => o.reached).reduce((low, b) => (low === undefined || b === undefined ? undefined : b < low ? b : low));
+    return { kind: 'overflow', sources: overflowed.map((o) => o.source), reached };
+  }
   const searches = settled.map((one) => {
     if (one.status === 'rejected') throw one.reason;
     return one.value;
@@ -258,10 +275,12 @@ function cutUncovered(exchanges: readonly SourceExchange[]): SourceExchange[] {
     const { pageKey, status, message, result } = answer;
     if (request.source === 'alchemy') {
       if (!Array.isArray(answer.transfers)) return { request, answer };
-      return { request, answer: { transfers: [], ...(!finished && typeof pageKey === 'string' ? { pageKey } : {}) } };
+      const last = finished || !isRecord(answer.transfers.at(-1)) ? [] : [{ blockNum: (answer.transfers.at(-1) as Record<string, unknown>).blockNum }];
+      return { request, answer: { transfers: last, ...(!finished && typeof pageKey === 'string' ? { pageKey } : {}) } };
     }
     if (!Array.isArray(result)) return { request, answer };
-    return { request, answer: { status, message, result: !finished && morePages(answer) ? result.map(() => ({})) : [] } };
+    const kept = (log: unknown, i: number) => (i === result.length - 1 && isRecord(log) ? { blockNumber: log.blockNumber } : {});
+    return { request, answer: { status, message, result: finished ? [] : result.map(kept) } };
   });
 }
 

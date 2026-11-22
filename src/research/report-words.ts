@@ -12,6 +12,14 @@ const plural = (n: number, one: string, many: string): string => (n === 1 ? one 
 /** Of a paged year's transactions with a proven Safe party, how many were found and how many studied. */
 export type SafeParties = { readonly found: number; readonly studied: number };
 
+/**
+ * The block range a newest-first search read completely, with the time of its first and last block when both were
+ * read: the whole last year, or the newest blocks when the cap of `cap` pages stopped it first.
+ */
+export type SearchSpan = { readonly kind: 'year' | 'recent'; readonly from: bigint; readonly to: bigint; readonly time: { readonly from: bigint; readonly to: bigint } | undefined; readonly cap: number };
+
+const dateOf = (seconds: bigint): string => new Date(Number(seconds) * 1000).toISOString().slice(0, 10);
+
 /** How far a tolerance lets a balance end from the card's amount, such as `up to 2 base units lower or 1 base unit higher`. */
 export const toleranceSpan = (less: bigint, more: bigint): string => {
   const units = (n: bigint): string => `${n} base unit${n === 1n ? '' : 's'}`;
@@ -391,6 +399,13 @@ const ZH = {
       : safes.studied === safes.found ? `，含證實為 Safe 的參與方的 ${safes.found} 筆全數研究`
       : `，含證實為 Safe 的參與方的 ${safes.found} 筆中研究 ${safes.studied} 筆`
     }`,
+  searchSpan: ({ kind, from, to, time, cap }: SearchSpan): string => {
+    const at = (block: bigint, seconds: bigint | undefined) => `區塊 ${block}${seconds === undefined ? '' : `（${dateOf(seconds)}）`}`;
+    const blocks = `${at(from, time?.from)}到${at(to, time?.to)}`;
+    if (kind === 'year') return `搜尋了最近一年的每一筆交易，從${blocks}，沒有遺漏。`;
+    const length = `${to - from + 1n} 個區塊${time === undefined ? '' : durationText(time.to - time.from, ['天', '小時', '分鐘'], '，約 ', '')}`;
+    return `從最新的區塊往回，搜尋了${blocks}的每一筆交易，共 ${length}，沒有遺漏；搜尋到 ${cap} 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。`;
+  },
   searchEtherscanOnly: (count: Span): Span[] => ['只有 Etherscan 搜尋事件，找到 ', count, ' 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。'],
   searchSame: (same: boolean, counts: Span): Span[] => [same ? 'Alchemy 和 Etherscan 找到的完全一樣' : 'Alchemy 和 Etherscan 找到的不一樣', '（', counts, '）。'],
   amountsLead: '每筆符合模板形狀的交易，都在它的上一個區塊上單獨重跑一次，讀它前後寄出方和收款方的餘額，跟交易寫的金額比較。只列出有宣告誤差，或餘額沒有剛好照金額變動的效果。',
@@ -997,6 +1012,13 @@ const EN: Words = {
       : safes.studied === safes.found ? `, ${safes.found === 1 ? 'the one' : `all ${safes.found}`} with a proven Safe party`
       : `, ${safes.studied} of ${safes.found} with a proven Safe party`
     }`,
+  searchSpan: ({ kind, from, to, time, cap }) => {
+    const at = (block: bigint, seconds: bigint | undefined) => `block ${block}${seconds === undefined ? '' : ` (${dateOf(seconds)})`}`;
+    const blocks = `from ${at(from, time?.from)} to ${at(to, time?.to)}`;
+    if (kind === 'year') return `Every transaction of the last year was searched, ${blocks}, with no gap. `;
+    const length = `${to - from + 1n} blocks${time === undefined ? '' : durationText(time.to - time.from, ['days', 'hours', 'minutes'], ', about ', '')}`;
+    return `Every transaction ${blocks} was searched, newest first, ${length}, with no gap; the search stops at its cap of ${cap} pages of 1,000, so the year's older transactions were not searched. `;
+  },
   searchEtherscanOnly: (count) => ['Only Etherscan searches an event, and found ', count, "; Alchemy's eth_getLogs reads at most 10 blocks at a time on the free plan."],
   searchSame: (same, counts) => [same ? 'Alchemy and Etherscan found exactly the same' : 'Alchemy and Etherscan found different transactions', ' (', counts, ').'],
   amountsLead:
