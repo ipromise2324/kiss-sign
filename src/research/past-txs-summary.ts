@@ -123,19 +123,20 @@ const stringsIn = (value: unknown): string[] =>
  * keccak256 of the entries of `registry` a summary's study could read, so adding an unrelated entry keeps it: each entry
  * the template names, each a card reference can name (a field's scope, the attribute it reads, a market's parts), each the
  * query's token, --from or --to is, each whose address occurs anywhere in the summary's results, every market when a
- * card field is one, each market all of whose entries are among those, and the attribute table, as `registry/` holds
- * them, in canonical JSON. `registry` is the one the study read, which for a template reported per vault holds that
+ * card field is one, each market all of whose entries are among those, and the rows of the attribute table those
+ * entries or the template name, as `registry/` holds them, in canonical JSON. `registry` is the one the study read, which for a template reported per vault holds that
  * vault alone of those its field accepts.
  */
 export function registryFingerprint(repoRoot: string, registry: Registry, query: PastTxsRecording['query'], results: unknown): Hex {
   const contracts = readJson(repoRoot, REGISTRY_PATH, {}) as Record<string, { readonly address?: unknown }>;
   const markets = readJson(repoRoot, MARKETS_PATH, {}) as Record<string, Record<string, unknown>>;
   const template = loadTemplate(repoRoot, query.template, registry);
+  const templateStrings = stringsIn(JSON.parse(readFileSync(join(repoRoot, TEMPLATES_DIR, query.template, 'template.json'), 'utf8')));
   const anyMarket = [...template.card.values()].some((field) => field.kind === 'market');
   const marketParts = anyMarket ? [...registry.markets.values()].flatMap((market) => MARKET_ENTRY_PARTS.map((part) => market[part].name)) : [];
   const queried = [query.token, query.from, query.to].flatMap((address) => (address === undefined ? [] : (registry.byAddress.get(address.toLowerCase() as Address)?.name ?? [])));
   const named = new Set([
-    ...stringsIn(JSON.parse(readFileSync(join(repoRoot, TEMPLATES_DIR, query.template, 'template.json'), 'utf8'))).filter(isEntryName),
+    ...templateStrings.filter(isEntryName),
     ...cardRefs(template).flatMap((ref) => refNames(ref, template, registry)),
     ...marketParts,
     ...queried,
@@ -143,11 +144,16 @@ export function registryFingerprint(repoRoot: string, registry: Registry, query:
   const text = JSON.stringify(results).toLowerCase();
   const kept = [...registry.entries.values()].filter((entry) => named.has(entry.name) || text.includes(entry.address.slice(2))).map((entry) => entry.name);
   const keptMarkets = [...registry.markets.keys()].filter((name) => anyMarket || MARKET_ENTRY_PARTS.every((part) => kept.includes(String(markets[name]?.[part]))));
+  const table = readJson(repoRoot, ATTRIBUTES_PATH, null) as Record<string, unknown> | null;
+  const read = new Set([
+    ...kept.flatMap((name) => [...Object.keys(registry.entries.get(name)?.attributes ?? {}), ...stringsIn(contracts[name])]),
+    ...templateStrings.flatMap((s) => s.split('.')),
+  ]);
   return keccakText(
     canonicalJson({
       contracts: Object.fromEntries(kept.sort().map((name) => [name, contracts[name]])),
       markets: Object.fromEntries(keptMarkets.sort().map((name) => [name, markets[name]])),
-      attributes: readJson(repoRoot, ATTRIBUTES_PATH, null),
+      attributes: table === null ? null : Object.fromEntries(Object.entries(table).filter(([name]) => read.has(name))),
     }),
   );
 }
