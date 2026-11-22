@@ -704,9 +704,9 @@ export function strip(ledger: Ledger): StripItem[] {
 
 const resultsOf = (ledger: Ledger, entry: RegistryEntry): Result[] => ledger.results.filter((r) => r.about.kind === 'entry' && r.about.entry.name === entry.name);
 
-/** 地址: entries with a result for the signer open, in ledger order; the rest fold into one row. */
-export function addressRows(ledger: Ledger): { readonly open: readonly RegistryEntry[]; readonly folded: readonly RegistryEntry[] } {
-  const asks = (entry: RegistryEntry) => resultsOf(ledger, entry).some(needsSigner);
+/** 地址: entries with a result for the signer or that `aiConcern` names open, in ledger order; the rest fold into one row. */
+export function addressRows(ledger: Ledger, aiConcern: (entry: RegistryEntry) => boolean): { readonly open: readonly RegistryEntry[]; readonly folded: readonly RegistryEntry[] } {
+  const asks = (entry: RegistryEntry) => aiConcern(entry) || resultsOf(ledger, entry).some(needsSigner);
   return { open: ledger.entries.filter(asks), folded: ledger.entries.filter((entry) => !asks(entry)) };
 }
 
