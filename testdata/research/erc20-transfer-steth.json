@@ -3,165 +3,178 @@
   "template": "erc20/transfer",
   "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
   "anchor": "any",
-  "head": "26434516",
+  "head": "26469759",
+  "yearPages": 10,
   "maxTxs": 240
  },
- "head": "26434516",
+ "head": "26469759",
  "studiedWith": {
   "template": "0x73d152f3283d07ac245108b5462c02cedf55bbaf0f5c03fcddcf5cbe8574afc2",
   "registry": "0x6847cb06d8d87035cacb6eb867c3d5ed87adbc860e1ff98c85359d040029bcb1",
   "study": "0xcc2d6f848cc7b0bc15af6b5c995c62c939021dfd4c6a622f5f935cb2c85ec225"
  },
  "search": {
+  "year": {
+   "kind": "overflow",
+   "range": {
+    "fromBlock": "23839201",
+    "toBlock": "26467200"
+   },
+   "pages": 10,
+   "sources": [
+    "alchemy",
+    "etherscan"
+   ]
+  },
   "windows": [
    {
     "asked": {
-     "fromBlock": "24015001",
-     "toBlock": "24022200"
+     "fromBlock": "24051001",
+     "toBlock": "24058200"
     },
     "range": {
-     "fromBlock": "24020401",
-     "toBlock": "24022200"
+     "fromBlock": "24054601",
+     "toBlock": "24058200"
     },
-    "found": 505,
+    "found": 622,
     "studied": 20
    },
    {
     "asked": {
-     "fromBlock": "24234001",
-     "toBlock": "24241200"
+     "fromBlock": "24270001",
+     "toBlock": "24277200"
     },
     "range": {
-     "fromBlock": "24239401",
-     "toBlock": "24241200"
+     "fromBlock": "24276301",
+     "toBlock": "24277200"
     },
-    "found": 544,
+    "found": 343,
     "studied": 20
    },
    {
     "asked": {
-     "fromBlock": "24453001",
-     "toBlock": "24460200"
+     "fromBlock": "24489001",
+     "toBlock": "24496200"
     },
     "range": {
-     "fromBlock": "24458401",
-     "toBlock": "24460200"
+     "fromBlock": "24494401",
+     "toBlock": "24496200"
     },
-    "found": 654,
+    "found": 410,
     "studied": 20
    },
    {
     "asked": {
-     "fromBlock": "24672001",
-     "toBlock": "24679200"
+     "fromBlock": "24708001",
+     "toBlock": "24715200"
     },
     "range": {
-     "fromBlock": "24677401",
-     "toBlock": "24679200"
+     "fromBlock": "24713401",
+     "toBlock": "24715200"
     },
-    "found": 416,
+    "found": 394,
     "studied": 20
    },
    {
     "asked": {
-     "fromBlock": "24891001",
-     "toBlock": "24898200"
+     "fromBlock": "24927001",
+     "toBlock": "24934200"
     },
     "range": {
-     "fromBlock": "24894601",
-     "toBlock": "24898200"
+     "fromBlock": "24932401",
+     "toBlock": "24934200"
     },
-    "found": 478,
+    "found": 334,
     "studied": 20
    },
    {
     "asked": {
-     "fromBlock": "25110001",
-     "toBlock": "25117200"
+     "fromBlock": "25146001",
+     "toBlock": "25153200"
     },
     "range": {
-     "fromBlock": "25115401",
-     "toBlock": "25117200"
+     "fromBlock": "25151401",
+     "toBlock": "25153200"
     },
-    "found": 264,
+    "found": 317,
     "studied": 20
    },
    {
     "asked": {
-     "fromBlock": "25329001",
-     "toBlock": "25336200"
+     "fromBlock": "25365001",
+     "toBlock": "25372200"
     },
     "range": {
-     "fromBlock": "25332601",
-     "toBlock": "25336200"
+     "fromBlock": "25368601",
+     "toBlock": "25372200"
     },
-    "found": 513,
+    "found": 480,
     "studied": 20
    },
    {
     "asked": {
-     "fromBlock": "25548001",
-     "toBlock": "25555200"
+     "fromBlock": "25584001",
+     "toBlock": "25591200"
     },
     "range": {
-     "fromBlock": "25553401",
-     "toBlock": "25555200"
+     "fromBlock": "25587601",
+     "toBlock": "25591200"
     },
-    "found": 368,
+    "found": 515,
     "studied": 20
    },
    {
     "asked": {
-     "fromBlock": "25767001",
-     "toBlock": "25774200"
+     "fromBlock": "25803001",
+     "toBlock": "25810200"
     },
     "range": {
-     "fromBlock": "25772401",
-     "toBlock": "25774200"
+     "fromBlock": "25808401",
+     "toBlock": "25810200"
     },
-    "found": 292,
+    "found": 438,
     "studied": 20
    },
    {
     "asked": {
-     "fromBlock": "25986001",
-     "toBlock": "25993200"
+     "fromBlock": "26022001",
+     "toBlock": "26029200"
     },
     "range": {
-     "fromBlock": "25991401",
-     "toBlock": "25993200"
+     "fromBlock": "26027401",
+     "toBlock": "26029200"
     },
-    "found": 285,
+    "found": 487,
     "studied": 20
    },
    {
     "asked": {
-     "fromBlock": "26205001",
-     "toBlock": "26212200"
+     "fromBlock": "26241001",
+     "toBlock": "26248200"
     },
     "range": {
-     "fromBlock": "26208601",
-     "toBlock": "26212200"
+     "fromBlock": "26244601",
+     "toBlock": "26248200"
     },
-    "found": 366,
+    "found": 550,
     "studied": 20
    },
    {
     "asked": {
-     "fromBlock": "26424001",
-     "toBlock": "26431200"
+     "fromBlock": "26460001",
+     "toBlock": "26467200"
     },
     "range": {
-     "fromBlock": "26427601",
-     "toBlock": "26431200"
+     "fromBlock": "26463601",
+     "toBlock": "26467200"
     },
-    "found": 539,
+    "found": 554,
     "studied": 20
    }
   ],
   "perWindow": 20,
   "found": {
-   "total": 5224,
+   "total": 5444,
    "only": {
     "alchemy": [],
     "etherscan": []
@@ -172,77 +185,35 @@
  "studies": [
   {
    "kind": "not-studied",
-   "hash": "0x301d66447ce2cd0613dedbd1e49c27fde5f06404addfa38590da77cf972af437",
+   "hash": "0x9c0c265496988b839388acebbe6327f9c10b2e119e2fdc94c2ab4d4cffe2060e",
    "why": "calls no function the template calls",
-   "to": "0x0096dbe7adc59653fe64d92561a19074e7023bd8",
-   "selector": "0x1d946b82"
+   "to": "0xa8c1c98aaf99a5dfc907d61b892b2ad624901185",
+   "selector": "0x0970a5a0"
   },
   {
    "kind": "not-studied",
-   "hash": "0x6995c7a0d53f2563cd8cd134b3310efc46e0f13aca7b703de8e0e8752a17a029",
+   "hash": "0xc26f05e492e73d079c2f91fbf5752cb59df2dbbdffce07083b987662be272695",
    "why": "calls no function the template calls",
-   "to": "0x00000688768803bbd44095770895ad27ad6b0d95",
-   "selector": "0xf497df75"
+   "to": "0x64338fd8e7b1918b4a806a175e26ed152b3d0b7b",
+   "selector": "0x06dc8bea"
   },
   {
    "kind": "not-studied",
-   "hash": "0xaef7a373788859317c299bf0f565660241d07658cdde245a8545c3c815a39f66",
+   "hash": "0x2ef426a8d916244fa97b439f01b244ca3ebcf3332c31984f150412a5309c7c60",
    "why": "calls no function the template calls",
    "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
    "selector": "0xa1903eab"
   },
   {
    "kind": "not-studied",
-   "hash": "0x758724e7ffcc9c206e1f82a69bc26662bbe2a0e9a5435567a4ddbc2bc90ec8ba",
-   "why": "calls no function the template calls",
-   "to": "0x1f2f10d1c40777ae1da742455c65828ff36df387",
-   "selector": "0x2b661098"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x166890ada401f9e67098f2c29eeb45e80e664a332a88cad6234bca6fba4a1b8f",
-   "why": "calls no function the template calls",
-   "to": "0x33636d49fbefbe798e15e7f356e8dbef543cc708",
-   "selector": "0xe8e9fc2a"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9387543fac9ee7422956ea35f6b4344f4d2095635bb378c90f6701c1af5b4fe5",
-   "why": "calls no function the template calls",
-   "to": "0x0000000000007a8d56014359bf3e98f18b7773f9",
-   "selector": "0x95130500"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa043c80cb569a16a09e70ea9d699c63670c511531c4aecc4c30bc72ab09159fd",
-   "why": "calls no function the template calls",
-   "to": "0x53bcdcc18f3bada2cd749a72b28d55eb7abb3dd2",
-   "selector": "0x5e70c733"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xeb9970088334629ce67afffa75e3dca3d8ee9a9b7c2054c6b9b88020ab16a62c",
-   "why": "calls no function the template calls",
-   "to": "0xff9cdf2b4fdd323b4b2a57faeb8b270ed89f4dfb",
-   "selector": "0x1cff79cd"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x48aad867a51439095eb6cad255da4b5de4254f17912d49896e78546291f9274f",
+   "hash": "0xccfdfd67bb2844d784cf3019b49217b640baec287f936b0372d6f3083eb0280d",
    "why": "calls no function the template calls",
    "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
    "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x478e33ee7e077c21c9464da3c7700654401493e170c4ec6bf70cbfbf1086fb46",
-   "why": "calls no function the template calls",
-   "to": "0x00000000009e50a7ddb7a7b0e2ee6604fd120e49",
-   "selector": "0x0121e60e"
   },
   {
    "kind": "misfit",
-   "hash": "0x4b5994e40921cb5dece3f80a0e6f5ef0ac137fd3637c2e9730aa8d44bf647051",
+   "hash": "0x6253d5b463b1730f6a237b80e081229f64aa9fa471cfb097e94725ebf0cac680",
    "sender": {
     "kind": "eoa",
     "address": "0xef7c73aa43254c2dc10ad786065590b9c88a0816",
@@ -257,17 +228,144 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0xd03de2500126e04320b84d20b99ab95e0757337d8e3425b70ba8e89da52ef69d",
+   "hash": "0x1facf724b1309daf4c1c7ba7fa2dab6cb7cef2ba1c2961fed7e0d80c7c5a5343",
    "why": "calls no function the template calls",
-   "to": "0x51c72848c68a965f66fa7a88855f9f7784502a7f",
-   "selector": "0x394b1de1"
+   "to": "0xbf1ffa07b53091b83fe846e24f8f8511c68ff299",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x36a86fd44786236cc89879d1220a19af5e179b10aa3270cbac8bbdd5d675ecfc",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1645624d216cad6c998ed2a0dd9d17ada8435bb200dd40d16fed8d71b1fad620",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xcb321cf31532c967e17f10db335c932bc4e8b3a1af7c388bfe891f14c0e8e5fd",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd97e245332f35678c902ee80be13eda6cfd412de85ef03566c24b9bccf004028",
+   "why": "calls no function the template calls",
+   "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+   "selector": "0xea598cb0"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x42a7619d24a42633315d267742d84acf71e0bfe4fd1ada8775a6c5d1c150ef7a",
+   "why": "calls no function the template calls",
+   "to": "0x2d83ff1cb1c79c68fe530d35f439a92a645faded",
+   "selector": "0x07ed2379"
   },
   {
    "kind": "misfit",
-   "hash": "0x49acd5da6ff4061a730087b52672babc318ceaf3477f872d0f268435eabbd1d9",
+   "hash": "0xfad2aec08fd72ac284705d3812bf0c6ae31d4cf8b45949c7814c0c8024dc2d31",
    "sender": {
     "kind": "eoa",
-    "address": "0xb07bb7899f4af0401663034d4d91c3b0fb76ee0b",
+    "address": "0xef7c73aa43254c2dc10ad786065590b9c88a0816",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0xd258ba989197eaa46c9f77f1fdee72b14692d7a82527db00df31c137c58a17ba",
+   "block": "24056850",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb7f174d52b8290f72ec66686a114ee632fcc4b35",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0x08927574f7ece092c0f1cc1afdfa77fd32e48e17",
+    "499999999999"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2272c1f2dc12e2aeeed4021e9a94c23cf0dce2cc0708433a0704ff9b56460d67",
+   "why": "calls no function the template calls",
+   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
+   "selector": "0xacf41e4d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3cecbb8e57b7517b89d3949d0325e511c4893e9e3ad58f116a78097668fe965d",
+   "why": "calls no function the template calls",
+   "to": "0xfd4a4922d1afe70000ce0ec6806454e78256504e",
+   "selector": "0x0bb9f5e1"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc6ad03b7ebcaba8f324f3e0eb36ba89e5741c38b9d8d809d10c54e9ed71c37e8",
+   "why": "calls no function the template calls",
+   "to": "0xbeb0b0623f66be8ce162ebdfa2ec543a522f4ea6",
+   "selector": "0x4a0d9878"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe482ff41bbe3abb7b27e0600e4ff1831150c631d462d08320e12a62b3deb9de1",
+   "why": "calls no function the template calls",
+   "to": "0x85b78aca6deae198fbf201c82daf6ca21942acc6",
+   "selector": "0x674eb980"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x6d16ab0d235de3d3c7c37abc8696a6fbe049e19c5f9dad99460bf41609bbdc7b",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xef7c73aa43254c2dc10ad786065590b9c88a0816",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3014d8b24caa804d6f8da4700d764a98bcd058fed2359ab4d27625b1a76d565e",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xef7c73aa43254c2dc10ad786065590b9c88a0816",
     "call": 0
    },
    "reason": {
@@ -279,137 +377,25 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0x3becc453f204f9ed0584d427128f5f5c663c6ce333717329f16acc630e5dd2d9",
+   "hash": "0xfef5f3502246735cf1cdc3fbc3c3a13ff48532c72d9b54011783ae37102ed0b8",
    "why": "calls no function the template calls",
-   "to": "0x23fc436d72028d7e4fec71f214d9a00b3da5782b",
-   "selector": "0xa0000000"
+   "to": "0x7da790bc4ede5db96d036e2dd2d287425a4aa9bf",
+   "selector": "0x1d946b82"
   },
   {
    "kind": "not-studied",
-   "hash": "0xb623636e3b4c6f379635066a3105d625339c45ace8ca95526cb5229cfe25e935",
-   "why": "calls no function the template calls",
-   "to": "0x0000000005f122fdde066942195c10106d490486",
-   "selector": "0x0d484c28"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc026d553cf804800458f20c26955b6c2d1278fdae6cce1851aeb63a6fffc36a5",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb8ede423bfb248b550958d726fa6a84600454c0e1bbbca7a99d0f50f5569c3ba",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9ba61d681c8247804124f6c529c31d6d6bc803f05c19ad52a9a6eb9ce5dfb8cf",
-   "why": "calls no function the template calls",
-   "to": "0xfa86aa141e45da5183b42792d99dede3d26ec515",
-   "selector": "0x04117561"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x343dc07ec3b3c6ea9282dc6bc5db150afb555cac05a11ff8a3438f6a5966a6e9",
-   "why": "calls no function the template calls",
-   "to": "0x455bf23ea7575a537b6374953fa71b5f3653272c",
-   "selector": "0x74d736c8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9ccbdae8cdb7c1c3697d3da937fa26dc2605b6e0427a6d65f64b9128a2268556",
-   "why": "calls no function the template calls",
-   "to": "0x36331e299247e5d0d3261e1d9852f6e0cffee95c",
-   "selector": "0xca8bd1f9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x14615a31c9fbc8c3261558107979c4e5c166000af428c683cf855373e6f74d16",
-   "why": "calls no function the template calls",
-   "to": "0x888888888889758f76e7103c6cbf23abbf58f946",
-   "selector": "0x12599ac6"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3113710f9370895ca83de53271f7ab6d7c92ce8f2b514da53f71664b1bab7fd5",
-   "why": "calls no function the template calls",
-   "to": "0x241c32761f499ab68af6ff07441e3a05d26bbc8b",
-   "selector": "0x5cedb17d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x0c8ffb894e01face1048efcc149f5005672854f177529cb978ac749f2f62e14e",
-   "why": "calls no function the template calls",
-   "to": "0xb185d98056419029dae7120ecbefa0dbc12c283a",
-   "selector": "0xd7bfdafc"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9666874957febcaed5415348452ea6ac981c4b44f5c8f1364c8c319533abb0ed",
-   "why": "calls no function the template calls",
-   "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
-   "selector": "0xea598cb0"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x410f3741274591e1bbdf12d6899cb1f9919cd1f2e388ddfb3549ab3deff9f2f6",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xfbfb1274f15fb849d4bbba7ddd922b7d0e08cf343aae01cc078c2a6cc7b92cc6",
+   "hash": "0xc8f940579267e2cc121ff5d0ae5c4211fdace7961322921e9c02236b1af89923",
    "why": "calls no function the template calls",
    "to": "0x33636d49fbefbe798e15e7f356e8dbef543cc708",
    "selector": "0xe8e9fc2a"
   },
   {
-   "kind": "not-studied",
-   "hash": "0xd3158c0754b3b87e32ab30fe3bfa35c57e4be1b53fc9c1806e118a6f6b39113e",
-   "why": "calls no function the template calls",
-   "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
-   "selector": "0xea598cb0"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x844b05d03ff9266be2434f1cdde5e668bc58daaa08d58e7c6dc8c90e2b81acfc",
-   "why": "calls no function the template calls",
-   "to": "0x9ad1cd15f52f7e296c5bc7db762559b3fd8c869d",
-   "selector": "0xbe45fd62"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf73943a50622c4e81d687525e38d16ea327d773482acbd47bed055fb78ec5219",
-   "why": "calls no function the template calls",
-   "to": "0x45312ea0eff7e09c83cbe249fa1d7598c4c8cd4e",
-   "selector": "0x5c9c18e2"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9bc93d309376658633a9d0887a49f73628784dcb8d4da8034729e4fa7f076dad",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x538c1f969eb268e3df7895058c2b4f44a98a626bd7888b78f763de064b75dbcb",
-   "why": "calls no function the template calls",
-   "to": "0x69c8253fd26375440e1c7791d4bfe3c1da9eb495",
-   "selector": "0x7111a994"
-  },
-  {
    "kind": "fit",
-   "hash": "0x7419d343f8884bddfb5e2a6629faabf04e8cb317be1a59a7eb111ee4c3c4b319",
-   "block": "24240360",
+   "hash": "0xf12c449a152ea6417e77ac97f622cd19fa388a4a021119138342fe484136bba7",
+   "block": "24276363",
    "sender": {
     "kind": "eoa",
-    "address": "0x0bda6ef6efa566d9b5b18baa23b62d02509c3918",
+    "address": "0x62428f1263163920d96b40cfd030c2813ae0dc9f",
     "call": 0
    },
    "paths": [
@@ -427,42 +413,8 @@
    "values": [
     "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
     "0",
-    "0x1ae3288090856da9278984325f911a9309765921",
-    "10000000000"
-   ],
-   "outside": [
-    {
-     "at": "call.to",
-     "kind": "token"
-    }
-   ]
-  },
-  {
-   "kind": "fit",
-   "hash": "0x7052f4f3d450e8122da2226a332b5b13fb9e33c197ba79a0d9896cafd781ce0e",
-   "block": "24240424",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x4df271e1611073f6cc0cb154cb5ea97bc4eb0e92",
-    "call": 0
-   },
-   "paths": [
-    "call.to",
-    "call.value",
-    "call.transfer.to",
-    "call.transfer.value"
-   ],
-   "types": [
-    "address",
-    "uint256",
-    "address",
-    "uint256"
-   ],
-   "values": [
-    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-    "0",
-    "0x62425cd6bdcb6bfe51558ea465b063486b70dc9f",
-    "60010000000000000000"
+    "0xd3a06d3eb718071204d18b8e7bcfc84f58e70df9",
+    "1000000000000"
    ],
    "outside": [
     {
@@ -473,790 +425,32 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0x140f3fea874e67b253b4157ae52645162b7cd0e551d4c5f4c90537f51ed628b4",
+   "hash": "0x16739d06d59f5c0caa3925d0fd2e2940f57e43c42928b254d4bae8c28ebf634e",
    "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "fit",
-   "hash": "0x0e95082bceaac3291825ae49351f1f27122b752235580f6516591186bc882161",
-   "block": "24240600",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xa216442915cacf4bc616b16a825b389b97efb105",
-    "call": 0
-   },
-   "paths": [
-    "call.to",
-    "call.value",
-    "call.transfer.to",
-    "call.transfer.value"
-   ],
-   "types": [
-    "address",
-    "uint256",
-    "address",
-    "uint256"
-   ],
-   "values": [
-    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-    "0",
-    "0x861eee8500b27610b733e178b3af3a2ffeca5da8",
-    "100000000000000000"
-   ],
-   "outside": [
-    {
-     "at": "call.to",
-     "kind": "token"
-    }
-   ]
+   "to": "0x85b78aca6deae198fbf201c82daf6ca21942acc6",
+   "selector": "0x674eb980"
   },
   {
    "kind": "not-studied",
-   "hash": "0x86cba64d2b8904f4feebbc2a5dcf7df1d42c528bf35b34777e20e65355209ebe",
-   "why": "calls no function the template calls",
-   "to": "0xad2eee404a46e9a0c0debf6532063f7085773be5",
-   "selector": "0x3872aa6b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5f89820d7ad6aa768dac99356da0aeee439542b1140e07f0d1a9306997b575c1",
-   "why": "calls no function the template calls",
-   "to": "0xb300000b72deaeb607a12d5f54773d1c19c7028d",
-   "selector": "0x810c705b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xca1ffe9c5bca9fd8b598d30515c3f9946bcb6f9ffec20964c44ee507790e4b7e",
-   "why": "calls no function the template calls",
-   "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
-   "selector": "no data"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xcbe91bec1f29d36541e51911783304899f2716c50dba4c0e38f814cefa72acd6",
-   "why": "calls no function the template calls",
-   "to": "0xccc88a9d1b4ed6b0eaba998850414b24f1c315be",
-   "selector": "0xf9e4bab4"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x0163c7ca272cb84da56c9616a42f8066eb5d6e9455b3ccbcca485121a8de3d8b",
-   "why": "calls no function the template calls",
-   "to": "0x301d9bc22d66f7bc49329a9d9eb16d3ecc4a12b4",
-   "selector": "0xded1f1a5"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x18293035479a1aafd2a8062f2c765c2e340e45691487ee7412d797764aec8813",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xa63f2d8f8975a171e471e4567a168a883336de28",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7e4ec95dbb3daaca8574cde0d661c8958a19cd404ede83992f36fde467085901",
-   "why": "calls no function the template calls",
-   "to": "0x1111111254eeb25477b68fb85ed929f73a960582",
-   "selector": "0x12aa3caf"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xd9ab7ba79eb811b66039ef594ff932217c2517eb5026e451a3fb300a23a5bc44",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xa63f2d8f8975a171e471e4567a168a883336de28",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x672de0dd61093908f4d7b75183658b5ace2103be93d1064fc00df5bd308c1afc",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "fit",
-   "hash": "0x1ed07a679873b2988a5e2c7f160ce12ffa67af8fc4c3a97eccb24e6cfb7eb3e0",
-   "block": "24458767",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x8899257ad57a6edde452280c329e0a0e85f46981",
-    "call": 0
-   },
-   "paths": [
-    "call.to",
-    "call.value",
-    "call.transfer.to",
-    "call.transfer.value"
-   ],
-   "types": [
-    "address",
-    "uint256",
-    "address",
-    "uint256"
-   ],
-   "values": [
-    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-    "0",
-    "0xf08eea0a6f6e2c8485dee209026edd34bc426e67",
-    "10000000000"
-   ],
-   "outside": [
-    {
-     "at": "call.to",
-     "kind": "token"
-    }
-   ]
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x498525f1de640c5e0e344a799b637f015d3f70d4bb2edacb65f8496a2161c0cb",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xa63f2d8f8975a171e471e4567a168a883336de28",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x44d3448428bf751c353ff5634554ada13a4c577b9fb20a4431731b5ef1a47575",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x9bcb125dd913954fdfd9fd409872a5105d982ffbf6dead5e1fbdc0cd1f57b846",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xbe8659061a5ad91d0700ded6d4480d801fc1a1146ce49ec1415107e8e9894367",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x5a22256b63bc045dec23749216ba68db76c3ee8e6aec2e0d1bf7f80fe582d2ea",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xba267d5ed86d410c5ba4a9e1bad07bc75482838ea17e0bf13d6fb566d048f435",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xa63f2d8f8975a171e471e4567a168a883336de28",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x5ae0c77ee9641fde9e6bcc952f928b6428bdb10f030389a4f1875deedaf8c5f3",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "fit",
-   "hash": "0xacfa0e2b3f3507e050d0de6b3ff163eb8b4840b4e4f0789e66b6fd6b59c97b39",
-   "block": "24459646",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x5bdf85216ec1e38d6458c870992a69e38e03f7ef",
-    "call": 0
-   },
-   "paths": [
-    "call.to",
-    "call.value",
-    "call.transfer.to",
-    "call.transfer.value"
-   ],
-   "types": [
-    "address",
-    "uint256",
-    "address",
-    "uint256"
-   ],
-   "values": [
-    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-    "0",
-    "0x23dcadeedd293428e837b79f489dd64cced27811",
-    "7419233060000000000"
-   ],
-   "outside": [
-    {
-     "at": "call.to",
-     "kind": "token"
-    }
-   ]
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xd70f7a3c5d938d23a007aa57403158381aa00f1466cbb63a29bbe31b8e18f5e5",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x3b5e14b05ca53cab0b8d737625ef3db0478b21e6",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x0fb267d6ff8b5a71ed853a1234ddd7820c9764eeb31df68538e47f8503a33ca3",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x5bb06d84c7d2b9094edf129ad1bbfbca7d4edff5",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5969dd8570a3ab9d003da6dbf6c33df260a1b1ed036beb674b95093b0ff9f7c8",
-   "why": "calls no function the template calls",
-   "to": "0xa3222357a0eccf60c73606170be6c99adecb59b3",
-   "selector": "0x0007e964"
-  },
-  {
-   "kind": "fit",
-   "hash": "0xd2477b7fcf6a9ff6c375d599eadce875839772576576f2db09eb938f0c48a6ad",
-   "block": "24459967",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x050e12a48998f529ca9c4b6172b5c73fe43f6f83",
-    "call": 0
-   },
-   "paths": [
-    "call.to",
-    "call.value",
-    "call.transfer.to",
-    "call.transfer.value"
-   ],
-   "types": [
-    "address",
-    "uint256",
-    "address",
-    "uint256"
-   ],
-   "values": [
-    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-    "0",
-    "0x7d40ef7aeeb11beb9c1af6f121e6976c88f3f647",
-    "29154443840564869696"
-   ],
-   "outside": [
-    {
-     "at": "call.to",
-     "kind": "token"
-    }
-   ]
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x034ef308df393737d6004c83f3a599e51399b6ee15dc2f63d178f8a4379b3f02",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x0983430ccb0a27813bd73adc273b08687ddfc008907115dd1320391e2a6771bc",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xab865e998d56ee49da354d84ad24f8feb602965e054653339e31eebe4f3e82a2",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xe048ba58a69373e0fb9a73bc149129f308ecbfaea536fb596aaa25f2344f3cf3",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd9b91ba00dcc78523748d3e492e0eb6888b517425769706f051bd15899b9ca3d",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xd595c41a8cbf0cf211195b89572a558d9fa74db21a4972f1da49fb86f8522cb1",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xb07bb7899f4af0401663034d4d91c3b0fb76ee0b",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xf6474ae85de89d61c2a929423aba23b4df0d5be2fcee85dd34a28cd477ff3b8d",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xe91bcae4a2d7b951304695f93cf1b9a1837cfe43",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc7829eb3a66f2665207becfa5f2026a63981fc8c8f00c9cf6797a821e36fac8e",
-   "why": "calls no function the template calls",
-   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
-   "selector": "0xacf41e4d"
-  },
-  {
-   "kind": "fit",
-   "hash": "0x887c047cedb2d98d3ca466d55f8dd0375a17c7f6831ee353e17cecd08773b790",
-   "block": "24677762",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x6020016732aec983b0e6397d2a13998e39253e53",
-    "call": 0
-   },
-   "paths": [
-    "call.to",
-    "call.value",
-    "call.transfer.to",
-    "call.transfer.value"
-   ],
-   "types": [
-    "address",
-    "uint256",
-    "address",
-    "uint256"
-   ],
-   "values": [
-    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-    "0",
-    "0xc84510493c0f93b01d5a0b9ec0ae9879404e0b81",
-    "10000000000000"
-   ],
-   "outside": [
-    {
-     "at": "call.to",
-     "kind": "token"
-    }
-   ]
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd415139d79ab954610977382f81a4a8f5137321ac8c5ef2c54d2b304240314c8",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xdf92200aa05bf3c79c7ab2cb4aadfe97464c43fd8dec5723b0152038b79fbbf6",
-   "why": "calls no function the template calls",
-   "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
-   "selector": "0xea598cb0"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x50c28c53d36bd7377dcacad88ab2e21555f9383d15a2c7c5737d2d59ff408c3f",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7c4d8381695cc840d8d2c23ba19ef8d81f176c6db5ae89dda27a06fa63e4021e",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xacba8fff476b07a3709a6f591494f60a7dd0650a756720d8a84a04811f235464",
-   "why": "calls no function the template calls",
-   "to": "0x2d83ff1cb1c79c68fe530d35f439a92a645faded",
-   "selector": "0x83800a8e"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x6aea280387667a60ab9e83303e40578eee79377c619bc158237a53cbfc802996",
-   "why": "calls no function the template calls",
-   "to": "0x2347faed8d309da2fda2a4339224999209c31bfc",
-   "selector": "0x459cc5bc"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x66bd9ea2392369b3e09b7a812f00cef3905b814c8ec948ca2d43b7c59e31cd9b",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xe4f66ed08ff2f0b029055cd7b4ed6b606c42db7b7481b89079ff599611351e1a",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x715fe3760969f098da54f71567dbbcfe5f409f918a75092bbdfba678478a95f0",
-   "why": "calls no function the template calls",
-   "to": "0x6131b5fae19ea4f9d964eac0408e4408b66337b5",
-   "selector": "0xe21fd0e9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7ec31ff94d47f861b11f708ae4e16fd4415a1cbd36ecb15fa26dc67b42a9a14a",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa9e96e57cb7bd4b43ec29dc740f2ff87a3a7bd27ffb8b4a24b9ce9cecc69c05e",
-   "why": "calls no function the template calls",
-   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
-   "selector": "0xacf41e4d"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x4fbd0da4be3a0aaccb3bdef57c7f38878b8e84cfe011e31b9dc93a5cd042e569",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x20e4b64ba91f74d5a361c21869f52f5e63f91426",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x6b2e19d00132727e16ea25306b42d37dccf427cdcbaeb85e90f7e1a3baadf42e",
-   "why": "calls no function the template calls",
-   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf8fe86460161ccf03e3ee6186f3bbcf187e568acbcb52936a42bb7f2ea0789c2",
-   "why": "calls no function the template calls",
-   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
-   "selector": "0xacf41e4d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa1f8bee5ad5808f540acc33b641f9fca8280c0aa9261353b6780ee49bf88d294",
-   "why": "calls no function the template calls",
-   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc9bcb9a9567e3fa9245a9acf234d1189fd0356be6158f3412863cb1db655af8c",
-   "why": "calls no function the template calls",
-   "to": "0x648b8d2340842a7040680915c4dab89382eeeda9",
-   "selector": "0x3462fcc1"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x63c60d3140af409571c0ea923a4563644231967690a5b470c27755c51848c5c3",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x65fda7586b4563489c2a78a1cd33dad73fd48bbe4affe10e16b2c132219fa027",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9d269ca62fea0c3adc1642438068723b73f3de5009d01e91a2eff4e3a40b6680",
-   "why": "calls no function the template calls",
-   "to": "0x2d83ff1cb1c79c68fe530d35f439a92a645faded",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x98fac5b64d445d270fff0f411951b2676a8b6020a0d9efba98cc928429a3476c",
-   "why": "calls no function the template calls",
-   "to": "0xf24be3404b723e35d9ebc60977b646d2581f57f0",
-   "selector": "0xfd3ad6d4"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x5d2d817b7668c37231b673048906783e2f41ee36874c0b7e9801ee662086529b",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xb07bb7899f4af0401663034d4d91c3b0fb76ee0b",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xb96ac48a439ef663c8f22da0a98d7d365567650aa5d56246f33c2667d0326a11",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x360eaad82a20fb0366a34a848c5b85faae49337804888992bd12b3e428b423e3",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x64c1ef9397d1e0669935f8060c9de6e7394dedbad4689f3d32f99f9ce09a3856",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x0ddc8cce2baff54ef113f50211300d3b88503a669ee0008c2cf0623e5af542b5",
-   "why": "calls no function the template calls",
-   "to": "0x6a000f20005980200259b80c5102003040001068",
-   "selector": "0xe3ead59e"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x775af5d83981372050f52bfe85bbe173914e74b3e43027e5bb9a2498255b657a",
-   "why": "calls no function the template calls",
-   "to": "0x036676389e48133b63a802f8635ad39e752d375d",
-   "selector": "0xc3ae1766"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x1eb1681db08bde6723ba311d1300aff45428f3037575ac3ac3ca7676ca2f910c",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xef7d85e948fc5c54d0524904bde4b7cd51944cca43fc20e1a1cbfa4295895948",
-   "why": "calls no function the template calls",
-   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xafaf8e3da167a041a79c6c6d34e6c555c7d16399106bcd8f275537d753859ff3",
-   "why": "calls no function the template calls",
-   "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
-   "selector": "0xea598cb0"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc88b193c3904f7eab631b5084a20a083a9d36623ab4847e8f1aafc450483b71a",
-   "why": "calls no function the template calls",
-   "to": "0x39053d51b77dc0d36036fc1fcc8cb819df8ef37a",
-   "selector": "0x9435bb43"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x724c60e370ad3658031676f2135b7b1f15aefa7ce5c4e847f0522be1d029b5a4",
-   "why": "calls no function the template calls",
-   "to": "0x0000000000001ff3684f28c67538d4d072c22734",
-   "selector": "0x2213bc0b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x1501b5c4ed25dbe7d7602357a218ff887edb87c1d4cfb2064ae02a119a650922",
-   "why": "calls no function the template calls",
-   "to": "0x6c668c238807cb8e0b724810fe0a26c56c3827c4",
-   "selector": "0x9265bb9d"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xa2f781b3d7b1d8012abcd4f62ef36b4a739bf3754bff1f168df37c68fa3a1ac9",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xbad000006db10503589262b55d09bb7b3c5e1472",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x2b4c4c825491f4a92dbce1b85dfa3a52e6a4607982cc4c693a0b2613c42a344d",
+   "hash": "0xa2194a28497147f57dc358366e8abe3a2ebfcc952dffd68a3c4182b2686249c0",
    "why": "calls no function the template calls",
    "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
    "selector": "0x5f575529"
   },
   {
    "kind": "not-studied",
-   "hash": "0x0f6574b20b951965a764cde30eca279d41f05aa798a67de2272d89f7da699cc2",
+   "hash": "0x90669770d9014cd16584fdc1141379b0b9fbd6f4f38e205c9e7b455b3a28a422",
    "why": "calls no function the template calls",
-   "to": "0x45312ea0eff7e09c83cbe249fa1d7598c4c8cd4e",
-   "selector": "0x5c9c18e2"
+   "to": "0x33636d49fbefbe798e15e7f356e8dbef543cc708",
+   "selector": "0xe8e9fc2a"
   },
   {
    "kind": "fit",
-   "hash": "0x627884718c54196654793779bcb50b725b43449532d7df91bfb50cd951b10748",
-   "block": "25115480",
+   "hash": "0xe18e7d53571471600c3d798af3d8aaf020acb7ba866b766c0910810183cbd0a6",
+   "block": "24276615",
    "sender": {
     "kind": "eoa",
-    "address": "0x222623585ce05da351b7d1567355aaa6e5deebed",
+    "address": "0x14a5b1b9abc2c14aa812f377287ef22d9c0e9886",
     "call": 0
    },
    "paths": [
@@ -1274,8 +468,42 @@
    "values": [
     "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
     "0",
-    "0xb86b095a44717d4b7678ad64cd94762091cef8c6",
-    "42090403198551355101"
+    "0xcf8b2ea7e9d8c0cbd90a88355f4d05db72dd25e7",
+    "6944561390443594211"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "fit",
+   "hash": "0x1c0fa41f123681b336cc7a1b09e4c7be2a375a7c15ff355079830f509a3d3d8a",
+   "block": "24276653",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf8191d98ae98d2f7abdfb63a9b0b812b93c873aa",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0x51c72848c68a965f66fa7a88855f9f7784502a7f",
+    "516000000000000000000"
    ],
    "outside": [
     {
@@ -1286,53 +514,39 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0x7c4d31bfe7969d9a901b270bf7b4c469f43fa1fe3628ebbeaea181f565385b8b",
+   "hash": "0x39f509a99310c535ebdc5fb3d7d4a139993caaaefb8d6693ea1bb5916b148db9",
    "why": "calls no function the template calls",
-   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
-   "selector": "0xd6681042"
+   "to": "0x3d90f66b534dd8482b181e24655a9e8265316be9",
+   "selector": "0x47ee97ff"
   },
   {
    "kind": "not-studied",
-   "hash": "0x614cdbaeedc2401e043bde05d12f6bba99fa0ca9641ac2bd3d3894015e10c280",
+   "hash": "0x424bc464ae7b4336236af9a8f566f2f058db141322afdc58a4bc16ab8d0d7291",
    "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
   },
   {
    "kind": "not-studied",
-   "hash": "0x4a5e84b4cd0e7c065cce672ea20a20fb14baef5cf304ce56a899512ed6b9d306",
+   "hash": "0x2a8677f8d54658749166a4a6a12c9ef35a232d51943ebfab65da6f2a517ae4b3",
    "why": "calls no function the template calls",
-   "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
-   "selector": "0xde0e9a3e"
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
   },
   {
    "kind": "not-studied",
-   "hash": "0x161e932fbe7f809fd2526370a3566645ef5c1c09c84905566665a33654346325",
+   "hash": "0x40f6dde155b734962c026dd7546e71f1c0ddda00de62b0f08134b30a8b0ab2e7",
    "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb7faebbb1c4c167cf95620c0b2e96dda18c8f9251fc699734ce1b496887255bb",
-   "why": "calls no function the template calls",
-   "to": "0x89c6340b1a1f4b25d36cd8b063d49045caf3f818",
-   "selector": "0x0193b9fc"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x199d42e201d1e200b4869ed0fde4bdd245455dc29b23717336fb42ea3e95fca5",
-   "why": "calls no function the template calls",
-   "to": "0x28b1dc1a5e3699a428bc51d234dfab7c9cb2a183",
-   "selector": "0x0c307f76"
+   "to": "0x8f5835e9d756c9bd934bce527157a4b0ef3c5cb7",
+   "selector": "0x4a7cf362"
   },
   {
    "kind": "fit",
-   "hash": "0xeb5f26d7cfc692b9d2db1a04dd5c0a3daaaa2d131ef4bc28835a03fe0fc33c4a",
-   "block": "25116107",
+   "hash": "0x32178822734e43b35243e72389cfc445ce640dc5f63ca7cdf67c4f01dc50ce22",
+   "block": "24276876",
    "sender": {
     "kind": "eoa",
-    "address": "0x7a5223b788f635d1dfd299d3c7b1b5851cbff416",
+    "address": "0xb260fcb8fdf0f6b5e334c1e62650540e5993895a",
     "call": 0
    },
    "paths": [
@@ -1351,7 +565,7 @@
     "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
     "0",
     "0x187fe1a8b76c60b85c00a2819152ff00ff642386",
-    "1082116880000000000"
+    "4653800000000000000"
    ],
    "outside": [
     {
@@ -1361,12 +575,47 @@
    ]
   },
   {
+   "kind": "not-studied",
+   "hash": "0xfb26478581cb0a98c5b157d9ad64cba91044809423072852ce8ae41b89d61782",
+   "why": "calls no function the template calls",
+   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe632e86e0f38f35949582e6a124c55e9d87bc57b17a7d03c900d879843696f08",
+   "why": "calls no function the template calls",
+   "to": "0x5d99a74df91d36a6be1a6c9b91548d35efe9dd0e",
+   "selector": "0x7111a994"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x74ed5558ad1cdd0a33027f8e370c66e50cc83e1ee307bf4e6378f322377b81ce",
+   "why": "calls no function the template calls",
+   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x919775b3bdf27a85d7548b37977aeadba7dbc3d7dae07268dea501d10a9e8512",
+   "why": "calls no function the template calls",
+   "to": "0x827fbd229f68ed3359a05e772d30481b59a0ad24",
+   "selector": "0x28a95d15"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4cc0997a96e5112868a2136630a92994ce0cec8834b9c4f71ea868ede205ad30",
+   "why": "calls no function the template calls",
+   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
+   "selector": "0xacf41e4d"
+  },
+  {
    "kind": "fit",
-   "hash": "0xb911f76ccc82c9de4d71a0e48bd2f25758eb83e20b17f1a1cb2544e4f2be79a9",
-   "block": "25116172",
+   "hash": "0x4cb7e94c54497d9c51bb7524fe525bacd9dc722aff957185acce39fa654c93bb",
+   "block": "24277109",
    "sender": {
     "kind": "eoa",
-    "address": "0x8cc2c2cb2da08cb231eb372b2b73ef5850636650",
+    "address": "0x352360bf9752a4ce9be769ff3b4a4f7dc1721081",
     "call": 0
    },
    "paths": [
@@ -1384,8 +633,8 @@
    "values": [
     "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
     "0",
-    "0xfec4848e01acfed07aeb38fa2cf87740af8204d3",
-    "1979371048375068"
+    "0x27f22cd7a47004f3bc41949e40d396a4f1e03180",
+    "30000000000000000000"
    ],
    "outside": [
     {
@@ -1396,25 +645,55 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0x2ffbbb3454a139dc5368a6c5b7139842be5f989ecdcc2fee926e0c83d3edf613",
+   "hash": "0x469d221cfafe7d9f794b04c4140b84863897baae1d67cb51048673ed636df639",
    "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
+   "to": "0xccc88a9d1b4ed6b0eaba998850414b24f1c315be",
+   "selector": "0xf9e4bab4"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa685b71fa6d3cb0b4e5467fe655973e4b78e2ddbc10fe5ccabcccca537b74898",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xef7c73aa43254c2dc10ad786065590b9c88a0816",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
   },
   {
    "kind": "not-studied",
-   "hash": "0x4baa5d1d4f3c31a4b998813363e1404683a2ace9ec9e1b0ff3c5fbaea7d9c018",
+   "hash": "0x27be9276256ee2e05d29b5566e12fb6966b03fd75e1b9cf9fa8aa8d0cc433223",
    "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
+   "to": "0x00c21ca82d94dade0d5d1ed420a4728f58427d21",
+   "selector": "0xc8512104"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x20ba983b139afb78008e8cb490316a018fcf25bf32598313aca112e049033d71",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb07bb7899f4af0401663034d4d91c3b0fb76ee0b",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
   },
   {
    "kind": "fit",
-   "hash": "0xd385829b0612744115797f70c2421fc5d620439ec4753b1830d70d84dc2efc01",
-   "block": "25116433",
+   "hash": "0x09b25eb8c7489fb2de3be6735f3a7c719565ed793aa6f37302f81ad76af87094",
+   "block": "24494703",
    "sender": {
     "kind": "eoa",
-    "address": "0xa03400e098f4421b34a3a44a1b4e571419517687",
+    "address": "0x6c7a1b59dfa3cd046c8a05d8b0e4150f3ec9cf35",
     "call": 0
    },
    "paths": [
@@ -1432,8 +711,57 @@
    "values": [
     "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
     "0",
-    "0x3da4d63a808db7fccc649aa05043c8017da415fc",
-    "837607550000000000"
+    "0xb5a115d4ac5c07f94d0f1421cf153b6bd1a1cc8d",
+    "391750657877112"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x84a3a95a00c56e0c47a5b8f1109784b9cdc6f82d1844690f3938b5c8174655b1",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb07bb7899f4af0401663034d4d91c3b0fb76ee0b",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0x6b1a19073e1f4cc58b2f83bf795a7ba162c46d7532d2e8c840008e44acf9a395",
+   "block": "24495085",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xeb5626397b050c3e88a7bd481d32dfa822e2022e",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0x3b27290be81ef6e150ca7156df43c4be9b99443c",
+    "154000000000"
    ],
    "outside": [
     {
@@ -1444,32 +772,39 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0x39f4d86f768c76c68fed2265a413cf8a210aeb5920068df48368b04fab1661b8",
+   "hash": "0x2be3fd5dfafb9cf84980a9254f7738f95b975efec99858039a82217d504d702f",
+   "why": "calls no function the template calls",
+   "to": "0x53bcdcc18f3bada2cd749a72b28d55eb7abb3dd2",
+   "selector": "0x627888cb"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd917f2124f482d79dace70fb3f3440795afbfc6e0123e15bfc254f52da3ba1cf",
+   "why": "calls no function the template calls",
+   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
+   "selector": "0xacf41e4d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4c934e7a9934f335b5d75d51e012c0c3ad3ba825616b496aec4964afcaa69eff",
+   "why": "calls no function the template calls",
+   "to": "0x53bcdcc18f3bada2cd749a72b28d55eb7abb3dd2",
+   "selector": "0x627888cb"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa2343cb9ef0c672659fc2d6a7dcbb68be39523388c073370a1bac2d79a42a9a4",
    "why": "calls no function the template calls",
    "to": "0x0000000000001ff3684f28c67538d4d072c22734",
    "selector": "0x2213bc0b"
   },
   {
-   "kind": "not-studied",
-   "hash": "0xf9936a6e41fd60780958d7ec1526b6824da4a93c0d4163db183a4a338c8e0684",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x1d5d0550c49d7b9178640a3f7a7283f98faf5e0c60a9fb255022445661bb8d02",
-   "why": "calls no function the template calls",
-   "to": "0x62de59c08eb5dae4b7e6f7a8cad3006d6965ec16",
-   "selector": "0xd3a86833"
-  },
-  {
    "kind": "fit",
-   "hash": "0xa01f74b060c8ac901ce950b548a3f2d3dc3f7e2f5d3b4749904e4dbf997cadd5",
-   "block": "25116657",
+   "hash": "0x58f22f05d4cc3588f3024f24678b8b09a3b0d0317f8dd7946379572742afae1d",
+   "block": "24495432",
    "sender": {
     "kind": "eoa",
-    "address": "0x2d41a55df73cbc0fb3d811181bc1a63f188b3304",
+    "address": "0x4a4aaa0155237881fbd5c34bfae16e985a7b068d",
     "call": 0
    },
    "paths": [
@@ -1487,8 +822,76 @@
    "values": [
     "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
     "0",
-    "0x1b4c289c4f6e0565f1e432654254485c490679e9",
-    "692000000000000"
+    "0x91d40e4818f4d4c57b4578d9eca6afc92ac8debe",
+    "175000000000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "fit",
+   "hash": "0x6f8fee4d8bd888aab672abad82332da0ad1defd296add48d2baabf2332d167a5",
+   "block": "24495525",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x183c139f8242021d854f750e7c5cace091fb8ca9",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0x9bf81cc31d0f1fa7ade83058509a4db154a182a2",
+    "5000000000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "fit",
+   "hash": "0x81eed9d7519fe7e25e960575db8e4791cff82c63948fb46ccd8ad030da3ec090",
+   "block": "24495644",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf8191d98ae98d2f7abdfb63a9b0b812b93c873aa",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0xbc8a0f5e41857292d12ef620e2a5895ce65a5ce0",
+    "71900000000000000000"
    ],
    "outside": [
     {
@@ -1499,32 +902,381 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0x95f0308399cc7f33408313e98f8f62926f838f3d919b07401d812639b2198a72",
+   "hash": "0x3471321c40846fafabd87101f437e53b4d207d4190785bf44f0b39407ccf7241",
    "why": "calls no function the template calls",
-   "to": "0x6a000f20005980200259b80c5102003040001068",
-   "selector": "0x0d893d62"
+   "to": "0x6131b5fae19ea4f9d964eac0408e4408b66337b5",
+   "selector": "0xe21fd0e9"
   },
   {
    "kind": "not-studied",
-   "hash": "0x100a45b3c9a61241a17021f556ba14971e8aec74d00d8e8b958e9276cb73b7cb",
+   "hash": "0xb0ea48f011d329723e2b6b95ac07aa7f647da11711daef083b7e0cf614be6668",
+   "why": "calls no function the template calls",
+   "to": "0xb8a451107a9f87fde481d4d686247d6e43ed715e",
+   "selector": "0xbaae8abf"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x957487c9b568907569711a880582b946583f6e48225abb0e4583da2a946edb20",
+   "why": "calls no function the template calls",
+   "to": "0x0000000000001ff3684f28c67538d4d072c22734",
+   "selector": "0x2213bc0b"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xdebd60be8424588a93d960f41e15e4405a3d0345ec5a8f43e831c8d0361f95bb",
+   "block": "24496032",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x0d0707963952f2fba59dd06f2b425ace40b492fe",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0xda8fa7140f0ef7632cfb137c3893c4cfcb838461",
+    "963543950000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "fit",
+   "hash": "0x385ef5a50d83adf80c1c41398cb6d7e7be3f1588ca447e4be285f385dc79f901",
+   "block": "24496087",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xc30a437a94ec6c98be0abbd2ff2f6b29a7abe1d9",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0x2b3bf74b29f59fb8dda41cf3d6a8da28cf8e7921",
+    "230680000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "fit",
+   "hash": "0x0129e36e7395cbda0200249ccedc999e03cc161a861b6d0b6d5ea46c449ae337",
+   "block": "24496114",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x23dcadeedd293428e837b79f489dd64cced27811",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0x91d40e4818f4d4c57b4578d9eca6afc92ac8debe",
+    "6639480000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x90cf55c7fd56df00216f41f44a10937aaf413b4fbb04ae2ebfdea89a8939cd5f",
+   "why": "calls no function the template calls",
+   "to": "0xbaf5f3a05bd7af6f3a0bba207803bf77e2657c8f",
+   "selector": "0x9435bb43"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x49b0509517bae6491977ba065124016736df925ba94dec955e5ebbe76f7f4531",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x00038beec3ba8fcbc3a3048c93c72c40c0c8b3a3f226a8833aea6c7e3aa1fc01",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x5e0a19c8de9da2a20c92116db14d98c57a47063903e22a1ac83e3447cc275773",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x85fef338df78c19310987f6277ea60c81dbd1e4a08c0882c6c7fb5f6d62a3c5f",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf2da60bea79c4687a5900c36c7745ed62f7124327d968462f2cd1e6e309a54f0",
+   "why": "calls no function the template calls",
+   "to": "0x634a422f99cf242978de181c08fd18baef545816",
+   "selector": "0x09c5eabe"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa80114a2fbf2403d88c38abff7aab01c45d8ee54dd72cb9575a804a1374f7b74",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe1f06fcad5df7c966b5000cc162fc3b90af647c5d3ea952d475c1ffbc9763602",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf599f697a282040c04a53a13d8da9ffab144a2688eeea2f2e423b175e1f58c96",
+   "block": "24713920",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xdc2444bdb9143fc94fbadb6fbf1ad4cea0f67022",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0xce137041854c6491445ae333f307e0a7129fda1f",
+    "10000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4580d6a1bb5495162ef62f379feff2fdccf484db9eb837eb43cdedeb72a4f657",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe09410716ae659c48dc1ad2876ef766d15e4f2d5273cd15a16d46cea522e2586",
+   "why": "calls no function the template calls",
+   "to": "0x1b7ad2bf458047aa369478caed5af5303ea3434a",
+   "selector": "0xbeabacc8"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe5e5bd2082f7c06fadbcc8cec52127ae69746520a6dbd6061043855763db7cc4",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x820916141af0d356294f81c1d2e04676b05f7338bc47d4aeb07d1d302fe184f6",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf2e62b59eeb90590a0b0bba6eb275dc530f720d0745ef70eedb4921b9375ca50",
+   "why": "calls no function the template calls",
+   "to": "0xf1e329b9a47739bdab7913661c1475e5919fafe8",
+   "selector": "0xf699b83b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6a0b386e173f9e48b5a8723c04f6365fde37526eddc066384d9999ead03b7289",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xfdbac9bc5e106e39681c480d767f57915522c7738ba43a1952709974372db0ea",
+   "block": "24714400",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x6fac619e2445c374666f9f3881fd458123ee9b0b",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0x6014077e57740519568aa224c1153676bc58239b",
+    "86974219611181575"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa294aca7ba334ab126749467bf7c289b6e11d16cca2338bf9124f6287cabb6ba",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xbf0f0458bba5795869d803d18ff3561b83161a413df96a018ef5445e5972b0b3",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9eab821b6de8e4d6be6a8092ac0e5473794c2d3a4c9f5805fed026a7f4d27a03",
    "why": "calls no function the template calls",
    "to": "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae",
-   "selector": "0x1794958f"
+   "selector": "0xaf7060fd"
   },
   {
    "kind": "not-studied",
-   "hash": "0xd6e5e8c7409b665c23ed2d2668cfc7cff601b355aee93b30f11974be61eaa82b",
+   "hash": "0xa0c1cc0955d070d0d95d6b3b9eb4f1c5bbd4faafc83ebad7b34a3f933d5eea62",
    "why": "calls no function the template calls",
    "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
    "selector": "0xa1903eab"
   },
   {
+   "kind": "not-studied",
+   "hash": "0xebd4b152be09b39809fd7b74787f2ef8d5a3d9f97eb31862ee4b04180f6bf1de",
+   "why": "calls no function the template calls",
+   "to": "0x455bf23ea7575a537b6374953fa71b5f3653272c",
+   "selector": "0x74d736c8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdb025e0966b45f0547ff603ff46ea4b51b95075d582f7dcdb9aad93516afbb00",
+   "why": "calls no function the template calls",
+   "to": "0x33636d49fbefbe798e15e7f356e8dbef543cc708",
+   "selector": "0xef9e1aa7"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x62f55019e6c8190765b5686960e5c44e5c2bafecfa609ab3c3f217a4fb04ded2",
+   "why": "calls no function the template calls",
+   "to": "0xbee162fa5ae892be74f3f3e01c23da89adbccccc",
+   "selector": "0x6d7b7040"
+  },
+  {
    "kind": "fit",
-   "hash": "0x5d320beff65359fae134133ed46299bef5f82aac98e5c6355716430bdcae898f",
-   "block": "25332604",
+   "hash": "0x2efac567bab21362019d5a2883a6f662e0ea5db109be8c91f3aa516e6a5d8d77",
+   "block": "24932546",
    "sender": {
     "kind": "eoa",
-    "address": "0x56cb5729f93a1aa231d7cd1e47f52cf506e708d5",
+    "address": "0x91d40e4818f4d4c57b4578d9eca6afc92ac8debe",
     "call": 0
    },
    "paths": [
@@ -1542,42 +1294,8 @@
    "values": [
     "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
     "0",
-    "0x7b4f14e6d3b42ec8b19e420d0e5e51f6b99ca642",
-    "6582112232178843"
-   ],
-   "outside": [
-    {
-     "at": "call.to",
-     "kind": "token"
-    }
-   ]
-  },
-  {
-   "kind": "fit",
-   "hash": "0xa6711479e93a1b8a739b8643d3bc94f512a3c2746976c845e8fa197124a598d4",
-   "block": "25332719",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xa4c6e26bbe48cb873cae4d823e5df9f609f8260c",
-    "call": 0
-   },
-   "paths": [
-    "call.to",
-    "call.value",
-    "call.transfer.to",
-    "call.transfer.value"
-   ],
-   "types": [
-    "address",
-    "uint256",
-    "address",
-    "uint256"
-   ],
-   "values": [
-    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-    "0",
-    "0x619303ee773e83932c7b8bef287a1a72f0d667c6",
-    "5730000000000000"
+    "0xdfd6995c6a7f4b15d306fed650a8112e18a07a6f",
+    "56787780000000000"
    ],
    "outside": [
     {
@@ -1588,31 +1306,17 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0xb8e98e2e8f60ce021747991705670b5e036accc3ffc1c540d63c24494a01d5c7",
+   "hash": "0xb31d42260edbb0709ced99d7065d3e8afcbcee9546a3e4a6d40cf7a77101900a",
    "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd51f2dc3b438f91ba0dd55837648a7eb7215610f88516f5071edd29f054ec3b1",
-   "why": "calls no function the template calls",
-   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
-   "selector": "0xacf41e4d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe60ee714e1a1baac590924d8fb6667311a56a800b17fa86289d51d70a8bbdbcb",
-   "why": "calls no function the template calls",
-   "to": "0x3d90f66b534dd8482b181e24655a9e8265316be9",
-   "selector": "0x47ee97ff"
+   "to": "0x5c28b966ab37cfb9397bbc04595f91f0fbf06d9b",
+   "selector": "0xef7b25d6"
   },
   {
    "kind": "misfit",
-   "hash": "0x44685d67f924f061a81e328bae0c318eff79c6819f75e06244e56086f19b8bfb",
+   "hash": "0xe5bd57a3fc8161ef60bb1f4c3858c6625e23be24a15ff7f78479f2a5f27e7b9d",
    "sender": {
     "kind": "eoa",
-    "address": "0xe91bcae4a2d7b951304695f93cf1b9a1837cfe43",
+    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
     "call": 0
    },
    "reason": {
@@ -1624,373 +1328,81 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0xd50225bbc82fc6c371f07fec56e7ee9ed43e47082b1ab164a2a2e0955c346fe9",
+   "hash": "0x4613c6ab46d89306bd556d8315ece987a2a6939470633bf0e23db4d4d3df998d",
    "why": "calls no function the template calls",
-   "to": "0x52f0d57fb5d4780a37164f918746f9bd51c684a3",
-   "selector": "0x544407e2"
+   "to": "0x6352a56caadc4f1e25cd6c75970fa768a3304e64",
+   "selector": "0x90411a32"
   },
   {
    "kind": "not-studied",
-   "hash": "0xbd0e6af7f97da4d539d478be37aaef896de9b137a50fd768cd30ee7e771ba1c7",
-   "why": "calls no function the template calls",
-   "to": "0x071e944d0ec39b4f8fdc3903824bb99c86cc41c0",
-   "selector": "0x388e5544"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xc10e1413ba1b859746510c6851163db0d434d2da734aed0efc2651cb4f88ff5c",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xe91bcae4a2d7b951304695f93cf1b9a1837cfe43",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "fit",
-   "hash": "0x35e08c54d7bc40fde71d47cfbda8d91f50550fb5434600905e4910a392933663",
-   "block": "25334271",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x7cc696a7734f459d55d1b4d716b1f56416f0c21f",
-    "call": 0
-   },
-   "paths": [
-    "call.to",
-    "call.value",
-    "call.transfer.to",
-    "call.transfer.value"
-   ],
-   "types": [
-    "address",
-    "uint256",
-    "address",
-    "uint256"
-   ],
-   "values": [
-    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-    "0",
-    "0xe179874e59c0ba9848c9288c72afb023cd8d7344",
-    "34900940437573620"
-   ],
-   "outside": [
-    {
-     "at": "call.to",
-     "kind": "token"
-    }
-   ]
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd8411bc7e937a7aacf5111d9ca32e762484dd556afd9c4c8aef4c2edd450d422",
-   "why": "calls no function the template calls",
-   "to": "0x393af4efb08818079b5e25708a7e62061c3252e6",
-   "selector": "0xa6eb5329"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd3ddc40a56e402478c4b46d2724dc1f590407f5eda00cfb78bac0542da411e25",
+   "hash": "0xe578f6d362da784012f99713bd9c35a50e78d6a38377d0eff92202d4a4ac49df",
    "why": "calls no function the template calls",
    "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
    "selector": "0xacf41e4d"
   },
   {
    "kind": "not-studied",
-   "hash": "0x0c7876e22025ba87dac093809c92ea63be44112ce4c3b899139fadf265f801ca",
+   "hash": "0xf77ded0c3c5b7d9de63f5cd127f0ec4563d3e396578d90f3d639f632ae767ec0",
+   "why": "calls no function the template calls",
+   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
+   "selector": "0xd6681042"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x41409afa97d22e0c757a94b319607b582eeded19c43f5a08e7cbec4608e61151",
+   "why": "calls no function the template calls",
+   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
+   "selector": "0x7951b76f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x822dc76bc4c4dcc7549cf9c02dec99b1efabaaab6d8bc0231ec6b05bba6c79d8",
    "why": "calls no function the template calls",
    "to": "0xb300000b72deaeb607a12d5f54773d1c19c7028d",
    "selector": "0x810c705b"
   },
   {
    "kind": "not-studied",
-   "hash": "0x1b1e255d6037dbef7d9ebd6ad3fae886442ce2a01e9c9a8ff02357c639f1da2d",
-   "why": "calls no function the template calls",
-   "to": "0x709de0b97e369661c99ad54f2b858139897d3dba",
-   "selector": "0xc3192f1f"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbdfcd2dda8502c369d8f34da51e2fe995322c2573e09a4bf7d8297d6edc56cdd",
-   "why": "calls no function the template calls",
-   "to": "0x81b962f00e25f5bcb11d4904e60e59a74c40c71c",
-   "selector": "0x39b20109"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x17dadb56ce961a487f75a41af6c4bda64ee7daed4175485d4c173a11f98cb877",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x93d61e1f6b4bf6d4cc4255e6a4afb8642b0dd83be4b2dec9fa4525cb4ca4475b",
-   "why": "calls no function the template calls",
-   "to": "0xa88f0329c2c4ce51ba3fc619bbf44efe7120dd0d",
-   "selector": "0x946fe3e8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb489a46a182e075a3ef16ef8d4d2d21a8a2843a2d830fc2223cc1d685a1ba053",
-   "why": "calls no function the template calls",
-   "to": "0x173272739bd7aa6e4e214714048a9fe699453059",
-   "selector": "0x7cd44734"
-  },
-  {
-   "kind": "fit",
-   "hash": "0x4a640a7ada29ca8241afe2d6faeb3b503b6c6b490d89a4b4515b9196b0c47918",
-   "block": "25335868",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xc7ff76d4b4fce1fef2a3cff19f1c68933420d22f",
-    "call": 0
-   },
-   "paths": [
-    "call.to",
-    "call.value",
-    "call.transfer.to",
-    "call.transfer.value"
-   ],
-   "types": [
-    "address",
-    "uint256",
-    "address",
-    "uint256"
-   ],
-   "values": [
-    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-    "0",
-    "0x0c63f939a3b36d2360b546336d3646c2ae91fc44",
-    "200005008200523525"
-   ],
-   "outside": [
-    {
-     "at": "call.to",
-     "kind": "token"
-    }
-   ]
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4b6281e470b1ba377276468fdbde05ce0ea5ce45e0721e0f17e4c344e8b3507d",
-   "why": "calls no function the template calls",
-   "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
-   "selector": "0xde0e9a3e"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x438d1fb7ddcc66fdee29bf3959244905f46ecc19a07466bb9a1dba5bd09e9df6",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf43abe7a3b6e5e82e5f7b9e32d86b732c4a9fe0159aeb80c064d181b354468d1",
+   "hash": "0xfe157bd7cfc00311cef65a5752ea1820a9ea40b1a85cf6aa5d19a60586e5be4e",
    "why": "calls no function the template calls",
    "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
    "selector": "0x13d79a0b"
   },
   {
    "kind": "not-studied",
-   "hash": "0x0791414f600da66072b038513bf069ce005f21570367dffd55aa8c3b8fefe3e9",
-   "why": "calls no function the template calls",
-   "to": "0x0000000000001ff3684f28c67538d4d072c22734",
-   "selector": "0x2213bc0b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb05ab02f2d3331708d3367f7e3e76620508f622cb48c1a6250bbbafc0f7b8f90",
-   "why": "calls no function the template calls",
-   "to": "0x14c5cfb708116f1b5170fac8f4b6e637a0c1f2fb",
-   "selector": "0xbeabacc8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5f13259ae59cf1ee453edb78fa68417c08f2a567d39c8b7568728472c32a9049",
-   "why": "calls no function the template calls",
-   "to": "0xbf000000a1f768e94bf68257138c8fd34f7dfcdb",
-   "selector": "0xa0000000"
-  },
-  {
-   "kind": "fit",
-   "hash": "0x3fb3aca5f5efddd2ec39aeeeedb3b630be939068cfd197c3c19744ac01318785",
-   "block": "25553813",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xdff47f054287560feb312f0b011b0eafe8d91fa7",
-    "call": 0
-   },
-   "paths": [
-    "call.to",
-    "call.value",
-    "call.transfer.to",
-    "call.transfer.value"
-   ],
-   "types": [
-    "address",
-    "uint256",
-    "address",
-    "uint256"
-   ],
-   "values": [
-    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-    "0",
-    "0x4b5f834ede79c52bd33d952c719a0b641a0310ea",
-    "3000000000000000000"
-   ],
-   "outside": [
-    {
-     "at": "call.to",
-     "kind": "token"
-    }
-   ]
-  },
-  {
-   "kind": "fit",
-   "hash": "0x86fb3aa1c9fac0d6cf3794e04155cbaa96e9fdf7d704aec68a489bd6995559c6",
-   "block": "25553864",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x606d0d218dff060abb430464ac4c57bec1066e07",
-    "call": 0
-   },
-   "paths": [
-    "call.to",
-    "call.value",
-    "call.transfer.to",
-    "call.transfer.value"
-   ],
-   "types": [
-    "address",
-    "uint256",
-    "address",
-    "uint256"
-   ],
-   "values": [
-    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-    "0",
-    "0x84d7a92da6dcdc91c534cd8b5d221ea180c7cf47",
-    "1794004245603234220"
-   ],
-   "outside": [
-    {
-     "at": "call.to",
-     "kind": "token"
-    }
-   ]
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa155701b47eca06b0cb549c1847819dfe54c51f7a279026dec75c5aa4484600f",
-   "why": "calls no function the template calls",
-   "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
-   "selector": "0xea598cb0"
-  },
-  {
-   "kind": "fit",
-   "hash": "0xe77c447d0065e9f2977812647ad702f11dda2e372304eb52a61dc34d3d8f2765",
-   "block": "25553984",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x9113bb16d6d04cef47c34e159de0517c20df9472",
-    "call": 0
-   },
-   "paths": [
-    "call.to",
-    "call.value",
-    "call.transfer.to",
-    "call.transfer.value"
-   ],
-   "types": [
-    "address",
-    "uint256",
-    "address",
-    "uint256"
-   ],
-   "values": [
-    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-    "0",
-    "0x70874fed980eb72cc446478381634f61095500b5",
-    "64902100000000000000"
-   ],
-   "outside": [
-    {
-     "at": "call.to",
-     "kind": "token"
-    }
-   ]
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xd67c559425c5191e8217c0cfb98af42c63444b2d3dc4855bf6a7092bafc14dff",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb14a98fe45fcdabeaf1a118f6931dc098f4c45c6c65f5a445855e2e9895c2cf9",
+   "hash": "0xd0253b72c14295ec59bfb68a3593617899ab58e3a97e98b386349b0cde2dbad8",
    "why": "calls no function the template calls",
    "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
    "selector": "0xa1903eab"
   },
   {
    "kind": "not-studied",
-   "hash": "0x1363e0cabdb78fa046dace44b19f6e427d8485f0bb9a00a0ba8e5211d174345a",
+   "hash": "0xa9c4aa379da40eb9b272b1effee1f47833885960b0d5e9449d04a772df4af5f7",
    "why": "calls no function the template calls",
-   "to": "0x5440e73a7aa781fbbb4c1b6b553031806468c09c",
-   "selector": "0x00db0000"
+   "to": "0x3057fe9ce0785055d546e974befa47b5e9f0cccc",
+   "selector": "0x07ed2379"
   },
   {
    "kind": "not-studied",
-   "hash": "0x5bcfca27577482aecf6564b1c81cc76a988685b91d32615af07478886a8fb0db",
+   "hash": "0xea6e9e918dd69ac8369dd1c3130178add5c1d046aa67581c1bb0d8874c6da8e0",
    "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x39d70b391f289212c4f05699acbd5d2f477c4dc9d21f1c266fe7dba6a46192c8",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x2133b08238b8dd0d752f071a1b796a80dff85198",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
+   "to": "0x6131b5fae19ea4f9d964eac0408e4408b66337b5",
+   "selector": "0xe21fd0e9"
   },
   {
    "kind": "not-studied",
-   "hash": "0x3e059e334aefb047975ead78fa1e10c95c1cfb2d9b90661e5e0a6a8953a2f02b",
+   "hash": "0x44c202b0c1a0f469f289c77a958e732f2095ca65bdecc672bc1e12e935f8f8a1",
    "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
+   "to": "0xbb1532f8209cb561a2fa064616c29448ed18ea4c",
+   "selector": "0x8c3e5945"
   },
   {
    "kind": "fit",
-   "hash": "0x936365edfc9b9e8cc769df04ccb68180c0c7ae0bf0a2d976ce249d53d1a500ae",
-   "block": "25554490",
+   "hash": "0x5253d45acc43674521b35eb79483a896f0f2a960fa7df97b6afa26966ec77455",
+   "block": "24933475",
    "sender": {
     "kind": "eoa",
-    "address": "0xd2ec563c902c9dfce4c2b002a1011fe63af1a122",
+    "address": "0x335545620c08ce96dfc83dfcc8c91e02235e5c28",
     "call": 0
    },
    "paths": [
@@ -2008,8 +1420,8 @@
    "values": [
     "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
     "0",
-    "0x64b153aba314519acc4e2a279ab461c2ded21f66",
-    "2000000000000000000"
+    "0xebfd166dd7c686828abe61504117f74146a80a8f",
+    "40121930446897329736"
    ],
    "outside": [
     {
@@ -2020,25 +1432,74 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0x1857834a0e801052ee1280e906ecc0532ac4941bf7e207e6b74fc7f1efadaf05",
+   "hash": "0x786f682e6c9f091b928321e504be9d201ba2c78f5e86f1d434c0c9b0b077a77b",
+   "why": "calls no function the template calls",
+   "to": "0x8f5835e9d756c9bd934bce527157a4b0ef3c5cb7",
+   "selector": "0x4a7cf362"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9f18cf78d6b06f2e61ef57b395005d884e1eafdc6489d2c53eb014ab6b56f38a",
+   "why": "calls no function the template calls",
+   "to": "0xccc88a9d1b4ed6b0eaba998850414b24f1c315be",
+   "selector": "0xf9e4bab4"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb7602ed6d096d5fc372d9eefcc5742fbac999f447ada2db9e6a53b5111ba28e4",
+   "why": "calls no function the template calls",
+   "to": "0x6131b5fae19ea4f9d964eac0408e4408b66337b5",
+   "selector": "0xe21fd0e9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xfcb0e82ce7c5d687c9b9335669082e05357c163e7786afe15b9f74504e554d6e",
    "why": "calls no function the template calls",
    "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
    "selector": "0xa1903eab"
   },
   {
    "kind": "not-studied",
-   "hash": "0x780be9b969c560ea12b62f53212e4bd1b85cf383818db68422535dc511ad8e70",
+   "hash": "0x363b5e86954f4d43dfa06ad88c27cf5ef12021b5196d59c76c395ee196c16f4b",
    "why": "calls no function the template calls",
-   "to": "0x5440e73a7aa781fbbb4c1b6b553031806468c09c",
-   "selector": "0x00dc0000"
+   "to": "0x89c6340b1a1f4b25d36cd8b063d49045caf3f818",
+   "selector": "0x0193b9fc"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9cbe6d2a1c883c6c55876550d50f911318edec63a6f6100e70e0544702990a59",
+   "why": "calls no function the template calls",
+   "to": "0xdc24316b9ae028f1497c275eb9192a3ea0f67022",
+   "selector": "0x3df02124"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0e1889e4165b6bff886f565650b70f2a51b3462ff9dbb4fca9ac210a096429f4",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4cc4efb56887c3fc019b48565578a27197bacf3c241207acf906819d87c0940b",
+   "why": "calls no function the template calls",
+   "to": "0x4d72bff1beac69925f8bd12526a39baab069e5da",
+   "selector": "0xe1aa105d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf5848687b382c1adba37d7e6f20633c93bf4db8a6e5ded643533e6cf6d728040",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
   },
   {
    "kind": "fit",
-   "hash": "0xb52dc42b5a10e71c145fc2a370aa819fd07d61904632217fdd35970083a3be28",
-   "block": "25554908",
+   "hash": "0xb3e08b82389accda7c7e21542402d33273d5cca15de7d232fb0a574f0dfc2dc7",
+   "block": "25151699",
    "sender": {
     "kind": "eoa",
-    "address": "0x91d40e4818f4d4c57b4578d9eca6afc92ac8debe",
+    "address": "0x04190f3c6cd761970e5ab87b3b84cda7e924fb0a",
     "call": 0
    },
    "paths": [
@@ -2056,8 +1517,8 @@
    "values": [
     "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
     "0",
-    "0x073f564419b625a45d8aea3bb0de4d5647113ad7",
-    "5850000000000000000"
+    "0x04190f3c6cd761970e5ab87b3b84cda7e924fb0a",
+    "72739247191251327"
    ],
    "outside": [
     {
@@ -2068,207 +1529,180 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0x3c72095bed8600fbaece17307125e61fd983ccd71fa45f112c17de91ff491c5e",
+   "hash": "0x1be847b06bff231713f9de6bcd4a9034108e234735a0192bc04de270960cf9d9",
+   "why": "calls no function the template calls",
+   "to": "0xad3b67bca8935cb510c8d18bd45f0b94f54a968f",
+   "selector": "0x146ee74d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xaa82d9dfdb4d2e9dd3feaab91737508240c8b8c003233da51f062167cb6caf3c",
+   "why": "calls no function the template calls",
+   "to": "0x6131b5fae19ea4f9d964eac0408e4408b66337b5",
+   "selector": "0xe21fd0e9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xbcaf03e453c1582103f3eef9a4fb0c961a45765294362e1d33653ffce590951d",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x32fe3869efef1cc18e1dc4867b17b08fee5040ed21e3a26f2fe2664585aae783",
    "why": "calls no function the template calls",
    "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
    "selector": "0x765e827f"
   },
   {
    "kind": "not-studied",
-   "hash": "0x87da03e9f109221c67fc2907d70c60b539504477471999cc8c9a3961703b3a74",
+   "hash": "0x13779d40ef351791fe592e622dcacee5a7d378fc319c6d0832027fb647342215",
    "why": "calls no function the template calls",
-   "to": "0xa9d635ef85bc37eb9ff9d6165481ea230ed32392",
-   "selector": "0x13d79a0b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4cdd3877af749d33f91811d7493449faf08803d3fd665e79756018812cefdc59",
-   "why": "calls no function the template calls",
-   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
-   "selector": "0xacf41e4d"
+   "to": "0x4d72bff1beac69925f8bd12526a39baab069e5da",
+   "selector": "0x8409d4fe"
   },
   {
    "kind": "misfit",
-   "hash": "0xbd58e2a56921a529102f9e18c09e98fc364b28d6388e3f420aeac873d768e9f8",
+   "hash": "0x715f9832d466e72096bb1daf0aa06c604548fa0cf818d0ea2a2c5e1cd624549c",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x2133b08238b8dd0d752f071a1b796a80dff85198",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x68626a81579f06fc6ad008e76bb7582c47f503697e0529a25ac8ec05bd2af40a",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xffc6da7f57049e0ab80e0f87cb0aa7491ed06eef7396691ef9be26403c23d962",
+   "why": "calls no function the template calls",
+   "to": "0x1f2f10d1c40777ae1da742455c65828ff36df387",
+   "selector": "0x2b667668"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8c0f05bc1d1815383a6c25f8294dc6738f81fcad97eb16ac3bc9423cf05b9ca1",
+   "why": "calls no function the template calls",
+   "to": "0x82d2d83134362355c0b485366d1f6d4dc38515de",
+   "selector": "0x99e1d016"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x210f0243022d6a15b8f7990283099360f841bc78d88b3eb74fae106d02fe0ffc",
+   "why": "calls no function the template calls",
+   "to": "0xa88f0329c2c4ce51ba3fc619bbf44efe7120dd0d",
+   "selector": "0x946fe3e8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x52020b6e9c1592ac2340ca4df235761f19d98635f5f1222b468c770189c360f4",
+   "why": "calls no function the template calls",
+   "to": "0xad3b67bca8935cb510c8d18bd45f0b94f54a968f",
+   "selector": "0x146ee74d"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf262e43732f44c3e1ab655246882ca79c42f9905f02863c8a554393734f1355a",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xe91bcae4a2d7b951304695f93cf1b9a1837cfe43",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe8276808b88cdb4cdfd0cdff496f0292dd55b1d5cba94419a2f04a932838bd59",
+   "why": "calls no function the template calls",
+   "to": "0xc2f2daa6d856afe7533eeb2584ee07d2e172818b",
+   "selector": "0x46289ac0"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x0bf2b5a6ba5e3d6d31664e297e40dc1c28f176dccd1e375c2b7642e56fb990d7",
    "sender": {
     "kind": "safe",
-    "address": "0xc53cced6332d06972a7eaedc64fdf6d4af5220b8"
+    "address": "0x16388463d60ffe0661cf7f1f31a7d658ac790ff7"
    },
    "reason": {
     "kind": "calls",
     "calls": [
      {
-      "to": "0xf89f49e21a2bd1fb24332462cb21dc1378aa25e1",
-      "selector": "0x6a761202"
+      "to": "0x1981ad9f44f2ea9add2dc4ad7d075c102c70af92",
+      "selector": "0x5c38eb3a"
+     },
+     {
+      "to": "0x1981ad9f44f2ea9add2dc4ad7d075c102c70af92",
+      "selector": "0x5c38eb3a"
+     },
+     {
+      "to": "0x1981ad9f44f2ea9add2dc4ad7d075c102c70af92",
+      "selector": "0x5c38eb3a"
+     },
+     {
+      "to": "0x1981ad9f44f2ea9add2dc4ad7d075c102c70af92",
+      "selector": "0x5c38eb3a"
+     },
+     {
+      "to": "0x1981ad9f44f2ea9add2dc4ad7d075c102c70af92",
+      "selector": "0x5c38eb3a"
+     },
+     {
+      "to": "0x1e9eb053228b1156831759401de0e115356b8671",
+      "selector": "0xda5f3286"
+     },
+     {
+      "to": "0x1e9eb053228b1156831759401de0e115356b8671",
+      "selector": "0xda5f3286"
      }
     ]
    }
   },
   {
    "kind": "not-studied",
-   "hash": "0xd8fdecaa9932fea31476edc2ec1451e4ae76bfff6bc588f5de1b848d9aaeeae6",
+   "hash": "0x7a884a6ad03e66f60e214ac6ea826022da9128eebc2775de7fb8950fef93bea7",
    "why": "calls no function the template calls",
    "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
    "selector": "0xa1903eab"
   },
   {
    "kind": "not-studied",
-   "hash": "0x2ef20455c25d648e394b3193a01d98baad883bae0ffacefd8f2e45338fa4907b",
+   "hash": "0x9bdd842cdbe192c2439ed5a32fa90b2634bbab173e8d5de235ebdf02dd06420d",
    "why": "calls no function the template calls",
-   "to": "0x225a38bc71102999dd13478bfabd7c4d53f2dc17",
-   "selector": "0xbc4a02e4"
+   "to": "0x215e278c44787dffd33b58311a0e9bb0657c1d8d",
+   "selector": "0xf92970eb"
   },
   {
    "kind": "not-studied",
-   "hash": "0xe260afc576b1269866809a7aa131a35a1a3f9a81e8cbaa41fc0843777d0a2b0f",
+   "hash": "0xf443ff0c8acb19979f9014e63a5ca2ab6f567e24ac9469678c1cc51ae5e4c12d",
    "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xdacf4a4593816b702f8525d1cddb79b9bca851f2a75086155d1da99e1e2170e2",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xae0f757fcb5849e065f07bbe2f81ccd9c84498e4e55e103d5cec4f2257675b35",
-   "why": "calls no function the template calls",
-   "to": "0xad3b67bca8935cb510c8d18bd45f0b94f54a968f",
-   "selector": "0x146ee74d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb41c29a32505c9a0bb07809a369a453a882d4b80f60732cc6fd89b928342ab5a",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7ebe765ab18f59044b04c53990c1cf2ba0680256f2012abe723c99e3b494de4b",
-   "why": "calls no function the template calls",
-   "to": "0x28b1dc1a5e3699a428bc51d234dfab7c9cb2a183",
-   "selector": "0xf2c42696"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x2aa9b28c908e639f773add98a78e5b798d124a2f5d600d9a3950aeb6a00f9f73",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x2133b08238b8dd0d752f071a1b796a80dff85198",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9cc06b5df11b6d5b10c5292a79cc61a163a2b6bb70383ee238ede28f50d10dc8",
-   "why": "calls no function the template calls",
-   "to": "0xe29771d17e879beae9be4b7127f3d5c7bbd50a36",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x6fdf56505aeaac2f99a7aaf6221798f1a37de0648563c447823c3e6ee38f9d05",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x2133b08238b8dd0d752f071a1b796a80dff85198",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x48632397ba7ec728a6bfd7ef5378664304a30954b29039bc1c07e5ab525220a5",
-   "why": "calls no function the template calls",
-   "to": "0xad3b67bca8935cb510c8d18bd45f0b94f54a968f",
-   "selector": "0x146ee74d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe27916f225850a8bc31c46cbe38190fccea8019441fc08a60fd55a8d9e13321a",
-   "why": "calls no function the template calls",
-   "to": "0xad3b67bca8935cb510c8d18bd45f0b94f54a968f",
-   "selector": "0x146ee74d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xac5793d043222a4443ef8e1168fbae4073bb57846f3c68920cc48e5231950f66",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd444117ce4ea38753d51000b308475c44971e8585576ace81937a68869420117",
-   "why": "calls no function the template calls",
-   "to": "0xad3b67bca8935cb510c8d18bd45f0b94f54a968f",
-   "selector": "0x146ee74d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x833b93f791600fcf8d7503bf881681c3c5af23f6b11b15874fac4e2616a753a3",
-   "why": "calls no function the template calls",
-   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
-   "selector": "0xd6681042"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x4fdfededcee3e40ef8b5f8ec95c3ef92699fa2a35a905a07bfa6db5688fc4335",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x00d9fe085d99b33ab2aae8063180c63e23bf2e69",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x5f75628dd2a4d5a0039ee2d5033eeb5b679a96828242ab0f139d7a461e4c82d0",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x2133b08238b8dd0d752f071a1b796a80dff85198",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3dd8e45baeda973425f8ab840958d74f15743f453efa82e9580ef6f7f9410060",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
   },
   {
    "kind": "fit",
-   "hash": "0x26347ac89bff782067f9dde13632a3d5bd56819f8f2d1729b635443856014856",
-   "block": "25991438",
+   "hash": "0x745b0ba5bd997decea38e1c08e6df259c2359836c9cf3eccbc7a2ab27cde421f",
+   "block": "25369112",
    "sender": {
     "kind": "eoa",
-    "address": "0xdff7e4892635a92a5c1027349978e628422302df",
+    "address": "0x42799bed762e293e01a6c31bd090928ca7fdd14e",
     "call": 0
    },
    "paths": [
@@ -2286,8 +1720,8 @@
    "values": [
     "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
     "0",
-    "0x62008d5122e5dfdeaf1a8218c4bc3bde0b339784",
-    "1000000000000"
+    "0xdd3d72c53ff982ff59853da71158bf1538b3ceee",
+    "47959350000000000"
    ],
    "outside": [
     {
@@ -2298,142 +1732,42 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0xda28e19d7cce3adfce77619fd5f22948a892eff952a1d0f5b2cec4e9f352b3e9",
-   "why": "calls no function the template calls",
-   "to": "0x8f5835e9d756c9bd934bce527157a4b0ef3c5cb7",
-   "selector": "0x4a7cf362"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x95575e400d40b83a150d9ac302756e7d2513b91c9dadd1ab1edef639b4531031",
-   "why": "calls no function the template calls",
-   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-   "selector": "0x13d79a0b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbc77e7ccaa0385335aa9873b4efca3852a2feba42307352351d2c1856ad79d73",
-   "why": "calls no function the template calls",
-   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
-   "selector": "0xd6681042"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x79ef43c161c2e4f7dda3b41a8cf09f4d709a2b9b20aa6e3b06db18718317d723",
-   "why": "calls no function the template calls",
-   "to": "0x3d90f66b534dd8482b181e24655a9e8265316be9",
-   "selector": "0x47ee97ff"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xedf594f29da72a52726f813cfd7ca91bec88e386381d7e89b9667b1d9be59a42",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa343fd2485efa754c22843972ec92ae0cd2c9bc0470b248c6f9f1c32e1a85112",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xafb4cc85fbf154cea1ebc9d7c4c1aed5fd7622e1e137f3da4c32b703c29715c1",
+   "hash": "0xc093b10419a34535edd554b49fef83850a4c462bcb35621df1f1b8085dda13d8",
    "why": "calls no function the template calls",
    "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
    "selector": "0x3593564c"
   },
   {
-   "kind": "misfit",
-   "hash": "0x40e6ed6f5bdb809d492f2d799d8fd2159cb6bba85f50c72698c4ecfd26c01788",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x012437b23bb065a70655bd1d4012a1e1a3cf6641",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
+   "kind": "not-studied",
+   "hash": "0x6f3c6d2a9df7e44412e9e17accbbd5270df7ebdf0366c0ade0c7fcb4bfd68f19",
+   "why": "calls no function the template calls",
+   "to": "0xe08d97e151473a848c3d9ca3f323cb720472d015",
+   "selector": "0x8cbf8566"
   },
   {
    "kind": "not-studied",
-   "hash": "0x1cc7223096073aaa141de55a1a6da5be774fb9b47d271cb6ede1781362653ce5",
+   "hash": "0x5b09fe792a27dc93ca7e2829cb0a97f6c8473610f4c5e022465c6f073c6669b2",
    "why": "calls no function the template calls",
-   "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
-   "selector": "0xea598cb0"
+   "to": "0x45312ea0eff7e09c83cbe249fa1d7598c4c8cd4e",
+   "selector": "0x5c9c18e2"
   },
   {
    "kind": "not-studied",
-   "hash": "0xb5d259ccfdbb3f908aaa9dbeab25a583e1ba25756d072ce62ffedb2c1f29ca07",
+   "hash": "0x148d0f625ac0ea5b12d8a9e4da32faba2629c20a33f94f7a8b23705a7c414973",
    "why": "calls no function the template calls",
-   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
-   "selector": "0xacf41e4d"
+   "to": "0x45312ea0eff7e09c83cbe249fa1d7598c4c8cd4e",
+   "selector": "0x5c9c18e2"
   },
   {
    "kind": "not-studied",
-   "hash": "0xbce9b9037b1c3bec2f204721995e2394c5f934badfb818f8391ba5b28431e7a2",
+   "hash": "0xfbc7a895b3bc6e8cf0fc528d79c734c05d957be8bf6e22103d315ddff3e7d13e",
    "why": "calls no function the template calls",
-   "to": "0x8f5835e9d756c9bd934bce527157a4b0ef3c5cb7",
-   "selector": "0x4a7cf362"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe7ac4f8d3971cfd0b9d52ce64683e4e727600e992ac7d9b6ed4554f17ec282d9",
-   "why": "calls no function the template calls",
-   "to": "0x33636d49fbefbe798e15e7f356e8dbef543cc708",
-   "selector": "0xef9e1aa7"
+   "to": "0x2d5805a423d6ce771f06972ad4499f120902631a",
+   "selector": "0xf497df75"
   },
   {
    "kind": "misfit",
-   "hash": "0x986655a85cc46d1689056f7a747491b4579803f10918100fae5dfc2a9514bdbc",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x00d9fe085d99b33ab2aae8063180c63e23bf2e69",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc892c051137dd0886e5f368199beed89a9fd777a8fcb0532fb5f20be09d3b8b2",
-   "why": "calls no function the template calls",
-   "to": "0xfa86aa141e45da5183b42792d99dede3d26ec515",
-   "selector": "0x04117561"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x66124d7adf37921437e70593c9430404eecaebfc1ba53739ed5bf35748e551d2",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x8f80defdc578eb362c2b0422b9f2d5ac41832ab0e2aa6a4334987d6d6164471e",
-   "why": "calls no function the template calls",
-   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-   "selector": "0xa1903eab"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe4e0f6408312c5e1c4fa7afc6d70c244af54205a2c84f06a95931e193eb86b94",
-   "why": "calls no function the template calls",
-   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
-   "selector": "0xacf41e4d"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xbef9121cb8ff8cbe10bda69b385ab277f13afeec1cd99443697bcc0bc14abbe0",
+   "hash": "0x2b77226a068036c51420270111d38782bb037c9d7dd90692d94ab25dc8f0b3e6",
    "sender": {
     "kind": "eoa",
     "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
@@ -2447,41 +1781,12 @@
    }
   },
   {
-   "kind": "misfit",
-   "hash": "0xb64c8b6c46718f57769e44ac10fed59a5a3b05f7599f364ca10e070fe7731c77",
-   "sender": {
-    "kind": "safe",
-    "address": "0x9aaddbb077a873ad0551441fc175b34e2ac76005"
-   },
-   "reason": {
-    "kind": "calls",
-    "calls": [
-     {
-      "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
-      "selector": "0x095ea7b3"
-     },
-     {
-      "to": "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45",
-      "selector": "0x04e45aaf"
-     },
-     {
-      "to": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-      "selector": "0x095ea7b3"
-     },
-     {
-      "to": "0xce00dd8f55e7f6a4fd39ec703f542c0bfa5eeeee",
-      "selector": "0x997e471f"
-     }
-    ]
-   }
-  },
-  {
    "kind": "fit",
-   "hash": "0xc6a972f515b48fc426072d86869dfdcdf9e12e18d0322f970c6ec988b148be84",
-   "block": "26208811",
+   "hash": "0xaf16337b7de6ba3a764df5fbe9e6b83c0430ffdeb3bd83ab65ebe03b05a7446e",
+   "block": "25370427",
    "sender": {
     "kind": "eoa",
-    "address": "0x374bf3596a1db61735ed92ea50ce54c06bcf3ba8",
+    "address": "0xf418263a6468c80d3bcb71033c56aacf81b241ba",
     "call": 0
    },
    "paths": [
@@ -2499,8 +1804,8 @@
    "values": [
     "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
     "0",
-    "0x7ad82294d5842e9fcabae8992e6deadbad484e42",
-    "7381741075243089"
+    "0x6cbb2add2a126e65cef029afca45576910a26b5f",
+    "10000000000000000"
    ],
    "outside": [
     {
@@ -2511,25 +1816,101 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0x4f8a22dcb2c542801f10ac4e873a2184f6bb74c7ff53b7b1012867ffcb73730d",
+   "hash": "0xe9af81552bd7c3252d3f7f38caf5b586e739162b1a173a8bcb14028a52753917",
+   "why": "calls no function the template calls",
+   "to": "0x0000000000007a8d56014359bf3e98f18b7773f9",
+   "selector": "0xa61a185d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb82af121c86f1513c2bb40d0d8e5fb2cffe8a56556d7f3369717dfb71574a7b1",
+   "why": "calls no function the template calls",
+   "to": "0x28b1dc1a5e3699a428bc51d234dfab7c9cb2a183",
+   "selector": "0xf2c42696"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x9df6cbcefb5e156fe02fc0bd871b4b7b54c2f10c8da56dcb721db7a54123ebf0",
+   "block": "25370804",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xbaa5a9b673003481972a97eb5593c8d1818843af",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0xc15acef1bfde13cff18a543c3452c7dc3647e556",
+    "4301275342029268705"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x715520f430cfcc452877ef7ffe009946b2cd7c9128a18ab6078887d4c3cb7c2a",
+   "why": "calls no function the template calls",
+   "to": "0x3e2943bff9f3b8ef36664d2ef038bad2b11efd2f",
+   "selector": "0xc6fe8747"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf0bb94237dc577a9fffde8dd0e95da19f1b7d9b7c9b41ffd199af64ef23b64a0",
+   "why": "calls no function the template calls",
+   "to": "0x0a2b94f6871c1d7a32fe58e1ab5e6dea2f114e56",
+   "selector": "0x544407e2"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8401d634b5d0fc49eb6a1a99a47d5aa6de4b24f92d2cda5800cde8f814af8e3b",
+   "why": "calls no function the template calls",
+   "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+   "selector": "0xde0e9a3e"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x92741e2c2e7f95ed264ce8198fabaec2e2fbb95464e582894eb52b70704f10f4",
    "why": "calls no function the template calls",
    "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
    "selector": "0xacf41e4d"
   },
   {
    "kind": "not-studied",
-   "hash": "0xe46fc79642bed7e3ad45edd288e0e48b7ff77ef6d2e36b30aed88ffeb8a59708",
+   "hash": "0x521c28fc390af355327ac6193f4a77cde00dc7a3ad55dfa73058c8b014439311",
    "why": "calls no function the template calls",
-   "to": "0xdc0909898e3bd862c86c69e4bcc2af08f4aaca70",
-   "selector": "0xe9ae5c53"
+   "to": "0xf7364e230ea0e5cc41e6cd4e2a30a26ca1850b73",
+   "selector": "0x1cff79cd"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0a77bbf01fc0a846af3cc25a217397f865a57fdc242c7ddeb13d36808515244b",
+   "why": "calls no function the template calls",
+   "to": "0x1921e0ff550c09066edd4df05d304151c45e77de",
+   "selector": "0x13d79a0b"
   },
   {
    "kind": "fit",
-   "hash": "0x4adcfd306d7596b5949d7c7fa83a6adfc08cf4b827f72191f77214851f0e712f",
-   "block": "26209584",
+   "hash": "0xf5ee2f2210cb67aeca394af5456e676a22d8c173fab22a29e9d907e39f890716",
+   "block": "25372093",
    "sender": {
     "kind": "eoa",
-    "address": "0xb0a27099582833c0cb8c7a0565759ff145113d64",
+    "address": "0xf5caeb033b515d4226fd49635fbed94deecad367",
     "call": 0
    },
    "paths": [
@@ -2547,8 +1928,8 @@
    "values": [
     "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
     "0",
-    "0x4a4aaa0155237881fbd5c34bfae16e985a7b068d",
-    "38646523000000000000"
+    "0xee5ef2acb2ae10cb1246da00b9538f0a0bb6a159",
+    "418000000000000000"
    ],
    "outside": [
     {
@@ -2559,35 +1940,192 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0xd4c09aaa6cfc882d218fbeb6ba918288611bcb8edcc4ab15110cb52bf88ec3d3",
+   "hash": "0x573d5e8508c85869d0755db71d4c9baaea469503d49e520a2b790882a6dc62a1",
+   "why": "calls no function the template calls",
+   "to": "0x3d90f66b534dd8482b181e24655a9e8265316be9",
+   "selector": "0x47ee97ff"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x937ddd33ba894fd5aaed4aaef177a5aee3fa9305fced09349b8e323c31df552f",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xbad000006db10503589262b55d09bb7b3c5e1472",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xccc83a03f665bb4cf3228ab1591a8f9bb0679466ed0dc52a10b3718e9056eccb",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xbad000006db10503589262b55d09bb7b3c5e1472",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6dcbb570d658dab86318ceb4acaa7ed87c19b6efcf93b919ae773476631185ae",
+   "why": "calls no function the template calls",
+   "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+   "selector": "0xde0e9a3e"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5bb2fdf09bef9adc53b0dffbceda32eaf4e92b69797d5ff4f8edcc14980923dd",
+   "why": "calls no function the template calls",
+   "to": "0xccc88a9d1b4ed6b0eaba998850414b24f1c315be",
+   "selector": "0xf9e4bab4"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x40312b0fd9018edbb9368e761b0c462c22ea0063b04cddc6df5c6c0ec385333c",
    "why": "calls no function the template calls",
    "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
    "selector": "0xa1903eab"
   },
   {
    "kind": "not-studied",
-   "hash": "0xf89c58171ad557db916c40cd6cf8feadf790fddc81f25a36af5bd14d50d6447d",
+   "hash": "0x9ed10eddba2b32bc160db7187c75da5fd2af29986748ac9383ddb20dd998ad2a",
    "why": "calls no function the template calls",
-   "to": "0x6a000f20005980200259b80c5102003040001068",
-   "selector": "0xe3ead59e"
+   "to": "0x858646372cc42e1a627fce94aa7a7033e7cf075a",
+   "selector": "0xe7a050aa"
   },
   {
    "kind": "not-studied",
-   "hash": "0x050aed2a0fdcc1be43dc0a58e8ca38b586798305b3eb47a7a760227f4f4df7ab",
+   "hash": "0xcfafe869921fa4bfef0a2bb3c5983047e9b47f824616a703e7c0aafa947176a0",
    "why": "calls no function the template calls",
-   "to": "0xec6fc9be2d5e505b40a2df8b0622cd25333823db",
-   "selector": "0xc94ba2ba"
+   "to": "0x98078db053902644191f93988341e31289e1c8fe",
+   "selector": "0x51a7c716"
   },
   {
    "kind": "not-studied",
-   "hash": "0x7bb57c662abe80473862eb2cd1bcbf013c3932ce3de192f4c81467905c780e69",
+   "hash": "0x9045c5d324b60d279cbc754454d0d9142943db8db387745ecede856bfeb84246",
    "why": "calls no function the template calls",
-   "to": "0xec6fc9be2d5e505b40a2df8b0622cd25333823db",
-   "selector": "0xc94ba2ba"
+   "to": "0x14c5cfb708116f1b5170fac8f4b6e637a0c1f2fb",
+   "selector": "0xbeabacc8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd61a8c8938aa4591925a21fa5e8e6328b2e1ba8a3849f7fd49739b329be1b5ac",
+   "why": "calls no function the template calls",
+   "to": "0xad3b67bca8935cb510c8d18bd45f0b94f54a968f",
+   "selector": "0x146ee74d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4ea07ce16dd2a10d60cfcf498fd34234646a6c75bc33fad6e2b0154eb091733a",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc1ec51386129689c0b9887a71b99701b63028de1bc7d0124398875d96e7456fc",
+   "why": "calls no function the template calls",
+   "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+   "selector": "0xde0e9a3e"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x336a98d97e8d8fcc123a4e32a0bf1ba4af6f9586b93525c54cfa4650eae35e2e",
+   "why": "calls no function the template calls",
+   "to": "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae",
+   "selector": "0xaf7060fd"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5399c771f8b12e7e2e61528444ee5a1b68369839d683302139214e1f8c0664d6",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x48a6643da1f5ad4f20f5f8328f8c25d23c01522a3e6f76972281f86e2b30ab50",
+   "why": "calls no function the template calls",
+   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9efcae02659d24639816cc731247ff989ac44ebbf957cfe0618745e70a42523b",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xfafb9aba8fc4368b291df4991612f869cfbaa7f3f3c7dc83fb02694993d731d8",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe40b0a0fabbaba53a35e9385747d2a5e97be20cecd80f326f80a5521dab87c4b",
+   "why": "calls no function the template calls",
+   "to": "0xe31cf501ef645af30724f979c054800a21ac611c",
+   "selector": "0x9265bb9d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1a59775d6c7a1293dd342c2ae70c2ac258eece4c359c3d05014eb69dc0c35c84",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdece11d56261a5d4cb7dd4e4bf5d8509e1ef8fbf7fd268873dab5bfd32a557d6",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x57635b73842ac7f175b40bdaefd2983969bec1f2ccb2a98d57ea8739ffe3d374",
+   "why": "calls no function the template calls",
+   "to": "0x858646372cc42e1a627fce94aa7a7033e7cf075a",
+   "selector": "0xe7a050aa"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd4441bde5908cf436e15f647cefc062765fd0a2935dae0acb1ba3769d2de510f",
+   "why": "calls no function the template calls",
+   "to": "0x135d1cadd27837b263c7a83c3dcbbd48bc1d6b6b",
+   "selector": "0x601881f3"
   },
   {
    "kind": "misfit",
-   "hash": "0x0fe573dc59f9121cacc0b0dbcc13ebb3079596f19daf52fabd7a2286769b0157",
+   "hash": "0x3998118d35b8c29f15e08806f488e33f9a3abb7f9252f7499be0c0a3ec62d697",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xe91bcae4a2d7b951304695f93cf1b9a1837cfe43",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb4a932252cacd1f930dbb7ffb60e3d47091562b58d3f6f1202237050aeb4e36e",
    "sender": {
     "kind": "eoa",
     "address": "0x2133b08238b8dd0d752f071a1b796a80dff85198",
@@ -2602,163 +2140,133 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0xd44a1a0958058a40478ba9caed1cd776739e21e6544e3ec8769ff44e11d90687",
+   "hash": "0x2cf43d8891ed6fd4195c211af46e20605804917a884d26292788107c37ca8ff0",
    "why": "calls no function the template calls",
-   "to": "0x45312ea0eff7e09c83cbe249fa1d7598c4c8cd4e",
-   "selector": "0x5c9c18e2"
+   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
+   "selector": "0x07ed2379"
   },
   {
    "kind": "not-studied",
-   "hash": "0xbf934d88b574cea9dad38cf5068106191d3d647b958706b4c82b90c98533bdda",
+   "hash": "0x73c3129f217c642bcc4b958b37e77c30617d3ba754aba577830047b5c10bc685",
    "why": "calls no function the template calls",
-   "to": "0x64338fd8e7b1918b4a806a175e26ed152b3d0b7b",
-   "selector": "0x06dc8bea"
+   "to": "0xad3b67bca8935cb510c8d18bd45f0b94f54a968f",
+   "selector": "0x146ee74d"
   },
   {
-   "kind": "fit",
-   "hash": "0xcecf8d79619d4ed20c4d0f43cbe0ffd47c65ba6fcedb1026c2f8b6b6a718bd50",
-   "block": "26211032",
+   "kind": "not-studied",
+   "hash": "0x129a86cdf0d2e3edbdb6f5d430122f5a9fdfca7b2c031752fcf12a4c50e0f90b",
+   "why": "calls no function the template calls",
+   "to": "0x6920c7c9a66edea563b1aecb8ca8097f811cbfc5",
+   "selector": "0x4641257d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8c56550e83330390d210045d06052dab5fb2018d102cc4fa71703b8e70cd8cbb",
+   "why": "calls no function the template calls",
+   "to": "0x1f6692e78dde07ff8da75769b6d7c716215bc7d0",
+   "selector": "0x8a99b4f2"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x04883ad09fa29aeef6d7b6e876439d7c304d406217a3535e2c2d8ae6d89c962e",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xfc4ef6778d15fda39a3093ae84de53addb347eab619a2dea6a924421b0579e62",
    "sender": {
     "kind": "eoa",
-    "address": "0x91d40e4818f4d4c57b4578d9eca6afc92ac8debe",
+    "address": "0xe91bcae4a2d7b951304695f93cf1b9a1837cfe43",
     "call": 0
    },
-   "paths": [
-    "call.to",
-    "call.value",
-    "call.transfer.to",
-    "call.transfer.value"
-   ],
-   "types": [
-    "address",
-    "uint256",
-    "address",
-    "uint256"
-   ],
-   "values": [
-    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-    "0",
-    "0xaea86ac3a1639d8e3734861d3ffbe75a27124f5b",
-    "4221688000000000000"
-   ],
-   "outside": [
-    {
-     "at": "call.to",
-     "kind": "token"
-    }
-   ]
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x6938daa560c0ab6341e620a1df22038f40e58fb33557b888283d96af2124aed4",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
   },
   {
    "kind": "not-studied",
-   "hash": "0x5bcb22c3262ae6ca28f244adce837eb6c7b50dd5e898082b3fa3a46927ee6b12",
+   "hash": "0x23b921e83085dbca6f2c8bb1673922bd65236851670723e66dcfdac3762aba52",
    "why": "calls no function the template calls",
-   "to": "0xc565221f5ecb43b2191f7afa4b5e99356053b27d",
-   "selector": "0x4fc79d94"
+   "to": "0xa88f0329c2c4ce51ba3fc619bbf44efe7120dd0d",
+   "selector": "0x946fe3e8"
   },
   {
    "kind": "not-studied",
-   "hash": "0x0dacadeb2a0e28409c66d47e2c571150c8ad0de3813cce59516074cf7b40c110",
+   "hash": "0xfc19f8a3517a361aa962e9b65b39a6cd959c7cc5329ceec2b5cd2ef23c1d21b3",
    "why": "calls no function the template calls",
-   "to": "0xec6fc9be2d5e505b40a2df8b0622cd25333823db",
-   "selector": "0xc94ba2ba"
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc18850e1f34df4e0c773142241258718a9c14c399ac7a026b86df6a147a64f22",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x2133b08238b8dd0d752f071a1b796a80dff85198",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
   },
   {
    "kind": "not-studied",
-   "hash": "0x074beb9fd156c0f92f8fc3b8894bc7b7168718e9d62f35c0c361bf727d465ab5",
+   "hash": "0xe6e0be5ecdbe82721008cf9f0a8c74046a8a2b8f8ebd70dfb4751d0b692490f0",
    "why": "calls no function the template calls",
-   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-   "selector": "0x13d79a0b"
+   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
+   "selector": "0x3593564c"
   },
   {
    "kind": "not-studied",
-   "hash": "0x0c407dd2ae9a005598786a9ec2cfa3f17c6f44ecad5396c7a42a625c89c955d8",
+   "hash": "0x24daeb6b3d88d94ad7389a642177bcf39b010dd675e5a98a76e4762c84196e59",
    "why": "calls no function the template calls",
-   "to": "0x0000000000bbf5c5fd284e657f01bd000933c96d",
-   "selector": "0x49af9204"
+   "to": "0x6131b5fae19ea4f9d964eac0408e4408b66337b5",
+   "selector": "0xe21fd0e9"
   },
   {
    "kind": "not-studied",
-   "hash": "0x4703f00b197a9d1bd5fdabfc1b769693f35539f71341d1fba4942d8d61d8323c",
-   "why": "calls no function the template calls",
-   "to": "0x5ed864e8f37dcb4f79c5172a815d1b3a9147eaab",
-   "selector": "0x9008d19f"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4901ef47b7002510b3fa66067c916182709f8cccf84f6ed24c6ebd54ac85cac0",
-   "why": "calls no function the template calls",
-   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
-   "selector": "0xd6681042"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x0e6099ca6caa3b9a8a4f2d9dfe6bd04e0edb458f2d9a7eaccd5b44c9d85c5232",
-   "why": "calls no function the template calls",
-   "to": "0xfe08d40eee53d64936d3128838867c867602665c",
-   "selector": "0x3756c011"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd959081b3e7e33342bb6d44251d5d41a7c8c8e46ce40c1f54ac7f6b2b32162c5",
+   "hash": "0x9231f197194870c81d7765784ac05a70934d0ab4251f8237a662f2f392be5ded",
    "why": "calls no function the template calls",
    "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
    "selector": "0xa1903eab"
   },
   {
    "kind": "not-studied",
-   "hash": "0xef6bb46ff405857df3a8ee3e8464cbd8016160ee183e6f05be186bf2cd4b8451",
+   "hash": "0x4372d691a1c412327e18953587a5c20337063e2131f6b9bc69331af29b7448ce",
    "why": "calls no function the template calls",
-   "to": "0xfe08d40eee53d64936d3128838867c867602665c",
-   "selector": "0x3756c011"
+   "to": "0x6a000f20005980200259b80c5102003040001068",
+   "selector": "0xe3ead59e"
   },
   {
    "kind": "fit",
-   "hash": "0xaf921d879084ea46d4ac97e070da376b339fa280e0a8366ebcef787cda0cec50",
-   "block": "26427867",
+   "hash": "0xde6e9c3d9332684c22b17cc9b3638e860c2a1954312ac67eedef82599c244db2",
+   "block": "25809978",
    "sender": {
     "kind": "eoa",
-    "address": "0x85c63731e7c651a902e6f34c9677fa3d8b762e64",
-    "call": 0
-   },
-   "paths": [
-    "call.to",
-    "call.value",
-    "call.transfer.to",
-    "call.transfer.value"
-   ],
-   "types": [
-    "address",
-    "uint256",
-    "address",
-    "uint256"
-   ],
-   "values": [
-    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-    "0",
-    "0xf7891e149c4c7eb1d2c63d24ca89e67d2574f30e",
-    "7206496002592178513"
-   ],
-   "outside": [
-    {
-     "at": "call.to",
-     "kind": "token"
-    }
-   ]
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc58b97a8e1ef4c5a471e6bf198d1ad32f395897d38244c0ae7a6635c7a731cdc",
-   "why": "calls no function the template calls",
-   "to": "0x62de59c08eb5dae4b7e6f7a8cad3006d6965ec16",
-   "selector": "0xd3a86833"
-  },
-  {
-   "kind": "fit",
-   "hash": "0xd4e063fce5a3661f478243f4ae304116edceac25041d07491fc401ae2d2c6f33",
-   "block": "26428088",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x995a99d27a4a88c18a279d3f8d631d9b3946ccf1",
+    "address": "0x62425cd6bdcb6bfe51558ea465b063486b70dc9f",
     "call": 0
    },
    "paths": [
@@ -2777,7 +2285,7 @@
     "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
     "0",
     "0x64cdaa89629fe003eaa31b480d8b63372d109a53",
-    "4400000000000000"
+    "4002668000000000000"
    ],
    "outside": [
     {
@@ -2788,64 +2296,42 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0xb1837f233c80dff52ff9623968fa4c911c2886a86dfe1ee1f6c31e769b717f3f",
+   "hash": "0x1c97a1f57b8a3a033e0137b34016b11595fa528d281cee2f947a6b98513b6941",
    "why": "calls no function the template calls",
-   "to": "0xec6fc9be2d5e505b40a2df8b0622cd25333823db",
-   "selector": "0xc94ba2ba"
+   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+   "selector": "0x13d79a0b"
   },
   {
    "kind": "not-studied",
-   "hash": "0x14a25fe63d52ae2946a77831e05b8f38fac2d254c57c7abc1876212f591f5168",
+   "hash": "0x21df35a59920d5bc308bfa62520edfaeae4bd883c768ba8351efb0c276ab2630",
    "why": "calls no function the template calls",
-   "to": "0x40e8e58052272496dcf42953cf7e699b522fe8a3",
-   "selector": "0xc58bc7e0"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x2fa8057287272241b5a0fb4c5128937d6df20dc69b870f45259455786aeabbaf",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x2133b08238b8dd0d752f071a1b796a80dff85198",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
+   "to": "0x555ce236c0220695b68341bc48c68d52210cc35b",
+   "selector": "0xc3c16ee4"
   },
   {
    "kind": "not-studied",
-   "hash": "0xe607e8e8e797068815343b2543a560e64160ad0257af981a46f0b66deda8acde",
-   "why": "calls no function the template calls",
-   "to": "0x0000000000bbf5c5fd284e657f01bd000933c96d",
-   "selector": "0x49af9204"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb10621b29ba87e66619b2c6db0c8ed9e54a4e85a822374ddf4b1c14498664912",
+   "hash": "0xff38301e5dd908b65ca8e00f4a57ce6d5151779ce536c17fcc026f13d20ece84",
    "why": "calls no function the template calls",
    "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
    "selector": "0xa1903eab"
   },
   {
    "kind": "not-studied",
-   "hash": "0xddcbb79db6a655cebce2a0fd14c6de168c69cdfb0804b770f43882f0c27d4cea",
+   "hash": "0x82befd220e0c442e2a28a494d3a657f4d2e9e15beb664fcd08ac0589360fb9c0",
    "why": "calls no function the template calls",
-   "to": "0xec6fc9be2d5e505b40a2df8b0622cd25333823db",
-   "selector": "0xc94ba2ba"
+   "to": "0x39053d51b77dc0d36036fc1fcc8cb819df8ef37a",
+   "selector": "0x9435bb43"
   },
   {
    "kind": "not-studied",
-   "hash": "0x271e4ca25207d425f2d193ebbdf581bbc7fa55c0a8fdec4d43a6309c5972ce1a",
+   "hash": "0xd37084c397033de65d97335c925cf0a80470f0552c3d44b0f773bdaafc4ca14b",
    "why": "calls no function the template calls",
-   "to": "0xb300000b72deaeb607a12d5f54773d1c19c7028d",
-   "selector": "0x810c705b"
+   "to": "0xbfd697f71159ed85eb1a7fe3520ad8e5d61017fb",
+   "selector": "0x96db582a"
   },
   {
    "kind": "misfit",
-   "hash": "0x0c04d6e2cded9c483ec7058dbeb4211de807c9f146f2482118891c009f45c81e",
+   "hash": "0x2f802a0cd1b4c49b008d79af2836121cd65e7ad8d587c3f54c72616a53d2d9f9",
    "sender": {
     "kind": "eoa",
     "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
@@ -2860,54 +2346,32 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0x41362ad9f743989bc2073776098fb2e8d95508b4dfc1b44a7f75b65702c7c64c",
+   "hash": "0xd15b6beae0db2ca75ebe797c712c8dfbdd690e2b4b998b108740d0f61b50d195",
    "why": "calls no function the template calls",
-   "to": "0xb300000b72deaeb607a12d5f54773d1c19c7028d",
-   "selector": "0x810c705b"
+   "to": "0x14c5cfb708116f1b5170fac8f4b6e637a0c1f2fb",
+   "selector": "0xbeabacc8"
   },
   {
    "kind": "not-studied",
-   "hash": "0x1f8ea5e82b0c3a63df97999dfc1c97aeaa3408a847c13473236e1eaa8a243390",
-   "why": "calls no function the template calls",
-   "to": "0x000000000004444c5dc75cb358380d2e3de08a90",
-   "selector": "0x48c89491"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd2cf643af81b7e2a23381f408cec9f07713e70bffabfe1f117c7de3b90abf19a",
-   "why": "calls no function the template calls",
-   "to": "0xc5eeda5cc27f7019f46d1078a63d11d1204b5ac4",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x42232e9e25f9df08bbd01bde5341e99808177b29678e0d46e31ff798af52b916",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x012437b23bb065a70655bd1d4012a1e1a3cf6641",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.encoding",
-    "expected": "canonical transfer(address,uint256)",
-    "actual": "differs at byte 68"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9c4a985da8c6a69ee438a75b7afadc2f7216342fca076f2b715e0aa4673ea854",
+   "hash": "0x72abe624828670093729f02dacac77274fda8108ae8585835d1c36bbda2bb9bf",
    "why": "calls no function the template calls",
    "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
    "selector": "0xa1903eab"
   },
   {
+   "kind": "not-studied",
+   "hash": "0xe6aae5f1450f370ad3a7a2353879a6aac733ec7451d3be64857f56787f5b3cb6",
+   "why": "calls no function the template calls",
+   "to": "0x45312ea0eff7e09c83cbe249fa1d7598c4c8cd4e",
+   "selector": "0x5c9c18e2"
+  },
+  {
    "kind": "fit",
-   "hash": "0xf6200fe570c80b84f75d3ffa3d7b327c26d9e00391c268500cd5f2dfa89eb4aa",
-   "block": "26430719",
+   "hash": "0x3dcdbd6af85fea28c5dd9331b35ce6475874a7bc647ea7af8a8cbdbc02205075",
+   "block": "26028083",
    "sender": {
     "kind": "eoa",
-    "address": "0xac38b526eaea47c648a44bb2b9dadd00f7b9ee9d",
+    "address": "0x92cd3d553f8b516e04ac619705ae0eeb515a7844",
     "call": 0
    },
    "paths": [
@@ -2925,8 +2389,8 @@
    "values": [
     "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
     "0",
-    "0x992615b4e5adf66493423f6fa7a67bb35376f6b0",
-    "10000000000000000000"
+    "0x6c12b81695e354f1d110304365c2c67c1e5bb51b",
+    "1000000000000"
    ],
    "outside": [
     {
@@ -2937,15 +2401,674 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0x4046e14672fde373a7ad33fc598e06dc523228fb6e80b00b421116d14275cf10",
+   "hash": "0x224e98514b9fe3d81bc1e5a46946d549d03997b29e9ab279cf6bda98406dc899",
+   "why": "calls no function the template calls",
+   "to": "0xa88e98bbd2af6ddd642407cb5455f956f0c553f0",
+   "selector": "0x00ecb456"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0116ff10a6324fb57ed571851d650e7036a1dab97f1818cdfc27be55541455fd",
+   "why": "calls no function the template calls",
+   "to": "0x666fedd4cdd4e890a5ad20e7b60975409435a64a",
+   "selector": "0x1fff991f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd4d28ed934a5984de2dcc62261aa78fdb4d116a9bd0f9fc02533176409bc7d59",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe03ba53d94e1a465d70106ad443d2f05f345fd353f119aaa359233c9fd3a8559",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xca46a5988f479652fe76e91778f886301afb2ad14704ef3a5cc3c744708cd60d",
+   "why": "calls no function the template calls",
+   "to": "0x4d9629e80118082b939e3d59e69c82a2ec08b4d5",
+   "selector": "0x1e9a6950"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x54ec52358f824e4bade0b84d952912a38489bf92facbc999518e2a38afdb1eaf",
+   "block": "26028566",
+   "sender": {
+    "kind": "safe",
+    "address": "0xaec5d9dce041df0321131e0188cfe6f8d0209e6c"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0x22e02fd4f8e5e590b9312f67cce9fb452aff2ba5",
+    "10000000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6c798767f0eddd14d9b5e9f9af572f08f9b05a27a8c2caadc918ee6823921531",
+   "why": "calls no function the template calls",
+   "to": "0xfa86aa141e45da5183b42792d99dede3d26ec515",
+   "selector": "0x04117561"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8488146316ceb89486f040df8380f4474fbac83a929863a73244f71cea7c4f6e",
    "why": "calls no function the template calls",
    "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
    "selector": "0xea598cb0"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x43e0ca4ce07a7d8d9363101074a163a8d1f7c315105f2c8c8d44e71f86602194",
+   "why": "calls no function the template calls",
+   "to": "0xbee162fa5ae892be74f3f3e01c23da89adbccccc",
+   "selector": "0x6d7b7040"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xcdf3516e193e4d85816ab6841a5e98aad4e9c22380767b1a23f4a82766569cd9",
+   "block": "26029055",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x5828748b3627becd3b5da68dbb85687c1cb601f8",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0x7005b45de07e1b70dcd38ee3a708cfd88a6c7f8e",
+    "51800000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x2750398e522120d0f7cda3ead13e8eb1156e3e85c7f3a482847334ec46b27193",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x22d559c65ec455458d27d78ebd3ba89d7960ba0aed239d1d57ff760f1f6bcef1",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xe91bcae4a2d7b951304695f93cf1b9a1837cfe43",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x76e59dad935df3381a283bfa3d9e306ff2236ce9e3350e7bbac39e0995e968bb",
+   "why": "calls no function the template calls",
+   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
+   "selector": "0xd6681042"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4ae5a2c6afd56fb41fdc59228940cd090ce41d2a041c02180ad857ab57629380",
+   "why": "calls no function the template calls",
+   "to": "0x0c8c5891a41078cef36970932d5c05dc1de7288b",
+   "selector": "0x0821e301"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xbb2b7d571726419c5c642a0acf60a0cdb35f1bf7c08f6dc29018133e43d154ca",
+   "block": "26245056",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x2c534471497c49bf628e18846bfd0f3d1165290a",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0x3ac3579b1d1e64ea5f22c047210f41838aeed399",
+    "1000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x254d7c73cf6e1eb7de23a7922935e1fc058c1280852092687decd2cc6bae5cce",
+   "why": "calls no function the template calls",
+   "to": "0x0c8c5891a41078cef36970932d5c05dc1de7288b",
+   "selector": "0x00331b00"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x62256071484829d94e84b2c0f685a756b121e374c9abf0e3921564d16dea3e77",
+   "block": "26245492",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x26494f8d5c9ccfd66e4a42fea4530f823bc4266b",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0x7e8e348f33c332ee6527f0f43f3b569cb0279aa5",
+    "196189010000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xbb60ebb0ae72e745750bde5f3195306505bf2b3ad29d4ca0df83e4ce9aaf8017",
+   "why": "calls no function the template calls",
+   "to": "0xd1c6aca7ea7ed44e1873dafa054c28ceb690c7eb",
+   "selector": "0x9eb723c7"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x6e0684d8b29fa31b78da42ada1f2c125f04489fcb2f67b07548b5d1e8a6f528c",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7f5643f424dd00e4b42010fdd840ab15e43e15233ceebd17d2c3972ab2f2393c",
+   "why": "calls no function the template calls",
+   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+   "selector": "0x13d79a0b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf44a75e8169de578098bea09768134b267f05f7e86ccee79b27ccb36981dd80f",
+   "why": "calls no function the template calls",
+   "to": "0x0c8c5891a41078cef36970932d5c05dc1de7288b",
+   "selector": "0x03353c40"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x50b4702bf83e40d0e824d754691cd651eceb2cd247fb70e66f7632008588cb96",
+   "why": "calls no function the template calls",
+   "to": "0x5b1ec7918d591e1c9313b97643cf05e5a4835229",
+   "selector": "0x9265bb9d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xfc8295d0c16d2fd922b839ad8ae8ae2f559c15438ac58a67fea922ecee33fc7c",
+   "why": "calls no function the template calls",
+   "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+   "selector": "0xea598cb0"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x93011e4d1fe01cbb7e85a030f309f9a0f9c4bcd711f6f7dff091a2e9828aa9bf",
+   "block": "26246847",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x26192145767c8942a8f245c6783a404e8a0e7446",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0x19b0f9d23e4162db6172b5b71e99deda92bbc493",
+    "156146715780598"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "fit",
+   "hash": "0x6ba2b444c0909aa6c367974c85cdb8d87d38557a9ddc5c34ed41784b41d53c27",
+   "block": "26246972",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x1bae874af9f81b8f93315b27f080260da4702d3a",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0xeb56986f4e93ff83098fc780c52364554dd3022e",
+    "9255531000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "fit",
+   "hash": "0x05dc96eee880eb5cba34471d522cc7e023a421d5e4e3df88e4d24504316201f7",
+   "block": "26247169",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xdd3e0814f08d4fec1f262bdec6fe77e9db25afef",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0x19b0f9d23e4162db6172b5b71e99deda92bbc493",
+    "447462571477982"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa2d5504ba53e8e0bc57597e5444262882eba04c537593a92b446c8ca0723c589",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xb721024768010f5490cd9dcc31e5fb6bcef3e0696d4ed342fba107f60519ff87",
+   "block": "26247485",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x0ab2e96e042a7402af586bdd1e12020a0a8011e7",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0x566f0d199a628c338313b83b2c6599570274b4f5",
+    "999999000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "fit",
+   "hash": "0xa1acd4493527d62e891d1c7009f9eaa479369a8a1354f0a4846a5430ae8930a6",
+   "block": "26247662",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x37810031e1a3042c1a4999c05cfdf1a6f928f380",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0xb0a732fe52d313c216c937b0fb8f02101d387216",
+    "1000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8da265bea5d9001fec5a3b0ae821cd014ca72fba406eda8cb44536db8710a865",
+   "why": "calls no function the template calls",
+   "to": "0x964b8c3e929a3b9879b0c7d71efc2259f6434621",
+   "selector": "0x9265bb9d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb715e20928aa296dce802146533cbb881839381159f7625d85028b1f4736938a",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0x23b872dd"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf15facd87e158dc3b7b2d83d5e914d9f4d4ce6f38326b91a8f6d416ec91a2c21",
+   "why": "calls no function the template calls",
+   "to": "0xbee162fa5ae892be74f3f3e01c23da89adbccccc",
+   "selector": "0x6d7b7040"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc8fcfd43098fb52a03a7991cba019c4ecadac9748d92c5b50b8289672d0f2274",
+   "why": "calls no function the template calls",
+   "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+   "selector": "0xde0e9a3e"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x33539f7c98ca31370b6257e168cc3b56a3b16d62af54761a0c35b269bb6d97e4",
+   "why": "calls no function the template calls",
+   "to": "0xa88f0329c2c4ce51ba3fc619bbf44efe7120dd0d",
+   "selector": "0x946fe3e8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8a5e339a369fce30e9a62c267b9b37f9d057927aa5101bfb3bb281eabc4f5cb1",
+   "why": "calls no function the template calls",
+   "to": "0xa9d635ef85bc37eb9ff9d6165481ea230ed32392",
+   "selector": "0x13d79a0b"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x6710b2629e252e1014a1f964a397ded7834294b73bd712742a987db997b78404",
+   "block": "26464101",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xe9fdba093438e0c0925ffdfc90cd580b9432fa40",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "0",
+    "0xc7abd7f6d95417a5ea442802e8951f91335295d9",
+    "403000000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.to",
+     "kind": "token"
+    }
+   ]
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xebbc0613ca4ce3cd2b1852f2b1475aca2181f4a67b81e2cdefacd412d36d0de3",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x2133b08238b8dd0d752f071a1b796a80dff85198",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x00a37b78dd299bfa21edb37e93691a46a1b53f97de7190d6eedc8703c8aefcc1",
+   "why": "calls no function the template calls",
+   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+   "selector": "0x13d79a0b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6a079fc13d347682ce16c4e41e551ed69efb59788e09f0e6618ddea713e033c0",
+   "why": "calls no function the template calls",
+   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
+   "selector": "0xd6681042"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x44a31f932dacb34cac52202e42919bac452da9d43a4704bda19af540e3521100",
+   "why": "calls no function the template calls",
+   "to": "0x5ed864e8f37dcb4f79c5172a815d1b3a9147eaab",
+   "selector": "0x9008d19f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x476cce15fa665581ac8c3edf71d8879b356747757b81d713b4442fde7751d72c",
+   "why": "calls no function the template calls",
+   "to": "0x0c8c5891a41078cef36970932d5c05dc1de7288b",
+   "selector": "0x12338100"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf1c54c307ef421d1c6d260ac5dc15237aa0cae3a526915fa229fb622d4392e51",
+   "why": "calls no function the template calls",
+   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+   "selector": "0x13d79a0b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6a6566002a9b6a246d0edda81bec233521190c750bc45bf8ee5b4a91caf9ea20",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x87177d70e30a6c748d7340214389b3ce806e56a6c7ad3cb958c8c79af68e279c",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xe91bcae4a2d7b951304695f93cf1b9a1837cfe43",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.encoding",
+    "expected": "canonical transfer(address,uint256)",
+    "actual": "differs at byte 68"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb5931d7818a979c41df06bd7ef0feec85e948a5eddc437d6428b4f7e56396550",
+   "why": "calls no function the template calls",
+   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
+   "selector": "0xd6681042"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x20046579798921d03859d1ce267a95f3faff4bd72004df1fd95e2ad390cb574e",
+   "why": "calls no function the template calls",
+   "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+   "selector": "0xa1903eab"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf492d0f8ca3f098f171c3255330a293c1dc2fdc201340ab48f279293fc6e3cf0",
+   "why": "calls no function the template calls",
+   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
+   "selector": "0xacf41e4d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa61b3db05e8ed0517e3f50ae7fcb4d4ef3705227bb9d9bf3bac2bfff6efdb2d6",
+   "why": "calls no function the template calls",
+   "to": "0x889edc2edab5f40e902b864ad4d7ade8e412f9b1",
+   "selector": "0xd6681042"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x29268304eb9c6c1e48177f3f038abfdbdae409d9f9dbfca49faf41368d705325",
+   "why": "calls no function the template calls",
+   "to": "0xa397a8c2086c554b531c02e29f3291c9704b00c7",
+   "selector": "0x555029a6"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf4159e65f6d97a25b6924582b74582e39dfb68113effc0e38a16dd30bad82e83",
+   "why": "calls no function the template calls",
+   "to": "0xbc1d9760bd6ca468ca9fb5ff2cfbeac35d86c973",
+   "selector": "0xd984396a"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc1486e628d857bca05cec15716b601fa79510d541b942f5a074568041fcb6025",
+   "why": "calls no function the template calls",
+   "to": "0x72cd4bde69cf997ee8adb882b7c97af58d21b191",
+   "selector": "0x23fd0eb1"
   }
  ],
  "measurements": [
   {
-   "hash": "0x7419d343f8884bddfb5e2a6629faabf04e8cb317be1a59a7eb111ee4c3c4b319",
+   "hash": "0xd258ba989197eaa46c9f77f1fdee72b14692d7a82527db00df31c137c58a17ba",
    "kind": "measured",
    "differences": [
     {
@@ -2963,79 +3086,7 @@
    ]
   },
   {
-   "hash": "0x7052f4f3d450e8122da2226a332b5b13fb9e33c197ba79a0d9896cafd781ce0e",
-   "kind": "measured",
-   "differences": [
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "sender",
-     "by": "0"
-    },
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "receiver",
-     "by": "-1"
-    }
-   ]
-  },
-  {
-   "hash": "0x0e95082bceaac3291825ae49351f1f27122b752235580f6516591186bc882161",
-   "kind": "measured",
-   "differences": [
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "sender",
-     "by": "1"
-    },
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "receiver",
-     "by": "-1"
-    }
-   ]
-  },
-  {
-   "hash": "0x1ed07a679873b2988a5e2c7f160ce12ffa67af8fc4c3a97eccb24e6cfb7eb3e0",
-   "kind": "measured",
-   "differences": [
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "sender",
-     "by": "0"
-    },
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "receiver",
-     "by": "0"
-    }
-   ]
-  },
-  {
-   "hash": "0xacfa0e2b3f3507e050d0de6b3ff163eb8b4840b4e4f0789e66b6fd6b59c97b39",
-   "kind": "measured",
-   "differences": [
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "sender",
-     "by": "0"
-    },
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "receiver",
-     "by": "0"
-    }
-   ]
-  },
-  {
-   "hash": "0xd2477b7fcf6a9ff6c375d599eadce875839772576576f2db09eb938f0c48a6ad",
+   "hash": "0xf12c449a152ea6417e77ac97f622cd19fa388a4a021119138342fe484136bba7",
    "kind": "measured",
    "differences": [
     {
@@ -3053,7 +3104,7 @@
    ]
   },
   {
-   "hash": "0x887c047cedb2d98d3ca466d55f8dd0375a17c7f6831ee353e17cecd08773b790",
+   "hash": "0xe18e7d53571471600c3d798af3d8aaf020acb7ba866b766c0910810183cbd0a6",
    "kind": "measured",
    "differences": [
     {
@@ -3071,32 +3122,14 @@
    ]
   },
   {
-   "hash": "0x627884718c54196654793779bcb50b725b43449532d7df91bfb50cd951b10748",
+   "hash": "0x1c0fa41f123681b336cc7a1b09e4c7be2a375a7c15ff355079830f509a3d3d8a",
    "kind": "measured",
    "differences": [
     {
      "effect": 0,
      "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
      "party": "sender",
-     "by": "1"
-    },
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "receiver",
-     "by": "0"
-    }
-   ]
-  },
-  {
-   "hash": "0xeb5f26d7cfc692b9d2db1a04dd5c0a3daaaa2d131ef4bc28835a03fe0fc33c4a",
-   "kind": "measured",
-   "differences": [
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "sender",
-     "by": "1"
+     "by": "2"
     },
     {
      "effect": 0,
@@ -3107,25 +3140,7 @@
    ]
   },
   {
-   "hash": "0xb911f76ccc82c9de4d71a0e48bd2f25758eb83e20b17f1a1cb2544e4f2be79a9",
-   "kind": "measured",
-   "differences": [
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "sender",
-     "by": "1"
-    },
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "receiver",
-     "by": "-1"
-    }
-   ]
-  },
-  {
-   "hash": "0xd385829b0612744115797f70c2421fc5d620439ec4753b1830d70d84dc2efc01",
+   "hash": "0x32178822734e43b35243e72389cfc445ce640dc5f63ca7cdf67c4f01dc50ce22",
    "kind": "measured",
    "differences": [
     {
@@ -3138,12 +3153,12 @@
      "effect": 0,
      "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
      "party": "receiver",
-     "by": "-1"
+     "by": "0"
     }
    ]
   },
   {
-   "hash": "0xa01f74b060c8ac901ce950b548a3f2d3dc3f7e2f5d3b4749904e4dbf997cadd5",
+   "hash": "0x4cb7e94c54497d9c51bb7524fe525bacd9dc722aff957185acce39fa654c93bb",
    "kind": "measured",
    "differences": [
     {
@@ -3161,7 +3176,7 @@
    ]
   },
   {
-   "hash": "0x5d320beff65359fae134133ed46299bef5f82aac98e5c6355716430bdcae898f",
+   "hash": "0x09b25eb8c7489fb2de3be6735f3a7c719565ed793aa6f37302f81ad76af87094",
    "kind": "measured",
    "differences": [
     {
@@ -3179,7 +3194,79 @@
    ]
   },
   {
-   "hash": "0xa6711479e93a1b8a739b8643d3bc94f512a3c2746976c845e8fa197124a598d4",
+   "hash": "0x6b1a19073e1f4cc58b2f83bf795a7ba162c46d7532d2e8c840008e44acf9a395",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "sender",
+     "by": "1"
+    },
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "receiver",
+     "by": "-1"
+    }
+   ]
+  },
+  {
+   "hash": "0x58f22f05d4cc3588f3024f24678b8b09a3b0d0317f8dd7946379572742afae1d",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "sender",
+     "by": "1"
+    },
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "receiver",
+     "by": "-1"
+    }
+   ]
+  },
+  {
+   "hash": "0x6f8fee4d8bd888aab672abad82332da0ad1defd296add48d2baabf2332d167a5",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "sender",
+     "by": "1"
+    },
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "receiver",
+     "by": "-1"
+    }
+   ]
+  },
+  {
+   "hash": "0x81eed9d7519fe7e25e960575db8e4791cff82c63948fb46ccd8ad030da3ec090",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "sender",
+     "by": "1"
+    },
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "receiver",
+     "by": "-2"
+    }
+   ]
+  },
+  {
+   "hash": "0xdebd60be8424588a93d960f41e15e4405a3d0345ec5a8f43e831c8d0361f95bb",
    "kind": "measured",
    "differences": [
     {
@@ -3197,7 +3284,7 @@
    ]
   },
   {
-   "hash": "0x35e08c54d7bc40fde71d47cfbda8d91f50550fb5434600905e4910a392933663",
+   "hash": "0x385ef5a50d83adf80c1c41398cb6d7e7be3f1588ca447e4be285f385dc79f901",
    "kind": "measured",
    "differences": [
     {
@@ -3215,61 +3302,7 @@
    ]
   },
   {
-   "hash": "0x4a640a7ada29ca8241afe2d6faeb3b503b6c6b490d89a4b4515b9196b0c47918",
-   "kind": "measured",
-   "differences": [
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "sender",
-     "by": "1"
-    },
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "receiver",
-     "by": "-1"
-    }
-   ]
-  },
-  {
-   "hash": "0x3fb3aca5f5efddd2ec39aeeeedb3b630be939068cfd197c3c19744ac01318785",
-   "kind": "measured",
-   "differences": [
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "sender",
-     "by": "1"
-    },
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "receiver",
-     "by": "-1"
-    }
-   ]
-  },
-  {
-   "hash": "0x86fb3aa1c9fac0d6cf3794e04155cbaa96e9fdf7d704aec68a489bd6995559c6",
-   "kind": "measured",
-   "differences": [
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "sender",
-     "by": "1"
-    },
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "receiver",
-     "by": "-1"
-    }
-   ]
-  },
-  {
-   "hash": "0xe77c447d0065e9f2977812647ad702f11dda2e372304eb52a61dc34d3d8f2765",
+   "hash": "0x0129e36e7395cbda0200249ccedc999e03cc161a861b6d0b6d5ea46c449ae337",
    "kind": "measured",
    "differences": [
     {
@@ -3287,7 +3320,7 @@
    ]
   },
   {
-   "hash": "0x936365edfc9b9e8cc769df04ccb68180c0c7ae0bf0a2d976ce249d53d1a500ae",
+   "hash": "0xf599f697a282040c04a53a13d8da9ffab144a2688eeea2f2e423b175e1f58c96",
    "kind": "measured",
    "differences": [
     {
@@ -3305,25 +3338,7 @@
    ]
   },
   {
-   "hash": "0xb52dc42b5a10e71c145fc2a370aa819fd07d61904632217fdd35970083a3be28",
-   "kind": "measured",
-   "differences": [
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "sender",
-     "by": "1"
-    },
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "receiver",
-     "by": "0"
-    }
-   ]
-  },
-  {
-   "hash": "0x26347ac89bff782067f9dde13632a3d5bd56819f8f2d1729b635443856014856",
+   "hash": "0xfdbac9bc5e106e39681c480d767f57915522c7738ba43a1952709974372db0ea",
    "kind": "measured",
    "differences": [
     {
@@ -3341,25 +3356,7 @@
    ]
   },
   {
-   "hash": "0xc6a972f515b48fc426072d86869dfdcdf9e12e18d0322f970c6ec988b148be84",
-   "kind": "measured",
-   "differences": [
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "sender",
-     "by": "1"
-    },
-    {
-     "effect": 0,
-     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-     "party": "receiver",
-     "by": "-1"
-    }
-   ]
-  },
-  {
-   "hash": "0x4adcfd306d7596b5949d7c7fa83a6adfc08cf4b827f72191f77214851f0e712f",
+   "hash": "0x2efac567bab21362019d5a2883a6f662e0ea5db109be8c91f3aa516e6a5d8d77",
    "kind": "measured",
    "differences": [
     {
@@ -3377,7 +3374,61 @@
    ]
   },
   {
-   "hash": "0xcecf8d79619d4ed20c4d0f43cbe0ffd47c65ba6fcedb1026c2f8b6b6a718bd50",
+   "hash": "0x5253d45acc43674521b35eb79483a896f0f2a960fa7df97b6afa26966ec77455",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "sender",
+     "by": "1"
+    },
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x745b0ba5bd997decea38e1c08e6df259c2359836c9cf3eccbc7a2ab27cde421f",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xaf16337b7de6ba3a764df5fbe9e6b83c0430ffdeb3bd83ab65ebe03b05a7446e",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "receiver",
+     "by": "-1"
+    }
+   ]
+  },
+  {
+   "hash": "0x9df6cbcefb5e156fe02fc0bd871b4b7b54c2f10c8da56dcb721db7a54123ebf0",
    "kind": "measured",
    "differences": [
     {
@@ -3395,7 +3446,7 @@
    ]
   },
   {
-   "hash": "0xaf921d879084ea46d4ac97e070da376b339fa280e0a8366ebcef787cda0cec50",
+   "hash": "0xf5ee2f2210cb67aeca394af5456e676a22d8c173fab22a29e9d907e39f890716",
    "kind": "measured",
    "differences": [
     {
@@ -3413,7 +3464,43 @@
    ]
   },
   {
-   "hash": "0xd4e063fce5a3661f478243f4ae304116edceac25041d07491fc401ae2d2c6f33",
+   "hash": "0xde6e9c3d9332684c22b17cc9b3638e860c2a1954312ac67eedef82599c244db2",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "sender",
+     "by": "1"
+    },
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x3dcdbd6af85fea28c5dd9331b35ce6475874a7bc647ea7af8a8cbdbc02205075",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "sender",
+     "by": "1"
+    },
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x54ec52358f824e4bade0b84d952912a38489bf92facbc999518e2a38afdb1eaf",
    "kind": "measured",
    "differences": [
     {
@@ -3431,7 +3518,7 @@
    ]
   },
   {
-   "hash": "0xf6200fe570c80b84f75d3ffa3d7b327c26d9e00391c268500cd5f2dfa89eb4aa",
+   "hash": "0xcdf3516e193e4d85816ab6841a5e98aad4e9c22380767b1a23f4a82766569cd9",
    "kind": "measured",
    "differences": [
     {
@@ -3445,6 +3532,150 @@
      "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
      "party": "receiver",
      "by": "-1"
+    }
+   ]
+  },
+  {
+   "hash": "0xbb2b7d571726419c5c642a0acf60a0cdb35f1bf7c08f6dc29018133e43d154ca",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "sender",
+     "by": "1"
+    },
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x62256071484829d94e84b2c0f685a756b121e374c9abf0e3921564d16dea3e77",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "sender",
+     "by": "1"
+    },
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "receiver",
+     "by": "-1"
+    }
+   ]
+  },
+  {
+   "hash": "0x93011e4d1fe01cbb7e85a030f309f9a0f9c4bcd711f6f7dff091a2e9828aa9bf",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "sender",
+     "by": "1"
+    },
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x6ba2b444c0909aa6c367974c85cdb8d87d38557a9ddc5c34ed41784b41d53c27",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "sender",
+     "by": "1"
+    },
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x05dc96eee880eb5cba34471d522cc7e023a421d5e4e3df88e4d24504316201f7",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "sender",
+     "by": "1"
+    },
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xb721024768010f5490cd9dcc31e5fb6bcef3e0696d4ed342fba107f60519ff87",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "sender",
+     "by": "1"
+    },
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xa1acd4493527d62e891d1c7009f9eaa479369a8a1354f0a4846a5430ae8930a6",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "sender",
+     "by": "1"
+    },
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x6710b2629e252e1014a1f964a397ded7834294b73bd712742a987db997b78404",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "sender",
+     "by": "1"
+    },
+    {
+     "effect": 0,
+     "token": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+     "party": "receiver",
+     "by": "0"
     }
    ]
   }
