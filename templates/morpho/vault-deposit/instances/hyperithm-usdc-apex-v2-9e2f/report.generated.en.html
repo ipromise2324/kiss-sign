@@ -348,7 +348,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div><div class="t"><span class="aiw" data-ai><span>On 2026-09-25 Morpho&#39;s SDK removed the Bundler3 address and listed VaultBundlesV1 (0x02912516d49dE997db75B9D7858faAE59209650B) instead; docs.morpho.org lists both.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
           <div class="rec"><span class="aiw" data-ai><span>In the recorded transactions, most deposits after the end of 2026-09 go through VaultBundlesV1, so the Morpho app may no longer take this template&#39;s route. <a class="aisrc" href="https://github.com/morpho-org/sdks/commit/9ac0ea55b93225a62ddeabb1c625064319be728d">source</a></span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Before signing, check whether the Safe transaction calls Bundler3 or VaultBundlesV1. One that goes through VaultBundlesV1 needs the morpho/vault-bundles-deposit template; with this template, verify returns MISMATCH.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Before signing, check whether the Safe transaction calls Bundler3 or VaultBundlesV1. No template covers the VaultBundlesV1 route yet; with this template, verify returns MISMATCH for it.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row">

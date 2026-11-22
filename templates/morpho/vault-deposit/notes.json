@@ -47,8 +47,8 @@
         "https://github.com/morpho-org/sdks/commit/9ac0ea55b93225a62ddeabb1c625064319be728d"
       ],
       "recommendation": {
-        "en": "Before signing, check whether the Safe transaction calls Bundler3 or VaultBundlesV1. One that goes through VaultBundlesV1 needs the morpho/vault-bundles-deposit template; with this template, verify returns MISMATCH.",
-        "zh-TW": "簽之前看 Safe 交易呼叫的是 Bundler3 還是 VaultBundlesV1；經 VaultBundlesV1 的要用 morpho/vault-bundles-deposit 模板，用這個模板 verify 會判 MISMATCH。"
+        "en": "Before signing, check whether the Safe transaction calls Bundler3 or VaultBundlesV1. No template covers the VaultBundlesV1 route yet; with this template, verify returns MISMATCH for it.",
+        "zh-TW": "簽之前看 Safe 交易呼叫的是 Bundler3 還是 VaultBundlesV1；經 VaultBundlesV1 的路線目前沒有模板，用這個模板 verify 會判 MISMATCH。"
       }
     }
   ],

@@ -697,7 +697,7 @@ test("a per-vault report shows that vault alone: no other vault, no asset or fac
   assert.match(text, /^\| `vault` \| a registry `vault` of the DefiLlama protocol `morpho-blue`, picked by number from the list below \|$/m);
   assert.deepEqual(entriesOf(scoped.subject, scoped.registry).map((e) => e.name), ['usdc', 'bundler3', 'steakhouse-prime-usdc-v2-0f51', 'vault-v2-factory', 'general-adapter-1']);
   const anchored = pastTxsRecordings(ROOT, scoped.subject).map((r) => r.file);
-  assert.deepEqual(anchored, ['testdata/research/morpho-vault-deposit-windows.json', 'testdata/research/morpho-vault-deposit.json']);
+  assert.deepEqual(anchored, ['testdata/research/morpho-vault-deposit-steakhouse-prime-usdc-v2-0f51.json']);
   assert.match(text, /^Written by `pnpm report morpho\/vault-deposit --instance-of steakhouse-prime-usdc-v2-0f51 --record` /m);
 });
 

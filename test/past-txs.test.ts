@@ -26,6 +26,7 @@ import type { Address, Hex } from '../src/safe/types.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
+import { SUMMARY_FIXTURES, runOffline } from './run-offline.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = repoWithTestFixtures();
@@ -582,7 +583,7 @@ test('--same-windows-as goes with the spread windows only, not with a block rang
 });
 
 test('--same-windows-as refuses a recording of one block range, and a name with no recording', () => {
-  const old = pastTxsRun('--same-windows-as', 'morpho-vault-deposit');
+  const old = runOffline('past-txs.ts', ['morpho/vault-deposit', '--token', 'steakhouse-prime-usdc-v2-0f51', '--anchor', 'mint', '--same-windows-as', 'morpho-vault-deposit'], 'research', { exchanges: [] }, ['morpho-vault-deposit.json'], undefined, SUMMARY_FIXTURES);
   assert.equal(old.status, 64);
   assert.equal(old.stderr, '--same-windows-as morpho-vault-deposit: the summary searched one block range and keeps no head block, so it has no windows to search again\n');
   const missing = pastTxsRun('--same-windows-as', 'no-such-study');
