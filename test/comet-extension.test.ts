@@ -23,7 +23,10 @@ const COMET = fixture.address;
 const IMPLEMENTATION = '0x0b07565a8ef48170e15918b251ebd95109b23255' as Address;
 const EXTENSION = '0xa70a0227028ad005f4fc9376a82cd1462e3aaedc' as Address;
 const OTHER = `0x${'0e'.repeat(20)}` as Address;
-const REGISTRY = JSON.parse(readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8')) as Record<string, Record<string, unknown>>;
+const REGISTRY = Object.fromEntries(
+  Object.entries(JSON.parse(readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8')) as Record<string, Record<string, unknown>>)
+    .filter(([, entry]) => String(entry.address).toLowerCase() !== COMET.toLowerCase()),
+);
 const FLUID_DELEGATOR = (readRecording(join(ROOT, 'testdata', 'abi', 'fluid-token.json')) as AbiCase).reads[0]!.value as Hex;
 
 const codeOf = (address: Address): Hex => fixture.reads.find((read) => read.method === 'getCode' && read.args[0] === address)!.value as Hex;
