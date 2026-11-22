@@ -68,7 +68,7 @@ Then follow [Data shapes](../../../docs/design/data-shapes.md#data-shapes); temp
 ## Study past transactions
 
 Run `pnpm past-txs <protocol>/<operation>` with no block range, anchored on the transfer or event the operation itself makes, such as a vault's shares minted for a deposit, the token's transfer for a transfer, or, for an event each Safe logs about itself, `--anchor event --event 'AddedOwner(address)'` with no `--token`; `pnpm past-txs --help` lists the anchors.
-The program picks its own search: the whole last year in up to 10 pages per source, studying first every transaction whose anchor party is a proven Safe, and when the year holds more, 12 windows across it; never pass `--from-block` or `--to-block`, which replace both with one range of your choosing.
+The program picks its own search: every transaction from the newest block back, through the whole last year or as far as 50 pages per source reach, studying first every transaction whose anchor party is a proven Safe; the report says which blocks it read. Never pass `--from-block` or `--to-block`, which replace it with one range of your choosing.
 To read again the blocks an earlier recording searched, such as to add what a read with no answer left out, pass `--same-windows-as <name>`, which takes the head block and the search from the summary `testdata/research/<name>.json`.
 
 1. For each field, note how many transactions and senders held the template's rule, for Safes and for EOAs separately.
