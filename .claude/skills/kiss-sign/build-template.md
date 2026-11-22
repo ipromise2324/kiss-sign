@@ -125,12 +125,24 @@ Open the pull request to the signer's fork with the template, `docs.json`, `note
 A verdict core change went in its own pull request first.
 Never paste generated output into the pull request description.
 
+The signer reads the report, not the diff, and merging is their yes.
+Write the description for them, in their language, in this order:
+
+1. One sentence: the operation, and that they need not read the diff.
+2. **Read the report**: the path of the report in their language on the branch.
+3. **Check before you merge**: one line per result the report lists under To review, in your own words, with each address in full, then one line per registry entry the branch adds or changes: open the sources the report lists for it and check that each page is the protocol's own and lists this address.
+4. **What the card will ask**: one line per card field.
+5. **The files**: how many files you wrote by hand (template, notes, `docs.json`, registry, tests) and how many the scripts recorded or generated, and why any other file changed, such as every past-transactions summary taking a new registry hash.
+6. **Merge when you are satisfied.**
+
+Put the engineering details (scope, blast radius, the commands that passed) last, inside a `<details>` block titled for the reviewer of the code.
+
 ## Tell the signer
 
 Keep the final message short and plain.
 
 1. If you merged a program change, anything outside `templates/`, `registry/` and `testdata/`, say so first: what it does, what `verify` now checks differently when it changed the verdict core, the canaries that passed, and that the template's pull request follows on the new `main`.
-2. Then the template, what the card will ask, what will be checked, the findings, and the pull request link.
+2. Then the template, what the card will ask, what will be checked, the findings, and the pull request link, whose description holds the same checklist.
 3. Then the next steps:
    - Read the report in their language (`report.generated.en.html` or `report.generated.zh-TW.html`, or the one that exists).
    - For each registry entry the branch adds or changes, open each source the report lists for it, and check that its domain is the protocol's own and that the page lists this address.
