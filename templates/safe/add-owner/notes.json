@@ -15,8 +15,8 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "Misfits change several owners in one MultiSend, one of them with enableModule; kiss-sign refuses such a batch, so each change is its own transaction.",
-    "zh-TW": "不合的是在一個 MultiSend 裡改好幾個 owner，其中一筆還加了 enableModule；kiss-sign 不接受這種批次，每個變更要各自一筆交易。"
+    "en": "Every misfit changes several owners in one MultiSend: several `addOwnerWithThreshold` calls, or one with `swapOwner` or `removeOwner`. A card holds one change, so verify refuses such a batch; make each change its own transaction.",
+    "zh-TW": "不合的全是在一個 MultiSend 裡改好幾個 owner：好幾個 `addOwnerWithThreshold`，或再加 `swapOwner`、`removeOwner`。一張卡片只放一項變更，verify 會拒絕這種批次；每項變更要各自一筆交易。"
   },
   "flow": [],
   "protocols": {},
@@ -29,16 +29,6 @@
       "recommendation": {
         "en": "Before you add it to the address book, confirm the full address with the person through a channel outside the chat. Keep the threshold at your current level of safety.",
         "zh-TW": "加進地址簿前，用聊天以外的管道跟本人確認完整地址；門檻維持在你原本的安全水準。"
-      }
-    },
-    {
-      "text": {
-        "en": "When the Safe web app's \"Manage signers\" changes several things at once, it wraps several calls in a MultiSend. A kiss-sign card accepts only one signer or threshold change, so such a batch transaction gives MISMATCH.",
-        "zh-TW": "Safe web app 的「Manage signers」一次改好幾項時，會把幾個呼叫包進 MultiSend 送出；kiss-sign 一張卡片只接受一項簽署人或門檻的變更，這種批次交易會 MISMATCH。"
-      },
-      "recommendation": {
-        "en": "Change one thing at a time, one transaction per change.",
-        "zh-TW": "每次只改一項，一項一筆交易。"
       }
     }
   ],
