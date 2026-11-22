@@ -23,7 +23,7 @@
   "judgments": [
     {
       "text": {
-        "en": "The market held 343.7 million USDC of supply on 2026-11-21, and between 327 and 427 million at every monthly reading over the year. It is old and large, not sudden; supply is about 20% below its December 2025 reading."
+        "en": "The market held 343.9 million USDC of supply at block 26,470,986 on 2026-11-22, and between 327 and 426 million at every monthly reading over the year. It is old and large, not sudden; supply is about 19% below its December 2025 peak."
       },
       "sources": [
         "https://etherscan.io/token/0xc3d688B66703497DAA19211EEdff47f25384cdc3"
@@ -37,7 +37,7 @@
     "compound-v3-cusdcv3/source.bounty": {
       "status": "concern",
       "text": {
-        "en": "Immunefi's compoundfinance scope lists 0xc3d688B66703497DAA19211EEdff47f25384cdc3 as cUSDCv3 (Mainnet USDC). The program's page names compound.finance as its site, while DefiLlama lists compound.xyz, so the program does not count it."
+        "en": "Fetched Immunefi's compoundfinance scope page on 2026-11-22: it lists 0xc3d688B66703497DAA19211EEdff47f25384cdc3 and names compound.finance as the site. DefiLlama lists compound.xyz; compound.finance redirects to www.compound.xyz. No Compound page I read links the Immunefi program."
       },
       "recommendation": {
         "en": "Open the Immunefi scope and the docs page yourself and compare the address."
@@ -45,7 +45,7 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "The Safes found supplied with `supply` alone after an earlier unlimited approval; none of them batched the exact approval. One EOA's supply repaid a borrow first, so its balance rose 5,501.99 USDC less, which verify gives MISMATCH."
+    "en": "Most Safes sent `supply` alone, spending an allowance given earlier, and some went through DeFi Saver's contract by delegatecall; verify gives MISMATCH for both. Propose the exact approval and the supply together as one batch."
   },
   "entries": {
     "compound-v3-cusdcv3": {

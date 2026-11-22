@@ -54,7 +54,7 @@ Key: it bears on whether an address or its code is the protocol's real one and d
 | Side | Token | Amount |
 | --- | --- | --- |
 | the Safe gives | the `baseToken` of the card's `market`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | the card's `amount` |
-| the Safe gets | the card's `market`: one of `compound-v3-cusdcv3` `0xc3d688B66703497DAA19211EEdff47f25384cdc3` | the card's `amount`; the Safe's balance may end up to 2 base units lower than that, for rounding; written by the AI in the template: Comet rounds the supply down twice, to principal and back. In 113 USDC supplies studied, the balance rose 1 unit less than the amount in 91 and 2 less in 21; the other one repaid a borrow.; in Traditional Chinese: Comet 存入時會往下取整兩次：換成本金、再換回餘額。研究的 113 筆 USDC 存入裡，餘額比金額少 1 單位的有 91 筆、少 2 單位的有 21 筆；剩下一筆是先還了借款。 |
+| the Safe gets | the card's `market`: one of `compound-v3-cusdcv3` `0xc3d688B66703497DAA19211EEdff47f25384cdc3` | the card's `amount`; the Safe's balance may end up to 2 base units lower than that, for rounding; written by the AI in the template: Comet rounds the supply down twice, to principal and back. In 85 USDC supplies studied, the balance rose 1 unit less than the amount in 70 and 2 less in 15.; in Traditional Chinese: Comet 存入時會往下取整兩次：換成本金、再換回餘額。研究的 85 筆 USDC 存入裡，餘額比金額少 1 單位的有 70 筆、少 2 單位的有 15 筆。 |
 
 ## Official documentation
 
