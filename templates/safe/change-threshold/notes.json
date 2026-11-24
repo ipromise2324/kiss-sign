@@ -15,21 +15,25 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "Every misfit batches the threshold with owner changes, some with enableModule calls, which kiss-sign refuses.",
-    "zh-TW": "不合的都是把門檻和 owner 變更一起送，有的還加 enableModule，kiss-sign 不接受。"
+    "en": "All four misfits also change the owners, two with `enableModule` calls. kiss-sign refuses such a batch: each change is its own transaction.",
+    "zh-TW": "四筆不合的都同時改了簽署人，其中兩筆還呼叫 `enableModule`。kiss-sign 不接受這種批次，每個變更要各自一筆交易。"
   },
   "flow": [],
   "protocols": {},
   "judgments": [
     {
       "text": {
-        "en": "A threshold of 1 means any one signer can move all the assets. With the threshold equal to the number of signers, losing one key leaves the Safe unable to act ever again.",
-        "zh-TW": "門檻 1 表示任何一個簽署人就能動全部資產；門檻等於人數時，少一把鑰匙就再也動不了。"
+        "en": "At a threshold of 1 any one signer alone can move all the assets; at a threshold equal to the number of signers, losing one key means the signers can never sign a transaction again. Then only a module already enabled could still act; it needs no signatures.",
+        "zh-TW": "門檻 1 表示任何一個簽署人就能動全部資產；門檻等於人數時，少一把鑰匙，簽署人就再也簽不出交易。那時只有事先啟用的 module 還能動，因為它不需要簽名。"
       },
       "recommendation": {
-        "en": "Set the threshold between the two, for example 2 of 3 signers.",
-        "zh-TW": "門檻介於兩者之間，例如 3 人設 2。"
-      }
+        "en": "With three or more signers, set the threshold between the two, for example 2 of 3.",
+        "zh-TW": "有三個以上簽署人時，門檻介於兩者之間，例如 3 人設 2。"
+      },
+      "sources": [
+        "https://github.com/safe-global/safe-smart-account/blob/186a21a74b327f17fc41217a927dea7064f74604/contracts/base/ModuleManager.sol#L61-L73",
+        "https://github.com/safe-global/safe-smart-account/blob/bf943f80fec5ac647159d26161446ac5d716a294/contracts/base/ModuleManager.sol#L81-L93"
+      ]
     }
   ],
   "reviews": {},
