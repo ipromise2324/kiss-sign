@@ -43,6 +43,8 @@ import { WORDS } from './report-words.ts';
 import { compareFlow } from './trace.ts';
 import type { FlowComparison, TracedTx } from './trace.ts';
 import type { SafeParties, SearchSpan, Words } from './report-words.ts';
+import { millions, modelName, totalTokens } from './usage.ts';
+import type { Usage } from './usage.ts';
 
 declare const anchorBrand: unique symbol;
 /** An id the page itself gives an element: a section, or an address row (`a-<registry name>`). A link names only these or an HttpsUrl. */
@@ -78,8 +80,12 @@ export type Page = {
   readonly id: string;
   readonly header: Header;
   readonly sections: readonly Section[];
+  readonly usage: UsageBlock;
   readonly footer: Inline;
 };
+
+/** What the AI used to make the report, under the last section and no result of its own. */
+export type UsageBlock = { readonly title: string; readonly lines: readonly string[] };
 
 export type Section = { readonly anchor: Anchor; readonly label: string; readonly count: RailCount | undefined; readonly body: Body };
 
@@ -1962,6 +1968,19 @@ const tracedOnce = (traces: readonly TracedTx[]): Extract<TracedTx, { kind: 'tra
  * notes.json is parsed against the scope the template and the ledger derive, so it cannot name what the page does not
  * show nor leave out a review the page needs. Throws NotesError for notes the program refuses.
  */
+const usageBlock = (usage: Usage | undefined, w: Words): UsageBlock => ({
+  title: w.usageTitle,
+  lines:
+    usage === undefined
+      ? [w.usageUnmeasured]
+      : [
+          w.usageCalls(usage.models.map(modelName).join(' + '), usage.calls, usage.minutes),
+          w.usageTokens(millions(totalTokens(usage)), millions(usage.cacheRead), millions(usage.input + usage.cacheWrite), millions(usage.output)),
+          ...(usage.kind === 'partial' ? [w.usagePartial] : []),
+          w.usageSource,
+        ],
+});
+
 export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTitle, language: Language): Page {
   const { subject, registry } = inputs;
   const { template } = subject;
@@ -2000,6 +2019,7 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
       verdict: { state: worst(ledger.results), text: research(notes.verdict.text, [], notes.verdict.status === 'safe' ? 'safe' : 'caution') },
     },
     sections,
+    usage: usageBlock(inputs.usage, w),
     footer: w.footer({ code: title.command }, sources.map((s): Span => ({ code: s })), inputs.fetched, { code: 'pnpm test' }, NOTES_FILE),
   };
 }

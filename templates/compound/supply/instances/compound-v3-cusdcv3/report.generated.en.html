@@ -271,6 +271,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
 .auto li{display:flex;gap:10px;align-items:baseline}
 .auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
+.usage{font-size:var(--t-small);color:var(--fg3);margin-bottom:28px}
+.usage h3{font-size:var(--t-row);color:var(--fg2);margin:0 0 6px}
+.usage p{margin:0}
 .foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
 .foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
@@ -622,6 +625,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
+<aside class="usage"><h3>AI usage to make this report</h3><p>Not measured</p></aside>
 <footer class="foot">Written by <code>pnpm report compound/supply --instance-of compound-v3-cusdcv3 --record</code> from <code>templates/compound/supply/template.json</code>, <code>templates/compound/supply/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/compound-supply/compound-v3-cusdcv3.json</code>, <code>testdata/abi</code>, <code>testdata/research/compound-supply.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/compound/supply/notes.json</code>, <code>templates/compound/supply/instances/compound-v3-cusdcv3/notes.json</code>; the data was read on 2026-11-22. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
 
 </div>

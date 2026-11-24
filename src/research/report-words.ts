@@ -527,6 +527,12 @@ const ZH = {
     '鏈上資料都同時問兩家節點，答案不一樣就不給結果。研究時有三種資料只有一個來源，都不會影響判定：過去交易的呼叫追蹤（drpc）、搜尋過去交易（Alchemy 或 Etherscan 找到的都算，找事件只用 Etherscan），和金庫曾經收過份額的地址名單（Alchemy，每個地址的餘額仍問兩家）。',
   traceExplain: (passed: number, counted: number): string =>
     `程式在過去交易的呼叫追蹤裡找 AI 寫的每條流程線，也確認每筆動到錢的內部呼叫都有模板或流程線說明；${counted} 項裡 ${passed} 項通過。追蹤只來自 drpc，其中代幣的轉帳和授權都跟兩家節點都同意的收據核對過。`,
+  usageTitle: '製作這份報告的 AI 用量',
+  usageUnmeasured: '未量測',
+  usageCalls: (models: string, calls: number, minutes: number): string => `${models} · 呼叫 ${calls} 次 · ${minutes} 分鐘`,
+  usageTokens: (total: string, reread: string, fresh: string, output: string): string => `總共 ${total} token = 重複讀取（cache 讀取）${reread} ＋ 新讀入（input 與 cache 寫入）${fresh} ＋ output ${output}`,
+  usagePartial: '這次只重跑過去交易的搜尋，用量只算這部分',
+  usageSource: '來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者',
   footer: (command: Span, sources: readonly Span[], fetched: string, test: Span, notes: string): Span[] => [
     '由 ',
     command,
@@ -1151,6 +1157,12 @@ const EN: Words = {
     "Every chain read asks two providers; when they disagree, there is no result. Three research reads have one source, and none of them reaches a verdict: past transactions' call traces (drpc), the search for past transactions (a transaction either Alchemy or Etherscan finds counts; only Etherscan searches for an event), and the addresses that ever received a vault's shares (Alchemy; each one's balance is still read through both).",
   traceExplain: (passed, counted) =>
     `The program looks for each of the AI's flow lines in the call traces of past transactions, and checks that the template or a flow line explains every call inside that moves money; ${passed} of ${counted} passed. The traces come from drpc alone; their token transfers and approvals are checked against the receipt both providers agree on.`,
+  usageTitle: 'AI usage to make this report',
+  usageUnmeasured: 'Not measured',
+  usageCalls: (models, calls, minutes) => `${models} · ${calls} ${plural(calls, 'call', 'calls')} · ${minutes} ${plural(minutes, 'minute', 'minutes')}`,
+  usageTokens: (total, reread, fresh, output) => `${total} tokens in total = ${reread} re-read (cache reads) + ${fresh} newly read (input and cache writes) + ${output} output`,
+  usagePartial: 'Only the search of past transactions was run again; the usage covers that part alone',
+  usageSource: "Source: the usage the API reported, in Claude Code's transcripts, without the coordinator",
   footer: (command, sources, fetched, test, notes) => [
     'Written by ',
     command,
