@@ -1,0 +1,12 @@
+{
+  "kind": "full",
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "calls": 47,
+  "minutes": 32,
+  "input": 94,
+  "cacheWrite": 332046,
+  "cacheRead": 4952961,
+  "output": 64259
+}
