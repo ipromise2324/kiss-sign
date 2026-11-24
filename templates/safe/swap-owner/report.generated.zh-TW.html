@@ -294,7 +294,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>2</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
 </nav>
 
 <div class="main">
@@ -317,12 +317,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>不動任何資產，但改的是誰能動這個 Safe：新簽署人的地址要從聊天以外的來源核對。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>2</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
   </details>
 </header>
 
 <section id="review">
-  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>2</span></span></h2>
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></span></h2>
   <p class="lead">每一項 AI 都先查過，附上建議。</p>
   <div class="rows">
     <div class="row">
@@ -331,13 +331,6 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
           <div class="rec"><span class="aiw" data-ai><span>新地址一旦換上，就和其他簽署人一樣能簽。</span><span class="byai">AI 研究</span></span></div>
           <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>新地址先跟本人確認；鑰匙外洩時盡快執行。</span><span class="byai">AI 研究</span></span></div>
-        </details></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>Safe web app 的「Manage signers」一次改好幾項時，會把幾個呼叫包進 MultiSend 送出；kiss-sign 一張卡片只接受一項簽署人或門檻的變更，這種批次交易會 MISMATCH。</span><span class="byai">AI 研究</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>每次只改一項，一項一筆交易。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
     </div>
   </div>
@@ -430,10 +423,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/gnosis_safe.json">github.com/safe-global/safe-deployments</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 safe（<a href="https://defillama.com/protocol/safe">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/safe">CoinGecko</a>、<a href="https://github.com/safe-global">GitHub 驗證網域</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（main）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py">github.com/safe-global/safe-cli</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 safe（<a href="https://defillama.com/protocol/safe">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/safe">CoinGecko</a>、<a href="https://github.com/safe-global">GitHub 驗證網域</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（main）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://etherscan.io/address/0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26">部署者 0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26，也部署了 safe-1.4.1</a></span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁 + github.com/safe-global/safe-cli (github.com/safe-global)、部署者</div>
         <details class="aisrcs" open><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 4 處 · AI 判斷：要注意</summary>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>safe-deployments（safe-global GitHub）v1.3.0 的 gnosis_safe.json，commit ca9cb0d：canonical 部署地址為 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552，chain 1 對應 canonical <a class="aisrc" href="https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/gnosis_safe.json">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>safe-cli（同一個 safe-global 組織，算同一個地方）：0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552，旁註 v1.3 <a class="aisrc" href="https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>safe-deployments（safe-global GitHub）v1.3.0 的 gnosis_safe.json，commit ca9cb0d：canonical 部署地址為 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552；chain 1 列出 canonical 和 eip155（另一個地址） <a class="aisrc" href="https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/gnosis_safe.json">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>safe-cli（同一個 safe-global 組織，算同一個地方）：0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552，旁註 v1.3.0 <a class="aisrc" href="https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
           <div><span class="aiw" data-ai><span class="byai">AI</span><span>Safe 文件的 supported networks v1.3.0：頁面靠 JavaScript 才顯示地址；直接讀取看不到地址，不算一個地方 <a class="aisrc" href="https://docs.safe.global/advanced/smart-account-supported-networks/v1.3.0">來源</a></span></span><span class="aires">AI 判斷：要注意</span></div>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 GnosisSafe，由 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26 透過 Arachnid deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C 建立 <a class="aisrc" href="https://etherscan.io/address/0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 GnosisSafe，建立者 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26（標籤 Gnosis Safe: Deployer），透過 0x4e59b44847b379578588920cA78FbF26c0B4956C（標籤 Create2: Factory）建立 <a class="aisrc" href="https://etherscan.io/address/0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
         </details></div>
     </div>
     <details class="fold">
@@ -446,9 +439,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="confirmed">在 2 個地方確認：官方頁 + github.com/safe-global/safe-cli (github.com/safe-global)、docs.safe.global/advanced/erc-4337/guides</div>
         <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 4 處 · AI 判斷：沒問題</summary>
           <div><span class="aiw" data-ai><span class="byai">AI</span><span>safe-deployments（safe-global GitHub）v1.4.1 的 safe.json，commit ca9cb0d：canonical 部署地址為 0x41675C099F32341bf84BFc5382aF534df5C7461a <a class="aisrc" href="https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.4.1/safe.json">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>safe-cli（同一個 safe-global 組織，算同一個地方）：0x41675C099F32341bf84BFc5382aF534df5C7461a，旁註 v1.4 <a class="aisrc" href="https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>safe-cli（同一個 safe-global 組織，算同一個地方）：0x41675C099F32341bf84BFc5382aF534df5C7461a，旁註 v1.4.1 <a class="aisrc" href="https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
           <div><span class="aiw" data-ai><span class="byai">AI</span><span>Safe 文件的 ERC-4337 permissionless 指南：直接讀取的頁面寫著 const SAFE_SINGLETON_ADDRESS = 0x41675C099F32341bf84BFc5382aF534df5C7461a <a class="aisrc" href="https://docs.safe.global/advanced/erc-4337/guides/permissionless-detailed">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 Safe，由 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26 透過 Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7 建立 <a class="aisrc" href="https://etherscan.io/address/0x41675C099F32341bf84BFc5382aF534df5C7461a#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 Safe，建立者 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26（標籤 Gnosis Safe: Deployer），透過合約 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7（沒有名稱標籤）建立 <a class="aisrc" href="https://etherscan.io/address/0x41675C099F32341bf84BFc5382aF534df5C7461a#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
         </details></div>
     </div>
     </details>
@@ -460,7 +453,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <p class="lead">過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 <span class="num">71</span> 筆：Safe <span class="num">71</span> 筆（71 個 Safe）、EOA <span class="num">0</span> 筆。這些交易全部成功執行：它們是從 Safe RemovedOwner時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0xa4bc52cda4304cdb025fe712f343c386ab07a78cb7c7bdfe368b03484b055aad">0xa4bc52cd…</a>、<a href="https://etherscan.io/tx/0x24385d26730c7745408d4e50efe4ca9089024002c762f3e5b7b1fc8f842fbbff">0x24385d26…</a>、<a href="https://etherscan.io/tx/0x5053537cf659ab1734de61cff1dd6c748dcc2deaef76611e293feb50872cae72">0x5053537c…</a>。</p>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 <span class="num">22</span> 筆跟你這筆不一樣：形狀一樣、但有地址不在 registry 裡的 <span class="num">0</span> 筆，形狀不同的 <span class="num">22</span> 筆</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>不合的是在一個 MultiSend 裡換、加或移除好幾個 owner，其中一筆還加了 enableModule；kiss-sign 不接受這種批次，每個變更要各自一筆交易。</span><span class="byai">AI 研究</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>不合的都在一個 MultiSend 裡把 <code>swapOwner</code> 和別的呼叫綁在一起：更多 <code>swapOwner</code>、<code>addOwnerWithThreshold</code> 或 <code>removeOwner</code>；五筆還呼叫 <code>enableModule</code>，其中四筆也對另一個合約呼叫，並改 <code>changeThreshold</code>。一張卡片只放一項變更，verify 會拒絕這種批次，每項變更要各自一筆交易。</span><span class="byai">AI 研究</span></span></p>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
   <h3>搜尋 Safe 的RemovedOwner，找到 15942 筆，研究 238 筆，含證實為 Safe 的參與方的 15909 筆中研究 205 筆</h3>
   <p class="lead">記錄在 <code>testdata/research/safe-swap-owner.json</code>。搜尋了最近一年的每一筆交易，從區塊 23856083（2025-11-22）到區塊 26484082（2026-11-24），沒有遺漏。只有 Etherscan 搜尋事件，找到 <span class="num">15942</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
