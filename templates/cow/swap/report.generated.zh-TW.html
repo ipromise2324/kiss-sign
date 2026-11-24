@@ -306,7 +306,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <header>
   <h1><span class="aiw" data-ai><span>在 CoW Swap 下賣單（代幣已授權）</span><span class="byai">AI 研究</span></span></h1>
   <span class="opid">cow/swap</span>
-  <p class="sub"><span class="aiw" data-ai><span>Safe 呼叫 CoW 結算合約的 <code>setPreSignature</code>，預先簽下一張賣單；solver 之後在 30 分鐘內成交。交易裡只有訂單的雜湊，verify 從 CoW 的 API 讀回訂單原文，算出同一個雜湊後，再逐項比對代幣、數量、收款人。賣的代幣要先授權給 CoW 的 vault relayer。</span><span class="byai">AI 研究</span></span></p>
+  <p class="sub"><span class="aiw" data-ai><span>Safe 呼叫 CoW 結算合約的 <code>setPreSignature</code>，預先簽下一張賣單；solver 在到期前都可以成交（app 設 30 分鐘後到期）。交易裡只有訂單的雜湊，verify 從 CoW 的 API 讀回訂單原文，算出同一個雜湊後，再逐項比對代幣、數量、收款人。賣的代幣要先授權給 CoW 的 vault relayer。</span><span class="byai">AI 研究</span></span></p>
   <ul class="checks">
     <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>地址來源 <span class="n num">7 / 7</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">7 個地址都至少在 2 個地方確認：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件或共用的部署者列出同一個地址。</span></span></li>
@@ -346,7 +346,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>這兩項 app 會自己填。</span><span class="byai">AI 研究</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>到期時間和 appData 這兩項 app 會自己填。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
           <div class="rec"><span class="aiw" data-ai><span>到期時間模板限制在區塊時間後 7 天內（app 設 30 分鐘）；appData 模板不限制（可能含 0.1% 的合作方手續費）。成交仍不會少於你填的最少數量，也只給 Safe。</span><span class="byai">AI 研究</span></span></div>
           <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受。訂單過期前不想要了，用 Safe 撤回。</span><span class="byai">AI 研究</span></span></div>

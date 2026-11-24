@@ -4,8 +4,8 @@
     "zh-TW": "在 CoW Swap 下賣單（代幣已授權）"
   },
   "summary": {
-    "en": "The Safe calls `setPreSignature` on CoW's settlement contract to pre-sign a sell order. A solver then fills it within 30 minutes. The transaction holds only the order's hash. verify reads the full order back from CoW's API, computes the same hash, then compares the tokens, amounts and recipient one by one. The token to sell must first have an allowance for CoW's vault relayer.",
-    "zh-TW": "Safe 呼叫 CoW 結算合約的 `setPreSignature`，預先簽下一張賣單；solver 之後在 30 分鐘內成交。交易裡只有訂單的雜湊，verify 從 CoW 的 API 讀回訂單原文，算出同一個雜湊後，再逐項比對代幣、數量、收款人。賣的代幣要先授權給 CoW 的 vault relayer。"
+    "en": "The Safe calls `setPreSignature` on CoW's settlement contract to pre-sign a sell order. A solver can then fill it until it expires (the app sets 30 minutes). The transaction holds only the order's hash. verify reads the full order back from CoW's API, computes the same hash, then compares the tokens, amounts and recipient one by one. The token to sell must first have an allowance for CoW's vault relayer.",
+    "zh-TW": "Safe 呼叫 CoW 結算合約的 `setPreSignature`，預先簽下一張賣單；solver 在到期前都可以成交（app 設 30 分鐘後到期）。交易裡只有訂單的雜湊，verify 從 CoW 的 API 讀回訂單原文，算出同一個雜湊後，再逐項比對代幣、數量、收款人。賣的代幣要先授權給 CoW 的 vault relayer。"
   },
   "verdict": {
     "status": "caution",
@@ -66,8 +66,8 @@
     },
     {
       "text": {
-        "en": "The app fills these two items. The template limits the expiry to at most 7 days after the block (the app sets 30 minutes) and does not limit appData (may include a 0.1% partner fee). The fill still gives no less than the minimum you type, and only to the Safe.",
-        "zh-TW": "這兩項 app 會自己填。到期時間模板限制在區塊時間後 7 天內（app 設 30 分鐘）；appData 模板不限制（可能含 0.1% 的合作方手續費）。成交仍不會少於你填的最少數量，也只給 Safe。"
+        "en": "The app fills the expiry and appData itself. The template limits the expiry to at most 7 days after the block (the app sets 30 minutes) and does not limit appData (may include a 0.1% partner fee). The fill still gives no less than the minimum you type, and only to the Safe.",
+        "zh-TW": "到期時間和 appData 這兩項 app 會自己填。到期時間模板限制在區塊時間後 7 天內（app 設 30 分鐘）；appData 模板不限制（可能含 0.1% 的合作方手續費）。成交仍不會少於你填的最少數量，也只給 Safe。"
       },
       "recommendation": {
         "en": "Acceptable. If you no longer want the order before it expires, cancel it from the Safe.",

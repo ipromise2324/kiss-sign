@@ -306,7 +306,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <header>
   <h1><span class="aiw" data-ai><span>Place a sell order on CoW Swap (token allowance already in place)</span><span class="byai">AI research</span></span></h1>
   <span class="opid">cow/swap</span>
-  <p class="sub"><span class="aiw" data-ai><span>The Safe calls <code>setPreSignature</code> on CoW&#39;s settlement contract to pre-sign a sell order. A solver then fills it within 30 minutes. The transaction holds only the order&#39;s hash. verify reads the full order back from CoW&#39;s API, computes the same hash, then compares the tokens, amounts and recipient one by one. The token to sell must first have an allowance for CoW&#39;s vault relayer.</span><span class="byai">AI research</span></span></p>
+  <p class="sub"><span class="aiw" data-ai><span>The Safe calls <code>setPreSignature</code> on CoW&#39;s settlement contract to pre-sign a sell order. A solver can then fill it until it expires (the app sets 30 minutes). The transaction holds only the order&#39;s hash. verify reads the full order back from CoW&#39;s API, computes the same hash, then compares the tokens, amounts and recipient one by one. The token to sell must first have an allowance for CoW&#39;s vault relayer.</span><span class="byai">AI research</span></span></p>
   <ul class="checks">
     <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Address sources <span class="n num">7 / 7</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">All 7 addresses are confirmed in at least 2 places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address.</span></span></li>
@@ -347,7 +347,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>The app fills these two items.</span><span class="byai">AI research</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>The app fills the expiry and appData itself.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
           <div class="rec"><span class="aiw" data-ai><span>The template limits the expiry to at most 7 days after the block (the app sets 30 minutes) and does not limit appData (may include a 0.1% partner fee). The fill still gives no less than the minimum you type, and only to the Safe.</span><span class="byai">AI research</span></span></div>
           <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. If you no longer want the order before it expires, cancel it from the Safe.</span><span class="byai">AI research</span></span></div>
