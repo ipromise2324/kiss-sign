@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-11-22",
+  "fetched": "2026-11-24",
   "defillama": [
     {
       "slug": "circle-usdc",
@@ -1619,10 +1619,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547"
         }
       }
@@ -2600,8 +2600,8 @@
   ],
   "facts": {
     "block": {
-      "number": "26469870",
-      "hash": "0x6caef1e7f6400445dd98b654ca624b7d4de59b1c4cf84f134882e9faa4a13652"
+      "number": "26486338",
+      "hash": "0xdb26ce58516194777f15c26b5996a935e6c318f09f751c16456454ab944b4fbf"
     },
     "defillama": [],
     "hacks": [],
@@ -2614,7 +2614,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x6caef1e7f6400445dd98b654ca624b7d4de59b1c4cf84f134882e9faa4a13652"
+            "blockHash": "0xdb26ce58516194777f15c26b5996a935e6c318f09f751c16456454ab944b4fbf"
           }
         ],
         "answers": {
@@ -2630,7 +2630,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x6caef1e7f6400445dd98b654ca624b7d4de59b1c4cf84f134882e9faa4a13652"
+            "blockHash": "0xdb26ce58516194777f15c26b5996a935e6c318f09f751c16456454ab944b4fbf"
           }
         ],
         "answers": {
@@ -2646,7 +2646,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x6caef1e7f6400445dd98b654ca624b7d4de59b1c4cf84f134882e9faa4a13652"
+            "blockHash": "0xdb26ce58516194777f15c26b5996a935e6c318f09f751c16456454ab944b4fbf"
           }
         ],
         "answers": {
@@ -2662,7 +2662,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x6caef1e7f6400445dd98b654ca624b7d4de59b1c4cf84f134882e9faa4a13652"
+            "blockHash": "0xdb26ce58516194777f15c26b5996a935e6c318f09f751c16456454ab944b4fbf"
           }
         ],
         "answers": {
@@ -2678,7 +2678,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x6caef1e7f6400445dd98b654ca624b7d4de59b1c4cf84f134882e9faa4a13652"
+            "blockHash": "0xdb26ce58516194777f15c26b5996a935e6c318f09f751c16456454ab944b4fbf"
           }
         ],
         "answers": {
@@ -2694,7 +2694,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x6caef1e7f6400445dd98b654ca624b7d4de59b1c4cf84f134882e9faa4a13652"
+            "blockHash": "0xdb26ce58516194777f15c26b5996a935e6c318f09f751c16456454ab944b4fbf"
           }
         ],
         "answers": {
