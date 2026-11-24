@@ -43,7 +43,7 @@ import { WORDS } from './report-words.ts';
 import { compareFlow } from './trace.ts';
 import type { FlowComparison, TracedTx } from './trace.ts';
 import type { SafeParties, SearchSpan, Words } from './report-words.ts';
-import { millions, modelName, totalTokens } from './usage.ts';
+import { formatMillions, modelName, totalTokens, usagePath } from './usage.ts';
 import type { Usage } from './usage.ts';
 
 declare const anchorBrand: unique symbol;
@@ -1963,11 +1963,6 @@ const tracedOnce = (traces: readonly TracedTx[]): Extract<TracedTx, { kind: 'tra
   ...new Map(traces.flatMap((t) => (t.kind === 'traced' ? [[t.hash, t] as const] : []))).values(),
 ];
 
-/**
- * The signer's page in `language`, from the report's inputs and the raw notes.json. The ledger judges every result;
- * notes.json is parsed against the scope the template and the ledger derive, so it cannot name what the page does not
- * show nor leave out a review the page needs. Throws NotesError for notes the program refuses.
- */
 const usageBlock = (usage: Usage | undefined, w: Words): UsageBlock => ({
   title: w.usageTitle,
   lines:
@@ -1975,12 +1970,17 @@ const usageBlock = (usage: Usage | undefined, w: Words): UsageBlock => ({
       ? [w.usageUnmeasured]
       : [
           w.usageCalls(usage.models.map(modelName).join(' + '), usage.calls, usage.minutes),
-          w.usageTokens(millions(totalTokens(usage)), millions(usage.cacheRead), millions(usage.input + usage.cacheWrite), millions(usage.output)),
-          ...(usage.kind === 'partial' ? [w.usagePartial] : []),
+          w.usageTokens(formatMillions(totalTokens(usage)), formatMillions(usage.cacheRead), formatMillions(usage.input + usage.cacheWrite), formatMillions(usage.output)),
+          ...(usage.kind === 'past-txs-rerun' ? [w.usagePartial] : []),
           w.usageSource,
         ],
 });
 
+/**
+ * The signer's page in `language`, from the report's inputs and the raw notes.json. The ledger judges every result;
+ * notes.json is parsed against the scope the template and the ledger derive, so it cannot name what the page does not
+ * show nor leave out a review the page needs. Throws NotesError for notes the program refuses.
+ */
 export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTitle, language: Language): Page {
   const { subject, registry } = inputs;
   const { template } = subject;
@@ -2007,7 +2007,7 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
     comparison,
   };
   const sections = [reviewSection(context), flowSection(context), ...protocolSections(context), ...vaultSection(context), walletSection(context), ...addressSection(context), pastSection(context), nextSection(context)];
-  const sources = [...title.sources, 'testdata/perturb', 'testdata/safe-tx', join(TEMPLATES_DIR, template.id, NOTES_FILE), ...(subject.vault === undefined ? [] : [join(subject.dir, NOTES_FILE)])];
+  const sources = [...title.sources, 'testdata/perturb', 'testdata/safe-tx', join(TEMPLATES_DIR, template.id, NOTES_FILE), ...(subject.vault === undefined ? [] : [join(subject.dir, NOTES_FILE)]), ...(inputs.usage === undefined ? [] : [usagePath({ template: template.id, instance: subject.vault?.name })])];
   return {
     language,
     id: subject.vault === undefined ? template.id : `${template.id} · ${subject.vault.name}`,
@@ -2020,6 +2020,6 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
     },
     sections,
     usage: usageBlock(inputs.usage, w),
-    footer: w.footer({ code: title.command }, sources.map((s): Span => ({ code: s })), inputs.fetched, { code: 'pnpm test' }, NOTES_FILE),
+    footer: w.footer({ code: title.command }, sources.map((s): Span => ({ code: s })), inputs.fetched, { code: 'pnpm test' }, NOTES_FILE, inputs.usage !== undefined),
   };
 }

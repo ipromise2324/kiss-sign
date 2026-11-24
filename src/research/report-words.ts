@@ -533,14 +533,14 @@ const ZH = {
   usageTokens: (total: string, reread: string, fresh: string, output: string): string => `總共 ${total} token = 重複讀取（cache 讀取）${reread} ＋ 新讀入（input 與 cache 寫入）${fresh} ＋ output ${output}`,
   usagePartial: '這次只重跑過去交易的搜尋，用量只算這部分',
   usageSource: '來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者',
-  footer: (command: Span, sources: readonly Span[], fetched: string, test: Span, notes: string): Span[] => [
+  footer: (command: Span, sources: readonly Span[], fetched: string, test: Span, notes: string, usage: boolean): Span[] => [
     '由 ',
     command,
     ' 從 ',
     ...sources.flatMap((s, i): Span[] => [...(i === 0 ? [] : ['、']), s]),
     ` 寫出，資料在 ${fetched} 讀取。不要手改；`,
     test,
-    ` 會重算並比對。${notes} 是 AI 寫的，標 AI 的文字沒有程式檢查。`,
+    ` 會重算並比對。${notes} 是 AI 寫的，標 AI 的文字沒有程式檢查。${usage ? '用量的數字程式也不檢查。' : ''}`,
   ],
 
   state: { ok: '通過', warn: '注意', bad: '不通過', na: '沒資料可比', ask: 'AI 判斷' } satisfies Record<State | 'ask', string>,
@@ -1163,14 +1163,14 @@ const EN: Words = {
   usageTokens: (total, reread, fresh, output) => `${total} tokens in total = ${reread} re-read (cache reads) + ${fresh} newly read (input and cache writes) + ${output} output`,
   usagePartial: 'Only the search of past transactions was run again; the usage covers that part alone',
   usageSource: "Source: the usage the API reported, in Claude Code's transcripts, without the coordinator",
-  footer: (command, sources, fetched, test, notes) => [
+  footer: (command, sources, fetched, test, notes, usage) => [
     'Written by ',
     command,
     ' from ',
     ...sources.flatMap((s, i): Span[] => [...(i === 0 ? [] : [', ']), s]),
     `; the data was read on ${fetched}. Do not edit it by hand; `,
     test,
-    ` computes it again and compares. ${notes} is written by the AI; no program checks the text tagged AI.`,
+    ` computes it again and compares. ${notes} is written by the AI; no program checks the text tagged AI${usage ? ' or the usage numbers' : ''}.`,
   ],
 
   state: { ok: 'pass', warn: 'attention', bad: 'fail', na: 'nothing to compare', ask: 'AI judgment' },

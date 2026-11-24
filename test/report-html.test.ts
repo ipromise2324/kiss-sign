@@ -18,7 +18,7 @@ import { WORDS } from '../src/research/report-words.ts';
 import { loadReport, readDocs, replayInputs, reportDir, templateTargets } from '../src/research/report.ts';
 import type { PastTxsSection, ReportInputs, ReportTitle } from '../src/research/report.ts';
 import type { Coverage, SearchRun, YearSearch } from '../src/research/past-txs.ts';
-import { parseUsage, readUsage } from '../src/research/usage.ts';
+import { parseUsage, readUsage, usagePath } from '../src/research/usage.ts';
 import { judgeFixtures } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { NOT_YET_REBUILT, reportedInstances } from '../src/template/vault-reports.ts';
@@ -395,7 +395,7 @@ test('every report ends with the AI usage that made it, or says it was not measu
     '總共 5.6M token = 重複讀取（cache 讀取）5.4M ＋ 新讀入（input 與 cache 寫入）0.19M ＋ output 0.03M',
     '來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者',
   ]);
-  assert.deepEqual(usageOf({ ...judged, usage: { ...usage, kind: 'partial' } }, 'zh-TW'), [...full.slice(0, 3), '這次只重跑過去交易的搜尋，用量只算這部分', full[3]]);
+  assert.deepEqual(usageOf({ ...judged, usage: { ...usage, kind: 'past-txs-rerun' } }, 'zh-TW'), [...full.slice(0, 3), '這次只重跑過去交易的搜尋，用量只算這部分', full[3]]);
   assert.deepEqual(usageOf({ ...judged, usage: undefined }, 'zh-TW'), ['製作這份報告的 AI 用量', '未量測']);
   assert.equal(usageOf({ ...judged, usage }, 'en')[2], '5.6M tokens in total = 5.4M re-read (cache reads) + 0.19M newly read (input and cache writes) + 0.03M output');
 });
@@ -408,6 +408,7 @@ test('a usage file is one report\'s counts, and one with a missing, negative or 
     [{ ...raw, calls: undefined }, /usage\.calls/],
     [{ ...raw, kind: 'rough' }, /usage\.kind/],
     [{ ...raw, models: ['<b>'] }, /usage\.models/],
+    [{ ...raw, models: ['this-report-is-safe'] }, /usage\.models/],
     [{ ...raw, cost: 3 }, /unknown key "cost"/],
   ] as const)
     assert.throws(() => parseUsage(bad), message);
@@ -416,6 +417,21 @@ test('a usage file is one report\'s counts, and one with a missing, negative or 
   mkdirSync(join(root, 'testdata', 'usage', 'a-b'), { recursive: true });
   writeFileSync(join(root, 'testdata', 'usage', 'a-b', 'v.json'), JSON.stringify(raw));
   assert.deepEqual(readUsage(root, { template: 'a/b', instance: 'v' }), raw);
+  writeFileSync(join(root, 'testdata', 'usage', 'a-b.json'), '{');
+  assert.throws(() => readUsage(root, { template: 'a/b' }), /^UsageError: testdata\/usage\/a-b\.json: /);
+});
+
+test('a report with a usage file prints it, names the file in the footer and says no program checks the numbers', () => {
+  const measured = [...withNotes].filter(([, { target, root }]) => existsSync(join(root, usagePath(target))));
+  assert.ok(measured.length > 0);
+  for (const [dir, { target, root }] of measured) {
+    const usage = readUsage(root, target) ?? assert.fail(dir);
+    for (const [language, html] of pages.get(dir)?.html ?? assert.fail(dir)) {
+      assert.ok(html.includes(WORDS[language].usageCalls('Opus 5.5', usage.calls, usage.minutes)), dir);
+      assert.ok(html.includes(`<code>${usagePath(target)}</code>`), dir);
+      assert.match(html, language === 'en' ? /or the usage numbers\./ : /用量的數字程式也不檢查。/);
+    }
+  }
 });
 
 test('下一步 ends every signer report, each command alone in its own block with no punctuation inside it', () => {
