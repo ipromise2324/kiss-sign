@@ -66,8 +66,8 @@
     },
     {
       "text": {
-        "en": "The app fills these two items. The template limits the expiry to at most 7 days after the block (the app sets 30 minutes) and does not limit appData (may include a 0.1% partner fee). The fill still gives no less than the minimum you type, and only to the Safe.",
-        "zh-TW": "這兩項 app 會自己填。到期時間模板限制在區塊時間後 7 天內（app 設 30 分鐘）；appData 模板不限制（可能含 0.1% 的合作方手續費）。成交仍不會少於你填的最少數量，也只給 Safe。"
+        "en": "The app fills the expiry and appData itself. The template limits the expiry to at most 7 days after the block (the app sets 30 minutes) and does not limit appData (may include a 0.1% partner fee). The fill still gives no less than the minimum you type, and only to the Safe.",
+        "zh-TW": "到期時間和 appData 這兩項 app 會自己填。到期時間模板限制在區塊時間後 7 天內（app 設 30 分鐘）；appData 模板不限制（可能含 0.1% 的合作方手續費）。成交仍不會少於你填的最少數量，也只給 Safe。"
       },
       "recommendation": {
         "en": "Acceptable. If you no longer want the order before it expires, cancel it from the Safe.",
