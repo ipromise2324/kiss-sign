@@ -43,6 +43,8 @@ import { WORDS } from './report-words.ts';
 import { compareFlow } from './trace.ts';
 import type { FlowComparison, TracedTx } from './trace.ts';
 import type { SafeParties, SearchSpan, Words } from './report-words.ts';
+import { formatMillions, modelName, totalTokens, usagePath } from './usage.ts';
+import type { Usage } from './usage.ts';
 
 declare const anchorBrand: unique symbol;
 /** An id the page itself gives an element: a section, or an address row (`a-<registry name>`). A link names only these or an HttpsUrl. */
@@ -78,8 +80,12 @@ export type Page = {
   readonly id: string;
   readonly header: Header;
   readonly sections: readonly Section[];
+  readonly usage: UsageBlock;
   readonly footer: Inline;
 };
+
+/** What the AI used to make the report, under the last section and no result of its own. */
+export type UsageBlock = { readonly title: string; readonly lead: string; readonly table: { readonly head: readonly [string, string]; readonly rows: readonly (readonly [string, string])[]; readonly total: readonly [string, string] } | undefined; readonly notes: readonly string[] };
 
 export type Section = { readonly anchor: Anchor; readonly label: string; readonly count: RailCount | undefined; readonly body: Body };
 
@@ -1957,6 +1963,24 @@ const tracedOnce = (traces: readonly TracedTx[]): Extract<TracedTx, { kind: 'tra
   ...new Map(traces.flatMap((t) => (t.kind === 'traced' ? [[t.hash, t] as const] : []))).values(),
 ];
 
+const usageBlock = (usage: Usage | undefined, w: Words): UsageBlock =>
+  usage === undefined
+    ? { title: w.usageTitle, lead: w.usageUnmeasured, table: undefined, notes: [] }
+    : {
+        title: w.usageTitle,
+        lead: w.usageCalls(usage.models.map(modelName).join(' + '), usage.calls, usage.minutes),
+        table: {
+          head: [w.usageItem, w.usageTokens],
+          rows: [
+            [w.usageReread, formatMillions(usage.cacheRead)],
+            [w.usageFresh, formatMillions(usage.input + usage.cacheWrite)],
+            [w.usageOutput, formatMillions(usage.output)],
+          ],
+          total: [w.usageTotal, formatMillions(totalTokens(usage))],
+        },
+        notes: [...(usage.kind === 'past-txs-rerun' ? [w.usagePartial] : []), w.usageSource],
+      };
+
 /**
  * The signer's page in `language`, from the report's inputs and the raw notes.json. The ledger judges every result;
  * notes.json is parsed against the scope the template and the ledger derive, so it cannot name what the page does not
@@ -1988,7 +2012,7 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
     comparison,
   };
   const sections = [reviewSection(context), flowSection(context), ...protocolSections(context), ...vaultSection(context), walletSection(context), ...addressSection(context), pastSection(context), nextSection(context)];
-  const sources = [...title.sources, 'testdata/perturb', 'testdata/safe-tx', join(TEMPLATES_DIR, template.id, NOTES_FILE), ...(subject.vault === undefined ? [] : [join(subject.dir, NOTES_FILE)])];
+  const sources = [...title.sources, 'testdata/perturb', 'testdata/safe-tx', join(TEMPLATES_DIR, template.id, NOTES_FILE), ...(subject.vault === undefined ? [] : [join(subject.dir, NOTES_FILE)]), ...(inputs.usage === undefined ? [] : [usagePath({ template: template.id, instance: subject.vault?.name })])];
   return {
     language,
     id: subject.vault === undefined ? template.id : `${template.id} · ${subject.vault.name}`,
@@ -2000,6 +2024,7 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
       verdict: { state: worst(ledger.results), text: research(notes.verdict.text, [], notes.verdict.status === 'safe' ? 'safe' : 'caution') },
     },
     sections,
-    footer: w.footer({ code: title.command }, sources.map((s): Span => ({ code: s })), inputs.fetched, { code: 'pnpm test' }, NOTES_FILE),
+    usage: usageBlock(inputs.usage, w),
+    footer: w.footer({ code: title.command }, sources.map((s): Span => ({ code: s })), inputs.fetched, { code: 'pnpm test' }, NOTES_FILE, inputs.usage !== undefined),
   };
 }
