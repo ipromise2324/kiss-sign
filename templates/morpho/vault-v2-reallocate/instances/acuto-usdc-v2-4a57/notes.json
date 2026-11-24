@@ -50,19 +50,89 @@
       "role": {
         "en": "Acuto's USDC vault (V2), not listed",
         "zh-TW": "Acuto 的 USDC vault（V2），沒有上架"
-      }
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Morpho API, `vaultV2ByAddress` with this address: name Acuto, `listed` false, curator 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5, owner 0xEB4Af6fA3AFA08B10d593EC8fF87efB03BC04645",
+            "zh-TW": "Morpho API 用 `vaultV2ByAddress` 查這個地址：名稱 Acuto，`listed` 是 false，curator 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5，owner 0xEB4Af6fA3AFA08B10d593EC8fF87efB03BC04645"
+          },
+          "url": "https://api.morpho.org/graphql",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "Morpho app's page for the usdc-usp-86 market, whose URL does not hold this address, names it Acuto, only in script data",
+            "zh-TW": "Morpho app 的 usdc-usp-86 市場頁，網址沒有這個地址，頁面把它叫 Acuto，但只在 script 資料裡"
+          },
+          "url": "https://app.morpho.org/ethereum/variable/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name VaultV2, creator 0x201051ae0fddac0ce47b299e4673caa39f32a961 through 0xA1D94F746dEfa1928926b84fB2596c06926C0405, the vault factory",
+            "zh-TW": "Etherscan：合約名 VaultV2，創建者 0x201051ae0fddac0ce47b299e4673caa39f32a961 透過 vault 工廠 0xA1D94F746dEfa1928926b84fB2596c06926C0405"
+          },
+          "url": "https://etherscan.io/address/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57#code",
+          "result": "pass"
+        }
+      ]
     },
     "acuto-usdc-v2-4a57-market-adapter": {
       "role": {
         "en": "The vault's Morpho Blue market adapter",
         "zh-TW": "vault 的 Morpho Blue 市場轉接合約"
-      }
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Morpho API, `vaultV2ByAddress` with 0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57: its only adapter is this address, type MorphoMarketV1",
+            "zh-TW": "Morpho API 用 `vaultV2ByAddress` 查 0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57：唯一的轉接合約就是這個地址，類型 MorphoMarketV1"
+          },
+          "url": "https://api.morpho.org/graphql",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name MorphoMarketV1AdapterV2, creator 0x201051ae0fddac0ce47b299e4673caa39f32a961 through 0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1, the adapter factory",
+            "zh-TW": "Etherscan：合約名 MorphoMarketV1AdapterV2，創建者 0x201051ae0fddac0ce47b299e4673caa39f32a961 透過轉接合約工廠 0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1"
+          },
+          "url": "https://etherscan.io/address/0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5#code",
+          "result": "pass"
+        }
+      ]
     },
     "vault-v2-factory": {
       "role": {
         "en": "The Morpho Vault V2 factory. It answers `isVaultV2` = true: it created this vault",
         "zh-TW": "Morpho Vault V2 工廠，它回答 `isVaultV2` = true，這個 vault 是它建立的"
-      }
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Morpho's docs list this address next to VaultV2Factory",
+            "zh-TW": "Morpho 文件在 VaultV2Factory 旁邊列出這個地址"
+          },
+          "url": "https://docs.morpho.org/developers/contracts/addresses/",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Morpho's SDK file lists this address under `vaultV2Factory` for Ethereum",
+            "zh-TW": "Morpho 的 SDK 檔案在 Ethereum 的 `vaultV2Factory` 列出這個地址"
+          },
+          "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name VaultV2Factory, creator 0xc0267a5fa9aaaf1694283c013cbfa925bcdb5de8",
+            "zh-TW": "Etherscan：合約名 VaultV2Factory，創建者 0xc0267a5fa9aaaf1694283c013cbfa925bcdb5de8"
+          },
+          "url": "https://etherscan.io/address/0xA1D94F746dEfa1928926b84fB2596c06926C0405#code",
+          "result": "pass"
+        }
+      ]
     }
   }
 }

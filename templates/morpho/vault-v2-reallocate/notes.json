@@ -77,61 +77,353 @@
       "role": {
         "en": "The vault's asset, also the token the markets lend",
         "zh-TW": "vault 的資產，也是市場借出的代幣"
-      }
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Circle's page lists this address for Ethereum mainnet",
+            "zh-TW": "Circle 的頁面列出 Ethereum 主網的這個地址"
+          },
+          "url": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko lists usd-coin at this address",
+            "zh-TW": "CoinGecko 在這個地址列出 usd-coin"
+          },
+          "url": "https://www.coingecko.com/en/coins/usd-coin",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name FiatTokenProxy, creator 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911",
+            "zh-TW": "Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911"
+          },
+          "url": "https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code",
+          "result": "pass"
+        }
+      ]
     },
     "cbbtc": {
       "role": {
         "en": "The market's collateral token",
         "zh-TW": "市場的抵押代幣"
-      }
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Coinbase's agentkit file lists this address as `CBBTC`",
+            "zh-TW": "Coinbase 的 agentkit 檔案把這個地址列為 `CBBTC`"
+          },
+          "url": "https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko lists coinbase-wrapped-btc at this address",
+            "zh-TW": "CoinGecko 在這個地址列出 coinbase-wrapped-btc"
+          },
+          "url": "https://www.coingecko.com/en/coins/coinbase-wrapped-btc",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name FiatTokenProxy, creator 0xCE97003ea2E0A565a9a0b6E36209c6dDAaa14b05 through 0x00000000001c3dC9A681A014e2732bF1419aFAec",
+            "zh-TW": "Etherscan：合約名 FiatTokenProxy，創建者 0xCE97003ea2E0A565a9a0b6E36209c6dDAaa14b05 透過 0x00000000001c3dC9A681A014e2732bF1419aFAec"
+          },
+          "url": "https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code",
+          "result": "pass"
+        }
+      ]
     },
     "morpho-blue": {
       "role": {
         "en": "Morpho Blue itself; the markets live inside it",
         "zh-TW": "Morpho Blue 本體，市場在它裡面"
-      }
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Morpho's docs list this address next to Morpho",
+            "zh-TW": "Morpho 文件在 Morpho 旁邊列出這個地址"
+          },
+          "url": "https://docs.morpho.org/developers/contracts/addresses/",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Morpho's SDK file lists this address under `blue` for Ethereum",
+            "zh-TW": "Morpho 的 SDK 檔案在 Ethereum 的 `blue` 列出這個地址"
+          },
+          "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name Morpho, creator 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5 through 0x4e59b44847b379578588920cA78FbF26c0B4956C",
+            "zh-TW": "Etherscan：合約名 Morpho，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5 透過 0x4e59b44847b379578588920cA78FbF26c0B4956C"
+          },
+          "url": "https://etherscan.io/address/0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb#code",
+          "result": "pass"
+        }
+      ]
     },
     "morpho-oracle-cbbtc-usdc-86": {
       "role": {
         "en": "The oracle the market uses to price cbBTC",
         "zh-TW": "市場用來給 cbBTC 定價的 oracle"
-      }
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Morpho API, `marketById` with 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64 on chain 1: oracle.address is this address",
+            "zh-TW": "Morpho API 用 `marketById` 查 chain 1 的 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64：oracle.address 就是這個地址"
+          },
+          "url": "https://api.morpho.org/graphql",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Morpho app's market page, read without running scripts: the address is only in the page's script data",
+            "zh-TW": "Morpho app 的市場頁，不跑 JavaScript 讀取：地址只出現在頁面的 script 資料裡"
+          },
+          "url": "https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name MorphoChainlinkOracleV2, made by 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 in a transaction from 0x0d61c8b6ca9669a36f351de3ae335e9689dd9c5b",
+            "zh-TW": "Etherscan：合約名 MorphoChainlinkOracleV2，由 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 建立，交易由 0x0d61c8b6ca9669a36f351de3ae335e9689dd9c5b 送出"
+          },
+          "url": "https://etherscan.io/address/0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a#code",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Morpho's SDK file lists 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 as `chainlinkOracleFactory`; its `isMorphoChainlinkOracleV2` answered true for this address at block 26,485,234",
+            "zh-TW": "Morpho 的 SDK 檔案把 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 列為 `chainlinkOracleFactory`；在區塊 26,485,234 它的 `isMorphoChainlinkOracleV2` 對這個地址回答 true"
+          },
+          "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Morpho's SDK source shows this address as `oracle` in a cbBTC/USDC example on Ethereum",
+            "zh-TW": "Morpho 的 SDK 原始碼在 Ethereum 的 cbBTC/USDC 範例裡把這個地址寫為 `oracle`"
+          },
+          "url": "https://github.com/morpho-org/sdks/blob/166277bc26a12235256bdf9162da012b80781a1e/packages/morpho-sdk/src/transactionPlan/blue/supply.ts",
+          "result": "pass"
+        }
+      ]
     },
     "adaptive-curve-irm": {
       "role": {
         "en": "The market's interest rate model",
         "zh-TW": "市場的利率模型"
-      }
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Morpho's docs list this address next to Adaptive Curve Irm",
+            "zh-TW": "Morpho 文件在 Adaptive Curve Irm 旁邊列出這個地址"
+          },
+          "url": "https://docs.morpho.org/developers/contracts/addresses/",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Morpho's SDK file lists this address under `adaptiveCurveIrm` for Ethereum",
+            "zh-TW": "Morpho 的 SDK 檔案在 Ethereum 的 `adaptiveCurveIrm` 列出這個地址"
+          },
+          "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name AdaptiveCurveIrm, creator 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5 through 0x4e59b44847b379578588920cA78FbF26c0B4956C",
+            "zh-TW": "Etherscan：合約名 AdaptiveCurveIrm，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5 透過 0x4e59b44847b379578588920cA78FbF26c0B4956C"
+          },
+          "url": "https://etherscan.io/address/0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC#code",
+          "result": "pass"
+        }
+      ]
     },
     "morpho-market-v1-adapter-v2-factory": {
       "role": {
         "en": "The factory that creates Vault V2 market adapters. It answers `isMorphoMarketV1AdapterV2` = true: it created the adapter",
         "zh-TW": "建立 Vault V2 市場轉接合約的工廠，它回答 `isMorphoMarketV1AdapterV2` = true，轉接合約是它建立的"
-      }
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Morpho's docs list this address next to MorphoMarketV1AdapterV2Factory",
+            "zh-TW": "Morpho 文件在 MorphoMarketV1AdapterV2Factory 旁邊列出這個地址"
+          },
+          "url": "https://docs.morpho.org/developers/contracts/addresses/",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Morpho's SDK file lists this address under `morphoMarketV1AdapterV2Factory` for Ethereum",
+            "zh-TW": "Morpho 的 SDK 檔案在 Ethereum 的 `morphoMarketV1AdapterV2Factory` 列出這個地址"
+          },
+          "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name MorphoMarketV1AdapterV2Factory, creator 0xc0267a5fa9aaaf1694283c013cbfa925bcdb5de8",
+            "zh-TW": "Etherscan：合約名 MorphoMarketV1AdapterV2Factory，創建者 0xc0267a5fa9aaaf1694283c013cbfa925bcdb5de8"
+          },
+          "url": "https://etherscan.io/address/0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1#code",
+          "result": "pass"
+        }
+      ]
     },
     "usp": {
       "role": {
         "en": "The collateral token of the USP markets",
         "zh-TW": "USP 市場的抵押代幣"
-      }
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Piku's docs list this address next to USP",
+            "zh-TW": "Piku 文件在 USP 旁邊列出這個地址"
+          },
+          "url": "https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko lists usp-yield-optimized-stablecoin at this address",
+            "zh-TW": "CoinGecko 在這個地址列出 usp-yield-optimized-stablecoin"
+          },
+          "url": "https://www.coingecko.com/en/coins/usp-yield-optimized-stablecoin",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name TransparentUpgradeableProxy, creator 0xB8eaa4f956C6324435f4088cAe9cDa974C358508",
+            "zh-TW": "Etherscan：合約名 TransparentUpgradeableProxy，創建者 0xB8eaa4f956C6324435f4088cAe9cDa974C358508"
+          },
+          "url": "https://etherscan.io/address/0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6#code",
+          "result": "pass"
+        }
+      ]
     },
     "morpho-oracle-usp-usdc": {
       "role": {
         "en": "The oracle the USP markets use to price USP",
         "zh-TW": "USP 市場用來給 USP 定價的 oracle"
-      }
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Morpho API, `marketById` with 0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461 and 0x60977eff30f04afef416234f4c67160b339f7429fc334888c522896c1c5808f1 on chain 1: oracle.address is this address",
+            "zh-TW": "Morpho API 用 `marketById` 查 chain 1 的 0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461、0x60977eff30f04afef416234f4c67160b339f7429fc334888c522896c1c5808f1：oracle.address 就是這個地址"
+          },
+          "url": "https://api.morpho.org/graphql",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Morpho app's market page, read without running scripts: the address is only in the page's script data",
+            "zh-TW": "Morpho app 的市場頁，不跑 JavaScript 讀取：地址只出現在頁面的 script 資料裡"
+          },
+          "url": "https://app.morpho.org/ethereum/variable/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name MorphoChainlinkOracleV2, made by 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 in a transaction from 0x13b5aad975de738dee4c7c0b2793d836d62e0e45",
+            "zh-TW": "Etherscan：合約名 MorphoChainlinkOracleV2，由 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 建立，交易由 0x13b5aad975de738dee4c7c0b2793d836d62e0e45 送出"
+          },
+          "url": "https://etherscan.io/address/0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d#code",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Morpho's SDK file lists 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 as `chainlinkOracleFactory`; its `isMorphoChainlinkOracleV2` answered true for this address at block 26,485,234",
+            "zh-TW": "Morpho 的 SDK 檔案把 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 列為 `chainlinkOracleFactory`；在區塊 26,485,234 它的 `isMorphoChainlinkOracleV2` 對這個地址回答 true"
+          },
+          "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+          "result": "pass"
+        }
+      ]
     },
     "weeth": {
       "role": {
         "en": "The collateral token of the weETH market",
         "zh-TW": "weETH 市場的抵押代幣"
-      }
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "ether.fi's GitHub file lists this address as `WEETH`",
+            "zh-TW": "ether.fi 的 GitHub 檔案把這個地址列為 `WEETH`"
+          },
+          "url": "https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko lists wrapped-eeth at this address",
+            "zh-TW": "CoinGecko 在這個地址列出 wrapped-eeth"
+          },
+          "url": "https://www.coingecko.com/en/coins/wrapped-eeth",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name UUPSProxy, creator 0xf8a86ea1Ac39EC529814c377Bd484387D395421e",
+            "zh-TW": "Etherscan：合約名 UUPSProxy，創建者 0xf8a86ea1Ac39EC529814c377Bd484387D395421e"
+          },
+          "url": "https://etherscan.io/address/0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee#code",
+          "result": "pass"
+        }
+      ]
     },
     "morpho-oracle-weeth-usdc-86": {
       "role": {
         "en": "The oracle the weETH market uses to price weETH",
         "zh-TW": "weETH 市場用來給 weETH 定價的 oracle"
-      }
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Morpho API, `marketById` with 0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e on chain 1: oracle.address is this address",
+            "zh-TW": "Morpho API 用 `marketById` 查 chain 1 的 0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e：oracle.address 就是這個地址"
+          },
+          "url": "https://api.morpho.org/graphql",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Morpho app's market page, read without running scripts: the address is only in the page's script data",
+            "zh-TW": "Morpho app 的市場頁，不跑 JavaScript 讀取：地址只出現在頁面的 script 資料裡"
+          },
+          "url": "https://app.morpho.org/ethereum/variable/0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e/usdc-weeth",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name MorphoChainlinkOracleV2, made by 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 in a transaction from 0xd8dd2706ef4ef9cd0fb7f54a1c5413aedd93121f",
+            "zh-TW": "Etherscan：合約名 MorphoChainlinkOracleV2，由 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 建立，交易由 0xd8dd2706ef4ef9cd0fb7f54a1c5413aedd93121f 送出"
+          },
+          "url": "https://etherscan.io/address/0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411#code",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Morpho's SDK file lists 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 as `chainlinkOracleFactory`; its `isMorphoChainlinkOracleV2` answered true for this address at block 26,485,234",
+            "zh-TW": "Morpho 的 SDK 檔案把 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 列為 `chainlinkOracleFactory`；在區塊 26,485,234 它的 `isMorphoChainlinkOracleV2` 對這個地址回答 true"
+          },
+          "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+          "result": "pass"
+        }
+      ]
     }
   },
   "fields": {
