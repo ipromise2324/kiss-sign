@@ -49,6 +49,8 @@ import { STANDARDS } from './standards.ts';
 import type { Standard } from './standards.ts';
 import { readRecording } from '../chain/bytecode.ts';
 import { WORDS, toleranceSpan } from './report-words.ts';
+import { readUsage } from './usage.ts';
+import type { Usage } from './usage.ts';
 
 /** A template, with the one instance its report covers when it is reported per instance, and the folder its files sit in. */
 export type Subject = { readonly kind: 'template'; readonly template: Template; readonly docs: readonly DocLink[]; readonly vault: RegistryEntry | undefined; readonly dir: string };
@@ -102,6 +104,8 @@ export type ReportInputs = {
   readonly facts: ProtocolFacts | undefined;
   /** Each recorded test transaction of the template judged again (`reportFixtures`). */
   readonly fixtures: readonly FixtureJudgement[];
+  /** The AI usage recorded for the report, which only the HTML report prints; undefined when it was not measured. */
+  readonly usage?: Usage | undefined;
 };
 
 export class ReportError extends Error {
@@ -1480,6 +1484,7 @@ export async function replayInputs(
     erc7730: await erc7730Text(entries, registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain))),
     facts: await replayFacts(subject.template, registry, entries, recording.facts),
     fixtures: await reportFixtures(repoRoot, subject, full),
+    usage: readUsage(repoRoot, target),
   };
   const registryFiles = hasMarket(subject.template) ? [REGISTRY_PATH, MARKETS_PATH] : [REGISTRY_PATH];
   const inputsFiles = [join(TEMPLATES_DIR, target.template, 'template.json'), ...docsPaths(repoRoot, target.template, target.instance), ...registryFiles];
