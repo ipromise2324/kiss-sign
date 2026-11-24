@@ -716,8 +716,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<aside class="usage"><h3>製作這份報告的 AI 用量</h3><p>未量測</p></aside>
-<footer class="foot">由 <code>pnpm report cow/swap-approve --record</code> 從 <code>templates/cow/swap-approve/template.json</code>、<code>templates/cow/swap-approve/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/cow-swap-approve.json</code>、<code>testdata/abi</code>、<code>testdata/research/cow-swap-approve-presign.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/cow/swap-approve/notes.json</code> 寫出，資料在 2026-11-24 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
+<aside class="usage"><h3>製作這份報告的 AI 用量</h3><p>Opus 5.5 · 呼叫 28 次 · 12 分鐘</p><table><thead><tr><th scope="col">項目</th><th scope="col">token</th></tr></thead><tbody><tr><th scope="row">重複讀取（cache 讀取）</th><td class="num">1.6M</td></tr><tr><th scope="row">新讀入（input 與 cache 寫入）</th><td class="num">0.17M</td></tr><tr><th scope="row">output</th><td class="num">0.02M</td></tr></tbody><tfoot><tr><th scope="row">總共</th><td class="num">1.8M</td></tr></tfoot></table><p>這次只重跑過去交易的搜尋，用量只算這部分</p><p>來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者</p></aside>
+<footer class="foot">由 <code>pnpm report cow/swap-approve --record</code> 從 <code>templates/cow/swap-approve/template.json</code>、<code>templates/cow/swap-approve/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/cow-swap-approve.json</code>、<code>testdata/abi</code>、<code>testdata/research/cow-swap-approve-presign.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/cow/swap-approve/notes.json</code>、<code>testdata/usage/cow-swap-approve.json</code> 寫出，資料在 2026-11-24 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。用量的數字程式也不檢查。</footer>
 
 </div>
 </div>
