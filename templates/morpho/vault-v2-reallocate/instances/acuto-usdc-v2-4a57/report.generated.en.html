@@ -298,7 +298,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="Contents">
   <h2>Contents</h2>
-  <ol><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">Instance</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">13</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  <ol><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">Instance</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">13</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
 </nav>
 
 <div class="main">
@@ -319,82 +319,89 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Two providers
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">Every chain read asks two providers; when they disagree, there is no result. Three research reads have one source, and none of them reaches a verdict: past transactions&#39; call traces (drpc), the search for past transactions (a transaction either Alchemy or Etherscan finds counts; only Etherscan searches for an event), and the addresses that ever received a vault&#39;s shares (Alchemy; each one&#39;s balance is still read through both).</span></span></li>
   </ul>
-  <div class="verdict" data-state="warn"><span class="lbl">Advice</span><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg><span class="aiw" data-ai><span>OK to use, but this is a small unlisted vault with concentrated holders, and only the factory confirms its address. See To review.</span><span class="byai">AI research: be careful</span></span></div>
+  <div class="verdict" data-state="warn"><span class="lbl">Advice</span><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg><span class="aiw" data-ai><span>No registered market pair can run now: the vault holds no funds in them. Only the factory confirms its address. See To review.</span><span class="byai">AI research: be careful</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
-    <ol><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">Instance</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">13</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+    <ol><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">Instance</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">13</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
   </details>
 </header>
 
 <section id="review">
-  <h2>To review <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></span></h2>
+  <h2>To review <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></span></h2>
   <p class="lead">The AI checked each item first and gives its advice.</p>
   <div class="rows">
     <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-cbbtc-usdc-86/address">
       <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
       <div><div class="t"><span class="grade"><span class="vh">Grade: </span>key</span>Address confirmed in too few places · morpho-oracle-cbbtc-usdc-86</div>
-        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI has no browser that runs JavaScript, so it did not open the market&#39;s page on the Morpho app.</span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI has no browser that runs JavaScript: read without scripts, the Morpho app&#39;s market page has the address only in script data.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
           <div class="meta">Confirmed in only 1 place: protocol API</div>
           <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-morpho-oracle-cbbtc-usdc-86">see source</a></div>
-          <div class="rec"><span class="aiw" data-ai><span>AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain (market id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64), and the oracle it answers is 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a. The market id is the hash of the five parameters, so a different oracle means a different market.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To check again, open this market&#39;s page on the Morpho app and compare the oracle address.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>On chain, Morpho Blue&#39;s <code>idToMarketParams</code> answers oracle 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a for usdc-cbbtc-86, and the Morpho factory 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 answers true for it. Morpho&#39;s SDK source shows it in a cbBTC/USDC example.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Open this market&#39;s page on the Morpho app and compare the oracle address yourself.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-usp-usdc/address">
       <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
       <div><div class="t"><span class="grade"><span class="vh">Grade: </span>key</span>Address confirmed in too few places · morpho-oracle-usp-usdc</div>
-        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain: for both markets, usdc-usp-915 and usdc-usp-86, the oracle it answers is 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d.</span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI has no browser that runs JavaScript: read without scripts, the Morpho app&#39;s market page has the address only in script data.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
           <div class="meta">Confirmed in only 1 place: protocol API</div>
           <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-morpho-oracle-usp-usdc">see source</a></div>
-          <div class="rec"><span class="aiw" data-ai><span>The market id is the hash of the five parameters, so a different oracle means a different market.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To check again, open these two markets&#39; pages on the Morpho app and compare the oracle address.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>On chain, Morpho Blue&#39;s <code>idToMarketParams</code> answers oracle 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d for usdc-usp-86 and usdc-usp-915, and the Morpho factory 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 answers true for it.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Open these two markets&#39; pages on the Morpho app and compare the oracle address yourself.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row" data-state="warn" data-grade="key" data-result="acuto-usdc-v2-4a57/address">
       <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
       <div><div class="t"><span class="grade"><span class="vh">Grade: </span>key</span>Address confirmed in too few places · acuto-usdc-v2-4a57</div>
-        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>The program&#39;s only check is the factory: VaultV2Factory answers <code>isVaultV2</code> = true.</span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI found no owner or curator page that lists the address.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
           <div class="meta">Confirmed in only 1 place: factory</div>
           <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-acuto-usdc-v2-4a57">see source</a></div>
-          <div class="rec"><span class="aiw" data-ai><span>AI asked the Morpho API about this address: the name is Acuto, it is not listed, and the curator is 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5. AI found no page that lists it without the address being in the URL.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Use this only if you are this vault&#39;s curator or allocator. First compare the address on the Morpho app&#39;s curator page.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>VaultV2Factory answers <code>isVaultV2</code> = true. The Morpho API names 0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57 Acuto, not listed, curator 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5. The Morpho app&#39;s usdc-usp-86 page names Acuto only in script data.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Compare the address with the one your own vault role is set on, such as on the Morpho app&#39;s curator page.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-weeth-usdc-86/address">
       <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
       <div><div class="t"><span class="grade"><span class="vh">Grade: </span>key</span>Address confirmed in too few places · morpho-oracle-weeth-usdc-86</div>
-        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI has no browser that runs JavaScript, so it did not open the market&#39;s page on the Morpho app.</span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI has no browser that runs JavaScript: read without scripts, the Morpho app&#39;s market page has the address only in script data.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
           <div class="meta">Confirmed in only 1 place: protocol API</div>
           <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-morpho-oracle-weeth-usdc-86">see source</a></div>
-          <div class="rec"><span class="aiw" data-ai><span>AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain (market id 0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e), and the oracle it answers is 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411. A different oracle means a different market.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To check again, open this market&#39;s page on the Morpho app and compare the oracle address.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>On chain, Morpho Blue&#39;s <code>idToMarketParams</code> answers oracle 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411 for usdc-weeth-86, and the Morpho factory 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 answers true for it.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Open this market&#39;s page on the Morpho app and compare the oracle address yourself.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>The market receiving the funds must stay within its caps, or the vault reverts.</span><span class="byai">AI research</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span><code>deallocate</code> reverts unless the source market holds the amount, and <code>allocate</code> reverts unless the target market has a cap with room for it.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
           <div class="rec"><span class="aiw" data-ai><span>verify confirms that the vault adapter&#39;s supply shares go down in the source market and up in the target market.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>First check that the target market&#39;s caps have room for the amount you type.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>First check that the source market holds the amount you type and that the target market&#39;s caps have room for it.</span><span class="byai">AI research</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>No card for this vault can execute now.</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="rec"><span class="aiw" data-ai><span>At block 26485309 a 1-unit <code>deallocate</code> from the owner Safe, itself an allocator, reverted for all four registered markets, and <code>allocate</code> reverted with ZeroAbsoluteCap for all but usdc-usp-86. Nearly all 756,078 USDC is in two unregistered Morini markets.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Do not build a card for this vault until it has funds in a registered market and a cap in another one.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>This vault is not listed on the Morpho app (Morpho API <code>listed</code> = false).</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>It held about 7.05 million USDC in 2026-03 and about 760,000 now. 68 addresses hold shares; the largest has 30.36% and the top 10 hold 96.50%. Its curator is a Safe, 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Only this vault&#39;s curator, sentinel or allocator needs this. It is small and concentrated, so read To review again before signing.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>Its monthly samples rose from 0.83 million USDC in 2026-02 to 5.21 million in 2026-03 and fell to 0.76 million now. 68 addresses hold shares; the largest has 30.52% and the top 10 hold 97.03%.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Only this vault&#39;s allocator uses this. It is small, shrinking and concentrated, so read To review again before signing.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>Moving funds has no timelock; it takes effect right after signing.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>The target market&#39;s caps must have room for the amount you type.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>First check the target market&#39;s caps and liquidity on the Morpho app.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Compare the source market, the target market and the amount with what you intend before signing.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
   </div>
@@ -577,7 +584,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div><dt>TVL</dt><dd><span><span class="num">$9.34 B</span></span><span class="sub2">on Ethereum <span class="num">$4.21 B</span></span></dd></div>
     <div><dt>Listed</dt><dd><span><span class="num">2024-01-14</span></span><span class="sub2">the date DefiLlama first listed it</span></dd></div>
     <div><dt>proxy</dt><dd><span>not a proxy</span><span class="sub2"><a href="#a-acuto-usdc-v2-4a57">acuto-usdc-v2-4a57</a>, read from the code pin</span></dd></div>
-    <div><dt>Audits</dt><dd><span class="aiw" data-ai><span>Vault V2&#39;s GitHub lists 10 audits (Spearbit, Zellic, Blackthorn, ChainSecurity, Certora and one contest). <a class="aisrc" href="https://github.com/morpho-org/vault-v2/tree/main/audits">source</a></span><span class="byai">AI research</span></span></dd></div>
+    <div><dt>Audits</dt><dd><span class="aiw" data-ai><span>Vault V2&#39;s GitHub audits folder holds 18 PDFs, read on 2026-11-24: 3 are drafts for a Midnight adapter (Cantina, Sherlock, TrustSec); the others are by Spearbit, Zellic, Blackthorn, ChainSecurity and Certora, plus one competition. <a class="aisrc" href="https://github.com/morpho-org/vault-v2/tree/main/audits">source</a></span><span class="byai">AI research</span></span></dd></div>
     <div><dt>Incidents</dt><dd><span>0</span><span class="sub2">DefiLlama hacks listed under this protocol or its parent</span></dd></div>
   </dl>
   <p class="srcline">On 2026-11-24 the program read <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://defillama.com/hacks">DefiLlama hacks</a>, the chain and <a href="https://api.morpho.org/graphql">the protocol API</a>. What is tagged AI research, the AI looked up.</p>
@@ -633,6 +640,18 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div><dt class="num">2026-11-24</dt><dd class="num">756,077.83 usdc</dd></div>
     </dl>
   </details>
+  <div data-ai>
+  <h3><span class="aiw" data-ai><span>Where the funds are</span><span class="byai">AI research</span></span></h3>
+  <p class="intro"><span class="aiw" data-ai><span>Two markets that the registry does not hold have the vault&#39;s funds: 514,366 USDC against the Morini CarryTradeUSDTRYLeverage Vault and 241,712 USDC against the Morini StockMarketTRBasisTrade Vault. usdc-usp-86 holds only dust, worth 0 USDC; the other three registered markets hold nothing. These are on-chain reads, not program results. <a class="aisrc" href="https://etherscan.io/address/0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5#readContract">source 1</a> <a class="aisrc" href="https://etherscan.io/address/0x2bf11d2E04Bc40daa95c24B8b90EC4F5c57Dd326">source 2</a> <a class="aisrc" href="https://etherscan.io/address/0x827Ce7E8e35861D9Ac7fE002755767b695A5594a">source 3</a></span></span></p>
+  </div>
+  <div data-ai>
+  <h3><span class="aiw" data-ai><span>Which registered market has a cap</span><span class="byai">AI research</span></span></h3>
+  <p class="intro"><span class="aiw" data-ai><span>Only usdc-usp-86 can receive funds: its caps are unlimited, and deposits go there. The absolute and relative caps of usdc-usp-915, usdc-cbbtc-86 and usdc-weeth-86 are 0 (block 26485299). Even after new deposits reach usdc-usp-86, they have no other registered market to go to until the curator raises a cap, which has a 3-day timelock. <a class="aisrc" href="https://etherscan.io/address/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57#readContract">source</a></span></span></p>
+  </div>
+  <div data-ai>
+  <h3><span class="aiw" data-ai><span>The owner Safe gets fee shares</span><span class="byai">AI research</span></span></h3>
+  <p class="intro"><span class="aiw" data-ai><span>If the signing Safe is the owner, it may get vault shares: the 10% performance fee is paid to the owner Safe 0xEB4Af6fA3AFA08B10d593EC8fF87efB03BC04645 when interest accrues. The curator Safe 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5 is not a fee recipient; both are allocators. <a class="aisrc" href="https://etherscan.io/address/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57#readContract">source</a></span></span></p>
+  </div>
 </section>
 
 <section id="wallet">
@@ -836,7 +855,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <p class="lead">In past records, <span class="num">2</span> transactions match the template exactly, made the way yours is: Safe <span class="num">2</span> (1 Safe), EOA <span class="num">0</span>. All of them succeeded: they were found through the event logs of acuto-usdc-v2-4a57 Deallocate, and a failed transaction leaves no such log. The latest 2 exact matches: <a href="https://etherscan.io/tx/0xf1dd158683ca740d276d2f092db3b8399af53e08e4c20532aa006a155bc4da7e">0xf1dd1586…</a>, <a href="https://etherscan.io/tx/0x2cb51a8ded3876133dd9d501150304121900cde4421a3e263594928329e47532">0x2cb51a8d…</a>.</p>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span><span class="num">168</span> more differ from yours: <span class="num">10</span> have the same shape but with a market outside the registry, <span class="num">158</span> have another shape</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>The windows held no allocator transaction: 11 redeems or withdrawals, 2 forceDeallocate calls, a separate operation, and 4 calls through other contracts.</span><span class="byai">AI research</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>The vault&#39;s owner and curator Safes made all 69 allocator transactions: 2 fit exactly, 10 moved USDC into two unregistered Morini markets, 45 used an adapter the vault has since removed, 10 ran one or three items, and 2 withdrew and put in different amounts. The last fitting shape is from August 2026.</span><span class="byai">AI research</span></span></p>
   <p class="lead">Only transactions that used this operation&#39;s calls count. An exact match has the template&#39;s calls and argument positions, meets every rule the transaction itself can show (such as where the sender goes, or a fixed value), and uses a contract the template allows wherever the template binds a registry contract. Same shape but a market, token, vault or address outside the registry means the calls, argument positions and those rules are the same, but an address or market is not in the registry; the kind is named when the record shows it, otherwise only address. The rest are grouped by reason, each with up to 3 examples.</p>
   <h3>Search of acuto-usdc-v2-4a57 Deallocate: 1082 found, 1082 studied</h3>
   <p class="lead">Recorded in <code>testdata/research/morpho-vault-v2-reallocate-acuto-usdc-v2-4a57.json</code>. Every transaction of the last year was searched, from block 23857157 (2025-11-22) to block 26485156 (2026-11-24), with no gap. Only Etherscan searches an event, and found <span class="num">1082</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>

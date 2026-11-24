@@ -298,7 +298,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
 </nav>
 
 <div class="main">
@@ -319,79 +319,89 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">鏈上資料都同時問兩家節點，答案不一樣就不給結果。研究時有三種資料只有一個來源，都不會影響判定：過去交易的呼叫追蹤（drpc）、搜尋過去交易（Alchemy 或 Etherscan 找到的都算，找事件只用 Etherscan），和金庫曾經收過份額的地址名單（Alchemy，每個地址的餘額仍問兩家）。</span></span></li>
   </ul>
-  <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用，但這是沒上架的小 vault，持有人集中；地址只有工廠確認，見待確認。</span><span class="byai">AI 研究：要小心</span></span></div>
+  <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>現在登記的市場沒有一對能執行：vault 在裡面沒有錢可撤；地址也只有工廠確認，見待確認。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
   </details>
 </header>
 
 <section id="review">
-  <h2>待確認 <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></span></h2>
   <p class="lead">每一項 AI 都先查過，附上建議。</p>
   <div class="rows">
     <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-cbbtc-usdc-86/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t"><span class="grade"><span class="vh">等級：</span>重要</span>地址確認的地方不夠 · morpho-oracle-cbbtc-usdc-86</div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器；不跑 script 讀 Morpho app 的市場頁，地址只在 script 資料裡。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
           <div class="meta">只在 1 個地方確認：協議 API</div>
           <div class="meta">至少要 2 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-cbbtc-usdc-86">看來源</a></div>
-          <div class="rec"><span class="aiw" data-ai><span>AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>（市場 id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64），回答的 oracle 就是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>鏈上 Morpho Blue 的 <code>idToMarketParams</code> 對 usdc-cbbtc-86 回答的 oracle 是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a，Morpho 的工廠 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 也回答 true。Morpho SDK 原始碼的 cbBTC/USDC 範例也是它。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>自己在 Morpho app 打開這個市場頁，比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
     </div>
     <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-usp-usdc/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t"><span class="grade"><span class="vh">等級：</span>重要</span>地址確認的地方不夠 · morpho-oracle-usp-usdc</div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>：usdc-usp-915 和 usdc-usp-86 兩個市場回答的 oracle 都是 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器；不跑 script 讀 Morpho app 的市場頁，地址只在 script 資料裡。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
           <div class="meta">只在 1 個地方確認：協議 API</div>
           <div class="meta">至少要 2 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-usp-usdc">看來源</a></div>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這兩個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>鏈上 Morpho Blue 的 <code>idToMarketParams</code> 對 usdc-usp-86 和 usdc-usp-915 回答的 oracle 是 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d，Morpho 的工廠 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 也回答 true。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>自己在 Morpho app 打開這兩個市場頁，比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
     </div>
     <div class="row" data-state="warn" data-grade="key" data-result="acuto-usdc-v2-4a57/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t"><span class="grade"><span class="vh">等級：</span>重要</span>地址確認的地方不夠 · acuto-usdc-v2-4a57</div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>程式只有工廠確認：VaultV2Factory 回答 <code>isVaultV2</code> = true。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒找到列出這個地址的 owner 或 curator 頁。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
           <div class="meta">只在 1 個地方確認：工廠</div>
           <div class="meta">至少要 2 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-acuto-usdc-v2-4a57">看來源</a></div>
-          <div class="rec"><span class="aiw" data-ai><span>AI 問 Morpho API 這個地址，名稱是 Acuto、沒有上架、curator 是 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5；AI 沒找到不靠網址帶地址就列出它的頁面。</span><span class="byai">AI 研究</span></span></div>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>只在你就是這個 vault 的 curator 或 allocator 時用；先在 Morpho app 的 curator 頁比對地址。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>VaultV2Factory 回答 <code>isVaultV2</code> = true。Morpho API 把 0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57 叫 Acuto、沒有上架、curator 是 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5。Morpho app 的 usdc-usp-86 市場頁只在 script 資料裡提到 Acuto。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>跟你自己有角色的 vault 地址比對，例如 Morpho app 的 curator 頁。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
     </div>
     <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-weeth-usdc-86/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t"><span class="grade"><span class="vh">等級：</span>重要</span>地址確認的地方不夠 · morpho-oracle-weeth-usdc-86</div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器；不跑 script 讀 Morpho app 的市場頁，地址只在 script 資料裡。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
           <div class="meta">只在 1 個地方確認：協議 API</div>
           <div class="meta">至少要 2 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-weeth-usdc-86">看來源</a></div>
-          <div class="rec"><span class="aiw" data-ai><span>AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>（市場 id 0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e），回答的 oracle 就是 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411；換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>鏈上 Morpho Blue 的 <code>idToMarketParams</code> 對 usdc-weeth-86 回答的 oracle 是 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411，Morpho 的工廠 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 也回答 true。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>自己在 Morpho app 打開這個市場頁，比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>搬進的市場要在上限內，否則 vault 會 revert；verify 確認 vault 轉接合約在來源市場的 supply shares 減少、在目標市場的增加。</span><span class="byai">AI 研究</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>來源市場放的錢不夠，<code>deallocate</code> 就 revert；目標市場沒有上限或上限放不下，<code>allocate</code> 就 revert。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>先確認目標市場的上限夠放你填的數量。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>verify 確認 vault 轉接合約在來源市場的 supply shares 減少、在目標市場的增加。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>先確認來源市場有你填的數量，目標市場的上限也放得下。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>這個 vault 沒有列在 Morpho app 上（Morpho API <code>listed</code> = false），2026-03 約 705 萬 USDC，現在約 76 萬；68 個地址持有股份，最大一個占 30.36%，前 10 名占 96.50%。</span><span class="byai">AI 研究</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>這個 vault 的 card 現在都執行不了。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="aiw" data-ai><span>curator 是 Safe 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5。</span><span class="byai">AI 研究</span></span></div>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>只有這個 vault 的 curator、sentinel 或 allocator 會用到；它小又集中，簽之前再看一次待確認。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>區塊 26485309，用 owner Safe（它是 allocator）試 1 單位：四個登記的市場 <code>deallocate</code> 全部 revert；<code>allocate</code> 除了 usdc-usp-86 都因 ZeroAbsoluteCap revert。756,078 USDC 幾乎全在兩個沒登記的 Morini 市場。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>等 vault 在某個登記的市場有錢、另一個登記的市場有上限，再建 card。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>搬錢不經 timelock，簽完馬上生效；目標市場的上限要放得下你填的數量。</span><span class="byai">AI 研究</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>這個 vault 沒有列在 Morpho app 上（Morpho API <code>listed</code> = false）。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>先在 Morpho app 看目標市場的上限和流動性。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>每月取樣從 2026-02 的 83 萬 USDC 升到 2026-03 的 521 萬，現在剩 76 萬；68 個地址持有份額，最大一個占 30.52%，前 10 名占 97.03%。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>只有這個 vault 的 allocator 會用到；它小、在縮水、持有人集中，簽之前再看一次待確認。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>搬錢不經 timelock，簽完馬上生效。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>簽之前把來源市場、目標市場和數量跟你的意思對一次。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
     </div>
   </div>
@@ -574,7 +584,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div><dt>TVL</dt><dd><span><span class="num">$9.34 B</span></span><span class="sub2">Ethereum 上 <span class="num">$4.21 B</span></span></dd></div>
     <div><dt>上線</dt><dd><span><span class="num">2024-01-14</span></span><span class="sub2">DefiLlama 開始列的日期</span></dd></div>
     <div><dt>proxy</dt><dd><span>不是 proxy</span><span class="sub2"><a href="#a-acuto-usdc-v2-4a57">acuto-usdc-v2-4a57</a>，從 code pin 讀到</span></dd></div>
-    <div><dt>稽核</dt><dd><span class="aiw" data-ai><span>Vault V2 的 GitHub 列了 10 份稽核（Spearbit、Zellic、Blackthorn、ChainSecurity、Certora 和一場競賽）。 <a class="aisrc" href="https://github.com/morpho-org/vault-v2/tree/main/audits">來源</a></span><span class="byai">AI 研究</span></span></dd></div>
+    <div><dt>稽核</dt><dd><span class="aiw" data-ai><span>2026-11-24 讀 Vault V2 GitHub 的 audits 資料夾：18 份 PDF，3 份是 Midnight 轉接合約的草稿（Cantina、Sherlock、TrustSec），其餘來自 Spearbit、Zellic、Blackthorn、ChainSecurity、Certora 和一場競賽。 <a class="aisrc" href="https://github.com/morpho-org/vault-v2/tree/main/audits">來源</a></span><span class="byai">AI 研究</span></span></dd></div>
     <div><dt>事故</dt><dd><span>0 起</span><span class="sub2">DefiLlama hacks 列在這個協議或它上層協議下的</span></dd></div>
   </dl>
   <p class="srcline">程式在 2026-11-24 讀 <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://defillama.com/hacks">DefiLlama hacks</a>、鏈上和<a href="https://api.morpho.org/graphql">協議 API</a>。標 AI 研究的是 AI 查的。</p>
@@ -630,6 +640,18 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div><dt class="num">2026-11-24</dt><dd class="num">756,077.83 usdc</dd></div>
     </dl>
   </details>
+  <div data-ai>
+  <h3><span class="aiw" data-ai><span>錢在哪裡</span><span class="byai">AI 研究</span></span></h3>
+  <p class="intro"><span class="aiw" data-ai><span>vault 的錢在兩個登記簿沒有的市場：抵押品是 Morini CarryTradeUSDTRYLeverage Vault 的 514,366 USDC，和 Morini StockMarketTRBasisTrade Vault 的 241,712 USDC。usdc-usp-86 只剩價值 0 USDC 的零頭，其餘三個登記的市場是 0。這是 AI 在鏈上讀的，不是程式結果。 <a class="aisrc" href="https://etherscan.io/address/0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5#readContract">來源 1</a> <a class="aisrc" href="https://etherscan.io/address/0x2bf11d2E04Bc40daa95c24B8b90EC4F5c57Dd326">來源 2</a> <a class="aisrc" href="https://etherscan.io/address/0x827Ce7E8e35861D9Ac7fE002755767b695A5594a">來源 3</a></span></span></p>
+  </div>
+  <div data-ai>
+  <h3><span class="aiw" data-ai><span>哪個登記的市場有上限</span><span class="byai">AI 研究</span></span></h3>
+  <p class="intro"><span class="aiw" data-ai><span>只有 usdc-usp-86 能收錢：上限沒有限制，存款也進這裡。usdc-usp-915、usdc-cbbtc-86、usdc-weeth-86 的絕對和相對上限都是 0（區塊 26485299）。就算新存款進了 usdc-usp-86，也沒有別的登記市場可搬，要等 curator 提高上限，timelock 是 3 天。 <a class="aisrc" href="https://etherscan.io/address/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57#readContract">來源</a></span></span></p>
+  </div>
+  <div data-ai>
+  <h3><span class="aiw" data-ai><span>owner Safe 會收到手續費份額</span><span class="byai">AI 研究</span></span></h3>
+  <p class="intro"><span class="aiw" data-ai><span>簽的 Safe 若是 owner，可能收到 vault 份額：結算利息時，10% 績效費付給 owner Safe 0xEB4Af6fA3AFA08B10d593EC8fF87efB03BC04645。curator Safe 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5 不是收費地址；兩個都是 allocator。 <a class="aisrc" href="https://etherscan.io/address/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57#readContract">來源</a></span></span></p>
+  </div>
 </section>
 
 <section id="wallet">
@@ -833,7 +855,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <p class="lead">過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 <span class="num">2</span> 筆：Safe <span class="num">2</span> 筆（1 個 Safe）、EOA <span class="num">0</span> 筆。這些交易全部成功執行：它們是從 acuto-usdc-v2-4a57 Deallocate時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 2 筆：<a href="https://etherscan.io/tx/0xf1dd158683ca740d276d2f092db3b8399af53e08e4c20532aa006a155bc4da7e">0xf1dd1586…</a>、<a href="https://etherscan.io/tx/0x2cb51a8ded3876133dd9d501150304121900cde4421a3e263594928329e47532">0x2cb51a8d…</a>。</p>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 <span class="num">168</span> 筆跟你這筆不一樣：形狀一樣、但用的是 registry 外的市場的 <span class="num">10</span> 筆，形狀不同的 <span class="num">158</span> 筆</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>取樣窗口裡沒有 allocator 的交易：11 筆贖回或提領、2 筆 forceDeallocate（另一種操作），和 4 筆透過其他合約的呼叫。</span><span class="byai">AI 研究</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>69 筆 allocator 交易全由 vault 的 owner 和 curator 兩個 Safe 送出：2 筆完全符合，10 筆搬進兩個沒登記的 Morini 市場，45 筆用 vault 後來移除的轉接合約，10 筆只有一項或有三項，2 筆撤出和放進的數量不同。形狀符合的最後一筆在 2026 年 8 月。</span><span class="byai">AI 研究</span></span></p>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
   <h3>搜尋 acuto-usdc-v2-4a57 的Deallocate，找到 1082 筆，研究 1082 筆</h3>
   <p class="lead">記錄在 <code>testdata/research/morpho-vault-v2-reallocate-acuto-usdc-v2-4a57.json</code>。搜尋了最近一年的每一筆交易，從區塊 23857157（2025-11-22）到區塊 26485156（2026-11-24），沒有遺漏。只有 Etherscan 搜尋事件，找到 <span class="num">1082</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>

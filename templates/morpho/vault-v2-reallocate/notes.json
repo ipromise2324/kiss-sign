@@ -15,8 +15,8 @@
       },
       "audits": {
         "text": {
-          "en": "Vault V2's GitHub lists 10 audits (Spearbit, Zellic, Blackthorn, ChainSecurity, Certora and one contest).",
-          "zh-TW": "Vault V2 的 GitHub 列了 10 份稽核（Spearbit、Zellic、Blackthorn、ChainSecurity、Certora 和一場競賽）。"
+          "en": "Vault V2's GitHub audits folder holds 18 PDFs, read on 2026-11-24: 3 are drafts for a Midnight adapter (Cantina, Sherlock, TrustSec); the others are by Spearbit, Zellic, Blackthorn, ChainSecurity and Certora, plus one competition.",
+          "zh-TW": "2026-11-24 讀 Vault V2 GitHub 的 audits 資料夾：18 份 PDF，3 份是 Midnight 轉接合約的草稿（Cantina、Sherlock、TrustSec），其餘來自 Spearbit、Zellic、Blackthorn、ChainSecurity、Certora 和一場競賽。"
         },
         "sources": [
           "https://github.com/morpho-org/vault-v2/tree/main/audits"
@@ -28,12 +28,12 @@
   "judgments": [
     {
       "text": {
-        "en": "The market receiving the funds must stay within its caps, or the vault reverts. verify confirms that the vault adapter's supply shares go down in the source market and up in the target market.",
-        "zh-TW": "搬進的市場要在上限內，否則 vault 會 revert；verify 確認 vault 轉接合約在來源市場的 supply shares 減少、在目標市場的增加。"
+        "en": "`deallocate` reverts unless the source market holds the amount, and `allocate` reverts unless the target market has a cap with room for it. verify confirms that the vault adapter's supply shares go down in the source market and up in the target market.",
+        "zh-TW": "來源市場放的錢不夠，`deallocate` 就 revert；目標市場沒有上限或上限放不下，`allocate` 就 revert。verify 確認 vault 轉接合約在來源市場的 supply shares 減少、在目標市場的增加。"
       },
       "recommendation": {
-        "en": "First check that the target market's caps have room for the amount you type.",
-        "zh-TW": "先確認目標市場的上限夠放你填的數量。"
+        "en": "First check that the source market holds the amount you type and that the target market's caps have room for it.",
+        "zh-TW": "先確認來源市場有你填的數量，目標市場的上限也放得下。"
       }
     }
   ],
@@ -41,34 +41,34 @@
     "morpho-oracle-cbbtc-usdc-86/address": {
       "status": "concern",
       "text": {
-        "en": "AI has no browser that runs JavaScript, so it did not open the market's page on the Morpho app. AI read Morpho Blue's `idToMarketParams` on chain (market id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64), and the oracle it answers is 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a. The market id is the hash of the five parameters, so a different oracle means a different market.",
-        "zh-TW": "AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 `idToMarketParams`（市場 id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64），回答的 oracle 就是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。"
+        "en": "AI has no browser that runs JavaScript: read without scripts, the Morpho app's market page has the address only in script data. On chain, Morpho Blue's `idToMarketParams` answers oracle 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a for usdc-cbbtc-86, and the Morpho factory 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 answers true for it. Morpho's SDK source shows it in a cbBTC/USDC example.",
+        "zh-TW": "AI 沒有能跑 JavaScript 的瀏覽器；不跑 script 讀 Morpho app 的市場頁，地址只在 script 資料裡。鏈上 Morpho Blue 的 `idToMarketParams` 對 usdc-cbbtc-86 回答的 oracle 是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a，Morpho 的工廠 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 也回答 true。Morpho SDK 原始碼的 cbBTC/USDC 範例也是它。"
       },
       "recommendation": {
-        "en": "Acceptable. To check again, open this market's page on the Morpho app and compare the oracle address.",
-        "zh-TW": "可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。"
+        "en": "Open this market's page on the Morpho app and compare the oracle address yourself.",
+        "zh-TW": "自己在 Morpho app 打開這個市場頁，比對 oracle 地址。"
       }
     },
     "morpho-oracle-usp-usdc/address": {
       "status": "concern",
       "text": {
-        "en": "AI read Morpho Blue's `idToMarketParams` on chain: for both markets, usdc-usp-915 and usdc-usp-86, the oracle it answers is 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d. The market id is the hash of the five parameters, so a different oracle means a different market.",
-        "zh-TW": "AI 在鏈上讀 Morpho Blue 的 `idToMarketParams`：usdc-usp-915 和 usdc-usp-86 兩個市場回答的 oracle 都是 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。"
+        "en": "AI has no browser that runs JavaScript: read without scripts, the Morpho app's market page has the address only in script data. On chain, Morpho Blue's `idToMarketParams` answers oracle 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d for usdc-usp-86 and usdc-usp-915, and the Morpho factory 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 answers true for it.",
+        "zh-TW": "AI 沒有能跑 JavaScript 的瀏覽器；不跑 script 讀 Morpho app 的市場頁，地址只在 script 資料裡。鏈上 Morpho Blue 的 `idToMarketParams` 對 usdc-usp-86 和 usdc-usp-915 回答的 oracle 是 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d，Morpho 的工廠 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 也回答 true。"
       },
       "recommendation": {
-        "en": "Acceptable. To check again, open these two markets' pages on the Morpho app and compare the oracle address.",
-        "zh-TW": "可以接受；想再確認就在 Morpho app 打開這兩個市場頁比對 oracle 地址。"
+        "en": "Open these two markets' pages on the Morpho app and compare the oracle address yourself.",
+        "zh-TW": "自己在 Morpho app 打開這兩個市場頁，比對 oracle 地址。"
       }
     },
     "morpho-oracle-weeth-usdc-86/address": {
       "status": "concern",
       "text": {
-        "en": "AI has no browser that runs JavaScript, so it did not open the market's page on the Morpho app. AI read Morpho Blue's `idToMarketParams` on chain (market id 0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e), and the oracle it answers is 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411. A different oracle means a different market.",
-        "zh-TW": "AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 `idToMarketParams`（市場 id 0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e），回答的 oracle 就是 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411；換掉 oracle 就是另一個市場。"
+        "en": "AI has no browser that runs JavaScript: read without scripts, the Morpho app's market page has the address only in script data. On chain, Morpho Blue's `idToMarketParams` answers oracle 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411 for usdc-weeth-86, and the Morpho factory 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 answers true for it.",
+        "zh-TW": "AI 沒有能跑 JavaScript 的瀏覽器；不跑 script 讀 Morpho app 的市場頁，地址只在 script 資料裡。鏈上 Morpho Blue 的 `idToMarketParams` 對 usdc-weeth-86 回答的 oracle 是 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411，Morpho 的工廠 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 也回答 true。"
       },
       "recommendation": {
-        "en": "Acceptable. To check again, open this market's page on the Morpho app and compare the oracle address.",
-        "zh-TW": "可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。"
+        "en": "Open this market's page on the Morpho app and compare the oracle address yourself.",
+        "zh-TW": "自己在 Morpho app 打開這個市場頁，比對 oracle 地址。"
       }
     }
   },
