@@ -18,7 +18,7 @@ import { WORDS } from '../src/research/report-words.ts';
 import { loadReport, readDocs, replayInputs, reportDir, templateTargets } from '../src/research/report.ts';
 import type { PastTxsSection, ReportInputs, ReportTitle } from '../src/research/report.ts';
 import type { Coverage, SearchRun, YearSearch } from '../src/research/past-txs.ts';
-import { parseUsage, readUsage, usagePath } from '../src/research/usage.ts';
+import { USAGE_DIR, modelName, parseUsage, readUsage, usagePath } from '../src/research/usage.ts';
 import { judgeFixtures } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { NOT_YET_REBUILT, reportedInstances } from '../src/template/vault-reports.ts';
@@ -423,11 +423,12 @@ test('a usage file is one report\'s counts, and one with a missing, negative or 
 
 test('a report with a usage file prints it, names the file in the footer and says no program checks the numbers', () => {
   const measured = [...withNotes].filter(([, { target, root }]) => existsSync(join(root, usagePath(target))));
-  assert.ok(measured.length > 0);
+  const files = readdirSync(join(ROOT, USAGE_DIR), { recursive: true, encoding: 'utf8' }).filter((file) => file.endsWith('.json'));
+  assert.deepEqual(measured.map(([, { target }]) => usagePath(target)).sort(), files.map((file) => join(USAGE_DIR, file)).sort(), 'each usage file belongs to a report');
   for (const [dir, { target, root }] of measured) {
     const usage = readUsage(root, target) ?? assert.fail(dir);
     for (const [language, html] of pages.get(dir)?.html ?? assert.fail(dir)) {
-      assert.ok(html.includes(WORDS[language].usageCalls('Opus 5.5', usage.calls, usage.minutes)), dir);
+      assert.ok(html.includes(WORDS[language].usageCalls(usage.models.map(modelName).join(' + '), usage.calls, usage.minutes)), dir);
       assert.ok(html.includes(`<code>${usagePath(target)}</code>`), dir);
       assert.match(html, language === 'en' ? /or the usage numbers\./ : /用量的數字程式也不檢查。/);
     }
