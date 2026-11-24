@@ -351,7 +351,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>fUSDC 已存在超過一年，規模很大。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="aiw" data-ai><span>一年內從 2026-01 的高點縮到大約一半，2026 年中以後大致維持在這個規模；沒有單一持有人占很大比例。程式量到的數字在「實例」區。 <a class="aisrc" href="https://docs.fluid.io/integrate/understanding-fluid-key-concepts-and-practices.html#withdrawal-limits">來源</a></span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>從 2026-01 的高點大幅縮小，2026 年中以後一直不到高點的一半；最大的持有人約占一成股份。程式量到的數字在「實例」區。 <a class="aisrc" href="https://docs.fluid.io/integrate/understanding-fluid-key-concepts-and-practices.html#withdrawal-limits">來源</a></span><span class="byai">AI 研究</span></span></div>
           <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>存入前想好何時要提：大額提領可能受 Fluid 的提款上限延後。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
     </div>
@@ -601,7 +601,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <p class="lead">過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 <span class="num">237</span> 筆：Safe <span class="num">119</span> 筆（65 個 Safe）、EOA <span class="num">118</span> 筆（114 個地址，各自送模板的一個呼叫）。這些交易全部成功執行：它們是從 fluid-fusdc 鑄造（存款）時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0xd86fdadaec264b0048d02f1de5b4bcad6ec25723f295190c71e51c334a174b21">0xd86fdada…</a>、<a href="https://etherscan.io/tx/0xc00870214ebdf99bb9e9f86edfbd551f15877bb1e16c77f014a79cb5e30ba11f">0xc0087021…</a>、<a href="https://etherscan.io/tx/0x6846fe46c45e2cabb9e84871d556f385dad7d11a4d628ac6bc4ab1ef2e6dfada">0x6846fe46…</a>。</p>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 <span class="num">94</span> 筆跟你這筆不一樣：形狀一樣、但有地址不在 registry 裡的 <span class="num">0</span> 筆，形狀不同的 <span class="num">94</span> 筆</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>唯一用別的做法的 Safe，以及 44 個 EOA，呼叫的是 Fluid Lite USDC vault（0x273DA948ACa9261043fbdb2a857BC255ECC29012）的 <code>deposit</code>，由它再存進 fUSDC；那是另一個產品，不是這個模板的路線。</span><span class="byai">AI 研究</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>不符合的 Safe 最多是只呼叫 <code>deposit</code>，用的是先前給的授權；其次是經由不是官方 MultiSend 的合約，或一筆裡合併多個 vault 或協議。所有不符合的 EOA 和一個 Safe 呼叫的是 Fluid Lite 的 USDC vault（0x273DA948ACa9261043fbdb2a857BC255ECC29012），是另一個產品。</span><span class="byai">AI 研究</span></span></p>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
   <h3>搜尋 fluid-fusdc 的鑄造（存款），找到 17755 筆，研究 480 筆，含證實為 Safe 的參與方的 205 筆全數研究</h3>
   <p class="lead">記錄在 <code>testdata/research/fluid-vault-deposit-fusdc.json</code>。搜尋了最近一年的每一筆交易，從區塊 23857302（2025-11-22）到區塊 26485301（2026-11-24），沒有遺漏。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">17755 = 17755</span>）。</p>

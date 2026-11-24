@@ -37,14 +37,14 @@
     }
   ],
   "pastTxsConclusion": {
-    "en": "The one Safe that deposited another way, and 44 of the EOAs, called `deposit` on Fluid Lite's USDC vault (0x273DA948ACa9261043fbdb2a857BC255ECC29012), which then deposits into fUSDC; that is another product, not this template's route.",
-    "zh-TW": "唯一用別的做法的 Safe，以及 44 個 EOA，呼叫的是 Fluid Lite USDC vault（0x273DA948ACa9261043fbdb2a857BC255ECC29012）的 `deposit`，由它再存進 fUSDC；那是另一個產品，不是這個模板的路線。"
+    "en": "The largest group of Safes that did not fit called only `deposit`, using an allowance given earlier. Others batched through a contract that is not an official MultiSend, or combined several vaults or protocols in one transaction. Every EOA that did not fit, and one Safe, called Fluid Lite's USDC vault (0x273DA948ACa9261043fbdb2a857BC255ECC29012), another product.",
+    "zh-TW": "不符合的 Safe 最多是只呼叫 `deposit`，用的是先前給的授權；其次是經由不是官方 MultiSend 的合約，或一筆裡合併多個 vault 或協議。所有不符合的 EOA 和一個 Safe 呼叫的是 Fluid Lite 的 USDC vault（0x273DA948ACa9261043fbdb2a857BC255ECC29012），是另一個產品。"
   },
   "judgments": [
     {
       "text": {
-        "en": "fUSDC has existed for more than a year and is large. Over the year it shrank to about half of its 2026-01 peak and has held near that size since mid-2026; no holder owns a large part. The program's figures are in the Instance section.",
-        "zh-TW": "fUSDC 已存在超過一年，規模很大。一年內從 2026-01 的高點縮到大約一半，2026 年中以後大致維持在這個規模；沒有單一持有人占很大比例。程式量到的數字在「實例」區。"
+        "en": "fUSDC has existed for more than a year and is large. It fell sharply from its 2026-01 peak and, since mid-2026, has stayed at less than half of it. The largest holder owns about a tenth of the shares. The program's figures are in the Instance section.",
+        "zh-TW": "fUSDC 已存在超過一年，規模很大。從 2026-01 的高點大幅縮小，2026 年中以後一直不到高點的一半；最大的持有人約占一成股份。程式量到的數字在「實例」區。"
       },
       "recommendation": {
         "en": "Before you deposit, plan when you will withdraw: a large withdrawal can be delayed by Fluid's withdrawal limits.",
