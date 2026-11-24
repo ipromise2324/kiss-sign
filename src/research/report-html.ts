@@ -5,7 +5,7 @@ import type { Language } from '../language.ts';
 import type { Phrase, State } from './ledger.ts';
 import { NOTES_FILE, codeSpans, notesLanguages, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
-import type { AddressRow, AiSource, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, NewestResult, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, Span, VaultBlock, WalletRows } from './report-page.ts';
+import type { AddressRow, AiSource, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, NewestResult, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, Span, UsageBlock, VaultBlock, WalletRows } from './report-page.ts';
 import { CSS, Html, SYMBOLS, escape, h, icon } from '../html.ts';
 import { WORDS } from './report-words.ts';
 import type { Words } from './report-words.ts';
@@ -625,6 +625,12 @@ function section(s: Section, r: R): Html {
 `;
 }
 
+const usageAside = (usage: UsageBlock): Html => {
+  const row = ([label, value]: readonly [string, string]) => h`<tr><th scope="row">${label}</th><td class="num">${value}</td></tr>`;
+  const table = usage.table === undefined ? '' : h`<table><thead><tr><th scope="col">${usage.table.head[0]}</th><th scope="col">${usage.table.head[1]}</th></tr></thead><tbody>${usage.table.rows.map(row)}</tbody><tfoot>${row(usage.table.total)}</tfoot></table>`;
+  return h`<aside class="usage"><h3>${usage.title}</h3><p>${usage.lead}</p>${table}${usage.notes.map((note) => h`<p>${note}</p>`)}</aside>`;
+};
+
 /** The whole document, in the page's language. Deterministic: the same Page always gives the same bytes. */
 export function renderPage(page: Page): string {
   tips = 0;
@@ -655,6 +661,7 @@ ${SYMBOLS}
 
 ${header(page, r).text}
 ${page.sections.map((s) => section(s, r).text).join('')}
+${usageAside(page.usage).text}
 <footer class="foot">${text(page.footer).text}</footer>
 
 </div>

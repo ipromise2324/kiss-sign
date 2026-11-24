@@ -179,7 +179,7 @@ None. There is no brand accent. Ink is the strongest non-state colour.
 - **Subtitle** (590, 16px): sub-blocks such as "交易後", review row titles, address names. A call heading is the function in 16px 590 mono, its contract prefix in Ink 2 400.
 - **Body** (400, 16px, 1.65): the summary under the title (17px, Ink 2) and running text; prose runs the main column's full width, as tables and diagrams do.
 - **Body Row** (400, 15px): property, review and address row content, and an argument's plain-words line.
-- **Caption** (400, 14px): sources, leads, rules, tooltips, the contents rail, an argument's AI line, footnote prose.
+- **Caption** (400, 14px): the AI usage block, sources, leads, rules, tooltips, the contents rail, an argument's AI line, footnote prose.
 - **Label** (400, 12–13px, 20–22px line): the AI tag (12px, 20px line) and who-decides chips (13px, 22px line).
 - **Mono** (400, 14px, 0.01em): addresses and code; a tuple part's value and a market id drop to 13–14px. Amounts use tabular figures instead of mono.
 
