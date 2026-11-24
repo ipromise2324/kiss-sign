@@ -32,7 +32,7 @@
         },
         "sources": [
           "https://github.com/Uniswap/v4-core/tree/main/docs/security/audits",
-          "https://github.com/Uniswap/universal-router/tree/main/audits"
+          "https://github.com/Uniswap/universal-router/tree/main/audit"
         ]
       },
       "incidents": []
@@ -90,10 +90,34 @@
       "sources": [
         {
           "text": {
-            "en": "Etherscan: contract name FiatTokenProxy, creator 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911",
-            "zh-TW": "Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911"
+            "en": "Circle's contract addresses page: this address in the row Ethereum of the mainnet USDC table",
+            "zh-TW": "Circle 的合約地址頁：主網 USDC 表的 Ethereum 那一列是這個地址"
           },
-          "url": "https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code",
+          "url": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's contract lookup answers the coin usd-coin (USDC) for this address",
+            "zh-TW": "用這個地址查 CoinGecko，回答的幣是 usd-coin（USDC）"
+          },
+          "url": "https://www.coingecko.com/en/coins/usd-coin",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name FiatTokenProxy, creator 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911, which Etherscan's name tag calls \"Circle: Deployer\" (a tag, not a proof)",
+            "zh-TW": "Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911，Etherscan 標籤是「Circle: Deployer」（標籤不是證明）"
+          },
+          "url": "https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "The creation transaction the Etherscan address page lists",
+            "zh-TW": "Etherscan 地址頁列出的創建交易"
+          },
+          "url": "https://etherscan.io/tx/0xe7e0fe390354509cd08c9a0168536938600ddc552b3f7cb96030ebef62e75895",
           "result": "pass"
         }
       ]
@@ -106,10 +130,34 @@
       "sources": [
         {
           "text": {
-            "en": "Etherscan: contract name TetherToken, creator 0x36928500Bc1dCd7af6a2B4008875CC336b927D57",
-            "zh-TW": "Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57"
+            "en": "Tether's supported protocols page: \"USD₮ contract address\" links this address",
+            "zh-TW": "Tether 的支援協議頁：「USD₮ contract address」連到這個地址"
           },
-          "url": "https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code",
+          "url": "https://tether.to/en/supported-protocols/",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's contract lookup answers the coin tether (Tether) for this address",
+            "zh-TW": "用這個地址查 CoinGecko，回答的幣是 tether（Tether）"
+          },
+          "url": "https://www.coingecko.com/en/coins/tether",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name TetherToken, creator 0x36928500Bc1dCd7af6a2B4008875CC336b927D57, which Etherscan's name tag calls \"Bitfinex: Deployer 5\" (a tag, not a proof)",
+            "zh-TW": "Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57，Etherscan 標籤是「Bitfinex: Deployer 5」（標籤不是證明）"
+          },
+          "url": "https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "The creation transaction the Etherscan address page lists",
+            "zh-TW": "Etherscan 地址頁列出的創建交易"
+          },
+          "url": "https://etherscan.io/tx/0x2f1c5c2b44f771e942a8506148e256f94f1a464babc938ae0690c6e34cd79190",
           "result": "pass"
         }
       ]
@@ -122,10 +170,34 @@
       "sources": [
         {
           "text": {
-            "en": "Etherscan: contract name ERC1967Proxy, creator 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5",
-            "zh-TW": "Etherscan：合約名 ERC1967Proxy，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5"
+            "en": "Morpho's addresses page: the row MORPHO under \"MORPHO Token\" holds this address",
+            "zh-TW": "Morpho 的地址頁：「MORPHO Token」下 MORPHO 那一列是這個地址"
           },
-          "url": "https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code",
+          "url": "https://docs.morpho.org/developers/contracts/addresses/",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's contract lookup answers the coin morpho (Morpho) for this address",
+            "zh-TW": "用這個地址查 CoinGecko，回答的幣是 morpho（Morpho）"
+          },
+          "url": "https://www.coingecko.com/en/coins/morpho",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name ERC1967Proxy, creator 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5, which Etherscan's name tag calls \"Morpho: Deployer 2\" (a tag, not a proof)",
+            "zh-TW": "Etherscan：合約名 ERC1967Proxy，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5，Etherscan 標籤是「Morpho: Deployer 2」（標籤不是證明）"
+          },
+          "url": "https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "The creation transaction the Etherscan address page lists",
+            "zh-TW": "Etherscan 地址頁列出的創建交易"
+          },
+          "url": "https://etherscan.io/tx/0x1a8de6a5ba99b4dcd91ff35424e2e3adf76b1de440f97e4a48b22bfe9a8f96e9",
           "result": "pass"
         }
       ]
@@ -138,10 +210,42 @@
       "sources": [
         {
           "text": {
-            "en": "Etherscan: contract name FiatTokenProxy, creator 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05",
-            "zh-TW": "Etherscan：合約名 FiatTokenProxy，創建者 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05"
+            "en": "Coinbase's agentkit repo: the pinned file and the file at the tip of main both bind CBBTC, in the mainnet list, to this address",
+            "zh-TW": "Coinbase 的 agentkit repo：釘住的檔案和 main 最新的檔案，主網清單裡 CBBTC 都是這個地址"
           },
-          "url": "https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code",
+          "url": "https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "coinbase.com/cbbtc did not answer my request (TLS error), so I could not read the address there",
+            "zh-TW": "coinbase.com/cbbtc 沒有回應我的請求（TLS 錯誤），沒能在那裡讀到地址"
+          },
+          "url": "https://www.coinbase.com/cbbtc",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's contract lookup answers the coin coinbase-wrapped-btc (Coinbase Wrapped BTC) for this address",
+            "zh-TW": "用這個地址查 CoinGecko，回答的幣是 coinbase-wrapped-btc（Coinbase Wrapped BTC）"
+          },
+          "url": "https://www.coingecko.com/en/coins/coinbase-wrapped-btc",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name FiatTokenProxy, creator 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05, which Etherscan's name tag calls \"Coinbase: Deployer\" (a tag, not a proof)",
+            "zh-TW": "Etherscan：合約名 FiatTokenProxy，創建者 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05，Etherscan 標籤是「Coinbase: Deployer」（標籤不是證明）"
+          },
+          "url": "https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "The creation transaction the Etherscan address page lists",
+            "zh-TW": "Etherscan 地址頁列出的創建交易"
+          },
+          "url": "https://etherscan.io/tx/0x09001d384305288073faa8f5cf3051c6cc13d55b66114064be17e12f71469753",
           "result": "pass"
         }
       ]
@@ -154,26 +258,146 @@
       "sources": [
         {
           "text": {
-            "en": "Etherscan: contract name UniversalRouter (verified, solc 0.8.26), creator 0x2179a60856e37dfeaaca0ab043b931fe224b27b6",
-            "zh-TW": "Etherscan：合約名 UniversalRouter（已驗證，solc 0.8.26），創建者 0x2179a60856e37dfeaaca0ab043b931fe224b27b6"
+            "en": "Uniswap's v4 deployments page: \"Universal Router 2.1.2\" in the Ethereum table is this address; the same table still lists \"Universal Router\" 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af",
+            "zh-TW": "Uniswap v4 部署頁：Ethereum 表裡的「Universal Router 2.1.2」是這個地址；同一張表也還列著「Universal Router」0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af"
           },
-          "url": "https://etherscan.io/address/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85#code",
+          "url": "https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments",
           "result": "pass"
         },
         {
           "text": {
-            "en": "The Uniswap trading API's spec states that it uses 2.1.2 by default when no version is given, which is the router the app sends transactions to today",
-            "zh-TW": "Uniswap 交易 API 的規格寫明：沒指定版本時預設用 2.1.2，也就是 app 今天送交易的 router"
+            "en": "Uniswap/universal-router deployment file: UniversalRouterV2_1_2 is this address, in the pinned commit, which was the tip of main on 2026-11-24",
+            "zh-TW": "Uniswap/universal-router 部署檔：UniversalRouterV2_1_2 是這個地址，釘住的 commit 在 2026-11-24 是 main 的最新一筆"
+          },
+          "url": "https://github.com/Uniswap/universal-router/blob/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Uniswap/sdks, universal-router-sdk: UniversalRouterVersion.V2_1_2 on mainnet is this address",
+            "zh-TW": "Uniswap/sdks 的 universal-router-sdk：主網的 UniversalRouterVersion.V2_1_2 是這個地址"
+          },
+          "url": "https://github.com/Uniswap/sdks/blob/74827a8ad193277ffe42a31635fd77a53f48ae71/sdks/universal-router-sdk/src/utils/constants.ts",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name UniversalRouter, creator 0x2179a60856E37dfeAacA0ab043B931fE224b27B6, which Etherscan's name tag calls \"Uniswap V4: Deployer\" (a tag, not a proof)",
+            "zh-TW": "Etherscan：合約名 UniversalRouter，創建者 0x2179a60856E37dfeAacA0ab043B931fE224b27B6，Etherscan 標籤是「Uniswap V4: Deployer」（標籤不是證明）"
+          },
+          "url": "https://etherscan.io/address/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "The creation transaction the Etherscan address page lists",
+            "zh-TW": "Etherscan 地址頁列出的創建交易"
+          },
+          "url": "https://etherscan.io/tx/0x350510f7398242ffc778c086ae6bbe9cc744c33a04468f1a7978e54164638257",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "The Uniswap trading API's spec: callers that do not pin a router version get 2.1.2 where it is deployed. The app's public code sends a version only for a permissioned token; live app not tested",
+            "zh-TW": "Uniswap 交易 API 的規格：沒指定 router 版本時，有部署 2.1.2 的鏈就用 2.1.2。app 公開的程式碼只在許可制代幣時才送版本；我沒有測線上的 app"
           },
           "url": "https://trade-api.gateway.uniswap.org/v1/api.json",
           "result": "pass"
         },
         {
           "text": {
-            "en": "Verified source code: every Permit2 transfer uses msgSender() (the address that calls execute) as the payer; no owner and no proxy",
-            "zh-TW": "已驗證原始碼：所有 Permit2 轉帳都用 msgSender()（呼叫 execute 的地址）當付款人，沒有 owner 和 proxy"
+            "en": "Source on Sourcify, read by hand: PERMIT2_PERMIT calls Permit2 with msgSender() as the owner, and SETTLE with payerIsUser pulls from msgSender(); msgSender() is the address that called execute",
+            "zh-TW": "在 Sourcify 讀原始碼：PERMIT2_PERMIT 用 msgSender() 當 owner 呼叫 Permit2，payerIsUser 的 SETTLE 從 msgSender() 拉代幣；msgSender() 是呼叫 execute 的地址"
           },
-          "url": "https://sourcify.dev/server/v2/contract/1/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85",
+          "url": "https://sourcify.dev/server/v2/contract/1/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85?fields=sources",
+          "result": "pass"
+        }
+      ]
+    },
+    "usp": {
+      "role": {
+        "en": "A token you can pick: USP, issued by Piku",
+        "zh-TW": "可選的代幣：Piku 發行的 USP"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Piku's token and workflow contracts page: ticker USP next to this address",
+            "zh-TW": "Piku 的代幣與合約頁：代號 USP 旁邊是這個地址"
+          },
+          "url": "https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's contract lookup answers the coin usp-yield-optimized-stablecoin (USP Yield Optimized Stablecoin) for this address",
+            "zh-TW": "用這個地址查 CoinGecko，回答的幣是 usp-yield-optimized-stablecoin（USP Yield Optimized Stablecoin）"
+          },
+          "url": "https://www.coingecko.com/en/coins/usp-yield-optimized-stablecoin",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name TransparentUpgradeableProxy, creator 0xB8eaa4f956C6324435f4088cAe9cDa974C358508, which Etherscan's name tag calls \"Piku: Deployer\" (a tag, not a proof)",
+            "zh-TW": "Etherscan：合約名 TransparentUpgradeableProxy，創建者 0xB8eaa4f956C6324435f4088cAe9cDa974C358508，Etherscan 標籤是「Piku: Deployer」（標籤不是證明）"
+          },
+          "url": "https://etherscan.io/address/0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "The creation transaction the Etherscan address page lists",
+            "zh-TW": "Etherscan 地址頁列出的創建交易"
+          },
+          "url": "https://etherscan.io/tx/0xe38f329a0426954fc83ec5bc5314f24dca2cfbcebefeb679cf43aebbbba70dda",
+          "result": "pass"
+        }
+      ]
+    },
+    "weeth": {
+      "role": {
+        "en": "A token you can pick: weETH, issued by ether.fi",
+        "zh-TW": "可選的代幣：ether.fi 發行的 weETH"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "ether.fi's deployed contracts page: weETH next to this address",
+            "zh-TW": "ether.fi 的已部署合約頁：weETH 旁邊是這個地址"
+          },
+          "url": "https://etherfi.gitbook.io/etherfi/contracts-and-integrations/deployed-contracts",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "etherfi-protocol/smart-contracts: the pinned file and the file at the tip of master both bind WEETH to this address",
+            "zh-TW": "etherfi-protocol/smart-contracts：釘住的檔案和 master 最新的檔案，WEETH 都是這個地址"
+          },
+          "url": "https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's contract lookup answers the coin wrapped-eeth (Wrapped eETH) for this address",
+            "zh-TW": "用這個地址查 CoinGecko，回答的幣是 wrapped-eeth（Wrapped eETH）"
+          },
+          "url": "https://www.coingecko.com/en/coins/wrapped-eeth",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name UUPSProxy, creator 0xf8a86ea1Ac39EC529814c377Bd484387D395421e, which Etherscan's name tag calls \"ether.fi: Deployer\" (a tag, not a proof)",
+            "zh-TW": "Etherscan：合約名 UUPSProxy，創建者 0xf8a86ea1Ac39EC529814c377Bd484387D395421e，Etherscan 標籤是「ether.fi: Deployer」（標籤不是證明）"
+          },
+          "url": "https://etherscan.io/address/0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "The creation transaction the Etherscan address page lists",
+            "zh-TW": "Etherscan 地址頁列出的創建交易"
+          },
+          "url": "https://etherscan.io/tx/0xa034bdf7ec3b407125fcfbb786d908b0bcfd9976f2fbaf489776ba58b9db61ac",
           "result": "pass"
         }
       ]

@@ -4,177 +4,43 @@
   "token": "0x000000000022d473030f116ddee9f6b43ac78ba3",
   "anchor": "event",
   "event": "Permit(address,address,address,uint160,uint48,uint48)",
-  "head": "26447476",
-  "wholeYear": true,
+  "head": "26485048",
+  "maxPages": 50,
   "maxTxs": 240
  },
- "head": "26447476",
+ "head": "26485048",
  "studiedWith": {
   "template": "0x334341b107c0b9fe63a7ee9b7047dec34611315ccff605d2f748ba5dfab1b141",
-  "registry": "0xc5f52cfe11fe16aa8f84df2738011335bf702180fe1b7054c29b0f5d313b0117",
+  "registry": "0x0672ec2285804b076bb73c8938308fafa5243aa472489a72a68f70bc0d807297",
   "study": "0x94bfaaffbfc8c7dbc5b3874bc31cfe270d787964a427798536f92503545477bb"
  },
  "search": {
-  "year": {
-   "kind": "overflow",
+  "coverage": {
+   "kind": "recent",
    "range": {
-    "fromBlock": "23817601",
-    "toBlock": "26445600"
+    "fromBlock": "26457831",
+    "toBlock": "26484984"
    },
-   "pages": 1,
-   "sources": [
-    "etherscan"
-   ]
-  },
-  "windows": [
-   {
-    "asked": {
-     "fromBlock": "24029401",
-     "toBlock": "24036600"
-    },
-    "range": {
-     "fromBlock": "24034801",
-     "toBlock": "24036600"
-    },
-    "found": 796,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "24248401",
-     "toBlock": "24255600"
-    },
-    "range": {
-     "fromBlock": "24254701",
-     "toBlock": "24255600"
-    },
-    "found": 557,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "24467401",
-     "toBlock": "24474600"
-    },
-    "range": {
-     "fromBlock": "24472801",
-     "toBlock": "24474600"
-    },
-    "found": 534,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "24686401",
-     "toBlock": "24693600"
-    },
-    "range": {
-     "fromBlock": "24692701",
-     "toBlock": "24693600"
-    },
-    "found": 481,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "24905401",
-     "toBlock": "24912600"
-    },
-    "range": {
-     "fromBlock": "24912151",
-     "toBlock": "24912600"
-    },
-    "found": 539,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "25124401",
-     "toBlock": "25131600"
-    },
-    "range": {
-     "fromBlock": "25131151",
-     "toBlock": "25131600"
-    },
-    "found": 424,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "25343401",
-     "toBlock": "25350600"
-    },
-    "range": {
-     "fromBlock": "25348801",
-     "toBlock": "25350600"
-    },
-    "found": 704,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "25562401",
-     "toBlock": "25569600"
-    },
-    "range": {
-     "fromBlock": "25567801",
-     "toBlock": "25569600"
-    },
-    "found": 656,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "25781401",
-     "toBlock": "25788600"
-    },
-    "range": {
-     "fromBlock": "25786801",
-     "toBlock": "25788600"
-    },
-    "found": 957,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "26000401",
-     "toBlock": "26007600"
-    },
-    "range": {
-     "fromBlock": "26006701",
-     "toBlock": "26007600"
-    },
-    "found": 667,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "26219401",
-     "toBlock": "26226600"
-    },
-    "range": {
-     "fromBlock": "26225701",
-     "toBlock": "26226600"
-    },
-    "found": 548,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "26438401",
-     "toBlock": "26445600"
-    },
-    "range": {
-     "fromBlock": "26445151",
-     "toBlock": "26445600"
-    },
-    "found": 385,
-    "studied": 20
+   "pages": 50,
+   "time": {
+    "from": "1795196087",
+    "to": "1795522883"
    }
-  ],
-  "perWindow": 20,
+  },
+  "safesFirst": {
+   "check": {
+    "kind": "not-checked",
+    "why": "a named contract's event has no party of fixed meaning"
+   },
+   "selection": {
+    "safes": 0,
+    "safesChosen": 0,
+    "rest": 28015,
+    "restChosen": 240
+   }
+  },
   "found": {
-   "total": 7248,
+   "total": 28015,
    "only": {
     "alchemy": [],
     "etherscan": []
@@ -185,1666 +51,17 @@
  "studies": [
   {
    "kind": "not-studied",
-   "hash": "0x7669bb88494dc7b229eded58c3d5649d664a75bdbca7655e821cba53897fa829",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xfd5dcbb15ab84601bca91b0f223242b64726a5146c785ca3134527842d3b8c2c",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x24db5f43f4a1ca8fbc5b2895ff85caf7e6267399d9a6b49d233998a89b3155bd",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x452336afae97a5095b0dc0661ee2db77615d3e0eccdf02989f1a854011c27dfc",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x2f0543c5c15d43eafb7115aca152d12c8df4bfb222dc64fd85f564bb1ffd5db0",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5a762d6620161ec5af1c0ba1d2eb22c393b9373ac47678d4483d8b95bca137b6",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x62d88bd7df9f4f1815b65c3ce79d00f048647bb31497cc9eb6abd37f8610d110",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x03918f705e5c2f266f379aa1fdf176a2cbbd02e710526d737e5093ea6eb575e0",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x1709a870b6195eae1a4f7a652218db6f54c65e93de51e10c81f561850df81796",
-   "why": "calls no function the template calls",
-   "to": "0x3fc91a3afd70395cd496c647d5a6cc9d4b2b7fad",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc3ced430ca1f852de7c47ea0651b08b61029cc225c3fe5494ed84963015bfc67",
-   "why": "calls no function the template calls",
-   "to": "0x3fc91a3afd70395cd496c647d5a6cc9d4b2b7fad",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x36d30ef47daffeb6a38f6a8843e9713f407fcefb563d94f0d26b7ed4111d1fa1",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbd338de7cde6f9abaa2e164831754c4a517ebf4e5b1249a7cd6e8c1eb4c6c834",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xcfeecf2b3796e16a058c7cb17db6db1d9faad6d118841594ece321f877d8535e",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x6abe78f83a9b69ab4fec9bdfaddae7b5ca757ac4639bdfdf1475b6defd8dd9e9",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe7319058f2f8d125ec7a76a10202de56849eb34dda15b1b040c5524694ebfd9f",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd847d8b785e832e8585ac44069de3608eb4fd6cfa8e82e214e5278607c79cada",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5503fcde80533a4884a13300234f644c214b20f551fa8a9df318cd76539048af",
-   "why": "calls no function the template calls",
-   "to": "0xae563e3f8219521950555f5962419c8919758ea2",
-   "selector": "0x19c6989f"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9ddc4e680325f3ea8ab8985c407e8cd9afe9e57c4d67982b9a810bdc3cc850bb",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x72fb607222cdae2f72b0a81641e81db657303b39c43e387b3ddcb14762813f5f",
-   "why": "calls no function the template calls",
-   "to": "0x0c9a3dd6b8f28529d72d7f9ce918d493519ee383",
-   "selector": "0xc16ae7a4"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x0f766df904a63fa4e95b44830dd493dfdc53ff0016ee7700f8469916c182f141",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xfceb8f053fdc686a37425b7389f26653d649610879a58d10a69cb0701c171157",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc18bfa0e5525034493dc085a9fb5608a4949a3d7856b2fd90f9c0974c5190067",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4312c803c1dd43552ecade96bc9b111b84e3afc0f169061f2fe0b33ddc3e5715",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x0895fdbc461fe84934f88898d3e6098a3aa480079b8592673cd1b2729062489d",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbfe9360028ed057d3dfe97d7a84cf5ee208c9417f2ea38886b6b495190499298",
-   "why": "calls no function the template calls",
-   "to": "0x3fc91a3afd70395cd496c647d5a6cc9d4b2b7fad",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc14cbc55d3c43ad428bee43ca96ba7d615b525057e8fd81c800b6eca8eb56d59",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x6c99bcbd03ff7bb2f5d8f39979554657f456078ffe0fbada9563448720bb9c79",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x051825eacc15de70c27c9c58766b04a905e0d083585a166e596815609f345bf8",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x943a879d141762b96d83efb46e0569ad2b3a802c95abbf842d1ec6499dc21d0b",
-   "why": "calls no function the template calls",
-   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
-   "selector": "0x2b67b570"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd1562b0261505630203a16f6ac23c8fd9a595badfe2ba8062d0f71005dda8e13",
-   "why": "calls no function the template calls",
-   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
-   "selector": "0x2b67b570"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc224f8def24e200983bcd5912a4d9693d7397af72cf4575127bd9b6761ecfd9f",
-   "why": "calls no function the template calls",
-   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
-   "selector": "0x2b67b570"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x1d6b23b88eef0a7b5b3db336de1360f6bab222d5a266ca25968cd3c7f2bd5df0",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x07e7235b27cf7d8459057910befda310055d08bc12153bf040e528d600fade90",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xdfaf596611369b8f094437bddc21f17192fed456ba022c735617b8ded79a9bd3",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x666cfec3e3c9107c4d9d6e7c3a4f62f398e33e9d73c6f40cf846e4ed1e22343e",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x1559210ba8995109900ad8c6a29f3861d57190508098f554d6140a2815c229f3",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbc3b526074579aaf9d79ab865385bb28626f4df6ce4d76d8f2ba43c50fb3f5cb",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x70857c18540af4327a87ca26d01027afc53b4c8fae48bcabf90e757fa2fb7577",
-   "why": "calls no function the template calls",
-   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
-   "selector": "0xac9650d8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb2dfa6a01a10628debb9e7c24c880182d60dfb12bb75f4872ee64261e9f10048",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x6345801c1903f87087b08d3335a2d802d58897aca03eb5337fcb629ee573ce8c",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4ae99b19a69219fef57ef7220580cfe0f3cb810b9d9f9cf6c243fb4a9f4ee70b",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7f1cbe4f8b49deb4a3ee82856d42490eb737c01d4859e68076f87987a04059bc",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb57e71586aa3d449fdeb74a1ec35e76be85e63a98259694903c6a3ad64e18d48",
-   "why": "calls no function the template calls",
-   "to": "0xae563e3f8219521950555f5962419c8919758ea2",
-   "selector": "0x19c6989f"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe9faab518ac6b1ff3cf64477a8e8cd7984defebf97867cdee5cfc54748cc67fc",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7083fee68db1f6ae129d66f291dd170da199efdb9ee1f5a32baf06df0f7f37ff",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x90e119b2ce58f74eacc15fe01a41828b4cdd02f02ceb2a87b40445a460d4280e",
-   "why": "calls no function the template calls",
-   "to": "0x80a64c6d7f12c47b7c66c5b4e20e72bc1fcd5d9e",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x63c6f4b8d5de151a664d81982c25b47afa358fb76de2310493b66928283130f7",
-   "why": "calls no function the template calls",
-   "to": "0x3fc91a3afd70395cd496c647d5a6cc9d4b2b7fad",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x10ff19824609e5fab83847f23a341d8b66e7fe9b3936747abc57d969241e47a9",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf5bdeada2427a56067f2de5fef0dbf16d4aea22d098abae1d22e902d21415231",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa8cf036d558f87049e374512e068ba1636b61b759c05bc5d0cf1dcac3ebb204c",
-   "why": "calls no function the template calls",
-   "to": "0x7d35cdb3e5763bff856f57a87001d64608825e82",
-   "selector": "0xfdcc8090"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbe364cbc887a2c79ee2b6c5fa1879c5d98cacb4f52d15674ba8aeb4945400b43",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7bf6d8c38278740158f6a727569467815667ea8a3268c4f37ae206029a20cc88",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd91aec42c989d1e26b734cc1f8347033949efc86c88588356158e32e154d8f47",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3fa26073bad86ee2c30b24cd308b4cf0ec89848073395ced8defea0f4ea58500",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd153b97c6487e0f5afe6fde75676027301300d692b7d919a72a3494c93dfe726",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe2ce2740d9dc3451d1ac20df5311f5af329a32b18a30af695b046ab0522942f9",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x26c37e640a39aba08792cda7782480194c8b7725ade8007b0e6733ba2780ed71",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x207fdcf79db50f5f82e55c3e0c3a76529c74ff72eafa13d5be13fc0dd631cd6c",
-   "why": "calls no function the template calls",
-   "to": "0xae563e3f8219521950555f5962419c8919758ea2",
-   "selector": "0x19c6989f"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x62d9267b23ea571ea701012b6e774e091bf50b106f80ddd3919cc9f13704dee7",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x273ec4891feb416df50c4665d57343046cadd4b0c4ecab9d97050d91b754b101",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5205eb287c8fbff7f9cc36583e116c031c1835284bcaa126cb7a37b765e3d9e2",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x358e13153c0aa99bab0e722fdecfe1cf9dbc56a33c8cbbe112f5d3c839299e40",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x6ab30e6ee96758abb46810aca56b7ae1ff6697fdfff4fc0f7216984c63c8fb9b",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5ab7eaac18b83c90bc4f649a2119efb8e3fdfe82712501e857079e0964ae2a3c",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x26abcd28100ae4670ef617e9f329f2b10360c0ab50667bf166290a4d96d820aa",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x777bd23775ff0678d2b78c536598920a9a262af01138c3d7ef4e8da962d22a43",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9f0fdcbf7cf81478becdfd19b04e5c04406e92f44cf9d22a559f98a98ee7c91a",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5446e309a29511587219a19d91e5c9c4cef4b0f3de185c58207c811c0fe9d0f0",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4bbdb565d5bef67566b276e298aa013b23332f1d527379dfef38000075649223",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa19df5397490e27cdd1d9ff8a97f146529fd85addcc9228be97d0b15574d52ea",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9fde126ab5986a561e96874bd99b5ba62c88e0e1c58123f957f89c05fb0ddeb5",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x1bc5042551020ec170cf32763cce671c40e093e2de1f966686de7289926eddcb",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9528ebeef96c8783309d705b1be2f297fb7d1de820dc23a6ea1bb43d281a5f10",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x88e23a18fd037ef0c06907bb72064d3a18f2035c801e79ac90bb5a74beef0d77",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x2bf9630bb426974fca5131501ffbf730efcd63bf9fb4a5a4464476d1ac99209b",
-   "why": "calls no function the template calls",
-   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
-   "selector": "0xac9650d8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xcc098718da8b4be79bd9756191f2236e69a54e24cb2ba9e8bb9593403d53d39a",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4ee8549998bac9151016638955e98a275e10fba90577934bd2a89591d27f7ac2",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9f50debf7aa337876f2696faf67a2c7df0cb5baa271e47f618e80ab3983b8ccd",
-   "why": "calls no function the template calls",
-   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
-   "selector": "0x2b67b570"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd7c80e8c5ed47a59d3049e1e52483d18b559c6c0dadd78c440a36c8bcf0e801d",
-   "why": "calls no function the template calls",
-   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
-   "selector": "0xac9650d8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x8f45988a64d7d5213e7013ec2a78c704714763d0f3f2cd0c972f3a6d1fa87e57",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x578949526a7f035470e2e1c94823c4bf3f9bfea0c1f990e708d722948e9b93b5",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x25e365cd9bcf6a81a6747d5becd12c9246d08679ee6df20de3c86a92f2cc1504",
-   "why": "calls no function the template calls",
-   "to": "0x80a64c6d7f12c47b7c66c5b4e20e72bc1fcd5d9e",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xac79a00563a5e22d0668dd12fedafd011f03da67b8b50ee19bff537a9e7b2269",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x45ac99092c612d397ea5931f7caae099c0f611368c68944f4db5b10c03ff8f2a",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd3a343af5e65510e2acf8ed30978a7660c3432f33307a8a5604aada93e41ed20",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x980f8c7f1feea123c4b9515e17a64dc3b8646bce63fb54f643bee1a3f23ea0a5",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x45c6deb4597d7630cf3c2b0f432ecdc444ff98e540915b6f4bfad679b272c0b1",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x76e81e5e0d8a05d7c52eb80edcc38a330c76db337bed2e4e37f1691bf9077f75",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xdea0d458f5cfd2d7489717284b05d26c4635a64ad586d8a7af9a82d57693c9ac",
-   "why": "calls no function the template calls",
-   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
-   "selector": "0x2b67b570"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x8a15b1e652c2d3d427cac675e79168c2effebcc65578089030b3cfbce649567b",
-   "why": "calls no function the template calls",
-   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
-   "selector": "0x2b67b570"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x92ba76b52ca3c9bdf1f01978b7079eb98560867d62dfcf467455ce85cd3995b1",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xcbdecc4a4a757d3f303d8dfb89b484c5316e8e1fade56d03c0a3aa23ce39e667",
-   "why": "calls no function the template calls",
-   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
-   "selector": "0xac9650d8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x23c3b1e72ed0a644d189f145aace6ed49a5d1cb712af9fa649be193cfabdbce4",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb8f4c8e1bdfe138d316f0057e63bdd07b6ae8f80241b1d721d17e354a9385803",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xcab806d7c1a6baed8785e6695582738bae69ef6d99531eb451da69a361795854",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x1d2a56de08d051e6ea545fde8fe5350ce703096eea523500f3df2ccba6d03204",
-   "why": "calls no function the template calls",
-   "to": "0x3fc91a3afd70395cd496c647d5a6cc9d4b2b7fad",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7a06ad76419bf0e30c547ba5bcbe0507451cfdb730cae7110c36ef3a9a9c9dfa",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf8db103e3f2f815648b90280f24e36ffd845f08a40a916800e02ba88e8712c71",
-   "why": "calls no function the template calls",
-   "to": "0x80a64c6d7f12c47b7c66c5b4e20e72bc1fcd5d9e",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4d4fdec61f8ddd09c608e90c5a533cab8de5dc80e057483f7f01f21dec13adfd",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x29e185a654e4e7c95b4e7e20afbbc3b19e2beb6e0248fee9f16fe174465b0806",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x6d9c24913561645ac5c6b92f7f16023c0318f7144f9aef24f11f83802cbb9331",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x022ad0b4dc018fe01d3d87ea3df680ff8d0061a608cee647b5b71fdf1955fc54",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3c35336f3b7eee2b1faa3c49509ec674dafa34e820e4df86f8767b88c2092ff2",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x38f9641278eb1b90f06c06ca0387911ac9bc3fa64a1ee1204a34231c5aa09f51",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x2caa20f90c9ec98388135a6c11e4393dbefdcaf427eb54c9575a13f282682c8c",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x41c48757e43f7c2c593fdb4d41166fef53a00f0843f80a8974722e2a4f0ed8d8",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xdeb9ed71d925347133d9879e4b8529da472e5949b049a128c1ddf180b47693de",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc93530d45739b348effff43b94cc6e57c75fd4463a1e3be39fed11d17e6a7842",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc1d5bcd998388f9dd608415ee0a623f6e9eb6f8c65ae2f188583a259dce8cc25",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x307c536ab559ebccb0c12b6264af95fdd57414fc0f20215f26d963e0ea416007",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xce3909b084995637cf19c4493810c68c19396bc39b175b4c434ae402816c1460",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x6c521137807b2285b8d277cd3fc3b2c4d96a708da557b00cfe921ee4b15a4fda",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc6e28cf8b916a499f52aeb3a01a171482587334f048b730dfc53e6d9efb675d5",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x8f60c76b0ef41793d79dc04f12ccf8a58022c508eb4cbd116b54f2ae766ac860",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xeedcc098ddf014cb8e2e0bc0a07ea9ec0387e7c392669568f1561f1528bc9879",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x510d9f40a81b0d50d14ab7431ea34557f4018cda152c01b0896e54ec7259833b",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x736eb4f5b18b67c15e0c99f8802be3416223e6df1a6f21bc782dc79afe78b71f",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3f5b38852921bfd8335744e8849fb8c218c874ed7832535828b69482ec9abd64",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x8b604019ab5ab68f41a7aee12914907cd7053e15fc86cfb436ab3ae077b1353f",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3567528432225c35a7b92f376fbdaeae8bb281f01bafdb18615ebdc82469e9c8",
-   "why": "calls no function the template calls",
-   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
-   "selector": "0xac9650d8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xaecbf7a842aa049f67536046e80306b192b4e904c11fbd6fa132a64099a82b7e",
-   "why": "calls no function the template calls",
-   "to": "0xae563e3f8219521950555f5962419c8919758ea2",
-   "selector": "0x19c6989f"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5dcc5a1fb05b08ea80a63bebdd34ddb893606287acb71bc20ed2bca25911b722",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9d49909ccedb5cc75a3261575a25bd635093251966e7d177c9cd9cca986c04c9",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x191814e168a0a8611083a24e361af6496f0f9b261d4665363b770d0041085977",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9dc4c8c202a4468555005bae2579a8ab9da1fa3910b9f2146f23ff020b9ed633",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x34be38b443382f451ed0e6d32514259f5e5cf068d51c64ed85c2796656206811",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x93c79a2d0bf06db3ed1fbd707a65e5537001ed807492590f6eb6b40c41436c62",
-   "why": "calls no function the template calls",
-   "to": "0x4095f064b8d3c3548a3bebfd0bbfd04750e30077",
-   "selector": "0xac9650d8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbe49445f66af20af4f08016468672a58848f5d95aedec1c0c2b390d6a090672a",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xeb2974e360a3d48d7c4a03cc2a317ab5711e1c981c0d3e446ed17a5a090a2cf0",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x423ef185abb7ff8440f5695537e3aa2166d4b2acf885822e7c6bc10d6d8c4292",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xddca2c659faae260426a41ff795383a75a19aa8070e754b2ce5d6c9ae0290bb9",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x46c75033603d54f7f351093c31f4e0b56b7dbae9640d1234a6cdace334f8f1d5",
-   "why": "calls no function the template calls",
-   "to": "0xa7e96bf2735bd33750bb504c3cc63e3770668dd4",
-   "selector": "0x55b53e2e"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x00d6517832ff413c839239f0f735addbaefce4625f1c558c1546e17c382b72e5",
-   "why": "calls no function the template calls",
-   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
-   "selector": "0x2b67b570"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x05cd923136c92d54498dd381431cc6a4c64544542a53d9dccbada59f8b5e4985",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4178ac44b450f66fc6eff2fdcca33fb511789dbb7729ded930328562fc24b4f0",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4d915ed66d16c043b636b90643581fa642457871173734764ece3872ebda6df0",
-   "why": "calls no function the template calls",
-   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
-   "selector": "0xac9650d8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x216cee4049f807787c1d9fee9cb752286b9d66c179dc349acf9201c56655fd8e",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x56f2dd7c522687c65fda2df14b938199665f40dd1926c9779ffcecfc6ebbdc01",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc90fe2dda720bcbc5cb155158131c113e5e2912e254c567911b532a78715c003",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x570d1d704386d7b667f69ae5bc894a9b1ee3bae59d27af85355311ae685606af",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xfb290b54f43ceb7898fd2d47d0f32bb66b4e4da7b4dbc3f4f526aa62f6eea4c9",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x2c4e6f2083629f89b5909ae8380d2443fa41066478baa97231fd74e9e401d84a",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbe2aba93974d552b9c6ea9c6fb978bd7c139901ef2c66099a7b4a8d084104b11",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x93430a141941ead88faea05b20d69befe4b54f3e9f11f9073474afea196b360e",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x0c885727c3171b4110d5e87a5dc49c62e7237c8f9c05eb9d3939d1d17489bf26",
-   "why": "calls no function the template calls",
-   "to": "0xf9563731278375f0135cc8aa10dbe942778ad7ee",
-   "selector": "0x686ab28a"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x05b5170f29ae13ed6a755596be8451b7431c5f6d302d7e604c9350d7405df490",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc6335d3755bb4a9b6418a270557c65554869dccce86c925ef5cf3c51a456fc2c",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x2e14795cd6549d992e7bb7d5888dcc1128535bfdc6d3cd4192321f29a608034e",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4c52e3309dc085e55da237f47593f89eb4d7525062fe634648ded8c1a67b0bbc",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xdb651f41e2db50dda8baaf5a6c72516efca956f8fe2521d1653d8ba9d3f9c712",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9e1ecec3ba9454fc427ca547ce1883e5e6b948391f9d208d8e97fa10d7e22a5b",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3d4bc268eea0fbc4d77379ecc8368852c68e1baaf87eae2469b6e66391ff4284",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbf1b974ebedb6966443047f545cd217061e007c168ec15fdef451acb5841b07b",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x95c5a54c077b14d8a9e24a25b1b91fdf1d057b6ae27b8d24b6aed2f0dc67849e",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x632ab5317e3c55a052f48dff9c7a40eef379aa3cc467bab4f3b9a43d5107f8ff",
-   "why": "calls no function the template calls",
-   "to": "0xcb640a86855f1a828c27241ba364348de28abe66",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x6b288e4d186c4f4be4b869c0316530dcce034de8a128aa6fbcbaa932a32d700d",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbad09941d9c3da8b2d618eeb75d9d2870a786d3df5e29d2282e217749b98d184",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7b8a5aa4222fc03f4e833d65d74544d311024b2739496e01de84e64063ebdb76",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x23e2db3d22a293e9a007d54aa07f381e485436625a5eb39e56a2e7aa13deef6f",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4f4566c9bf6e85c873182ba11d7857c7f19a773d419b3e701443467a89ef8ccb",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x2d5099c4264f37bea24c871d37a3f6ca76fd34087ecf5449c4280ec35a1cc2e7",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe67d9b548c2206f4406c2ef59354fbdcefcabdb71023608f5df257784a0e0a68",
-   "why": "calls no function the template calls",
-   "to": "0xae563e3f8219521950555f5962419c8919758ea2",
-   "selector": "0x19c6989f"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5d849e63f28e49b8fdae5ad265a92d49f9c60b21a083387981d79e5a7e47a2ac",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4fbe5c89937a9cf10c08bb2e48e2cdd9d0be0525a727bfadcfd4d2d890be8e8d",
-   "why": "calls no function the template calls",
-   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
-   "selector": "0xac9650d8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf4bf1c5f925dba6d4c21fcdc8542df4ab6994c71bbbbf89331f6f4ef4b7d5b4e",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xdac5eafd80943845f8f9d91d1a7543cd652ccc8248f167eee07da4f673d3891d",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x57a1bc3f7f2f91adc2b122acc8f44fd8b6c5c9d7d5b1a51a6ef0a9c3e9e67988",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x191b2d373049636419d3c0b3ad3b73920e98d94aa49ce45b3bb2ded9382bea9c",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x1ca0e67356a6b0abc381ddbef8ebe130c5e67fb626463593e1c4ab2ee899db21",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd8acdbd275228720447e16490c58a80c897df11b88ba75cdd41838c05a8f3d5c",
-   "why": "calls no function the template calls",
-   "to": "0xcb640a86855f1a828c27241ba364348de28abe66",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5a10fa494a0d9ee099a0e8d62959d256e21d396331af7e418d3da7e6d9edcc75",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb7050c1d221f709b42bddc30c462a71f98296ee6f21441962b87ba2b9ae15934",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9873211d71b890dd34a30e0cc36b5f882b942a2f335d22f0a08f77cf3fc42a99",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbe644700c6ef91e1834c5a540907ca40bc05c48ac49ddc8865f8ca038437948e",
-   "why": "calls no function the template calls",
-   "to": "0x00581261a1200956ea05d1810ff28ffd66d8e254",
-   "selector": "0xac9650d8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4379e791620bc0e0f8d5b5c975719f9ab015029627ef7f69d5ef02ada58a036f",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe16a58bbc58f87b13f04bffbbe260c254413a7616b82d19a27c28f63714f4360",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x0130fe7766528c662fecc57c236229bbe5f2e6558d214291575137254ddf9f06",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd084b4b3ca482d1218275bc17e1a1f428431fcd9de08c7590e5315989aa67c6f",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb7be8d56e2a2cb06ad1ca3598173f5dea9bd9cbfb039adf7b13fb095056198ba",
-   "why": "calls no function the template calls",
-   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
-   "selector": "0x2b67b570"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x920d8933da75b3bdd4e9ed4b9f04b6c8b94fef0aa843d91d7a4e8678047618ee",
-   "why": "calls no function the template calls",
-   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
-   "selector": "0x2b67b570"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x66a1c282be02266508cade90a69872cc146edcdd59f64dec7c5d8f894f45e957",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc71a6f203a3994c8ef0ae341dfc31c043d0882a99e8ef6439b5d6d05ac3c6d60",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x720689023646d57019f094edbe20905adde4ca85f2a1155634fc24e3c2ba2f42",
-   "why": "calls no function the template calls",
-   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
-   "selector": "0xac9650d8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf91ea50f6ed2ee1089abdd0c2cf2f14dc1d7de9b3cb8117d28aaf18fc1a17ac3",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe4060a839d489848cea90ff83143a5ae0c290851ce83db5cfeca68603270d5cc",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf5565a948d51aad20acedbe6f150658245386a557cf22a95659850459ded7451",
-   "why": "calls no function the template calls",
-   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
-   "selector": "0xac9650d8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x64fcf7a40b7cfbd44fed1f33aac2ee1ad3972bac548c1dad2611d6f81f894994",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x13a32a1cd3ba1d4730dd18cb9f92671c3eb745327e7714d77ff6f56ed2da56df",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x613f7a5b250a8c563adb8cacaef87db9ea93c4f99242d05f435d9c6106457775",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3200870549717f49e1b99a8d98142444feb3283e35075318dee878c438770900",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x8f083f43c68f763b98d098205c6d28e4b34cc631c85d23e0d893b9ae58b46fac",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x30bf2e8a73f198e1808a08ab1f84ca300fc8aa899bb4374a754cbe28f3c9be1f",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xce1d0892b6283c541a7886761d8952d6109c48eb0c791ca989a206f8fdb29e8d",
-   "why": "calls no function the template calls",
-   "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
-   "selector": "0x374f435d"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xcfc8456173f5865f2542a01afbae342da6163add13f51c1f5b3c32cdac7b06c9",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc2fdddd8626b6916c0edcae046c4df816992ef9840d1fbf0d39960008cc17f28",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x03d5ea89c3067601a788d11f10ad234cf481715bbd4691a67e9a393c1e9668b1",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe878a99c67353f0bdf802368fa008485c38e1dd58732c8c013121911c54d14fc",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x0eb45a0ace87feedcbc8beff0afb38f17fd81f3b64bd29b17d9f4de92cd6afda",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xaf909008c89e935d23648aa3a9bc6d656ec577965b51534f79f5358059a03ca0",
-   "why": "calls no function the template calls",
-   "to": "0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x8628c3e15acf70dd8381092e094c41ad58217ec80b76754208583cb9b2092159",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x0b2d3e5c6cbe720a8ee75a9743582807fd17e3ee6f02a63248694a18d76049ee",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x49768cf2b74436c25d66f44accca26739fa6255d7bb4149595fb2980706b524b",
+   "hash": "0x0f8018f245a7e79926daddc30c6f88a5368353cc00d848b765a15cbeaba62473",
    "why": "calls no function the template calls",
    "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
    "selector": "0x3593564c"
   },
   {
    "kind": "misfit",
-   "hash": "0xacae3484b45e6a3848272be4a28f0c45526699bba5f29242273ce3360b388416",
+   "hash": "0x8d3140f827a6e54114e6a44ade27ca2b00ba4712d063333ac5231be2069ec64a",
    "sender": {
     "kind": "eoa",
-    "address": "0x17436129bec19c9946743914ddc6f728dfc32f64",
-    "call": 0
-   },
-   "reason": {
-    "kind": "items",
-    "at": "call.execute.inputs",
-    "expected": 2,
-    "got": 4
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe99f5ffedc321b2e59be7827ddb93d3227389e64e26cd45a24d87f8f4a15ee79",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7dbb1968442d4113995c70eb39a08a837003bfa60b568a794798276d06f1850a",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x016c9dd79eb554c9b58f36501819b6567c19473f504d82b8d56c19c4bbfd0b29",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb3b62476bcc0102393863707aef486a68351fd38095489c068aca2d40b565760",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbc454ddb8d5671d93d75d34ae565375c69d3f60deb3b73577dcbf49c44758e61",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x2a1452000430b1e71f4cbb31fd27d58ba856c5078a29cf917835a00312283aea",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x83a195e5de78a360407875b82b52782d331eb298",
-    "call": 0
-   },
-   "reason": {
-    "kind": "items",
-    "at": "call.execute.inputs",
-    "expected": 2,
-    "got": 4
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x02e119ac820a8a65c838b6b0a9150d68fa112e98d6756fb9afbc6e191383dc92",
-   "why": "calls no function the template calls",
-   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
-   "selector": "0xac9650d8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x8f27df5c79be65a7813b9b66ef2ac9a08542f0a33cd5643d3c6fa7f999eab812",
-   "why": "calls no function the template calls",
-   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
-   "selector": "0xac9650d8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb4449dff21e6a2bd01dd40f73bab476834def3d9cd0d6a07960be6dd8388ce2a",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5e0d07fe01dc27826d0b6d92fb083e55a7250fb918e84be0c3094087c0b84e35",
-   "why": "calls no function the template calls",
-   "to": "0xad1f277b0154b485de16aa3a6ab8d5cb88d0299c",
-   "selector": "0x893aa9f6"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x1f9c2801df5841e4ea91adfac7d2debbc3412a554e69a36aa85422cdcc8db790",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf141b66cdf5e46b97db5237d80733a0c6f763a4385ea2c3b3b3f88be7586128d",
-   "why": "calls no function the template calls",
-   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
-   "selector": "0x2b67b570"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xae30d71024a5c34a781dde54c55ca0709d21d42c012f129ac12ce0d00837ec6f",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x35af412dc39dd2bbade9474db9602723e44ebb6ed11fea9a2089b59c0a3aa276",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x3ac6d0e32a5e4089d3df069edae9152029785767",
-    "call": 0
-   },
-   "reason": {
-    "kind": "items",
-    "at": "call.execute.inputs",
-    "expected": 2,
-    "got": 4
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd72c842c46adb52666f9b1b75ff8c52fd9f33fd6fded6a8ccf02d94fd6df59e6",
-   "why": "calls no function the template calls",
-   "to": "0x00581261a1200956ea05d1810ff28ffd66d8e254",
-   "selector": "0xac9650d8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc7b37668be39ee8f896eb75c1270d192cc25539a801d8045d07bb9bc56e7b4cd",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x85509646ac294bd59b05b511dbc1476cb5aea3f0904420cf429f19fc15e8f761",
-   "why": "calls no function the template calls",
-   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
-   "selector": "0xac9650d8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd62c37ab015ab9ea6233117610a498849d4336e41abc1034be805ac824a1328d",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x408ca2da94199bcaaf4f5865a82de48cf3715dedaf499bfd4800f364cc25b823",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4e173d73d14d49b6ebb9c1656de40e5328ca0b1bfb253f5c08cb0de004fd7056",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x203f70c9b70efcfcea1ca7a3b7940186b0cb3f074cab87da80a38a11b8d81234",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xd25944f50193d5689b5bf7d09402947d5f7fd0fa",
-    "call": 0
-   },
-   "reason": {
-    "kind": "items",
-    "at": "call.execute.inputs",
-    "expected": 2,
-    "got": 3
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x57eeacbeb30a67e9d21757dcd1c0b0616608d311f28cc5efc91a28fd9b803a85",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3663086681318d5cc0a8c56b04e066bcd15031ddd24c8b58eac356907d8f6f60",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x944dbfb3f99edc3c0d200b70aa44990ac2f8221464141942554c5eea65467e42",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xcba5d81f31a8d378e8ab2f7671470d9e1f84a29f8b899b73a6035a546d0a7dce",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5e178d8b9c87fb45f5d4b6eba1be4b6db5afa39b10c3a379d99ac4f68a9954e3",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf7bc95e325735ccbe4e84611fe4354523aff4151746b48aa7d0e254101694210",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xac26b70233baa92ef277f0f3ddfb3bfeec5181131fac55ae164a524c0602df14",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x0ddff646220545079cac93b1699ceea4bb3420d147d611126cb6a0593b0396c0",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xabe946537da53f933ae1f1663dd7170001f754cfda894d697b01fa5a7b880160",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xba78a128780c6f36a8c23def594d6ea952d69236",
+    "address": "0xe2b8a07928d4f10aa11bc0f20ad1be305a48a37a",
     "call": 0
    },
    "reason": {
@@ -1856,31 +73,303 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0x95157cdfbdd3625b79ad55c557ce09bd8897e9d7eec86cfea20880a894e4007f",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xdec7ce815f98fa369311384e38c04d47f60b1914fce8861e7a592998f2615512",
-   "why": "calls no function the template calls",
-   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
-   "selector": "0x3593564c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x248a10050cf189fac324b1e5c17c9d5f1f4499752dc6d34428bb7ae428398fcc",
+   "hash": "0x1b4e1d0cd7e043d066ef7004f06dc4c390b27bcf6c8b27798e2688a1c1e53fd3",
    "why": "calls no function the template calls",
    "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
    "selector": "0x3593564c"
   },
   {
    "kind": "misfit",
-   "hash": "0x05b1141f184fc681099bf1e62f5a9b7742f16ec4adbf1f8c018ce21acd7527b1",
+   "hash": "0x78643f33807857ea69a7368c479cc633f2caa245a8bbfab2d561bc01fa69556b",
    "sender": {
     "kind": "eoa",
-    "address": "0xef98abfcdcde47e67cc94b8a43ead0158c8cb1bc",
+    "address": "0x494f569475673a7cc639499d62f16f9d1a813e93",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 6
+   }
+  },
+  {
+   "kind": "fit",
+   "hash": "0xa5fdcab7b55e27cc6581a64885cc3310f1d33dc30efe48269b5fe04cf07b5493",
+   "block": "26458727",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x212b9fe405d4913c170155727f37c9029d7f4b2f",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.execute.commands",
+    "call.execute.inputs[0].PERMIT2_PERMIT.permitSingle.details.token",
+    "call.execute.inputs[0].PERMIT2_PERMIT.permitSingle.details.amount",
+    "call.execute.inputs[0].PERMIT2_PERMIT.permitSingle.details.expiration",
+    "call.execute.inputs[0].PERMIT2_PERMIT.permitSingle.details.nonce",
+    "call.execute.inputs[0].PERMIT2_PERMIT.permitSingle.spender",
+    "call.execute.inputs[0].PERMIT2_PERMIT.permitSingle.sigDeadline",
+    "call.execute.inputs[0].PERMIT2_PERMIT.signature",
+    "call.execute.inputs[1].V4_SWAP.actions",
+    "call.execute.inputs[1].V4_SWAP.params[0].SWAP_EXACT_IN.params.currencyIn",
+    "call.execute.inputs[1].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].intermediateCurrency",
+    "call.execute.inputs[1].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].fee",
+    "call.execute.inputs[1].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].tickSpacing",
+    "call.execute.inputs[1].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].hooks",
+    "call.execute.inputs[1].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].hookData",
+    "call.execute.inputs[1].V4_SWAP.params[0].SWAP_EXACT_IN.params.minHopPriceX36",
+    "call.execute.inputs[1].V4_SWAP.params[0].SWAP_EXACT_IN.params.amountIn",
+    "call.execute.inputs[1].V4_SWAP.params[0].SWAP_EXACT_IN.params.amountOutMinimum",
+    "call.execute.inputs[1].V4_SWAP.params[1].SETTLE.currency",
+    "call.execute.inputs[1].V4_SWAP.params[1].SETTLE.amount",
+    "call.execute.inputs[1].V4_SWAP.params[1].SETTLE.payerIsUser",
+    "call.execute.inputs[1].V4_SWAP.params[2].TAKE.currency",
+    "call.execute.inputs[1].V4_SWAP.params[2].TAKE.recipient",
+    "call.execute.inputs[1].V4_SWAP.params[2].TAKE.amount",
+    "call.execute.deadline"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "bytes",
+    "address",
+    "uint160",
+    "uint48",
+    "uint48",
+    "address",
+    "uint256",
+    "bytes",
+    "bytes",
+    "address",
+    "address",
+    "uint24",
+    "int24",
+    "address",
+    "bytes",
+    "uint256[]",
+    "uint128",
+    "uint128",
+    "address",
+    "uint256",
+    "bool",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x23617e59a5925b2a4bf75d73ff6711cd0b29de85",
+    "0",
+    "0x0a10",
+    "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    "1461501637330902918203684832716283019655932542975",
+    "1797798879",
+    "0",
+    "0x23617e59a5925b2a4bf75d73ff6711cd0b29de85",
+    "1795208679",
+    "0x81b7bc3bf28ee6dd7f91521e387d8fd2b028924660e6827e1ff6f1e7365e04b3369882559d3f0a98129faa34763a56fca4c1c28e1579ded8cd73d92f170dfea91c",
+    "0x070b0e",
+    "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    "0x0000000000000000000000000000000000000000",
+    "100",
+    "1",
+    "0x0000000000000000000000000000000000000000",
+    "0x",
+    "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "5000000",
+    "3145426571669841",
+    "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    "0",
+    "true",
+    "0x0000000000000000000000000000000000000000",
+    "0x212b9fe405d4913c170155727f37c9029d7f4b2f",
+    "0",
+    "1795208685"
+   ],
+   "outside": [
+    {
+     "at": "call.execute.inputs[1].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].intermediateCurrency",
+     "kind": "address"
+    },
+    {
+     "at": "call.execute.inputs[1].V4_SWAP.params[2].TAKE.currency",
+     "kind": "address"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7fe209d38a5311630eaa93ce645799d855fe354d29ea9e30c90ac43ba65fadc5",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe9c4f73f30747d8f87a076a64c7fe091eb0f00010c6e93bccd49fb5a9ff9cdd6",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x31a7465e8a0a53168e27774ff6382b8cf9123cf9",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 16
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x393f5e4230a5af94fc5e64355009e2f6c194df3f06168ca5ba8cc88b2f330631",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x53b95ab290b1e4e629c35977007c2f4f617448e7fa70cd2a4c8e2e7a457f4cf1",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xcf91d100c3107298c65c13d21f55e72bfab0b65498d4e6fcd3603be26dc840fe",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6eafa461a86b3182702e6e7f6c9ec988ec9264923d0fc30b67480d6307444c63",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd7fb20f8f8637f66c8f09adb6650f51e98202f2a56e16d5ec63952de2291bdca",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x96cb839eec239de6fd315d7766c1f140cb51c1531492cb5796ecbb092707c3ae",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x382c1adc872f3ed9c9fb247a865c17f3f434ab0457092f1923f72fd166b599d3",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb1ad8c0501f35443f49f24a6a3a991c86d313608df02828331a9401933213538",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x480c2a583f4ddc1b817c734ab412f8b49752eef4",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 8
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x5c5a697152e1f3c5de4b10cda5be7e3ac10a5c6b0c46bdfec076131153aa5b3e",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf67dad969a09614e893d81b5509e6ea724334a8b",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3e0f1cf25443f0390dba205fe72f90c9acb51f50303fd8552203b550e9910052",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3be169710546173fbb7158d902ebc3d3ab63d901106c60861e5bfd875e1ff00e",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xaa1a026f8d1ef642548c15ede1c22459bcef76a53bdeafefc06643942be3e1e5",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf48677c756d1cefecee33f2854d0067297cbaedbd665ef57fd80b0977c0d5126",
+   "why": "calls no function the template calls",
+   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
+   "selector": "0x2b67b570"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdff5722f971e2b9419c7343ef40f90eb67430309f1b9f8d30d52e5ac1b1cdcf5",
+   "why": "calls no function the template calls",
+   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
+   "selector": "0x2b67b570"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd5829c173ff75357bd51dc11a19222da9c7fdbdfb049cbe87395cf0851045039",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x88dc6a3186245012f639591f316f9216f743cded0e5ccebf84690234a3a4c4ac",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xba1e89b4de09fab434b2fe6b6cb21dec66d04688643e0910a342f16c8d518952",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe26750ba547d145145ea911f076d9237399d57ee46016fc67e141a14acc9065f",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x5022ef709a2f41d8e97bb964a3e7b883a25e83edd720a76930c1f24c7ae22afc",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xbec69dfce4c1fa8b7843fee1ca85788d84a86b06",
     "call": 0
    },
    "reason": {
@@ -1892,26 +381,1900 @@
   },
   {
    "kind": "not-studied",
-   "hash": "0xb188354b37027cba355f030dab35daf5fdcce0409214984fe1689c0a8873aa1c",
+   "hash": "0x27909c4a5e3253a78208fd35076b2848b913f4e83ab3a49afd7866ac497e46b0",
    "why": "calls no function the template calls",
    "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
    "selector": "0x3593564c"
   },
   {
    "kind": "not-studied",
-   "hash": "0xb43a8f677a1e6f6284c30d4910ba3be293f50200bbccebf9a8f29d6c763bfd13",
+   "hash": "0x99335398bed261846b6f9882296a73f6b698ce0c0d999ad93864bba74a0e5abe",
+   "why": "calls no function the template calls",
+   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
+   "selector": "0x2b67b570"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc01c77b90a831ecad8256d27ea2f21e13cd0d310f78a32425bb7335c5c11488e",
    "why": "calls no function the template calls",
    "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
    "selector": "0x3593564c"
   },
   {
    "kind": "not-studied",
-   "hash": "0xcc2c5bb4f452970dadaa05d1f80bcd49686ac2a1ce3f2163686e0cb48b2dbde4",
+   "hash": "0x22a2963edb05f33cf7eafd41835d23d2c3668ad0129b2a1027eb8b1c1efd6b02",
+   "why": "calls no function the template calls",
+   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
+   "selector": "0x2b67b570"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc473680e85025761059bc358548b7b929746d3c8f209e9a7bb328e2d9261400d",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x60a00b52aa364866b7635c69a3c58b3b39b55541",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 4
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1b1da630e72d67b39518ee04292a0a6701ebfebcd04ae618b9ada26ef3ce9c94",
+   "why": "calls no function the template calls",
+   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
+   "selector": "0x2b67b570"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd7e0820b9f0026563a08bea0f81d80a997898f3a933219d2b6dc30027f3a0404",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x3e4ed81a6f468c0a1bfe5a4a67348d004178adaf",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].encoding",
+    "expected": "canonical V4_SWAP(bytes,bytes[])",
+    "actual": "differs at byte 688"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xca6c8092b63198cf563ca79b333145f3125aa35fc6ab7e863a11d4fb6e256858",
+   "why": "calls no function the template calls",
+   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
+   "selector": "0x2b67b570"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8062ecd443027ce35729d648cf2089b180759abb03692ad88c52374b5a17b483",
+   "why": "calls no function the template calls",
+   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
+   "selector": "0x2b67b570"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x91ba52431e6ae904b657dfb9dd76268b78515fd9bd45492c80b8911567e2d5fc",
+   "why": "calls no function the template calls",
+   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
+   "selector": "0x2b67b570"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf89ebee18f707dbe3f15d5d3b4b576b2b95bf0fdc243ee54189631429a00c12d",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xcc8d4ff6d4c303cd3d6ebde83f49de8ea6ec756ee0d74812be8c3b146ad21758",
+   "why": "calls no function the template calls",
+   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
+   "selector": "0x2b67b570"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xaf613d48d6d4d003cc7f97bcead712cac1b77c37df91e78502519827676bd25e",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x11ef25dbafc854b9e33871d0e198eb77b2616fea",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 976"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x04d867d2b0f2b931047c55332d00b84a16d47610d51ac2627b3ef9757757b3f9",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x989f710bf002c9b9f0ee8d267eb74d1b5f39435da338b862a3c93eac73f74b8b",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd3be9fe56423c186b1919304c582846e5037c042",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 3
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5fbb3ff6be30fc2f6de02ebce0e8a5db6867d443502fa7a5d4d7936ae28d4209",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x72b2b96087707d3419f1f57c73da53bc4763cb77f7c0a7f90c1c14d34950a88c",
+   "why": "calls no function the template calls",
+   "to": "0xef1c6e67703c7bd7107eed8303fbe6ec2554bf6b",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdfd0442baf92ffb328e531273f8e3d73bfffa84adf4efb8819d02f46b5c3a5ab",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xdf041663d33d296a94c4637ff77fa834e02a30e5e47d6895fd28f711db11e479",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf516199866cff36a03069e459827996e5cfb33f7",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 4
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf63e1bbaf7ce58a9c19341b1be49846f759bab6bfc4dead69c94f522fb8dc7b3",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdeb6fbb84dda4d289983762f2894060126a9a6dc3b0994b4e4b5d8dac3aed44f",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf8d6fa360f7971933c9078c259cff7a4bc2e5e8a9fb92150db79e708d8c2bd66",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3864fbbfdffd19d19128f53b6657f79c1405c2ea0f82ddedd44325b6a1899636",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x353a3a0cc182fdee1c6e7f3ecb1d3fe024439aeb",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 3
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xaaeb6487438e5481544f8a075aba59b7b69becf0482a768050c5f3ba3e61ca01",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1f5146425a25e0fa8efcae331d596006d9618a4fed6e66dbac199057d64e105c",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6fd350865b0e93b97b47d01791974c70c36a0cde6931ea82bd3e507ce8b455f1",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa1b58d856fd47e06070943a2947b55e54359a6c51e5af8a13698ece7f7f7b67e",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3902751293a09e61d6cff8dc60c7ecf18c72806bea7b0b8eec404568349e6048",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x2433396b7932f09f7d705c535e2d1f8ee8a06d55",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 3
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x372770817078f2f488f4e31bf1f5f32edb2d27bb515dee48e738e5ea53850701",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdc284b9e2025197a33b5184e6f4a6665a97f4b03e150c13f5d686adfafdb372f",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5e32b157e495f5c0526a5f82b9e01a0fe84d62eaec02ed750237606e0ac1a31d",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdea99f4d00bd9c993ff012dba70a78a62f5bab8c3276536e9070670636a2fc37",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x7aa05d613f22e497e210823cc06957f376299b5ae75b27342da5c6d6e29ff65e",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x4c3b64afbe21391f1e6f475ae896ae160ec9200b",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 5
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7b92109dfffcbc056aa634f9e31082a1281b134a12b34e0e52e12d73d04df85f",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb1569614d99e77b00c2f8f2a3423cfbb10bbbf5eaca81c02ce539641a20a843c",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xea0d583f845f6ebcdffc14a262219d0cd4d47192",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 4
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xbc3a2f0966950b1ef2d5d33233111b897b25625d2740b26f591d6801d93a8cd1",
+   "why": "calls no function the template calls",
+   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
+   "selector": "0xac9650d8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9f2dff5dc95edd2833891bbaed2b60dd441f7315c09c05423d836a06502edb31",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x90278b00c2e0b443c6bf0ecf78c3e27fb56cec2372ca84b5c3368156f3084d63",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x278a12b415af6b1091add31c4226b5b857d3677938d609843f8d367ccc51d67c",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xbf1a03de7775f5473aa6d85a83020988feec8e766f330da7f10771fb558ed063",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe7aaf45c1870030a168f5aa27a72221802de27bb0aab85861ef9e995ece4a371",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd21c2172d66ed5031efda109c4d502ba28f2d679a6f9749fc409983b9f462a7b",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x549d2a324ca24f25c044becccda785681df8c7fa5b3fad976ab13fd5488b30a0",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa3796b4d2018269434730a12674c20a5f13984fecb37069f6b112ed11d703e42",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7ffe8bf93271a552865675edd4a3b94fc4a2d9ffd45c997ca25500797c30c0d7",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x2a82a61b87290615085e75872592a76697a6bb09f1e86d30f648c305e532e4ef",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x94185d3509d929348ea397a82b17148a2c61db3f",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2c1e7cb15fe93d23ccd089aaa378daa3a69bb6e8d06335f02f47d896014f404a",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7768fba2fc2358c24d858f5306b2c2db9beae30aacba3f004340f57e16ee257c",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x393601fb96d5c824d4b0410486a0adb60b80d6f92dd5def11899ae284abd987b",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x955b06fea08dd8d48ece50bc4c031e582d5ce626b13ead9f05529cacf24ebbc0",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9c6435b564506fee189d5d30d144c0c62274d2913a24e56a27b698b4b31779d0",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x16169143d4fa75d71f7a7609ef32fef816ea9864cc4fab0195435e6582035364",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x181c5d40922341062ec9ee6a03ba05cfcf48bab7847f58a248b698b1265dd48e",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb807d8250e5882cd5976271d804608477e6b1eb56ed3baffe45095ed0279e8e8",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6b5a6b14ba26324bd77daf61306dfd0d75ef6f258633584b75452b0cd121a9ed",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6a04cb3d0ba71b031cb81f3ea1bb397f84658ed33616628ee5e05ce1ebaed269",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2de9ab15e9b9d4428cdb9383ab08f29588f531a30bf37f304561d81a549e4b85",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3212df2fc76e16829b66edd0144bb7c6498a16c234e9228c8817c9a1ca68d5bc",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x5e919bf5fb49d6df9b41a8bc135d4621e0b5bb68",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 3
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8775f7feeaec4841046964bc6904d0d76426aa23c4836d753fdb3a508b407af6",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3481be9b442469a0ce85e2120fbdeb3e69d70281b2b9f0275ad4dfe2add4f7bb",
+   "why": "calls no function the template calls",
+   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
+   "selector": "0xac9650d8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x55045be99dd7ca4122a74800323afd4b5afcafe9e337b313b52fa99ff4652590",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xcc9f3a8e9dc59a94a00b582cc79aee578c8adffbc70706c36dfa8dbf0d3ef6d6",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa35c50d3eb8da7de72ac1a18434f7a9cb26f70ae268051176276e10917e81440",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x544acbf0355c433b4c3700393287f33c0bcd6132b65e99678ebdbbba634404d4",
+   "why": "calls no function the template calls",
+   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
+   "selector": "0xac9650d8"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa0efe079201934ae3cbe5104cd3789766945d5d657af2e181f3b7b5105beb584",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x8902eee563a1cb60f5167974b67ef0a34d2655dc",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x0498bece4e40de1dcd1c8ede6130c62aa9f17e24a8f3b97b9c5a3ff5daa3415b",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x9b4a32039ca26ca8f7a622b8ae5cecb63938b433",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 976"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe01105759c553876c574f6fcae9b19e094b8898426911acc6d52359519b59af2",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc25b1c92f77279d45c2aacee3813c14462847a310b0b4cf5bd7c832b5a50e321",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6d8f9eaddcc02b63a2fba52abc1e19a9b392501b50a3fb77bce529c6f6c5c4b9",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2d3762caaba5ec12e8b09cb3df4bbb93beace0b4a42068acc56e2d6d3bd693a9",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xce66e40dfd8104ff0e2d9f8dc995744a8657f5b5268fc8fbb89b3a24ced1dd11",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe08f2d32c72c14f21ba32738dbcd726620c6a98d1bdbba810bf2528381c57876",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb6ca987ff3c4bfa16649efca2c5531c735ae6fbc490a1d2e3e83d9bc7828843c",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x70cb20c4ee9a596a7df7ad251616f381135e781cb970396cf5bc57944e8d213d",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6a9a3593e332c045c9c8615d09cd10c32b92527f2ddcec77026f5a43fdeaa76b",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4b9c5de87904e0005022a18201d8e6b0b572633e00d34c4cb42c8a003e3377fd",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1b6ddb761aa6122f5dc5d7a2affabe4917b3357c79228537f64f1d2c6f11c82e",
+   "why": "calls no function the template calls",
+   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
+   "selector": "0xac9650d8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xba97ff5e4d2f66e37542f34cae9daf4fa1a7f77624847637ddaaee3894ab8f66",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3f42500b84eb5fa81bc0d07b2121abc503329549b7c9f0e7416308ec21838a87",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xff40b7095633f41bc960dfbdd8a783b67ce706f5",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 3
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd78444ab7e89cc9e243850e274d36f77aa2767a44a39c53f8df559d46d901267",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc1e4559fa604816f25a1600e3c4532bfb0f08901d4236dfcc9578705d402a6e7",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x0837bcf1db69889cac0a06a7f0e6fcf3110cfa21d0b390ee79ed0a2a59cdd8f4",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x5e5c68123934ee75ef4313b21b65222f51ac1565",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8f073d5a8ce37cb11cacc345ec09ca36ae205232c753b08b550b44071a2245b0",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdd60861d63ff70efff31a163c9ddbf664eb47296dbb9fb60ff0d37ee38d94c14",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xde653467e7379ecff6f8dcd6c04eb7848cc329e3514eee2afd4617a48dd98b65",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x0e88db127ed843095ef2a533f3167903c66d8257",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc2d21d28f4774411cb6b454bd46f4181a1d9bb35a13bacbde82efbe57b3eb986",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9f44acc9326c783ebf8ef29b8d05e91b0774f61df84b51db65a335eef5c671c3",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xfeb7c2947a971870f0d8a0722b6455285be61ed5726ea98365407969ac7a6662",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd24e28cc134e48a18a7c2faa7d764226d97afc291f7936c41f6a6e2297f49378",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x46bbd6aef92b4e013a0fba97fdbb6f5708bba890",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe038e9c616a3192c6dd1bdf56836086e21d2315912db27b360870a33eafdf352",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xffdcc48bbcbd36c14c5ad50c46fbcd9caa7c8dba",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xeb1c89e5b87d47f7f8e329cc42883b7656a03d67e5e232e6ede8b8296c7e6e7f",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe368d4d52dd51e9cf3a5f668600765547618a0501e68141fcbcf7be4f6bc50be",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb1a5fe3d71ad0b1901e43fd18de4113b7a452c41484a6bb6b1308f49d725f9eb",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6fe245ffbaa5a8634f6d41bb52f6258d763bcdf68544d5af4b3124541926c60b",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x010b3b1d2d7440012ca27d5e44a9b431a5300c946b375acc1237a09dac408127",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9057391089f4ac6586caba8cac2199118ad7b80b96f7009d114794804f6ae279",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x19a1144579c91ec6b0fe7ce0d29ec9f2aabc22d7ec9261ae9945173ae9af8ad0",
+   "why": "calls no function the template calls",
+   "to": "0x00581261a1200956ea05d1810ff28ffd66d8e254",
+   "selector": "0xac9650d8"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe6c425085d08b9d0f5f76e5fabefe523bb845c8c14dc2a31d60d382c7b15bf04",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x9db7b3431c9c130b2a3e81d9eaf899c39147e45d",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 3
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1ffc78049220ed4ba0610d746d3199e001edd9d002ed5ad542c193bdc4986c8a",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1824771448c943b2df3b51a72f7108e02f26360c0c003692866e210a38a3b50d",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x29b3a6f1ab3e8b7082267a322b772f819d7af13499c410451c9a0be5626f219e",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x440b31232469b9cfb9cf48679fb53c044a119e042913f9040a821823b791d52a",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5f43cdab3d21d03bca5790f87f5cc7c80604bc1b61397ae1e9ba505c69fc6de4",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x523226aa5a88437540eb782c1183293bdd6e7af26c48098ee8305f3da69ffecc",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc6cc63084c6117e394b385aa45ca5c2741a850c43f1aae2369cb5b365ef6a99a",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x76248ebec6e713cc316bd6f3fbd7e146486a8c5a",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].encoding",
+    "expected": "canonical V4_SWAP(bytes,bytes[])",
+    "actual": "differs at byte 688"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xeb395d2beef4143ee664dbf50c587e48180708ff0452c79e026d2844c67c3e30",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3ef3423694e1b8c58f4f749f5019037af2a7b981dc82cfe0ef6ed386e470de1d",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa797995647a6dd84b0d11487ade49b11e9ec73d7",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 4
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc2435aeb2e5a292336a8438bcaebcf1d4e7b1eaaf217f400b88df3f3b48b67d5",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x3594b50c53ae4679ffe4423c41a7011fc4546c8f",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 3
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe5ad49bccacf4480a050107f1114a638bff4eb7b8ae8a58e149d3daeef736c83",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2bbc3882b084a0fdb93f968d15e810f22c98aa697e944f96f277dff4578f33c7",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x83e5bbd4966d63db9c5531f409e8c03dfeda1583787edea170bca5457b9580e6",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x6ed5a379b7f4e0e34dc9d10f12edbf6117c9aa7caca88e093d69e2714bc45d5d",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x29e8bb8f231ea84edfb240da0bc2f932a9726205",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 3
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x04fd806750b06444fb309518403c4f454c5cde691b179695af61c20ade2b17c1",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf2ae6edf0ead4fc877b8d1df25b22713c7fa8e1a",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa3e801b822d0254626bd852e40a4a9d62fe39742c0ba338fd0e1c040385047fa",
+   "why": "calls no function the template calls",
+   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
+   "selector": "0xac9650d8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xfeeb70dbc128056e281c6349ce6ec233069bada82ee04ae7d9124727584c2f4c",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xfa5e38d2e211446bd950232c1df1a4f9273df6c2c0a060613d29aea7a20b6206",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd0c4f3e679524641ee85772b54e991b6e5c8f14fc1419a796e327d1bc1650133",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5e4d1f03f9eee74c6e4b160c46416ed6621ede18637153f9dc4edb97dda940c8",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf1390eeda4ac65b865762ecf307739b8d64470240d5dd6bcfe63391443989bf9",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3ead1d97c73fddb0a1c5391edc4b3a0c6057d2f00e4cd783f3f59acdec6f388e",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb89f2898a8781fcd0b610b1c8a3e4503b013494359e0429d9caa64975bbe7d3b",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x87ecfd0c264630828f7c8701a75050a6dd6b52d447fb3aa8bb87efd66115beb2",
+   "why": "calls no function the template calls",
+   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
+   "selector": "0x2b67b570"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf0b32ebd25a47582cc397b7a160bdb34977343a9d467c2d34b35fde596a0b2eb",
+   "why": "calls no function the template calls",
+   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
+   "selector": "0x2b67b570"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6ca3cbaf36ee810a3448affe538e9f1da1bf1db53c00fbab87d8948d310e2043",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0564a94328221c1434fe2ce9fbb2cebf4c55e1bf3210c83cd6c45d041b54a453",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x450b61bf80281d77a9e7b1a5fbd9479de5ee7f242e3986c7cc8e4186320d72fe",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x795853deb7ca5f2aed4e3a205cb8b3d7fc13d93544fb713b56f67bce1c200892",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x13a5755535f27a2db363fee1cadb39475dc42c49",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 3
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4c74947f623f21316655fab605d41552277cd156e29359aa44f02b6f2a369294",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe60a0fceb05beb895181836d86cff70a0e5985c2cab5ecebc974cc31c858344c",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x375bea571a6b1a09a9341ef85b992583987ac58c13983b86994654fd75caebad",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x52c2888988d7ba3f32d8f846b943aa05a09eeedbffd474939a90637cda045c24",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc1a8ce59c5067724212e5efcbdabb818b30eeb36f71bc64693081a72e95576b6",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x09865907e60ce10eea9cfadd488b5cccac600f51a62ad3be5518759978262077",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x78dbd5263a75726970673d5feca8df22012d8f72b8c4b52ca5f1782f9af4aa4d",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1371c5fe3651111b927f573bce658562f6ad75bf211bb7a6afa41828e8a1f298",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x8cbe7db2b183d88c41d21d3972c8910f4ef1410ddd9aea480deab0a540d487ad",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xee91f6757fbbf4ca56e6122ffd55d68e2b76df0a",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 3
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xaa7d0e6620e6004ff57946549abe2c5e7dae6c62664392a90af6575c4a013237",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4eace4da6d171b8f1ded44c85dc36071a29a422a4366a4596d82ee10c993b5e2",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x53f63829fe7e332842f67130705418d48b15dec6e27e39e1cb990bf9768bd2d0",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x51275d1ae72648b0ee9e725b518e301ad29483e9",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x49eda461b449117db2206885f5ba96bc8a08bf596ab7c8d53f64fa1ce7bd8307",
+   "why": "calls no function the template calls",
+   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
+   "selector": "0xac9650d8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf419ba846c76bc7f50d2394fb86ee1d53d19f910cb8be8830b41931365913bea",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb8053d39988fb579c7b4f7dfea464fc5c2af3d62558d09cff6f7857767a702dc",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa07cfc95cdd466163b1b2c0acc0109295e832178842e5d836017e446a2b79b3d",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x90fd5fb8bbec8a32d9ee640436b0dc09dabeb37e2b8d86470e14179368562a90",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd26182996268c079a5a52d035b7db830a78a4647ad823da04cbd491db2d45030",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x114be028b34b071ce6e1955126e277c54e8681f8e2f78ca02d411a6951209a39",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x65c92f50b398bc05a4be4ad3d47cf23966c796eb",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 4
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x0961d4bf807bfa9c59e61de9de759a199e8fcc2c41b5abac2de9c2b1d6a93ca5",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xc260a013c7853c708e5f49971f63e3a6b4b93d94",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4685b978561c36fc17756abd9a762637310001fdacf18541e11ff64ed2177ae3",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb80700bcbb6c774257712a82c5ba5924ebb4d82cc8e67079c3c6df603cf8f06a",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x26ce7eaa6875c7045e92e8cf3eaaf2b2ca4b2023b53eec6722d11721a1f8b245",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x42e1c35532a62130263b7f11ae480976aa8db92aa68af98a976cda00c472fdbb",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x31dfd4f3016472f2fd9907029cdb8eec7303573b767e24e06a84226e08f63e41",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd2cfb214973902bba0f03a1470ac06706327a96c74958dc6437343f81ee433d0",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x86f7f4f33054b62aa8a1899ac86d0286aa25df75",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xba1763c9709ac2fc8663ff0ce4b8221a009d259bd2ad3eae25b1ec37c863c3c6",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x08ee17afebca8bad75a683c0d09ad5a1ddc59df670efb38f81bc5b8175a207d0",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x189c430272e46e891518d331233fa96061be37561f06ac8cb821f55ad37b78c4",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf67907e557e09df8204968f5b8a16650cff843dd",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x722b2cd88086630b11ea42adc03f612587be80c974c08c79a31b762900fec9ba",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4357d16509618fd5ffa41123f5bd931845978ce0659f43e0415201a524061a13",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xcf78ff53c06e1135c53a692ffb32485d2ca75edb30b311ea108d913e5f33329e",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x17c7d89b93072b256e06d8abca73b990f8b58d5ca912bf2765bdc7fb3e5d39a7",
+   "why": "calls no function the template calls",
+   "to": "0x4095f064b8d3c3548a3bebfd0bbfd04750e30077",
+   "selector": "0xac9650d8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdff26577198f61044e569a0110e1f6787f0a521c990e1de88877c99892cea9d4",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x49962169f516ced8f4fd09e2df8edcc75c2cdaf0a16de875771eab5e89b8d3a1",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x5b5e929f0b863d12bd7cc7b2e14a6a9c92f55856",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1546cbc20bfe61bbd941c35f856981f3da4b808a807306a3909f2d75f46ae0fb",
+   "why": "calls no function the template calls",
+   "to": "0xe41c726421007e133a59365432fe886a73b45126",
+   "selector": "0xca931073"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2fd0ced53b63eb2579a65287e9cfa7bc5f3e0db30212e36f0422f885fa0d0624",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x09ec2f88cfa8f8d38e014aeca3c18eee1120201b9291c8b6a80cf8be032a87b2",
+   "why": "calls no function the template calls",
+   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
+   "selector": "0x2b67b570"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xad9479895adf5594be56adf3f74dd850fbfe1cc277f341a428c58fcd84ba17dc",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x28ed7309af71b43665a7e8b241bd940ac9df6ead40e4278eb103ec3900c1cf5c",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x430d871144afa101bc2dd33f65ae8abfc7fd6d6216589a24046d1aebcdd43400",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x0393bfea33bc948de4435d139e9e9f63f5c8bc73c531c5f8e97a4180cca6e7f8",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x5a5f9d7e7f487e71d08df5e0e103da291820a529",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 3
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe25472f0026e4c7240be3546ea594deef644423ebf1fdf6b225cf5802895a51d",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xa8c26a182a1535641b39ace0fc7824990f53d924",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb80a8f5801bad1edab1a004f5a112660afaab24d57d53b4accc8bc7147140223",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x0d794aed0eea36f48657e48e48d5f2fd3bbebee9",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe05cdf895247c682ba0427d73ef15b4183c00fb79e39c3b512afc11e3a6c9c76",
+   "why": "calls no function the template calls",
+   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
+   "selector": "0xac9650d8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x253f6b2fde3d8653d43470b7e3af7bd8d8d71ef2e06f39a398c78e84e8b59285",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd371f246ab86d904dd0cd01427f695269de76d5455a3ce34df2540cdb5c2e59e",
+   "why": "calls no function the template calls",
+   "to": "0xe41c726421007e133a59365432fe886a73b45126",
+   "selector": "0x9b676069"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5645564b412f72c21046b24a5b180c0565cc4d5f0c3dfdc86b501d25f78539cd",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x22a4a1e19a114da5b45a4436ee951494f2c95c523d964e95f2a99fc7867d4017",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xbcf6c4f59dde3b674144ee860c5d07060e2964cf",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 4
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf2e4175e459a9a0bd4b68397eb0b66ab0a04d28ba4af8f44138151b113e79a6c",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x663aa5cebcb4f88d87510682f8ecc5b4759a180d7f5b7826b94e9f4d5bb025a6",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xfe4356b3cac9166107da0c580cc8e78ec73a6c22bf72d29f6986e6653ab3247d",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5bb32382fa893b248f5952f67e016fc5c80f7bc68fb517ec7a0e7614336823e6",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd570d3e86764da5846d9c2561d930390c60270b285d5f0f04f1c74c7317b413f",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5545fc15a5b841b64b5b16b4b40cb662b08078d75d2004c7bcc3cc39fdcb9a39",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb81af75c2d687210621d53b0920cea0849aa52f4af578a056adff342be3b45b1",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8b6506781d69f99d76d722f2b4466dc37c63d15aecba1f87e2f1962d871467b1",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8508c34a31ff4f9b59a8ad66f504d57fb36c5c7cb0db9dad7f7038e4758571de",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x88dba1d7a30318cca5e298bbd954c6cf41d255829f280caa7ed3ebc44dfed3f9",
+   "why": "calls no function the template calls",
+   "to": "0x4095f064b8d3c3548a3bebfd0bbfd04750e30077",
+   "selector": "0xac9650d8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb673122ff1ff3b2a8217f2a79af526fd84daa04113749e2cf6b56b0d56244f5a",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x854971ba1e23f39800e7ff1cbee4e2d68429cf320f1f4839057ad2e8bfdc6728",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x390d36b28a3903ca6776eda0688dd52cf43da6407848183030db9daffb3208ef",
+   "why": "calls no function the template calls",
+   "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
+   "selector": "0x2b67b570"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x65b43f213f072dc86e1895f8d4a1919c30709b89d17e360d79e26751455aca84",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x89c0f87b30ea34744f86a26e848ab2be867c1c18",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd8a3e0742548a317709095847bbe8b0139414044bf405e3fb07467d60a45a8f5",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x97aa60018a187d8c561169b8c1921c24d202755ec42954d1ce19f5fea01cabfb",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb7f3f23643f19fa0b0ac6f42bb2214b3d2c1aeed978533eff6eb7b436e3e6447",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x4d8f0fb7f6ab024a54087bb0d644c3657119c61a",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa94ada523d9e8ad578c89c21840d1f169cdc7d282e2d7b53ea7801e7121e893d",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf46674bd65cdc85985cf371895ac5cb58df16642",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x5c65da84b289a2a9b265c37ce2ac23377e3599ddc44cc3e90e6f45eafc790e42",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x1ebccb51b5cf7113d29962179adc5f4d18205e99",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 4
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x5a8399af2a9fe010b17d078ef6b8311ee54dd8987a31a62a3f3f6448d9efbd89",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x0a769b9e0bdd64d463454b265625c3c5d209d3e4",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x668fc9a90a0a535d746c770a8d24348dea44d36fad0f282c9c80f2bf28d50815",
+   "why": "calls no function the template calls",
+   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
+   "selector": "0xac9650d8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7061c231785faf9f5aaa321d9228085b9967f0d536e32044a71c9ec91af3cf4a",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9f63f99e4bb26709ce9ddcfea93d21eb66bbd0ac14ffd4d11576791ab9cbad33",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x134a6888da90bdc3b06cc9247ffb19d7d508bef42e4949a99d34c0eba62ee5aa",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc65b9c978018dfbfa3380c7aac30b15e86a6f346f5173e35b911ebcba3cc5d86",
+   "why": "calls no function the template calls",
+   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
+   "selector": "0xac9650d8"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf98ce3d9e0e2aa7961ccf965c3d9cf7c19b7b5729228b872a71ed6db81c4638e",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xe514a6e591de4f703fb86981e7af837b67df2500",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc67608aeb856c7a191608a94e8979334749ae335a1f9c261e0ded474c2cfee3b",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0f69b41492378e8b51d1276ba0d7681cdd7663ddc0df8dbb1622dc444abd7a6a",
+   "why": "calls no function the template calls",
+   "to": "0x0c9a3dd6b8f28529d72d7f9ce918d493519ee383",
+   "selector": "0xc16ae7a4"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x854560e878e6b5c244f14bfd004378bd74532803eaeb0e7335ccc48f31ea3843",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x05ce953ff8a7dfa30710816a6801a4f52c4f3c34",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xff9e1e85cc83184d530db069f96f4853a3644c52b6ab5eb57bab276d924859b2",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb9141278eecfadff5c4b9d86db748287204b6925",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xdd1af1782ea7040cb0e10dc5e4390773b2cd0c16cc40f9dbee91d3169c753f38",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xe8b3f5ef7751e4a25aa2b0ec25f439e7816e6eff",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4679bee3b4513c3efe78f9a2fd8b35ad75281c964591284a5a98eb60e1e6697d",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe2f59a855bc5b592b28822cbdad8e316533aec95b492006d83423c29a291a585",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x83f2cbed8e51feb87d61d054fad826d9afeaed10",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.execute.inputs",
+    "expected": 2,
+    "got": 3
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe3f15527a02c9994b8a55776a1a3c216a7183f49acb6015eba83c4a2d1470f56",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xeb45cc9eba9e89bbe5e00984a6ab64178e2fcfce2920082e444db62c95e01deb",
+   "why": "calls no function the template calls",
+   "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb13c541d01c8fc4c10cace68eac2029701b86b1e3eefd8257d59aa67eb6cf0ab",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x2de0b972a634114c4a832a7788c8051dc41589b6",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf728cf50275a8da8e59f359e9ebe0d7449c069d5049a5d7b2910715af4c7e19b",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf0c93193b28f04ed6567d46a621e7ab194fcded5",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.execute.inputs[1].V4_SWAP.params[0].encoding",
+    "expected": "canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))",
+    "actual": "differs at byte 1040"
+   }
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x059e28053906ea84c57b59aea81711adf23344683c0e8142ecb866b413b8057a",
    "why": "calls no function the template calls",
    "to": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
    "selector": "0x3593564c"
   }
  ],
- "measurements": [],
+ "measurements": [
+  {
+   "hash": "0xa5fdcab7b55e27cc6581a64885cc3310f1d33dc30efe48269b5fe04cf07b5493",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+     "party": "sender",
+     "by": "0"
+    }
+   ]
+  }
+ ],
  "traces": []
 }
