@@ -32,6 +32,7 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
   - [4. Verify on your computer, and check on a second one](#4-verify-on-your-computer-and-check-on-a-second-one)
   - [5. Sign](#5-sign)
 - [Threat model](#threat-model)
+- [Token cost](#token-cost)
 - [Scope](#scope)
 - [Contributing](#contributing)
 - [Disclaimer](#disclaimer)
@@ -254,6 +255,35 @@ You choose the protocol; kiss-sign checks its state, its app's transactions and 
 ### You
 
 kiss-sign checks a transaction against the card you sealed and the reports you merged, so it cannot catch your own mistake in them. A card with the wrong vault or an extra zero in the amount gets `MATCH`. Nothing catches a signature you give without comparing the hashes on your wallet, or a flagged address you merge without reading the report.
+
+## Token cost
+
+What it cost Claude Opus 5.5 to make reports, measured between 2026-11-22 and 2026-11-25. These are re-records: the template already existed, and the AI researched the operation again, recorded the evidence, rewrote the notes, ran the tests and opened the pull request. Building a template from zero is not measured and will cost more.
+
+| Report | Calls | Tokens | Cache reads | Output | Minutes | USD |
+|---|---:|---:|---:|---:|---:|---:|
+| compound/supply (compound-v3-cusdcv3) | 79 | 6.68M | 96% | 39k | 26 | $3.22 |
+| morpho/vault-v2-reallocate (acuto-usdc-v2-4a57) | 41 | 4.67M | 92% | 61k | 25 | $3.66 |
+| safe/add-owner | 71 | 5.61M | 96% | 32k | 74 | $2.59 |
+| safe/change-threshold | 40 | 3.55M | 93% | 30k | 62 | $2.40 |
+| safe/remove-owner | 73 | 5.14M | 96% | 33k | 57 | $2.54 |
+| safe/swap-owner | 37 | 2.85M | 92% | 26k | 55 | $2.07 |
+| uniswap/allow-router | 31 | 2.83M | 89% | 42k | 15 | $2.62 |
+| uniswap/approve-permit2 | 30 | 2.51M | 90% | 37k | 15 | $2.29 |
+| uniswap/swap-permit | 47 | 5.35M | 93% | 64k | 32 | $3.94 |
+
+Updates that only ran the search of past transactions again:
+
+| Report | Calls | Tokens | Cache reads | Output | Minutes | USD |
+|---|---:|---:|---:|---:|---:|---:|
+| cow/swap | 35 | 2.40M | 91% | 30k | 20 | $2.00 |
+| cow/swap-approve | 28 | 1.82M | 89% | 24k | 12 | $1.64 |
+| erc20/transfer (six tokens) | 69 | 5.59M | 96% | 29k | 175 | $2.69 |
+| fluid/vault-deposit (fluid-fusdc) | 35 | 2.61M | 91% | 29k | 30 | $2.04 |
+
+How they were measured: one report at a time, three fresh agents per report, usage as the API reported it in the Claude Code transcripts. Minutes include waiting for public nodes, which is most of erc20/transfer. Dollars are [Anthropic's list prices](https://platform.claude.com/docs/en/about-claude/pricing) as read on 2026-11-25: per million tokens, $4 input, $5 five-minute cache write, $0.20 cache read, $20 output. A subscription bills differently.
+
+The tables leave out the coordinator, the session that starts the agents, reads each report and talks with the signer. Over the same days its two sessions used 81.0M tokens, $47.18 at list prices ($8 per million for their one-hour cache writes). That total also covers changes to the program, work on reports not listed here and discussion, so it is not a cost per report.
 
 ## Scope
 
