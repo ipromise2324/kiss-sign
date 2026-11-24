@@ -386,18 +386,18 @@ test('every report ends with the AI usage that made it, or says it was not measu
   const usageOf = (of: HtmlInputs, language: Language) => {
     const html = renderPage(buildPage(of, notesOf(id), title, language));
     assert.match(html, /<\/section>\s*<aside class="usage">.*<\/aside>\s*<footer/);
-    return [...(/<aside class="usage">(.*)<\/aside>/.exec(html)?.[1] ?? '').matchAll(/<(?:h3|p)>(.*?)<\/(?:h3|p)>/g)].map((m) => m[1]);
+    return [...(/<aside class="usage">(.*)<\/aside>/.exec(html)?.[1] ?? '').matchAll(/<(?:h3|p|th|td)(?: [^>]*)?>(.*?)<\/(?:h3|p|th|td)>/g)].map((m) => m[1]);
   };
   const full = usageOf({ ...judged, usage }, 'zh-TW');
   assert.deepEqual(full, [
     '製作這份報告的 AI 用量',
     'Opus 5.5 · 呼叫 71 次 · 74 分鐘',
-    '總共 5.6M token = 重複讀取（cache 讀取）5.4M ＋ 新讀入（input 與 cache 寫入）0.19M ＋ output 0.03M',
+    ...['項目', 'token', '重複讀取（cache 讀取）', '5.4M', '新讀入（input 與 cache 寫入）', '0.19M', 'output', '0.03M', '總共', '5.6M'],
     '來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者',
   ]);
-  assert.deepEqual(usageOf({ ...judged, usage: { ...usage, kind: 'past-txs-rerun' } }, 'zh-TW'), [...full.slice(0, 3), '這次只重跑過去交易的搜尋，用量只算這部分', full[3]]);
+  assert.deepEqual(usageOf({ ...judged, usage: { ...usage, kind: 'past-txs-rerun' } }, 'zh-TW'), [...full.slice(0, -1), '這次只重跑過去交易的搜尋，用量只算這部分', full.at(-1)]);
   assert.deepEqual(usageOf({ ...judged, usage: undefined }, 'zh-TW'), ['製作這份報告的 AI 用量', '未量測']);
-  assert.equal(usageOf({ ...judged, usage }, 'en')[2], '5.6M tokens in total = 5.4M re-read (cache reads) + 0.19M newly read (input and cache writes) + 0.03M output');
+  assert.deepEqual(usageOf({ ...judged, usage }, 'en').slice(2, -1), ['Item', 'Tokens', 'Re-read (cache reads)', '5.4M', 'Newly read (input and cache writes)', '0.19M', 'Output', '0.03M', 'Total', '5.6M']);
 });
 
 test('a usage file is one report\'s counts, and one with a missing, negative or unknown value is refused', () => {
