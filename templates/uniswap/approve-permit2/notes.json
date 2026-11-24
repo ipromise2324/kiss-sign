@@ -42,8 +42,32 @@
       "sources": [
         {
           "text": {
-            "en": "Etherscan: contract name FiatTokenProxy, creator 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911",
-            "zh-TW": "Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911"
+            "en": "Circle's contract address page lists this address next to Ethereum",
+            "zh-TW": "Circle 的合約地址頁在 Ethereum 旁列出這個地址"
+          },
+          "url": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's contract lookup answers the coin usd-coin at this address",
+            "zh-TW": "CoinGecko 用這個地址查到的幣是 usd-coin"
+          },
+          "url": "https://api.coingecko.com/api/v3/coins/ethereum/contract/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Coinbase's agentkit file names it USDC under ethereum-mainnet (another issuer's file, so only a lead)",
+            "zh-TW": "Coinbase agentkit 的檔案在 ethereum-mainnet 下以 USDC 列出它（不是發行方的檔案，只當線索）"
+          },
+          "url": "https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name FiatTokenProxy, creator 0x95ba4cf87d6723ad9c0db21737d862be80e93911, labelled Circle: Deployer",
+            "zh-TW": "Etherscan：合約名 FiatTokenProxy，創建者 0x95ba4cf87d6723ad9c0db21737d862be80e93911，標籤 Circle: Deployer"
           },
           "url": "https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code",
           "result": "pass"
@@ -58,8 +82,24 @@
       "sources": [
         {
           "text": {
-            "en": "Etherscan: contract name TetherToken, creator 0x36928500Bc1dCd7af6a2B4008875CC336b927D57",
-            "zh-TW": "Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57"
+            "en": "Tether's supported protocols page lists this address as its Ethereum contract",
+            "zh-TW": "Tether 的支援協議頁列出這個地址為它在 Ethereum 的合約"
+          },
+          "url": "https://tether.to/en/supported-protocols/",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's contract lookup answers the coin tether at this address",
+            "zh-TW": "CoinGecko 用這個地址查到的幣是 tether"
+          },
+          "url": "https://api.coingecko.com/api/v3/coins/ethereum/contract/0xdac17f958d2ee523a2206206994597c13d831ec7",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name TetherToken, creator 0x36928500bc1dcd7af6a2b4008875cc336b927d57, labelled Bitfinex: Deployer 5",
+            "zh-TW": "Etherscan：合約名 TetherToken，創建者 0x36928500bc1dcd7af6a2b4008875cc336b927d57，標籤 Bitfinex: Deployer 5"
           },
           "url": "https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code",
           "result": "pass"
@@ -74,8 +114,24 @@
       "sources": [
         {
           "text": {
-            "en": "Etherscan: contract name ERC1967Proxy, creator 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5",
-            "zh-TW": "Etherscan：合約名 ERC1967Proxy，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5"
+            "en": "Morpho's addresses page lists MORPHO at this address",
+            "zh-TW": "Morpho 的地址頁列出 MORPHO 為這個地址"
+          },
+          "url": "https://docs.morpho.org/developers/contracts/addresses/",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's contract lookup answers the coin morpho at this address",
+            "zh-TW": "CoinGecko 用這個地址查到的幣是 morpho"
+          },
+          "url": "https://api.coingecko.com/api/v3/coins/ethereum/contract/0x58d97b57bb95320f9a05dc918aef65434969c2b2",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name ERC1967Proxy, creator 0x937ce2d6c488b361825d2db5e8a70e26d48afed5, labelled Morpho: Deployer 2",
+            "zh-TW": "Etherscan：合約名 ERC1967Proxy，創建者 0x937ce2d6c488b361825d2db5e8a70e26d48afed5，標籤 Morpho: Deployer 2"
           },
           "url": "https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code",
           "result": "pass"
@@ -90,8 +146,32 @@
       "sources": [
         {
           "text": {
-            "en": "Etherscan: contract name FiatTokenProxy, creator 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05",
-            "zh-TW": "Etherscan：合約名 FiatTokenProxy，創建者 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05"
+            "en": "Coinbase's agentkit file names it CBBTC, and the file at the tip of main shows the same",
+            "zh-TW": "Coinbase agentkit 的檔案以 CBBTC 列出它，main 最新版也相同"
+          },
+          "url": "https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's contract lookup answers the coin coinbase-wrapped-btc at this address",
+            "zh-TW": "CoinGecko 用這個地址查到的幣是 coinbase-wrapped-btc"
+          },
+          "url": "https://api.coingecko.com/api/v3/coins/ethereum/contract/0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Coinbase's cbBTC page did not answer my fetch, so it counts as nothing",
+            "zh-TW": "Coinbase 的 cbBTC 頁面讀不到，不算任何確認"
+          },
+          "url": "https://www.coinbase.com/cbbtc",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name FiatTokenProxy, creator 0xce97003ea2e0a565a9a0b6e36209c6ddaaa14b05, labelled Coinbase: Deployer",
+            "zh-TW": "Etherscan：合約名 FiatTokenProxy，創建者 0xce97003ea2e0a565a9a0b6e36209c6ddaaa14b05，標籤 Coinbase: Deployer"
           },
           "url": "https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code",
           "result": "pass"
@@ -106,18 +186,122 @@
       "sources": [
         {
           "text": {
-            "en": "Etherscan: contract name Permit2 (verified, solc 0.8.17), creator 0xd32ff78579352ca78f416120a9f68b65c410871b",
-            "zh-TW": "Etherscan：合約名 Permit2（已驗證，solc 0.8.17），創建者 0xd32ff78579352ca78f416120a9f68b65c410871b"
+            "en": "Uniswap's v4 deployments page lists Permit2 at this address under Ethereum",
+            "zh-TW": "Uniswap 的 v4 部署頁在 Ethereum 下列出 Permit2 為這個地址"
+          },
+          "url": "https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Uniswap's permit2-sdk constants file sets PERMIT2_ADDRESS to this address; the tip of main too",
+            "zh-TW": "Uniswap 的 permit2-sdk 常數檔把 PERMIT2_ADDRESS 設為這個地址，main 最新版也相同"
+          },
+          "url": "https://github.com/Uniswap/sdks/blob/8ae0425c57e1699b0ae48ebb3077a2f526ae3818/sdks/permit2-sdk/src/constants.ts",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Uniswap's Permit2 docs: the same address on every chain Uniswap supports except zkSync",
+            "zh-TW": "Uniswap 的 Permit2 文件：除了 zkSync，每條鏈都是這個地址"
+          },
+          "url": "https://developers.uniswap.org/docs/protocols/permit2/overview",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name Permit2, creator 0xd32ff78579352ca78f416120a9f68b65c410871b, labelled Uniswap: Permit2 Deployer",
+            "zh-TW": "Etherscan：合約名 Permit2，創建者 0xd32ff78579352ca78f416120a9f68b65c410871b，標籤 Uniswap: Permit2 Deployer"
           },
           "url": "https://etherscan.io/address/0x000000000022D473030F116dDEE9F6B43aC78BA3#code",
           "result": "pass"
         },
         {
           "text": {
-            "en": "Permit2 source code: no owner, no proxy; AllowanceTransfer transfers only when a spender the owner has approved calls it",
-            "zh-TW": "Permit2 原始碼：沒有 owner、沒有 proxy；AllowanceTransfer 只在 owner 授權過的 spender 呼叫時轉帳"
+            "en": "Permit2 source at main's tip: no owner, no proxy; transferFrom spends only allowance[from][token][msg.sender]",
+            "zh-TW": "Permit2 原始碼（main 最新版）：沒有 owner、沒有 proxy；transferFrom 只動用 allowance[from][token][msg.sender]"
           },
           "url": "https://github.com/Uniswap/permit2/blob/cc56ad0f3439c502c246fc5cfcc3db92bb8b7219/src/AllowanceTransfer.sol",
+          "result": "pass"
+        }
+      ]
+    },
+    "usp": {
+      "role": {
+        "en": "A token you can pick: USP, Piku's stablecoin",
+        "zh-TW": "可選的代幣：Piku 的穩定幣 USP"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Piku's token and workflow contracts page lists USP at this address",
+            "zh-TW": "Piku 的 token and workflow contracts 頁列出 USP 為這個地址"
+          },
+          "url": "https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's contract lookup answers the coin usp-yield-optimized-stablecoin at this address",
+            "zh-TW": "CoinGecko 用這個地址查到的幣是 usp-yield-optimized-stablecoin"
+          },
+          "url": "https://api.coingecko.com/api/v3/coins/ethereum/contract/0x098697ba3fee4ea76294c5d6a466a4e3b3e95fe6",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "DefiLlama's adapter for Piku's DAO holds the address (not Piku's own, only a lead)",
+            "zh-TW": "DefiLlama 的 Piku DAO adapter 有這個地址（不是 Piku 自己的，只當線索）"
+          },
+          "url": "https://github.com/DefiLlama/DefiLlama-Adapters/blob/main/projects/piku-dao/index.js",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name TransparentUpgradeableProxy, creator 0xb8eaa4f956c6324435f4088cae9cda974c358508, labelled Piku: Deployer",
+            "zh-TW": "Etherscan：合約名 TransparentUpgradeableProxy，創建者 0xb8eaa4f956c6324435f4088cae9cda974c358508，標籤 Piku: Deployer"
+          },
+          "url": "https://etherscan.io/address/0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "weeth": {
+      "role": {
+        "en": "A token you can pick: weETH, ether.fi's wrapped eETH",
+        "zh-TW": "可選的代幣：ether.fi 的 weETH（包裝 eETH）"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "ether.fi's Deployed.s.sol sets WEETH to this address; the tip of master too",
+            "zh-TW": "ether.fi 的 Deployed.s.sol 把 WEETH 設為這個地址，master 最新版也相同"
+          },
+          "url": "https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "ether.fi's deployed contracts docs page shows the address",
+            "zh-TW": "ether.fi 的 deployed contracts 文件頁有這個地址"
+          },
+          "url": "https://etherfi.gitbook.io/etherfi/contracts-and-integrations/deployed-contracts",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's contract lookup answers the coin wrapped-eeth at this address",
+            "zh-TW": "CoinGecko 用這個地址查到的幣是 wrapped-eeth"
+          },
+          "url": "https://api.coingecko.com/api/v3/coins/ethereum/contract/0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name UUPSProxy, creator 0xf8a86ea1ac39ec529814c377bd484387d395421e, labelled ether.fi: Deployer",
+            "zh-TW": "Etherscan：合約名 UUPSProxy，創建者 0xf8a86ea1ac39ec529814c377bd484387d395421e，標籤 ether.fi: Deployer"
+          },
+          "url": "https://etherscan.io/address/0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee#code",
           "result": "pass"
         }
       ]

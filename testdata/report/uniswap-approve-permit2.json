@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-11-17",
+  "fetched": "2026-11-24",
   "defillama": [
     {
       "slug": "circle-usdc",
@@ -253,6 +253,10 @@
         {
           "text": "Ethereum 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
           "heading": "Mainnet"
+        },
+        {
+          "text": "Hedera 0.0.456858",
+          "heading": "Mainnet"
         }
       ]
     },
@@ -265,6 +269,38 @@
         },
         {
           "text": "https://etherscan.io/token/0xdac17f958d2ee523a2206206994597c13d831ec7",
+          "heading": "Supported Protocols and Integration Guidelines"
+        },
+        {
+          "text": "USD₮ contract address:",
+          "heading": "Supported Protocols and Integration Guidelines"
+        },
+        {
+          "text": "https://snowtrace.io/token/0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7",
+          "heading": "Supported Protocols and Integration Guidelines"
+        },
+        {
+          "text": "USD₮ contract address:",
+          "heading": "Supported Protocols and Integration Guidelines"
+        },
+        {
+          "text": "https://kavascan.io/address/0x919C1c267BC06a7039e03fcc2eF738525769109c",
+          "heading": "Supported Protocols and Integration Guidelines"
+        },
+        {
+          "text": "USD₮ contract address:",
+          "heading": "Supported Protocols and Integration Guidelines"
+        },
+        {
+          "text": "https://celoscan.io/token/0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
+          "heading": "Supported Protocols and Integration Guidelines"
+        },
+        {
+          "text": "USD₮ contract address:",
+          "heading": "Supported Protocols and Integration Guidelines"
+        },
+        {
+          "text": "https://www.kaiascan.io/token/0xd077a400968890eacc75cdc901f0356c943e4fdb",
           "heading": "Supported Protocols and Integration Guidelines"
         }
       ]
@@ -279,6 +315,62 @@
         {
           "text": "| MORPHO | [ 0x58D97B57BB95320F9a05dC918Aef65434969c2B2 ](https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code) <AddressCopyButton address=\"0x58D97B57BB95320F9a05dC918Aef65434969c2B2\" /> | [morpho-org/morpho-token](https://github.com/morpho-org/morpho-token) |",
           "heading": "MORPHO Token [#morpho-token]"
+        },
+        {
+          "text": "| MorphoOFTAdapter | [ 0x50d3d6fD7518682155E3C1B65FDD50e1b35649D9 ](https://etherscan.io/address/0x50d3d6fD7518682155E3C1B65FDD50e1b35649D9#code) <AddressCopyButton address=\"0x50d3d6fD7518682155E3C1B65FDD50e1b35649D9\" /> | [morpho-org/morpho-token-l0](https://github.com/morpho-org/morpho-token-l0) |",
+          "heading": "MORPHO Token [#morpho-token]"
+        },
+        {
+          "text": "| MORPHO wrapper | [ 0x9D03bb2092270648d7480049d0E58d2FcF0E5123 ](https://etherscan.io/address/0x9d03bb2092270648d7480049d0e58d2fcf0e5123#code) <AddressCopyButton address=\"0x9D03bb2092270648d7480049d0E58d2FcF0E5123\" /> | [morpho-org/morpho-token](https://github.com/morpho-org/morpho-token) |",
+          "heading": "MORPHO Token [#morpho-token]"
+        },
+        {
+          "text": "| Legacy MORPHO | [ 0x9994E35Db50125E0DF82e4c2dde62496CE330999 ](https://etherscan.io/address/0x9994E35Db50125E0DF82e4c2dde62496CE330999#code) <AddressCopyButton address=\"0x9994E35Db50125E0DF82e4c2dde62496CE330999\" /> | [morpho-org/legacy-morpho-token](https://github.com/morpho-org/legacy-morpho-token) |",
+          "heading": "MORPHO Token [#morpho-token]"
+        },
+        {
+          "text": "</Tab>",
+          "heading": "MORPHO Token [#morpho-token]"
+        },
+        {
+          "text": "| :------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------- |",
+          "heading": "MORPHO Token [#morpho-token]"
+        },
+        {
+          "text": "| MORPHO | [ 0xBAa5CC21fd487B8Fcc2F632f3F4E8D37262a0842 ](https://basescan.org/address/0xBAa5CC21fd487B8Fcc2F632f3F4E8D37262a0842#code) <AddressCopyButton address=\"0xBAa5CC21fd487B8Fcc2F632f3F4E8D37262a0842\" /> | [morpho-org/morpho-token](https://github.com/morpho-org/morpho-token) |",
+          "heading": "MORPHO Token [#morpho-token]"
+        },
+        {
+          "text": "</Tab>",
+          "heading": "MORPHO Token [#morpho-token]"
+        },
+        {
+          "text": "| :----------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------- |",
+          "heading": "MORPHO Token [#morpho-token]"
+        },
+        {
+          "text": "| MORPHO | [ 0x40BD670A58238e6E230c430BBb5cE6ec0d40df48 ](https://arbiscan.io/address/0x40bd670a58238e6e230c430bbb5ce6ec0d40df48#code) <AddressCopyButton address=\"0x40BD670A58238e6E230c430BBb5cE6ec0d40df48\" /> | [morpho-org/morpho-token-l0](https://github.com/morpho-org/morpho-token-l0) |",
+          "heading": "MORPHO Token [#morpho-token]"
+        },
+        {
+          "text": "| MorphoMintBurnOFTAdapter | [ 0xFc3329363cd51adBBaa52E389bEE389981ccaAE0 ](https://arbiscan.io/address/0xFc3329363cd51adBBaa52E389bEE389981ccaAE0#code) <AddressCopyButton address=\"0xFc3329363cd51adBBaa52E389bEE389981ccaAE0\" /> | [morpho-org/morpho-token-l0](https://github.com/morpho-org/morpho-token-l0) |",
+          "heading": "MORPHO Token [#morpho-token]"
+        },
+        {
+          "text": "</Tab>",
+          "heading": "MORPHO Token [#morpho-token]"
+        },
+        {
+          "text": "| :------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |",
+          "heading": "MORPHO Token [#morpho-token]"
+        },
+        {
+          "text": "| MORPHO | [ 0x1e5eFCA3D0dB2c6d5C67a4491845c43253eB9e4e ](https://explorer.katanarpc.com/token/0x1e5eFCA3D0dB2c6d5C67a4491845c43253eB9e4e?tab=contract_code) <AddressCopyButton address=\"0x1e5eFCA3D0dB2c6d5C67a4491845c43253eB9e4e\" /> | [agglayer/TokenWrappedBridgeUpgradeable](https://github.com/agglayer/agglayer-contracts/blob/feature/update-sovereign-L2/contracts/v2/lib/TokenWrappedBridgeUpgradeable.sol) |",
+          "heading": "MORPHO Token [#morpho-token]"
+        },
+        {
+          "text": "</Tab>",
+          "heading": "MORPHO Token [#morpho-token]"
         }
       ]
     },
@@ -290,6 +382,27 @@
         },
         {
           "text": "CBBTC: \"0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf\","
+        },
+        {
+          "text": "CBETH: \"0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22\","
+        },
+        {
+          "text": "EURC: \"0x808456652fdb597867f38412077A9182bf77359F\","
+        },
+        {
+          "text": "CBBTC: \"0xcbB7C0006F23900c38EB856149F799620fcb8A4a\","
+        },
+        {
+          "text": "WETH: \"0x4200000000000000000000000000000000000006\","
+        },
+        {
+          "text": "EURC: \"0x1abaea1f7c830bd89acc67ec4af516284b1bc33c\","
+        },
+        {
+          "text": "CBBTC: \"0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf\","
+        },
+        {
+          "text": "WETH: \"0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2\","
         }
       ]
     },
@@ -335,6 +448,10 @@
         {
           "text": "| [Permit2](https://github.com/Uniswap/permit2) | [`0x000000000022D473030F116dDEE9F6B43aC78BA3`](https://etherscan.io/address/0x000000000022D473030F116dDEE9F6B43aC78BA3) |",
           "heading": "Ethereum: 1"
+        },
+        {
+          "text": "### Unichain: 130",
+          "heading": "Ethereum: 1"
         }
       ]
     },
@@ -346,6 +463,9 @@
         },
         {
           "text": "export const PERMIT2_ADDRESS = '0x000000000022D473030F116dDEE9F6B43aC78BA3'"
+        },
+        {
+          "text": "export function permit2Address(chainId?: number): string {"
         }
       ]
     },
@@ -384,6 +504,18 @@
         },
         {
           "text": "address public constant WEETH = 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee;"
+        },
+        {
+          "text": "// Membership & NFTs"
+        },
+        {
+          "text": "address public constant ETHERFI_REDEMPTION_MANAGER = 0xDadEf1fFBFeaAB4f68A9fD181395F68b4e4E7Ae0;"
+        },
+        {
+          "text": "address public constant WEETH_WITHDRAW_ADAPTER = 0xFbfe6b9cEe0E555Bad7e2E7309EFFC75200cBE38;"
+        },
+        {
+          "text": "address public constant PRIORITY_WITHDRAWAL_QUEUE = 0x35e7D6feF6f72aDd3c3e39dEc6d9CCc29e3345FA;"
         }
       ]
     },
@@ -465,6 +597,9 @@
           },
           {
             "text": "exports.PERMIT2_ADDRESS = '0x000000000022D473030F116dDEE9F6B43aC78BA3';"
+          },
+          {
+            "text": "function permit2Address(chainId) {"
           }
         ]
       }
@@ -664,10 +799,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa"
         }
       }
@@ -803,10 +938,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         }
       }
@@ -1350,7 +1485,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xdac17f958d2ee523a2206206994597c13d831ec7",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x1420761dbff0321c42a4bda163af2d7500d723b0139a72267c009d0eedfa9e6f"
         }
@@ -1364,7 +1499,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xdac17f958d2ee523a2206206994597c13d831ec7",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x1420761dbff0321c42a4bda163af2d7500d723b0139a72267c009d0eedfa9e6f"
         }
@@ -1458,20 +1593,6 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
-        {
-          "blockHash": "0x94c8e4c16c5f87b1c92d56b440dec9edd0a686f60c2ca131966074df4e3ca3ab"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x0000000000000000000000004364fd2371b6318159366abfa51f190df5c24852",
-        "drpc": "0x0000000000000000000000004364fd2371b6318159366abfa51f190df5c24852"
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
         "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x94c8e4c16c5f87b1c92d56b440dec9edd0a686f60c2ca131966074df4e3ca3ab"
@@ -1483,6 +1604,20 @@
       }
     },
     {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        {
+          "blockHash": "0x94c8e4c16c5f87b1c92d56b440dec9edd0a686f60c2ca131966074df4e3ca3ab"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000004364fd2371b6318159366abfa51f190df5c24852",
+        "drpc": "0x0000000000000000000000004364fd2371b6318159366abfa51f190df5c24852"
+      }
+    },
+    {
       "method": "eth_getCode",
       "params": [
         "0x4364fd2371b6318159366abfa51f190df5c24852",
@@ -1491,10 +1626,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9"
         }
       }
@@ -1630,10 +1765,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547"
         }
       }
@@ -2721,7 +2856,7 @@
       "params": [
         "0x000000000022d473030f116ddee9f6b43ac78ba3",
         {
-          "blockHash": "0xf3491a5dddaa804add39c119f5cf8c0d86cab857697b6915e0fa60e5c38fad32"
+          "blockHash": "0x39ec5835b124bcf283cc667a912f44df1037779875a12f489c0f446e750abb54"
         }
       ],
       "answers": {
@@ -2739,7 +2874,7 @@
         "0x000000000022d473030f116ddee9f6b43ac78ba3",
         "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
-          "blockHash": "0xf3491a5dddaa804add39c119f5cf8c0d86cab857697b6915e0fa60e5c38fad32"
+          "blockHash": "0x39ec5835b124bcf283cc667a912f44df1037779875a12f489c0f446e750abb54"
         }
       ],
       "answers": {
@@ -2753,7 +2888,7 @@
         "0x000000000022d473030f116ddee9f6b43ac78ba3",
         "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
-          "blockHash": "0xf3491a5dddaa804add39c119f5cf8c0d86cab857697b6915e0fa60e5c38fad32"
+          "blockHash": "0x39ec5835b124bcf283cc667a912f44df1037779875a12f489c0f446e750abb54"
         }
       ],
       "answers": {
@@ -2763,13 +2898,13 @@
     }
   ],
   "today": {
-    "number": "26435407",
-    "hash": "0xf3491a5dddaa804add39c119f5cf8c0d86cab857697b6915e0fa60e5c38fad32"
+    "number": "26484922",
+    "hash": "0x39ec5835b124bcf283cc667a912f44df1037779875a12f489c0f446e750abb54"
   },
   "facts": {
     "block": {
-      "number": "26435407",
-      "hash": "0xf3491a5dddaa804add39c119f5cf8c0d86cab857697b6915e0fa60e5c38fad32"
+      "number": "26484922",
+      "hash": "0x39ec5835b124bcf283cc667a912f44df1037779875a12f489c0f446e750abb54"
     },
     "defillama": [],
     "hacks": [],
@@ -2782,7 +2917,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xf3491a5dddaa804add39c119f5cf8c0d86cab857697b6915e0fa60e5c38fad32"
+            "blockHash": "0x39ec5835b124bcf283cc667a912f44df1037779875a12f489c0f446e750abb54"
           }
         ],
         "answers": {
@@ -2798,7 +2933,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xf3491a5dddaa804add39c119f5cf8c0d86cab857697b6915e0fa60e5c38fad32"
+            "blockHash": "0x39ec5835b124bcf283cc667a912f44df1037779875a12f489c0f446e750abb54"
           }
         ],
         "answers": {
@@ -2814,7 +2949,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xf3491a5dddaa804add39c119f5cf8c0d86cab857697b6915e0fa60e5c38fad32"
+            "blockHash": "0x39ec5835b124bcf283cc667a912f44df1037779875a12f489c0f446e750abb54"
           }
         ],
         "answers": {
@@ -2830,7 +2965,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xf3491a5dddaa804add39c119f5cf8c0d86cab857697b6915e0fa60e5c38fad32"
+            "blockHash": "0x39ec5835b124bcf283cc667a912f44df1037779875a12f489c0f446e750abb54"
           }
         ],
         "answers": {
@@ -2846,7 +2981,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xf3491a5dddaa804add39c119f5cf8c0d86cab857697b6915e0fa60e5c38fad32"
+            "blockHash": "0x39ec5835b124bcf283cc667a912f44df1037779875a12f489c0f446e750abb54"
           }
         ],
         "answers": {
@@ -2862,7 +2997,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xf3491a5dddaa804add39c119f5cf8c0d86cab857697b6915e0fa60e5c38fad32"
+            "blockHash": "0x39ec5835b124bcf283cc667a912f44df1037779875a12f489c0f446e750abb54"
           }
         ],
         "answers": {
