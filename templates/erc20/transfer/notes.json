@@ -18,8 +18,8 @@
   "protocols": {},
   "judgments": [],
   "pastTxsConclusion": {
-    "en": "For each token the card can name, the transfers studied moved exactly the stated amount. The misfits called `transfer` on unverified contracts outside the registry, or sent several tokens in one Safe batch; verify refuses both, since the call must go to the card's token alone.",
-    "zh-TW": "卡片能選的每個代幣，研究過的轉帳都剛好轉出所寫的數量。不符合的交易是對登錄表外、未驗證的合約呼叫 `transfer`，或在一筆 Safe 批次裡轉出好幾種代幣；verify 兩種都拒絕，因為呼叫只能打到卡片上的那個代幣。"
+    "en": "Only USP's search covers a year; USDC and USDT cover about an hour, the others 3 to 46 days, and older blocks were not searched. For each token the card can name, the fitting transfers measured moved exactly the stated amount. The largest misfit group, 113 Safe transactions, delegatecalls contracts listed in DeFi Saver's GitHub address file; what each did was not read. The rest are batches, or EOA calls to unverified contracts or with nonstandard data. verify refuses them all.",
+    "zh-TW": "只有 USP 搜滿一年；USDC、USDT 約一小時，其他 3 到 46 天，更早的沒搜。卡片能選的每個代幣，量過的轉帳都剛好轉出所寫的數量。最多的不符合是 113 筆 Safe delegatecall 到 DeFi Saver GitHub 地址檔列出的合約，每筆做什麼沒讀。其餘是批次，或 EOA 呼叫未驗證的合約、資料不標準。verify 全部拒絕。"
   },
   "reviews": {},
   "entries": {

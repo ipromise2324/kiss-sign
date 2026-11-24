@@ -496,7 +496,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 <span class="num">210</span> 筆跟你這筆不一樣：形狀一樣、但用的是 registry 外的代幣的 <span class="num">51</span> 筆，形狀不同的 <span class="num">159</span> 筆</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>卡片能選的每個代幣，研究過的轉帳都剛好轉出所寫的數量。不符合的交易是對登錄表外、未驗證的合約呼叫 <code>transfer</code>，或在一筆 Safe 批次裡轉出好幾種代幣；verify 兩種都拒絕，因為呼叫只能打到卡片上的那個代幣。</span><span class="byai">AI 研究</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>只有 USP 搜滿一年；USDC、USDT 約一小時，其他 3 到 46 天，更早的沒搜。卡片能選的每個代幣，量過的轉帳都剛好轉出所寫的數量。最多的不符合是 113 筆 Safe delegatecall 到 DeFi Saver GitHub 地址檔列出的合約，每筆做什麼沒讀。其餘是批次，或 EOA 呼叫未驗證的合約、資料不標準。verify 全部拒絕。</span><span class="byai">AI 研究</span></span></p>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
   <h3>搜尋 cbbtc 的轉帳，找到 9723 筆，研究 240 筆，含證實為 Safe 的參與方的 461 筆中研究 180 筆</h3>
   <p class="lead">記錄在 <code>testdata/research/erc20-transfer-cbbtc.json</code>。從最新的區塊往回，搜尋了區塊 26464179（2026-11-21）到區塊 26485441（2026-11-24）的每一筆交易，共 21263 個區塊，約 3.0 天，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">9723 = 9723</span>）。</p>
