@@ -1,0 +1,12 @@
+{
+  "kind": "past-txs-rerun",
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "calls": 35,
+  "minutes": 30,
+  "input": 72,
+  "cacheWrite": 198836,
+  "cacheRead": 2379237,
+  "output": 28506
+}
