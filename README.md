@@ -258,7 +258,7 @@ kiss-sign checks a transaction against the card you sealed and the reports you m
 
 ## Token cost
 
-What it cost Claude Opus 5.5 to make reports, measured between 2026-11-22 and 2026-11-25. These are re-records: the template already existed, and the AI researched the operation again, recorded the evidence, rewrote the notes, ran the tests and opened the pull request. Building a template from zero is not measured and will cost more.
+What it cost Claude Opus 5.5 to make reports, measured between 2026-11-22 and 2026-11-25. These are re-records: the template already existed, and the AI researched the operation again, recorded the evidence, rewrote the notes, ran the tests and opened the pull request. Building a template from zero was not measured.
 
 | Report | Calls | Tokens | Cache reads | Output | Minutes | USD |
 |---|---:|---:|---:|---:|---:|---:|
@@ -281,7 +281,7 @@ Updates that only ran the search of past transactions again:
 | erc20/transfer (six tokens) | 69 | 5.59M | 96% | 29k | 175 | $2.69 |
 | fluid/vault-deposit (fluid-fusdc) | 35 | 2.61M | 91% | 29k | 30 | $2.04 |
 
-How they were measured: one report at a time, three fresh agents per report, usage as the API reported it in the Claude Code transcripts. Minutes include waiting for public nodes, which is most of erc20/transfer. Dollars are [Anthropic's list prices](https://platform.claude.com/docs/en/about-claude/pricing) as read on 2026-11-25: per million tokens, $4 input, $5 five-minute cache write, $0.20 cache read, $20 output. A subscription bills differently.
+How they were measured: one report at a time, three fresh agents per report, usage as the API reported it in the Claude Code transcripts. Minutes include waiting for public nodes. Dollars are [Anthropic's list prices](https://platform.claude.com/docs/en/about-claude/pricing) as read on 2026-11-25: per million tokens, $4 input, $5 five-minute cache write, $0.20 cache read, $20 output. A subscription bills differently.
 
 The tables leave out the coordinator, the session that starts the agents, reads each report and talks with the signer. Over the same days its two sessions used 81.0M tokens, $47.18 at list prices ($8 per million for their one-hour cache writes). That total also covers changes to the program, work on reports not listed here and discussion, so it is not a cost per report.
 
