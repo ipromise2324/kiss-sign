@@ -85,7 +85,7 @@ export type Page = {
 };
 
 /** What the AI used to make the report, under the last section and no result of its own. */
-export type UsageBlock = { readonly title: string; readonly lines: readonly string[] };
+export type UsageBlock = { readonly title: string; readonly lead: string; readonly table: { readonly head: readonly [string, string]; readonly rows: readonly (readonly [string, string])[]; readonly total: readonly [string, string] } | undefined; readonly notes: readonly string[] };
 
 export type Section = { readonly anchor: Anchor; readonly label: string; readonly count: RailCount | undefined; readonly body: Body };
 
@@ -1963,18 +1963,23 @@ const tracedOnce = (traces: readonly TracedTx[]): Extract<TracedTx, { kind: 'tra
   ...new Map(traces.flatMap((t) => (t.kind === 'traced' ? [[t.hash, t] as const] : []))).values(),
 ];
 
-const usageBlock = (usage: Usage | undefined, w: Words): UsageBlock => ({
-  title: w.usageTitle,
-  lines:
-    usage === undefined
-      ? [w.usageUnmeasured]
-      : [
-          w.usageCalls(usage.models.map(modelName).join(' + '), usage.calls, usage.minutes),
-          w.usageTokens(formatMillions(totalTokens(usage)), formatMillions(usage.cacheRead), formatMillions(usage.input + usage.cacheWrite), formatMillions(usage.output)),
-          ...(usage.kind === 'past-txs-rerun' ? [w.usagePartial] : []),
-          w.usageSource,
-        ],
-});
+const usageBlock = (usage: Usage | undefined, w: Words): UsageBlock =>
+  usage === undefined
+    ? { title: w.usageTitle, lead: w.usageUnmeasured, table: undefined, notes: [] }
+    : {
+        title: w.usageTitle,
+        lead: w.usageCalls(usage.models.map(modelName).join(' + '), usage.calls, usage.minutes),
+        table: {
+          head: [w.usageItem, w.usageTokens],
+          rows: [
+            [w.usageReread, formatMillions(usage.cacheRead)],
+            [w.usageFresh, formatMillions(usage.input + usage.cacheWrite)],
+            [w.usageOutput, formatMillions(usage.output)],
+          ],
+          total: [w.usageTotal, formatMillions(totalTokens(usage))],
+        },
+        notes: [...(usage.kind === 'past-txs-rerun' ? [w.usagePartial] : []), w.usageSource],
+      };
 
 /**
  * The signer's page in `language`, from the report's inputs and the raw notes.json. The ledger judges every result;
