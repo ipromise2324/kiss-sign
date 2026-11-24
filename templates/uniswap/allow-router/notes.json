@@ -4,35 +4,37 @@
     "zh-TW": "在 Permit2 授權 Uniswap Universal Router 使用一個代幣"
   },
   "summary": {
-    "en": "The Safe calls `approve` on Permit2 so that Universal Router 2.1.2 can pull the token you pick from the Safe through Permit2. The amount is 2^160-1 (Permit2's unlimited), and the app sets the expiry, usually 30 days. The router pulls tokens only from the address that calls it, so only the Safe's own later swaps can use it.",
-    "zh-TW": "Safe 呼叫 Permit2 的 `approve`，讓 Universal Router 2.1.2 能透過 Permit2 從 Safe 拉你選的代幣，數量 2^160-1（Permit2 的無上限），到期時間由 app 設，通常 30 天。router 只從呼叫它的地址拉代幣，所以只有 Safe 自己之後的兌換能用。"
+    "en": "The Safe calls `approve` on Permit2 so that Universal Router 2.1.2 can pull the token you pick from the Safe through Permit2. The amount is 2^160-1 (Permit2's unlimited); the template leaves the expiration free. The router pulls only from the address that calls it, so only the Safe's own calls to the router can use this allowance.",
+    "zh-TW": "Safe 呼叫 Permit2 的 `approve`，讓 Universal Router 2.1.2 能透過 Permit2 從 Safe 拉你選的代幣，數量 2^160-1（Permit2 的無上限），到期時間模板不限定。router 只從呼叫它的地址拉代幣，所以只有 Safe 自己呼叫 router 才用得到這筆授權。"
   },
   "verdict": {
     "status": "safe",
     "text": {
-      "en": "The allowance goes only to the router. The router pulls tokens only from the Safe that calls it, so while the allowance stays, only the Safe can use it.",
-      "zh-TW": "授權只給 router；router 只從呼叫它的 Safe 拉代幣，留著也只有 Safe 能用。"
+      "en": "The router pulls only from its caller, so only the Safe's own router calls can use this allowance until it expires or is revoked.",
+      "zh-TW": "router 只從呼叫者拉代幣，所以到期或收回前，只有 Safe 自己呼叫 router 才用得到這筆授權。"
     }
   },
   "pastTxsConclusion": {
-    "en": "No Safe approval fits. EOA approvals mostly name router 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af, not this one, or set another amount or 0; each gives MISMATCH.",
-    "zh-TW": "沒有 Safe 的授權符合。EOA 的授權多半給 router 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af，不是這個，或設別的數量或 0；都會是 MISMATCH。"
+    "en": "The search stopped at its 50-page cap, 5.7 days back, so it does not cover the year. In it 0 Safe transactions fit. 2 of 47 EOA transactions fit; of the 45 misfits, 27 name another router, 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af, 6 a third spender, 5 set amount 0 and 7 other amounts.",
+    "zh-TW": "搜尋停在 50 頁上限，只回溯 5.7 天，沒涵蓋一整年；其中 0 筆 Safe 交易符合。EOA 47 筆有 2 筆符合；不符的 45 筆裡，27 筆授權給另一個 router 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af，6 筆給第三個 spender，5 筆數量是 0，7 筆是別的數量。"
   },
   "flow": [],
   "protocols": {
     "uniswap-v4": {
       "intro": {
-        "en": "Uniswap: the largest decentralized exchange on Ethereum. All v4 pools live in one PoolManager contract.",
-        "zh-TW": "Uniswap：以太坊上最大的去中心化交易所；v4 的池子都在同一個 PoolManager 合約裡。"
+        "en": "Uniswap: a decentralized exchange. All v4 pools live in one PoolManager contract.",
+        "zh-TW": "Uniswap：去中心化交易所；v4 的池子都在同一個 PoolManager 合約裡。"
       },
       "audits": {
         "text": {
-          "en": "The v4 core and periphery contracts and the Universal Router all have public audit reports (OpenZeppelin, Spearbit, Certora and others), in each repo's audits folder.",
-          "zh-TW": "v4 核心與周邊合約、Universal Router 都有公開的審計報告（OpenZeppelin、Spearbit、Certora 等），放在各 repo 的 audits 資料夾。"
+          "en": "The v4 core and periphery contracts, the Universal Router and Permit2 have audit reports in their repos. Only the folders' file names were read: the router's include one for Universal Router 2.1, none names 2.1.2.",
+          "zh-TW": "v4 核心與周邊合約、Universal Router、Permit2 的 repo 裡都有審計報告。只看了資料夾的檔名：router 的有一份寫 Universal Router 2.1，沒有檔名寫 2.1.2。"
         },
         "sources": [
           "https://github.com/Uniswap/v4-core/tree/main/docs/security/audits",
-          "https://github.com/Uniswap/universal-router/tree/main/audit"
+          "https://github.com/Uniswap/universal-router/tree/main/audit",
+          "https://github.com/Uniswap/v4-periphery/tree/main/audits",
+          "https://github.com/Uniswap/permit2/tree/main/audits"
         ]
       },
       "incidents": []
@@ -41,12 +43,12 @@
   "judgments": [
     {
       "text": {
-        "en": "Allowances that stay after the transaction: the Safe's unlimited allowance to Permit2, and the 2^160-1, 30-day allowance to the Universal Router inside Permit2. The router pulls tokens only from the address that calls it, so only the Safe's own later transactions can use it.",
-        "zh-TW": "交易後留著的授權：Safe 給 Permit2 的無上限授權，和 Permit2 裡給 Universal Router 的 2^160-1、30 天授權。router 只從呼叫它的地址拉代幣，所以只有 Safe 自己之後的交易能用它。"
+        "en": "The 2^160-1 allowance to the Universal Router stays in Permit2 until it expires; only the Safe's own calls to the router can use it. Separately, the token's approval to Permit2 can also be spent by a Permit2 message the Safe signs, and Safe messages (EIP-1271) do not go through kiss-sign.",
+        "zh-TW": "給 Universal Router 的 2^160-1 授權會留在 Permit2 直到到期，只有 Safe 自己呼叫 router 才用得到。另外，代幣給 Permit2 的授權，Safe 簽的 Permit2 訊息也能動用，而 Safe 訊息（EIP-1271）不經過 kiss-sign。"
       },
       "recommendation": {
-        "en": "Acceptable. To revoke, call approve(Permit2, 0) on the token, or call lockdown on Permit2.",
-        "zh-TW": "可以接受；想收回時，對代幣呼叫 approve(Permit2, 0)，或在 Permit2 呼叫 lockdown。"
+        "en": "Look at the expiration on verify's page, and check the spender of any Permit2 message before signing it. To revoke: `lockdown` on Permit2 for the router, or `approve` Permit2 for 0 on the token for every path.",
+        "zh-TW": "在 verify 的網頁看到期時間；簽任何 Permit2 訊息前確認 spender。收回：在 Permit2 呼叫 `lockdown`（只停 router），或在代幣上 `approve` Permit2 為 0（全部停）。"
       }
     }
   ],
@@ -190,8 +192,8 @@
     },
     "permit2": {
       "role": {
-        "en": "Uniswap's Permit2: it keeps token allowances for users, and moves tokens only as a user's allowances in Permit2 permit",
-        "zh-TW": "Uniswap 的 Permit2：替使用者保管代幣授權，只依使用者在 Permit2 上的授權轉代幣"
+        "en": "Uniswap's Permit2: it keeps token allowances for users, and moves tokens by those allowances or by a user's signed Permit2 message",
+        "zh-TW": "Uniswap 的 Permit2：替使用者保管代幣授權，依這些授權或使用者簽的 Permit2 訊息轉代幣"
       },
       "sources": [
         {
@@ -222,6 +224,22 @@
           "text": {
             "en": "Permit2 source (AllowanceTransfer): approve writes allowance[msg.sender][token][spender]; _transfer reads the allowance of its caller and reverts once it has expired; an amount of 2^160-1 is not reduced by use",
             "zh-TW": "Permit2 原始碼（AllowanceTransfer）：approve 寫入 allowance[msg.sender][token][spender]；_transfer 讀呼叫者的授權，過期就 revert；數量 2^160-1 不會因使用而減少"
+          },
+          "url": "https://github.com/Uniswap/permit2/blob/cc56ad0f3439c502c246fc5cfcc3db92bb8b7219/src/AllowanceTransfer.sol",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Permit2 source (SignatureTransfer): a transfer spends the owner's token approval to Permit2 on the owner's signature alone, reading no Permit2 allowance",
+            "zh-TW": "Permit2 原始碼（SignatureTransfer）：有 owner 的簽名就能動用 owner 給 Permit2 的代幣授權，不看 Permit2 裡的授權額度"
+          },
+          "url": "https://github.com/Uniswap/permit2/blob/cc56ad0f3439c502c246fc5cfcc3db92bb8b7219/src/SignatureTransfer.sol",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Permit2 source (AllowanceTransfer): a message the owner signed can set an allowance through permit; lockdown sets only the named pairs' amount to 0",
+            "zh-TW": "Permit2 原始碼（AllowanceTransfer）：owner 簽的訊息可經 permit 設定授權；lockdown 只把指定的代幣和 spender 的數量設為 0"
           },
           "url": "https://github.com/Uniswap/permit2/blob/cc56ad0f3439c502c246fc5cfcc3db92bb8b7219/src/AllowanceTransfer.sol",
           "result": "pass"
@@ -276,8 +294,8 @@
         },
         {
           "text": {
-            "en": "Uniswap/interface code: the app pins no router version except 2.2.0 for a permissioned token, so it takes the API's default",
-            "zh-TW": "Uniswap/interface 程式碼：除了受許可代幣指定 2.2.0，app 不指定 router 版本，所以用 API 的預設"
+            "en": "Uniswap/interface code at this commit names no router version except 2.2.0 for a permissioned token; what the live app sends was not checked",
+            "zh-TW": "Uniswap/interface 這個 commit 的程式碼除了受許可代幣的 2.2.0，不指定 router 版本；線上 app 實際送什麼沒有查"
           },
           "url": "https://github.com/Uniswap/interface/blob/c4fb7d8f6bf4eac1a0b633a0c6b9e22387a4a3cc/packages/uniswap/src/data/apiClients/tradingApi/TradingApiClient.ts",
           "result": "pass"
@@ -294,6 +312,14 @@
           "text": {
             "en": "Verified source on Sourcify: the Permit2 transfers in Dispatcher take msgSender() as payer, and a batch reverts when a from is not msgSender(); Lock sets that to the caller of execute. A search of contracts/ found no Ownable, onlyOwner, delegatecall or selfdestruct",
             "zh-TW": "Sourcify 的已驗證原始碼：Dispatcher 裡的 Permit2 轉帳以 msgSender() 當付款人，批次中 from 不是 msgSender() 就 revert；Lock 把它設成呼叫 execute 的地址。在 contracts/ 搜尋沒有 Ownable、onlyOwner、delegatecall 或 selfdestruct"
+          },
+          "url": "https://sourcify.dev/server/v2/contract/1/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Same Sourcify source: V2 and V3 swaps set the payer to msgSender() or the router itself; the V3 callback passes that payer on and reverts unless its caller is the pool address it computes",
+            "zh-TW": "同一份 Sourcify 原始碼：V2、V3 兌換的付款人是 msgSender() 或 router 自己；V3 callback 沿用這個付款人，呼叫者不是它算出的池子就 revert"
           },
           "url": "https://sourcify.dev/server/v2/contract/1/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85",
           "result": "pass"
@@ -387,8 +413,8 @@
       "zh-TW": "授權數量 2^160-1，Permit2 的無上限，用了也不會減少。"
     },
     "1.approve.expiration": {
-      "en": "When the allowance expires. The app sets it 30 days ahead; the verify page shows it.",
-      "zh-TW": "授權到期時間，app 設 30 天後；verify 的網頁會顯示。"
+      "en": "When Permit2 stops honouring the allowance; the template leaves it free. The 2 fitting past transactions set it about 30 days ahead; verify's page shows the one you sign.",
+      "zh-TW": "Permit2 停止承認這筆授權的時間，模板不限定。過去符合的 2 筆都設在約 30 天後；verify 的網頁會顯示你要簽的。"
     }
   }
 }
