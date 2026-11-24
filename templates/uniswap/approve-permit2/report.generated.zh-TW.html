@@ -306,7 +306,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <header>
   <h1><span class="aiw" data-ai><span>授權 Uniswap 的 Permit2 使用一個代幣（無上限）</span><span class="byai">AI 研究</span></span></h1>
   <span class="opid">uniswap/approve-permit2</span>
-  <p class="sub"><span class="aiw" data-ai><span>Safe 對你選的代幣呼叫 <code>approve</code>，把無上限的額度給 Permit2。這是 Uniswap app 第一次賣某個代幣前要的授權；Permit2 本身不能動用它，要 Safe 之後在 Permit2 另外授權某個合約（例如 Universal Router）才行。</span><span class="byai">AI 研究</span></span></p>
+  <p class="sub"><span class="aiw" data-ai><span>Safe 對你選的代幣呼叫 <code>approve</code>，把無上限的額度給 Permit2。Uniswap 文件寫的 swap 流程，每個代幣要先做一次這個授權。Permit2 只依兩種東西轉代幣：Safe 在 Permit2 另外給某個合約的授權，或 Safe 簽過的 Permit2 訊息。</span><span class="byai">AI 研究</span></span></p>
   <ul class="checks">
     <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>地址來源 <span class="n num">7 / 7</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">7 個地址都至少在 2 個地方確認：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件或共用的部署者列出同一個地址。</span></span></li>
@@ -319,7 +319,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">鏈上資料都同時問兩家節點，答案不一樣就不給結果。研究時有三種資料只有一個來源，都不會影響判定：過去交易的呼叫追蹤（drpc）、搜尋過去交易（Alchemy 或 Etherscan 找到的都算，找事件只用 Etherscan），和金庫曾經收過份額的地址名單（Alchemy，每個地址的餘額仍問兩家）。</span></span></li>
   </ul>
-  <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>無上限授權給 Permit2 會留著；只有 Safe 另外在 Permit2 授權過的合約能用。</span><span class="byai">AI 研究：要小心</span></span></div>
+  <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>無上限授權會留著；要 Safe 另外在 Permit2 授權，或簽過 Permit2 訊息，才會被動用。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
     <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">7</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
   </details>
@@ -331,7 +331,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="rows">
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>授權給 Permit2 之後，任何 Safe 簽過的 Permit2 訊息都能動用這個代幣，而 Safe 訊息（EIP-1271）不經過 kiss-sign。</span><span class="byai">AI 研究</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>授權給 Permit2 之後，Safe 對這個代幣簽的 Permit2 訊息就能動用它，而 Safe 訊息（EIP-1271）不經過 kiss-sign。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
           <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>簽任何 Permit2 訊息前確認 spender；不再用 Uniswap 時把授權改回 0。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
@@ -373,7 +373,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="arg" data-field="1.approve.value">
       <div class="nm"><span class="pn">value</span><span class="who">固定</span></div>
       <div class="val"><div class="raw">115792089237316195423570985008687907853269984665640564039457584007913129639935</div><div class="is">固定值</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>授權額度 2^256-1，無上限；Uniswap app 的預設。</span></span></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>授權額度 2^256-1，無上限；Uniswap interface 原始碼的 approve hook 傳的就是這個值。</span></span></div></div>
     </div>
       </details>
   </div>
@@ -481,17 +481,18 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     </div>
     <div class="ad" id="a-permit2" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
-      <div><span class="nm">permit2</span><span class="role"><span class="aiw" data-ai><span>Uniswap 的 Permit2：替使用者保管代幣授權，只依使用者在 Permit2 上的授權轉代幣</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div><span class="nm">permit2</span><span class="role"><span class="aiw" data-ai><span>Uniswap 的 Permit2：替使用者保管代幣授權，依這些授權或使用者簽的 Permit2 訊息轉代幣</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0x000000000022D473030F116dDEE9F6B43aC78BA3</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments">developers.uniswap.org/llms.mdx/docs/protocols/v4</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 uniswap-v4（<a href="https://defillama.com/protocol/uniswap-v4">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/uniswap">CoinGecko</a> 對照）</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://github.com/Uniswap/sdks/blob/8ae0425c57e1699b0ae48ebb3077a2f526ae3818/sdks/permit2-sdk/src/constants.ts">github.com/Uniswap/sdks</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 uniswap-v4（<a href="https://defillama.com/protocol/uniswap-v4">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/uniswap">CoinGecko</a>、<a href="https://github.com/uniswap">GitHub 驗證網域</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（main）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.npmjs.com/package/@uniswap/permit2-sdk/v/1.4.1">npm @uniswap/permit2-sdk@1.4.1</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 uniswap-v4（<a href="https://defillama.com/protocol/uniswap-v4">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/uniswap">CoinGecko</a>、<a href="https://github.com/uniswap">GitHub 驗證網域</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（npm 1.4.1）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0xd32ff78579352ca78f416120a9f68b65c410871b">部署者 0xD32Ff78579352cA78f416120A9f68b65c410871b</a><span class="res">沒有已確認的合約同一個部署者</span></span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁、github.com/Uniswap/sdks + npm @uniswap/permit2-sdk@1.4.1 (github.com/uniswap)</div>
         <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。</div>
-        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 5 處 · AI 判斷：沒問題</summary>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 6 處 · AI 判斷：沒問題</summary>
           <div><span class="aiw" data-ai><span class="byai">AI</span><span>Uniswap 的 v4 部署頁在 Ethereum 下列出 Permit2 為這個地址 <a class="aisrc" href="https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
           <div><span class="aiw" data-ai><span class="byai">AI</span><span>Uniswap 的 permit2-sdk 常數檔把 PERMIT2_ADDRESS 設為這個地址，main 最新版也相同 <a class="aisrc" href="https://github.com/Uniswap/sdks/blob/8ae0425c57e1699b0ae48ebb3077a2f526ae3818/sdks/permit2-sdk/src/constants.ts">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
           <div><span class="aiw" data-ai><span class="byai">AI</span><span>Uniswap 的 Permit2 文件：除了 zkSync，每條鏈都是這個地址 <a class="aisrc" href="https://developers.uniswap.org/docs/protocols/permit2/overview">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
           <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 Permit2，創建者 0xd32ff78579352ca78f416120a9f68b65c410871b，標籤 Uniswap: Permit2 Deployer <a class="aisrc" href="https://etherscan.io/address/0x000000000022D473030F116dDEE9F6B43aC78BA3#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Permit2 原始碼（main 最新版）：沒有 owner、沒有 proxy；transferFrom 只動用 allowance[from][token][msg.sender] <a class="aisrc" href="https://github.com/Uniswap/permit2/blob/cc56ad0f3439c502c246fc5cfcc3db92bb8b7219/src/AllowanceTransfer.sol">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>AllowanceTransfer 原始碼（main 最新版）：transferFrom 只動用 allowance[from][token][msg.sender]。在 Permit2 的主要檔案用 grep 沒找到 owner 或升級功能（libraries 沒搜） <a class="aisrc" href="https://github.com/Uniswap/permit2/blob/cc56ad0f3439c502c246fc5cfcc3db92bb8b7219/src/AllowanceTransfer.sol">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>SignatureTransfer 原始碼：轉帳要 owner 對訊息的簽名，呼叫者會當成 spender 算進訊息 hash <a class="aisrc" href="https://github.com/Uniswap/permit2/blob/cc56ad0f3439c502c246fc5cfcc3db92bb8b7219/src/SignatureTransfer.sol">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
         </details></div>
     </div>
     <div class="ad" id="a-weeth" data-state="ok">
@@ -516,7 +517,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <p class="lead">過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 <span class="num">4</span> 筆：Safe <span class="num">0</span> 筆、EOA <span class="num">4</span> 筆（4 個地址，各自送模板的一個呼叫）。這些交易全部成功執行：它們是從 morpho Approval時、usdc Approval時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0xdde00dd4dcc869cf18dd540dfaa45bedc1581ad972df58f4f8639bb36aaf0c7d">0xdde00dd4…</a>、<a href="https://etherscan.io/tx/0xb3eecf7364fdc0769a2d423c58418a5c110930725d60ffde2c31221002fdc3f3">0xb3eecf73…</a>、<a href="https://etherscan.io/tx/0x53913a968b6bffc7b9aaf2abaf1ecc4b841afa4b884fa4bdb1328bb2ec776af5">0x53913a96…</a>。</p>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 <span class="num">258</span> 筆跟你這筆不一樣：形狀一樣、但有地址不在 registry 裡的 <span class="num">0</span> 筆，形狀不同的 <span class="num">258</span> 筆</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>沒找到 Safe 給 Permit2 的授權。EOA 不合的是授權給別的 spender，或給 Permit2 固定數量或 0。</span><span class="byai">AI 研究</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>兩次搜尋都沒涵蓋一整年：都停在 50 頁上限，usdc 只到 13.8 小時，morpho 只到 45.8 天。「沒有 Safe 授權 Permit2」只對這次樣本成立。morpho 的 183 個 Safe 有 182 個是同一種批次，授權的是別的 spender。符合的 4 筆都是 EOA。</span><span class="byai">AI 研究</span></span></p>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
   <h3>搜尋 morpho 的Approval，找到 26661 筆，研究 240 筆</h3>
   <p class="lead">記錄在 <code>testdata/research/uniswap-approve-permit2-morpho.json</code>。從最新的區塊往回，搜尋了區塊 26156110（2026-10-09）到區塊 26484833（2026-11-24）的每一筆交易，共 328724 個區塊，約 45.8 天，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。只有 Etherscan 搜尋事件，找到 <span class="num">26661</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
