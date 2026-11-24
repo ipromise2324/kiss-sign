@@ -306,7 +306,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <header>
   <h1><span class="aiw" data-ai><span>Swap tokens on Uniswap, with a signed Permit2 allowance</span><span class="byai">AI research</span></span></h1>
   <span class="opid">uniswap/swap-permit</span>
-  <p class="sub"><span class="aiw" data-ai><span>The Safe calls <code>execute</code> on Uniswap&#39;s Universal Router. It first uses <code>PERMIT2_PERMIT</code> to hand over a Permit2 allowance the Safe&#39;s signers signed beforehand (to the router, 2^160-1, 30 days), then runs <code>V4_SWAP</code>: in one v4 pool with no hook, it sells the amount you type, and all of the bought token goes to the Safe. The router&#39;s allowance in Permit2 stays after the transaction.</span><span class="byai">AI research</span></span></p>
+  <p class="sub"><span class="aiw" data-ai><span>The Safe calls <code>execute</code> on Uniswap&#39;s Universal Router. It first uses <code>PERMIT2_PERMIT</code> to hand over a Permit2 allowance the Safe&#39;s signers signed beforehand (to the router, 2^160-1; the template leaves the expiry free), then runs <code>V4_SWAP</code>: in one v4 pool with no hook, it sells the amount you type, and all of the bought token goes to the Safe. The router&#39;s allowance in Permit2 stays after the transaction.</span><span class="byai">AI research</span></span></p>
   <ul class="checks">
     <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Address sources <span class="n num">7 / 7</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">All 7 addresses are confirmed in at least 2 places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address.</span></span></li>
@@ -319,7 +319,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Two providers
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">Every chain read asks two providers; when they disagree, there is no result. Three research reads have one source, and none of them reaches a verdict: past transactions&#39; call traces (drpc), the search for past transactions (a transaction either Alchemy or Etherscan finds counts; only Etherscan searches for an event), and the addresses that ever received a vault&#39;s shares (Alchemy; each one&#39;s balance is still read through both).</span></span></li>
   </ul>
-  <div class="verdict" data-state="ok"><span class="lbl">Advice</span><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span class="aiw" data-ai><span>The template binds the swap itself. But the Permit2 allowance is a message signed separately beforehand, and kiss-sign does not check that step.</span><span class="byai">AI research: be careful</span></span></div>
+  <div class="verdict" data-state="ok"><span class="lbl">Advice</span><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span class="aiw" data-ai><span>The template binds the swap, but most sampled direct swaps are encoded differently and would be MISMATCH. The Permit2 allowance is signed separately; kiss-sign does not check that step.</span><span class="byai">AI research: be careful</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
     <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">7</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
   </details>
@@ -331,33 +331,33 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="rows">
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>Most sampled one-pool swaps are encoded differently from this template and would be MISMATCH.</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="rec"><span class="aiw" data-ai><span>Of 4 tagged permit swaps through one pool, 3 use v4 actions 0x0b060e (pay, then swap), one of them USDT to USDC; 1 uses the template&#39;s 0x070b0e and buys ETH, outside the registry. No sampled Safe transaction fits: one with a permit adds a command and a hook pool, one that approved instead also uses 0x0b060e. The tag (unix bytes after the call) does not prove the app sent it. The searches stopped at their cap, after 1.3 to 3.8 days. <a class="aisrc" href="https://etherscan.io/tx/0x8d3140f827a6e54114e6a44ade27ca2b00ba4712d063333ac5231be2069ec64a">source 1</a> <a class="aisrc" href="https://etherscan.io/tx/0xaf613d48d6d4d003cc7f97bcead712cac1b77c37df91e78502519827676bd25e">source 2</a> <a class="aisrc" href="https://etherscan.io/tx/0x0498bece4e40de1dcd1c8ede6130c62aa9f17e24a8f3b97b9c5a3ff5daa3415b">source 3</a> <a class="aisrc" href="https://etherscan.io/tx/0xa5fdcab7b55e27cc6581a64885cc3310f1d33dc30efe48269b5fe04cf07b5493">source 4</a> <a class="aisrc" href="https://etherscan.io/tx/0x376065625d981b9b6aba9a64f67e53db6451538c12595275d382727a26d3b772">source 5</a> <a class="aisrc" href="https://etherscan.io/tx/0xcf503bc24daf1eb0b6629bd169057ef288db1e2b4ba91ebd37d5ac9f05acdd76">source 6</a> <a class="aisrc" href="https://etherscan.io/tx/0x9e6929eac015fe90f960198d762e6eb4aca4a712a774c278dafb1657cd897eab">source 7</a></span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Expect a MISMATCH when the actions are 0x0b060e; do not sign past it. What the app sends for a Safe today was not established; the one Safe transaction seen with 0x070b0e and a permit is of 2026-10-07.</span><span class="byai">AI research</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>The Permit2 allowance this transaction uses is a Safe message (EIP-1271) that the Safe&#39;s signers signed beforehand, and kiss-sign does not check that step.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>The template binds the allowance&#39;s contents in the transaction, so a wrongly signed one makes the transaction fail. But an allowance you were tricked into signing for someone else can be used without this transaction.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>The template binds the allowance&#39;s contents in the transaction, and its permit command has no allow-failure flag, so when Permit2 rejects the signature the router reverts the whole transaction. But an allowance you were tricked into signing for someone else can be used without this transaction. <a class="aisrc" href="https://sourcify.dev/server/v2/contract/1/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85?fields=sources">source</a></span><span class="byai">AI research</span></span></div>
           <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>When you sign the Permit2 message, check that the spender is Universal Router 0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>You type the card&#39;s &#34;minimum to receive&#34; yourself.</span><span class="byai">AI research</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>You type the card&#39;s minimum to receive yourself, and it is the only price protection.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>The Uniswap app&#39;s trading API works out the slippage at each quote (auto slippage 0.5% to 5.5%), and the price comes from a route the API finds across many pools, which no view on chain can read.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>The app picks the pool (fee and tick spacing); the template only requires no hook, and anyone can open a v4 pool. Below the minimum the router makes the transaction fail, and verify also gives MISMATCH. The trading API calculates the app&#39;s automatic slippage for each quote, and no view on chain reads it. <a class="aisrc" href="https://trade-api.gateway.uniswap.org/v1/api.json">source</a></span><span class="byai">AI research</span></span></div>
           <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Type the minimum to receive shown on the app&#39;s confirm screen. Do not type a lower one.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>The app picks the pool (fee and tick spacing).</span><span class="byai">AI research</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>Allowances stay after the transaction: the 2^160-1 allowance to the Universal Router inside Permit2, until its expiration, and whatever the Safe allowed Permit2 itself on the token.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>The template allows any pool and only requires that it has no hook. Anyone can open a v4 pool, so the only price protection is the minimum you type: below it, the router makes the transaction fail, and verify also gives MISMATCH.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. Always type the minimum to receive that the app shows.</span><span class="byai">AI research</span></span></div>
-        </details></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>Allowances that stay after the transaction: the Safe&#39;s unlimited allowance to Permit2, and the 2^160-1, 30-day allowance to the Universal Router inside Permit2.</span><span class="byai">AI research</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>The router pulls tokens only from the address that calls it, so only the Safe&#39;s own later transactions can use it.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>In the router&#39;s source every Permit2 pull takes from the address that called it, so others cannot use the Safe&#39;s allowance through the router. <a class="aisrc" href="https://sourcify.dev/server/v2/contract/1/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85?fields=sources">source</a></span><span class="byai">AI research</span></span></div>
           <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To revoke, call approve(Permit2, 0) on the token, or call lockdown on Permit2.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
@@ -415,16 +415,16 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">token</div><div><div class="is">the token (sell-token) you pick</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The token the allowance is for, that is, the token sold.</span></span></div></div></div>
         <div class="part"><div class="pn">expiration</div><div><div class="is">differs each time <span class="f3">tested with other values: the same result or the transaction fails</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>When the allowance expires. The app sets it 30 days ahead; the verify page shows it.</span></span></div></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>When the allowance expires. It was 30 days ahead in the Safe test transaction and in the one past transaction that fits; the verify page shows it.</span></span></div></div></div>
         <div class="part"><div class="pn">nonce</div><div><div class="is">differs each time <span class="f3">tested with other values: the same result or the transaction fails</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Permit2&#39;s nonce for this token and router. It goes up by one each time it is used.</span></span></div></div></div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 fixed value; any change is a MISMATCH</summary>
         <div class="part"><div class="pn">amount</div><div><div class="raw">1461501637330902918203684832716283019655932542975</div><div class="is">a fixed value</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The allowance amount, 2^160-1, Permit2&#39;s unlimited; the Uniswap app&#39;s default.</span></span></div></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The allowance amount, 2^160-1, Permit2&#39;s unlimited, as in the Safe test transaction and the one past transaction that fits.</span></span></div></div></div>
       </details>
       </div></div>
         <div class="part"><div class="pn">sigDeadline</div><div><div class="is">differs each time <span class="f3">tested with other values: the same result or the transaction fails</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>When this signature stops being valid. The app sets it 30 minutes ahead.</span></span></div></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>When this signature stops being valid: 28 minutes after the proposal in the Safe test transaction, 30 minutes after the block in the one past transaction that fits.</span></span></div></div></div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 fixed value; any change is a MISMATCH</summary>
         <div class="part"><div class="pn">spender</div><div><div class="raw">0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85</div><div class="is"><a href="#a-universal-router-2.1.2">universal-router-2.1.2</a></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The spender contract: Universal Router 2.1.2.</span></span></div></div></div>
@@ -456,9 +456,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">intermediateCurrency</div><div><div class="is">the token (buy-token) you pick</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The token this hop swaps into, that is, the token bought.</span></span></div></div></div>
         <div class="part"><div class="pn">fee</div><div><div class="is">differs each time <span class="f3">tested with other values: it takes other pools and still receives no less than the card</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The pool&#39;s fee tier, set when the app picks the route. Between USDC and USDT, 7 and 8 have been seen (7 and 8 per million). Another value means another pool, or a pool that does not exist.</span></span></div></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The pool&#39;s fee tier, in millionths, set when the app picks the route. Seen: 7 and 8 for USDC/USDT in the Safe test transactions, 100 in the one past transaction that fits. Another value means another pool, or a pool that does not exist.</span></span></div></div></div>
         <div class="part"><div class="pn">tickSpacing</div><div><div class="is">differs each time <span class="f3">tested with other values: it takes other pools and still receives no less than the card</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The pool&#39;s tick spacing. Together with the fee, it decides which pool this is. Every one seen was 1.</span></span></div></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The pool&#39;s tick spacing. Together with the fee, it decides which pool this is. It was 1 in the Safe test transactions and in the one past transaction that fits.</span></span></div></div></div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>2 fixed values; any change is a MISMATCH</summary>
         <div class="part"><div class="pn">hooks</div><div><div class="raw">0x0000000000000000000000000000000000000000</div><div class="is">none (zero address)</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The pool&#39;s hook contract. The zero address means no hook, so no extra contract runs during the swap.</span></span></div></div></div>
@@ -468,7 +468,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       </div></div>
       </div></div>
         <div class="part"><div class="pn">minHopPriceX36</div><div><div class="is">differs each time <span class="f3">tested with other values: the same result or the transaction fails</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The lowest price for each hop, optional. It can only make the transaction fail when the price is too poor. It was empty in every transaction seen.</span></span></div></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The lowest price for each hop, optional. It can only make the transaction fail when the price is too poor. It was empty in the Safe test transactions and in the one past transaction that fits.</span></span></div></div></div>
         <div class="part"><div class="pn">amountIn</div><div><div class="is">the amount (sell-amount) you type</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The amount to sell, in the token&#39;s base units.</span></span></div></div></div>
         <div class="part"><div class="pn">amountOutMinimum</div><div><div class="is">at least the amount (min-buy) you type <span class="f3">less than this is a MISMATCH</span></div>
@@ -510,7 +510,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="arg" data-field="1.execute.deadline">
       <div class="nm"><span class="pn">deadline</span><span class="who app">app fills, any value</span></div>
       <div class="val"><div class="is">differs each time <span class="f3">tested with other values: the same result or the transaction fails</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>After this time the router refuses the swap. The app sets it when it builds the transaction; in the transactions seen it was about 30 minutes ahead.</span></span></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>After this time the router refuses the swap. It was about 29 minutes after the proposal in the Safe test transaction, and about 30 minutes after the block in the one past transaction that fits.</span></span></div></div>
     </div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 fixed value; any change is a MISMATCH</summary>
     <div class="arg" data-field="1.execute.commands">
@@ -530,12 +530,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="protocol-uniswap-v4">
   <h2>uniswap-v4</h2>
-  <p class="intro"><span class="aiw" data-ai><span>Uniswap: the largest decentralized exchange on Ethereum. All v4 pools live in one PoolManager contract.</span><span class="byai">AI research</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>Uniswap: a decentralized exchange. All v4 pools live in one PoolManager contract.</span><span class="byai">AI research</span></span></p>
   <dl class="props two">
     <div><dt>TVL</dt><dd><span><span class="num">$1.33 B</span></span><span class="sub2">on Ethereum <span class="num">$631.13 M</span></span></dd></div>
     <div><dt>Listed</dt><dd><span><span class="num">2025-01-29</span></span><span class="sub2">the date DefiLlama first listed it</span></dd></div>
     <div><dt>proxy</dt><dd><span>not a proxy</span><span class="sub2"><a href="#a-universal-router-2.1.2">universal-router-2.1.2</a>, read from the code pin</span></dd></div>
-    <div><dt>Audits</dt><dd><span class="aiw" data-ai><span>The v4 core and periphery contracts and the Universal Router all have public audit reports (OpenZeppelin, Spearbit, Certora and others), in each repo&#39;s audits folder. <a class="aisrc" href="https://github.com/Uniswap/v4-core/tree/main/docs/security/audits">source 1</a> <a class="aisrc" href="https://github.com/Uniswap/universal-router/tree/main/audit">source 2</a></span><span class="byai">AI research</span></span></dd></div>
+    <div><dt>Audits</dt><dd><span class="aiw" data-ai><span>The v4 core contracts and the Universal Router have public audit reports in their repos (v4 core: OpenZeppelin, Spearbit, Certora, ABDK, Trail of Bits; router: OpenZeppelin, Spearbit, ABDK). The router folder names 2.1 and no report names 2.1.2. I read the file lists, not the reports. <a class="aisrc" href="https://github.com/Uniswap/v4-core/tree/main/docs/security/audits">source 1</a> <a class="aisrc" href="https://github.com/Uniswap/universal-router/tree/main/audit">source 2</a></span><span class="byai">AI research</span></span></dd></div>
     <div><dt>Incidents</dt><dd><span>0</span><span class="sub2">DefiLlama hacks listed under this protocol or its parent</span></dd></div>
   </dl>
   <p class="srcline">On 2026-11-24 the program read <a href="https://defillama.com/protocol/uniswap-v4">DefiLlama</a>, <a href="https://defillama.com/hacks">DefiLlama hacks</a> and the chain. What is tagged AI research, the AI looked up.</p>
@@ -635,7 +635,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
           <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: contract name UniversalRouter, creator 0x2179a60856E37dfeAacA0ab043B931fE224b27B6, which Etherscan&#39;s name tag calls &#34;Uniswap V4: Deployer&#34; (a tag, not a proof) <a class="aisrc" href="https://etherscan.io/address/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
           <div><span class="aiw" data-ai><span class="byai">AI</span><span>The creation transaction the Etherscan address page lists <a class="aisrc" href="https://etherscan.io/tx/0x350510f7398242ffc778c086ae6bbe9cc744c33a04468f1a7978e54164638257">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
           <div><span class="aiw" data-ai><span class="byai">AI</span><span>The Uniswap trading API&#39;s spec: callers that do not pin a router version get 2.1.2 where it is deployed. The app&#39;s public code sends a version only for a permissioned token; live app not tested <a class="aisrc" href="https://trade-api.gateway.uniswap.org/v1/api.json">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Source on Sourcify, read by hand: PERMIT2_PERMIT calls Permit2 with msgSender() as the owner, and SETTLE with payerIsUser pulls from msgSender(); msgSender() is the address that called execute <a class="aisrc" href="https://sourcify.dev/server/v2/contract/1/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85?fields=sources">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Source on Sourcify, read by hand: PERMIT2_PERMIT calls Permit2 with msgSender() as the owner; every V2, V3, v4 and direct pull through Permit2 takes from msgSender(), the address that called execute <a class="aisrc" href="https://sourcify.dev/server/v2/contract/1/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85?fields=sources">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
         </details></div>
     </div>
     <div class="ad" id="a-usp" data-state="ok">
@@ -699,7 +699,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span><span class="num">64</span> more differ from yours: <span class="num">1</span> has the same shape but with an address outside the registry, <span class="num">63</span> have another shape</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>No Safe swap was found. 141 of the 240 transactions studied called router 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af, not this one; the 6 to this router add commands or encode the swap otherwise.</span><span class="byai">AI research</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>No sampled Safe transaction fits. 3 of the 4 tagged one-pool permit swaps use v4 actions 0x0b060e, the template expects 0x070b0e. Each search stopped at its cap after 3.8, 1.3 or 2.4 days. Of 240 in the permit search, 156 called another router, 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af, and 55 this one.</span><span class="byai">AI research</span></span></p>
   <p class="lead">Only transactions that used this operation&#39;s calls count. An exact match has the template&#39;s calls and argument positions, meets every rule the transaction itself can show (such as where the sender goes, or a fixed value), and uses a contract the template allows wherever the template binds a registry contract. Same shape but a market, token, vault or address outside the registry means the calls, argument positions and those rules are the same, but an address or market is not in the registry; the kind is named when the record shows it, otherwise only address. The rest are grouped by reason, each with up to 3 examples.</p>
   <h3>Search of permit2 Permit: 28015 found, 240 studied</h3>
   <p class="lead">Recorded in <code>testdata/research/uniswap-swap-permit-permit2.json</code>. Every transaction from block 26457831 (2026-11-20) to block 26484984 (2026-11-24) was searched, newest first, 27154 blocks, about 3.8 days, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched. Only Etherscan searches an event, and found <span class="num">28015</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>

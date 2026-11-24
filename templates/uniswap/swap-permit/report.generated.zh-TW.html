@@ -306,7 +306,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <header>
   <h1><span class="aiw" data-ai><span>用 Uniswap 兌換代幣，附上簽好的 Permit2 授權</span><span class="byai">AI 研究</span></span></h1>
   <span class="opid">uniswap/swap-permit</span>
-  <p class="sub"><span class="aiw" data-ai><span>Safe 呼叫 Uniswap Universal Router 的 <code>execute</code>，先用 <code>PERMIT2_PERMIT</code> 交出 Safe 簽署人事先簽好的 Permit2 授權（給 router，2^160-1，30 天），再 <code>V4_SWAP</code>：在一個沒有 hook 的 v4 池子，把你填的數量賣掉，買進的代幣全部給 Safe。Permit2 裡給 router 的授權交易後留著。</span><span class="byai">AI 研究</span></span></p>
+  <p class="sub"><span class="aiw" data-ai><span>Safe 呼叫 Uniswap Universal Router 的 <code>execute</code>，先用 <code>PERMIT2_PERMIT</code> 交出 Safe 簽署人事先簽好的 Permit2 授權（給 router，2^160-1，到期時間模板不限），再 <code>V4_SWAP</code>：在一個沒有 hook 的 v4 池子，把你填的數量賣掉，買進的代幣全部給 Safe。Permit2 裡給 router 的授權交易後留著。</span><span class="byai">AI 研究</span></span></p>
   <ul class="checks">
     <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>地址來源 <span class="n num">7 / 7</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">7 個地址都至少在 2 個地方確認：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件或共用的部署者列出同一個地址。</span></span></li>
@@ -319,7 +319,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">鏈上資料都同時問兩家節點，答案不一樣就不給結果。研究時有三種資料只有一個來源，都不會影響判定：過去交易的呼叫追蹤（drpc）、搜尋過去交易（Alchemy 或 Etherscan 找到的都算，找事件只用 Etherscan），和金庫曾經收過份額的地址名單（Alchemy，每個地址的餘額仍問兩家）。</span></span></li>
   </ul>
-  <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>兌換本身有綁住；但 Permit2 授權是事先另外簽的訊息，kiss-sign 不檢查那一步。</span><span class="byai">AI 研究：要小心</span></span></div>
+  <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>模板綁住兌換本身，但抽樣的直接兌換多半編碼不同，會是 MISMATCH；Permit2 授權另外簽，kiss-sign 不檢查那一步。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
     <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">7</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
   </details>
@@ -331,32 +331,33 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="rows">
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>抽樣的單池兌換多半和模板編碼不同，會 MISMATCH。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span>帶 unix 標記的 permit 單池兌換 4 筆：3 筆動作是 0x0b060e，含 USDT 換 USDC；1 筆是模板的 0x070b0e，買登記外的 ETH。Safe 沒有一筆符合：permit 那筆多指令又走 hook 池，approve 那筆也是 0x0b060e。標記不算證明；搜尋到上限就停，只有 1.3 到 3.8 天。 <a class="aisrc" href="https://etherscan.io/tx/0x8d3140f827a6e54114e6a44ade27ca2b00ba4712d063333ac5231be2069ec64a">來源 1</a> <a class="aisrc" href="https://etherscan.io/tx/0xaf613d48d6d4d003cc7f97bcead712cac1b77c37df91e78502519827676bd25e">來源 2</a> <a class="aisrc" href="https://etherscan.io/tx/0x0498bece4e40de1dcd1c8ede6130c62aa9f17e24a8f3b97b9c5a3ff5daa3415b">來源 3</a> <a class="aisrc" href="https://etherscan.io/tx/0xa5fdcab7b55e27cc6581a64885cc3310f1d33dc30efe48269b5fe04cf07b5493">來源 4</a> <a class="aisrc" href="https://etherscan.io/tx/0x376065625d981b9b6aba9a64f67e53db6451538c12595275d382727a26d3b772">來源 5</a> <a class="aisrc" href="https://etherscan.io/tx/0xcf503bc24daf1eb0b6629bd169057ef288db1e2b4ba91ebd37d5ac9f05acdd76">來源 6</a> <a class="aisrc" href="https://etherscan.io/tx/0x9e6929eac015fe90f960198d762e6eb4aca4a712a774c278dafb1657cd897eab">來源 7</a></span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>動作是 0x0b060e 時會是 MISMATCH，不要硬簽。app 現在替 Safe 送什麼沒有確認；看過用 permit 加 0x070b0e 的 Safe 交易是 2026-10-07 那筆。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>這筆交易用的 Permit2 授權是 Safe 簽署人事先簽的 Safe 訊息（EIP-1271），kiss-sign 不檢查那一步。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="aiw" data-ai><span>交易裡的授權內容模板有綁住，簽錯會讓交易失敗；但被騙簽給別人的授權，不需要這筆交易就能被用掉。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>交易裡的授權內容模板有綁住，permit 指令也沒有容許失敗的旗標，所以 Permit2 不收簽名時 router 讓整筆交易失敗；但被騙簽給別人的授權，不需要這筆交易就能被用掉。 <a class="aisrc" href="https://sourcify.dev/server/v2/contract/1/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85?fields=sources">來源</a></span><span class="byai">AI 研究</span></span></div>
           <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>簽 Permit2 訊息時確認 spender 是 Universal Router 0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>卡片的「最少收到的數量」要你自己填：Uniswap app 的滑價由它的交易 API 每次報價時算（自動滑價 0.5% 到 5.5%），價格來自 API 在很多池子間找的路由，鏈上沒有一個 view 讀得到。</span><span class="byai">AI 研究</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>「最少收到的數量」要你自己填，它是唯一的價格保護。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span>池子（手續費和 tick 間距）由 app 選，模板只要求沒有 hook，而任何人都能開 v4 池子；少於最少數量，router 讓交易失敗，verify 也會 MISMATCH。自動滑價由交易 API 每次報價時算，鏈上沒有一個 view 讀得到。 <a class="aisrc" href="https://trade-api.gateway.uniswap.org/v1/api.json">來源</a></span><span class="byai">AI 研究</span></span></div>
           <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>照 app 確認畫面上的最少收到數量填，不要填得更低。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>池子（手續費和 tick 間距）由 app 選，模板不限，只要求沒有 hook。</span><span class="byai">AI 研究</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>交易後會留下授權：Permit2 裡給 Universal Router 的 2^160-1 授權，到到期為止，以及 Safe 先前在代幣上給 Permit2 的額度。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="aiw" data-ai><span>任何人都能開 v4 池子，所以價格只靠你填的最少數量保護：少於它，router 讓交易失敗，verify 也會 MISMATCH。</span><span class="byai">AI 研究</span></span></div>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；最少收到的數量一定照 app 顯示的填。</span><span class="byai">AI 研究</span></span></div>
-        </details></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>交易後留著的授權：Safe 給 Permit2 的無上限授權，和 Permit2 裡給 Universal Router 的 2^160-1、30 天授權。</span><span class="byai">AI 研究</span></span></div>
-        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="aiw" data-ai><span>router 只從呼叫它的地址拉代幣，所以只有 Safe 自己之後的交易能用它。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>原始碼裡 router 每次透過 Permit2 拉代幣，都是從呼叫它的地址拉，所以別人不能透過 router 用 Safe 的授權。 <a class="aisrc" href="https://sourcify.dev/server/v2/contract/1/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85?fields=sources">來源</a></span><span class="byai">AI 研究</span></span></div>
           <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想收回時，對代幣呼叫 approve(Permit2, 0)，或在 Permit2 呼叫 lockdown。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
     </div>
@@ -414,16 +415,16 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">token</div><div><div class="is">你選的代幣（sell-token）</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>授權的代幣，也就是賣出的代幣。</span></span></div></div></div>
         <div class="part"><div class="pn">expiration</div><div><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>授權到期時間，app 設 30 天後；verify 的網頁會顯示。</span></span></div></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>授權到期時間；Safe 測試交易和唯一符合的歷史交易都是約 30 天後，verify 的網頁會顯示。</span></span></div></div></div>
         <div class="part"><div class="pn">nonce</div><div><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Permit2 對這個代幣和 router 的 nonce，每用一次加一。</span></span></div></div></div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 個固定的值；改了任何一個都是 MISMATCH</summary>
         <div class="part"><div class="pn">amount</div><div><div class="raw">1461501637330902918203684832716283019655932542975</div><div class="is">固定值</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>授權數量 2^160-1，Permit2 的無上限；Uniswap app 的預設。</span></span></div></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>授權數量 2^160-1，Permit2 的無上限；Safe 測試交易和唯一符合的歷史交易都是這個數。</span></span></div></div></div>
       </details>
       </div></div>
         <div class="part"><div class="pn">sigDeadline</div><div><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這份簽名的有效期限，app 設 30 分鐘後。</span></span></div></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這份簽名的有效期限；Safe 測試交易是提案後 28 分鐘，唯一符合的歷史交易是區塊時間後 30 分鐘。</span></span></div></div></div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 個固定的值；改了任何一個都是 MISMATCH</summary>
         <div class="part"><div class="pn">spender</div><div><div class="raw">0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85</div><div class="is"><a href="#a-universal-router-2.1.2">universal-router-2.1.2</a></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>被授權的合約：Universal Router 2.1.2。</span></span></div></div></div>
@@ -455,9 +456,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">intermediateCurrency</div><div><div class="is">你選的代幣（buy-token）</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一跳換到的代幣，也就是買進的代幣。</span></span></div></div></div>
         <div class="part"><div class="pn">fee</div><div><div class="is">每筆不同 <span class="f3">換成別的值測過，會走別的池子，收到的仍不少於卡片</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>池子的手續費等級，app 選路由時決定；USDC 和 USDT 之間看過 7 和 8（百萬分之 7、8）。換成別的值就是別的池子或不存在的池子。</span></span></div></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>池子的手續費等級（百萬分之幾），app 選路由時決定。看過：Safe 測試交易的 USDC／USDT 是 7、8，唯一符合的歷史交易是 100。換成別的值就是別的池子或不存在的池子。</span></span></div></div></div>
         <div class="part"><div class="pn">tickSpacing</div><div><div class="is">每筆不同 <span class="f3">換成別的值測過，會走別的池子，收到的仍不少於卡片</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>池子的 tick 間距，和手續費一起決定是哪個池子；看過的都是 1。</span></span></div></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>池子的 tick 間距，和手續費一起決定是哪個池子；Safe 測試交易和唯一符合的歷史交易都是 1。</span></span></div></div></div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>2 個固定的值；改了任何一個都是 MISMATCH</summary>
         <div class="part"><div class="pn">hooks</div><div><div class="raw">0x0000000000000000000000000000000000000000</div><div class="is">無（零地址）</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>池子的 hook 合約；零地址代表沒有 hook，兌換時不會跑任何額外的合約。</span></span></div></div></div>
@@ -467,7 +468,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       </div></div>
       </div></div>
         <div class="part"><div class="pn">minHopPriceX36</div><div><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>每一跳的最低價格，可有可無；只會讓價格太差時交易失敗。看過的交易都是空的。</span></span></div></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>每一跳的最低價格，可有可無；只會讓價格太差時交易失敗。Safe 測試交易和唯一符合的歷史交易都是空的。</span></span></div></div></div>
         <div class="part"><div class="pn">amountIn</div><div><div class="is">你填的金額（sell-amount）</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>賣出的數量，以代幣的最小單位計。</span></span></div></div></div>
         <div class="part"><div class="pn">amountOutMinimum</div><div><div class="is">至少你填的金額（min-buy） <span class="f3">比這個少就 MISMATCH</span></div>
@@ -509,7 +510,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="arg" data-field="1.execute.deadline">
       <div class="nm"><span class="pn">deadline</span><span class="who app">app 填，不限</span></div>
       <div class="val"><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>過了這個時間 router 就拒絕這筆兌換；app 建交易時設定，看過的交易大約是 30 分鐘後。</span></span></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>過了這個時間 router 就拒絕這筆兌換。Safe 測試交易是提案後約 29 分鐘，唯一符合的歷史交易是區塊時間後約 30 分鐘。</span></span></div></div>
     </div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 個固定的值；改了任何一個都是 MISMATCH</summary>
     <div class="arg" data-field="1.execute.commands">
@@ -529,12 +530,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="protocol-uniswap-v4">
   <h2>uniswap-v4</h2>
-  <p class="intro"><span class="aiw" data-ai><span>Uniswap：以太坊上最大的去中心化交易所；v4 的池子都在同一個 PoolManager 合約裡。</span><span class="byai">AI 研究</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>Uniswap：去中心化交易所；v4 的池子都在同一個 PoolManager 合約裡。</span><span class="byai">AI 研究</span></span></p>
   <dl class="props two">
     <div><dt>TVL</dt><dd><span><span class="num">$1.33 B</span></span><span class="sub2">Ethereum 上 <span class="num">$631.13 M</span></span></dd></div>
     <div><dt>上線</dt><dd><span><span class="num">2025-01-29</span></span><span class="sub2">DefiLlama 開始列的日期</span></dd></div>
     <div><dt>proxy</dt><dd><span>不是 proxy</span><span class="sub2"><a href="#a-universal-router-2.1.2">universal-router-2.1.2</a>，從 code pin 讀到</span></dd></div>
-    <div><dt>稽核</dt><dd><span class="aiw" data-ai><span>v4 核心與周邊合約、Universal Router 都有公開的審計報告（OpenZeppelin、Spearbit、Certora 等），放在各 repo 的 audits 資料夾。 <a class="aisrc" href="https://github.com/Uniswap/v4-core/tree/main/docs/security/audits">來源 1</a> <a class="aisrc" href="https://github.com/Uniswap/universal-router/tree/main/audit">來源 2</a></span><span class="byai">AI 研究</span></span></dd></div>
+    <div><dt>稽核</dt><dd><span class="aiw" data-ai><span>v4 核心合約和 Universal Router 的 repo 裡有公開的審計報告（v4 核心：OpenZeppelin、Spearbit、Certora、ABDK、Trail of Bits；router：OpenZeppelin、Spearbit、ABDK）。router 資料夾有標 2.1 的報告，沒有標 2.1.2 的。我只看了檔案清單，沒讀報告內容。 <a class="aisrc" href="https://github.com/Uniswap/v4-core/tree/main/docs/security/audits">來源 1</a> <a class="aisrc" href="https://github.com/Uniswap/universal-router/tree/main/audit">來源 2</a></span><span class="byai">AI 研究</span></span></dd></div>
     <div><dt>事故</dt><dd><span>0 起</span><span class="sub2">DefiLlama hacks 列在這個協議或它上層協議下的</span></dd></div>
   </dl>
   <p class="srcline">程式在 2026-11-24 讀 <a href="https://defillama.com/protocol/uniswap-v4">DefiLlama</a>、<a href="https://defillama.com/hacks">DefiLlama hacks</a>和鏈上。標 AI 研究的是 AI 查的。</p>
@@ -634,7 +635,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
           <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 UniversalRouter，創建者 0x2179a60856E37dfeAacA0ab043B931fE224b27B6，Etherscan 標籤是「Uniswap V4: Deployer」（標籤不是證明） <a class="aisrc" href="https://etherscan.io/address/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
           <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan 地址頁列出的創建交易 <a class="aisrc" href="https://etherscan.io/tx/0x350510f7398242ffc778c086ae6bbe9cc744c33a04468f1a7978e54164638257">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
           <div><span class="aiw" data-ai><span class="byai">AI</span><span>Uniswap 交易 API 的規格：沒指定 router 版本時，有部署 2.1.2 的鏈就用 2.1.2。app 公開的程式碼只在許可制代幣時才送版本；我沒有測線上的 app <a class="aisrc" href="https://trade-api.gateway.uniswap.org/v1/api.json">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>在 Sourcify 讀原始碼：PERMIT2_PERMIT 用 msgSender() 當 owner 呼叫 Permit2，payerIsUser 的 SETTLE 從 msgSender() 拉代幣；msgSender() 是呼叫 execute 的地址 <a class="aisrc" href="https://sourcify.dev/server/v2/contract/1/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85?fields=sources">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>在 Sourcify 讀原始碼：PERMIT2_PERMIT 用 msgSender() 當 owner 呼叫 Permit2；V2、V3、v4 和直接轉帳透過 Permit2 拉代幣，都從 msgSender()，也就是呼叫 execute 的地址 <a class="aisrc" href="https://sourcify.dev/server/v2/contract/1/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85?fields=sources">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
         </details></div>
     </div>
     <div class="ad" id="a-usp" data-state="ok">
@@ -698,7 +699,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 <span class="num">64</span> 筆跟你這筆不一樣：形狀一樣、但用的是 registry 外的地址的 <span class="num">1</span> 筆，形狀不同的 <span class="num">63</span> 筆</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>沒找到 Safe 的兌換。研究的 240 筆裡有 141 筆呼叫 router 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af，不是這個；送到這個 router 的 6 筆多了指令或編碼不同。</span><span class="byai">AI 研究</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>抽樣的 Safe 交易沒有一筆符合。帶標記、用 permit 的單池兌換 4 筆有 3 筆用 v4 動作 0x0b060e，模板要 0x070b0e。搜尋到上限就停，只涵蓋 3.8、1.3、2.4 天。permit 搜尋的 240 筆裡 156 筆呼叫別的 router，55 筆呼叫這個。</span><span class="byai">AI 研究</span></span></p>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
   <h3>搜尋 permit2 的Permit，找到 28015 筆，研究 240 筆</h3>
   <p class="lead">記錄在 <code>testdata/research/uniswap-swap-permit-permit2.json</code>。從最新的區塊往回，搜尋了區塊 26457831（2026-11-20）到區塊 26484984（2026-11-24）的每一筆交易，共 27154 個區塊，約 3.8 天，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。只有 Etherscan 搜尋事件，找到 <span class="num">28015</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
