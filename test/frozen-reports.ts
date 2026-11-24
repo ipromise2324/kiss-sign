@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { REPORT_RECORDINGS_DIR } from '../src/research/report.ts';
 import { RECORDINGS_DIR, SUMMARIES_DIR } from '../src/research/past-txs-summary.ts';
+import { USAGE_DIR } from '../src/research/usage.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -23,7 +24,7 @@ export const FROZEN_RECORDINGS_DIR = join(RECORDINGS_DIR, 'frozen');
 /** The folders the frozen copy holds in place of the repository's. */
 const FROZEN_PARTS = [TEMPLATES_DIR, 'registry', REPORT_RECORDINGS_DIR, SUMMARIES_DIR];
 
-/** A repository whose templates, registry, report recordings and past-txs summaries are the frozen ones, and whose other test data is this checkout's. */
+/** A repository whose templates, registry, report recordings and past-txs summaries are the frozen ones, which holds no usage file, and whose other test data is this checkout's. */
 export function repoWithFrozenReports(): string {
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-frozen-'));
   process.on('exit', () => rmSync(root, { recursive: true, force: true }));
@@ -31,7 +32,7 @@ export function repoWithFrozenReports(): string {
   for (const part of FROZEN_PARTS) symlinkSync(join(FROZEN_DIR, part), join(root, part));
   for (const name of readdirSync(join(ROOT, 'testdata'))) {
     const part = join('testdata', name);
-    if (!FROZEN_PARTS.includes(part)) symlinkSync(join(ROOT, part), join(root, part));
+    if (part !== USAGE_DIR && !FROZEN_PARTS.includes(part)) symlinkSync(join(ROOT, part), join(root, part));
   }
   return root;
 }
