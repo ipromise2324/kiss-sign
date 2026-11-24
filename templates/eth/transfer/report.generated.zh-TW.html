@@ -271,6 +271,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
 .auto li{display:flex;gap:10px;align-items:baseline}
 .auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
+.usage{font-size:var(--t-small);color:var(--fg3);margin-bottom:28px}
+.usage h3{font-size:var(--t-row);color:var(--fg2);margin:0 0 6px}
+.usage p{margin:0}
 .foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
 .foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
@@ -434,6 +437,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
+<aside class="usage"><h3>製作這份報告的 AI 用量</h3><p>未量測</p></aside>
 <footer class="foot">由 <code>pnpm report eth/transfer --record</code> 從 <code>templates/eth/transfer/template.json</code>、<code>templates/eth/transfer/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/eth-transfer.json</code>、<code>testdata/abi</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/eth/transfer/notes.json</code> 寫出，資料在 2026-11-17 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
 
 </div>

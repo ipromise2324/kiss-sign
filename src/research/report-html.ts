@@ -655,6 +655,7 @@ ${SYMBOLS}
 
 ${header(page, r).text}
 ${page.sections.map((s) => section(s, r).text).join('')}
+<aside class="usage"><h3>${escape(page.usage.title)}</h3>${page.usage.lines.map((line) => `<p>${escape(line)}</p>`).join('')}</aside>
 <footer class="foot">${text(page.footer).text}</footer>
 
 </div>
