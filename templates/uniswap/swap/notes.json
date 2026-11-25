@@ -4,8 +4,8 @@
     "zh-TW": "用 Uniswap 的 StablePair hook 池子兌換 USDC 和 USDT"
   },
   "summary": {
-    "en": "The Safe calls `execute` on Uniswap's Universal Router to swap USDC for USDT, or back, in one fixed Uniswap v4 pool whose fee Uniswap's own hook, StablePairHook, sets. The Safe must first approve Permit2 and allow the router there (uniswap/approve-permit2 and uniswap/allow-router; the same MultiSend works). The app often quotes another route: a pool without a hook, a split, a route through USDS, or a permit signature. Each is a MISMATCH here; get a new quote or do not sign. Example: on 2026-11-18 another Safe sold 20,000 USDC, allowed no less than 19,923.50 USDT and got 20,023.72.",
-    "zh-TW": "Safe 在一個固定的 Uniswap v4 池子把 USDC 換成 USDT 或反過來，手續費由 Uniswap 的 StablePairHook 決定。要先授權 Permit2、允許 router（uniswap/approve-permit2、uniswap/allow-router）。app 常報別的路線（無 hook 池子、拆單、繞經 USDS、permit 簽名），都是 MISMATCH：重新報價或不要簽。例子：別的 Safe 賣 20,000 USDC，拿到 20,023.72。"
+    "en": "The Safe calls `execute` on Uniswap's Universal Router to swap USDC for USDT, or back, in one fixed Uniswap v4 pool whose fee Uniswap's own hook, StablePairHook, sets. First approve Permit2 and allow the router (uniswap/approve-permit2, uniswap/allow-router; the same MultiSend works). The app often quotes another route: a pool without a hook, a split, a route through USDS, or a permit signature. Each is a MISMATCH here; get a new quote or do not sign.",
+    "zh-TW": "Safe 用 Uniswap router 的 `execute`，在固定的 v4 池子把 USDC 換成 USDT 或反向，手續費由 Uniswap 自己的 StablePairHook 決定。先授權 Permit2、允許 router（uniswap/approve-permit2、uniswap/allow-router，可同一 MultiSend）。app 常報別的路線（無 hook 池子、拆單、繞經 USDS、permit 簽名），都是 MISMATCH：重新報價或不要簽。"
   },
   "verdict": {
     "status": "caution",

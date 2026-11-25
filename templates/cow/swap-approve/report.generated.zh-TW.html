@@ -428,7 +428,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">buyAmount</div><div><div class="is">至少你填的金額（min-buy） <span class="f3">比這個少就 MISMATCH</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>最少要買到的數量（限價）。結算合約保證成交不少於這個數。</span></span></div></div></div>
         <div class="part"><div class="pn">validTo</div><div><div class="is">最多比區塊時間晚 604800 秒（約 7 天） <span class="f3">區塊時間：還沒執行的交易用 verify 讀到的最新區塊，已執行的用它所在的區塊；更晚就 MISMATCH</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>訂單在這個時間到期（Unix 秒），app 設為報價後 30 分鐘。較晚到期只讓訂單開著更久：仍最多成交一次，不少於卡片的最低值，付給 Safe。Safe 可以用 <code>invalidateOrder</code> 取消；已過期的訂單不能成交。7 天是保留的餘裕，不是量出來的需要。</span></span></div></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>訂單在這個時間到期（Unix 秒），app 設為報價後 30 分鐘。較晚到期只讓訂單開著更久：仍最多成交一次，不少於卡片的最低值，付給 Safe。可用 <code>invalidateOrder</code> 取消；過期就不能成交。有上限，是因為開著的訂單在你不再注意後很久仍能成交；7 天和 cow/swap 相同。</span></span></div></div></div>
         <div class="part"><div class="pn">appData</div><div><div class="is">每筆不同 <span class="f3">訂單裡的值，由雜湊鎖住；模板不限，也不換值測試</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>app 附在訂單上的 JSON 的雜湊（app 名稱、滑價、手續費、hooks）。結算合約不讀它。</span></span></div></div></div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>6 個固定的值；改了任何一個都是 MISMATCH</summary>

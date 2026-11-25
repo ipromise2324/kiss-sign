@@ -414,8 +414,8 @@
       "zh-TW": "最少要買到的數量（限價）。結算合約保證成交不少於這個數。"
     },
     "2.setPreSignature.orderUid.digest.validTo": {
-      "en": "The order expires at this time (Unix seconds); the app sets it 30 minutes after the quote. A later expiry only keeps the order open longer: it still fills at most once, for no less than the card's minimum, to the Safe. The Safe can cancel it with `invalidateOrder`; one already expired cannot fill. The 7 days are a margin, not a measured need.",
-      "zh-TW": "訂單在這個時間到期（Unix 秒），app 設為報價後 30 分鐘。較晚到期只讓訂單開著更久：仍最多成交一次，不少於卡片的最低值，付給 Safe。Safe 可以用 `invalidateOrder` 取消；已過期的訂單不能成交。7 天是保留的餘裕，不是量出來的需要。"
+      "en": "The order expires at this time (Unix seconds); the app sets it 30 minutes after the quote. A later expiry only keeps the order open longer: it still fills at most once, for no less than the card's minimum, to the Safe. `invalidateOrder` cancels it; an expired one cannot fill. The limit exists because an open order can fill long after you stop watching; 7 days is cow/swap's limit.",
+      "zh-TW": "訂單在這個時間到期（Unix 秒），app 設為報價後 30 分鐘。較晚到期只讓訂單開著更久：仍最多成交一次，不少於卡片的最低值，付給 Safe。可用 `invalidateOrder` 取消；過期就不能成交。有上限，是因為開著的訂單在你不再注意後很久仍能成交；7 天和 cow/swap 相同。"
     },
     "2.setPreSignature.orderUid.digest.appData": {
       "en": "The hash of the JSON the app attaches to the order (app name, slippage, fees, hooks). The settlement contract does not read it.",

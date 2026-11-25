@@ -4,8 +4,8 @@
     "zh-TW": "用 Uniswap 沒有 hook 的 v4 池子兌換 USDC 和 USDT"
   },
   "summary": {
-    "en": "The Safe calls `execute` on Uniswap's Universal Router to swap USDC for USDT, or back, in one Uniswap v4 pool with no hook. Look at `commands`: 0x10 with `hooks` all zeros is this template; 0x1004 with the StablePair hook pool is uniswap/swap. The wrong one is a MISMATCH, not a loss, and so is any other shape (a split, another token on the way, a permit signature, an extra fee command): get a new quote or do not sign. The Safe must first approve Permit2 and allow the router there (uniswap/approve-permit2 and uniswap/allow-router; the same MultiSend works). Example: on 2026-11-14 another Safe sold 8.029841 USDC, allowed no less than 7.995463 USDT and got 8.035641.",
-    "zh-TW": "Safe 在沒有 hook 的 Uniswap v4 池子把 USDC 換成 USDT 或反向。看 `commands`：0x10 且 `hooks` 全零用這個，0x1004 用 uniswap/swap；選錯或別的形狀（拆單、繞路、permit、多收費）是 MISMATCH，不會損失：重新報價或不要簽。要先授權 Permit2、允許 router（uniswap/approve-permit2、uniswap/allow-router）。例子：賣 8.029841 USDC，拿到 8.035641。"
+    "en": "The Safe swaps USDC for USDT, or back, in one Uniswap v4 pool with no hook. Look at `commands`: 0x10 with `hooks` all zeros is this template; 0x1004 with the StablePair hook pool is uniswap/swap. The wrong one is a MISMATCH, not a loss, and so is any other shape (a split, another token on the way, a permit signature, an extra fee command): get a new quote or do not sign. First approve Permit2 and allow the router (uniswap/approve-permit2, uniswap/allow-router; the same MultiSend works).",
+    "zh-TW": "Safe 在沒有 hook 的 Uniswap v4 池子把 USDC 換成 USDT 或反向。看 `commands`：0x10 且 `hooks` 全零用這個，0x1004 且是 StablePair hook 池子用 uniswap/swap；選錯或別的形狀（拆單、繞經別的代幣、permit 簽名、多收費指令）是 MISMATCH，不會損失：重新報價或不簽。先做 uniswap/approve-permit2、uniswap/allow-router（可同一 MultiSend）。"
   },
   "verdict": {
     "status": "caution",
