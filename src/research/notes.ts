@@ -250,7 +250,7 @@ const own = (record: Record<string, unknown>, key: string): unknown => (Object.h
 const refuse = (path: string, rule: string): never => {
   throw new NotesError(`${path}: ${rule}`);
 };
-const shown = (key: string): string => JSON.stringify(key.slice(0, 80));
+export const shown = (key: string): string => JSON.stringify(key.slice(0, 80));
 
 /** What may stand between two backticks: one identifier, such as a function or argument name, with or without `()`. */
 const CODE_SPAN = /^[A-Za-z_][A-Za-z0-9_]*(\(\))?$/;
@@ -264,16 +264,20 @@ export function codeSpans(text: string): readonly string[] | undefined {
   return parts.length % 2 === 1 && parts.every((part, i) => i % 2 === 0 || CODE_SPAN.test(part)) ? parts : undefined;
 }
 
+/** AI text in one language of at most `max` characters, its backticks not counted. Throws NotesError. */
+export function plainText(path: string, raw: unknown, max: number): string {
+  if (typeof raw !== 'string' || raw.trim() === '') return refuse(path, 'not a non-empty string');
+  if (CONTROL.test(raw)) return refuse(path, 'holds a control or bidirectional character');
+  const parts = codeSpans(raw);
+  if (parts === undefined) return refuse(path, 'holds a backtick that does not open or close a code span around one identifier, such as `erc4626Deposit`');
+  if (parts.join('').length > max) return refuse(path, `longer than ${max} characters`);
+  return raw;
+}
+
 const str =
   (max: number): P<string> =>
-  (path, raw) => {
-    if (typeof raw !== 'string' || raw.trim() === '') return refuse(path, 'not a non-empty string');
-    if (CONTROL.test(raw)) return refuse(path, 'holds a control or bidirectional character');
-    const parts = codeSpans(raw);
-    if (parts === undefined) return refuse(path, 'holds a backtick that does not open or close a code span around one identifier, such as `erc4626Deposit`');
-    if (parts.join('').length > max) return refuse(path, `longer than ${max} characters`);
-    return raw;
-  };
+  (path, raw) =>
+    plainText(path, raw, max);
 
 /** How many characters a language may use for what Traditional Chinese says in `max`. */
 const LENGTH: Readonly<Record<Language, number>> = { 'zh-TW': 1, en: 3 };
@@ -309,7 +313,14 @@ const oneOf =
   (path, raw) =>
     values.includes(raw as string) ? (raw as T[number]) : refuse(path, `not one of ${values.join(', ')}`);
 
-const url: P<HttpsUrl> = (path, raw) => parseHttpsUrl(raw) ?? refuse(path, 'not an https URL in RFC 3986 characters');
+/** An https URL the AI cites, without a user name or password, which would show one domain and open another. Throws NotesError. */
+export function citedUrl(path: string, raw: unknown): HttpsUrl {
+  const parsed = parseHttpsUrl(raw) ?? refuse(path, 'not an https URL in RFC 3986 characters');
+  const { username, password } = new URL(parsed);
+  return username === '' && password === '' ? parsed : refuse(path, 'a URL with a user name or password');
+}
+
+const url: P<HttpsUrl> = citedUrl;
 
 const callNumber: P<number> = (path, raw, scope) =>
   typeof raw === 'number' && Number.isSafeInteger(raw) && raw >= 1 && raw <= scope.calls ? raw : refuse(path, `not one of the template's ${scope.calls} calls`);
