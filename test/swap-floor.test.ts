@@ -28,7 +28,7 @@ const HEAD = 26_490_000;
 const HEAD_HASH = `0x${'ab'.repeat(32)}`;
 const NOW = 1_800_000_000;
 const HOUR = 3600;
-const PINNED = ['usdc-usd', 'usdt-usd', 'eth-usd', 'cbbtc-usd', 'weeth-eth', 'v3-usdc-usdt-100', 'v3-usdc-weth-500'];
+const PINNED = ['usdc', 'usdt', 'weth', 'weeth', 'cbbtc', 'usdc-usd', 'usdt-usd', 'eth-usd', 'cbbtc-usd', 'weeth-eth', 'v3-usdc-usdt-100', 'v3-usdc-weth-500'];
 
 const text = (path: string) => readFileSync(join(FIXTURE, path), 'utf8');
 const contracts = () => JSON.parse(text('registry/contracts.json'));
@@ -265,6 +265,8 @@ for (const [what, world, message] of [
   ['the providers disagree on a pool', { ...calm, drpc: { pools: { ...calm.pools, 'v3-usdc-usdt-100': { tick: 5000 } } } }, /cannot read observe\(uint32\[\]\) on v3-usdc-usdt-100 .*alchemy and drpc disagree/],
   ['a pool reverts at one provider only', { ...calm, drpc: { pools: { ...calm.pools, 'v3-usdc-usdt-100': 'revert' } } }, /cannot read observe\(uint32\[\]\) on v3-usdc-usdt-100/],
   ['a feed runs other code', { ...calm, code: { 'usdt-usd': '0x01' as Hex } }, /usdt-usd 0x3E7d\S+, which a value is read from, is not shown to run the code the registry pins/],
+  ['the token sold runs other code', { ...calm, code: { usdt: '0x01' as Hex } }, /usdt 0xdAC1\S+, which a value is read from, is not shown/],
+  ['the token received runs other code', { ...calm, code: { usdc: '0x01' as Hex } }, /usdc 0xA0b8\S+, which a value is read from, is not shown/],
   ['a pool runs other code', { ...calm, code: { 'v3-usdc-usdt-100': '0x01' as Hex } }, /v3-usdc-usdt-100 0x3416\S+, which a value is read from, is not shown/],
 ] as const satisfies readonly (readonly [string, World, RegExp])[]) {
   test(`card new refuses a floor, whatever is typed, when ${what}`, async () => {

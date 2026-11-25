@@ -168,6 +168,9 @@ Part of [the kiss-sign design](../design.md).
   A contract the transaction reaches without being one is not: the Morpho Blue markets, oracles and interest rate models behind a vault, the adapters of a Morpho Vault V2 that no card reference names, and the Safe's own singleton, fallback handler and guard.
   For the Safe's settings the floor rules check only that the transaction does not change them.
   A contract reached only from inside a registry contract, such as Fluid's Liquidity layer behind each fToken, is checked when that entry names it in `dependsOn`.
+- A value `card new` computes is read from pinned code only as far as the registry goes: the contract the read calls, the entries its target and arguments name, and their `dependsOn`.
+  What these call behind that is not checked, such as the adapters, markets, oracles and interest rate models behind a vault's `previewDeposit`, so a change there can move the computed limit; its inputs, such as a vault's reported assets, are not pinned either.
+  `decimals()` is read with no code check, for a typed amount and a computed one alike, except the two tokens of a swap's floor priced by feeds, whose code is checked first: a token that changed could scale what is typed; the base units in the seal question show it, and `verify`'s code check refuses the token.
 - A proxy that routes each selector to its own implementation has no view that lists its implementations, so its pin covers the implementations its seeds reach and the selectors those list.
   Seeds that miss an implementation leave it unchecked: the pin does not hold it, neither `verify` nor the report reads it, and a call to one of its selectors runs code nothing pinned.
   Only the AI's notes on the entry, from the proxy's implementation history, say that a seed reaches every implementation still set, and no program checks them.
