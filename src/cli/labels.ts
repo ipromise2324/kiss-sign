@@ -113,6 +113,7 @@ const EN = {
     noBlockTime: (why: string) => `cannot read the block's time: ${why}`,
     notFresh: (block: bigint, seconds: bigint, limit: bigint) =>
       `block ${block}, the latest both providers have, is ${seconds < 0n ? -seconds : seconds} s ${seconds < 0n ? 'after' : 'behind'} this computer's clock, more than ${limit} s; a provider that lags or lies, or a wrong clock, would make an old answer look current`,
+    leftOpen: (block: bigint, seconds: bigint, limit: bigint) => `block ${block}, which the card's values were read at, is now ${seconds} s old, more than ${limit} s; nothing is sealed, so run card new again`,
     feedRefused: (feed: string, address: string, why: string) => `${feed} ${address} gives no price: ${why}`,
     feedWhy: {
       description: (said: string, feed: { readonly description: string }) => `description() answers ${said}, the registry says ${JSON.stringify(feed.description)}`,
@@ -347,6 +348,7 @@ const ZH: Labels = {
     noBlockTime: (why) => `讀不到區塊的時間：${why}`,
     notFresh: (block, seconds, limit) =>
       `兩個供應商都有的最新區塊 ${block} 比這台電腦的時鐘${seconds < 0n ? '晚' : '早'} ${seconds < 0n ? -seconds : seconds} 秒，超過 ${limit} 秒；供應商落後或說謊、或時鐘不準，會讓舊的答案看起來像現在的`,
+    leftOpen: (block, seconds, limit) => `卡片的值是在區塊 ${block} 讀的，現在已經過了 ${seconds} 秒，超過 ${limit} 秒；什麼都沒封存，請重新執行 card new`,
     feedRefused: (feed, address, why) => `${feed} ${address} 給不出價格：${why}`,
     feedWhy: {
       description: (said, feed) => `description() 回答 ${said}，登記表寫的是 ${JSON.stringify(feed.description)}`,

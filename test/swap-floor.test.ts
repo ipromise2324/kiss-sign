@@ -14,7 +14,7 @@ import { encodeParams } from '../src/decode/codec.ts';
 import type { AbiValue } from '../src/decode/codec.ts';
 import { floorOf, pairFacts, valueOf } from '../src/price/reference.ts';
 import { harmonicLiquidity, meanTick, sqrtRatioAtTick } from '../src/price/tick.ts';
-import { RegistryError, parseRegistry, registryFromTexts } from '../src/registry.ts';
+import { RegistryError, loadRegistry, parseRegistry, registryFromTexts } from '../src/registry.ts';
 import type { Hex } from '../src/safe/types.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
 import { checkTemplateFields } from '../src/template/check.ts';
@@ -139,15 +139,16 @@ function transportOf(world: World, edited: ReadonlyMap<string, string>): Transpo
   };
 }
 
-type Typed = { readonly sell: string; readonly buy: string; readonly amount: string; readonly then: readonly string[] };
+type Typed = { readonly sell: string; readonly buy: string; readonly amount: string; readonly then: readonly string[]; readonly waits?: Readonly<Record<number, number>> };
 
 /** `card new` of one swap template in `world`: the picks, the amount, then the typed lines of `then`. */
-async function cardNew(id: string, { sell, buy, amount, then }: Typed, world: World = calm, repoRoot = (shared ??= clone()), language = 'en') {
+async function cardNew(id: string, { sell, buy, amount, then, waits = {} }: Typed, world: World = calm, repoRoot = (shared ??= clone()), language = 'en') {
   const home = mkdtempSync(join(tmpdir(), 'kiss-sign-floor-home-'));
   writeFileSync(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: SAFE, repo: 'github.com/signer/kiss-sign', language }));
   const registry = JSON.parse(readFileSync(join(repoRoot, 'registry', 'contracts.json'), 'utf8')) as Record<string, { address: string }>;
   const queue = [sell, buy, amount, ...then];
   const asked: string[] = [];
+  let waited = 0;
   let stdout = '';
   let stderr = '';
   const code = await main(['card', 'new', id], {
@@ -157,6 +158,7 @@ async function cardNew(id: string, { sell, buy, amount, then }: Typed, world: Wo
     platform: 'linux',
     readSecret: undefined,
     ask: async (question) => {
+      waited += waits[asked.length] ?? 0;
       asked.push(question);
       return queue.shift();
     },
@@ -164,7 +166,7 @@ async function cardNew(id: string, { sell, buy, amount, then }: Typed, world: Wo
     transport: transportOf(world, new Map(Object.entries(registry).map(([name, { address }]) => [address.toLowerCase(), name]))),
     fetchJson: async () => assert.fail('card new fetches nothing'),
     readMessage: async () => ({ why: 'none' }),
-    now: () => (world.clock ?? NOW) * 1000,
+    now: () => ((world.clock ?? NOW) + waited) * 1000,
   });
   const cards = existsSync(join(home, 'cards')) ? readdirSync(join(home, 'cards')) : [];
   const card = cards.length === 0 ? undefined : parseCard(JSON.parse(readFileSync(join(home, 'cards', cards[0] as string), 'utf8')));
@@ -343,6 +345,36 @@ test('a provider a few blocks behind and a clock a few minutes off are normal, a
     assert.equal(made.code, 0, made.stderr);
     assert.match(lines(made.stdout), /chain reads at block 264\d+ of 2027-01-15 08:00:00 UTC, where/);
   }
+});
+
+for (const [what, swap, at] of [
+  ['the slippage prompt', { ...STABLE, then: ['', 'y'] }, 3],
+  ['the typed minimum', { sell: 'weth', buy: 'usdc', amount: '1', then: ['1,640', 'y'] }, 3],
+  ['a minimum with no price', { sell: 'morpho', buy: 'usdc', amount: '10', then: ['15', 'y'] }, 3],
+  ['the seal question', { ...STABLE, then: ['', 'y'] }, 4],
+] as const) {
+  test(`card new seals nothing once ${what} was left open past 30 minutes, and seals at 30 minutes`, async () => {
+    const late = await cardNew('cow/swap', { ...swap, waits: { [at]: 1801 } });
+    assert.equal(late.code, 1, late.stdout);
+    assert.match(late.stderr, /block 26490000, which the card's values were read at, is now 1801 s old, more than 1800 s; nothing is sealed/);
+    assert.equal(late.minBuy, undefined);
+    if (at === 3) assert.ok(!late.stdout.includes('base units'), 'the box is not shown');
+    const inTime = await cardNew('cow/swap', { ...swap, waits: { [at]: 1800 } });
+    assert.equal(inTime.code, 0, inTime.stderr);
+  });
+}
+
+test('no floor is computed once the slippage prompt was left open', async () => {
+  const late = await cardNew('cow/swap', { ...STABLE, then: ['', 'y'], waits: { 3: 1801 } });
+  assert.match(late.stdout, /latestRoundData/);
+  assert.doesNotMatch(late.stdout, /the app's minimum received must be at least/);
+});
+
+test('no price is read for a floor once the block is old', async () => {
+  const twoAmounts = clone(undefined, (t) => (t.card.other = t.card['sell-amount']));
+  const late = await cardNew('uniswap/swap', { ...STABLE, then: ['1', '', 'y'], waits: { 3: 1801 } }, calm, twoAmounts);
+  assert.match(late.stderr, /is now 1801 s old/);
+  assert.doesNotMatch(late.stdout, /latestRoundData/);
 });
 
 test('what a feed calls itself is printed with no character that can rewrite the terminal', async () => {
@@ -556,6 +588,71 @@ for (const [what, edit, path] of [
     );
   });
 }
+
+const FLOOR = { atLeast: 'card.min-buy' };
+const SOLD_RULE = { card: 'sell-amount' };
+const TIME = { free: { time: { en: 'x', 'zh-TW': 'x' } } };
+const UNBOUND = /it does not bound what is received/;
+
+function swapOf(params: readonly (readonly [parameter: string, rule: unknown])[]): any {
+  const t = template('uniswap/swap');
+  t.card['other'] = { kind: 'amount', of: 'sell-token' };
+  t.effects.gives.push({ token: 'card.sell-token', amount: 'card.other' });
+  t.calls[0].args.inputs.items[0].encoded.args.params.items[1] = {
+    encoded: { as: `SWAP(${params.map(([p]) => p).join(', ')})`, args: Object.fromEntries(params.map(([p, rule]) => [p.split(' ')[1], rule])) },
+  };
+  t.calls[0].args.inputs.items[1] = { encoded: { as: 'OTHER(address token, uint256 other)', args: { token: { card: 'sell-token' }, other: { card: 'other' } } } };
+  t.calls[0].args.inputs.items[0].encoded.args.params.items.splice(0, 1);
+  t.calls[0].args.inputs.items[0].encoded.args.actions.const = '0x060e';
+  return t;
+}
+
+const least = (rule: unknown) => ['uint256 least', rule] as const;
+const sold = (rule: unknown = SOLD_RULE) => ['uint256 sold', rule] as const;
+const deadline = (rule: unknown) => ['uint256 deadline', rule] as const;
+const start = (rule: unknown) => ['uint256 start', rule] as const;
+
+for (const [what, params, said] of [
+  ['the minimum declared a time, after the amount sold', [sold(), least(TIME), deadline(FLOOR)], /beside a free time it must come after sell-amount, with the time not between them/],
+  ['the minimum declared a time, after a deadline first', [deadline(FLOOR), sold(), least(TIME)], /beside a free time it must come after sell-amount/],
+  ['the amount received declared a time, before the most sold', [least(TIME), sold({ atMost: 'card.sell-amount' }), deadline(FLOOR)], /beside a free time it must come before sell-amount/],
+  ['the amount received declared a time, between a deadline and the most sold', [deadline(FLOOR), least(TIME), sold({ atMost: 'card.sell-amount' })], /beside a free time it must come before sell-amount/],
+  ['two free times', [start(TIME), sold(), least(FLOOR), deadline(TIME)], /2 free times of type uint256 sit beside it/],
+  ['the minimum at most an amount', [sold(), least({ atMost: 'card.other' }), deadline(FLOOR)], /another uint256 beside it is neither a const, a time nor one of the two amounts/],
+  ['the minimum another card amount', [sold(), least({ card: 'other' }), deadline(FLOOR)], /another uint256 beside it/],
+  ['the minimum at least another card amount', [sold(), least({ atLeast: 'card.other' }), deadline(FLOOR)], /another uint256 beside it/],
+  ['the minimum at most the amount sold', [sold(), least({ atMost: 'card.sell-amount' }), deadline(FLOOR)], /another uint256 beside it/],
+  ['a deadline left plainly free', [sold(), least(FLOOR), deadline({ free: 'x' })], /a free uint256 sits beside it and could be the real minimum; a deadline must be declared a time, \{"free": \{"time": "<why>"\}\}/],
+] as const) {
+  test(`a floor is refused beside ${what}`, () => {
+    assert.throws(
+      () => parseTemplate(swapOf(params), shipped),
+      (error) => error instanceof TemplateError && error.message.startsWith('card.min-buy.floor:') && UNBOUND.test(error.message) && said.test(error.message),
+    );
+  });
+}
+
+for (const [what, params] of [
+  ['an exact sale with a deadline last', [sold(), least(FLOOR), deadline(TIME)]],
+  ['an exact sale with a deadline first', [deadline(TIME), sold(), least(FLOOR)]],
+  ['an amount received, the most sold and a deadline', [least(FLOOR), sold({ atMost: 'card.sell-amount' }), deadline(TIME)]],
+  ['a deadline within seconds, and a const', [start({ const: '0' }), sold(), least(FLOOR), deadline({ withinSeconds: 600 })]],
+  ['a minimum before the amount sold, with no free time', [least(FLOOR), sold()]],
+] as const) {
+  test(`a floor loads in ${what}`, () => {
+    parseTemplate(swapOf(params), shipped);
+  });
+}
+
+test('each shipped swap template loads with a floor on it', () => {
+  const registry = loadRegistry(ROOT);
+  const tried = ['uniswap/swap', 'uniswap/swap-no-hook', 'cow/swap', 'cow/swap-approve'];
+  for (const id of tried) {
+    const raw = JSON.parse(readFileSync(join(ROOT, 'templates', id, 'template.json'), 'utf8'));
+    raw.card['min-buy'].floor = { sells: 'sell-amount' };
+    parseTemplate(raw, registry);
+  }
+});
 
 test('a real swap meets a card whose floor is at or below its own minimum, and one unit above it is a mismatch, with or without `floor` in the template', () => {
   const fixture = JSON.parse(readFileSync(join(ROOT, 'testdata', 'safe-tx', 'uniswap-swap-hook-usdc-usdt.json'), 'utf8'));

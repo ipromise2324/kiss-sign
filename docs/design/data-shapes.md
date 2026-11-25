@@ -362,9 +362,14 @@ Card values per operation, covering the operations in the Safe's history:
   Example: 16,089.929021 USDT, with the feeds at 0.99894 and 0.99994 and the pool lower, is worth 16,073.838 USDC; at 0.50% the floor is that less 0.75%, 15,953.284 USDC, and an app minimum of 15,995.324415 meets it.
   When the app's minimum is below the floor, `verify` says `MISMATCH`, and the signer types the slippage the app shows or lowers it in the app.
   Template load refuses a `floor` beside `computed` or `max`; one whose `sells` is not another typed amount; a field or a `sells` that does not count a token a card `contract` field of kind `token` or `vault` picks; and one that does not bind.
-  To bind, an `atLeast` of it must sit beside the sold amount (exactly the card's, or `atMost` it) in one call, struct or message, with the same type, and no other number of that type there may be free but a `time`, so it cannot be a deadline's.
+  To bind, an `atLeast` of it must sit beside the sold amount (exactly the card's, or `atMost` it) in one call, struct or message, with the same type, so it cannot be a deadline's.
+  Any other value of that type there must be a `const`, a `withinSeconds` time, or one free `time`, so an honest deadline is declared a time; a second free time, a plain `free`, `equals`, or another card amount is refused.
+  Beside a free time, an exact amount sold must come before the floor, and an `atMost` one after it, with the time not between them: the order in Uniswap's v2 and v3 routers, where the minimum declared a time and the floor put on the deadline shows.
   A transaction that moves tokens must also name both amounts in its effects: `sells` in `gives`, an `atLeast` of the floor in `gets`, each in its own token.
-  One that moves none signs an order, and each message it signs must hold both tokens and both amounts; which of two fixed numbers of one type is the amount received is left to the review.
+  One that moves none signs an order, and each message it signs must hold both tokens and both amounts.
+  Load does not know which number the contract reads as its minimum.
+  The review compares the floor's parameter with the contract's source, and that the real minimum is not: a `const` (0 bounds nothing) or a `withinSeconds`; a free time where the contract's own order has the deadline between the amount sold and the minimum, or the minimum before the amount sold; a number of another width, a `bytes32`, or one in `bytes`; or one in another struct, in an array, or among the arguments around a struct.
+  It also checks that the message's sell and buy tokens are not exchanged, as load only requires both.
   The floor is `card new`'s: `card seal` of a file checks only that it is not 0.
   It does not give the best price, protect against what happens above the floor, or cover a token without a feed, and its feeds' owner can change the aggregator behind a proxy whose code stays as pinned (see [Known limits](known-limits.md#known-limits)).
   Without `floor`, as for a template written before it, the minimum is typed from what the app shows.

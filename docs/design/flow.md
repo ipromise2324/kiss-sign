@@ -654,6 +654,7 @@ The AI fills nothing and decides nothing here.
    Every read of a card is made at one block, the lower of the two providers' heads, and the box before the seal question prints its time.
    `card new` refuses when that block is more than 300 seconds from this computer's clock, either way, or the heads are more than 25 blocks apart, 25 slots being the same five minutes: one provider that lags or lies could otherwise choose an old block, at which an old feed answer looks fresh.
    Providers that serve wallets are normally within a few blocks of each other, and the shortest feed heartbeat in use is an hour, so five minutes refuses neither normal lag nor an unsynchronised clock.
+   The block's age is checked again before a floor's prices are read, after the slippage is typed, before the seal question and after it is answered: once the block is more than 30 minutes old, as when a prompt was left open, the card is refused and nothing is sealed.
    A field with a `floor` is computed or typed by the rule of the two tokens picked, after every other typed number: `card new` prints each feed and pool it read, with its address, the value of the amount sold by each, and any doubt; a doubted or far-off minimum is typed twice.
    A card with several operations names several templates.
    Terminal output is plain text when standard output is not a terminal or `NO_COLOR` is set; at a terminal, colour sets apart what the signer picked or typed, what the program computed, and dim provenance lines, and nothing is said by colour alone.

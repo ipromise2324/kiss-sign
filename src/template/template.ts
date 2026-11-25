@@ -1575,7 +1575,7 @@ export function floorFields(template: Template): ReadonlySet<string> {
   ]);
 }
 
-/** Values that sit side by side: the arguments of one call, the members of one struct or message, the items of one array. */
+/** Values that sit side by side: the arguments of one call, the members of one struct or message, the parts of packed bytes. */
 type Siblings = { readonly of: 'arguments' | 'message'; readonly members: readonly { readonly type: AbiType; readonly rule: Rule }[] };
 
 function siblingsIn(of: Siblings['of'], types: readonly AbiType[], rules: readonly Rule[]): Siblings[] {
@@ -1602,31 +1602,57 @@ function siblingsUnder(type: AbiType, rule: Rule): Siblings[] {
   }
 }
 
+const isSale = (rule: Rule, sells: string): boolean => (rule.kind === 'card' && rule.ref.field === sells) || (rule.kind === 'at-most' && rule.field === sells);
+
 /**
- * A floor must bound what the Safe receives, for exactly what it sells. Another free number of the floor's type beside it
- * could be the real minimum, leaving the floor on a deadline. A transaction that moves no token signs an order, so each
- * message must bind it.
+ * Why no `atLeast` of `name` in the group bounds what is received for `sells`, or undefined when one does. Anything else
+ * of its type there could be the real minimum, leaving the floor on a deadline. A deadline may stay free where swapping it
+ * with the minimum shows: Uniswap's v2 and v3 routers put an exact amount sold before its minimum, and an amount received
+ * before its most sold, with no deadline between.
+ */
+function unboundFloor({ members }: Siblings, name: string, sells: string): string | undefined {
+  const isLeast = (rule: Rule): boolean => rule.kind === 'at-least' && rule.field === name;
+  const isTime = (rule: Rule): boolean => rule.kind === 'free' && rule.time === true;
+  const types = new Set(members.flatMap(({ type, rule }) => (isLeast(rule) ? [canonicalType(type)] : [])));
+  const problems = [...types].map((type): string | undefined => {
+    const rules = members.flatMap((member) => (canonicalType(member.type) === type ? [member.rule] : []));
+    const sold = rules.findIndex((rule) => isSale(rule, sells));
+    if (sold === -1) return `no atLeast of it sits beside ${sells} with the same type`;
+    const other = rules.find((rule, i) => i !== sold && !isLeast(rule) && !isTime(rule) && rule.kind !== 'const' && rule.kind !== 'within-seconds');
+    if (other?.kind === 'free') return `a free ${type} sits beside it and could be the real minimum; a deadline must be declared a time, {"free": {"time": "<why>"}}`;
+    if (other !== undefined) return `another ${type} beside it is neither a const, a time nor one of the two amounts, so it could be the real minimum`;
+    const times = rules.flatMap((rule, i) => (isTime(rule) ? [i] : []));
+    if (times.length > 1) return `${times.length} free times of type ${type} sit beside it, so one could be the real minimum`;
+    const [time] = times;
+    if (time === undefined) return undefined;
+    const exact = rules[sold]?.kind === 'card';
+    const least = exact ? rules.findIndex((rule, i) => i > sold && isLeast(rule)) : rules.findLastIndex((rule, i) => i < sold && isLeast(rule));
+    if (least !== -1 && (time < Math.min(sold, least) || time > Math.max(sold, least))) return undefined;
+    return `beside a free time it must come ${exact ? 'after' : 'before'} ${sells}, with the time not between them, or the time could be the real minimum`;
+  });
+  return problems.includes(undefined) ? undefined : (problems[0] ?? `no atLeast of it sits beside ${sells} with the same type`);
+}
+
+/**
+ * A floor must bound what the Safe receives, for exactly what it sells. A transaction that moves no token signs an order,
+ * so each message must bind it.
  */
 function requireBindingFloor(template: Template, name: string, { sells }: Floor): void {
   const path = `card.${name}.floor`;
   const { gives, gets } = template.effects;
   const tokenOf = (field: string): string => refKey((template.card.get(field) as Extract<CardField, { kind: 'amount' }>).of);
   const groups = template.calls.flatMap(({ data }) => (data === 'empty' ? [] : siblingsIn('arguments', typesOf(data.fn.params), data.args)));
-  const sold = (rule: Rule): boolean => (rule.kind === 'card' && rule.ref.field === sells) || (rule.kind === 'at-most' && rule.field === sells);
-  const bounds = ({ members }: Siblings): boolean =>
-    members.some(
-      (least) =>
-        least.rule.kind === 'at-least' &&
-        least.rule.field === name &&
-        members.some(({ type, rule }) => sold(rule) && canonicalType(type) === canonicalType(least.type)) &&
-        !members.some(({ type, rule }) => rule.kind === 'free' && rule.time !== true && canonicalType(type) === canonicalType(least.type)),
-    );
-  if (!groups.some(({ members }) => members.some(({ rule }) => sold(rule)))) throw new TemplateError(`${path}.sells`, `no call sells exactly, or at most, ${sells}`);
-  if (!groups.some(bounds)) throw new TemplateError(path, `no atLeast of it sits beside ${sells} with the same type and no free number of that type, so it does not bound what is received`);
+  const selling = (group: Siblings): boolean => group.members.some(({ rule }) => isSale(rule, sells));
+  if (!groups.some(selling)) throw new TemplateError(`${path}.sells`, `no call sells exactly, or at most, ${sells}`);
+  const problems = groups.map((group) => unboundFloor(group, name, sells));
+  if (!problems.includes(undefined)) {
+    const beside = groups.findIndex((group) => selling(group) && group.members.some(({ rule }) => rule.kind === 'at-least' && rule.field === name));
+    throw new TemplateError(path, `it does not bound what is received: ${problems[Math.max(beside, 0)]}`);
+  }
   if (gives.length === 0 && gets.length === 0) {
     const names = ({ members }: Siblings, token: string): boolean => members.some(({ rule }) => rule.kind === 'card' && refKey(rule.ref) === token);
     const messages = groups.filter(({ of }) => of === 'message');
-    const whole = messages.every((message) => bounds(message) && names(message, tokenOf(sells)) && names(message, tokenOf(name)));
+    const whole = messages.every((message) => unboundFloor(message, name, sells) === undefined && names(message, tokenOf(sells)) && names(message, tokenOf(name)));
     if (messages.length === 0 || !whole) throw new TemplateError(path, `the transaction moves no token, and a message it signs does not hold both tokens, ${sells} and an atLeast of ${name}`);
     return;
   }

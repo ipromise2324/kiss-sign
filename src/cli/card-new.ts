@@ -132,6 +132,7 @@ const UINT256_LIMIT = 1n << 256n;
  * old feed answer looks fresh.
  */
 const MAX_BLOCK_DRIFT_SECONDS = 300n;
+const MAX_READ_AGE_SECONDS = 1800n;
 const SLOT_SECONDS = 12n;
 const MAX_HEAD_GAP = MAX_BLOCK_DRIFT_SECONDS / SLOT_SECONDS;
 
@@ -140,6 +141,7 @@ type Chain = {
   readonly decimals: (entry: RegistryEntry) => Promise<number>;
   /** The time of the block every read is made at. */
   readonly time: () => Promise<bigint>;
+  readonly refuseOld: () => void;
   /** Refuses the card unless `entry`, and each entry it depends on, runs the code its registry pin names. */
   readonly pinned: (entry: RegistryEntry) => Promise<void>;
   /** What a view answers. */
@@ -154,6 +156,7 @@ type Chain = {
 
 function openChain(reader: Reader | undefined, registry: Registry, now: () => number, L: CardWords): Chain {
   let at: BlockHeader | undefined;
+  const behindClock = (block: BlockHeader): bigint => BigInt(Math.floor(now() / 1000)) - block.time;
   const noTime = (why: string): never => {
     throw new CardError(L.noBlockTime(why));
   };
@@ -163,7 +166,7 @@ function openChain(reader: Reader | undefined, registry: Registry, now: () => nu
       const latest = await reader.block('latest');
       const header = await reader.header(latest.kind === 'agreed' ? latest.value : refuse(latest.reason));
       const block = header.kind === 'agreed' ? header.value : noTime(header.reason);
-      const behind = BigInt(Math.floor(now() / 1000)) - block.time;
+      const behind = behindClock(block);
       if (behind > MAX_BLOCK_DRIFT_SECONDS || -behind > MAX_BLOCK_DRIFT_SECONDS) throw new CardError(L.notFresh(block.number, behind, MAX_BLOCK_DRIFT_SECONDS));
       at = block;
     }
@@ -194,6 +197,11 @@ function openChain(reader: Reader | undefined, registry: Registry, now: () => nu
       if (typeof decimals !== 'number') return refuse(decimals.problem);
       known.set(entry.address, decimals);
       return decimals;
+    },
+    refuseOld: () => {
+      if (at === undefined) return;
+      const behind = behindClock(at);
+      if (behind > MAX_READ_AGE_SECONDS) throw new CardError(L.leftOpen(at.number, behind, MAX_READ_AGE_SECONDS));
     },
     pinned: async (entry) => {
       const refuse = (why: string): never => {
@@ -493,6 +501,7 @@ async function floorValue(name: string, field: TypedField & { readonly kind: 'am
     io.stdout(text(rows([['', L.noIndependentPrice(facts.tokens.map((token) => token.name)), p.warn]], 2)));
     return { value: await typedValue(name, field, values, ctx), by: 'typed' };
   }
+  ctx.chain.refuseOld();
   const reference = await referenceOf(facts, sell, buy, ctx);
   const [sellDecimals, decimals] = [await ctx.chain.decimals(sell), await ctx.chain.decimals(buy)];
   const amount = BigInt(values[sells] as string);
@@ -521,6 +530,7 @@ async function floorValue(name: string, field: TypedField & { readonly kind: 'am
   if (expected === 0n) throw new CardError(L.priceComesToZero(name));
   if (computes) {
     const typed = typedSlippage(name, await answer(ctx.ask, L.askSlippage(name, percent(FLOOR_RULE.slippageBps), percent(FLOOR_RULE.maxSlippageBps))), L);
+    ctx.chain.refuseOld();
     const total = typed + FLOOR_RULE.marginBps;
     const value = floorOf(amount, reference.strict, total);
     const stricter = reference.twaps.some((ratio) => moreThan(ratio, reference.chain)) ? L.poolValue : L.feedValue;
@@ -644,5 +654,11 @@ export async function cardNew(args: readonly string[], io: Io, w: Labels): Promi
     for (const name of filled.computed) computed.add(`${i}:${name}`);
   }
   io.stdout('\n');
-  return seal({ operations }, io, w, confirm, { decimals: chain.known, provenance: chain.provenance(), computed });
+  chain.refuseOld();
+  const confirmFresh: Terminal['confirm'] = async (question) => {
+    const yes = await confirm(question);
+    if (yes) chain.refuseOld();
+    return yes;
+  };
+  return seal({ operations }, io, w, confirmFresh, { decimals: chain.known, provenance: chain.provenance(), computed });
 }
