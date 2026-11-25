@@ -88,7 +88,7 @@ One report covers one concrete operation: for a template reported per instance, 
 2. **Research the addresses.** For each contract the operation touches, find and check the address yourself in every place you can, write what you saw as `entries.<name>.sources` in `notes.json`, record in the registry each place the program can read, and only then run the program's checks ([addresses.md](addresses.md)).
 3. **Establish the ABI.** Take function signatures only from a proven ABI ([how](build-template.md#establish-the-abi)).
 4. **Draft the template.** Start from the nearest existing template and bind every argument ([how](build-template.md#draft-the-template)).
-5. **Study past transactions.** Run `pnpm past-txs` with the program's own search, every transaction from the newest block back through the last year or as far as its page cap reaches, and read every misfit and every balance difference ([how](build-template.md#study-past-transactions)).
+5. **Study past transactions.** Run `pnpm past-txs` with the program's own search, every transaction from the newest block back through the last year or as far as its page cap reaches, read every misfit and every balance difference, and settle every address it names in the call traces ([how](build-template.md#study-past-transactions)).
 6. **Check the protocol's health.** Hacks, audits, upgrades, admin changes, paused contracts, each with a URL ([how](build-template.md#check-the-protocols-health)).
 7. **Generate the report.** Write `docs.json`, then `pnpm report ... --record` ([how](build-template.md#generate-the-report)).
 8. **Write the notes and reviews.** Complete `notes.json` around your step 2 observations, write a review of every result the signer must look at against the result as printed, then `pnpm report ... --render` ([notes-and-reviews.md](notes-and-reviews.md)).
@@ -105,7 +105,7 @@ The new instance's `--record` reads that shared part live again, since its repor
 
 1. Research the new instance's address, and every entry it names that no report names yet, such as its asset, as [addresses.md](addresses.md) says, its observations in the instance's own `notes.json` before any check.
    Prove its factory when the entry has a `factory` attribute, and read its evidence ([An instance a template is reported per](addresses.md#contracts-that-need-more)).
-2. Run `pnpm past-txs <protocol>/<operation>` anchored on the instance with the transfer or event the operation itself makes, such as `--token <vault> --anchor mint` for a vault deposit ([Study past transactions](build-template.md#study-past-transactions)), with no block range and `--record <name>`, and note the counts by sender type.
+2. Run `pnpm past-txs <protocol>/<operation>` anchored on the instance with the transfer or event the operation itself makes, such as `--token <vault> --anchor mint` for a vault deposit ([Study past transactions](build-template.md#study-past-transactions)), with no block range and `--record <name>`, note the counts by sender type, and settle every address it names in the call traces.
    The instance's report includes only the past-txs summaries whose `--token` is the instance itself, so anchor on it, never on its asset.
 3. Before recording, write the instance's own `docs.json` when a function's page is specific to this report, such as a page that names the instance, its asset or another contract only this report covers: `--record` reads and checks those pages.
    Then run `pnpm report <protocol>/<operation> --instance-of <instance> --record`.

@@ -29,6 +29,7 @@ The exact shape and every limit are in step 6 of [First time an operation is don
   Before you write a line, find that call in a past transaction's internal calls (Etherscan's trace of one transaction `pnpm past-txs` found) and in the contract's source; `sources` holds both, the source pinned to a commit first, since a confirmed line links the first source, then the transaction's Etherscan page; the program checks only that `sources` is a list of https URLs, not empty.
   Name no call the template binds itself, such as a Bundler3 bundle item: the diagram draws those from the template, and the program refuses the line.
   Spend the four lines on the steps that move money inside the call: every `transfer`, `transferFrom`, `approve` or ETH transfer that touches the sender (made by it, paying it or paid to it, or spending its allowance) and is not a call the template binds or a line names, nor made directly by one, is a result for the signer that you review; a call between two other addresses is not.
+  Every address outside the registry in those calls was settled before the notes, at [Study past transactions](build-template.md#study-past-transactions); its review says the same.
 - `protocols`, by DefiLlama slug, one for every protocol the generated report's protocol facts cover: `intro`, one line; `audits`, a note citing the audit reports; `incidents`, one note per DefiLlama hack in date order, its cause with the post-mortem as a source, exactly as many as the facts list.
 - `judgments`: at most four, each with a `recommendation`.
 - `reviews`: below.
