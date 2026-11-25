@@ -3,10 +3,21 @@ import type { RegistryEntry } from '../registry.ts';
 import type { FreeClaim, ViewChange } from '../template/template.ts';
 import type { Confidence, FindingKind, Phrase, State, StripLine } from './ledger.ts';
 import type { AiTag, AiSourceResult, Reviewed, Span, Who } from './report-page.ts';
+import type { PastGroupKind } from './report-past.ts';
 import type { OutsideKind } from './study.ts';
 
-/** Chinese text before a word, with a space only when the word starts in Latin script or a digit. */
+/** Chinese text before a word, or after one, with a space only where the word's own end is in Latin script or a digit. */
 const before = (prefix: string, word: string): string => (/^[A-Za-z0-9]/.test(word) ? `${prefix} ${word}` : `${prefix}${word}`);
+const after = (word: string, suffix: string): string => (/[A-Za-z0-9]$/.test(word) ? `${word} ${suffix}` : `${word}${suffix}`);
+/** A card field in words, and whether the program computes it instead of the signer typing it. */
+export type By = { readonly field: string; readonly computed: boolean };
+
+const zhField = (prefix: string, { field, computed }: By): string => before(`${prefix}${computed ? '程式算的' : '你填的'}`, field);
+const enField = ({ field, computed }: By): string => `the ${field} ${computed ? 'the program computes' : 'you type'}`;
+
+/** What the perturbation tests saw of the other values they tried in a free place. */
+export type FreeTest = 'not-tested' | 'all-failed' | 'tested';
+
 const plural = (n: number, one: string, many: string): string => (n === 1 ? one : many);
 
 /** Of a paged year's transactions with a proven Safe party, how many were found and how many studied. */
@@ -18,7 +29,7 @@ export type SafeParties = { readonly found: number; readonly studied: number };
  */
 export type SearchSpan = { readonly kind: 'year' | 'recent'; readonly from: bigint; readonly to: bigint; readonly time: { readonly from: bigint; readonly to: bigint } | undefined; readonly cap: number };
 
-const dateOf = (seconds: bigint): string => new Date(Number(seconds) * 1000).toISOString().slice(0, 10);
+export const dateOf = (seconds: bigint): string => new Date(Number(seconds) * 1000).toISOString().slice(0, 10);
 
 /** How far a tolerance lets a balance end from the card's amount, such as `up to 2 base units lower or 1 base unit higher`. */
 export const toleranceSpan = (less: bigint, more: bigint): string => {
@@ -26,13 +37,28 @@ export const toleranceSpan = (less: bigint, more: bigint): string => {
   return `up to ${[less > 0n ? `${units(less)} lower` : '', more > 0n ? `${units(more)} higher` : ''].filter((t) => t !== '').join(' or ')}`;
 };
 
-function durationText(seconds: bigint, units: readonly [string, string, string], open: string, close: string): string {
-  const size = (s: bigint) => (s < 0n ? -s : s);
-  const unit = ([86400n, 3600n, 60n] as const).findIndex((u) => size(seconds) >= u);
-  if (unit === -1) return '';
-  const value = Number(seconds) / Number([86400n, 3600n, 60n][unit]);
-  return `${open}${Number.isInteger(value) ? value : value.toFixed(1)} ${units[unit]}${close}`;
+const UNITS = [86400n, 3600n, 60n] as const;
+
+/** Which way a length loses its last digits: `up` for one nothing exceeds, such as a limit, `down` for one nothing is below. */
+type Rounding = 'up' | 'down';
+
+/** A length of time in the largest unit it fills, such as `5.7 days`, or past two years in whole years. */
+function durationText(seconds: bigint, rounding: Rounding, unit: (n: string, of: 'second' | 'minute' | 'hour' | 'day' | 'year') => string): string {
+  const parts = (n: bigint, of: bigint): bigint => (rounding === 'up' ? (n + of - 1n) / of : n / of);
+  const year = 365n * 86400n;
+  if (seconds >= 2n * year) return unit(grouped(parts(seconds, year)), 'year');
+  const at = UNITS.findIndex((u) => seconds >= u);
+  const of = UNITS[at];
+  if (of === undefined) return unit(`${seconds}`, 'second');
+  const tenths = parts(seconds * 10n, of);
+  return unit(`${tenths / 10n}${tenths % 10n === 0n ? '' : `.${tenths % 10n}`}`, (['day', 'hour', 'minute'] as const)[at] as 'day');
 }
+
+const opposite = (rounding: Rounding): Rounding => (rounding === 'up' ? 'down' : 'up');
+const grouped = (n: bigint): string => n.toString().replace(/\B(?=(\d{3})+$)/g, ',');
+const ZH_UNITS = { second: '秒', minute: '分鐘', hour: '小時', day: '天', year: '年' } as const;
+const zhDuration = (seconds: bigint, rounding: Rounding = 'up'): string => durationText(seconds, rounding, (n, of) => `${n} ${ZH_UNITS[of]}`);
+const enDuration = (seconds: bigint, rounding: Rounding = 'up'): string => durationText(seconds, rounding, (n, of) => `${n} ${of}${n === '1' ? '' : 's'}`);
 
 const ZH = {
   /** Joins the items of a list the way prose does: `a、b` in Chinese, `a, b` in English. */
@@ -76,12 +102,12 @@ const ZH = {
   named: (word: string, name: string): string => `${word}（${name}）`,
   /** A part of a card field, such as the vault's asset. */
   partOf: (field: string, part: string): string => before(`${field}的`, part),
-  typed: (field: string): string => before('你填的', field),
+  typed: (by: By): string => zhField('', by),
   picked: (field: string): string => before('你選的', field),
-  atLeastTyped: (field: string): string => before('至少你填的', field),
-  atMostTyped: (field: string): string => before('最多你填的', field),
-  exactlyTyped: (field: string): string => before('剛好你填的', field),
-  equalsTyped: (field: string): string => before('等於你填的', field),
+  atLeastTyped: (by: By): string => zhField('至少', by),
+  atMostTyped: (by: By): string => zhField('最多', by),
+  exactlyTyped: (by: By): string => zhField('剛好', by),
+  equalsTyped: (by: By): string => zhField('等於', by),
 
   free: {
     scalar: '換成別的值測過，結果不變或交易失敗',
@@ -89,11 +115,16 @@ const ZH = {
     unread: '合約不讀它，換成別的值結果一樣',
     route: '換成別的值測過，會走別的池子，收到的仍不少於卡片',
   } satisfies Record<FreeClaim, string>,
+  freeNotTested: '模板允許任何值，沒有測試換過別的值',
+  freeAllFailed: '換成別的值測過，每次交易都失敗或不符合卡片',
+  freeKeyNotTested: '模板允許任何值，沒有測試換過別的值。',
+  freeKeySomeNotTested: '模板允許任何值；其中有些沒有測試換過別的值。',
+  freeKeyAllFailed: '換成別的值測過，每次交易都失敗或不符合卡片。',
   freeKey: {
-    scalar: '換成別的值，結果一樣或交易失敗',
-    proof: '換成別的值，交易就失敗',
-    unread: '合約不讀它，換成別的值結果一樣',
-    route: '換成別的值會走別的池子，但 Safe 給出和收到的數量仍要符合卡片，否則交易失敗或 MISMATCH',
+    scalar: '換成別的值，結果一樣或交易失敗。',
+    proof: '換成別的值，交易就失敗。',
+    unread: '合約不讀它，換成別的值結果一樣。',
+    route: '換成別的值會走別的池子，但 Safe 給出和收到的數量仍要符合卡片，否則交易失敗或 MISMATCH。',
   } satisfies Record<FreeClaim, string>,
   freeMember: '訂單裡的值，由雜湊鎖住；模板不限，也不換值測試',
   source: { api: '協議 API', coingecko: 'CoinGecko', factory: '工廠', bounty: 'Immunefi 漏洞賞金範圍', deployer: '部署者' },
@@ -105,8 +136,8 @@ const ZH = {
   githubDomains: 'GitHub 驗證網域',
   deployer: (address: string, siblings: readonly string[]): string => `部署者 ${address}${siblings.length === 0 ? '' : `，也部署了 ${siblings.join('、')}`}`,
   confirmed: (places: readonly string[], enough: boolean): string => (places.length === 0 ? '沒有任何地方確認' : `${enough ? '在' : '只在'} ${places.length} 個地方確認：${places.join('、')}`),
-  fewConfirmationsWhy: (min: number): string =>
-    `至少要 ${min} 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。`,
+  fewConfirmations: (address: Span, places: readonly string[], min: number): Span[] =>
+    places.length === 0 ? ['沒有任何地方列出 ', address, `；至少要 ${min} 個。`] : [`只在 ${places.join('、')} 找到 `, address, `；至少要 ${min} 個地方。`],
 
   finding: {
     'site-differs': { title: '網站跟 DefiLlama 列的不同', why: '這個頁面的網域或 GitHub 組織，不是 DefiLlama 列給這個協議的。' },
@@ -154,9 +185,20 @@ const ZH = {
   } satisfies { readonly [K in FindingKind]?: { readonly title: string; readonly why: string } },
   needsReview: '要你看',
   flowLine: (n: number): string => `流程線 ${n}`,
-  moneySubject: (call: number, from: string, to: string, kind: Span): Span[] => [`呼叫 ${call} 底下 ${from} → ${to} 的 `, kind],
+  money: {
+    sender: '送出方',
+    inPast: (n: number): string => `${n} 筆過去交易裡，`,
+    transfer: (from: string, to: string, token: string): string => `${after(from, '付了')} ${token} ${before('給', to)}`,
+    approve: (from: string, to: string, token: string): string => `${after(from, '讓')} ${to} ${before('動用它的', token)}`,
+    eth: (from: string, to: string): string => `${after(from, '付了')} ETH ${before('給', to)}`,
+    unread: (call: number, token: string): string => `呼叫 ${call} 底下有一步動了送出方的 ${token}，付給誰沒有讀到`,
+    notDescribed: '，模板沒有說明這一步',
+    several: (n: number, what: string): string => `${n} 個不同的${what}`,
+    addresses: '地址',
+    under: (call: number): string => `在呼叫 ${call} 底下。`,
+    parties: (pairs: readonly string[], all: number): string => `付款方 → 收款方${all > pairs.length ? `（共 ${all} 組，列出 ${pairs.length} 組）` : ''}：${pairs.join('、')}。`,
+  },
   seenIn: (seen: number, of: number): string => `在 ${of} 筆裡看到 ${seen} 筆。`,
-  inTransactions: (n: number): string => `共 ${n} 筆過去交易。`,
   outsideRegistry: (shown: readonly string[], all: number): string => `不在登記表裡的地址${all > shown.length ? `（共 ${all} 個，列出 ${shown.length} 個）` : ''}：${shown.join('、')}。`,
   docSubject: (page: string, fn: Span): Span[] => [`${page} `, fn],
   notInStandard: (standard: string): string => `標準頁上沒有這個函式在 ${standard} 裡的宣告。`,
@@ -175,11 +217,9 @@ const ZH = {
   safe: '你的 Safe',
   role: { sender: '發起', contract: '合約', fixed: '固定的地址', picked: '你選' },
   who: { 'you-type': '你填', 'you-pick': '你選', computed: '程式算', fixed: '固定', free: '不限', bounded: '有上限' } satisfies Record<Who, string>,
-  appFills: 'app 填，不限',
-  appBounded: 'app 填，有上限',
   chip: (who: string, field: string): string => `${who}：${field}`,
-  chipParts: (names: readonly string[], who: string): string => `${names.join('、')} ${who}`,
-  whoMeans: { 'you-type': '每次簽名填', 'you-pick': '每次簽名選', computed: 'card new 每次簽名讀鏈算出，你核對', fixed: '改了就 MISMATCH', bounded: '超過上限就 MISMATCH', member: '訂單裡的值，由雜湊鎖住' },
+  whoMeans: { 'you-type': '每次簽名你自己填。', 'you-pick': '每次簽名你從清單裡選。', computed: 'card new 每次簽名從鏈上讀，你核對。', fixed: '模板定的。改了就 MISMATCH。', bounded: '超過上限就 MISMATCH。', member: '訂單裡的值，由訂單的雜湊鎖住。' },
+  whoGroup: { you: '你', program: 'kiss-sign', app: 'app' },
   change: { increases: '增加', decreases: '減少', same: '不變' } satisfies Record<ViewChange, string>,
   inParens: (items: readonly string[]): string => `（${items.join('、')}）`,
 
@@ -198,8 +238,9 @@ const ZH = {
   priceHow: '依卡片的金額和股份數算出，交易裡的要一樣嚴或更嚴',
   atLeastHow: '比這個少就 MISMATCH',
   atMostHow: '比這個多就 MISMATCH',
-  within: (seconds: bigint): string => `最多比區塊時間晚 ${seconds} 秒${durationText(seconds, ['天', '小時', '分鐘'], '（約 ', '）')}`,
-  withinHow: '區塊時間：還沒執行的交易用 verify 讀到的最新區塊，已執行的用它所在的區塊；更晚就 MISMATCH',
+  within: (seconds: bigint): string => `最多比區塊時間晚 ${zhDuration(seconds)}`,
+  withinHow: (seconds: bigint): string => `剛好 ${seconds} 秒。區塊時間：還沒執行的交易用 verify 讀到的最新區塊，已執行的用它所在的區塊；更晚就 MISMATCH。`,
+  withinLabel: '怎麼算',
   argsOf: (fn: Span): Span[] => [fn, ' 的參數'],
   packed: (bytes: number, parts: number): string => `${bytes} bytes，${parts} 段接在一起`,
   eip712: (struct: Span): Span[] => [struct, ' 的 EIP-712 雜湊'],
@@ -231,8 +272,8 @@ const ZH = {
   getsMore: '收到多於 0',
   getsAny: '收到 0 或更多',
   riseOrStay: '可以增加或不變，不能減少',
-  getsAtLeast: (field: string): string => before('收到的不能少於你填的', field),
-  givesAtMost: (field: string): string => `${before('給出的不能多於你填的', field)}，Safe 的餘額也不能增加`,
+  getsAtLeast: (by: By): string => zhField('收到的不能少於', by),
+  givesAtMost: (by: By): string => `${zhField('給出的不能多於', by)}，Safe 的餘額也不能增加`,
   tolerance: (less: bigint, more: bigint): string =>
     `因為捨入，Safe 最後的餘額可以${[less > 0n ? `低最多 ${less}` : '', more > 0n ? `高最多 ${more}` : ''].filter((t) => t !== '').join(' 或')} 個最小單位`,
   touched: '只能因捨入變動',
@@ -248,7 +289,7 @@ const ZH = {
   safeOwners: 'Safe 的簽署人',
   ownersHow: '交易前後各讀一次 getOwners()，其他人不能變',
   safeThreshold: 'Safe 的門檻',
-  becomesTyped: (field: string): string => before('變成你填的', field),
+  becomesTyped: (by: By): string => zhField('變成', by),
   thresholdHow: '交易前後各讀一次 getThreshold()',
   readAround: (view: string): string => `${view}，交易前後各讀一次`,
   allowance: (spender: readonly Span[], token: string, permit2: boolean): Span[] => [permit2 ? '透過 Permit2 給 ' : '給 ', ...spender, ` 的 ${token} 授權`],
@@ -357,34 +398,25 @@ const ZH = {
     entry: (at: Span, actual: Span, allowed: string): Span[] => [at, ' 是 ', actual, `，不是${allowed}`],
     calls: (template: Span): Span[] => ['呼叫跟模板不同，模板是 ', template],
     items: (at: Span, got: number, expected: number): Span[] => [at, ` 有 ${got} 項，模板是 ${expected} 項`],
-    field: (at: Span, expected: Span, actual: Span): Span[] => [at, ' 的值跟模板不同：模板要 ', expected, '，交易是 ', actual],
+    field: (at: Span, expected: Span, actual: Span): Span[] => [at, ' 是 ', actual, '，模板要 ', expected],
     notSender: (at: Span): Span[] => [at, ' 不是送出交易的 Safe 或地址'],
     differs: (at: Span, other: Span): Span[] => [at, ' 跟 ', other, ' 的值不同，模板要兩個一樣'],
-    late: (at: Span, seconds: bigint): Span[] => [at, ` 比交易所在區塊的時間晚超過 ${seconds} 秒${durationText(seconds, ['天', '小時', '分鐘'], '（約 ', '）')}，模板不允許`],
+    late: (at: Span, seconds: bigint): Span[] => [at, ` 比交易所在區塊的時間晚超過 ${zhDuration(seconds, 'down')}，模板不允許`],
     trailer: (at: Span): Span[] => ['參數後面多了模板不允許的位元組，在 ', at],
     foreignDelegatecall: 'delegatecall 到不是官方 MultiSend 的合約',
     noncanonical: 'MultiSend 的編碼不標準',
     other: '形狀跟模板不同',
   },
+  inCalls: '，呼叫 ',
   noDataParens: '（沒有資料）',
   creation: '（建立合約）',
   /** A contract's call with no function: `usdc（沒有資料）`. */
   bareCall: (contract: string, word: string): string => `${contract}${word}`,
   otherContract: '別的合約',
+  senderItself: '自己',
   anchor: { mintVault: '鑄造（存款）', mint: '鑄造', burnVault: '銷毀（提款）', burn: '銷毀', transfer: '轉帳' },
   outsideKind: { market: '市場', token: '代幣', vault: '金庫', address: '地址' } satisfies Record<OutsideKind, string>,
-  outside: (kinds: readonly string[]): string => `用的是 registry 外的${kinds.join('或')}`,
-  anyOutside: '有地址不在 registry 裡',
   sameShapeBut: (parts: readonly (readonly [Span, string])[]): Span[] => ['形狀一樣，但 ', ...parts.flatMap(([at, kind], i): Span[] => [...(i === 0 ? [] : ['、']), at, ` 用的是 registry 外的${kind}`])],
-  blockLead: (count: number, senders: number, who: 'safe' | 'address', exact: number, outside: number, outsideWords: string): Span[] => [
-    { num: `${count}` },
-    ` 筆用了這個操作的呼叫（${senders} 個${who === 'safe' ? ' Safe' : '地址'}），`,
-    { num: `${exact}` },
-    ' 筆跟模板一模一樣',
-    ...(outside === 0 ? [] : ['，', { num: `${outside}` }, ` 筆形狀一樣、但${outsideWords}`]),
-    '。',
-  ],
-  eoaCalls: (fn: string): string => `EOA 直接呼叫 ${fn}`,
   otherOperations: (n: number, top: readonly (readonly [Span, number])[], more: boolean): Span[] => [
     `另外 ${n} 筆是別的操作，不列入：`,
     ...top.flatMap(([name, k], i): Span[] => [...(i === 0 ? [] : ['、']), name, ` ${k} 筆`]),
@@ -403,49 +435,60 @@ const ZH = {
     const at = (block: bigint, seconds: bigint | undefined) => `區塊 ${block}${seconds === undefined ? '' : `（${dateOf(seconds)}）`}`;
     const blocks = `${at(from, time?.from)}到${at(to, time?.to)}`;
     if (kind === 'year') return `搜尋了最近一年的每一筆交易，從${blocks}，沒有遺漏。`;
-    const length = `${to - from + 1n} 個區塊${time === undefined ? '' : durationText(time.to - time.from, ['天', '小時', '分鐘'], '，約 ', '')}`;
+    const length = `${to - from + 1n} 個區塊${time === undefined ? '' : `，約 ${zhDuration(time.to - time.from, 'down')}`}`;
     return `從最新的區塊往回，搜尋了${blocks}的每一筆交易，共 ${length}，沒有遺漏；搜尋到 ${cap} 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。`;
   },
   searchEtherscanOnly: (count: Span): Span[] => ['只有 Etherscan 搜尋事件，找到 ', count, ' 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。'],
   searchSame: (same: boolean, counts: Span): Span[] => [same ? 'Alchemy 和 Etherscan 找到的完全一樣' : 'Alchemy 和 Etherscan 找到的不一樣', '（', counts, '）。'],
-  amountsLead: '每筆符合模板形狀的交易，都在它的上一個區塊上單獨重跑一次，讀它前後寄出方和收款方的餘額，跟交易寫的金額比較。只列出有宣告誤差，或餘額沒有剛好照金額變動的效果。',
+  amountsTitle: '餘額有沒有剛好照金額變動？',
+  amountsLead: '每筆符合的交易都在它的上一個區塊上單獨重跑一次，比較它前後的餘額跟交易寫的金額。',
   amountsTolerance: (less: bigint, more: bigint): string => (less === 0n && more === 0n ? '模板沒有宣告誤差，所以容許 0' : `模板宣告的誤差：最多少 ${less}、多 ${more} 個最小單位`),
-  amountsToken: (token: string, safes: number, eoas: number, inRegistry: boolean): string =>
-    `${token}（Safe ${safes} 筆、EOA ${eoas} 筆）${inRegistry ? '' : '：這個代幣不在 registry 裡，卡片不能選它，所以不算待確認'}`,
-  amountsParty: (party: 'sender' | 'receiver'): string => (party === 'sender' ? '寄出方：' : '收款方：'),
+  amountsToken: (token: string, n: number, safes: number, eoas: number): string => `${token}：${n} 筆（Safe ${safes} 筆、EOA ${eoas} 筆）`,
+  amountsHead: { by: '餘額最後', sender: '寄出方', receiver: '收款方' },
+  amountsOutside: (n: number): string => `${n} 個不在 registry 裡的代幣；卡片不能選它們，所以不用確認`,
   amountsBy: (by: bigint): string => (by === 0n ? '剛好' : `${by < 0n ? '少' : '多'} ${by < 0n ? -by : by} 個最小單位`),
-  amountsCount: (n: number): string => `${n} 筆`,
   amountsBeyond: (lower: bigint, higher: bigint): string =>
     `寄出方的餘額最多${[lower > 0n ? `少了 ${lower}` : '', higher > 0n ? `多了 ${higher}` : ''].filter((t) => t !== '').join('、')} 個最小單位，超過模板容許的誤差；這樣的交易拿來簽，會是 MISMATCH。`,
   amountsUnfounded: '模板宣告了誤差，但量到的交易都剛好照金額變動：這個誤差沒有證據。',
   amountsUnmeasured: (n: number): string => `另外 ${n} 筆量不到（單獨重跑失敗、跟實際執行的 log 不同，或讀不到）。`,
-  spreadLead: '模板留給 app 自由填的數字，在符合模板形狀的交易裡填了哪些值：最小、第 50、90、99 百分位和最大。模板宣告為時間的欄位，算的是它減掉交易所在區塊時間的秒數。這是證據，不是規則。',
-  spreadWho: (safe: boolean): string => (safe ? 'Safe' : 'EOA'),
-  spreadTime: (time: boolean): string => (time ? '減掉區塊時間後的秒數' : '填的值'),
-  spreadSeconds: (seconds: bigint): string => `${seconds} 秒${durationText(seconds, ['天', '小時', '分鐘'], '（約 ', '）')}`,
-  spreadUnrecorded: (n: number): string => `另外 ${n} 筆的區塊時間沒有記錄到。`,
   past: '過去交易',
-  bySender: (kind: 'safe' | 'eoa', count: Span, n: number, senders: number): Span[] => [
-    kind === 'safe' ? 'Safe ' : 'EOA ',
-    count,
-    n === 0 ? ' 筆' : ` 筆（${senders} 個${kind === 'safe' ? ' Safe' : '地址，各自送模板的一個呼叫'}）`,
-  ],
-  bySenders: (parts: readonly (readonly Span[])[]): Span[] => ['：', ...parts.flatMap((p, i) => [...(i === 0 ? [] : ['、']), ...p])],
-  searched: (token: string, anchor: string): string => `${token} ${anchor}時`,
-  sameLine: (exact: number, byExact: readonly Span[]): Span[] => ['過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 ', { num: `${exact}` }, ' 筆', ...byExact, '。'],
-  othersLine: (outsideWords: string, outside: number, misfits: number): Span[] => [
-    '另外 ',
-    { num: `${outside + misfits}` },
-    ` 筆跟你這筆不一樣：形狀一樣、但${outsideWords}的 `,
-    { num: `${outside}` },
-    ' 筆，形狀不同的 ',
-    { num: `${misfits}` },
-    ' 筆',
-  ],
-  succeeded: (one: boolean, searched: readonly string[]): string =>
-    `${one ? '它成功執行：它是' : '這些交易全部成功執行：它們是'}從 ${searched.join('、')}的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。`,
-  latestExact: (n: number): string => `一模一樣的最近 ${n} 筆：`,
-  end: '。',
+  pastWorked: '1. 這個模板的交易以前成功過嗎？',
+  pastYes: (times: number, senders: number): string => `成功過，${senders} 個 Safe 一共做過 ${times} 次。`,
+  pastNo: '研究過的交易裡沒有 Safe 這樣做過。',
+  pastEoa: (times: number, senders: number, oneCall: boolean): string => (times === 0 ? 'EOA：0 次。' : `EOA：${times} 次，來自 ${senders} 個地址${oneCall ? '' : '，各自送模板的一個呼叫'}。`),
+  pastNewest: (when: string): string => `${before('最近一次是', when)}。`,
+  pastSucceeded: '全部成功執行。',
+  pastLinks: (n: number, newest: boolean): string => `${newest ? `最近 ${n} 筆` : `其中 ${n} 筆`}：`,
+  pastSucceededWhy: '這些交易是從事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。',
+  atBlockNumber: (block: bigint): string => `區塊 ${block}`,
+  pastNumbers: '2. app 填的值，一般是多少？',
+  pastNoNumbers: '這個模板沒有留任何值給 app 填。',
+  pastNoNumberValues: '研究過的交易裡沒有這個值。',
+  pastTimeLead: '設在多久之後，從交易所在的區塊起算',
+  pastNumberLead: '填的數字',
+  pastValueLead: '填的值',
+  pastGroup: { 'safe-exact': 'Safe，符合模板', 'safe-differs': 'Safe，別的地方不同', 'eoa-exact': 'EOA，呼叫符合模板', 'eoa-differs': 'EOA，別的地方不同' } satisfies Record<PastGroupKind, string>,
+  pastHead: { transactions: '交易', count: '數量', shortest: '最短', smallest: '最小', half: '一半不超過', most: '99% 不超過', longest: '最長', largest: '最大', value: '值', distinct: '不同的值', commonest: '最常見', safe: 'Safe', eoa: 'EOA', what: '哪裡不同', newest: '最近', example: '例子（最多 3 筆）' },
+  pastNone: '無',
+  pastLimit: (seconds: bigint): readonly [string, string, string] => ['模板上限：', zhDuration(seconds), '。更久就 MISMATCH。'],
+  pastNotRecorded: '沒有記錄',
+  pastUnrecorded: (group: string, n: number): string => `${group}：另外 ${n} 筆的區塊時間沒有記錄到，不在表裡。`,
+  pastMost: (value: Span, times: number): Span[] => [value, `，${times} 筆`],
+  pastExact: '完整數字',
+  pastExactTime: (path: Span): Span[] => [path, '，單位是秒：'],
+  duration: (seconds: bigint, rounding: Rounding): string => (seconds < 0n ? `區塊前 ${zhDuration(-seconds, opposite(rounding))}` : zhDuration(seconds, rounding)),
+  pastDiffer: '3. 其他交易哪裡不同？',
+  pastDifferLead: (n: number): string => `${n} 筆交易做了這個模板不允許的事。`,
+  pastNoDiffer: '研究過的交易裡，沒有這個操作的其他做法。',
+  pastMore: (reasons: number, n: number): string => `另外 ${reasons} 種，共 ${n} 筆`,
+  pastSearch: '程式怎麼搜尋',
+  pastCallsOther: (calls: Span): Span[] => ['呼叫了別的函式：', calls],
+  pastCallsMissing: (missing: Span, calls: Span): Span[] => ['沒有 ', missing, '：只有 ', calls],
+  pastCallsExtra: (calls: Span): Span[] => ['除了模板的呼叫，還有別的：', calls],
+  pastBatch: (n: number): string => `一次超過 ${n} 個呼叫的批次`,
+  pastFieldMany: (at: Span, n: number, expected: Span): Span[] => [at, ` 是 ${n} 種別的值，模板要 `, expected],
+  pastEncoding: (at: Span): Span[] => ['資料不是 ', at, ' 的標準編碼'],
+  pastEntryMany: (at: Span, n: number, allowed: string): Span[] => [at, ` 是 ${n} 個別的地址，不是${allowed}`],
 
   prompt: (word: string, name: Span): Span[] => [`${word}（`, name, '）'],
   pickOnly: (only: Span, address: Span): Span[] => ['：它列出可選的合約，每個附完整地址。選 ', only, '，地址是 ', address],
@@ -462,7 +505,8 @@ const ZH = {
   amountPrints: '它在問 [y/N] 之前顯示的卡片列出整顆和 base units 兩種寫法，核對數字是你要的。',
   orMax: (max: Span, value: string): Span[] => ['也可以打 ', max, `，等於 ${value} base units；card new 會印出模板寫的理由。`],
   margin: (margin: string): string => `，再加 ${margin} 餘裕`,
-  computedPrompt: '：不用填。協議的 app 自己會填這個值，不會問使用者，所以程式自己算。',
+  computedPrompt: (carried: boolean): string =>
+    carried ? '：不用填。協議的 app 自己會填這個值，不會問使用者，所以程式自己算。' : '：不用填。交易裡沒有這個值，所以程式自己算，verify 拿模擬的結果跟它比。',
   computedHow: (fn: Span, token: string, floor: boolean, slippage: string, preset: string, margin: string): Span[] => [
     '它在鏈上讀 ',
     fn,
@@ -490,10 +534,10 @@ const ZH = {
   compareHashes: (verify: Span): Span[] => ['硬體錢包上的 domain hash 和 message hash，跟 ', verify, ' 網頁上的逐字比對，一樣才簽。'],
   onlyCalls: (n: number): string => `交易只有這 ${n} 個呼叫，MultiSend 也一個個解開`,
   everyArgument: '每個參數符合上面的規則，重新編碼要一模一樣',
-  gives: (token: string, amount: { readonly kind: 'card' | 'at-most'; readonly field: string } | { readonly kind: 'all' | 'positive' }): string =>
-    `模擬後 Safe 給出的 ${token} ${amount.kind === 'card' ? before('剛好是你填的', amount.field) : amount.kind === 'at-most' ? before('不多於你填的', amount.field) : amount.kind === 'all' ? '是全部餘額' : '多於 0'}`,
+  gives: (token: string, amount: { readonly kind: 'card' | 'at-most'; readonly by: By } | { readonly kind: 'all' | 'positive' }): string =>
+    `模擬後 Safe 給出的 ${token} ${amount.kind === 'card' ? zhField('剛好是', amount.by) : amount.kind === 'at-most' ? zhField('不多於', amount.by) : amount.kind === 'all' ? '是全部餘額' : '多於 0'}`,
   toleranceLine: (token: string, tolerance: string): string => `模擬後 Safe 的 ${token}：${tolerance}`,
-  gets: (token: string, atLeast: string | undefined): Span[] => [`模擬後 Safe 收到 ${token}`, ...(atLeast === undefined ? [] : [before('，不少於你填的', atLeast)])],
+  gets: (token: string, atLeast: By | undefined): Span[] => [`模擬後 Safe 收到 ${token}`, ...(atLeast === undefined ? [] : [zhField('，不少於', atLeast)])],
   getsAnyAmount: (token: string): string => `模擬後 Safe 的 ${token} 可以增加或不變，不能減少`,
   noBalanceChange: '模擬後 Safe 的餘額一點都不能變',
   nonceIs: 'Safe 交易的 nonce 是',
@@ -503,7 +547,7 @@ const ZH = {
   allowanceKept: '除了上面「交易後」列出可以留著的授權，沒有任何授權在交易後變高',
   /** A view's changes after its name: each value and what it must do. */
   viewChanges: (changes: readonly (readonly [string, string])[]): string => `：${changes.map(([value, change]) => `${value} ${change}`).join('、')}`,
-  equalsTypedList: (field: string): string => `等於你填的 ${field}`,
+  equalsTypedList: (by: By): string => zhField('等於', by),
   pinned: '卡片用到的每個登記合約，程式碼還是 code pin 記錄的那份',
 
   unrecorded: '模板有不限的參數，但沒有換值測試的記錄，程式沒有測過它們。',
@@ -527,17 +571,17 @@ const ZH = {
     '鏈上資料都同時問兩家節點，答案不一樣就不給結果。研究時有三種資料只有一個來源，都不會影響判定：過去交易的呼叫追蹤（drpc）、搜尋過去交易（Alchemy 或 Etherscan 找到的都算，找事件只用 Etherscan），和金庫曾經收過份額的地址名單（Alchemy，每個地址的餘額仍問兩家）。',
   traceExplain: (passed: number, counted: number): string =>
     `程式在過去交易的呼叫追蹤裡找 AI 寫的每條流程線，也確認每筆動到錢的內部呼叫都有模板或流程線說明；${counted} 項裡 ${passed} 項通過。追蹤只來自 drpc，其中代幣的轉帳和授權都跟兩家節點都同意的收據核對過。`,
-  usageTitle: '製作這份報告的 AI 用量',
-  usageUnmeasured: '未量測',
-  usageCalls: (models: string, calls: number, minutes: number): string => `${models} · 呼叫 ${calls} 次 · ${minutes} 分鐘`,
+  usage: 'AI 用量',
+  usageUnmeasured: '這份報告的 AI 用量未量測。',
+  usageCalls: (models: string, calls: number, minutes: number): string => `${models} 用 ${calls} 次呼叫、${minutes} 分鐘做出這份報告。`,
   usageItem: '項目',
   usageTokens: 'token',
   usageReread: '重複讀取（cache 讀取）',
   usageFresh: '新讀入（input 與 cache 寫入）',
   usageOutput: 'output',
   usageTotal: '總共',
-  usagePartial: '這次只重跑過去交易的搜尋，用量只算這部分',
-  usageSource: '來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者',
+  usagePartial: '這次只重跑過去交易的搜尋，用量只算這部分。',
+  usageSource: '來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者。這些數字程式不檢查。',
   footer: (command: Span, sources: readonly Span[], fetched: string, test: Span, notes: string, usage: boolean): Span[] => [
     '由 ',
     command,
@@ -583,7 +627,7 @@ const ZH = {
   legendConfirmed: (counts: readonly Span[]): Span[] => ['兩邊都確認：程式在過去交易的呼叫追蹤裡看到這條線（', ...counts, '），AI 也讀過合約原始碼；每條線旁的說明是 AI 寫的。'],
   legendPartial: (counts: readonly Span[]): Span[] => ['程式只在部分過去交易的呼叫追蹤裡看到這條線（', ...counts, '），所以還不算確認。'],
   traceNote: '呼叫追蹤只顯示過去交易走過的路；合約可能依當時狀態走別條路，簽名時保護你的是效果檢查。',
-  whoDecides: '誰決定',
+  whoDecides: '每個值由誰決定',
   safeTx: 'Safe 交易',
   afterTx: '交易後',
   noAssets: 'Safe 不給出、也不收到任何資產：模擬後 Safe 的餘額有任何變化，都是 MISMATCH。',
@@ -618,13 +662,6 @@ const ZH = {
   aiChecked: (n: number, judgment: string): string => `AI 補查 ${n} 處 · ${judgment}`,
   foldedAddresses: (n: number): string => (n === 1 ? '另外 1 個地址沒有要你看的結果' : `另外 ${n} 個地址都沒有要你看的結果`),
   noPast: '這個操作沒有研究過去交易。',
-  otherWays: '其他做法',
-  otherWaysLead:
-    '只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。',
-  recordedIn: ['記錄在 ', '。'] as readonly [string, string],
-  txCount: (n: number): string => `${n} 筆`,
-  fromSenders: (n: number): string => `，來自 ${n} 個地址`,
-  examples: '例：',
   compare: '比對',
   compareHashesWhat: 'domain hash 和 message hash，都是 0x 開頭 64 個字元',
   automatic: '程式每次簽名自動做的事',
@@ -677,12 +714,12 @@ const EN: Words = {
   },
   named: (word, name) => `${word} (${name})`,
   partOf: (field, part) => `${part} of the ${field}`,
-  typed: (field) => `the ${field} you type`,
+  typed: (by) => enField(by),
   picked: (field) => `the ${field} you pick`,
-  atLeastTyped: (field) => `at least the ${field} you type`,
-  atMostTyped: (field) => `at most the ${field} you type`,
-  exactlyTyped: (field) => `exactly the ${field} you type`,
-  equalsTyped: (field) => `equals the ${field} you type`,
+  atLeastTyped: (by) => `at least ${enField(by)}`,
+  atMostTyped: (by) => `at most ${enField(by)}`,
+  exactlyTyped: (by) => `exactly ${enField(by)}`,
+  equalsTyped: (by) => `equals ${enField(by)}`,
 
   free: {
     scalar: 'tested with other values: the same result or the transaction fails',
@@ -690,11 +727,16 @@ const EN: Words = {
     unread: 'the contract does not read it; another value gives the same result',
     route: 'tested with other values: it takes other pools and still receives no less than the card',
   },
+  freeNotTested: 'the template allows any value, and no test tried another',
+  freeAllFailed: 'tested with other values: each time the transaction failed or did not match the card',
+  freeKeyNotTested: 'The template allows any value; no test tried another.',
+  freeKeySomeNotTested: 'The template allows any value; for some of these, no test tried another.',
+  freeKeyAllFailed: 'Every other value tested made the transaction fail or not match the card.',
   freeKey: {
-    scalar: 'another value gives the same result or the transaction fails',
-    proof: 'another value makes the transaction fail',
-    unread: 'the contract does not read it; another value gives the same result',
-    route: 'another value takes other pools, but what the Safe gives and receives must still match the card, or the transaction fails or is a MISMATCH',
+    scalar: 'Another value gives the same result or the transaction fails.',
+    proof: 'Another value makes the transaction fail.',
+    unread: 'The contract does not read it, so another value gives the same result.',
+    route: 'Another value takes other pools, but what the Safe gives and receives must still match the card, or the transaction fails or is a MISMATCH.',
   },
   freeMember: 'a value in the order, locked by its hash; the template allows any value and no perturbation test tries another',
   source: { api: 'protocol API', coingecko: 'CoinGecko', factory: 'factory', bounty: 'Immunefi bug bounty scope', deployer: 'deployer' },
@@ -707,8 +749,8 @@ const EN: Words = {
   deployer: (address, siblings) => `deployer ${address}${siblings.length === 0 ? '' : `, which also deployed ${siblings.join(', ')}`}`,
   confirmed: (places, enough) =>
     places.length === 0 ? 'Confirmed nowhere' : `Confirmed in ${enough ? '' : 'only '}${places.length} ${plural(places.length, 'place', 'places')}: ${places.join(', ')}`,
-  fewConfirmationsWhy: (min) =>
-    `At least ${min} places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.`,
+  fewConfirmations: (address, places, min) =>
+    places.length === 0 ? ['Found nowhere: ', address, `; at least ${min} places are needed.`] : [`Found only in ${places.join(', ')}: `, address, `; at least ${min} places are needed.`],
 
   finding: {
     'site-differs': { title: 'site differs from the one DefiLlama lists', why: "This page's domain or GitHub organization is not one DefiLlama lists for this protocol." },
@@ -783,9 +825,20 @@ const EN: Words = {
   },
   needsReview: 'needs your review',
   flowLine: (n) => `Flow line ${n}`,
-  moneySubject: (call, from, to, kind) => [`Under call ${call}, ${from} → ${to} `, kind],
+  money: {
+    sender: 'the sender',
+    inPast: (n) => `In ${n} past ${plural(n, 'transaction', 'transactions')}, `,
+    transfer: (from, to, token) => `${from} paid ${token} to ${to}`,
+    approve: (from, to, token) => `${from} let ${to} spend its ${token}`,
+    eth: (from, to) => `${from} paid ETH to ${to}`,
+    unread: (call, token) => `a step under call ${call} moved the sender's ${token}, to whom was not read`,
+    notDescribed: '; the template does not describe this step',
+    several: (n, what) => `${n} different ${what}`,
+    addresses: 'addresses',
+    under: (call) => `Under call ${call}.`,
+    parties: (pairs, all) => `From → to${all > pairs.length ? ` (${pairs.length} of ${all})` : ''}: ${pairs.join(', ')}.`,
+  },
   seenIn: (seen, of) => `Seen in ${seen} of ${of}.`,
-  inTransactions: (n) => `In ${n} past ${plural(n, 'transaction', 'transactions')}.`,
   outsideRegistry: (shown, all) => `Addresses outside the registry${all > shown.length ? ` (${shown.length} of ${all})` : ''}: ${shown.join(', ')}.`,
   docSubject: (page, fn) => [`${page} `, fn],
   notInStandard: (standard) => `The standard's page does not hold this function's declaration in ${standard}.`,
@@ -803,12 +856,10 @@ const EN: Words = {
 
   safe: 'your Safe',
   role: { sender: 'sender', contract: 'contract', fixed: 'fixed address', picked: 'you pick' },
-  who: { 'you-type': 'you type', 'you-pick': 'you pick', computed: 'computed', fixed: 'fixed', free: 'any', bounded: 'bounded' },
-  appFills: 'app fills, any value',
-  appBounded: 'app fills, up to a limit',
+  who: { 'you-type': 'you type', 'you-pick': 'you pick', computed: 'computed', fixed: 'fixed', free: 'any value', bounded: 'up to a limit' },
   chip: (who, field) => `${who}: ${field}`,
-  chipParts: (names, who) => `${names.join(', ')} ${who}`,
-  whoMeans: { 'you-type': 'typed at each signing', 'you-pick': 'picked at each signing', computed: 'read from the chain by card new at each signing; you check it', fixed: 'any change is a MISMATCH', bounded: 'past the limit is a MISMATCH', member: 'a value in the order, locked by its hash' },
+  whoMeans: { 'you-type': 'You type it at each signing.', 'you-pick': 'You pick it from a list at each signing.', computed: 'card new reads it from the chain at each signing. You check it.', fixed: 'The template sets it. Any change is a MISMATCH.', bounded: 'Past the limit is a MISMATCH.', member: 'A value in the order, locked by the order\'s hash.' },
+  whoGroup: { you: 'You', program: 'kiss-sign', app: 'The app' },
   change: { increases: 'increases', decreases: 'decreases', same: 'unchanged' },
   inParens: (items) => ` (${items.join(', ')})`,
 
@@ -827,8 +878,9 @@ const EN: Words = {
   priceHow: "computed from the card's amount and shares; the transaction's must be as strict or stricter",
   atLeastHow: 'less than this is a MISMATCH',
   atMostHow: 'more than this is a MISMATCH',
-  within: (seconds) => `at most ${seconds} s${durationText(seconds, ['d', 'h', 'min'], ' (about ', ')')} after the block's time`,
-  withinHow: "the block's time: for a transaction not yet executed, the latest block verify reads; for an executed one, the block it ran in; later is a MISMATCH",
+  within: (seconds) => `at most ${enDuration(seconds)} after the block's time`,
+  withinHow: (seconds) => `Exactly ${seconds} seconds. The block's time: for a transaction not yet executed, the latest block verify reads; for an executed one, the block it ran in. Later is a MISMATCH.`,
+  withinLabel: 'How it is counted',
   argsOf: (fn) => ['the arguments of ', fn],
   packed: (bytes, parts) => `${bytes} bytes, ${parts} parts joined`,
   eip712: (struct) => ['the EIP-712 hash of ', struct],
@@ -859,8 +911,8 @@ const EN: Words = {
   getsMore: 'receives more than 0',
   getsAny: 'receives 0 or more',
   riseOrStay: 'may rise or stay the same, never fall',
-  getsAtLeast: (field) => `receives no less than the ${field} you type`,
-  givesAtMost: (field) => `gives no more than the ${field} you type, and gains none`,
+  getsAtLeast: (by) => `receives no less than ${enField(by)}`,
+  givesAtMost: (by) => `gives no more than ${enField(by)}, and gains none`,
   tolerance: (less, more) => `the Safe's balance may end ${toleranceSpan(less, more)}, for rounding`,
   touched: 'changes only by rounding',
   listSep: '; ',
@@ -875,7 +927,7 @@ const EN: Words = {
   safeOwners: "Safe's signers",
   ownersHow: 'getOwners() is read before and after the transaction; no other signer may change',
   safeThreshold: "Safe's threshold",
-  becomesTyped: (field) => `becomes the ${field} you type`,
+  becomesTyped: (by) => `becomes ${enField(by)}`,
   thresholdHow: 'getThreshold() is read before and after the transaction',
   readAround: (view) => `${view}, read before and after the transaction`,
   allowance: (spender, token, permit2) => [`${token} allowance ${permit2 ? 'through Permit2 ' : ''}for `, ...spender],
@@ -982,33 +1034,24 @@ const EN: Words = {
     entry: (at, actual, allowed) => [at, ' is ', actual, `, not ${allowed}`],
     calls: (template) => ['The calls differ from the template, which is ', template],
     items: (at, got, expected) => [at, ` has ${got} ${plural(got, 'item', 'items')}; the template has ${expected}`],
-    field: (at, expected, actual) => [at, ' differs from the template: the template wants ', expected, ', the transaction has ', actual],
+    field: (at, expected, actual) => [at, ' was ', actual, ', the template wants ', expected],
     notSender: (at) => [at, ' is not the Safe or address that sent the transaction'],
     differs: (at, other) => [at, ' differs from ', other, '; the template wants them the same'],
-    late: (at, seconds) => [at, ` is more than ${seconds} s${durationText(seconds, ['d', 'h', 'min'], ' (about ', ')')} after the time of the block it ran in, which the template refuses`],
+    late: (at, seconds) => [at, ` is more than ${enDuration(seconds, 'down')} after the time of the block it ran in, which the template refuses`],
     trailer: (at) => ['Bytes the template does not allow follow the arguments, at ', at],
     foreignDelegatecall: 'A delegatecall to a contract that is not the official MultiSend',
     noncanonical: 'A MultiSend encoding that is not the standard one',
     other: "A shape other than the template's",
   },
+  inCalls: ', calling ',
   noDataParens: '(no data)',
   creation: '(contract creation)',
   bareCall: (contract, word) => `${contract} ${word}`,
   otherContract: 'another contract',
+  senderItself: 'itself',
   anchor: { mintVault: 'mint (deposit)', mint: 'mint', burnVault: 'burn (withdrawal)', burn: 'burn', transfer: 'transfer' },
   outsideKind: { market: 'market', token: 'token', vault: 'vault', address: 'address' },
-  outside: (kinds) => `with ${/^[aeiou]/.test(kinds[0] ?? '') ? 'an' : 'a'} ${kinds.join(' or ')} outside the registry`,
-  anyOutside: 'with an address outside the registry',
   sameShapeBut: (parts) => ['Same shape, but ', ...parts.flatMap(([at, kind], i): Span[] => [...(i === 0 ? [] : [', ']), at, ` is ${/^[aeiou]/.test(kind) ? 'an' : 'a'} ${kind} outside the registry`])],
-  blockLead: (count, senders, who, exact, outside, outsideWords) => [
-    { num: `${count}` },
-    ` ${plural(count, 'transaction', 'transactions')} used this operation's calls (${senders} ${who === 'safe' ? plural(senders, 'Safe', 'Safes') : plural(senders, 'address', 'addresses')}); `,
-    { num: `${exact}` },
-    ` ${plural(exact, 'matches', 'match')} the template exactly`,
-    ...(outside === 0 ? [] : ['; ', { num: `${outside}` }, ` ${plural(outside, 'has', 'have')} the same shape but ${outsideWords}`]),
-    '.',
-  ],
-  eoaCalls: (fn) => `EOA calls ${fn} directly`,
   otherOperations: (n, top, more) => [
     `${n} more are other operations, not counted: `,
     ...top.flatMap(([name, k], i): Span[] => [...(i === 0 ? [] : [', ']), name, ` ${k}`]),
@@ -1027,50 +1070,60 @@ const EN: Words = {
     const at = (block: bigint, seconds: bigint | undefined) => `block ${block}${seconds === undefined ? '' : ` (${dateOf(seconds)})`}`;
     const blocks = `from ${at(from, time?.from)} to ${at(to, time?.to)}`;
     if (kind === 'year') return `Every transaction of the last year was searched, ${blocks}, with no gap. `;
-    const length = `${to - from + 1n} blocks${time === undefined ? '' : durationText(time.to - time.from, ['days', 'hours', 'minutes'], ', about ', '')}`;
+    const length = `${to - from + 1n} blocks${time === undefined ? '' : `, about ${enDuration(time.to - time.from, 'down')}`}`;
     return `Every transaction ${blocks} was searched, newest first, ${length}, with no gap; the search stops at its cap of ${cap} pages of 1,000, so the year's older transactions were not searched. `;
   },
   searchEtherscanOnly: (count) => ['Only Etherscan searches an event, and found ', count, "; Alchemy's eth_getLogs reads at most 10 blocks at a time on the free plan."],
   searchSame: (same, counts) => [same ? 'Alchemy and Etherscan found exactly the same' : 'Alchemy and Etherscan found different transactions', ' (', counts, ').'],
-  amountsLead:
-    'Each transaction that fits the template was run again alone on its parent block, with the sender\'s and the receiver\'s balances read just before and after it, and compared with the amount it states. Shown only for an effect that declares a tolerance, or whose balances did not all move by exactly the stated amount.',
+  amountsTitle: 'Did the balances move by exactly the stated amount?',
+  amountsLead: 'Each matching transaction was run again alone on its parent block, and the balances before and after it were compared with the amount it states.',
   amountsTolerance: (less, more) => (less === 0n && more === 0n ? 'The template declares no tolerance, so it allows 0' : `The template's tolerance: up to ${less} ${plural(Number(less), 'base unit', 'base units')} lower, ${more} higher`),
-  amountsToken: (token, safes, eoas, inRegistry) =>
-    `${token} (${safes} from Safes, ${eoas} from EOAs)${inRegistry ? '' : ': this token is not in the registry, so no card can name it and it needs no review'}`,
-  amountsParty: (party) => (party === 'sender' ? 'Sender: ' : 'Receiver: '),
-  amountsBy: (by) => (by === 0n ? 'exact' : `${by < 0n ? -by : by} ${plural(Number(by < 0n ? -by : by), 'base unit', 'base units')} ${by < 0n ? 'lower' : 'higher'}`),
-  amountsCount: (n) => `in ${n}`,
+  amountsToken: (token, n, safes, eoas) => `${token}: ${n} ${plural(n, 'transaction', 'transactions')} (${safes} from Safes, ${eoas} from EOAs)`,
+  amountsHead: { by: 'The balance ended', sender: 'Sender', receiver: 'Receiver' },
+  amountsOutside: (n) => `${n} ${plural(n, 'token', 'tokens')} outside the registry; no card can name ${plural(n, 'it', 'them')}, so nothing to review`,
+  amountsBy: (by) => (by === 0n ? 'as stated' : `${by < 0n ? -by : by} ${plural(Number(by < 0n ? -by : by), 'base unit', 'base units')} ${by < 0n ? 'lower' : 'higher'}`),
   amountsBeyond: (lower, higher) =>
     `A sender's balance ended up to ${[lower > 0n ? `${lower} base units lower` : '', higher > 0n ? `${higher} base units higher` : ''].filter((t) => t !== '').join(' and ')} than stated, beyond the template's tolerance; such a transaction to sign would be MISMATCH.`,
   amountsUnfounded: 'The template declares a tolerance, but every measured transaction moved exactly the stated amount: no evidence for it.',
   amountsUnmeasured: (n) => `${n} more could not be measured (the run alone failed, its logs differed from the executed one, or a read got no answer).`,
-  spreadLead:
-    'The values the fitting transactions set in each number the template leaves free: the smallest, the 50th, 90th and 99th percentile, and the largest. For a field the template declares a time, each is the value less the time of the block the transaction ran in, in seconds. This is evidence, not a rule.',
-  spreadWho: (safe) => (safe ? 'Safe' : 'EOA'),
-  spreadTime: (time) => (time ? 'seconds after the block time' : 'value set'),
-  spreadSeconds: (seconds) => `${seconds} s${durationText(seconds, ['d', 'h', 'min'], ' (about ', ')')}`,
-  spreadUnrecorded: (n) => `${n} more have no recorded block time.`,
   past: 'Past transactions',
-  bySender: (kind, count, n, senders) => [
-    kind === 'safe' ? 'Safe ' : 'EOA ',
-    count,
-    n === 0 ? '' : ` (${senders} ${kind === 'safe' ? plural(senders, 'Safe', 'Safes') : `${plural(senders, 'address', 'addresses')}, each sending one call of the template`})`,
-  ],
-  bySenders: (parts) => [': ', ...parts.flatMap((p, i) => [...(i === 0 ? [] : [', ']), ...p])],
-  searched: (token, anchor) => `${token} ${anchor}`,
-  sameLine: (exact, byExact) => ['In past records, ', { num: `${exact}` }, ` ${plural(exact, 'transaction matches', 'transactions match')} the template exactly, made the way yours is`, ...byExact, '.'],
-  othersLine: (outsideWords, outside, misfits) => [
-    { num: `${outside + misfits}` },
-    ` more ${plural(outside + misfits, 'differs', 'differ')} from yours: `,
-    { num: `${outside}` },
-    ` ${plural(outside, 'has', 'have')} the same shape but ${outsideWords}, `,
-    { num: `${misfits}` },
-    ` ${plural(misfits, 'has', 'have')} another shape`,
-  ],
-  succeeded: (one, searched) =>
-    ` ${one ? 'It succeeded: it was' : 'All of them succeeded: they were'} found through the event logs of ${searched.join(', ')}, and a failed transaction leaves no such log.`,
-  latestExact: (n) => ` The latest ${n} exact ${plural(n, 'match', 'matches')}: `,
-  end: '.',
+  pastWorked: "1. Has this template's transaction worked before?",
+  pastYes: (times, senders) => `Yes, ${times} ${plural(times, 'time', 'times')}, by ${senders} ${plural(senders, 'Safe', 'Safes')}.`,
+  pastNo: 'Not by a Safe, in what was studied.',
+  pastEoa: (times, senders, oneCall) => (times === 0 ? 'EOA: 0.' : `EOA: ${times} ${plural(times, 'time', 'times')}, from ${senders} ${plural(senders, 'address', 'addresses')}${oneCall ? '' : ", each sending one of the template's calls"}.`),
+  pastNewest: (when) => `The newest: ${when}.`,
+  pastSucceeded: 'All of them succeeded.',
+  pastLinks: (n, newest) => ` ${newest ? (n === 1 ? 'The newest one' : `The newest ${n}`) : `${n} of them`}: `,
+  pastSucceededWhy: 'These transactions were found through event logs, and a failed transaction leaves none.',
+  atBlockNumber: (block) => `block ${block}`,
+  pastNumbers: '2. What values are normal in what the app fills?',
+  pastNoNumbers: 'This template leaves no value for the app to fill.',
+  pastNoNumberValues: 'No studied transaction holds this value.',
+  pastTimeLead: 'how far ahead it was set, counted from the block the transaction ran in',
+  pastNumberLead: 'the number that was set',
+  pastValueLead: 'the value that was set',
+  pastGroup: { 'safe-exact': 'Safe, matches the template', 'safe-differs': 'Safe, differs elsewhere', 'eoa-exact': 'EOA, its call matches the template', 'eoa-differs': 'EOA, differs elsewhere' },
+  pastHead: { transactions: 'Transactions', count: 'Count', shortest: 'Shortest', smallest: 'Smallest', half: 'Half at or under', most: '99% at or under', longest: 'Longest', largest: 'Largest', value: 'Value', distinct: 'Different values', commonest: 'Most common', safe: 'Safe', eoa: 'EOA', what: 'What was different', newest: 'Newest', example: 'Examples (up to 3)' },
+  pastNone: 'none',
+  pastLimit: (seconds) => ['Template limit: ', enDuration(seconds), '. Longer is a MISMATCH.'],
+  pastNotRecorded: 'not recorded',
+  pastUnrecorded: (group, n) => `${group}: ${n} more ${plural(n, 'has', 'have')} no recorded block time and ${plural(n, 'is', 'are')} not in the table.`,
+  pastMost: (value, times) => [value, `, in ${times}`],
+  pastExact: 'Exact numbers',
+  pastExactTime: (path) => [path, ', in seconds: '],
+  duration: (seconds, rounding) => (seconds < 0n ? `${enDuration(-seconds, opposite(rounding))} before` : enDuration(seconds, rounding)),
+  pastDiffer: '3. How did the others differ?',
+  pastDifferLead: (n) => `${n} ${plural(n, 'transaction', 'transactions')} did something this template refuses.`,
+  pastNoDiffer: 'No studied transaction did this operation another way.',
+  pastMore: (reasons, n) => `${reasons} more ${plural(reasons, 'way', 'ways')}, ${n} ${plural(n, 'transaction', 'transactions')}`,
+  pastSearch: 'How the program searched',
+  pastCallsOther: (calls) => ['Called other functions: ', calls],
+  pastCallsMissing: (missing, calls) => ['No ', missing, ' in it: only ', calls],
+  pastCallsExtra: (calls) => ["The template's calls and others: ", calls],
+  pastBatch: (n) => `A batch of more than ${n} calls`,
+  pastFieldMany: (at, n, expected) => [at, ` was ${n} other values, the template wants `, expected],
+  pastEncoding: (at) => ['The data is not the standard encoding of ', at],
+  pastEntryMany: (at, n, allowed) => [at, ` was ${n} other addresses, not ${allowed}`],
 
   prompt: (word, name) => [`${word} (`, name, ')'],
   pickOnly: (only, address) => [': it lists the contracts you can pick, each with its full address. Pick ', only, ', address ', address],
@@ -1087,7 +1140,10 @@ const EN: Words = {
   amountPrints: 'The card it shows before asking [y/N] gives it both in whole tokens and in base units; check that the number is what you want.',
   orMax: (max, value) => ['You can also type ', max, `, which is ${value} base units; card new prints the template's reason.`],
   margin: (margin) => ` plus a ${margin} margin`,
-  computedPrompt: ": you do not type it. The protocol's app fills this value without asking its user, so the program computes it.",
+  computedPrompt: (carried) =>
+    carried
+      ? ": you do not type it. The protocol's app fills this value without asking its user, so the program computes it."
+      : ': you do not type it. The transaction does not carry this value, so the program computes it, and verify holds the simulated result to it.',
   computedHow: (fn, token, floor, slippage, preset, margin) => [
     'It reads ',
     fn,
@@ -1122,9 +1178,9 @@ const EN: Words = {
   onlyCalls: (n) => `The transaction has only ${n === 1 ? 'this call' : `these ${n} calls`}, counting each call inside a MultiSend`,
   everyArgument: 'Every argument follows the rules above, and encoding them again gives exactly the same bytes',
   gives: (token, amount) =>
-    `After simulation, the ${token} the Safe gives is ${amount.kind === 'card' ? `exactly the ${amount.field} you type` : amount.kind === 'at-most' ? `at most the ${amount.field} you type` : amount.kind === 'all' ? 'its whole balance' : 'more than 0'}`,
+    `After simulation, the ${token} the Safe gives is ${amount.kind === 'card' ? `exactly ${enField(amount.by)}` : amount.kind === 'at-most' ? `at most ${enField(amount.by)}` : amount.kind === 'all' ? 'its whole balance' : 'more than 0'}`,
   toleranceLine: (token, tolerance) => `After simulation, the Safe's ${token}: ${tolerance}`,
-  gets: (token, atLeast) => [`After simulation, the Safe receives ${token}`, ...(atLeast === undefined ? [] : [`, no less than the ${atLeast} you type`])],
+  gets: (token, atLeast) => [`After simulation, the Safe receives ${token}`, ...(atLeast === undefined ? [] : [`, no less than ${enField(atLeast)}`])],
   getsAnyAmount: (token) => `After simulation, the Safe's ${token} may rise or stay the same, never fall`,
   noBalanceChange: 'After simulation, no balance of the Safe may change at all',
   nonceIs: "The Safe transaction's nonce is ",
@@ -1133,7 +1189,7 @@ const EN: Words = {
   allowanceKeptFor: (spenders) => `No allowance is higher after the transaction, except that the allowance kept for ${spenders.join(', ')} is at most the amount you type`,
   allowanceKept: 'No allowance is higher after the transaction, except those "After the transaction" above lists as allowed to remain',
   viewChanges: (changes) => `: ${changes.map(([value, change]) => `${value} ${change}`).join(', ')}`,
-  equalsTypedList: (field) => `equals the ${field} you type`,
+  equalsTypedList: (by) => `equals ${enField(by)}`,
   pinned: 'Every registry contract the card uses still runs the code its code pin records',
 
   unrecorded: 'The template has arguments that take any value, but no perturbation test is recorded, so the program has not tested them.',
@@ -1162,17 +1218,17 @@ const EN: Words = {
     "Every chain read asks two providers; when they disagree, there is no result. Three research reads have one source, and none of them reaches a verdict: past transactions' call traces (drpc), the search for past transactions (a transaction either Alchemy or Etherscan finds counts; only Etherscan searches for an event), and the addresses that ever received a vault's shares (Alchemy; each one's balance is still read through both).",
   traceExplain: (passed, counted) =>
     `The program looks for each of the AI's flow lines in the call traces of past transactions, and checks that the template or a flow line explains every call inside that moves money; ${passed} of ${counted} passed. The traces come from drpc alone; their token transfers and approvals are checked against the receipt both providers agree on.`,
-  usageTitle: 'AI usage to make this report',
-  usageUnmeasured: 'Not measured',
-  usageCalls: (models, calls, minutes) => `${models} · ${calls} ${plural(calls, 'call', 'calls')} · ${minutes} ${plural(minutes, 'minute', 'minutes')}`,
+  usage: 'AI usage',
+  usageUnmeasured: 'The AI usage of this report was not measured.',
+  usageCalls: (models, calls, minutes) => `${models} made this report in ${calls} ${plural(calls, 'call', 'calls')} over ${minutes} ${plural(minutes, 'minute', 'minutes')}.`,
   usageItem: 'Item',
   usageTokens: 'Tokens',
   usageReread: 'Re-read (cache reads)',
   usageFresh: 'Newly read (input and cache writes)',
   usageOutput: 'Output',
   usageTotal: 'Total',
-  usagePartial: 'Only the search of past transactions was run again; the usage covers that part alone',
-  usageSource: "Source: the usage the API reported, in Claude Code's transcripts, without the coordinator",
+  usagePartial: 'Only the search of past transactions was run again; the usage covers that part alone.',
+  usageSource: "Source: the usage the API reported, in Claude Code's transcripts, without the coordinator. No program checks these numbers.",
   footer: (command, sources, fetched, test, notes, usage) => [
     'Written by ',
     command,
@@ -1217,7 +1273,7 @@ const EN: Words = {
   legendConfirmed: (counts) => ['Confirmed two ways: the program saw the line in the call traces of past transactions (', ...counts, "), and the AI read the contract's source; the words beside each line are the AI's."],
   legendPartial: (counts) => ['Seen in the call traces of only some past transactions (', ...counts, '), so not confirmed.'],
   traceNote: 'A call trace shows only the path past transactions took; a contract may take another path on other state, and what protects you at signing is the effects check.',
-  whoDecides: 'Who decides',
+  whoDecides: 'Who decides each value',
   safeTx: 'Safe transaction',
   afterTx: 'After the transaction',
   noAssets: 'The Safe gives and receives no asset: any change to its balances after simulation is a MISMATCH.',
@@ -1252,13 +1308,6 @@ const EN: Words = {
   aiChecked: (n, judgment) => `AI also checked ${n} ${plural(n, 'place', 'places')} · ${judgment}`,
   foldedAddresses: (n) => (n === 1 ? '1 more address has no result for you to review' : `${n} more addresses have no result for you to review`),
   noPast: 'No past transactions were studied for this operation.',
-  otherWays: 'Other ways',
-  otherWaysLead:
-    "Only transactions that used this operation's calls count. An exact match has the template's calls and argument positions, meets every rule the transaction itself can show (such as where the sender goes, or a fixed value), and uses a contract the template allows wherever the template binds a registry contract. Same shape but a market, token, vault or address outside the registry means the calls, argument positions and those rules are the same, but an address or market is not in the registry; the kind is named when the record shows it, otherwise only address. The rest are grouped by reason, each with up to 3 examples.",
-  recordedIn: ['Recorded in ', '. '],
-  txCount: (n) => `${n}`,
-  fromSenders: (n) => `, from ${n} ${plural(n, 'address', 'addresses')}`,
-  examples: 'Examples: ',
   compare: 'Compare',
   compareHashesWhat: 'the domain hash and the message hash, each 0x followed by 64 characters',
   automatic: 'What the program does at each signing',

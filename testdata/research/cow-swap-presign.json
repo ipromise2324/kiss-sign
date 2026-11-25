@@ -12,7 +12,7 @@
  "studiedWith": {
   "template": "0x1f359514725cc6838f3a236f23d81324a220ee3a5563b64f31480657c1cd035b",
   "registry": "0xbb963821293c0c28b817bfad6e439456327916a2bb4971f420eeb3013dbe6288",
-  "study": "0x93d6ae115524c3f77d6d18a3ea56abfd3c858a2f754f25fd1afaf57be20d11f6"
+  "study": "0x666083030893f4947cba22a732c03d67881bc2dabdffd8ad91d58fe8978d8fa1"
  },
  "search": {
   "coverage": {
@@ -125,6 +125,7 @@
   {
    "kind": "misfit",
    "hash": "0xffc49c2ac96d6d815425c36fc0821e9351a6a149f5f294f188dea01914b46d2b",
+   "block": "25328832",
    "sender": {
     "kind": "safe",
     "address": "0x83def68f12acc40b9157015c2dffe5028d9e7a93"
@@ -141,11 +142,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x355d372594300cd143ab1dfbef27fded1785974acac8a39c0a8a422e33578663",
+   "block": "25331019",
    "sender": {
     "kind": "safe",
     "address": "0x245cc372c84b3645bf0ffe6538620b04a217988b"
@@ -162,7 +165,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -240,6 +244,7 @@
   {
    "kind": "misfit",
    "hash": "0xc173d78cacbfa7de32e445d831290fb9c3026890ff4ca06bb9acdaa674fafcc7",
+   "block": "25337335",
    "sender": {
     "kind": "safe",
     "address": "0x4d6ef2e6e81e88edea98fd8eeaad442bcb2d8a24"
@@ -256,7 +261,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -268,6 +274,7 @@
   {
    "kind": "misfit",
    "hash": "0x011fd11a7106c6acd2b73f77d303c6518505eb6528ae597dd0b61bd97d9828ce",
+   "block": "25341666",
    "sender": {
     "kind": "safe",
     "address": "0xb5d235c27bd7741e2467ffb0efd49877f6beda13"
@@ -284,11 +291,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x7ed34372ecc372b0940c78fb2838771e8d9bf452911ebbc75f8c145c08fee9ff",
+   "block": "25344825",
    "sender": {
     "kind": "safe",
     "address": "0xca591b3b53521ccde47d2da4e0ea151f8b81f6c1"
@@ -309,11 +318,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x206f1ad2e11e14c5bd3835d286ad7c785502baf6fc67bbf03c03051a05dc1d0f",
+   "block": "25346903",
    "sender": {
     "kind": "safe",
     "address": "0xb55ed5a98595380ceffe2153fe166adb14a76b52"
@@ -330,11 +341,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x20c6bc8c467bde557417495bf95eb3ae8324eb752a2487743b495afea3c66a70",
+   "block": "25352696",
    "sender": {
     "kind": "safe",
     "address": "0x523441756f4f8654474dcffa5f6d720779db4990"
@@ -351,11 +364,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x69bc8285e3f50271a76722da1bbd246edfef089d4d98d06605a10d333614df65",
+   "block": "25360382",
    "sender": {
     "kind": "safe",
     "address": "0x330af5442f57864109924a32cf6a513d2179f34f"
@@ -372,7 +387,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -518,6 +534,7 @@
   {
    "kind": "misfit",
    "hash": "0xd89c6e4d1f283e7ba9fdda64d6f9a5d0d136b2b0ded9c5c4000f34f7fb17d78d",
+   "block": "25374344",
    "sender": {
     "kind": "safe",
     "address": "0xaee3743636e194d72215cccd9da687421894b072"
@@ -534,7 +551,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -762,6 +780,7 @@
   {
    "kind": "misfit",
    "hash": "0x82198bececfad2364a0406dbec2d4f329f6602fba29af598949b00b6074902d3",
+   "block": "25387700",
    "sender": {
     "kind": "safe",
     "address": "0x6abfd6139c7c3cc270ee2ce132e309f59caaf6a2"
@@ -778,11 +797,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xbd6686da905ef636df4427eb8b696f26e805b50057146146d96dfdfdc0409095",
+   "block": "25388887",
    "sender": {
     "kind": "safe",
     "address": "0xd764d052beaf0ebb4548d9c4d41945e3547b6c13"
@@ -792,7 +813,19 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1782322834"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xe5a95f91b7c95db904f2e503afdfa5c9c265222b4b45fb6f36f4261eddc4f049"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -804,6 +837,7 @@
   {
    "kind": "misfit",
    "hash": "0x2c9ccbb93c20246f1d21f69df213ad4e74307d121af9a926b6eeb22741220843",
+   "block": "25394974",
    "sender": {
     "kind": "safe",
     "address": "0xf1b6c2bcffe389499d4492a4e5216283f0538390"
@@ -820,7 +854,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -972,6 +1007,7 @@
   {
    "kind": "misfit",
    "hash": "0x34576ebbd7149ec1c2d17c002bba18469cb605725d3be952e11726fe2e504d8c",
+   "block": "25401169",
    "sender": {
     "kind": "safe",
     "address": "0x8ed02cf60f6c40f756eeeee66e70d0f9970a5d32"
@@ -988,11 +1024,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xeab510555c062a9859cc6ddfca36dc8a499cb08d8fd612bc3a1bbd321256c1aa",
+   "block": "25403286",
    "sender": {
     "kind": "safe",
     "address": "0x0035ee9ddeaa0aabc5649da02e492da9de85a0df"
@@ -1009,7 +1047,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -1160,6 +1199,7 @@
   {
    "kind": "misfit",
    "hash": "0x289a946c9cfad6b4d68aef0b3daa6daca651eff4b541a6bd675dd374e9fcb66e",
+   "block": "25424407",
    "sender": {
     "kind": "safe",
     "address": "0x71b45cf7426458559b1e5cf41827a19d671b867d"
@@ -1176,11 +1216,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x001da693b8eb5595facb25c184668cc165003e8ace127d35525d6c0b5332a270",
+   "block": "25427849",
    "sender": {
     "kind": "safe",
     "address": "0xa6da23798aab69d579c943271946b84d399ab6fa"
@@ -1197,7 +1239,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -1289,6 +1332,7 @@
   {
    "kind": "misfit",
    "hash": "0x708e2232f5326ff24c3bf473612ac3d99633bfb837b830606c97d8041e332411",
+   "block": "25435555",
    "sender": {
     "kind": "safe",
     "address": "0x59f2ec9dc5c02d66bd7bd86ca4f68fed83aad2c4"
@@ -1298,7 +1342,19 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1782884678"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x001c9b05c1df85c8dcce668c23c8e93647bfde898fb5011d99daf054d934c555"
+    }
+   ]
   },
   {
    "kind": "fit",
@@ -1380,6 +1436,7 @@
   {
    "kind": "misfit",
    "hash": "0xd2a97f314cee2d32348c3f21dee581d5650a99f5894a75b6bd4cacd72eb8478f",
+   "block": "25439662",
    "sender": {
     "kind": "safe",
     "address": "0xff6f132bc2aa7a1b99f6c77d2261e7ddbb310591"
@@ -1396,7 +1453,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -1576,6 +1634,7 @@
   {
    "kind": "misfit",
    "hash": "0x1d470a1910b271663f759f17facc0cc4e6a9472b0f9e63b5afccaeb63129fedb",
+   "block": "25470346",
    "sender": {
     "kind": "safe",
     "address": "0x3ea00bc8a0e63c153fa8e3bc03c434c8d1bb3f16"
@@ -1592,7 +1651,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -1744,6 +1804,7 @@
   {
    "kind": "misfit",
    "hash": "0x38c2df19cb64630f626b9056de25af64662152ef506732041e8cd3488c6eda2a",
+   "block": "25480288",
    "sender": {
     "kind": "safe",
     "address": "0xffaba80e4b9851171925633655ed614fc842fb3f"
@@ -1760,7 +1821,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -1838,6 +1900,7 @@
   {
    "kind": "misfit",
    "hash": "0x706a94b9d102d567a73f30c54d920d5eadef7e6a4c9106159f570fcfff3570f5",
+   "block": "25487156",
    "sender": {
     "kind": "safe",
     "address": "0xdc22ca4476fd57cac78a71a44042c7b43cba55f2"
@@ -1854,7 +1917,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1866,6 +1930,7 @@
   {
    "kind": "misfit",
    "hash": "0x32c2c41282acb7718dad241ae643bb72b5ace6b9f368f5552f62a0454808cf03",
+   "block": "25494047",
    "sender": {
     "kind": "safe",
     "address": "0x560121a2831e88a3e46ee2d3380aa8fbe3e7a712"
@@ -1882,7 +1947,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -2263,6 +2329,7 @@
   {
    "kind": "misfit",
    "hash": "0xa9bee155b5ee51cdeb8670fb782c5823780ee541819f47f4a5b21bec13d9aa72",
+   "block": "25529739",
    "sender": {
     "kind": "safe",
     "address": "0xb0950fa9cb83f2e50cb907d9d599a5616d2211c5"
@@ -2279,11 +2346,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x5ec5b9327753de330252858c8518f4def5aabad5fbbeb1696926b01c6b9c2202",
+   "block": "25532543",
    "sender": {
     "kind": "safe",
     "address": "0x425d39a089b643bc1c16135ceae00f6bb071106e"
@@ -2300,7 +2369,19 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1784053841"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x844bf2d2161c6a3d53409ea80454a333c31452e39d871178ded3afc4eb65437b"
+    }
+   ]
   },
   {
    "kind": "fit",
@@ -2382,6 +2463,7 @@
   {
    "kind": "misfit",
    "hash": "0xb8d2ddcc627cac6ae1ad0bcfd2994f59c2f0c9c565170142ae05ccc45c30a8ff",
+   "block": "25539493",
    "sender": {
     "kind": "safe",
     "address": "0xb8d92f2e8d1a98c18cde85e49a0f11e3c64d0a68"
@@ -2398,11 +2480,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xf690a3f79609fe58b16138ada84f2a6a69a1fe3db7f9fa5305afc3db78900e9b",
+   "block": "25543668",
    "sender": {
     "kind": "safe",
     "address": "0x52666ad68156b03eace67678cdcf1d74bc56201d"
@@ -2412,11 +2496,24 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1784187485"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x77b85ceb1451b3bd48a93175d6750ab9326ec6db3282ab5c36f8a3cba6aee41a"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x198c6c502c7b64c6f272913037f9b697d1dd72e1b20ccbf5eb953ec8b23d2000",
+   "block": "25546045",
    "sender": {
     "kind": "safe",
     "address": "0x0f035e7ff8a21159f10994aa0186449fc852a9e7"
@@ -2429,11 +2526,13 @@
       "selector": "0xc6fe8747"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x31d267681a6b0bc92e166fac4f1dff38dc714258576c2e68565642fc981f4355",
+   "block": "25549680",
    "sender": {
     "kind": "safe",
     "address": "0xd022d6bb8b6c1c357ec77d930dc6a0ad40ffc90b"
@@ -2450,11 +2549,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x8d89123480a21784607cdc2a3632a81c86bcdb5e970d91a0bdac15a6efd0090b",
+   "block": "25552923",
    "sender": {
     "kind": "safe",
     "address": "0x8695431984854ade451745c76026964c07e9757f"
@@ -2464,7 +2565,19 @@
     "at": "call.setPreSignature.orderUid.digest.partiallyFillable",
     "expected": "false",
     "actual": "true"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1815854987"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xa230867f2fd5faa7d4bfa721993e1126642b7b94152e4a511a3e5003759e2d6c"
+    }
+   ]
   },
   {
    "kind": "fit",
@@ -2542,6 +2655,7 @@
   {
    "kind": "misfit",
    "hash": "0x2bfe5ad7b63bed7b2cfc7e06ecfb13dbe16cca6b2065a56658d6ff7d9a55d17e",
+   "block": "25562001",
    "sender": {
     "kind": "safe",
     "address": "0x048060a5d996d20997e80f5b082de8ce5da3f852"
@@ -2558,7 +2672,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -2636,6 +2751,7 @@
   {
    "kind": "misfit",
    "hash": "0x34bb0757c88eb46eafa1e06df9009f741c2198e27f25788d906c29db2ea64d2d",
+   "block": "25575111",
    "sender": {
     "kind": "safe",
     "address": "0x4f0403ac60a922ac06a91d4797d9b60acf6fc644"
@@ -2652,7 +2768,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -2741,6 +2858,7 @@
   {
    "kind": "misfit",
    "hash": "0x16dc0244296f6b3f6eb07874825b2d8d8a937f3f85bfe13d2e14e66c69ace489",
+   "block": "25583129",
    "sender": {
     "kind": "safe",
     "address": "0x4c44fe4732a9a6e5a641191e1ee1be29136ddcbe"
@@ -2761,11 +2879,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xff02f844c5db4451697d8b7164192196b638acaaddd179d233bda1503e3bebe0",
+   "block": "25588896",
    "sender": {
     "kind": "safe",
     "address": "0xe697903dc6ca014d3e17ba61f4daf657afd51561"
@@ -2778,11 +2898,13 @@
       "selector": "0xc6fe8747"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x969064e99670342ce89c36e85b2eada04cd00366c02962ccec011e0d9270f498",
+   "block": "25590473",
    "sender": {
     "kind": "safe",
     "address": "0x7bb5e307edf80630f153bd28789b4365efe4cce3"
@@ -2795,11 +2917,13 @@
       "selector": "0xc6fe8747"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x83e44e0e7a890a167109baf5affbebeddd40ddb9630c7242a20eb96906db495c",
+   "block": "25595247",
    "sender": {
     "kind": "safe",
     "address": "0x89e3f2a1f85d04205a23a3d4c6c322efb6190f9e"
@@ -2812,11 +2936,13 @@
       "selector": "0x6a761202"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xc6a50e1c42401a01beac1497de6630d940f1f065776489ae31b28a1dbd814242",
+   "block": "25596669",
    "sender": {
     "kind": "safe",
     "address": "0xfabca7957d67c680d3ab2c28b8dc003a5852123a"
@@ -2833,7 +2959,8 @@
       "selector": "0xc6fe8747"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2845,6 +2972,7 @@
   {
    "kind": "misfit",
    "hash": "0x7d85e65bf3b3c611103b0ba561428ced419eb744b018c0c5d585bc7e6f3dbb0a",
+   "block": "25603637",
    "sender": {
     "kind": "safe",
     "address": "0x5212812dccef951eae1b3e66f7759230b19cf67b"
@@ -2854,7 +2982,19 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1784909806"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xa844c99a981e5d4357c389224b24a0eae0d1b4ed9eac5cb3b26806bfa8d0bcff"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -2950,6 +3090,7 @@
   {
    "kind": "misfit",
    "hash": "0x0282d6255d7ccd6a0cd98a6b7a86a25e7b1f8761c32fd515e476be870265ff0e",
+   "block": "25623249",
    "sender": {
     "kind": "safe",
     "address": "0xdbdcc1752bc54960614d9dce38f2077594776c89"
@@ -2966,11 +3107,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xd359fa375d4fd5eef9560d09bb12aeaf246d292869da9ef7cd4d4d3536a45aa1",
+   "block": "25625136",
    "sender": {
     "kind": "safe",
     "address": "0x1e93f91e38dee64339cfbed29ef6ee51d188e7ff"
@@ -2978,11 +3121,24 @@
    "reason": {
     "kind": "not-sender",
     "at": "call.setPreSignature.orderUid.digest.receiver"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1785209917"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xe9efafff9b3dfc99344d3fce3d6a0abbf3bb830d01565195b408c0df35d81082"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0xa929b04999983035a7a2983580c401139c71f68e07e1bd062603953896ea1187",
+   "block": "25628733",
    "sender": {
     "kind": "safe",
     "address": "0x7f2165014a477f6aba532000d8088ed64dd1eba1"
@@ -2999,7 +3155,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -3296,6 +3453,7 @@
   {
    "kind": "misfit",
    "hash": "0x8133ddd26502d0c20727bc3ee712ad599d8ff9be2ff044a24fa549324e785ee8",
+   "block": "25646421",
    "sender": {
     "kind": "safe",
     "address": "0x4d754910d570b30f9a0150eeb7281cb3ce0cf42f"
@@ -3312,7 +3470,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3324,6 +3483,7 @@
   {
    "kind": "misfit",
    "hash": "0x03fd4035485c2cb97b644b81ecd6a4a05869e2e398e4fb263f1bf57a9501a614",
+   "block": "25652310",
    "sender": {
     "kind": "safe",
     "address": "0x53390590476dc98860316e4b46bb9842af55efc4"
@@ -3333,11 +3493,24 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1785495987"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x18e9d42c32d73a837c0f1a33d92c46ad55b5ac341f6667d6c1d7d66e929e3fca"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0xcff657adc57b24cdda1e779f846fcaa94a20bf23dd034755ef528c22bc4089ec",
+   "block": "25654060",
    "sender": {
     "kind": "safe",
     "address": "0x5d0c187f4e1a4c6f07fb41f16c0452c95de4eb9f"
@@ -3354,11 +3527,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x7a654bbfc0dec1d09652a983f3c07c146d5c28656acaa7b755ab65112b2ef0d8",
+   "block": "25654989",
    "sender": {
     "kind": "safe",
     "address": "0xaee46befc45ff09b17b676471f5ccda5be8c13d5"
@@ -3375,11 +3550,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x5ce8a9510f940092622fc87cc47db01ab264c5fafcee8c0e07f1770c0217378a",
+   "block": "25658991",
    "sender": {
     "kind": "safe",
     "address": "0x4ff1b9d9ba8558f5eafcec096318ea0d8b541971"
@@ -3396,7 +3573,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3481,6 +3659,7 @@
   {
    "kind": "misfit",
    "hash": "0xeaf0cccf356b952d047052c14457876c96bbc4339b955dd1b078b0b90142609e",
+   "block": "25670992",
    "sender": {
     "kind": "safe",
     "address": "0x8bed9a9882a999748d145decee3b3ab748ff9ed9"
@@ -3497,11 +3676,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x54d620c383aa5fa90709fdf43f206779ff0947ca8f3f8b314061740d847ab3f9",
+   "block": "25673327",
    "sender": {
     "kind": "safe",
     "address": "0x09cd06b1738d9a4568044ba33b60bfdbb9cd7c16"
@@ -3518,7 +3699,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -3664,6 +3846,7 @@
   {
    "kind": "misfit",
    "hash": "0x67c595e2794352ae2e9085eef624d62e20e4a596f552da9e240d4318c6d07f37",
+   "block": "25677260",
    "sender": {
     "kind": "safe",
     "address": "0x52a490ffd0e9ed47074c79fc69b57a0f6db52996"
@@ -3680,7 +3863,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3776,6 +3960,7 @@
   {
    "kind": "misfit",
    "hash": "0xf1097a1404fb231d1b68dd4d8b1f740ddf29084eefcc1f95ec720daa9e94eda9",
+   "block": "25687122",
    "sender": {
     "kind": "safe",
     "address": "0x425d39a089b643bc1c16135ceae00f6bb071106e"
@@ -3792,7 +3977,8 @@
       "selector": "0x569d3489"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3804,6 +3990,7 @@
   {
    "kind": "misfit",
    "hash": "0xcb9d9f8d3101ac7cf1cf7a8fd892074d7bbf872f5f3321d2ab59859de39fbddb",
+   "block": "25691058",
    "sender": {
     "kind": "safe",
     "address": "0xb232a72e116c1d92b3bb508565d598d277421bde"
@@ -3824,7 +4011,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3836,6 +4024,7 @@
   {
    "kind": "misfit",
    "hash": "0x44cedc109114bbed24fd6f45d18100b05716e84ce9c7882979d79547ee1d4903",
+   "block": "25696796",
    "sender": {
     "kind": "safe",
     "address": "0x042b32ac6b453485e357938bdc38e0340d4b9276"
@@ -3852,11 +4041,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xdcaeac0d7329251344751e3ee516dba3ad1fd4f33a96785832f1518fe2e76a66",
+   "block": "25698130",
    "sender": {
     "kind": "safe",
     "address": "0x8d3aca27963d5bad978d3e953d3f3680cea3faec"
@@ -3877,11 +4068,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xac6946b99ba623e94e3c84e13919cb46603b4c70ea40c1686ed47d315a3a876b",
+   "block": "25701859",
    "sender": {
     "kind": "safe",
     "address": "0x415faa5055b02c87f5ec154ed0d2b1f4dd55e019"
@@ -3898,11 +4091,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x8ac640b5de6c5cb6b8dbcab30daa27b24b33041614646c10501df9a04dab59b6",
+   "block": "25703507",
    "sender": {
     "kind": "safe",
     "address": "0xab407a5402f3b35682bdb134781b1cdae1fa71c0"
@@ -3919,7 +4114,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3938,6 +4134,7 @@
   {
    "kind": "misfit",
    "hash": "0xf5e46bc46592bf33ae1309b751d11fbf38c28f0083257593b0eecc87177fab69",
+   "block": "25710901",
    "sender": {
     "kind": "safe",
     "address": "0xbf47d2467b00d571d672e2e41c572fe263040f6d"
@@ -3947,7 +4144,19 @@
     "at": "call.setPreSignature.orderUid.digest.partiallyFillable",
     "expected": "false",
     "actual": "true"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1786203577"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -3973,13 +4182,15 @@
   {
    "kind": "misfit",
    "hash": "0x5a67cfaa9aece57b722d434d005696a0616d389d65f7d648b7a7ba6560d3c065",
+   "block": "25727005",
    "sender": {
     "kind": "safe",
     "address": "0x12beef35025841efccb77d6ee40df86400fdb4bb"
    },
    "reason": {
     "kind": "foreign-delegatecall"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -4159,6 +4370,7 @@
   {
    "kind": "misfit",
    "hash": "0xbd40d29b083d857c7a0f36ad754abefcab809c250f2427ef1d15b00d0343cfdc",
+   "block": "25741737",
    "sender": {
     "kind": "safe",
     "address": "0x315a8034ea2a342f55e4c332408f07b9bf7d0a62"
@@ -4168,11 +4380,24 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1787176344"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0xf3735335499b4aa5ccad21550636155feb16055e5f3a2c2d47e3503ca52c8204",
+   "block": "25745341",
    "sender": {
     "kind": "safe",
     "address": "0xe615f2e4ecb9cd2689f3d08772f6adbfe9ec8ac1"
@@ -4189,7 +4414,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -4342,6 +4568,7 @@
   {
    "kind": "misfit",
    "hash": "0x1c2ec967ddd64b7699f23633d8aa4ec0f5a48ef8129f9f247bd45cafaa637ef1",
+   "block": "25759548",
    "sender": {
     "kind": "safe",
     "address": "0x4516bf404caf55e096bc53a12e68770d0a9fb9fc"
@@ -4358,11 +4585,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x4c79f0c6ef780f04f03131ba479fa84bed3741dc3f1ecb465bafbab945fb44b0",
+   "block": "25762750",
    "sender": {
     "kind": "safe",
     "address": "0x6a6803c44b95d67f07dd9990a9e95ca6a20f323f"
@@ -4379,7 +4608,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -4457,6 +4687,7 @@
   {
    "kind": "misfit",
    "hash": "0x75553f9f8c5bdfe54cadee05f3e804d61e3d734e228713ffe9c751fb96e0f69f",
+   "block": "25773690",
    "sender": {
     "kind": "safe",
     "address": "0xa5312813006736615cd3bc3c41dc1769a767d5f6"
@@ -4466,7 +4697,19 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1786957874"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x1b1efdf2d70296b8da36e28ceffc2e34deabf4777467c77f01272061ca03d443"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -4722,6 +4965,7 @@
   {
    "kind": "misfit",
    "hash": "0xf4c91eb04f3fd5a3f5d9661414b708f4b2198c8f63cd781f66022002714a60eb",
+   "block": "25796369",
    "sender": {
     "kind": "safe",
     "address": "0x57a86f7b336b7df3ec66bf9e1ee94bb7118eed97"
@@ -4738,11 +4982,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xab27cf58075185de7f95c22d3196db3c137f8b267aac60a248b77f5a79195ca0",
+   "block": "25797876",
    "sender": {
     "kind": "safe",
     "address": "0x15d59b3358faa2f1b0df2b92a172b453fa9fd833"
@@ -4759,7 +5005,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -4994,6 +5241,7 @@
   {
    "kind": "misfit",
    "hash": "0x1898d055a49f24f83cb95fc8c81e724ffa1e31b44bfccd5ffedec574868c5421",
+   "block": "25811229",
    "sender": {
     "kind": "safe",
     "address": "0x908d91df93a862c14aea74eb383b1ac070521e5c"
@@ -5003,7 +5251,19 @@
     "at": "call.setPreSignature.orderUid.digest.partiallyFillable",
     "expected": "false",
     "actual": "true"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1818965523"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -5029,6 +5289,7 @@
   {
    "kind": "misfit",
    "hash": "0xe6334789c0d8dc00677db7f9dea0557a720b4f829676950ec6d0abdc2c89d506",
+   "block": "25823831",
    "sender": {
     "kind": "safe",
     "address": "0x5dbf9287787a5825becb0321a276c9c92d570a75"
@@ -5065,11 +5326,13 @@
       "selector": "0x908e9ee0"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xa2c687a8f113953aa756b907ff185ea0643b6629ea30df498039a4473bcdd83d",
+   "block": "25825327",
    "sender": {
     "kind": "safe",
     "address": "0x3b33e333b2cb692bc98ac655ba92a592cd42d755"
@@ -5086,7 +5349,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -5168,6 +5432,7 @@
   {
    "kind": "misfit",
    "hash": "0x8d8e704a8b3f6b798abaaeaa5c10474721fecdbcc600c45bec291bf962ee7fec",
+   "block": "25827416",
    "sender": {
     "kind": "safe",
     "address": "0x3887d605a519253f3a8cd29a062c71a13d0d7f1c"
@@ -5184,7 +5449,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -5203,6 +5469,7 @@
   {
    "kind": "misfit",
    "hash": "0x74bbc4012ac2a6bd9a0e331bc8f3c7182c762a15c8d7d3301a7cd0df31a600c1",
+   "block": "25833562",
    "sender": {
     "kind": "safe",
     "address": "0x425d39a089b643bc1c16135ceae00f6bb071106e"
@@ -5299,7 +5566,8 @@
       "selector": "0xe3ead59e"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -5464,6 +5732,7 @@
   {
    "kind": "misfit",
    "hash": "0xcfb47d3dc55b052e21caac1bb5bb261271920b6740e2c4f3a109998ac54c8c7b",
+   "block": "25844605",
    "sender": {
     "kind": "safe",
     "address": "0xd100b6645eb05bd88ff6491cb9f1c2688948b838"
@@ -5473,7 +5742,19 @@
     "at": "call.setPreSignature.orderUid.digest.partiallyFillable",
     "expected": "false",
     "actual": "true"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1788414807"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
+    }
+   ]
   },
   {
    "kind": "fit",
@@ -5558,6 +5839,7 @@
   {
    "kind": "misfit",
    "hash": "0x991799779e2e6d9a3afb43bcd5739eb08649bff4b9709b6b02c00fde5b7b9e9b",
+   "block": "25851830",
    "sender": {
     "kind": "safe",
     "address": "0x0f4308e2a9e47936da3b7277a7496fc9f5547ecb"
@@ -5567,11 +5849,24 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1787898814"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xef724ce1cd2de3d184fce41349a86ee811ab6a28a3df34006e025e30f36e926d"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x0919aacd6796ed0c7ed0bc60b75d44ccd1365ef3d754ed42644a1bf425973a0d",
+   "block": "25853789",
    "sender": {
     "kind": "safe",
     "address": "0xb2a766cac59edfbff6375d37c0966975843c360f"
@@ -5588,7 +5883,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -5830,6 +6126,7 @@
   {
    "kind": "misfit",
    "hash": "0x85ab9b74f7c00dd5a4390457688fa8625d1102f89f825ad432f0a6d6ced686f9",
+   "block": "25873841",
    "sender": {
     "kind": "safe",
     "address": "0xee6ec2555a7e6ddd1672f589261bb82789cf3255"
@@ -5839,7 +6136,19 @@
     "at": "call.setPreSignature.orderUid.digest.partiallyFillable",
     "expected": "false",
     "actual": "true"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1819636460"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x280a21c875603b9e71c87d3ff7b50382eb4750212d54f3d324e585772407de47"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -5851,6 +6160,7 @@
   {
    "kind": "misfit",
    "hash": "0xa60b4007bac0d218e637ca6763541f36b4a0c6c3b5433d41845013463d0ce89f",
+   "block": "25876645",
    "sender": {
     "kind": "safe",
     "address": "0x71028407594d438a5f718972228538d0002c6d7f"
@@ -5867,7 +6177,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -5886,6 +6197,7 @@
   {
    "kind": "misfit",
    "hash": "0x545071a1f6b10dc0a4a35383daf70055123d10257c4baaf9b1872b2e8e4ebbac",
+   "block": "25882152",
    "sender": {
     "kind": "safe",
     "address": "0x3f58b8ae5b0109b03c2cbb124385c89685862e8f"
@@ -5902,7 +6214,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -6062,6 +6375,7 @@
   {
    "kind": "misfit",
    "hash": "0xc151ddf2ba07e23ee93d917a6e7fb2bbaa093f4c453972468339c4f89f6f01a9",
+   "block": "25890938",
    "sender": {
     "kind": "safe",
     "address": "0xb76735c519329d277b6d863a903cb40d45771808"
@@ -6078,11 +6392,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x1162268c31fbb31c5802ce3bb8f2c79d859b8a773ec7c94460f3d967cfb60672",
+   "block": "25892707",
    "sender": {
     "kind": "safe",
     "address": "0x42d77b72e69488ebe9ba4914387b524be0f1bbdf"
@@ -6099,7 +6415,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -6118,6 +6435,7 @@
   {
    "kind": "misfit",
    "hash": "0x75ef870813185ca52b65fdc25f0f312f8a202f3c66262ddf4399f5cdbdf239dd",
+   "block": "25898100",
    "sender": {
     "kind": "safe",
     "address": "0xb496c9866b6d0b9e8c63ff6c072270cf5f9b4230"
@@ -6127,7 +6445,19 @@
     "at": "call.setPreSignature.orderUid.digest.partiallyFillable",
     "expected": "false",
     "actual": "true"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1820011918"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x86c8e3f7977b36b25f7076d84802a942acce179ae8e9ca92239c501b0752cf00"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -6139,6 +6469,7 @@
   {
    "kind": "misfit",
    "hash": "0xfd3f2d5e62c5529d8b59eca012af4544c14b9c73067aea3ee00692f816bc2766",
+   "block": "25902719",
    "sender": {
     "kind": "safe",
     "address": "0x16fb2d3b2507291c24214f51b708a7987f78eadc"
@@ -6148,11 +6479,24 @@
     "at": "call.setPreSignature.orderUid.digest.partiallyFillable",
     "expected": "false",
     "actual": "true"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1798703160"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x280a21c875603b9e71c87d3ff7b50382eb4750212d54f3d324e585772407de47"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x65036df55982a7d4660eb42b2a9dad1664e8aeb87dd3c4b7c76f36c2f67a2a71",
+   "block": "25904155",
    "sender": {
     "kind": "safe",
     "address": "0xf93164c4aff5ac451038fc2f80c7065b4e52a982"
@@ -6169,7 +6513,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -6242,6 +6587,7 @@
   {
    "kind": "misfit",
    "hash": "0x4a5d105cbd28f08f9ac7fe237c414382dadf94afa982bcef9cec4af22848d98e",
+   "block": "25910790",
    "sender": {
     "kind": "safe",
     "address": "0xdc22ca4476fd57cac78a71a44042c7b43cba55f2"
@@ -6258,7 +6604,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -6270,6 +6617,7 @@
   {
    "kind": "misfit",
    "hash": "0xb9af86e6ca5e517913752e40bd909f60957160f6f1b66049294dea4e29ff16be",
+   "block": "25917257",
    "sender": {
     "kind": "safe",
     "address": "0x9c12ef8290688c4f5228de2fcfa346e886cfddec"
@@ -6286,11 +6634,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xba6c90e7a0fa5834dacb954e6b47f535548a7c292bf2a71f015c888c9cb5e84e",
+   "block": "25920281",
    "sender": {
     "kind": "safe",
     "address": "0x8c764d9e0295d7c61b129c1969e398f857f6a791"
@@ -6307,7 +6657,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -6585,6 +6936,7 @@
   {
    "kind": "misfit",
    "hash": "0x6eef9bf7cdbcfafeca827edba58eaa19892c5e4a1c897462af59b500de661dd6",
+   "block": "25946075",
    "sender": {
     "kind": "safe",
     "address": "0x1676d23711186076fa74aa53511dda750a1f0d9a"
@@ -6601,7 +6953,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -6674,6 +7027,7 @@
   {
    "kind": "misfit",
    "hash": "0x0f790ec85c04ab70b8899dca6d7795edd8297e1b1315099a82aff8cf1eafccf2",
+   "block": "25948233",
    "sender": {
     "kind": "safe",
     "address": "0xd011c1fce7478bc6f55b2997d4cbf17bd7a42916"
@@ -6690,7 +7044,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -6709,6 +7064,7 @@
   {
    "kind": "misfit",
    "hash": "0x06cd2c19cd72f80f9db01e396efcbdc47e9e719d9e958e320535ba91b598a119",
+   "block": "25954836",
    "sender": {
     "kind": "safe",
     "address": "0x83d647e287d2bc41502c22526c5bdc29b6fb3191"
@@ -6725,7 +7081,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -6835,6 +7192,7 @@
   {
    "kind": "misfit",
    "hash": "0x8ad4bd2e35911215140bb766c6d52f9f0a72e969ca79cd0e1ab0203214d21d16",
+   "block": "25976899",
    "sender": {
     "kind": "safe",
     "address": "0x7b00d28b3a3507e93aebcfaf155ed252aa7ede91"
@@ -6851,7 +7209,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -6940,6 +7299,7 @@
   {
    "kind": "misfit",
    "hash": "0xc75ec0e452d48aa600faa01177e054335cdabe8ad388f2a37e2940addfa24079",
+   "block": "25983874",
    "sender": {
     "kind": "safe",
     "address": "0xd2d08d6f010b9c7f1edd3121892b6c676cf20670"
@@ -6956,11 +7316,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xcdb8c668598f05219d5febd36523641188c2854372379ff838f070d80d673209",
+   "block": "25985275",
    "sender": {
     "kind": "safe",
     "address": "0x8616b00f779ada7df11f27d3b0e06c754b6582e2"
@@ -6977,7 +7339,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -6989,6 +7352,7 @@
   {
    "kind": "misfit",
    "hash": "0x1d67f92231e305a1605ae9d6a79503a6203fdcbe20b9c014e8ebc66deea32ab5",
+   "block": "25990399",
    "sender": {
     "kind": "safe",
     "address": "0xd5c71e38be810c7fd996b752f53fd4de1699b789"
@@ -6998,7 +7362,19 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1789605856"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x844bf2d2161c6a3d53409ea80454a333c31452e39d871178ded3afc4eb65437b"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -7010,6 +7386,7 @@
   {
    "kind": "misfit",
    "hash": "0x5e585e9993927815423c006413c109342e9fcd884979749bace85db149a875e5",
+   "block": "25992612",
    "sender": {
     "kind": "safe",
     "address": "0x669a22ae6a6eabe032369960db83362c5adc5297"
@@ -7019,11 +7396,24 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1796111820"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xa230867f2fd5faa7d4bfa721993e1126642b7b94152e4a511a3e5003759e2d6c"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x57b20315b36c4375df285a2ece85d93bd0dcbfef8625170f8447686eca254b70",
+   "block": "25996400",
    "sender": {
     "kind": "safe",
     "address": "0xbd9d65ec307ee6953e61826831e16d6c98026838"
@@ -7040,7 +7430,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -7129,6 +7520,7 @@
   {
    "kind": "misfit",
    "hash": "0xcae74594c64620158bc8301f934bb21a58dec7dbb74a47250578cef3399de84f",
+   "block": "25999796",
    "sender": {
     "kind": "safe",
     "address": "0xb7133f46b713e808253cb13d315aac15ef134bab"
@@ -7145,7 +7537,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -7450,6 +7843,7 @@
   {
    "kind": "misfit",
    "hash": "0x8925028aafa47ecf403b4664eed1f1eff0fdbc74b91468aa829f837ebcb6d8d4",
+   "block": "26015021",
    "sender": {
     "kind": "safe",
     "address": "0x8f559b03d78509d8cda8aca66ee4a965f57fd491"
@@ -7459,7 +7853,19 @@
     "at": "call.setPreSignature.orderUid.digest.partiallyFillable",
     "expected": "false",
     "actual": "true"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1790467389"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -7553,6 +7959,7 @@
   {
    "kind": "misfit",
    "hash": "0x033ad380fd11651e32e4c3b43e4ee2f2b7ccd48a03b8de9f9fef3344ab7ccdc3",
+   "block": "26026949",
    "sender": {
     "kind": "safe",
     "address": "0x4d754910d570b30f9a0150eeb7281cb3ce0cf42f"
@@ -7569,11 +7976,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x25712414336580319fe9dc94bbcccf26489a1707048c7623450a47bfce0d1e2f",
+   "block": "26028325",
    "sender": {
     "kind": "safe",
     "address": "0x5e1a4527de49a5982e45642119c68a8af4d94cec"
@@ -7590,7 +7999,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -7668,6 +8078,7 @@
   {
    "kind": "misfit",
    "hash": "0x864eb27294aa342b77325f91fde88bd72bf1b69059f18a6a935a19bab95e4b7c",
+   "block": "26032154",
    "sender": {
     "kind": "safe",
     "address": "0x073997396b83b8ca325777bc08e4b65c65b4a190"
@@ -7684,11 +8095,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x911840629eba84dbc58a0d5e4fe899ba5f176521f8f47343c7d0201c0d26455f",
+   "block": "26033033",
    "sender": {
     "kind": "safe",
     "address": "0xba68d59e6bd8d0de45805b51959f8fa5e0c45c2a"
@@ -7705,7 +8118,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -7783,6 +8197,7 @@
   {
    "kind": "misfit",
    "hash": "0x1dc1ed9b29bc8704c4185837b926ec9a38179fa62933a3a00b567bd008f9b1d0",
+   "block": "26034522",
    "sender": {
     "kind": "safe",
     "address": "0x769ec0a1598fea7ce3f0c3efc08229f3258cd309"
@@ -7799,7 +8214,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -7891,6 +8307,7 @@
   {
    "kind": "misfit",
    "hash": "0x107b4c95b73042a4a5103ec7e8a47408dc514d67f355edf7e6c9cede2f9f0143",
+   "block": "26040346",
    "sender": {
     "kind": "safe",
     "address": "0x5ac6720d12ef7cce95d8fb5c40590ce957c0d6f5"
@@ -7907,7 +8324,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -8069,6 +8487,7 @@
   {
    "kind": "misfit",
    "hash": "0x83c344f884fa15a23a87e9e587e27fd2a6300a6f091f55378f60553066bb93c2",
+   "block": "26046104",
    "sender": {
     "kind": "safe",
     "address": "0xbb73c28167afcba8ce91102d25d268c982730956"
@@ -8085,7 +8504,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8104,6 +8524,7 @@
   {
    "kind": "misfit",
    "hash": "0x0e94b1c092e348ff57c0c36e9a21447ccca5d090d233f72ba66fbb4632adb5ea",
+   "block": "26049654",
    "sender": {
     "kind": "safe",
     "address": "0x9a30193bbf772f451745ffe12f9a2d8c6d11a9fd"
@@ -8120,7 +8541,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8207,6 +8629,7 @@
   {
    "kind": "misfit",
    "hash": "0x96585caaaabdc343909c4d3e584af285ba89ee54d7e11945a590ffda0887b726",
+   "block": "26055687",
    "sender": {
     "kind": "safe",
     "address": "0x58468fe6a341e1a8b904fc47c882923b6e23d791"
@@ -8223,7 +8646,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8331,6 +8755,7 @@
   {
    "kind": "misfit",
    "hash": "0x99238e1e68156a8f74dd1232bcb777b90baa53bb776759d3a6ca029f7e4f80e3",
+   "block": "26074880",
    "sender": {
     "kind": "safe",
     "address": "0xa3e5203a7f6bae26d009a228e76d41818988a5b2"
@@ -8347,7 +8772,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8436,6 +8862,7 @@
   {
    "kind": "misfit",
    "hash": "0x4ca6058274886bd300e8d27966a84cf8407e30d998b0bfbca354f32bafa4b189",
+   "block": "26079762",
    "sender": {
     "kind": "safe",
     "address": "0x684c658694ccbcd21ae3fd11f07c9e0beceb17a3"
@@ -8452,7 +8879,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -8558,6 +8986,7 @@
   {
    "kind": "misfit",
    "hash": "0x34d2dd343a2a82bb13aac70ea1d85b355d60711f43b6e51449ca6c8bfbf6c40e",
+   "block": "26090033",
    "sender": {
     "kind": "safe",
     "address": "0x9530971d0b0d0033682fcc2ac1b9ae3da49abbac"
@@ -8567,11 +8996,24 @@
     "at": "call.setPreSignature.orderUid.digest.partiallyFillable",
     "expected": "false",
     "actual": "true"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1791372705"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x4748ba33f1a06a46c9e7bfb9fc304c47b7994a4cbf23cae8baca79b3cc451613",
+   "block": "26091454",
    "sender": {
     "kind": "safe",
     "address": "0x53390590476dc98860316e4b46bb9842af55efc4"
@@ -8581,11 +9023,24 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1790786753"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xc196a22c7d1cbb3e048dcf39f7be4ab536d0abad27bcf2ffd143a8a5618fcfaa"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x7f61c56a19023d68b3ea0564a03d6eb536f8088b5872ae54f1a8729986ec4f39",
+   "block": "26092366",
    "sender": {
     "kind": "safe",
     "address": "0x569fa1a5d7a2d47a4c13e884160b4959a89b449b"
@@ -8595,7 +9050,19 @@
     "at": "call.setPreSignature.orderUid.digest.partiallyFillable",
     "expected": "false",
     "actual": "true"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1791400215"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xa230867f2fd5faa7d4bfa721993e1126642b7b94152e4a511a3e5003759e2d6c"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -8607,6 +9074,7 @@
   {
    "kind": "misfit",
    "hash": "0x5f675418e384e803c87fa413f2fe5f3e2bfd0b7fe1b1da38ddbaa3036e0681a7",
+   "block": "26096747",
    "sender": {
     "kind": "safe",
     "address": "0x8d7db16024f72909d045df377597155eee1cb181"
@@ -8616,7 +9084,19 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1790850749"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x8811330a2fd863fea1b4a9e63722f029203acb2254887c31cc6e7ce045101696"
+    }
+   ]
   },
   {
    "kind": "fit",
@@ -8694,6 +9174,7 @@
   {
    "kind": "misfit",
    "hash": "0x86d9c5fc2c91040b786e13e01804bcfc25b5ab3f0556a85b43ac4661eef06271",
+   "block": "26099165",
    "sender": {
     "kind": "safe",
     "address": "0x4504db1ca6659fa04b5bc9c96deee4691c58f034"
@@ -8703,7 +9184,19 @@
     "at": "call.setPreSignature.orderUid.digest.partiallyFillable",
     "expected": "false",
     "actual": "true"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1791482945"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xa230867f2fd5faa7d4bfa721993e1126642b7b94152e4a511a3e5003759e2d6c"
+    }
+   ]
   },
   {
    "kind": "fit",
@@ -8781,6 +9274,7 @@
   {
    "kind": "misfit",
    "hash": "0x129fb85a200ea077f8578767407d1451d69a1fef56e644ceec45e49e306299bc",
+   "block": "26103600",
    "sender": {
     "kind": "safe",
     "address": "0x755198e48ffaf974ed56b8799150faf607f22380"
@@ -8801,11 +9295,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xff2ec44b611529ff1aa59bb3ff4319c12ed980e073c7fa7f0deaad970ac12095",
+   "block": "26104985",
    "sender": {
     "kind": "safe",
     "address": "0xfabca7957d67c680d3ab2c28b8dc003a5852123a"
@@ -8822,7 +9318,8 @@
       "selector": "0xc6fe8747"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8982,6 +9479,7 @@
   {
    "kind": "misfit",
    "hash": "0x99a87c1dd6fef6d1a4bc19423b4e09c4ff31e60b4f6626c64957d1c597242d34",
+   "block": "26118629",
    "sender": {
     "kind": "safe",
     "address": "0xc7a0d564707d48ba4723be760ebbb8c5e7844ce5"
@@ -8998,7 +9496,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -9101,6 +9600,7 @@
   {
    "kind": "misfit",
    "hash": "0x25e0a6226f99053d74bb05d58709a3918be7610675f72e64e3a6c69fbdf2df26",
+   "block": "26129315",
    "sender": {
     "kind": "safe",
     "address": "0x6f448b2843153c88a98aec893975ed66b564e7eb"
@@ -9117,11 +9617,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xe3bb30da46bdfc324a450f7f39165e86018b4f953f127f6d153a962e4ab4e94e",
+   "block": "26132193",
    "sender": {
     "kind": "safe",
     "address": "0xccccebdbda2d68baba6da99449b9ca41dba9d4ff"
@@ -9138,11 +9640,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x6d68a9b41b85912131b4e1e9b8c8e5f884898e8b1b18301e3dfa6afa136b0c34",
+   "block": "26133382",
    "sender": {
     "kind": "safe",
     "address": "0xba8c3dd56154bde7635253b8dbe4cce6b84c5f74"
@@ -9159,7 +9663,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -9199,6 +9704,7 @@
   {
    "kind": "misfit",
    "hash": "0xcda14033d85440951244abbaebbca8f8d55541bc54849bd4cfef086a1b63a03f",
+   "block": "26146269",
    "sender": {
     "kind": "safe",
     "address": "0xba8c3dd56154bde7635253b8dbe4cce6b84c5f74"
@@ -9215,7 +9721,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -9304,6 +9811,7 @@
   {
    "kind": "misfit",
    "hash": "0x8095d6288bd58b06da82d7f252021e9c6839d993f8e494af6416eb0f05a6e4fe",
+   "block": "26150740",
    "sender": {
     "kind": "safe",
     "address": "0xf93edc3cbd5250170c947c2f7d132137e734a188"
@@ -9313,11 +9821,24 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1791501181"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x5c44d0318571cefc72e0acf8be88ab3d56a8584095ee420d7f01d781ef7b0d78"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x014e838d40d7c7cafd2c88997d5fd126396fdd6ceaa65bb50ab9b8aa4d2ea671",
+   "block": "26153638",
    "sender": {
     "kind": "safe",
     "address": "0x6c53b213d58fa0403691f412ea63ed0fb39f5b1e"
@@ -9334,7 +9855,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -9440,6 +9962,7 @@
   {
    "kind": "misfit",
    "hash": "0x5e319d553ccf6381d23526c1524e7c45e71c35725158392b7a2f98f934fcf70c",
+   "block": "26171559",
    "sender": {
     "kind": "safe",
     "address": "0xf93edc3cbd5250170c947c2f7d132137e734a188"
@@ -9449,7 +9972,19 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1791751761"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xb3af1d563890e612b5cddb41f2b46a4e963493295b048a74e9927aa58f47ae5f"
+    }
+   ]
   },
   {
    "kind": "fit",
@@ -9543,6 +10078,7 @@
   {
    "kind": "misfit",
    "hash": "0xde576721bf1a71849a61125bbaa490618d9872f00f00d89205c29c41686c8d3b",
+   "block": "26183388",
    "sender": {
     "kind": "safe",
     "address": "0xb423e0f6e7430fa29500c5cc9bd83d28c8bd8978"
@@ -9559,11 +10095,13 @@
       "selector": "0xc6fe8747"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x156f939a6354f689bddd40af8a00daf856e096b0c7e0e38c13c351790d9c7d68",
+   "block": "26184459",
    "sender": {
     "kind": "safe",
     "address": "0xc8ecf9f51f7235b54eabb21836a6892a380545bc"
@@ -9580,11 +10118,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x74c7f06498b872ff17fe66b2a7bf35a58bee744fa7617c1c04abeeb6e26c8f91",
+   "block": "26185485",
    "sender": {
     "kind": "safe",
     "address": "0xb1a8a5a3692c8bcf6682a0b3d538715e1bb1b936"
@@ -9601,7 +10141,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "unreadable",
@@ -9611,6 +10152,7 @@
   {
    "kind": "misfit",
    "hash": "0x714b4cd21140783662816709643c414a778f70c42fb78ca1b0fda4394b1d42d3",
+   "block": "26191076",
    "sender": {
     "kind": "safe",
     "address": "0x4504db1ca6659fa04b5bc9c96deee4691c58f034"
@@ -9620,7 +10162,19 @@
     "at": "call.setPreSignature.orderUid.digest.partiallyFillable",
     "expected": "false",
     "actual": "true"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1792589368"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xa230867f2fd5faa7d4bfa721993e1126642b7b94152e4a511a3e5003759e2d6c"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -9632,6 +10186,7 @@
   {
    "kind": "misfit",
    "hash": "0x5b61f260044d755f9429ff15725ae57fe7e9dd60336fcedf7b02082f45d568f8",
+   "block": "26193484",
    "sender": {
     "kind": "safe",
     "address": "0xfcf2a356e07e8497f51d1b348e7ada25293189ff"
@@ -9648,11 +10203,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xfce9f0e96342cb45f66caf3f5a1ef71861358a563ee5c9ba125ee44ea7574bfc",
+   "block": "26195981",
    "sender": {
     "kind": "safe",
     "address": "0xa1e3a90d4fe0f4d775d2bf5414114c0b79bafa89"
@@ -9669,7 +10226,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -9752,6 +10310,7 @@
   {
    "kind": "misfit",
    "hash": "0x1fd03e417bf521a281fd0387e93f9a16503958b959b4d586242476913fcca2cd",
+   "block": "26197906",
    "sender": {
     "kind": "safe",
     "address": "0x19a5f2f08edb29fbbdd43e5f4ccce9a3f35a2218"
@@ -9768,7 +10327,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -9950,6 +10510,7 @@
   {
    "kind": "misfit",
    "hash": "0x243e062f0e2bce25dab817d7c959192722fd3f647728b0d4ceba8965fd5de812",
+   "block": "26205911",
    "sender": {
     "kind": "safe",
     "address": "0x0610a806356a36d3ef46ab75b2b184e74ed13ce1"
@@ -9966,7 +10527,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -10058,6 +10620,7 @@
   {
    "kind": "misfit",
    "hash": "0xec03c4805e5fc3de10b4b41c1f454364d65a5c955d46258e08530256525f00e1",
+   "block": "26219916",
    "sender": {
     "kind": "safe",
     "address": "0x5cc40a0a699994dd1e57fe5862108df03dcd873c"
@@ -10067,7 +10630,19 @@
     "at": "call.setPreSignature.orderUid.digest.partiallyFillable",
     "expected": "false",
     "actual": "true"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1792936887"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x75cd9eb72b5c5424bcded4cc1b5aec9a34c227fc2b80a2429fe2f14f11b28ee5"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -10093,6 +10668,7 @@
   {
    "kind": "misfit",
    "hash": "0x04032441552f0e59b6074bee321a1820aed7bd83842ea8e3655097abd30751dd",
+   "block": "26229660",
    "sender": {
     "kind": "safe",
     "address": "0xce3fdcb7497928b82c3b5095b8714afe577070d6"
@@ -10105,7 +10681,8 @@
       "selector": "0xc6fe8747"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -10178,6 +10755,7 @@
   {
    "kind": "misfit",
    "hash": "0x4c4ee0c79fca3878a59c2e548ded5ab0f0a5c675eea233f9bc708ac30c11584a",
+   "block": "26234830",
    "sender": {
     "kind": "safe",
     "address": "0x0962f833f91b3c72d160cccd97632c11ee7c781f"
@@ -10194,7 +10772,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -10440,6 +11019,7 @@
   {
    "kind": "misfit",
    "hash": "0xe35dc547234018d80b1e9844420bd82b3a43bd74d82cc4c7c0704a969e878974",
+   "block": "26247795",
    "sender": {
     "kind": "safe",
     "address": "0x27663e8e9ce6f1c6e297d0933fa50236eeb56e4b"
@@ -10447,11 +11027,24 @@
    "reason": {
     "kind": "not-sender",
     "at": "call.setPreSignature.orderUid.digest.receiver"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1792669550"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x7bf116ffa5dcc0ea4f365fd027400c9d676603907c59af753a71384be9516fa8"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x0950b6d3563047b1c61b919ee4e98d5a8380035c33d9a12b7eff84c7f84b0d72",
+   "block": "26249066",
    "sender": {
     "kind": "safe",
     "address": "0xbbe0de9757f93e3306adbfebe906ab285edd13da"
@@ -10468,7 +11061,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -10850,6 +11444,7 @@
   {
    "kind": "misfit",
    "hash": "0x3b4a7224f0fd9f6199a33e87220d3816646a55e8940c7d5768aac877d1416421",
+   "block": "26266612",
    "sender": {
     "kind": "safe",
     "address": "0xb192b43fb93e234be60f5172351cd6ad65405560"
@@ -10866,7 +11461,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -10948,6 +11544,7 @@
   {
    "kind": "misfit",
    "hash": "0x64af7caf6421965ba2348d04bd247d67d2ab27bd8eb71e801309c18dbfc2b862",
+   "block": "26275819",
    "sender": {
     "kind": "safe",
     "address": "0xef00b01bd571cb7e05da972e8007c6ab367c4713"
@@ -10964,7 +11561,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -11270,6 +11868,7 @@
   {
    "kind": "misfit",
    "hash": "0xee918a35abc8b0482d64708a72c2b3042f304f63cb8327079d867aebf5aeb77d",
+   "block": "26291710",
    "sender": {
     "kind": "safe",
     "address": "0xc9c61194682a3a5f56bf9cd5b59ee63028ab6041"
@@ -11286,11 +11885,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xbd259b5d1112e2eae589ec2fdea20ed7a755970b103ca3866ba01ef2206527f7",
+   "block": "26293373",
    "sender": {
     "kind": "safe",
     "address": "0x3034137e8c64d0c3dbcdef860a09d76bb4282c21"
@@ -11307,7 +11908,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -11319,6 +11921,7 @@
   {
    "kind": "misfit",
    "hash": "0xe08cbe95f8cff6e8a928b5dcbba1fe8022bca852c38220d75608918288988e72",
+   "block": "26298535",
    "sender": {
     "kind": "safe",
     "address": "0x60716991acda9e990bfb3b1224f1f0fb81538267"
@@ -11335,7 +11938,8 @@
       "selector": "0xc6fe8747"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -11366,6 +11970,7 @@
   {
    "kind": "misfit",
    "hash": "0xdf7f7ba90ab9a7ee103e3b8123474e6043a3eb0aa6cb2e48347be268266c3001",
+   "block": "26304361",
    "sender": {
     "kind": "safe",
     "address": "0x10cb02ff58492ed4358a1b7087721546fe9ff864"
@@ -11382,11 +11987,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x4256902681b5cac144071d2853dbf5f9c97d32250b02b5ef50881d35f197150b",
+   "block": "26305121",
    "sender": {
     "kind": "safe",
     "address": "0x315a8034ea2a342f55e4c332408f07b9bf7d0a62"
@@ -11396,11 +12003,24 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1793962614"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x53dc65a83616c00c4dc82f07646eccc4a76c43f3d0ebe588dce0b8cd98551909",
+   "block": "26305984",
    "sender": {
     "kind": "safe",
     "address": "0x569fa1a5d7a2d47a4c13e884160b4959a89b449b"
@@ -11410,11 +12030,24 @@
     "at": "call.setPreSignature.orderUid.digest.partiallyFillable",
     "expected": "false",
     "actual": "true"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1793973052"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xa230867f2fd5faa7d4bfa721993e1126642b7b94152e4a511a3e5003759e2d6c"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x523d37c8258d2af59039fcaa060beef72f49389ac9b9bd79e1bd5f0ace7d253d",
+   "block": "26306847",
    "sender": {
     "kind": "safe",
     "address": "0x4b1a3f1d35911ac4da997116f1d8747ece5f22cb"
@@ -11427,7 +12060,8 @@
       "selector": "0xbe9a6555"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -11505,6 +12139,7 @@
   {
    "kind": "misfit",
    "hash": "0x1bebd26b4184dfc190e19d4d8ea024d0ec868cf32c4dd2378b1f74034ceb6104",
+   "block": "26310711",
    "sender": {
     "kind": "safe",
     "address": "0x2ab8f0925d01ed17887f882ad2aabfe33bde0011"
@@ -11521,7 +12156,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -11533,6 +12169,7 @@
   {
    "kind": "misfit",
    "hash": "0xc46a60eb1b2cf854fb227a523c00f592eb27d28927ad71a54d34014fcbdb47ac",
+   "block": "26315877",
    "sender": {
     "kind": "safe",
     "address": "0xd88abec44019364d80cebd3868751c843182eab2"
@@ -11542,7 +12179,19 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1793489100"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x1bee8a88a34a8a944adfc6e861df62665c9114b80209dd21895025dbf204fbe7"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -11634,6 +12283,7 @@
   {
    "kind": "misfit",
    "hash": "0x8c5c6e524682198b7a8a520a02a6bb9253ef7c7ef807a59288c08dedcc2c25f7",
+   "block": "26327265",
    "sender": {
     "kind": "safe",
     "address": "0x591e3a3e219feaa4327b4ea8860c7b7af5881818"
@@ -11650,7 +12300,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -11728,6 +12379,7 @@
   {
    "kind": "misfit",
    "hash": "0x66c6d06c257bd9e5a9d55d325a533953be29077100e38414838a371b92de5d84",
+   "block": "26329752",
    "sender": {
     "kind": "safe",
     "address": "0xa3d2920d9f583144f1d1fc704d753022dcc00f3a"
@@ -11737,7 +12389,19 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1793655872"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x89040636d296d8ac897da1c1a97cd1204014213252f7304a1e6e194d97c1d28a"
+    }
+   ]
   },
   {
    "kind": "fit",
@@ -11968,6 +12632,7 @@
   {
    "kind": "misfit",
    "hash": "0xa32db89094a37e89626c378e84ab0ea4b6a307a1aeb32ecddf8cf23b41ef6a14",
+   "block": "26340384",
    "sender": {
     "kind": "safe",
     "address": "0xf6e6218885f40f9d6d53a704a7ba554045c5cea6"
@@ -11984,7 +12649,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -12073,6 +12739,7 @@
   {
    "kind": "misfit",
    "hash": "0x5695c1df79f9e04a485c8c2574ad7788c3bc088732ffeea0e6eff65d0faab36e",
+   "block": "26343828",
    "sender": {
     "kind": "safe",
     "address": "0x6e7c1e40420de8d2d03b643c42419e7568895cbc"
@@ -12089,11 +12756,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x64929b8b8ce0c9699f8a08b0f719ae333a4a8d9ca8af803419e28d3c59b57bbb",
+   "block": "26346345",
    "sender": {
     "kind": "safe",
     "address": "0x00cafbc21f9acfa6084d584d12f9c46eacfe00ca"
@@ -12101,7 +12770,19 @@
    "reason": {
     "kind": "not-sender",
     "at": "call.setPreSignature.orderUid.digest.receiver"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1793857768"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x6b505a4cfccb761670092f3e37b7ac8515d99ad0e9bd9312b17d8a2dbe4ccef3"
+    }
+   ]
   },
   {
    "kind": "fit",
@@ -12179,6 +12860,7 @@
   {
    "kind": "misfit",
    "hash": "0x210dc45b66f571e6ac37897e97f24d260b8890c89476479c76ec706d7141afe5",
+   "block": "26349357",
    "sender": {
     "kind": "safe",
     "address": "0x509d017b1f91494765e80077302f981b099d29bb"
@@ -12188,11 +12870,24 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1793891922"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x51c058bcb67a6559acf32341f441d2a94df2978e7c0fa2abaf889bcdfd461ecc"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x5b3af11325271ba661363949496c0c38bed41773be373bbef9efe3e4eae47035",
+   "block": "26350279",
    "sender": {
     "kind": "safe",
     "address": "0x9f3d74c832eca464d757efcc4e7dcda1c88fe269"
@@ -12209,7 +12904,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -12282,6 +12978,7 @@
   {
    "kind": "misfit",
    "hash": "0x72e04faa44aa11b808a73e735e63bcf90bf257dbd8ff0b6ebb536b9ddcb5c23e",
+   "block": "26355154",
    "sender": {
     "kind": "safe",
     "address": "0x2cd9869d161082f5865cd3364a06d7768c5684ef"
@@ -12298,7 +12995,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -12595,6 +13293,7 @@
   {
    "kind": "misfit",
    "hash": "0xacec5e81358065c97a6c5529505dd71c53c2037e6b25109041d5d3ba6ca9bdd5",
+   "block": "26366019",
    "sender": {
     "kind": "safe",
     "address": "0x66a7b66d7e823155660bdc6b83beaaa11098ea89"
@@ -12611,11 +13310,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x4ec032529f0ff12da81121ab59a06c1724f22a435162c38902b2ac5974d2e252",
+   "block": "26369766",
    "sender": {
     "kind": "safe",
     "address": "0xce5c33ba5b41cb4fea10e2c0c2fe4d95bc32d5d9"
@@ -12636,7 +13337,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -12718,6 +13420,7 @@
   {
    "kind": "misfit",
    "hash": "0xc7158e997041399b9b2b50c9a2b9e3411feeb8a416ae3288f004c26fd3e2afb2",
+   "block": "26375135",
    "sender": {
     "kind": "safe",
     "address": "0x654679a6587cd6821ba6dcf44b2647d4ae815846"
@@ -12725,7 +13428,19 @@
    "reason": {
     "kind": "not-sender",
     "at": "call.setPreSignature.orderUid.digest.receiver"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1794202618"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x844bf2d2161c6a3d53409ea80454a333c31452e39d871178ded3afc4eb65437b"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -12842,6 +13557,7 @@
   {
    "kind": "misfit",
    "hash": "0x7fd16b695e18458043c19d57e13c119b7ec9bfcad02d82e681dd970c301f9b3a",
+   "block": "26385719",
    "sender": {
     "kind": "safe",
     "address": "0x393dbacb055e5380ad1379b6828df214b11b28f8"
@@ -12858,7 +13574,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -12955,6 +13672,7 @@
   {
    "kind": "misfit",
    "hash": "0xa1d8b3528d268897b567036a1042ee78ab3b4bd73bd61c899d448cde1efa02c9",
+   "block": "26393026",
    "sender": {
     "kind": "safe",
     "address": "0x273a8399a6840b68778a4bfee0c6dadc0a4a1bdb"
@@ -12971,7 +13689,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -12983,6 +13702,7 @@
   {
    "kind": "misfit",
    "hash": "0x3cabbd5a17461478341a7c7e05f080053260353bf2de86c8db4dd200a789bd00",
+   "block": "26397116",
    "sender": {
     "kind": "safe",
     "address": "0x1ac9c64368ec5a728d0dc5e80d3b14e92fc17efd"
@@ -12999,11 +13719,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xef855a83e45664e58656d58b56159d53ba54834ce36fc731a91a3bb43148f27e",
+   "block": "26399154",
    "sender": {
     "kind": "safe",
     "address": "0x366d6561adb89ff1ab5635838fbfc51e514656d2"
@@ -13032,7 +13754,19 @@
       "selector": "0x5fd9ae2e"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1797081772"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -13051,6 +13785,7 @@
   {
    "kind": "misfit",
    "hash": "0x41c70849e58b804d1ec1d8443a33cfcd39f5d5c725847240a56dc8665f6187bd",
+   "block": "26403708",
    "sender": {
     "kind": "safe",
     "address": "0xd67e60872f42ad52f078cc4d59cede84d2b96f9c"
@@ -13067,11 +13802,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x038c16fe61e9cef75be067a7cd7ceba6fb9c8cad598536bb515c567a107d48c9",
+   "block": "26405064",
    "sender": {
     "kind": "safe",
     "address": "0x366d6561adb89ff1ab5635838fbfc51e514656d2"
@@ -13100,7 +13837,19 @@
       "selector": "0x5fd9ae2e"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1797153003"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
+    }
+   ]
   },
   {
    "kind": "fit",
@@ -13255,6 +14004,7 @@
   {
    "kind": "misfit",
    "hash": "0x8cbf59a89ca87955ac1056dd602b7e207baa56f48e802bfa735257efe5e9e50a",
+   "block": "26409600",
    "sender": {
     "kind": "safe",
     "address": "0xfdf31ed0b1788c7ad01a3e6041f7a37b49b478ad"
@@ -13271,7 +14021,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -13435,6 +14186,7 @@
   {
    "kind": "misfit",
    "hash": "0x7f9e1c5fae60c2039b7618408cedbde2f7533354524e78db1bc05b249b5bb4ce",
+   "block": "26416432",
    "sender": {
     "kind": "safe",
     "address": "0xc1cfc1b283a554fb09928d268555e39100462080"
@@ -13451,7 +14203,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -13537,6 +14290,7 @@
   {
    "kind": "misfit",
    "hash": "0x8227d4aa7bab053fe0af713d08f56110b5d472315b89ee93f5f4d1c7f1ec1a69",
+   "block": "26423071",
    "sender": {
     "kind": "safe",
     "address": "0x50c011be9b8629d4c1336fcca054f36e55de0b64"
@@ -13553,7 +14307,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -13565,6 +14320,7 @@
   {
    "kind": "misfit",
    "hash": "0xf6f118ed654aa102603f8b40b2620b253a02e5df4ac383a074354fa6f498bf1a",
+   "block": "26426329",
    "sender": {
     "kind": "safe",
     "address": "0x2407ceafb95ae40cae32372ba29c44e4f87dea68"
@@ -13574,11 +14330,24 @@
     "at": "call.setPreSignature.orderUid.digest.partiallyFillable",
     "expected": "false",
     "actual": "true"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1826374433"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x297a23ed7a8f76cb3a698c6e12199212038a0c5fcb3b0c9ca42f7efe65ea1a36"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0xfab426599171106286ab2446add33b25ce159e7637425a028b99ad68fc35e0fc",
+   "block": "26427912",
    "sender": {
     "kind": "safe",
     "address": "0xdc22ca4476fd57cac78a71a44042c7b43cba55f2"
@@ -13595,7 +14364,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -13607,6 +14377,7 @@
   {
    "kind": "misfit",
    "hash": "0x7104467144c306812609624ee9eb866fbb48ceb427169471e73f4509c2460c90",
+   "block": "26431823",
    "sender": {
     "kind": "safe",
     "address": "0x781f97e249883a841a7077cdde6bdfffd6675476"
@@ -13623,7 +14394,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -13722,6 +14494,7 @@
   {
    "kind": "misfit",
    "hash": "0x8127edce099fd9ae79f042af71ab823bf99fdabf573a90e609ac17f19edf968e",
+   "block": "26441377",
    "sender": {
     "kind": "safe",
     "address": "0x16388463d60ffe0661cf7f1f31a7d658ac790ff7"
@@ -13746,7 +14519,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -13901,6 +14675,7 @@
   {
    "kind": "misfit",
    "hash": "0x60774285a1e71fc5e2e807fab479aba7fd2cd57ae91dc1767fed87bd0a7c4752",
+   "block": "26445306",
    "sender": {
     "kind": "safe",
     "address": "0x0bbb31976b5637c9531b192aaca054498438da12"
@@ -13917,7 +14692,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -13943,6 +14719,7 @@
   {
    "kind": "misfit",
    "hash": "0xbab80a0fc3740a7570539614add866dbd95b7f41d965019c6eede01d9c537058",
+   "block": "26452482",
    "sender": {
     "kind": "safe",
     "address": "0x84ba2321d46814fb1aa69a7b71882efea50f700c"
@@ -13959,11 +14736,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xd8f09fd9405affcb7ea489360b7c3d2daf6d46bdbdc99f1656c4a18e4c5b581b",
+   "block": "26454276",
    "sender": {
     "kind": "safe",
     "address": "0x2ab8f0925d01ed17887f882ad2aabfe33bde0011"
@@ -13980,11 +14759,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x12eb55c7532f7f25cc9bedf7bcf35bd0e8b5da4757df23b59074e0de7ca93601",
+   "block": "26455620",
    "sender": {
     "kind": "safe",
     "address": "0xe0cde6f407bb914b27106137ccf0a1906461846f"
@@ -14005,7 +14786,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -14024,6 +14806,7 @@
   {
    "kind": "misfit",
    "hash": "0x15feac6541d7976d28a8ce96b4e6a3580d357f29b321fb945f3a4e2e92770bde",
+   "block": "26457350",
    "sender": {
     "kind": "safe",
     "address": "0x8616b00f779ada7df11f27d3b0e06c754b6582e2"
@@ -14040,11 +14823,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x373c91a78fd9fdc000528bb918c1f0303e5b0f10cd25ca3679f9f4cd241299c7",
+   "block": "26457903",
    "sender": {
     "kind": "safe",
     "address": "0x2ab8f0925d01ed17887f882ad2aabfe33bde0011"
@@ -14061,7 +14846,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -14226,6 +15012,7 @@
   {
    "kind": "misfit",
    "hash": "0xebfde2c857ec0c8d4e56c01cede279afd0b3d06b0ed0882ec48e2883de522b89",
+   "block": "26464243",
    "sender": {
     "kind": "safe",
     "address": "0x2a9e6c6aca248dca83a8fb5c1f19de79c522da65"
@@ -14242,7 +15029,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -14331,6 +15119,7 @@
   {
    "kind": "misfit",
    "hash": "0xcde8d9d29ace730d4c715d911aa511a40ae3c2c10cdfec4db2cf730e77e2adb9",
+   "block": "26470954",
    "sender": {
     "kind": "safe",
     "address": "0x578a3008cba50d63f8ddeefa68f02553f724c608"
@@ -14340,11 +15129,24 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1795355769"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xa1dedc47a35eb314ede523abfc865fbab1ae62fbd3ac2835123d82150a9645d6"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0xf9f67e9b9be1226059e0be940f953e0a64b7a02101e7f603fc7d2571db7a6378",
+   "block": "26471909",
    "sender": {
     "kind": "safe",
     "address": "0xf49a0485fac6a2852a99a4e47ceeca67747dbd4f"
@@ -14361,11 +15163,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x311393c49589c0663241ae7676deac5e54b38d9953690748f0228dcec1bc8339",
+   "block": "26473403",
    "sender": {
     "kind": "safe",
     "address": "0x16388463d60ffe0661cf7f1f31a7d658ac790ff7"
@@ -14386,7 +15190,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -14398,6 +15203,7 @@
   {
    "kind": "misfit",
    "hash": "0x9867f4373ede8933a5bd33f4f63a79ff42cd5dda148d1f2024d4707951064bd7",
+   "block": "26477587",
    "sender": {
     "kind": "safe",
     "address": "0x343254b785b601a08b15026d83da57d1d4da3773"
@@ -14414,7 +15220,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -14499,6 +15306,7 @@
   {
    "kind": "misfit",
    "hash": "0x4074e41684febddaa34b030cdf134a4345d9c7dc5cb25e0e63593ecdef34c8a7",
+   "block": "26482000",
    "sender": {
     "kind": "safe",
     "address": "0xf93edc3cbd5250170c947c2f7d132137e734a188"
@@ -14508,7 +15316,19 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1795488800"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xc61a89aaf61d3780dbf2264df5e3176807091db36b76920de4cb4af9108e54bb"
+    }
+   ]
   },
   {
    "kind": "not-studied",

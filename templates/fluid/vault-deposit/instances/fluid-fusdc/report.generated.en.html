@@ -27,6 +27,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-
 a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
 a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+[data-ai]{overflow-wrap:anywhere}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
 .addr.line{display:block;margin-top:4px}
@@ -65,7 +66,7 @@ h1 .byai{vertical-align:6px}
 h1 .aiw>:first-child{margin-right:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
 .sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
-:is(.sub,h3,.intro,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
+:is(.sub,h3,.intro,.ans,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
 .verdict .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:flex;align-items:flex-start;gap:8px;font-size:var(--t-row);position:relative}
@@ -148,9 +149,19 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
 
-.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
-.key>span{display:inline-flex;gap:8px;align-items:center}
-.key .k0{color:var(--fg3);font-weight:590}
+.deciders{margin:36px 0 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}
+.deciders h3{margin:0 0 10px;font-size:var(--t-small);color:var(--fg2)}
+.deciders dl{margin:0;display:flex;flex-direction:column;gap:12px}
+.deciders .grp{display:grid;grid-template-columns:88px minmax(0,1fr);gap:0 16px;align-items:start}
+.deciders .gh{font-size:var(--t-small);line-height:24px;color:var(--fg);font-weight:590}
+.deciders .defs{margin:0;display:flex;flex-direction:column;gap:6px}
+.deciders .defs>div{display:grid;grid-template-columns:116px minmax(0,1fr);gap:0 14px;align-items:start;font-size:var(--t-small);line-height:24px;color:var(--fg2)}
+.deciders .who{justify-self:start}
+@media (max-width:560px){.deciders .grp{grid-template-columns:minmax(0,1fr)}}
+.mix{margin:10px 0 12px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 16px;align-items:start}
+.mix dt{justify-self:start}
+.mix dd{margin:0;display:flex;flex-wrap:wrap;gap:6px;line-height:24px}
+.mix code{font-size:var(--t-label)}
 .cb{margin-top:40px}
 .callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
 .callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
@@ -202,7 +213,7 @@ details.fixed[open]>summary .chev{transform:rotate(90deg)}
 }
 
 .rows{border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
@@ -249,14 +260,31 @@ details.fold[open]>summary .chev{transform:rotate(90deg)}
 details.fold .ad:last-child{border-bottom:0}
 
 .warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
-.pblock{border-top:1px solid var(--line);margin-top:16px}
-.ph{display:flex;flex-direction:column;gap:4px;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
-.ph .pt{font-weight:590}
-.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
-.pg .pc{color:var(--fg)}
-.pg .pcalls{margin-bottom:4px}
-.pg .pex{font-size:var(--t-small);margin-top:4px}
-.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+.ans{margin:0 0 10px;color:var(--fg2)}
+.ans b{color:var(--fg)}
+.cap{margin:8px 0 0;font-size:var(--t-small);color:var(--fg3)}
+.lm{color:var(--warn)}
+.sh{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-size:var(--t-small);color:var(--fg2);margin-top:18px}
+.sc{overflow-x:auto;margin:12px 0 8px}
+.pt2{border-collapse:collapse;width:100%;font-size:var(--t-small);font-variant-numeric:tabular-nums}
+.pt2 th{font-size:var(--t-label);font-weight:400;color:var(--fg3);text-align:left;padding:6px 16px 6px 0;border-bottom:1px solid var(--line2);white-space:nowrap}
+.pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
+.pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
+.pt2 .n{text-align:right}
+.pt2 th{vertical-align:bottom}
+.pt2 th.n{white-space:normal}
+.pt2 td.nw{white-space:nowrap}
+.pt2 td.v{color:var(--fg);font-weight:590}
+.pt2 .tx{min-width:104px}
+@media (max-width:760px){
+  .pt2,.pt2 tbody,.pt2 tr{display:block}
+  .pt2 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .pt2 tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .pt2 td,.pt2 td.n{display:grid;grid-template-columns:minmax(0,130px) minmax(0,1fr);gap:12px;padding:3px 0;border-bottom:0;text-align:left}
+  .pt2 td::before{content:attr(data-label);font-size:var(--t-label);font-weight:400;color:var(--fg3)}
+  .pt2 td.nw{white-space:normal}
+  .pt2 td.what{min-width:0}
+}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -271,13 +299,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
 .auto li{display:flex;gap:10px;align-items:baseline}
 .auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
-.usage{font-size:var(--t-small);color:var(--fg3);margin-bottom:28px}
-.usage h3{font-size:var(--t-row);color:var(--fg2);margin:0 0 6px}
-.usage p{margin:0}
-.usage table{border-collapse:collapse;margin:10px 0}
-.usage th,.usage td{padding:6px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left}
-.usage th+td,.usage th+th{padding-left:32px;text-align:right}
-.usage tfoot th,.usage tfoot td{color:var(--fg);border-bottom:0}
+.ut{border-collapse:collapse;width:100%;margin:16px 0 12px;font-size:var(--t-row)}
+.ut th,.ut td{padding:9px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left;color:var(--fg2)}
+.ut thead th{font-size:var(--t-label);color:var(--fg3);border-bottom-color:var(--line2)}
+.ut th+td,.ut th+th{text-align:right;font-variant-numeric:tabular-nums}
+.ut tfoot th,.ut tfoot td{color:var(--fg);font-weight:590;border-bottom:0}
 .foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
 .foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
@@ -298,7 +324,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="Contents">
   <h2>Contents</h2>
-  <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">Flow <span class="cnt">2 calls</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">Instance</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">4</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">Flow <span class="cnt">2 calls</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">Instance</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">4</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li><li><a href="#usage">AI usage</a></li></ol>
 </nav>
 
 <div class="main">
@@ -316,12 +342,14 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">At each signing, the program checks that every contract the card uses still runs the code it was researched with. An upgrade or a replacement is stopped. Signing does not touch fluid-lending-factory; only the report compares its code. No ABI proof compares the code fluid-liquidity runs today, so the report reads it at the latest block and compares it with the current code pin. fluid-liquidity: it routes each call by function selector to its own implementation; each implementation the seeds reach, with its function list, is checked the same way, and one no seed reaches is not checked.</span></span></li>
     <li data-state="ok" data-line="params"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Parameter checks <span class="n num">2 / 2</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">The program changed every bound argument of 2 test transactions one by one, and each must become a MISMATCH; an argument that takes any value must give the same result with another value.</span></span></li>
+    <li data-state="ok" data-line="trace"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Call traces <span class="n num">2 / 2</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">The program looks for each of the AI&#39;s flow lines in the call traces of past transactions, and checks that the template or a flow line explains every call inside that moves money; 2 of 2 passed. The traces come from drpc alone; their token transfers and approvals are checked against the receipt both providers agree on.</span></span></li>
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Two providers
-      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">Every chain read asks two providers; when they disagree, there is no result. Three research reads have one source, and none of them reaches a verdict: past transactions&#39; call traces (drpc), the search for past transactions (a transaction either Alchemy or Etherscan finds counts; only Etherscan searches for an event), and the addresses that ever received a vault&#39;s shares (Alchemy; each one&#39;s balance is still read through both).</span></span></li>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Every chain read asks two providers; when they disagree, there is no result. Three research reads have one source, and none of them reaches a verdict: past transactions&#39; call traces (drpc), the search for past transactions (a transaction either Alchemy or Etherscan finds counts; only Etherscan searches for an event), and the addresses that ever received a vault&#39;s shares (Alchemy; each one&#39;s balance is still read through both).</span></span></li>
   </ul>
   <div class="verdict" data-state="ok"><span class="lbl">Advice</span><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span class="aiw" data-ai><span>Usable. The tokens are actually held in Fluid&#39;s Liquidity contract, and at every signing the program checks that its code is unchanged. Send a small amount the first time.</span><span class="byai">AI research: be careful</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
-    <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">Flow <span class="cnt">2 calls</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">Instance</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">4</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+    <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">Flow <span class="cnt">2 calls</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">Instance</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">4</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li><li><a href="#usage">AI usage</a></li></ol>
   </details>
 </header>
 
@@ -376,20 +404,28 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#head)"/>
     <text class="no" x="102" y="142">2</text><text class="fn" x="120" y="142">deposit</text>
     <line class="call" x1="90" y1="156" x2="467" y2="156" marker-end="url(#head)"/>
-    <foreignObject x="353.6" y="177" width="396.4" height="44"><div class="cap" data-ai><span class="byai">AI research</span><span>The deposited USDC is held in Liquidity</span></div></foreignObject>
-    <line class="inner" x1="470" y1="224" x2="657" y2="224" marker-end="url(#head)"/>
-    <foreignObject x="102" y="233" width="648" height="44"><div class="cap" data-ai><span class="byai">AI research</span><span>The fToken pulls USDC from the Safe with <code>transferFrom</code> through the Liquidity contract</span></div></foreignObject>
-    <line class="inner" x1="470" y1="280" x2="283" y2="280" marker-end="url(#head)"/>
+    <foreignObject x="421.6" y="177" width="328.4" height="44"><div class="cap" data-ai><span class="mark ok">①</span><span>The deposited USDC is held in Liquidity</span></div></foreignObject>
+    <line class="inner seen" x1="470" y1="224" x2="657" y2="224" marker-end="url(#head)"/>
+    <foreignObject x="102" y="233" width="648" height="44"><div class="cap" data-ai><span class="mark ok">②</span><span>The fToken pulls USDC from the Safe with <code>transferFrom</code> through the Liquidity contract</span></div></foreignObject>
+    <line class="inner seen" x1="470" y1="280" x2="283" y2="280" marker-end="url(#head)"/>
     <text class="capg" x="104" y="306">you get fluid-fusdc</text>
     <line class="gain" x1="470" y1="316" x2="93" y2="316" marker-end="url(#head)"/>
   </svg>
   </div>
   <div class="scrollhint">Scroll the diagram sideways; fluid-liquidity is at the far right</div>
-  <div class="key">
-    <span class="k0">Who decides</span>
-    <span><span class="who you">you type</span>typed at each signing</span>
-    <span><span class="who you">you pick</span>picked at each signing</span>
-    <span><span class="who">fixed</span>any change is a MISMATCH</span>
+  <ul class="legend">
+    <li data-state="ok">Confirmed two ways: the program saw the line in the call traces of past transactions (<a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/contracts/protocols/lending/fToken/main.sol#L289">①</a> 97 of 97, <a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/contracts/protocols/lending/fToken/main.sol#L676">②</a> 97 of 97), and the AI read the contract&#39;s source; the words beside each line are the AI&#39;s.</li>
+  </ul>
+  <p class="lead">A call trace shows only the path past transactions took; a contract may take another path on other state, and what protects you at signing is the effects check.</p>
+  <div class="deciders">
+    <h3>Who decides each value</h3>
+    <dl>
+      <div class="grp"><dt class="gh">You</dt><dd class="defs">
+        <div><span class="who you">you type</span><span>You type it at each signing.</span></div>
+        <div><span class="who you">you pick</span><span>You pick it from a list at each signing.</span></div></dd></div>
+      <div class="grp"><dt class="gh">kiss-sign</dt><dd class="defs">
+        <div><span class="who">fixed</span><span>The template sets it. Any change is a MISMATCH.</span></div></dd></div>
+    </dl>
   </div>
   <p class="lead keylead">The transaction&#39;s calls, one by one. Each argument shows who decides it, its value or the rule it must follow, and what it does.</p>
   
@@ -523,7 +559,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="addresses">
-  <h2>Addresses <span class="c">4</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Each address must be confirmed in at least two places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
+  <h2>Addresses <span class="c">4</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t7"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t7" role="tooltip">Each address must be confirmed in at least two places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
   <div class="rows">
     <details class="fold">
       <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>4 more addresses have no result for you to review</summary>
@@ -574,24 +610,20 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>Past transactions</h2>
-  <p class="lead">In past records, <span class="num">97</span> transactions match the template exactly, made the way yours is: Safe <span class="num">1</span> (1 Safe), EOA <span class="num">96</span> (87 addresses, each sending one call of the template). All of them succeeded: they were found through the event logs of fluid-fusdc mint (deposit), and a failed transaction leaves no such log. The latest 3 exact matches: <a href="https://etherscan.io/tx/0x65e8a75ca2a4d4f09052428a7b2de41d46c55ea3c04d43208dcb163a10366430">0x65e8a75c…</a>, <a href="https://etherscan.io/tx/0x5c8e02c495cf31e9d7cc4a46ed2eb4664544071e61520ca2dd0d3a600189958a">0x5c8e02c4…</a>, <a href="https://etherscan.io/tx/0x699557e62adab4d3465ec69cb6a275c1f124999515cf007b9bf7bcc92b6f8586">0x699557e6…</a>.</p>
-  <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span><span class="num">43</span> more differ from yours: <span class="num">0</span> have the same shape but with an address outside the registry, <span class="num">43</span> have another shape</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>The only Safe transaction that does not fit calls <code>deposit</code> on another contract, which then deposits into fUSDC. That is not the Fluid app&#39;s route.</span><span class="byai">AI research</span></span></p>
-  <p class="lead">Only transactions that used this operation&#39;s calls count. An exact match has the template&#39;s calls and argument positions, meets every rule the transaction itself can show (such as where the sender goes, or a fixed value), and uses a contract the template allows wherever the template binds a registry contract. Same shape but a market, token, vault or address outside the registry means the calls, argument positions and those rules are the same, but an address or market is not in the registry; the kind is named when the record shows it, otherwise only address. The rest are grouped by reason, each with up to 3 examples.</p>
+  <h3>1. Has this template&#39;s transaction worked before?</h3>
+  <p class="ans"><b>Yes, 1 time, by 1 Safe.</b> EOA: 96 times, from 87 addresses, each sending one of the template&#39;s calls. The newest: 2026-11-12. All of them succeeded. The newest 3: <a href="https://etherscan.io/tx/0x65e8a75ca2a4d4f09052428a7b2de41d46c55ea3c04d43208dcb163a10366430">0x65e8a75c…</a> <a href="https://etherscan.io/tx/0x5c8e02c495cf31e9d7cc4a46ed2eb4664544071e61520ca2dd0d3a600189958a">0x5c8e02c4…</a> <a href="https://etherscan.io/tx/0x699557e62adab4d3465ec69cb6a275c1f124999515cf007b9bf7bcc92b6f8586">0x699557e6…</a></p>
+  <h3>2. What values are normal in what the app fills?</h3>
+  <p class="ans">This template leaves no value for the app to fill.</p>
+  <h3>3. How did the others differ?</h3>
+  <p class="ans">43 transactions did something this template refuses.</p>
+  <p class="ans"><span class="aiw" data-ai><span>The only Safe transaction that does not fit calls <code>deposit</code> on another contract, which then deposits into fUSDC. That is not the Fluid app&#39;s route.</span><span class="byai">AI research</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="tx">Examples (up to 3)</th></tr></thead><tbody>
+    <tr><td class="what" data-label="What was different"><span>The called contract is <span class="addr">0x273DA948ACa9261043fbdb2a857BC255ECC29012</span>, not the template&#39;s fluid-fusdc</span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">42</span></span></td><td class="nw" data-label="Newest"><span>2026-10-12</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xd5043a870a9ab16c34b476ada8fbee29e3600bb43efcd3c47902a071c60df3fe">0xd5043a87…</a> <a href="https://etherscan.io/tx/0x84e857cdb07cb86b23906ee31728b9a682043581096ed287eaef2f54ea240fb8">0x84e857cd…</a> <a href="https://etherscan.io/tx/0xa99964330912c869cc03135427e740e6e1e0b702302926809da9e504a415e807">0xa9996433…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>No <code>approve</code> in it: only <code>0x273DA948ACa9261043fbdb2a857BC255ECC29012.deposit</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>2026-07-13</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x1128c3ee12632db7a14da947d8aa884874ba97d387d1d1624c5f6d9d442de475">0x1128c3ee…</a></span></td></tr></tbody></table></div>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>How the program searched</span></summary>
   <h3>Search of fluid-fusdc mint (deposit): 512 found, 237 studied</h3>
-  <p class="lead">Recorded in <code>testdata/research/fluid-vault-deposit-fusdc.json</code>. Alchemy and Etherscan found exactly the same (<span class="num">512 = 512</span>).</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">2</span> transactions used this operation&#39;s calls (2 Safes); <span class="num">1</span> matches the template exactly.</span></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x273DA948ACa9261043fbdb2a857BC255ECC29012.deposit</code></div><div>The calls differ from the template, which is <code>approve → deposit</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x1128c3ee12632db7a14da947d8aa884874ba97d387d1d1624c5f6d9d442de475">0x1128c3ee…</a></div></div></div>
-  </div>
-  <div class="pblock">
-    <div class="ph"><span class="pt">EOA calls deposit directly</span><span><span class="num">138</span> transactions used this operation&#39;s calls (127 addresses); <span class="num">96</span> match the template exactly.</span></div>
-    <div class="pg"><span class="pc num">42</span><div><div>The called contract is <span class="addr">0x273DA948ACa9261043fbdb2a857BC255ECC29012</span>, not the template&#39;s fluid-fusdc<span class="f3">, from 40 addresses</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xc414006cb6065dea598827193afd72f685a4571a81bcd0b31db5924218d5812d">0xc414006c…</a>, <a href="https://etherscan.io/tx/0xd1e82a6ce311fc25d147208029cd79b5617aa6cfe028c303495c4b17768350d5">0xd1e82a6c…</a>, <a href="https://etherscan.io/tx/0xd4f717913232cdc84898369963e6a76fb4783fff45f7f214caf8d664842703d8">0xd4f71791…</a></div></div></div>
-  </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>97 more are other operations, not counted: <code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 15, <code>0x18f1FAC179feB0ee44F339a616feFb979A6961BE.0x248b1701</code> 6, <code>0x3f04b65Ddbd87f9CE0A2e7Eb24d80e7fb87625b5.0x230ae89c</code> 5, <code>0x3f04b65Ddbd87f9CE0A2e7Eb24d80e7fb87625b5.mint</code> 5, and others.</span></div>
+  <p class="cap">Alchemy and Etherscan found exactly the same (<span class="num">512 = 512</span>).</p>
+  <p class="cap">These transactions were found through event logs, and a failed transaction leaves none.</p>
+  <p class="cap">97 more are other operations, not counted: <code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 15, <code>0x18f1FAC179feB0ee44F339a616feFb979A6961BE.0x248b1701</code> 6, <code>0x3f04b65Ddbd87f9CE0A2e7Eb24d80e7fb87625b5.0x230ae89c</code> 5, <code>0x3f04b65Ddbd87f9CE0A2e7Eb24d80e7fb87625b5.mint</code> 5, and others.</p>
   </details>
 </section>
 
@@ -630,7 +662,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<aside class="usage"><h3>AI usage to make this report</h3><p>Not measured</p></aside>
+<section id="usage">
+  <h2>AI usage</h2>
+  <p class="lead">The AI usage of this report was not measured.</p>
+</section>
+
 <footer class="foot">Written by <code>pnpm report fluid/vault-deposit --instance-of fluid-fusdc --record</code> from <code>templates/fluid/vault-deposit/template.json</code>, <code>templates/fluid/vault-deposit/docs.json</code>, <code>templates/fluid/vault-deposit/instances/fluid-fusdc/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/fluid-vault-deposit/fluid-fusdc.json</code>, <code>testdata/abi</code>, <code>testdata/research/fluid-vault-deposit-fusdc.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/fluid/vault-deposit/notes.json</code>, <code>templates/fluid/vault-deposit/instances/fluid-fusdc/notes.json</code>; the data was read on 2026-11-17. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
 
 </div>
