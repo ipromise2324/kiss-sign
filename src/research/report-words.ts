@@ -512,6 +512,9 @@ const ZH = {
     fn,
     `，兩個節點答案一樣才用，印出預期的 ${token} 數量，再${floor ? '少' : '多'} ${slippage}（協議預設的 ${preset}${margin}），${floor ? '無條件捨去' : '無條件進位'}。`,
   ],
+  floorPrompt: (sells: Span): Span[] => ['：程式用你選的兩個代幣的獨立價格，替 ', sells, ' 算最少要收到多少。'],
+  floorHow: (token: string, preset: string, most: string, margin: string): string => `兩個代幣都有價格來源、又錨定同一個價格時，它問 app 顯示的滑價（按 Enter 是 ${preset}，最多 ${most}），印出讀到的價格，取比較嚴的那個，扣掉滑價和 ${margin} 餘裕，無條件捨去。核對 app 的最少收到數量不低於它印出的 ${token} 數量。`,
+  floorElse: (retype: string): string => `其他情況程式不算，你填 app 顯示的最少收到數量：有價格時程式拿它跟價格比，比價格低超過 ${retype} 或價格有疑問就要再填一次一樣的數量；有代幣沒有價格來源時，程式說沒有東西可以比。`,
   presetSource: (source: Span): Span[] => ['預設值的來源：', source, '。核對印出的預期數量跟最後的數字合理。'],
 
   next: '下一步',
@@ -1149,6 +1152,9 @@ const EN: Words = {
     fn,
     ` on chain, uses the answer only when both providers agree, prints the expected amount of ${token}, then takes ${slippage} ${floor ? 'less' : 'more'} (the protocol's default ${preset}${margin}), rounded ${floor ? 'down' : 'up'}.`,
   ],
+  floorPrompt: (sells) => [': the program computes the least to receive for ', sells, ' from an independent price of the two tokens you picked.'],
+  floorHow: (token, preset, most, margin) => `When both tokens have a price feed and share a peg, it asks the slippage the app shows (Enter is ${preset}, at most ${most}), prints the prices it read, and takes the stricter one less the slippage and a ${margin} margin, rounded down. Check that the app's minimum received is not below the amount of ${token} it prints.`,
+  floorElse: (retype) => `Otherwise it computes nothing and you type the minimum received the app shows: where there is a price the program compares the two, and a minimum more than ${retype} below it, or a price in doubt, must be typed twice; where a token has no feed it says there is nothing to compare with.`,
   presetSource: (source) => ['Source of the default: ', source, '. Check that the expected amount and the final number it prints are reasonable.'],
 
   next: 'Next steps',
