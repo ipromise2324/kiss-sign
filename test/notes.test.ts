@@ -242,7 +242,7 @@ test('English text that holds Chinese characters or full-width punctuation is re
   for (const en of ['供應 USDC', 'Supply USDC，then deposit', 'Supply（USDC）']) refused(edited(['summary'], { en, 'zh-TW': '供應 USDC' }), 'notes.json.summary.en: holds Chinese characters or full-width punctuation');
 });
 
-test('text over its limit is refused: 250 for the summary, 150 for a field, 2,000 for a note, 300 for a review, 200 for a judgment, role, recommendation, intro or AI source, 100 for a title, flow line or verdict; English may be three times as long', () => {
+test('text over its limit is refused: 2,000, 300 for a review, 200 for a judgment, role, recommendation, intro or AI source, 100 for a title, flow line or verdict; English may be three times as long', () => {
   const over = (n: number) => t('x'.repeat(n + 1));
   refused(edited(['summary'], over(250)), 'notes.json.summary.zh-TW: longer than 250 characters');
   refused(edited(['fields', '1.approve.spender'], over(150)), 'notes.json.fields.1.approve.spender.zh-TW: longer than 150 characters');
