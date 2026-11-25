@@ -1,7 +1,7 @@
 import type { Read, Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
 
-/** How far behind the head a long run reads: a block this deep is not replaced while the run reads it by its hash. */
+/** How far behind the head a long run reads, by the block's hash. A deeper reorganization is unlikely, and leaves the run's later reads unread. */
 export const SETTLED_DEPTH = 8n;
 
 /** The block `SETTLED_DEPTH` behind the head both providers are at. */

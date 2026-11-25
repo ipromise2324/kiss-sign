@@ -63,8 +63,8 @@ export type DocLink = { readonly fn: AbiFunction; readonly contract: RegistryEnt
 /** What a report is of: a template by id, with `instance` for one reported per instance. */
 export type TemplateTarget = { readonly template: string; readonly instance?: string | undefined };
 
-/** The ERC-7730 files the section read, cut as `pnpm erc7730 --record` cuts them, and the attestation reads. */
-export type Erc7730Section = { readonly commit: string; readonly files: Readonly<Record<string, string>>; readonly chain: readonly Exchange[] };
+/** The ERC-7730 files the section read, cut as `pnpm erc7730 --record` cuts them, and the attestation reads, made at `block`; older recordings hold no `block` and read the latest. */
+export type Erc7730Section = { readonly commit: string; readonly files: Readonly<Record<string, string>>; readonly block?: { readonly number: string; readonly hash: Hex }; readonly chain: readonly Exchange[] };
 
 /** A program-made recording of the live answers a template's report used, beside the ABI and past-transaction ones. */
 export type ReportRecording = ListingsRecording & {
@@ -1519,6 +1519,8 @@ export async function replayInputs(
   const pastRecordings = pastTxsRecordings(repoRoot, subject);
   const pastTxs = pastRecordings.map(({ file, recording: r }) => summarizePastTxs(repoRoot, registry, file, r));
   if (recording.fetched >= JUDGED_SINCE || existsSync(join(repoRoot, subject.dir, TRACE_ADDRESSES_FILE))) requireJudged(repoRoot, subject, registry, pastTxs);
+  const erc7730Block = recording.erc7730.block;
+  const erc7730At = erc7730Block === undefined ? undefined : { number: BigInt(erc7730Block.number), hash: erc7730Block.hash };
   const snapshot: Snapshot = { commit: recording.erc7730.commit, files: new Map(Object.entries(recording.erc7730.files)) };
   const inputs: ReportInputs = {
     subject,
@@ -1533,7 +1535,7 @@ export async function replayInputs(
     today: recording.today === undefined ? undefined : await readToday(replayReader(recording.code), subject, registry, { number: BigInt(recording.today.number), hash: recording.today.hash }),
     instances:
       recording.instances === undefined ? undefined : await readInstances(replayReader(recording.code), subject, registry, { number: BigInt(recording.instances.number), hash: recording.instances.hash }),
-    erc7730: await erc7730Text(entries, registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain))),
+    erc7730: await erc7730Text(entries, registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain), erc7730At)),
     facts: await replayFacts(subject.template, registry, entries, recording.facts),
     fixtures: await reportFixtures(repoRoot, subject, full),
     usage: readUsage(repoRoot, target),

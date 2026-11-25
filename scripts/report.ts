@@ -72,9 +72,11 @@ A template whose card has an instance field, a vault today, is reported per inst
 names it, and the report reads the registry as if it were the only one the card can name and
 studies only the past-txs recordings whose --token is that instance. Without
 --instance-of such a template is refused, naming the instances that have a report.
-It reads the chain at the block 8 behind the head, which no reorganization replaces while it reads.
+It reads the chain at the block 8 behind the head, which a reorganization is unlikely to replace
+while it reads, except that an instance's evidence is read at the latest block and each code pin's
+span at the span's own blocks.
 A read with no answer is asked again after each pause; one still without an answer prints as
-UNVERIFIABLE, never as FINDING, and --record then stops and writes nothing.
+UNVERIFIABLE, never as FINDING, and --record then stops after that section and writes nothing.
 --record refuses before any read, naming every one, while an address the recorded call traces show
 moving the sender's money is neither checked at signing nor judged in the trace-addresses.json
 beside the report, while that file judges an address no trace names, or while no trace counts for
@@ -244,6 +246,7 @@ for (const vault of evidenceEntries(subject)) {
   console.error(`reading ${vault.name} at the latest block`);
   vaults.set(vault.name, (await vaultEvidenceText(reader, alchemy, registry, vault)).text);
 }
+requireRead();
 
 if (!(await ensureVendored(['erc7730'], nodeVendorIoWith(githubToken)))) process.exit(1);
 const snapshot = loadSnapshot();
@@ -251,18 +254,21 @@ if ('unavailable' in snapshot) {
   console.error(snapshot.unavailable);
   process.exit(1);
 }
-requireRead();
 const codeChain = recordingTransport(httpsTransport(), endpoints);
 const codeReader = createReader(endpoints, codeChain.transport, { note });
 const spans = await checkSpans(codeReader, entries);
+requireRead();
 const today = await readToday(codeReader, subject, registry, latest.value);
 const instances = await readInstances(codeReader, subject, registry, latest.value);
+requireRead();
 const erc7730Chain = recordingTransport(httpsTransport(), endpoints);
-const erc7730 = await erc7730Text(entries, registry, snapshot, () => chainAt(createReader(endpoints, erc7730Chain.transport, { note })));
+const erc7730 = await erc7730Text(entries, registry, snapshot, () => chainAt(createReader(endpoints, erc7730Chain.transport, { note }), latest.value));
+requireRead();
 
 const factsChain = recordingTransport(httpsTransport(), endpoints);
 const scope = subject.kind === 'template' ? factsScope(subject.template, registry, entries) : undefined;
 const facts = scope === undefined ? undefined : await protocolFacts(scope, registry, { defillama: listing, reader: createReader(endpoints, factsChain.transport, { note }), block: latest.value });
+requireRead();
 
 const fetched = new Date();
 const fixtures = await reportFixtures(root, subject, fullRegistry);
@@ -273,8 +279,7 @@ const text = renderReport(live, { command, sources: ['live reads at the time it 
 console.log(text);
 
 if (flags.record) {
-  requireRead();
-  const erc7730Section = { commit: snapshot.commit, files: Object.fromEntries(trimErc7730(snapshot, erc7730.reports)), chain: erc7730Chain.exchanges() };
+  const erc7730Section = { commit: snapshot.commit, block: { number: latest.value.number.toString(), hash: latest.value.hash }, files: Object.fromEntries(trimErc7730(snapshot, erc7730.reports)), chain: erc7730Chain.exchanges() };
   const raw = new Map(await Promise.all([...answers].map(async ([path, answer]) => [path, await answer] as const)));
   const factsSection = scope === undefined ? {} : { facts: factsRecording(scope, latest.value, raw, factsChain.exchanges()) };
   const recording = recordingText({ ...trimReportRecording(subject, entries, listings, pages, fetched, vaults, erc7730Section, codeChain.exchanges(), today?.block, instances?.block), ...factsSection }, 2);
