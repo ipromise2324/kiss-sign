@@ -629,7 +629,7 @@ The AI fills nothing and decides nothing here.
    The card stores base units, so `card seal` and `replay` never read decimals, and no check `verify` runs does; `verify` reads `decimals()` the same way only to show amounts in whole tokens on its page (the card, the expected changes, and the name column of the [比對清單](independent-check.md#the-比對清單)), after every check, at the block it read as latest, so the verdict file records the answers and `replay` does not read them; it shows base units for a token the providers do not agree on.
    A token that is not a registry contract, which a template allows only through an `address` card field, has no decimals the program trusts, so its amount is typed as a base-unit integer and the prompt says why.
    A nonce is typed as a plain integer.
-   A computed field is not asked: `card new` reads it as the template declares (see [Intent card](data-shapes.md#intent-card)) and prints each read, the slippage with its source, and the value in whole tokens; the card before the seal step's question gives it in base units too.
+   A computed field is not asked: `card new` reads it as the template declares (see [Intent card](data-shapes.md#intent-card)), from contracts that run the code the registry pins, and prints each read, the slippage with its source, and the value in whole tokens; the card before the seal step's question gives it in base units too.
    A card with several operations names several templates.
    Terminal output is plain text when standard output is not a terminal or `NO_COLOR` is set; at a terminal, colour sets apart what the signer picked or typed, what the program computed, and dim provenance lines, and nothing is said by colour alone.
 10. **Seal it.**

@@ -5,7 +5,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { main } from '../src/cli/main.ts';
+import { keccakCode } from '../src/contracts/code.ts';
 import { parseFunctionSignature } from '../src/decode/abi.ts';
+import type { Hex } from '../src/safe/types.ts';
 import type { Transport } from '../src/chain/rpc.ts';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -49,6 +51,19 @@ function publish(dir: string): string {
 function dataClone(): string {
   const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
   for (const sub of ['registry', 'templates']) cpSync(join(ROOT, sub), join(dir, sub), { recursive: true });
+  repinned(dir, 'steakhouse-prime-usdc-v2-0f51', { hash: keccakCode(VAULT_CODE), from: 0 });
+  return dir;
+}
+
+/** The stub runtime code the tests' providers answer for the vault, which its entry is pinned to; it holds no DELEGATECALL. */
+const VAULT_CODE: Hex = '0x00' as Hex;
+
+/** Writes `code` as the code pin of entry `name` in `dir`'s registry; undefined removes its pin. */
+function repinned(dir: string, name: string, code: unknown): string {
+  const path = join(dir, 'registry', 'contracts.json');
+  const registry = JSON.parse(readFileSync(path, 'utf8'));
+  registry[name].code = code;
+  writeFileSync(path, JSON.stringify(registry, null, 2));
   return dir;
 }
 
@@ -330,7 +345,7 @@ const steakhouseViews: Views = (_provider, to, selector, arg) => {
 };
 
 /** Two providers that answer decimals() per token address and the views `views` answers; `drpc` overrides what drpc answers for decimals(). */
-function decimalsChain(alchemy: Record<string, number | 'revert'>, drpc: Record<string, number | 'revert'> = {}, views: Views = steakhouseViews): Chain & { calls: string[] } {
+function decimalsChain(alchemy: Record<string, number | 'revert'>, drpc: Record<string, number | 'revert'> = {}, views: Views = steakhouseViews, code = (_provider: string): Hex => VAULT_CODE): Chain & { calls: string[] } {
   const calls: string[] = [];
   const transport: Transport = async (url, body) => {
     const { method, params } = JSON.parse(body) as { method: string; params: unknown[] };
@@ -338,10 +353,12 @@ function decimalsChain(alchemy: Record<string, number | 'revert'>, drpc: Record<
     const reverted = { status: 200, text: JSON.stringify({ jsonrpc: '2.0', id: 1, error: { code: 3, message: 'execution reverted' } }) };
     if (method === 'eth_blockNumber') return reply(`0x${HEAD.toString(16)}`);
     if (method === 'eth_getBlockByNumber') return reply({ number: `0x${HEAD.toString(16)}`, hash: HEAD_HASH });
+    const provider = url.includes('drpc') ? 'drpc' : 'alchemy';
+    if (method === 'eth_getCode') return reply(code(provider));
+    if (method === 'eth_getStorageAt') return reply(`0x${'0'.repeat(64)}`);
     assert.equal(method, 'eth_call');
     const [{ to, data }, at] = params as [{ to: string; data: string }, { blockHash: string }];
     assert.equal(at.blockHash, HEAD_HASH);
-    const provider = url.includes('drpc') ? 'drpc' : 'alchemy';
     if (data !== '0x313ce567') {
       const answer = views(provider, to, data.slice(0, 10), BigInt(`0x${data.slice(10) || '0'}`));
       assert.ok(answer !== undefined, `${data.slice(0, 10)} on ${to} is not stubbed`);
@@ -518,6 +535,39 @@ for (const [what, views, message] of [
     assert.equal(existsSync(join(home, 'cards')), false);
   });
 }
+
+for (const [what, code, pin, message] of [
+  ['runs code its pin does not name', () => '0x01' as Hex, undefined, /steakhouse-prime-usdc-v2-0f51 0xbeef\S+, which a computed value is read from, is not shown to run the code the registry pins: steakhouse-prime-usdc-v2-0f51 0xbeef\S+ has code hash 0x[0-9a-f]{64} at block 21000000, the registry pins 0x[0-9a-f]{64}/],
+  ['runs code the providers disagree on', (provider: string) => (provider === 'drpc' ? '0x01' : VAULT_CODE) as Hex, undefined, /not shown to run the code the registry pins: eth_getCode: alchemy and drpc disagree/],
+  ['has no code pin', () => VAULT_CODE, 'none', /not shown to run the code the registry pins: .* has no code pin in the registry/],
+  ['delegates, though its pin names no implementation', () => `0x363d3d373d3d3d363d73${'11'.repeat(20)}5af43d82803e903d91602b57fd5bf3` as Hex, 'clone', /not shown to run the code the registry pins: .* delegates to 0x1{40} at block 21000000, the registry pins no implementation/],
+] as const) {
+  test(`card new refuses to compute a value from a contract that ${what}, calls nothing on it, and seals nothing`, async () => {
+    const home = freshHome();
+    configure(home);
+    const served = code as (provider: string) => Hex;
+    const repoRoot = repinned(dataClone(), 'steakhouse-prime-usdc-v2-0f51', pin === 'none' ? undefined : { hash: keccakCode(pin === 'clone' ? served('alchemy') : VAULT_CODE), from: 0 });
+    const views: Views = (_provider, _to, selector) => assert.fail(`${selector} was called`);
+    const result = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'y'], { ...decimalsChain({ [USDC]: 6, [STEAKHOUSE]: 18 }, {}, views, served), repoRoot });
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, message);
+    assert.equal(existsSync(join(home, 'cards')), false);
+  });
+}
+
+test('card new refuses to compute a value from a contract one of whose dependsOn entries runs other code than its pin names', async () => {
+  const home = freshHome();
+  configure(home);
+  const repoRoot = dataClone();
+  const path = join(repoRoot, 'registry', 'contracts.json');
+  const registry = JSON.parse(readFileSync(path, 'utf8'));
+  const [dependency] = Object.entries<{ kind: string; code?: object; dependsOn?: string[] }>(registry).find(([, entry]) => entry.kind === 'router' && entry.code !== undefined && entry.dependsOn === undefined)!;
+  registry['steakhouse-prime-usdc-v2-0f51'].dependsOn = [dependency];
+  writeFileSync(path, JSON.stringify(registry, null, 2));
+  const result = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'y'], { ...mainnet(), repoRoot });
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /not shown to run the code the registry pins: .* has code hash 0x[0-9a-f]{64} at block 21000000/);
+});
 
 test('card new takes commas between thousands, as the protocol\'s app shows an amount', async () => {
   const home = freshHome();

@@ -31,6 +31,7 @@ import type { Labels } from './labels.ts';
 import type { Io, Terminal } from './io.ts';
 import { stopUnlessDataIsMain, requireConfig, seal } from './setup.ts';
 import { bindView } from '../simulate/effects.ts';
+import { checkCode } from '../verify/code.ts';
 
 /** A name a field may hold; a registry entry carries the factory that created it, so two vaults of one display name stay apart. */
 type Choice = { readonly name: string; readonly address: Address; readonly from: 'registry' | 'address-book' | 'safe'; readonly factory?: RegistryEntry };
@@ -127,6 +128,8 @@ const UINT256_LIMIT = 1n << 256n;
 /** Every chain read of one card, through both providers at the one block they agree on. */
 type Chain = {
   readonly decimals: (entry: RegistryEntry) => Promise<number>;
+  /** Refuses the card unless `entry`, and each entry it depends on, runs the code its registry pin names. */
+  readonly pinned: (entry: RegistryEntry) => Promise<void>;
   /** What a view answers. */
   readonly call: (to: RegistryEntry, data: Hex, call: string) => Promise<Hex>;
   /** Each token's decimals read so far. */
@@ -135,7 +138,7 @@ type Chain = {
   readonly provenance: () => string | undefined;
 };
 
-function openChain(reader: Reader | undefined, L: CardWords): Chain {
+function openChain(reader: Reader | undefined, registry: Registry, L: CardWords): Chain {
   let at: BlockRef | undefined;
   const agreedBlock = async (refuse: (why: string) => never): Promise<{ readonly reader: Reader; readonly at: BlockRef }> => {
     if (reader === undefined) throw new Error('no chain reader');
@@ -146,6 +149,7 @@ function openChain(reader: Reader | undefined, L: CardWords): Chain {
     return { reader, at };
   };
   const known = new Map<Address, number>();
+  const pinned = new Set<string>();
   return {
     known,
     provenance: () => (at === undefined || reader === undefined ? undefined : L.chainReads(at.number, reader.providers)),
@@ -160,6 +164,17 @@ function openChain(reader: Reader | undefined, L: CardWords): Chain {
       if (typeof decimals !== 'number') return refuse(decimals.problem);
       known.set(entry.address, decimals);
       return decimals;
+    },
+    pinned: async (entry) => {
+      const refuse = (why: string): never => {
+        throw new CardError(L.codeNotPinned(entry.name, checksumAddress(entry.address), why));
+      };
+      const { reader: r, at: ref } = await agreedBlock(refuse);
+      const entries = [entry, ...(entry.dependsOn ?? []).map((name) => registry.entries.get(name) as RegistryEntry)].filter(({ name }) => !pinned.has(name));
+      const check = await checkCode(r, entries, ref, 'pending');
+      if (check.kind === 'mismatch') refuse(check.findings.join('; '));
+      if (check.kind === 'unverifiable') refuse(check.reasons.join('; '));
+      for (const { name } of entries) pinned.add(name);
     },
     call: async (to, data, call) => {
       const refuse = (why: string): never => {
@@ -264,6 +279,7 @@ async function readValue(read: ComputedRead, values: Readonly<Record<string, str
   };
   const bound = bindView({ ...read, args }, { safe, values: resolved, registry });
   if ('problem' in bound) return refuse(bound.problem);
+  await ctx.chain.pinned(to);
   const answer = decodeValues(read.returns.map((param) => param.type), hexToBytes((await ctx.chain.call(to, bound.call.data, call)).slice(2)));
   if (answer === undefined) return refuse(ctx.L.notReturns(`(${read.returns.map((param) => canonicalType(param.type)).join(',')})`));
   const [first, ...rest] = read.output;
@@ -412,7 +428,7 @@ export async function cardNew(args: readonly string[], io: Io, w: Labels): Promi
     return loadTemplate(io.repoRoot, id, sources.registry);
   });
   const reader = templates.some(readsChain) ? openMainnetReader(io.env, io.transport) : undefined;
-  const chain = openChain(reader, L);
+  const chain = openChain(reader, sources.registry, L);
   const ctx = { sources, io, ask, chain, p: paint(io.color === true), L, language: w.language, reported: (id: string) => reportedInstancesIn(io.repoRoot, id) };
   const operations: CardOperation[] = [];
   for (const [i, template] of templates.entries()) {
