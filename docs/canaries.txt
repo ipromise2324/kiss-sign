@@ -103,3 +103,6 @@ reads testdata/verify/morpho-vault-deposit.json
 
 canary test/canaries/self-check.canary.ts
 guards verify runs only main of the configured repository: a changed, extra or hidden file, a local commit, an old checkout, another origin, an insteadOf rewrite, a rewritten object, a replace ref, filters, hooks, worktree tricks and the global git config are all refused before anything is verified.
+
+canary test/canaries/swap-floor.canary.ts
+guards A swap's floor: a minimum under the card's is MISMATCH; card new never seals a floor the signer did not type below the price less 1.25%, one source that says less never lowers it, a pushed or thin pool, a lost peg or a late feed computes nothing and takes nothing typed once, and a feed with no price, other code or a provider that lies gives no card.
