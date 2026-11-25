@@ -46,6 +46,19 @@ test('every bound field of the Morpho deposit, changed alone, gives a mismatch',
   assert.deepEqual(mutations(), { kind: 'pass', bound: 21, free: 0 });
 });
 
+test('every bound field of the shipped Morpho deposit, changed alone, gives a mismatch', () => {
+  const { service, chain } = JSON.parse(readFileSync(join(ROOT, 'testdata', 'safe-tx', 'morpho-vault-bundles-deposit.json'), 'utf8'));
+  const tx = parseServiceTx(service, { chainId: 1n, version: chain.version });
+  const id = 'morpho/vault-deposit';
+  const templates = templatesOf(loadTemplate(ROOT, id, registry));
+  const operations = [{ template: id, values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount: '10000000000', 'min-shares': '9609712613964437589511' } }];
+  const result = resolveCard({ operations }, { templates, registry, addressBook: new Map(), safe: tx.safe });
+  assert.equal(result.kind, 'resolved');
+  const { card } = result as Extract<typeof result, { kind: 'resolved' }>;
+  const blockTime = { kind: 'read', number: BigInt(service.blockNumber), time: BigInt(Date.parse(service.executionDate) / 1000) } as const;
+  assert.deepEqual(checkMutations(tx, card, templates, registry, [], { blockTime }), { kind: 'pass', bound: 13, free: 1 });
+});
+
 test('a template that frees the deposited assets still passes, with one more free field and one fewer bound', () => {
   const weakened = structuredClone(rawTemplate);
   weakened.calls[1].args.bundle.items[1].fields.data.call.args.assets = { free: { en: 'test: assets left free', 'zh-TW': '測試：資產數量不受限制' } };

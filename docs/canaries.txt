@@ -9,7 +9,8 @@ guards Real blind-signing attacks on Safes (Bybit, WazirX, Radiant), replayed fr
 reads testdata/attacks/
 
 canary test/canaries/mutation.canary.ts
-guards Every bound field of the Morpho vault deposit, changed alone, gives MISMATCH; a checker that ignores the receiver is reported weak, naming it.
+guards Every bound field of the shipped Morpho vault deposit, and of the Bundler3 fixture, changed alone, gives MISMATCH; a checker that ignores the receiver is reported weak, naming it.
+reads testdata/safe-tx/morpho-vault-bundles-deposit.json
 reads testdata/safe-tx/morpho-vault-deposit.json
 reads test/fixtures/registry/
 reads test/fixtures/templates/
