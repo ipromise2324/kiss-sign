@@ -335,6 +335,19 @@ Each picture is drawn from an HTML source in `docs/diagrams/`, and `sh docs/diag
      A call made inside a `DELEGATECALL`, or the older `CALLCODE`, which the comparison counts as one, names, as `callTracer` gives it, the contract whose code delegated as its `from`, so a proxy's calls read as the proxy's and its call to its implementation is no step of the path.
      A trace shows the path past transactions took; a contract may take another path on other state, so the effects check at signing, not a trace, is what protects the signer.
      The report compares each AI `flow` line with these traces (see Flow lines against the traces under Report).
+   - **Addresses in the traces:** the program names, before any note is written, every address that moves the sender's money in a trace and whose code `verify` does not check for the template, so a fixed contract reached only from inside another is not missed.
+     It reads the money calls as the report does (see Flow lines against the traces), with no `flow` line, so it names the parties and the token of each money call the template neither binds nor makes directly from a bound call.
+     An address is named when the registry does not hold it, and also when the registry holds it but none of the contracts and tokens `verify` checks is it or lists it in `dependsOn`.
+     `pnpm past-txs` prints them all after each run, and `--restudy` after each summary: the address, and per template call which token moved, whether the sender paid it, was paid it, approved it or spent an allowance it was given, the kind of call, in how many transactions, and one's hash.
+     The AI settles each, one of three ways:
+     a fixed contract of the operation that was missed is registered and listed in the reaching entry's `dependsOn`, after which a new study no longer names it;
+     one that differs per transaction or is no fixed part of the operation, such as an aggregator's pools, is judged `not-fixed`;
+     one the program cannot express is judged `known-limit`, naming the program change that would.
+     A judgement is hand-written data in `trace-addresses.json` beside the report's files, in the template's folder or the instance's: by address in full, `{ "judgement": "not-fixed" | "known-limit", "reason", "sources" }`, `sources` at least one https URL, and for a `known-limit` `needs`, the change.
+     `pnpm report --record` refuses, before it reads anything live, while an address in the report's recordings is unjudged, naming every one, and refuses a judgement of an entry `verify` checks.
+     `--render`, `--offline` and `pnpm test` do not read the file, so a report recorded before this rule stays as it is until it is recorded again; `--render` keeps its own check, a review of each money call no line covers.
+     No page shows a judgement: the signer reads that review, which names each such address, and the file itself in the pull request.
+     Where the card chooses among several tokens for what the effects give or get, the program also prints in how many traced transactions each token was paid by the sender and to it, and which in none, so a sample that holds one direction of a swap shows.
 5. **Check the protocol's health.**
    The AI looks for anything that makes the protocol unsafe to use right now: past hacks and incidents (for example DefiLlama's hack list and the protocol's own post-mortems), audits, recent upgrades, admin or timelock changes, paused or deprecated contracts.
    Every claim cites its source.

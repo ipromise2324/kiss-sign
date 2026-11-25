@@ -7,6 +7,7 @@ Part of [the kiss-sign design](../design.md).
   The receipt check counts movements, not where they sit: a `Transfer` of a token outside the registry, a registry token's mint or burn, from or to the zero address, and an `Approval` of a token outside the registry need no matching call, and a registry token's call that a hand-edited trace moves under another call, one already covered, still matches its log, and no program traces a recorded transaction again, so such an edit is not caught.
   A trace only confirms a `flow` line in the report or asks the AI for a review; it never changes a verdict.
   A trace also shows one path: a contract may branch on state, so a line seen in every past transaction may not hold for the transaction to sign, and the effects check at signing is what protects the signer.
+  The addresses `pnpm past-txs` names from the traces are those the traced transactions met: an address only an untraced case reaches, such as the other direction of a swap, is not named, nor is one that acts in another transaction, such as the solver that settles an order a Safe signs on chain, nor one that is only a party of a money call a bound call makes directly, such as a pool the template's router pays itself.
 - Etherscan name tags (labels such as "Morpho: Bundler3") are not used.
   Etherscan offers no free API for them.
   The verified contract name and the creator, read from the contract's Etherscan page, are used instead.

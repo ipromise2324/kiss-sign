@@ -20,6 +20,7 @@ import { RECORDINGS_DIR, SUMMARIES_DIR, parseSummary, studyRecording, summaryFil
 import type { PastTxsSummary } from '../src/research/past-txs-summary.ts';
 import { ReportError, pastTxsRegistry } from '../src/research/report.ts';
 import { drpcTraces } from '../src/research/trace.ts';
+import { traceAddressesText } from '../src/research/trace-addresses.ts';
 import type { PastTxsRecording, Sampling } from '../src/research/recording.ts';
 import { parseAddress } from '../src/safe/types.ts';
 import type { Address } from '../src/safe/types.ts';
@@ -97,6 +98,13 @@ For each transaction exactly the template it reads the call trace from drpc alon
 approvals against the receipt both providers agree on; --record keeps each trace cut down to each
 call's depth, type, from, to, selector, value, whether it reverted, and the address arguments of a
 transfer, transferFrom, approve or permit.
+Then it prints every address the traces show moving the sender's money whose code verify does not
+check for the template, outside the registry or registered but not reached through dependsOn: per
+template call, which token moved which way, in how many transactions and one's hash. Register each
+fixed contract and list it in dependsOn, or judge it in the trace-addresses.json beside the report;
+pnpm report --record refuses while one is neither. Where the card chooses among several tokens it
+prints in how many traced transactions each moved, so a sample of one direction shows; --restudy
+prints both too.
 
 Options:
   --token <name | address>       The anchor token, or the contract that logs --event; left out for
@@ -174,8 +182,10 @@ if (flags.restudy === true) {
       process.exit(64);
     }
     const recording = readRecording(path) as PastTxsRecording;
-    const summary = await studyRecording(ROOT, recording, pastTxsRegistry(ROOT, registry, recording.query));
+    const studied = pastTxsRegistry(ROOT, registry, recording.query);
+    const summary = await studyRecording(ROOT, recording, studied);
     console.log(`wrote ${writeSummary(checkedSummary(name, summary, safe))}`);
+    process.stdout.write(traceAddressesText(loadTemplate(ROOT, recording.query.template, studied), studied, summary.traces));
   }
   process.exit(0);
 }
@@ -276,6 +286,7 @@ const run = await pastTxs(query, {
   traces: traces.source,
 });
 process.stdout.write(renderPastTxs(run, registry));
+process.stdout.write(traceAddressesText(template, registry, run.traces));
 
 if (flags.record !== undefined) {
   const refusal = unreadRefusal(unread);
