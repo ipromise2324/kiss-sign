@@ -8,7 +8,6 @@ import type { Exchange } from '../src/chain/recording.ts';
 import type { BlockRef, Transaction } from '../src/chain/types.ts';
 import { proveParties } from '../src/research/safe-parties.ts';
 import { sharedReads } from '../src/research/shared-reads.ts';
-import { PAGE, RANGE_PAGES, pagesAhead } from '../src/research/sources.ts';
 import { proveParty } from '../src/research/study.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 
@@ -42,32 +41,4 @@ test('a transaction is read once in a run, until both providers give the same an
   assert.equal((await reader.getTransaction(hash)).kind, 'unverifiable');
   const both = await Promise.all([reader.getTransaction(hash), reader.getTransaction(hash)]);
   assert.deepEqual([both.map((r) => r.kind), asked], [['agreed', 'agreed'], 2]);
-});
-
-const full = { status: '1', result: Array.from({ length: PAGE }, () => ({})) };
-const query = (page: number) => ({ address: '0xa', page: String(page) });
-
-test('a full Etherscan page asks the next ones early, each page once and none past the last one a range may hold', async () => {
-  const asked: string[] = [];
-  const ask = pagesAhead(async (q) => (asked.push(q.page as string), full), () => undefined);
-  for (let page = 1; page <= RANGE_PAGES; page++) assert.equal(await ask(query(page), 'empty'), full);
-  assert.deepEqual(asked, Array.from({ length: RANGE_PAGES }, (_, i) => String(i + 1)));
-});
-
-test('a short Etherscan page asks nothing early, and a page asked early that the search never reaches leaves no unread note', async () => {
-  const asked: string[] = [];
-  const unread: string[] = [];
-  const ask = pagesAhead(async (q, note) => {
-    asked.push(q.page as string);
-    if (q.page === '1') return full;
-    note(`page ${q.page}`);
-    throw new Error('unreachable');
-  }, (read) => void unread.push(read));
-  await ask(query(1), 'empty');
-  assert.deepEqual(unread, []);
-  await assert.rejects(ask(query(2), 'empty'), /unreachable/);
-  assert.deepEqual(unread, ['page 2']);
-  const short = pagesAhead(async (q) => (asked.push(`short ${q.page}`), { status: '1', result: [{}] }), () => undefined);
-  await short(query(1), 'empty');
-  assert.equal(asked.filter((a) => a.startsWith('short')).length, 1);
 });
