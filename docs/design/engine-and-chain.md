@@ -45,7 +45,7 @@ These are protocol-free and change rarely.
 - The Safe transaction hashes, computed locally.
 - Decode, then re-encode byte for byte, so nothing hides in the encoding.
   - One exception, declared per call in the template: a trailer of at most a stated number of bytes after the arguments, with a written reason.
-    The Morpho app appends 8 bytes to `multicall` (a timestamp and an origin tag) that the contract never reads, and up to 12 to `vaultBundlesV1Deposit`.
+    The Morpho app appends up to 12 bytes to `vaultBundlesV1Deposit` (a timestamp and one or two origin tags) that the contract never reads.
     A template may allow at most 19 bytes, so a whole 20-byte address never fits in a trailer.
     A contract that reads its caller from the last 20 bytes of calldata (ERC-2771) would still take the last argument byte plus a 19-byte trailer as an address, so a template for such a contract declares no trailer.
     A call to a registry contract whose entry declares `ignoresTrailer`, with the reason its code never reads calldata past a call's arguments, may allow up to 64 bytes: the Uniswap app appends a tag of up to 46 bytes to `execute`, and the Universal Router's verified source reads neither `msg.data` nor `calldatasize`.

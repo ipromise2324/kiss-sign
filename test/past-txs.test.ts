@@ -25,11 +25,11 @@ import type { Anchor, AnchorKind, Ask, Hits, SourceExchange, SourceRequest } fro
 import type { Address, Hex } from '../src/safe/types.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
-import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
+import { repoWithBundler3Deposit } from './bundler3-deposit.ts';
 import { SUMMARY_FIXTURES, runOffline } from './run-offline.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
 
-const ROOT = repoWithTestFixtures();
+const ROOT = repoWithBundler3Deposit();
 
 /** The text of a summary of `query` that studied nothing. */
 const summaryOf = (query: PastTxsRecording['query']): string =>

@@ -16,9 +16,9 @@ import { checkCommand, checkHints } from '../src/verify/check-command.ts';
 import { callTree } from '../src/verify/expected.ts';
 import { verdictPage } from '../src/verify/page.ts';
 import type { CheckName, CheckState } from '../src/verify/verdict.ts';
-import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
+import { repoWithBundler3Deposit } from './bundler3-deposit.ts';
 
-const ROOT = repoWithTestFixtures();
+const ROOT = repoWithBundler3Deposit();
 const registry = loadRegistry(ROOT);
 const PASSED: Record<CheckName, CheckState> = {
   'template-approval': 'passed',

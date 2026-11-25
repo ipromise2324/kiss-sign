@@ -13,19 +13,21 @@ import { checkMutations } from '../../src/template/mutation.ts';
 import type { Checker, MutationResult } from '../../src/template/mutation.ts';
 import { loadTemplate, parseTemplate } from '../../src/template/template.ts';
 import type { Template } from '../../src/template/template.ts';
+import { repoWithTestFixtures } from '../repo-with-test-fixtures.ts';
 
 const ROOT = join(import.meta.dirname, '..', '..');
+const FIXTURES = repoWithTestFixtures();
 const fixture = JSON.parse(readFileSync(join(ROOT, 'testdata', 'safe-tx', 'morpho-vault-deposit.json'), 'utf8'));
 const deposit = parseServiceTx(fixture.service, { chainId: 1n, version: fixture.chain.version });
 const registry = loadRegistry(ROOT);
-const template = loadTemplate(ROOT, 'morpho/vault-deposit', registry);
-const rawTemplate = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
+const template = loadTemplate(FIXTURES, 'morpho/vault-deposit-bundler3', registry);
+const rawTemplate = JSON.parse(readFileSync(join(FIXTURES, 'templates', 'morpho', 'vault-deposit-bundler3', 'template.json'), 'utf8'));
 const DEPOSIT_PATH = 'multiSend[1].multicall.bundle[1].data.erc4626Deposit';
 
 const templatesOf = (t: Template) => new Map([[t.id, t]]);
 
 function card(templates: ReadonlyMap<string, Template>, amount = '1800000000180'): ResolvedCard {
-  const operations = [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount, 'min-shares': '1741863305677219101283940' } }];
+  const operations = [{ template: 'morpho/vault-deposit-bundler3', values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount, 'min-shares': '1741863305677219101283940' } }];
   const result = resolveCard({ operations }, { templates, registry, addressBook: new Map(), safe: deposit.safe });
   assert.equal(result.kind, 'resolved');
   return (result as Extract<typeof result, { kind: 'resolved' }>).card;

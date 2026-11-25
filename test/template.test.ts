@@ -14,15 +14,17 @@ import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
 import { checkTemplateFields } from '../src/template/check.ts';
 import type { FieldCheck, Finding } from '../src/template/check.ts';
 import { TemplateError, loadTemplate, parseTemplate } from '../src/template/template.ts';
+import { repoWithBundler3Deposit } from './bundler3-deposit.ts';
 import { parseRegistryAt } from './registry-at.ts';
 
 const ROOT = join(import.meta.dirname, '..');
+const BUNDLER3 = repoWithBundler3Deposit();
 const fixture = JSON.parse(readFileSync(join(ROOT, 'testdata', 'safe-tx', 'morpho-vault-deposit.json'), 'utf8'));
 const deposit = parseServiceTx(fixture.service, { chainId: 1n, version: fixture.chain.version });
 const registry = loadRegistry(ROOT);
-const template = loadTemplate(ROOT, 'morpho/vault-deposit', registry);
+const template = loadTemplate(BUNDLER3, 'morpho/vault-deposit', registry);
 const templates = new Map([[template.id, template]]);
-const rawTemplate = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
+const rawTemplate = JSON.parse(readFileSync(join(BUNDLER3, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
 
 const OTHER = '0x1111111111111111111111111111111111111111';
 

@@ -11,8 +11,9 @@ import { checkTemplateFields } from '../src/template/check.ts';
 import type { FieldCheck } from '../src/template/check.ts';
 import { checkMutations } from '../src/template/mutation.ts';
 import { loadTemplate } from '../src/template/template.ts';
+import { repoWithBundler3Deposit } from './bundler3-deposit.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = repoWithBundler3Deposit();
 const registry = loadRegistry(ROOT);
 const templates = new Map([['morpho/vault-deposit', loadTemplate(ROOT, 'morpho/vault-deposit', registry)]]);
 
