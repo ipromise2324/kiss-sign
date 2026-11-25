@@ -204,8 +204,8 @@ const under = (card: Card, from: string, to: string): Card => ({
 
 const wordHex = (value: bigint | Address) => (typeof value === 'bigint' ? value.toString(16) : value.slice(2)).padStart(64, '0');
 
-/** `tx` with the pool key's `word`th word (fee 2, tickSpacing 3, hooks 4) set to `to`. */
-function withPoolKeyWord(tx: SafeTx, word: 2 | 3 | 4, to: bigint | Address): SafeTx {
+/** `tx` with the `word`th word from the pool key's start (fee 2, tickSpacing 3, hooks 4, then zeroForOne 5) set to `to`. */
+function withPoolKeyWord(tx: SafeTx, word: 2 | 3 | 4 | 5, to: bigint | Address): SafeTx {
   const pair = wordHex(addressOf('usdc')) + wordHex(addressOf('usdt'));
   const key = tx.data.slice(2).indexOf(pair);
   assert.ok(key > 0 && key % 2 === 0, 'the pool key is in the data');
@@ -250,10 +250,21 @@ test('uniswap/swap-no-hook refuses another token at each place the transaction n
     ['usdt', [`${key}.currency1`, `${v4}.params[2].TAKE.currency`]],
   ] as const;
   for (const [token, paths] of places) paths.forEach((at, nth) => assert.deepEqual(mismatchAt(check(changed(tx, addressOf(token), addressOf('morpho'), nth), NO_HOOK.card)), [at]));
-  for (const [sell, buy] of [['morpho', 'usdt'], ['usdc', 'morpho'], ['usdt', 'usdc']] as const) {
+  const sold = `${v4}.params[0].SETTLE.currency`;
+  const bought = `${v4}.params[2].TAKE.currency`;
+  for (const [sell, buy, at] of [['morpho', 'usdt', [sold]], ['usdc', 'morpho', [bought]], ['usdt', 'usdc', [sold, bought]]] as const) {
     const card: Card = { operations: [swapOp(sell, buy, NO_HOOK.sell, NO_HOOK.minBuy, 'uniswap/swap-no-hook')] };
-    assert.notDeepEqual(mismatchAt(check(tx, card)), []);
+    assert.deepEqual(mismatchAt(check(tx, card)), at);
   }
+});
+
+test('uniswap/swap-no-hook matches the fields of a USDT to USDC swap, the recorded one with its two tokens and direction turned around', () => {
+  const tx = safeTx(NO_HOOK.name);
+  const [usdc, usdt] = [addressOf('usdc'), addressOf('usdt')];
+  const reversed = withPoolKeyWord(changed(changed(tx, usdt, usdc, 1), usdc, usdt, 0), 5, 0n);
+  const card: Card = { operations: [swapOp('usdt', 'usdc', NO_HOOK.sell, NO_HOOK.minBuy, 'uniswap/swap-no-hook')] };
+  assert.deepEqual(check(reversed, card), { kind: 'match' });
+  assert.deepEqual(mismatchAt(check(reversed, NO_HOOK.card)), ['call.execute.inputs[0].V4_SWAP.params[0].SETTLE.currency', 'call.execute.inputs[0].V4_SWAP.params[2].TAKE.currency']);
 });
 
 test('uniswap/swap-no-hook refuses the multi-hop SWAP_EXACT_IN shape at its action list', () => {

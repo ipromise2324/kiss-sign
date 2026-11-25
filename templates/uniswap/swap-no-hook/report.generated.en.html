@@ -357,15 +357,15 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>You type the card&#39;s minimum to receive yourself; it is your only price protection.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>The pool&#39;s fee is left free, so the transaction may use another pool than the quote showed, even one anyone made with a bad price, but never below your minimum. Example: the other Safe sold 8.029841 USDC with a minimum of 7.995463 USDT, 0.5% under what it got. A minimum of 7 would let it lose about 1.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>The pool&#39;s fee is left free, so the transaction may use another pool than the quote showed, even one anyone made with a bad price, but never below your minimum. On its one recorded transaction the program tried fees 34, 36 and 0 and all three reverted, so the program never saw a swap through another pool, whatever the row&#39;s legend says. Example: the other Safe sold 8.029841 USDC with a minimum of 7.995463 USDT, 0.5% under what it got. A minimum of 7 would let it lose about 1.</span><span class="byai">AI research</span></span></div>
           <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Type the minimum shown on the app&#39;s confirm screen, no lower.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>Only one Safe transaction of this shape was found, USDC to USDT at fee 35, where the skill asks for two.</span><span class="byai">AI research</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>Only one Safe transaction of this shape was found, USDC to USDT at fee 35.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>The program&#39;s perturbation test ran on it alone. Selling USDT and the other fees rest on AI evidence, not a program result: the AI simulated 10 EOA transactions (both directions, fees 7, 8, 10, 35, 100) and every swap gave exactly the sell amount and got at least its minimum.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>One is thin: a second Safe, with another amount, fee or direction, would show the rules are not fitted to one transaction. The program&#39;s perturbation test ran on it alone. Selling USDT and the other fees rest on AI evidence, not a program result: the AI simulated 10 EOA transactions (both directions, fees 7, 8, 10, 35, 100) and every swap gave exactly the sell amount and got at least its minimum.</span><span class="byai">AI research</span></span></div>
           <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>If you sell USDT, decide whether this AI evidence is enough, and start with a small amount.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
@@ -494,7 +494,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="arg" data-field="1.execute.deadline">
       <div class="nm"><span class="pn">deadline</span><span class="who app">app fills, any value</span></div>
       <div class="val"><div class="is">differs each time <span class="f3">tested with other values: the same result or the transaction fails</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>After this time the router refuses the swap. The app sets it: about 29 minutes after the block in the Safe transaction, 14 to 30 minutes in the 413 EOA calls (AI evidence).</span></span></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>After this time the router refuses the swap. The app sets it: about 29 minutes after the block in the Safe transaction, 14 to 30 minutes in the 413 EOA calls (AI evidence). It needs no bound: a later run still pays exactly the sell amount and gets at least the minimum.</span></span></div></div>
     </div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 fixed value; any change is a MISMATCH</summary>
     <div class="arg" data-field="1.execute.commands">
