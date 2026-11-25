@@ -65,7 +65,7 @@ h1 .byai{vertical-align:6px}
 h1 .aiw>:first-child{margin-right:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
 .sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
-:is(.sub,h3,.intro,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
+:is(.sub,h3,.intro,.ans,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
 .verdict .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:flex;align-items:flex-start;gap:8px;font-size:var(--t-row);position:relative}
@@ -148,9 +148,19 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
 
-.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
-.key>span{display:inline-flex;gap:8px;align-items:center}
-.key .k0{color:var(--fg3);font-weight:590}
+.deciders{margin:36px 0 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}
+.deciders h3{margin:0 0 10px;font-size:var(--t-small);color:var(--fg2)}
+.deciders dl{margin:0;display:flex;flex-direction:column;gap:12px}
+.deciders .grp{display:grid;grid-template-columns:88px minmax(0,1fr);gap:0 16px;align-items:start}
+.deciders .gh{font-size:var(--t-small);line-height:24px;color:var(--fg);font-weight:590}
+.deciders .defs{margin:0;display:flex;flex-direction:column;gap:6px}
+.deciders .defs>div{display:grid;grid-template-columns:116px minmax(0,1fr);gap:0 14px;align-items:start;font-size:var(--t-small);line-height:24px;color:var(--fg2)}
+.deciders .who{justify-self:start}
+@media (max-width:560px){.deciders .grp{grid-template-columns:minmax(0,1fr)}}
+.mix{margin:10px 0 12px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 16px;align-items:start}
+.mix dt{justify-self:start}
+.mix dd{margin:0;display:flex;flex-wrap:wrap;gap:6px;line-height:24px}
+.mix code{font-size:var(--t-label)}
 .cb{margin-top:40px}
 .callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
 .callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
@@ -249,14 +259,19 @@ details.fold[open]>summary .chev{transform:rotate(90deg)}
 details.fold .ad:last-child{border-bottom:0}
 
 .warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
-.pblock{border-top:1px solid var(--line);margin-top:16px}
-.ph{display:flex;flex-direction:column;gap:4px;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
-.ph .pt{font-weight:590}
-.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
-.pg .pc{color:var(--fg)}
-.pg .pcalls{margin-bottom:4px}
-.pg .pex{font-size:var(--t-small);margin-top:4px}
-.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+.ans{margin:0 0 10px;color:var(--fg2)}
+.ans b{color:var(--fg)}
+.cap{margin:8px 0 0;font-size:var(--t-small);color:var(--fg3)}
+.lm{color:var(--warn)}
+.sh{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-size:var(--t-small);color:var(--fg2);margin-top:18px}
+.sc{overflow-x:auto;margin:12px 0 8px}
+.pt2{border-collapse:collapse;width:100%;font-size:var(--t-small);font-variant-numeric:tabular-nums}
+.pt2 th{font-size:var(--t-label);font-weight:400;color:var(--fg3);text-align:left;padding:6px 16px 6px 0;border-bottom:1px solid var(--line2);white-space:nowrap}
+.pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
+.pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
+.pt2 .n{text-align:right}
+.pt2 td.nw{white-space:nowrap}
+.pt2 td.v{color:var(--fg);font-weight:590}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -271,13 +286,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
 .auto li{display:flex;gap:10px;align-items:baseline}
 .auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
-.usage{font-size:var(--t-small);color:var(--fg3);margin-bottom:28px}
-.usage h3{font-size:var(--t-row);color:var(--fg2);margin:0 0 6px}
-.usage p{margin:0}
-.usage table{border-collapse:collapse;margin:10px 0}
-.usage th,.usage td{padding:6px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left}
-.usage th+td,.usage th+th{padding-left:32px;text-align:right}
-.usage tfoot th,.usage tfoot td{color:var(--fg);border-bottom:0}
+.ut{border-collapse:collapse;width:100%;margin:16px 0 12px;font-size:var(--t-row)}
+.ut th,.ut td{padding:9px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left;color:var(--fg2)}
+.ut thead th{font-size:var(--t-label);color:var(--fg3);border-bottom-color:var(--line2)}
+.ut th+td,.ut th+th{text-align:right;font-variant-numeric:tabular-nums}
+.ut tfoot th,.ut tfoot td{color:var(--fg);font-weight:590;border-bottom:0}
 .foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
 .foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
@@ -298,7 +311,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
 </nav>
 
 <div class="main">
@@ -321,7 +334,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用，但要小心：只有工廠確認這個 vault 的地址，Hyperithm 也沒有頁面列出它。先看待確認，第一次先送小額。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
   </details>
 </header>
 
@@ -334,8 +347,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div><div class="t"><span class="grade"><span class="vh">等級：</span>重要</span>地址確認的地方不夠 · hyperithm-usdc-apex-v2-9e2f</div>
         <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>程式唯一的確認來源是工廠：VaultV2Factory 回答 <code>isVaultV2</code> = true。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="meta">只在 1 個地方確認：工廠</div>
-          <div class="meta">至少要 2 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-hyperithm-usdc-apex-v2-9e2f">看來源</a></div>
+          <div class="meta">只在 工廠 找到 <span class="addr">0x093272C07700d3cA5301C3Bf9B3A392624179E2F</span>；至少要 2 個地方。<a href="#a-hyperithm-usdc-apex-v2-9e2f">看來源</a></div>
           <div class="rec"><span class="aiw" data-ai><span>Etherscan 顯示 0x093272C07700d3cA5301C3Bf9B3A392624179E2F 是 VaultV2 合約，由工廠 0xA1D94F746dEfa1928926b84fB2596c06926C0405 建立。AI 沒找到 Hyperithm 或 Morpho 不靠網址帶地址就列出它的頁面。</span><span class="byai">AI 研究</span></span></div>
           <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>自己從 Morpho app 的 vault 列表點進這個 vault，比對完整地址。第一次送小額。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
@@ -404,14 +416,19 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </svg>
   </div>
   <div class="scrollhint">圖可以左右滑動，最右邊是 hyperithm-usdc-apex-v2-9e2f</div>
-  <div class="key">
-    <span class="k0">誰決定</span>
-    <span><span class="who you">你填</span>每次簽名填</span>
-    <span><span class="who you">你選</span>每次簽名選</span>
-    <span><span class="who">程式算</span>card new 每次簽名讀鏈算出，你核對</span>
-    <span><span class="who">固定</span>改了就 MISMATCH</span>
-    <span><span class="who app">app 填，不限</span>合約不讀它，換成別的值結果一樣</span>
-    <span><span class="who app">app 填，有上限</span>超過上限就 MISMATCH</span>
+  <div class="deciders">
+    <h3>每個值由誰決定</h3>
+    <dl>
+      <div class="grp"><dt class="gh">你</dt><dd class="defs">
+        <div><span class="who you">你填</span><span>每次簽名你自己填。</span></div>
+        <div><span class="who you">你選</span><span>每次簽名你從清單裡選。</span></div></dd></div>
+      <div class="grp"><dt class="gh">kiss-sign</dt><dd class="defs">
+        <div><span class="who">程式算</span><span>card new 每次簽名從鏈上讀，你核對。</span></div>
+        <div><span class="who">固定</span><span>模板定的。改了就 MISMATCH。</span></div></dd></div>
+      <div class="grp"><dt class="gh">app</dt><dd class="defs">
+        <div><span class="who app">不限</span><span>合約不讀它，換成別的值結果一樣。</span></div>
+        <div><span class="who app">有上限</span><span>超過上限就 MISMATCH。</span></div></dd></div>
+    </dl>
   </div>
   <p class="lead keylead">下面逐一列出交易的每個呼叫。每個參數都寫出由誰決定、它的值或必須符合的規則，以及它的作用。</p>
   
@@ -448,8 +465,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>每股最高價格（資產 ÷ 份額，乘以 1e27）。實際價格更高，整筆失敗。程式要求它不高於「金額 ÷ 最少份額」，所以依 vault 自己回報的份額數，你至少拿到最少份額。</span></span></div></div>
     </div>
     <div class="arg" data-field="2.vaultBundlesV1Deposit.assetPermit">
-      <div class="nm"><span class="pn">assetPermit</span><span class="who">kind 固定</span><span class="who app">data 不限</span></div>
+      <div class="nm"><span class="pn">assetPermit</span></div>
       <div class="val"><div class="is">2 個部分</div>
+      <dl class="mix">
+        <dt><span class="who">固定</span></dt><dd><code>kind</code> </dd>
+        <dt><span class="who app">不限</span></dt><dd><code>data</code> </dd>
+      </dl>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>用簽名代替授權的資料。Safe 用呼叫 1 的授權，所以這裡是空的。</span></span></div></div>
       <div class="parts">
         <div class="part"><div class="pn">data</div><div><div class="is">每筆不同 <span class="f3">合約不讀它，換成別的值結果一樣</span></div>
@@ -461,8 +482,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       </div>
     </div>
     <div class="arg" data-field="2.vaultBundlesV1Deposit.deadline">
-      <div class="nm"><span class="pn">deadline</span><span class="who app">app 填，有上限</span></div>
-      <div class="val"><div class="is">最多比區塊時間晚 604800 秒（約 7 天） <span class="f3">區塊時間：還沒執行的交易用 verify 讀到的最新區塊，已執行的用它所在的區塊；更晚就 MISMATCH</span></div>
+      <div class="nm"><span class="pn">deadline</span><span class="who app">有上限</span></div>
+      <div class="val"><div class="is">最多比區塊時間晚 7 天</div><details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>怎麼算</summary><div class="meta">剛好 604800 秒。區塊時間：還沒執行的交易用 verify 讀到的最新區塊，已執行的用它所在的區塊；更晚就 MISMATCH。</div></details>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>過了這個時間交易就失敗。app 設在組交易後兩小時，Safe 較晚執行就要重新組。過去符合的 31 筆裡，最久的一筆在期限前 496,672 秒（約 5.7 天）執行，所以上限是 7 天；一半在期限前 7,051 秒以內執行。</span></span></div></div>
     </div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>2 個固定的值；改了任何一個都是 MISMATCH</summary>
@@ -638,24 +659,24 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>過去交易</h2>
-  <p class="lead">過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 <span class="num">0</span> 筆。</p>
-  <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 <span class="num">7</span> 筆跟你這筆不一樣：形狀一樣、但有地址不在 registry 裡的 <span class="num">0</span> 筆，形狀不同的 <span class="num">7</span> 筆</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>沒有 Safe 在這個 vault 走過模板的路線：存款的 Safe 都走 Bundler3，現在不接受。走新路線的只有一個 EOA，用 USDC 的 <code>permit</code> 取代授權。</span><span class="byai">AI 研究</span></span></p>
-  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
+  <h3>1. 這個模板的交易以前成功過嗎？</h3>
+  <p class="ans"><b>研究過的交易裡沒有 Safe 這樣做過。</b> EOA：0 次。</p>
+  <h3>2. app 填的值，一般是多少？</h3>
+  <div class="sh"><code>data</code><span>填的值</span></div>
+  <p class="cap">1 個不同的值（Safe 0 筆、EOA 1 筆）。最常見的是 <span class="addr">0x0000000000000000…(128 bytes)</span>，1 筆。</p>
+  <div class="sh"><code>deadline</code><span>設在多久之後，從交易所在的區塊起算</span></div><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">交易</th><th scope="col" class="n">數量</th><th scope="col" class="nw v">最短</th><th scope="col" class="nw v">一半不超過</th><th scope="col" class="nw v">最長</th></tr></thead><tbody>
+    <tr><td class="what">Safe，符合模板</td><td class="n"><span class="num">0</span></td><td class="nw v">無</td><td class="nw v">無</td><td class="nw v">無</td></tr>
+    <tr><td class="what">EOA，別的地方不同</td><td class="n"><span class="num">1</span></td><td class="nw v">沒有記錄</td><td class="nw v">沒有記錄</td><td class="nw v">沒有記錄</td></tr></tbody></table></div>
+  <p class="cap">模板上限：<b class="lm">7 天</b>。更久就 MISMATCH。</p>
+  <h3>3. 其他交易哪裡不同？</h3>
+  <p class="ans">7 筆交易做了這個模板不允許的事。</p>
+  <p class="ans"><span class="aiw" data-ai><span>沒有 Safe 在這個 vault 走過模板的路線：存款的 Safe 都走 Bundler3，現在不接受。走新路線的只有一個 EOA，用 USDC 的 <code>permit</code> 取代授權。</span><span class="byai">AI 研究</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="nw">例子</th></tr></thead><tbody>
+    <tr><td class="what">呼叫了別的函式：<code>usdc.approve → bundler3.0x374f435d</code></td><td class="n"><span class="num">6</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 24922291</td><td class="nw"><a href="https://etherscan.io/tx/0xbbcae7b746b4e3e6c9cb56ed15301e39a7f32b4eb5ea55dcda4c1f7a6de17704">0xbbcae7b7…</a></td></tr>
+    <tr><td class="what"><code>vaultBundlesV1Deposit.assetPermit.kind</code> 是 <span class="addr">1</span>，模板要 <span class="addr">0</span></td><td class="n"><span class="num">0</span></td><td class="n"><span class="num">1</span></td><td class="nw">區塊 26319532</td><td class="nw"><a href="https://etherscan.io/tx/0x03652285a11a34dd743131fa10047dc5baf4073986a7d27e523e9d3899707e32">0x03652285…</a></td></tr></tbody></table></div>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>程式怎麼搜尋</span></summary>
   <h3>搜尋 hyperithm-usdc-apex-v2-9e2f 的鑄造（存款），找到 7038 筆，研究 240 筆，含證實為 Safe 的參與方的 17 筆全數研究</h3>
-  <p class="lead">記錄在 <code>testdata/research/morpho-vault-deposit-v2.json</code>。搜尋了最近一年的每一筆交易，從區塊 23862266（2025-11-23）到區塊 26490265（2026-11-25），沒有遺漏。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">7038 = 7038</span>）。</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">6</span> 筆用了這個操作的呼叫（2 個 Safe），<span class="num">0</span> 筆跟模板一模一樣。</span></div>
-    <div class="pg"><span class="pc num">6 筆</span><div><div class="pcalls"><code>usdc.approve → bundler3.0x374f435d</code></div><div>呼叫跟模板不同，模板是 <code>approve → vaultBundlesV1Deposit</code><span class="f3">，來自 2 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x4f64d35c66e20f5956956db7a8d2eff3515c8ce177fb7fe5c302020ad7679a2f">0x4f64d35c…</a>、<a href="https://etherscan.io/tx/0x92c3e36dcaf900f1f5f836b5e9968296c173aea4200351b16f913deb79b40ad4">0x92c3e36d…</a>、<a href="https://etherscan.io/tx/0x7667a60ff42625518a709b06a447e9dac326f87e6731d065463c244585066521">0x7667a60f…</a></div></div></div>
-  </div>
-  <div class="pblock">
-    <div class="ph"><span class="pt">EOA 直接呼叫 vaultBundlesV1Deposit</span><span><span class="num">1</span> 筆用了這個操作的呼叫（1 個地址），<span class="num">0</span> 筆跟模板一模一樣。</span></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div><code>call.vaultBundlesV1Deposit.assetPermit.kind</code> 的值跟模板不同：模板要 <span class="addr">0</span>，交易是 <span class="addr">1</span><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x03652285a11a34dd743131fa10047dc5baf4073986a7d27e523e9d3899707e32">0x03652285…</a></div></div></div>
-  </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 233 筆是別的操作，不列入：<code>hyperithm-usdc-apex-v2-9e2f.multicall</code> 180 筆、<code>bundler3.0x374f435d</code> 30 筆、<code>0x48b415841165304f7EfaA7D5dD5FC65cc7B4bd8e.0x26f3525e</code> 5 筆、<code>hyperithm-usdc-apex-v2-9e2f.deposit</code> 4 筆，還有別的。</span></div>
+  <p class="cap">搜尋了最近一年的每一筆交易，從區塊 23862266（2025-11-23）到區塊 26490265（2026-11-25），沒有遺漏。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">7038 = 7038</span>）。</p>
+  <p class="cap">另外 233 筆是別的操作，不列入：<code>hyperithm-usdc-apex-v2-9e2f.multicall</code> 180 筆、<code>bundler3.0x374f435d</code> 30 筆、<code>0x48b415841165304f7EfaA7D5dD5FC65cc7B4bd8e.0x26f3525e</code> 5 筆、<code>hyperithm-usdc-apex-v2-9e2f.deposit</code> 4 筆，還有別的。</p>
   </details>
 </section>
 
@@ -697,7 +718,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<aside class="usage"><h3>製作這份報告的 AI 用量</h3><p>未量測</p></aside>
+<section id="usage">
+  <h2>AI 用量</h2>
+  <p class="lead">這份報告的 AI 用量未量測。</p>
+</section>
+
 <footer class="foot">由 <code>pnpm report morpho/vault-deposit --instance-of hyperithm-usdc-apex-v2-9e2f --record</code> 從 <code>templates/morpho/vault-deposit/template.json</code>、<code>templates/morpho/vault-deposit/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/morpho-vault-deposit/hyperithm-usdc-apex-v2-9e2f.json</code>、<code>testdata/abi</code>、<code>testdata/research/morpho-vault-deposit-v2.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/morpho/vault-deposit/notes.json</code>、<code>templates/morpho/vault-deposit/instances/hyperithm-usdc-apex-v2-9e2f/notes.json</code> 寫出，資料在 2026-11-25 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
 
 </div>

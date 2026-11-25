@@ -11,7 +11,7 @@
  "studiedWith": {
   "template": "0x73d152f3283d07ac245108b5462c02cedf55bbaf0f5c03fcddcf5cbe8574afc2",
   "registry": "0x29e5c40b03d1ff697e20950b77b17466eb8b11a4b637dc222b5952a1c276fd9e",
-  "study": "0x94bfaaffbfc8c7dbc5b3874bc31cfe270d787964a427798536f92503545477bb"
+  "study": "0xb596923b6c289246962b4c2a301475010e93cfa8db57d91a981943ffeaa1e73d"
  },
  "search": {
   "coverage": {
@@ -83,6 +83,7 @@
   {
    "kind": "misfit",
    "hash": "0xab441a5287fdca19089dcd7256fc77faa9a325c2a2dc2c23a2e3f87bc7c03b3b",
+   "block": "26485742",
    "sender": {
     "kind": "safe",
     "address": "0xd4f1eacdd7ccd70d6eefe4ef511184ed7b2484c9"
@@ -99,7 +100,8 @@
       "selector": "0x85b77f45"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -162,7 +164,8 @@
     "0xc045ef76537a09f0f34de404ded0d57c14f1df69",
     "10000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795532099"
   },
   {
    "kind": "not-studied",
@@ -316,7 +319,8 @@
     "0xd7594e1f1edd7669e174f8531ea9ad10d9e982b8",
     "1100110000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795532327"
   },
   {
    "kind": "not-studied",
@@ -372,7 +376,8 @@
     "0xe83a5398868d2c7ac9bf0423e693d38e95bc72d1",
     "1530000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795532399"
   },
   {
    "kind": "fit",
@@ -401,7 +406,8 @@
     "0x6fa5b6d93e2539caea358518d3fe8f75418e5a1d",
     "3800000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795532423"
   },
   {
    "kind": "not-studied",
@@ -499,7 +505,8 @@
     "0xd290b5bb287931454ea59e96111beb7b8f2996b9",
     "500000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795532567"
   },
   {
    "kind": "not-studied",
@@ -542,7 +549,8 @@
     "0xce43851485f437005ef3c1821e250c4d3c53b946",
     "81000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795532591"
   },
   {
    "kind": "not-studied",
@@ -626,7 +634,8 @@
     "0x7a27f9586d0895f045b80b3fb1d9d6ef4d54e9bc",
     "419363000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795532795"
   },
   {
    "kind": "not-studied",
@@ -738,7 +747,8 @@
     "0x7f000ddc2211cd48c15548d2a3cb6004d4fed22a",
     "98000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795532915"
   },
   {
    "kind": "not-studied",
@@ -774,7 +784,8 @@
     "0xc55b68e4e97a945b150c0c6865a3cb4c22ccefd4",
     "3380000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795532987"
   },
   {
    "kind": "not-studied",
@@ -859,7 +870,8 @@
     "0xce43851485f437005ef3c1821e250c4d3c53b946",
     "1651666443"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533131"
   },
   {
    "kind": "not-studied",
@@ -916,7 +928,8 @@
     "0x908c2d54e1e0bcaadab9c4cd5a706314b319454a",
     "5901340000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533203"
   },
   {
    "kind": "fit",
@@ -944,7 +957,8 @@
     "0x6ab536bc3d486cfb0b4b59f4054c1071009720ef",
     "1000000001"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533203"
   },
   {
    "kind": "fit",
@@ -972,7 +986,8 @@
     "0x7f000ddc2211cd48c15548d2a3cb6004d4fed22a",
     "195510000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533203"
   },
   {
    "kind": "not-studied",
@@ -1015,7 +1030,8 @@
     "0x3155624211770e9c92709a2e46a5612f0f42d1e6",
     "84182663"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533287"
   },
   {
    "kind": "not-studied",
@@ -1051,7 +1067,8 @@
     "0x2b83357a520df33ebc05658a533a6b8006606020",
     "10000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533359"
   },
   {
    "kind": "not-studied",
@@ -1121,7 +1138,8 @@
     "0x8095962e43c5be63381ed1acb72d7ff373de4a4c",
     "43597301245"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533383"
   },
   {
    "kind": "fit",
@@ -1149,7 +1167,8 @@
     "0x39431b3c875c8492aaad2359b4387151b769c5f7",
     "100000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533407"
   },
   {
    "kind": "fit",
@@ -1177,7 +1196,8 @@
     "0x3bd71353509f887b53d66b125f2625adf044c863",
     "4479998988"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533407"
   },
   {
    "kind": "not-studied",
@@ -1196,6 +1216,7 @@
   {
    "kind": "misfit",
    "hash": "0xd60a181658457702593377c1a78a828cb49edf156f3a0551e5dd3dd3ee0c7cc5",
+   "block": "26485859",
    "sender": {
     "kind": "safe",
     "address": "0xd4f1eacdd7ccd70d6eefe4ef511184ed7b2484c9"
@@ -1208,7 +1229,8 @@
       "selector": "0x85b77f45"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1244,7 +1266,8 @@
     "0x466ba3edd0783b0e0e675b50e7e59396b0433064",
     "5000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533479"
   },
   {
    "kind": "not-studied",
@@ -1315,7 +1338,8 @@
     "0xd5604b34a41a753229cf11eea3e43de0e3bd10bc",
     "20000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533599"
   },
   {
    "kind": "fit",
@@ -1343,7 +1367,8 @@
     "0x02af14c68da5e8ccddc2b95b6f4c31965c91713f",
     "1000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533623"
   },
   {
    "kind": "not-studied",
@@ -1434,7 +1459,8 @@
     "0xb8defe4c4d2e251984fd1a0614d84e46e28693b7",
     "697000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533707"
   },
   {
    "kind": "not-studied",
@@ -1469,7 +1495,8 @@
     "0x1e31ec090ac5ab37a370b884d8357828df7b79a9",
     "7000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533731"
   },
   {
    "kind": "fit",
@@ -1498,7 +1525,8 @@
     "0x6642c749e36c0376c6b83ce5f2ac74227d6150a0",
     "4071600000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533731"
   },
   {
    "kind": "not-studied",
@@ -1533,7 +1561,8 @@
     "0xafc07c622998c83b3ce755c0fa969657194966f9",
     "291060000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533767"
   },
   {
    "kind": "not-studied",
@@ -1569,7 +1598,8 @@
     "0x0510b1a8b756836e0563358737d445aa8589cfe7",
     "424630000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533803"
   },
   {
    "kind": "fit",
@@ -1597,7 +1627,8 @@
     "0x78a0d7c68e24345617414d7ed6e82f7395fb2617",
     "68600000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533815"
   },
   {
    "kind": "not-studied",
@@ -1653,7 +1684,8 @@
     "0x47e8cddfb952149375fc1f16f24ef03238ccd3c7",
     "2024340000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533887"
   },
   {
    "kind": "not-studied",
@@ -1689,7 +1721,8 @@
     "0xd07e6ab4b75b3da5a96b5e81064a65fc04f98814",
     "433080000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533935"
   },
   {
    "kind": "not-studied",
@@ -1708,6 +1741,7 @@
   {
    "kind": "misfit",
    "hash": "0x8bbf403804e6bfd57cd6b210062c218ebdc994c1ee8cbd555fc248c3337017c6",
+   "block": "26485903",
    "sender": {
     "kind": "safe",
     "address": "0xc613b5c2bff2955761c27fc3bfc4e91ce12472a7"
@@ -1720,7 +1754,8 @@
       "selector": "0x6bbba4e0"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1762,7 +1797,8 @@
     "0x47e8cddfb952149375fc1f16f24ef03238ccd3c7",
     "6739480000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795533995"
   },
   {
    "kind": "not-studied",
@@ -1819,7 +1855,8 @@
     "0xd03b30f9ed6821d838bfb3b1f1914c297500985d",
     "1800000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795534067"
   },
   {
    "kind": "not-studied",
@@ -1862,7 +1899,8 @@
     "0x87d5cc11b33baaaf696acc3e91b61078933e4fb5",
     "51627996"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795534139"
   },
   {
    "kind": "not-studied",
@@ -1918,7 +1956,8 @@
     "0x8e1af86bae17634884a2a1babcc99d922bc6455a",
     "66473000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795534223"
   },
   {
    "kind": "not-studied",
@@ -1982,7 +2021,8 @@
     "0x9c2e658ffc8ea7fad00a4829bd4b554e8a716f73",
     "110819000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795534355"
   },
   {
    "kind": "not-studied",
@@ -2017,7 +2057,8 @@
     "0x5573aeecfa9a0adf44a92cd4e70cef536eec5962",
     "80000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795534451"
   },
   {
    "kind": "fit",
@@ -2046,7 +2087,8 @@
     "0xf59c8ea3ebe0d24e19db68261868a301accb2a70",
     "9000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795534487"
   },
   {
    "kind": "not-studied",
@@ -2095,7 +2137,8 @@
     "0x39b8dc750e7b96211e0526f7025cc26058086d99",
     "7458361422"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795534547"
   },
   {
    "kind": "fit",
@@ -2124,7 +2167,8 @@
     "0x991baecb8bcf1f870eaf4f337992afbde8cebd72",
     "591500"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795534547"
   },
   {
    "kind": "not-studied",
@@ -2201,7 +2245,8 @@
     "0x593cae3d38e7aba4b51f9ed436aa306dd7da07af",
     "17000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795534763"
   },
   {
    "kind": "fit",
@@ -2230,7 +2275,8 @@
     "0x2304085f618c372d76fda6395407dcd4bba2b381",
     "130000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795534811"
   },
   {
    "kind": "fit",
@@ -2259,11 +2305,13 @@
     "0x64464d547d33ccb8bfffa910ce436d5f9b94b7fa",
     "400000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795534871"
   },
   {
    "kind": "misfit",
    "hash": "0xc0f3fb577f2755a0bee0de8bdf977fd52301c53168cb632ad27c3a64b73bee38",
+   "block": "26485980",
    "sender": {
     "kind": "safe",
     "address": "0x9a3365dcec93dfc9d539a500e72155678b4fe8c0"
@@ -2280,7 +2328,8 @@
       "selector": "0xac9650d8"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2323,7 +2372,8 @@
     "0xce43851485f437005ef3c1821e250c4d3c53b946",
     "460000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795534931"
   },
   {
    "kind": "not-studied",
@@ -2358,7 +2408,8 @@
     "0xa339a456502fbe378376197293db6bc25ed41aac",
     "634000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795534967"
   },
   {
    "kind": "fit",
@@ -2386,7 +2437,8 @@
     "0x91e43c9616704b632ae2ca41371e7384bb53b8a4",
     "1000352124"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795534991"
   },
   {
    "kind": "not-studied",
@@ -2477,7 +2529,8 @@
     "0xbd15fd4a44d6eec231db32f15bcd791d00ab97cd",
     "100000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795535195"
   },
   {
    "kind": "not-studied",
@@ -2534,7 +2587,8 @@
     "0xce43851485f437005ef3c1821e250c4d3c53b946",
     "1419800000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795535291"
   },
   {
    "kind": "not-studied",
@@ -2570,7 +2624,8 @@
     "0x4dee266213d7c71dd3fad2f711de673c0daa9532",
     "184000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795535363"
   },
   {
    "kind": "fit",
@@ -2598,7 +2653,8 @@
     "0x3834113db9157eb517db4f9aeb5e7752e0461508",
     "50000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795535363"
   },
   {
    "kind": "not-studied",
@@ -2703,7 +2759,8 @@
     "0xb0395974372792034b7631cebf280e12bb5ffcb4",
     "128000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795535507"
   },
   {
    "kind": "not-studied",
@@ -2739,7 +2796,8 @@
     "0x26ca8b8246f03654dc24aa6adc91038fcfe9f315",
     "539850000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795535567"
   },
   {
    "kind": "not-studied",
@@ -2789,7 +2847,8 @@
     "0x71682aed34a2da8ef5bc23fdd9bf45170efb91c3",
     "655051142"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795535639"
   },
   {
    "kind": "not-studied",
@@ -2832,7 +2891,8 @@
     "0xbbbb77c73ac32bb4723eb15b68489c31a454bd95",
     "22871404"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795535687"
   },
   {
    "kind": "not-studied",
@@ -2867,7 +2927,8 @@
     "0xed0994296d81ceda731b9aa4f74e72179cc87c28",
     "2050000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795535747"
   },
   {
    "kind": "fit",
@@ -2896,7 +2957,8 @@
     "0x8d0cf1f7b6c522174cc61bd6b49a41c46b9e2f0c",
     "316127083"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795535747"
   },
   {
    "kind": "not-studied",

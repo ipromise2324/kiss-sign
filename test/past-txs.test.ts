@@ -13,6 +13,7 @@ import type { Transport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import type { Registry } from '../src/registry.ts';
 import { foundBy, pastTxs } from '../src/research/past-txs.ts';
+import { withBlockTimes } from './block-times.ts';
 import { renderPastTxs, spreadOf } from '../src/research/past-txs-render.ts';
 import { DEFAULT_SAMPLING, MAX_PAGES, YEAR_PAGES, samplingFields, samplingOf, scrubRecording } from '../src/research/recording.ts';
 import { replayMessages } from '../src/research/messages.ts';
@@ -540,7 +541,7 @@ const noAmounts = (): Template => {
 };
 
 function replayDroppingDrpc(hash: string, fails: number): Transport {
-  const replay = replayTransport(recording.exchanges, REPLAY_ENDPOINTS);
+  const replay = replayTransport(withBlockTimes(recording.exchanges), REPLAY_ENDPOINTS);
   let left = fails;
   return async (url, body, signal) => {
     if (url === REPLAY_ENDPOINTS[1].url && body.includes(hash) && left-- > 0) throw Object.assign(new Error('read ECONNRESET'), { code: 'ECONNRESET' });
@@ -551,7 +552,7 @@ function replayDroppingDrpc(hash: string, fails: number): Transport {
 test('a read that fails on the way is asked again, so a dropped connection that heals changes nothing', async () => {
   const unread: string[] = [];
   const reader = createReader(REPLAY_ENDPOINTS, replayDroppingDrpc(FIT, 2), { retryPausesMs: [0, 0], note: (read) => void unread.push(read) });
-  assert.equal(await report({ reader, template: noAmounts() }), await report({ template: noAmounts() }));
+  assert.equal(await report({ reader, template: noAmounts() }), await report({ reader: replayReader(withBlockTimes(recording.exchanges)), template: noAmounts() }));
   assert.deepEqual(unread, []);
 });
 

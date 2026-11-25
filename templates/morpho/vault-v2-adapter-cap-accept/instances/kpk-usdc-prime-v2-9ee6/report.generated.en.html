@@ -65,7 +65,7 @@ h1 .byai{vertical-align:6px}
 h1 .aiw>:first-child{margin-right:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
 .sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
-:is(.sub,h3,.intro,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
+:is(.sub,h3,.intro,.ans,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
 .verdict .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:flex;align-items:flex-start;gap:8px;font-size:var(--t-row);position:relative}
@@ -148,9 +148,19 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
 
-.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
-.key>span{display:inline-flex;gap:8px;align-items:center}
-.key .k0{color:var(--fg3);font-weight:590}
+.deciders{margin:36px 0 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}
+.deciders h3{margin:0 0 10px;font-size:var(--t-small);color:var(--fg2)}
+.deciders dl{margin:0;display:flex;flex-direction:column;gap:12px}
+.deciders .grp{display:grid;grid-template-columns:88px minmax(0,1fr);gap:0 16px;align-items:start}
+.deciders .gh{font-size:var(--t-small);line-height:24px;color:var(--fg);font-weight:590}
+.deciders .defs{margin:0;display:flex;flex-direction:column;gap:6px}
+.deciders .defs>div{display:grid;grid-template-columns:116px minmax(0,1fr);gap:0 14px;align-items:start;font-size:var(--t-small);line-height:24px;color:var(--fg2)}
+.deciders .who{justify-self:start}
+@media (max-width:560px){.deciders .grp{grid-template-columns:minmax(0,1fr)}}
+.mix{margin:10px 0 12px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 16px;align-items:start}
+.mix dt{justify-self:start}
+.mix dd{margin:0;display:flex;flex-wrap:wrap;gap:6px;line-height:24px}
+.mix code{font-size:var(--t-label)}
 .cb{margin-top:40px}
 .callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
 .callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
@@ -249,14 +259,19 @@ details.fold[open]>summary .chev{transform:rotate(90deg)}
 details.fold .ad:last-child{border-bottom:0}
 
 .warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
-.pblock{border-top:1px solid var(--line);margin-top:16px}
-.ph{display:flex;flex-direction:column;gap:4px;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
-.ph .pt{font-weight:590}
-.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
-.pg .pc{color:var(--fg)}
-.pg .pcalls{margin-bottom:4px}
-.pg .pex{font-size:var(--t-small);margin-top:4px}
-.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+.ans{margin:0 0 10px;color:var(--fg2)}
+.ans b{color:var(--fg)}
+.cap{margin:8px 0 0;font-size:var(--t-small);color:var(--fg3)}
+.lm{color:var(--warn)}
+.sh{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-size:var(--t-small);color:var(--fg2);margin-top:18px}
+.sc{overflow-x:auto;margin:12px 0 8px}
+.pt2{border-collapse:collapse;width:100%;font-size:var(--t-small);font-variant-numeric:tabular-nums}
+.pt2 th{font-size:var(--t-label);font-weight:400;color:var(--fg3);text-align:left;padding:6px 16px 6px 0;border-bottom:1px solid var(--line2);white-space:nowrap}
+.pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
+.pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
+.pt2 .n{text-align:right}
+.pt2 td.nw{white-space:nowrap}
+.pt2 td.v{color:var(--fg);font-weight:590}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -271,13 +286,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
 .auto li{display:flex;gap:10px;align-items:baseline}
 .auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
-.usage{font-size:var(--t-small);color:var(--fg3);margin-bottom:28px}
-.usage h3{font-size:var(--t-row);color:var(--fg2);margin:0 0 6px}
-.usage p{margin:0}
-.usage table{border-collapse:collapse;margin:10px 0}
-.usage th,.usage td{padding:6px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left}
-.usage th+td,.usage th+th{padding-left:32px;text-align:right}
-.usage tfoot th,.usage tfoot td{color:var(--fg);border-bottom:0}
+.ut{border-collapse:collapse;width:100%;margin:16px 0 12px;font-size:var(--t-row)}
+.ut th,.ut td{padding:9px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left;color:var(--fg2)}
+.ut thead th{font-size:var(--t-label);color:var(--fg3);border-bottom-color:var(--line2)}
+.ut th+td,.ut th+th{text-align:right;font-variant-numeric:tabular-nums}
+.ut tfoot th,.ut tfoot td{color:var(--fg);font-weight:590;border-bottom:0}
 .foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
 .foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
@@ -298,7 +311,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="Contents">
   <h2>Contents</h2>
-  <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">Instance</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">5</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">Instance</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">5</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li><li><a href="#usage">AI usage</a></li></ol>
 </nav>
 
 <div class="main">
@@ -321,7 +334,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="ok"><span class="lbl">Advice</span><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span class="aiw" data-ai><span>OK to use. KPK&#39;s docs, CoinGecko and the factory all confirm this vault.</span><span class="byai">AI research: OK to use</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
-    <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">Instance</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">5</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+    <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">Instance</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">5</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li><li><a href="#usage">AI usage</a></li></ol>
   </details>
 </header>
 
@@ -373,11 +386,15 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </svg>
   </div>
   <div class="scrollhint">Scroll the diagram sideways; kpk-usdc-prime-v2-9ee6 is at the far right</div>
-  <div class="key">
-    <span class="k0">Who decides</span>
-    <span><span class="who you">you type</span>typed at each signing</span>
-    <span><span class="who you">you pick</span>picked at each signing</span>
-    <span><span class="who">fixed</span>any change is a MISMATCH</span>
+  <div class="deciders">
+    <h3>Who decides each value</h3>
+    <dl>
+      <div class="grp"><dt class="gh">You</dt><dd class="defs">
+        <div><span class="who you">you type</span><span>You type it at each signing.</span></div>
+        <div><span class="who you">you pick</span><span>You pick it from a list at each signing.</span></div></dd></div>
+      <div class="grp"><dt class="gh">kiss-sign</dt><dd class="defs">
+        <div><span class="who">fixed</span><span>The template sets it. Any change is a MISMATCH.</span></div></dd></div>
+    </dl>
   </div>
   <p class="lead keylead">The transaction&#39;s calls, one by one. Each argument shows who decides it, its value or the rule it must follow, and what it does.</p>
   
@@ -571,25 +588,20 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>Past transactions</h2>
-  <p class="lead">In past records, <span class="num">1</span> transaction matches the template exactly, made the way yours is: Safe <span class="num">1</span> (1 Safe), EOA <span class="num">0</span>. It succeeded: it was found through the event logs of kpk-usdc-prime-v2-9ee6 IncreaseAbsoluteCap, and a failed transaction leaves no such log. The latest 1 exact match: <a href="https://etherscan.io/tx/0xc86672ea25ab95736afedcd4e77859b2c6a5e51a563b606ee79d8c6a2ba813fb">0xc86672ea…</a>.</p>
-  <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span><span class="num">5</span> more differ from yours: <span class="num">0</span> have the same shape but with an address outside the registry, <span class="num">5</span> have another shape</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>One Safe transaction accepted 18 cap ids at once, and EOAs accepted two cap ids together; each gives MISMATCH.</span><span class="byai">AI research</span></span></p>
-  <p class="lead">Only transactions that used this operation&#39;s calls count. An exact match has the template&#39;s calls and argument positions, meets every rule the transaction itself can show (such as where the sender goes, or a fixed value), and uses a contract the template allows wherever the template binds a registry contract. Same shape but a market, token, vault or address outside the registry means the calls, argument positions and those rules are the same, but an address or market is not in the registry; the kind is named when the record shows it, otherwise only address. The rest are grouped by reason, each with up to 3 examples.</p>
+  <h3>1. Has this template&#39;s transaction worked before?</h3>
+  <p class="ans"><b>Yes, 1 time, by 1 Safe.</b> EOA: 0. The newest ran on block 24929062. All of them succeeded.</p>
+  <h3>2. What values are normal in what the app fills?</h3>
+  <p class="ans">This template leaves no value for the app to fill.</p>
+  <h3>3. How did the others differ?</h3>
+  <p class="ans">5 transactions did something this template refuses.</p>
+  <p class="ans"><span class="aiw" data-ai><span>One Safe transaction accepted 18 cap ids at once, and EOAs accepted two cap ids together; each gives MISMATCH.</span><span class="byai">AI research</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="nw">Example</th></tr></thead><tbody>
+    <tr><td class="what"><code>multicall.data</code> has 4 items; the template has 2, calling <code>kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap</code></td><td class="n"><span class="num">0</span></td><td class="n"><span class="num">3</span></td><td class="nw">block 26397987</td><td class="nw"><a href="https://etherscan.io/tx/0xa5840cb778a0f9d65c789dbee8369f1d639b9b604fd12fff190cae1b53c15fb9">0xa5840cb7…</a></td></tr>
+    <tr><td class="what"><code>multicall.data</code> has 36 items; the template has 2</td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">block 24936786</td><td class="nw"><a href="https://etherscan.io/tx/0xc369256e0ce7944761dad6eb047953e1db2a0b99738cd37109c5268e84c421f4">0xc369256e…</a></td></tr>
+    <tr><td class="what">The data is not the standard encoding of <code>capId(string,address)</code></td><td class="n"><span class="num">0</span></td><td class="n"><span class="num">1</span></td><td class="nw">block 25223050</td><td class="nw"><a href="https://etherscan.io/tx/0xe060c571f3cc0b2acec58078edd5addd6f38fde7fcd408cb4f09efcc1d68e79c">0xe060c571…</a></td></tr></tbody></table></div>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>How the program searched</span></summary>
   <h3>Search of kpk-usdc-prime-v2-9ee6 IncreaseAbsoluteCap: 6 found, 6 studied</h3>
-  <p class="lead">Recorded in <code>testdata/research/morpho-vault-v2-adapter-cap-accept-kpk-usdc-prime-v2-9ee6.json</code>. Only Etherscan searches an event, and found <span class="num">6</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">2</span> transactions used this operation&#39;s calls (1 Safe); <span class="num">1</span> matches the template exactly.</span></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap</code></div><div><code>data</code> has 36 items; the template has 2<span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xc369256e0ce7944761dad6eb047953e1db2a0b99738cd37109c5268e84c421f4">0xc369256e…</a></div></div></div>
-  </div>
-  <div class="pblock">
-    <div class="ph"><span class="pt">EOA calls multicall directly</span><span><span class="num">4</span> transactions used this operation&#39;s calls (3 addresses); <span class="num">0</span> match the template exactly.</span></div>
-    <div class="pg"><span class="pc num">3</span><div><div class="pcalls"><code>kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap</code></div><div><code>data</code> has 4 items; the template has 2<span class="f3">, from 3 addresses</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x9abea3527ada54ebb0fc873a21ca044aa16daacbaa64f68330fce3531f96d00d">0x9abea352…</a>, <a href="https://etherscan.io/tx/0x62e2257bdfc1ccf730fe1ab46d588e2ed41e7f62267937533859d2eef57b973c">0x62e2257b…</a>, <a href="https://etherscan.io/tx/0xa5840cb778a0f9d65c789dbee8369f1d639b9b604fd12fff190cae1b53c15fb9">0xa5840cb7…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div><code>call.multicall.data[0].increaseAbsoluteCap.idData.encoding</code> differs from the template: the template wants <span class="addr">canonical capId(string,address)</span>, the transaction has <span class="addr">differs at byte 295</span><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xe060c571f3cc0b2acec58078edd5addd6f38fde7fcd408cb4f09efcc1d68e79c">0xe060c571…</a></div></div></div>
-  </div>
+  <p class="cap">Only Etherscan searches an event, and found <span class="num">6</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
+  <p class="cap">These transactions were found through event logs, and a failed transaction leaves none.</p>
   </details>
 </section>
 
@@ -634,7 +646,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<aside class="usage"><h3>AI usage to make this report</h3><p>Not measured</p></aside>
+<section id="usage">
+  <h2>AI usage</h2>
+  <p class="lead">The AI usage of this report was not measured.</p>
+</section>
+
 <footer class="foot">Written by <code>pnpm report morpho/vault-v2-adapter-cap-accept --instance-of kpk-usdc-prime-v2-9ee6 --record</code> from <code>templates/morpho/vault-v2-adapter-cap-accept/template.json</code>, <code>templates/morpho/vault-v2-adapter-cap-accept/docs.json</code>, <code>templates/morpho/vault-v2-adapter-cap-accept/instances/kpk-usdc-prime-v2-9ee6/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/morpho-vault-v2-adapter-cap-accept/kpk-usdc-prime-v2-9ee6.json</code>, <code>testdata/abi</code>, <code>testdata/research/morpho-vault-v2-adapter-cap-accept-kpk-usdc-prime-v2-9ee6.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/morpho/vault-v2-adapter-cap-accept/notes.json</code>, <code>templates/morpho/vault-v2-adapter-cap-accept/instances/kpk-usdc-prime-v2-9ee6/notes.json</code>; the data was read on 2026-11-17. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
 
 </div>

@@ -385,18 +385,18 @@ test('every report ends with the AI usage that made it, or says it was not measu
   const usage = { kind: 'full', models: ['claude-opus-5-5'], calls: 71, minutes: 74, input: 10_000, cacheWrite: 180_000, cacheRead: 5_400_000, output: 30_000 } as const;
   const usageOf = (of: HtmlInputs, language: Language) => {
     const html = renderPage(buildPage(of, notesOf(id), title, language));
-    assert.match(html, /<\/section>\s*<aside class="usage">.*<\/aside>\s*<footer/);
-    return [...(/<aside class="usage">(.*)<\/aside>/.exec(html)?.[1] ?? '').matchAll(/<(?:h3|p|th|td)(?: [^>]*)?>(.*?)<\/(?:h3|p|th|td)>/g)].map((m) => m[1]);
+    assert.match(html, /<\/section>\s*<section id="usage">[^]*<\/section>\s*<footer/);
+    return [...(/<section id="usage">(.*?)<\/section>/s.exec(html)?.[1] ?? '').matchAll(/<(?:h2|p|th|td)(?: [^>]*)?>(.*?)<\/(?:h2|p|th|td)>/g)].map((m) => m[1]);
   };
   const full = usageOf({ ...judged, usage }, 'zh-TW');
   assert.deepEqual(full, [
-    '製作這份報告的 AI 用量',
-    'Opus 5.5 · 呼叫 71 次 · 74 分鐘',
+    'AI 用量',
+    'Opus 5.5 用 71 次呼叫、74 分鐘做出這份報告。',
     ...['項目', 'token', '重複讀取（cache 讀取）', '5.4M', '新讀入（input 與 cache 寫入）', '0.19M', 'output', '0.03M', '總共', '5.6M'],
-    '來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者',
+    '來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者。這些數字程式不檢查。',
   ]);
-  assert.deepEqual(usageOf({ ...judged, usage: { ...usage, kind: 'past-txs-rerun' } }, 'zh-TW'), [...full.slice(0, -1), '這次只重跑過去交易的搜尋，用量只算這部分', full.at(-1)]);
-  assert.deepEqual(usageOf({ ...judged, usage: undefined }, 'zh-TW'), ['製作這份報告的 AI 用量', '未量測']);
+  assert.deepEqual(usageOf({ ...judged, usage: { ...usage, kind: 'past-txs-rerun' } }, 'zh-TW'), [...full.slice(0, -1), '這次只重跑過去交易的搜尋，用量只算這部分。', full.at(-1)]);
+  assert.deepEqual(usageOf({ ...judged, usage: undefined }, 'zh-TW'), ['AI 用量', '這份報告的 AI 用量未量測。']);
   assert.deepEqual(usageOf({ ...judged, usage }, 'en').slice(2, -1), ['Item', 'Tokens', 'Re-read (cache reads)', '5.4M', 'Newly read (input and cache writes)', '0.19M', 'Output', '0.03M', 'Total', '5.6M']);
 });
 
@@ -442,7 +442,7 @@ test('下一步 ends every signer report, each command alone in its own block wi
     const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
     const recipient = [...template.card.values()].some((field) => field.kind === 'recipient' || field.kind === 'owner');
     const section = nextSteps(html);
-    assert.ok(html.lastIndexOf('<section') < html.indexOf('id="next"'), `${id}: 下一步 is the last section`);
+    assert.match(html.slice(html.indexOf('<section id="next">')), /^<section id="next">[^]*?<\/section>\s*<section id="usage">/, `${id}: only AI 用量 follows 下一步`);
     assert.deepEqual(commands(section), [
       `pnpm kiss-sign template approve ${target.template}`,
       ...(recipient ? ['pnpm kiss-sign book add <name> <address>'] : []),
@@ -545,7 +545,7 @@ test("a newest-first search's lead says which blocks it read whole and their dat
   const lead = (language: Language, coverage: Coverage | undefined): string => {
     const search: SearchRun = coverage === undefined ? { kind: 'windows', year: undefined, windows: [], perWindow: 0 } : { kind: 'newest-first', coverage, safesFirst };
     const page = renderPage(buildPage({ ...judged, pastTxs: [{ ...first, run: { ...first.run, search } }, ...rest] }, notesOf(id), title, language));
-    return /<h3>(?:Search of|搜尋)[^<]*<\/h3>\s*<p class="lead">([^\n]*)<\/p>/.exec(page)?.[1] ?? assert.fail(`${language}: a search lead`);
+    return /<h3>(?:Search of|搜尋)[^<]*<\/h3>\s*<p class="cap">([^\n]*)<\/p>/.exec(page)?.[1] ?? assert.fail(`${language}: a search lead`);
   };
   const time = { from: 1_789_280_000n, to: 1_790_000_000n };
   const recent: Coverage = { kind: 'recent', range: { fromBlock: 26378401n, toBlock: 26438400n }, pages: 50, time };
@@ -568,7 +568,7 @@ test("a newest-first search's lead says which blocks it read whole and their dat
     assert.ok(lead(language, recent).includes(withCap), `${language}: ${lead(language, recent)}`);
     assert.ok(lead(language, year).includes(whole), `${language}: ${lead(language, year)}`);
     assert.ok(lead(language, { ...recent, time: undefined }).includes(timeless), `${language}: ${lead(language, { ...recent, time: undefined })}`);
-    assert.equal(lead(language, recent).replace(withCap, '').replace(/\s+/g, ' '), older.replace(/\s+/g, ' '), 'the sentence is all a newest-first search adds');
+    assert.equal(lead(language, recent).replace(withCap, '').replace(/\s+/g, ' ').trim(), older.replace(/\s+/g, ' '), 'the sentence is all a newest-first search adds');
     assert.doesNotMatch(older, /newest first|往回/, 'an older recording of the windows says nothing of its range');
   }
 });
@@ -643,7 +643,7 @@ test('each To review item shows its state, grade, plain title and one-line concl
       const [open, folded] = row.split('<details class="more">') as [string, string];
       assert.match(open, /<svg class="i \w+"/, `${id}: the state icon stays open`);
       assert.match(open, new RegExp(`<div class="t"><span class="grade"><span class="vh">${WORDS[language].gradeName}</span>(${Object.values(WORDS[language].grade).join('|')})</span>[^<]+</div>`), `${id}: grade, named for a screen reader, and a plain title stay open`);
-      assert.doesNotMatch(/<div class="t">.*?<\/div>/.exec(open)?.[0] ?? '', /<code>|0x[0-9a-fA-F]{40}/, `${id}: no address or code in the title`);
+      if (!row.includes('data-result="trace.')) assert.doesNotMatch(/<div class="t">.*?<\/div>/.exec(open)?.[0] ?? '', /<code>|0x[0-9a-fA-F]{40}/, `${id}: no address or code in the title`);
       assert.match(open, /<div class="rec"><span class="lbl">[^<]+<\/span><span class="aiw" data-ai>/, `${id}: the conclusion stays open`);
       assert.match(folded, /<div class="meta">/, `${id}: the details are folded`);
       const title = /<div class="t"><span class="grade"><span class="vh">[^<]*<\/span>[^<]*<\/span>([^<]+)<\/div>/.exec(open)?.[1] ?? assert.fail(id);
@@ -657,7 +657,7 @@ test('each To review item shows its state, grade, plain title and one-line concl
   assert.match(row, /AI has concerns<\/span>.*The program's only check is the factory: VaultV2Factory answers <code>isVaultV2<\/code> = true\.<\/span>/s);
   assert.doesNotMatch(row, /AI opened the vault's page/, 'the rest of the review is folded');
   const details = /<div class="row" data-state="warn" data-grade="key"[^>]*>.*?(<details.*?<\/details>)/s.exec(frozen)?.[1] ?? assert.fail('the key row');
-  assert.match(details, /<div class="meta">Confirmed in only 1 place: factory<\/div>/, 'the details name only what the title does not');
+  assert.match(details, /<div class="meta">Found only in factory: <span class="addr">0x[0-9a-fA-F]{40}<\/span>; at least 2 places are needed\.<a href="#a-/, 'the details name only where it was found, with the address');
   assert.match(details, /<div class="rec"><span class="aiw" data-ai><span>AI opened the vault's page/, 'the folded review starts after its open sentence');
 });
 
@@ -673,18 +673,18 @@ test('Next steps first asks the signer to open the sources the report lists for 
 const pastOf = (html: string): string => /<section id="past">.*?<\/section>/s.exec(html)?.[0] ?? assert.fail('a 過去交易 section');
 const textOf = (html: string): string => unescape(html.replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
 
-test("過去交易 leads with the transactions exactly like the signer's, keeps each FINDING open, and folds the rest under the one line that counts them", async () => {
+test("過去交易 leads with the transactions exactly like the signer's, says how the others differed, keeps each FINDING open, and folds how it searched", async () => {
   const { inputs, title } = pages.get(hyperithm()) ?? assert.fail('the frozen Hyperithm report');
   const page = buildPage(await withFixtures(hyperithm(), inputs), notesOf(hyperithm()), title, 'en');
-  const finding = { effect: 'gives amount', tolerance: 'exact', tokens: [], finding: 'beyond the tolerance', unmeasured: undefined };
-  const sections = page.sections.map((s) => (s.body.kind === 'past' ? { ...s, body: { ...s.body, amounts: [...s.body.amounts, finding] } satisfies Body } : s));
+  const finding = { effect: 'gives amount', tolerance: 'exact', tokens: [], outside: undefined, finding: 'beyond the tolerance', unmeasured: undefined };
+  const sections = page.sections.map((s) => (s.body.kind === 'past' && s.body.past !== undefined ? { ...s, body: { kind: 'past', past: { ...s.body.past, amounts: [finding] } } satisfies Body } : s));
   const past = pastOf(renderPage({ ...page, sections } satisfies Page));
-  const fold = past.indexOf('<details class="fold">');
-  assert.match(textOf(past.slice(0, fold)), /^Past transactions In past records, 32 transactions match the template exactly, made the way yours is: Safe 6 \(2 Safes\), EOA 26 /);
-  assert.ok(past.indexOf('FINDING: beyond the tolerance') > 0 && past.indexOf('FINDING: beyond the tolerance') < fold, 'a FINDING sits before the fold');
-  assert.equal(textOf(/<summary>(.*?)<\/summary>/s.exec(past.slice(fold))?.[1] ?? ''), '336 more differ from yours: 0 have the same shape but with an address outside the registry, 336 have another shape');
+  assert.match(textOf(past), /^Past transactions 1\. Has this template's transaction worked before\? Yes, 6 times, by 2 Safes\. EOA: 26 times, from 17 addresses, each sending one of the template's calls\. /);
+  const open = past.replace(/<details class="fold">.*?<\/details>/gs, '');
+  assert.ok(open.includes('FINDING: beyond the tolerance'), 'a FINDING is in no fold');
+  assert.match(textOf(open), /336 transactions did something this template refuses\./);
   const conclusion = (notesOf(hyperithm()) as { pastTxsConclusion: { en: string } }).pastTxsConclusion.en.split('`')[0] as string;
-  assert.ok(unescape(past).indexOf(conclusion) > unescape(past).indexOf('<details class="fold">'), "the AI's word on the other shapes is in the fold");
+  assert.ok(unescape(open).includes(conclusion), "the AI's word on the other shapes is open under how they differed");
 });
 
 test("an instance's context notes show in its section under their titles, each with the AI tag and its sources", async () => {

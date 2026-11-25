@@ -11,7 +11,7 @@
  "studiedWith": {
   "template": "0x73d152f3283d07ac245108b5462c02cedf55bbaf0f5c03fcddcf5cbe8574afc2",
   "registry": "0x6847cb06d8d87035cacb6eb867c3d5ed87adbc860e1ff98c85359d040029bcb1",
-  "study": "0x94bfaaffbfc8c7dbc5b3874bc31cfe270d787964a427798536f92503545477bb"
+  "study": "0xb596923b6c289246962b4c2a301475010e93cfa8db57d91a981943ffeaa1e73d"
  },
  "search": {
   "coverage": {
@@ -84,7 +84,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794414407"
   },
   {
    "kind": "not-studied",
@@ -96,6 +97,7 @@
   {
    "kind": "misfit",
    "hash": "0x93a6c47f15632c5e08f1d33b80f97bc09db46b28653a5ac53cca16402988fa65",
+   "block": "26393537",
    "sender": {
     "kind": "safe",
     "address": "0x7ab1daa0c03886af6f2c2b62afc434b8119843b9"
@@ -112,7 +114,8 @@
       "selector": "0x6e553f65"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -124,6 +127,7 @@
   {
    "kind": "misfit",
    "hash": "0x6db2ecb614c11e6d8aad94a3064670bfe0340e67e08d38562dc268ff41e4e593",
+   "block": "26394355",
    "sender": {
     "kind": "safe",
     "address": "0xd3cb0dc5ea9481b9e6361e975ac13a73c3183cf0"
@@ -140,7 +144,8 @@
       "selector": "0xea598cb0"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -173,7 +178,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794438827"
   },
   {
    "kind": "not-studied",
@@ -214,7 +220,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794447527"
   },
   {
    "kind": "not-studied",
@@ -282,7 +289,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794487835"
   },
   {
    "kind": "fit",
@@ -315,7 +323,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794487919"
   },
   {
    "kind": "fit",
@@ -348,7 +357,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794492107"
   },
   {
    "kind": "not-studied",
@@ -367,6 +377,7 @@
   {
    "kind": "misfit",
    "hash": "0x8163428d4dcbb619530bac09f18e3d261dfa67772fed7f2d31450a4dabdd1f51",
+   "block": "26400303",
    "sender": {
     "kind": "safe",
     "address": "0x2a9e6c6aca248dca83a8fb5c1f19de79c522da65"
@@ -379,11 +390,13 @@
       "selector": "0xea598cb0"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xb886e21cc875a2bade1801eca6236638e15b07158bc37f7b2eed9110221adce5",
+   "block": "26400347",
    "sender": {
     "kind": "safe",
     "address": "0xba8c3dd56154bde7635253b8dbe4cce6b84c5f74"
@@ -396,7 +409,8 @@
       "selector": "0x6a761202"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -430,7 +444,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794508943"
   },
   {
    "kind": "not-studied",
@@ -449,6 +464,7 @@
   {
    "kind": "misfit",
    "hash": "0x9b784c03947d6456433b28f3a7720ca94bb07f80d8d638637e6f8497af35f1a0",
+   "block": "26402968",
    "sender": {
     "kind": "eoa",
     "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
@@ -459,7 +475,8 @@
     "at": "call.encoding",
     "expected": "canonical transfer(address,uint256)",
     "actual": "differs at byte 68"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -513,6 +530,7 @@
   {
    "kind": "misfit",
    "hash": "0xbded00322033f43b762073ab4b6d6d6b2d902268165bd5940fc7a49c4d2f933e",
+   "block": "26405425",
    "sender": {
     "kind": "safe",
     "address": "0xa0925d00a2f7659176bc51820944098bbf7298c7"
@@ -529,7 +547,8 @@
       "selector": "0xd6681042"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -569,11 +588,13 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794568259"
   },
   {
    "kind": "misfit",
    "hash": "0x264f5a7622f7e75f57e8fcd8099a307784dbac97c91b6b18cad5f60c25a8676f",
+   "block": "26405987",
    "sender": {
     "kind": "eoa",
     "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
@@ -584,7 +605,8 @@
     "at": "call.encoding",
     "expected": "canonical transfer(address,uint256)",
     "actual": "differs at byte 68"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -596,6 +618,7 @@
   {
    "kind": "misfit",
    "hash": "0x58cf60104a219851e602804c374de8187164630c211ef72b15f9eb167829e883",
+   "block": "26407309",
    "sender": {
     "kind": "safe",
     "address": "0xe2a682a9722354d825d1bbdf372cc86b2ea82c8c"
@@ -616,7 +639,8 @@
       "selector": "0xa9059cbb"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -677,7 +701,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794624239"
   },
   {
    "kind": "not-studied",
@@ -689,6 +714,7 @@
   {
    "kind": "misfit",
    "hash": "0x64652941de55b246587857ea3d21fb948b03b23abb2f4a02167a8b665502f305",
+   "block": "26411233",
    "sender": {
     "kind": "safe",
     "address": "0x946802757d0ec3e07dee2b746ccfc297962c7fd8"
@@ -705,11 +731,13 @@
       "selector": "0xea598cb0"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xa8f3fe1fcc58ee437d794bad04ee50723ef0c04361ba6209e71542e4e0d71fe4",
+   "block": "26411240",
    "sender": {
     "kind": "safe",
     "address": "0x947d1c903f9d27d6b21cdde87e699704e2198268"
@@ -726,7 +754,8 @@
       "selector": "0xea598cb0"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -759,7 +788,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794639467"
   },
   {
    "kind": "not-studied",
@@ -771,6 +801,7 @@
   {
    "kind": "misfit",
    "hash": "0x460839715f8c4351fadeaa17c122f7d4ac5d6c26ea2e4ed0ca9c383095ff6439",
+   "block": "26412168",
    "sender": {
     "kind": "safe",
     "address": "0x1c029d3c084e7e3830cda7b3a57b65dc0a61d7d8"
@@ -787,7 +818,8 @@
       "selector": "0xd6681042"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -841,7 +873,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794664247"
   },
   {
    "kind": "fit",
@@ -874,7 +907,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794664487"
   },
   {
    "kind": "not-studied",
@@ -914,7 +948,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794670367"
   },
   {
    "kind": "not-studied",
@@ -954,7 +989,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794671135"
   },
   {
    "kind": "fit",
@@ -987,7 +1023,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794671219"
   },
   {
    "kind": "fit",
@@ -1020,11 +1057,13 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794671531"
   },
   {
    "kind": "misfit",
    "hash": "0x0d936437486d35b5493c95dece15248a6e299825110b5a1b7f118f79d8b64357",
+   "block": "26414451",
    "sender": {
     "kind": "safe",
     "address": "0xf1482b34c0d6a9bfbf04258b0d6c7bf3aa067189"
@@ -1041,7 +1080,8 @@
       "selector": "0xea598cb0"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1088,7 +1128,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794674903"
   },
   {
    "kind": "not-studied",
@@ -1163,7 +1204,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794699791"
   },
   {
    "kind": "not-studied",
@@ -1175,6 +1217,7 @@
   {
    "kind": "misfit",
    "hash": "0xa32d5a6760962742f2049a2de1ee38c8ac335aba6a52f2d21209473f0550d221",
+   "block": "26416904",
    "sender": {
     "kind": "safe",
     "address": "0xa4e07a93e0be4604a9539d8add1fc71c9b8ef2dd"
@@ -1191,7 +1234,8 @@
       "selector": "0xa9059cbb"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1210,6 +1254,7 @@
   {
    "kind": "misfit",
    "hash": "0x27ca32d2676b4ba40de809706d4ff828e6fa9c6472a80b527e49ed3583453e52",
+   "block": "26417791",
    "sender": {
     "kind": "safe",
     "address": "0x71c6383f5d147db0232e3dc9563874d43f962ec1"
@@ -1226,7 +1271,8 @@
       "selector": "0xea598cb0"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1273,7 +1319,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794728255"
   },
   {
    "kind": "fit",
@@ -1306,7 +1353,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794728687"
   },
   {
    "kind": "not-studied",
@@ -1402,7 +1450,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794765923"
   },
   {
    "kind": "not-studied",
@@ -1449,6 +1498,7 @@
   {
    "kind": "misfit",
    "hash": "0x61a92c2b638ecefb1056d1704f954a8e4dc60ed3dd13d9b6e610c8281333a43a",
+   "block": "26426608",
    "sender": {
     "kind": "safe",
     "address": "0x78c1938f3e7c623ff2c00417e5d7feeb82424b47"
@@ -1465,7 +1515,8 @@
       "selector": "0xea598cb0"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1491,6 +1542,7 @@
   {
    "kind": "misfit",
    "hash": "0xabe26427b2ae167be572ff8d745b7c04f95fe4d6d01df45b94017e068b8ce118",
+   "block": "26428065",
    "sender": {
     "kind": "safe",
     "address": "0x03d4969997a6f6cf8b8695c33087aa175a8463d6"
@@ -1507,11 +1559,13 @@
       "selector": "0x6e553f65"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x1c4e99311083605e8791dfdef40002a97f34c8764c64ff91e199d38f2b9c3f5a",
+   "block": "26428300",
    "sender": {
     "kind": "safe",
     "address": "0xf6f0732c1e9971497342c295141566e6f1a31e96"
@@ -1528,7 +1582,8 @@
       "selector": "0xa9059cbb"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1568,7 +1623,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794844907"
   },
   {
    "kind": "fit",
@@ -1601,11 +1657,13 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794849191"
   },
   {
    "kind": "misfit",
    "hash": "0xa72fa2ab3d9bad8c47a6571a4779931cc40153a34adf400be3abfdf27b5079da",
+   "block": "26429018",
    "sender": {
     "kind": "safe",
     "address": "0x765c6a8f20c842e8c826b0d9425015784f982afc"
@@ -1622,11 +1680,13 @@
       "selector": "0xf696ccb3"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xbe11c2695e3efbc7ea902aaca86116ddd51a49c8274acb4a04aec0535678f009",
+   "block": "26429241",
    "sender": {
     "kind": "safe",
     "address": "0x765c6a8f20c842e8c826b0d9425015784f982afc"
@@ -1639,7 +1699,8 @@
       "selector": "0x5c9c18e2"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1651,6 +1712,7 @@
   {
    "kind": "misfit",
    "hash": "0x1445c352c2979d006f7a42673ce858c0ba9a5217aa963129fbfc7c81532cbcba",
+   "block": "26430015",
    "sender": {
     "kind": "safe",
     "address": "0x03fc3295a0ede5fbf174379e07f925d5040328c3"
@@ -1667,11 +1729,13 @@
       "selector": "0x6e553f65"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x3ba6b2655a23c95a26dccdee31b6f2c01b8b4df986f2f31811b93bf114828a4b",
+   "block": "26430761",
    "sender": {
     "kind": "safe",
     "address": "0xcf17d5d15ea66fbf003d60c2b43b39800d8a7d63"
@@ -1688,7 +1752,8 @@
       "selector": "0xea598cb0"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1735,7 +1800,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794893375"
   },
   {
    "kind": "not-studied",
@@ -1776,7 +1842,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794913151"
   },
   {
    "kind": "fit",
@@ -1809,7 +1876,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794914459"
   },
   {
    "kind": "not-studied",
@@ -1856,7 +1924,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794927179"
   },
   {
    "kind": "not-studied",
@@ -1868,6 +1937,7 @@
   {
    "kind": "misfit",
    "hash": "0xa4feed2fb166446d414f9a2ea64c66294f8845664d5c3fb57e9faf9865b31b68",
+   "block": "26436372",
    "sender": {
     "kind": "safe",
     "address": "0x20579fd4209be077b1eecedaf60f216868980c4b"
@@ -1892,11 +1962,13 @@
       "selector": "0xc6fe8747"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x571e585c55de0c41873f12f5f842a40ce112d1aad94f358fbd3fa173b6896f68",
+   "block": "26436973",
    "sender": {
     "kind": "safe",
     "address": "0xe46cfb087d2b2b272498f82ae4ef0b60b6dcef51"
@@ -1913,7 +1985,8 @@
       "selector": "0xa9059cbb"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1961,7 +2034,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794949499"
   },
   {
    "kind": "not-studied",
@@ -2002,7 +2076,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1794965939"
   },
   {
    "kind": "not-studied",
@@ -2050,7 +2125,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795003439"
   },
   {
    "kind": "not-studied",
@@ -2062,6 +2138,7 @@
   {
    "kind": "misfit",
    "hash": "0xd9b07853eea1c441f595824ea51fed53f0241511daa712bc0d3f5407350f1d43",
+   "block": "26442109",
    "sender": {
     "kind": "eoa",
     "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
@@ -2072,7 +2149,8 @@
     "at": "call.encoding",
     "expected": "canonical transfer(address,uint256)",
     "actual": "differs at byte 68"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2120,7 +2198,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795028459"
   },
   {
    "kind": "not-studied",
@@ -2160,7 +2239,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795047095"
   },
   {
    "kind": "not-studied",
@@ -2228,6 +2308,7 @@
   {
    "kind": "misfit",
    "hash": "0x243a5f0aa46c112a480f904830e45c378a8012f4cbb8eaf72c6436fd2b9347ac",
+   "block": "26447037",
    "sender": {
     "kind": "safe",
     "address": "0x2f3c91d9680c0cc25e640774577da11505e5d9f9"
@@ -2244,7 +2325,8 @@
       "selector": "0xea598cb0"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2256,6 +2338,7 @@
   {
    "kind": "misfit",
    "hash": "0x61fe5596f53c6a122df20aefb36f9725ccb4c34cb90f2a1015f01d4ff437a60e",
+   "block": "26448031",
    "sender": {
     "kind": "safe",
     "address": "0x1ec3cbe8fb1d8019092500cca2111c158a35bc82"
@@ -2268,7 +2351,8 @@
       "selector": "0x83800a8e"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2301,6 +2385,7 @@
   {
    "kind": "misfit",
    "hash": "0x5824d3984a93e22b02286d6f2d9339e78ae949f2f0e2b429e22b203ed18c0dc9",
+   "block": "26449231",
    "sender": {
     "kind": "eoa",
     "address": "0x012437b23bb065a70655bd1d4012a1e1a3cf6641",
@@ -2311,7 +2396,8 @@
     "at": "call.encoding",
     "expected": "canonical transfer(address,uint256)",
     "actual": "differs at byte 68"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2351,7 +2437,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795100735"
   },
   {
    "kind": "not-studied",
@@ -2363,6 +2450,7 @@
   {
    "kind": "misfit",
    "hash": "0x4d5bc409851f59271f9589715e4595f2aeedf8a6871a99a0d2342111fba0c5c1",
+   "block": "26450982",
    "sender": {
     "kind": "safe",
     "address": "0xc0a8aea9806cd61c88730c9841a6c60576a16921"
@@ -2379,7 +2467,8 @@
       "selector": "0xd6681042"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2405,6 +2494,7 @@
   {
    "kind": "misfit",
    "hash": "0x240ec4f5b145f152f2d69e19cd9b80deb0da4eeaa3f05a58eb05b9735165c04b",
+   "block": "26454417",
    "sender": {
     "kind": "safe",
     "address": "0x6a434683b35f96df4a44966e83a992a72cfd3e08"
@@ -2421,7 +2511,8 @@
       "selector": "0xea598cb0"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -2455,7 +2546,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795157951"
   },
   {
    "kind": "not-studied",
@@ -2474,13 +2566,15 @@
   {
    "kind": "misfit",
    "hash": "0xed8a18e06061012fad423e8f69e1119488c97ea34a90c41a1d6cb8ae69715e0c",
+   "block": "26456520",
    "sender": {
     "kind": "safe",
     "address": "0x7f07c0ece5efadbe65140e66db5a979923c7a456"
    },
    "reason": {
     "kind": "foreign-delegatecall"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2520,7 +2614,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795181459"
   },
   {
    "kind": "fit",
@@ -2553,7 +2648,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795182419"
   },
   {
    "kind": "not-studied",
@@ -2593,18 +2689,21 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795191611"
   },
   {
    "kind": "misfit",
    "hash": "0xd9cbbc97a84ccafb2d1bda8822c34b2874479fec35bb1136aebee4db0e54e883",
+   "block": "26457466",
    "sender": {
     "kind": "safe",
     "address": "0x7f07c0ece5efadbe65140e66db5a979923c7a456"
    },
    "reason": {
     "kind": "foreign-delegatecall"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2616,6 +2715,7 @@
   {
    "kind": "misfit",
    "hash": "0x6289939ccc907ec13a9c72b235501b50188068b9f2fcdbace9313417b39600a6",
+   "block": "26457875",
    "sender": {
     "kind": "safe",
     "address": "0x79c0230b1772ac789cb443e1a23cd725b31bad42"
@@ -2632,7 +2732,8 @@
       "selector": "0xea598cb0"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2680,7 +2781,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795202543"
   },
   {
    "kind": "not-studied",
@@ -2721,7 +2823,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795208891"
   },
   {
    "kind": "not-studied",
@@ -2776,7 +2879,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795229951"
   },
   {
    "kind": "not-studied",
@@ -2830,6 +2934,7 @@
   {
    "kind": "misfit",
    "hash": "0x3ae0621845dfa69efe07aac3ae9f428fa1c0f061ab328a755b68ffc6ee7d3b61",
+   "block": "26463633",
    "sender": {
     "kind": "safe",
     "address": "0xef59f0ad1be369189e7dd30fb474263a87400c73"
@@ -2913,7 +3018,8 @@
       "selector": "0xa9059cbb"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2954,7 +3060,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795276799"
   },
   {
    "kind": "fit",
@@ -2987,7 +3094,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795279331"
   },
   {
    "kind": "not-studied",
@@ -3035,7 +3143,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795317623"
   },
   {
    "kind": "not-studied",
@@ -3111,7 +3220,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795368875"
   },
   {
    "kind": "fit",
@@ -3144,7 +3254,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795375451"
   },
   {
    "kind": "fit",
@@ -3177,7 +3288,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795375955"
   },
   {
    "kind": "not-studied",
@@ -3273,11 +3385,13 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795431371"
   },
   {
    "kind": "misfit",
    "hash": "0xaffd026064ff9b49a6ce3f22e3dc7f154de8a6a1c488eeb0da4e1e25c31e8a3f",
+   "block": "26477402",
    "sender": {
     "kind": "safe",
     "address": "0xa81dc026cc733784cddc341eb730cee024b106b6"
@@ -3294,11 +3408,13 @@
       "selector": "0xea598cb0"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xd60750d86f453196d420ccd7c7fe59986441d13a20f8e3a4a992a70714887bd8",
+   "block": "26477749",
    "sender": {
     "kind": "safe",
     "address": "0xa81dc026cc733784cddc341eb730cee024b106b6"
@@ -3315,7 +3431,8 @@
       "selector": "0x8fcb4e5b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3404,7 +3521,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795464731"
   },
   {
    "kind": "not-studied",
@@ -3445,7 +3563,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795472207"
   },
   {
    "kind": "not-studied",
@@ -3457,6 +3576,7 @@
   {
    "kind": "misfit",
    "hash": "0x5bfac02c37b420b927145f0316f104504fbb372e98af3a8836aeab6e4a55d82c",
+   "block": "26482332",
    "sender": {
     "kind": "safe",
     "address": "0x663f09bc8e3b4b7f935f8bdfeb8d787dfeb15f23"
@@ -3473,7 +3593,8 @@
       "selector": "0xd6681042"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3485,6 +3606,7 @@
   {
    "kind": "misfit",
    "hash": "0x3e768638a9638cb7982d045b9ef793f1242a0207756a29d05a40c2cc8f245f30",
+   "block": "26483323",
    "sender": {
     "kind": "eoa",
     "address": "0xd6434d157f254276d69ede3bd9fc805482206908",
@@ -3495,11 +3617,13 @@
     "at": "call.encoding",
     "expected": "canonical transfer(address,uint256)",
     "actual": "differs at byte 68"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xee3a67f8e355a94e3c03fdcbed3c629258e6df7941e566d2afb82d1743e16c35",
+   "block": "26483817",
    "sender": {
     "kind": "safe",
     "address": "0x7b7f0e4ed559b2394ea8265ec1fc2f1f8112945a"
@@ -3516,7 +3640,8 @@
       "selector": "0xd6681042"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3535,6 +3660,7 @@
   {
    "kind": "misfit",
    "hash": "0xe4e1ec740601c4306d5912f1b9f5ef4f2d1337811a50e6053a728d6cb2b47743",
+   "block": "26484834",
    "sender": {
     "kind": "safe",
     "address": "0xf93c529ba547b4183e02a0f4aa2d3e2655075e58"
@@ -3551,7 +3677,8 @@
       "selector": "0x853c637d"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3599,7 +3726,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795525007"
   },
   {
    "kind": "fit",
@@ -3632,7 +3760,8 @@
      "at": "call.to",
      "kind": "token"
     }
-   ]
+   ],
+   "time": "1795526807"
   }
  ],
  "measurements": [

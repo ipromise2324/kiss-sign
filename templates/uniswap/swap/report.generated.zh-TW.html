@@ -65,7 +65,7 @@ h1 .byai{vertical-align:6px}
 h1 .aiw>:first-child{margin-right:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
 .sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
-:is(.sub,h3,.intro,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
+:is(.sub,h3,.intro,.ans,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
 .verdict .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:flex;align-items:flex-start;gap:8px;font-size:var(--t-row);position:relative}
@@ -148,9 +148,19 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
 
-.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
-.key>span{display:inline-flex;gap:8px;align-items:center}
-.key .k0{color:var(--fg3);font-weight:590}
+.deciders{margin:36px 0 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}
+.deciders h3{margin:0 0 10px;font-size:var(--t-small);color:var(--fg2)}
+.deciders dl{margin:0;display:flex;flex-direction:column;gap:12px}
+.deciders .grp{display:grid;grid-template-columns:88px minmax(0,1fr);gap:0 16px;align-items:start}
+.deciders .gh{font-size:var(--t-small);line-height:24px;color:var(--fg);font-weight:590}
+.deciders .defs{margin:0;display:flex;flex-direction:column;gap:6px}
+.deciders .defs>div{display:grid;grid-template-columns:116px minmax(0,1fr);gap:0 14px;align-items:start;font-size:var(--t-small);line-height:24px;color:var(--fg2)}
+.deciders .who{justify-self:start}
+@media (max-width:560px){.deciders .grp{grid-template-columns:minmax(0,1fr)}}
+.mix{margin:10px 0 12px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 16px;align-items:start}
+.mix dt{justify-self:start}
+.mix dd{margin:0;display:flex;flex-wrap:wrap;gap:6px;line-height:24px}
+.mix code{font-size:var(--t-label)}
 .cb{margin-top:40px}
 .callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
 .callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
@@ -249,14 +259,19 @@ details.fold[open]>summary .chev{transform:rotate(90deg)}
 details.fold .ad:last-child{border-bottom:0}
 
 .warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
-.pblock{border-top:1px solid var(--line);margin-top:16px}
-.ph{display:flex;flex-direction:column;gap:4px;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
-.ph .pt{font-weight:590}
-.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
-.pg .pc{color:var(--fg)}
-.pg .pcalls{margin-bottom:4px}
-.pg .pex{font-size:var(--t-small);margin-top:4px}
-.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+.ans{margin:0 0 10px;color:var(--fg2)}
+.ans b{color:var(--fg)}
+.cap{margin:8px 0 0;font-size:var(--t-small);color:var(--fg3)}
+.lm{color:var(--warn)}
+.sh{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-size:var(--t-small);color:var(--fg2);margin-top:18px}
+.sc{overflow-x:auto;margin:12px 0 8px}
+.pt2{border-collapse:collapse;width:100%;font-size:var(--t-small);font-variant-numeric:tabular-nums}
+.pt2 th{font-size:var(--t-label);font-weight:400;color:var(--fg3);text-align:left;padding:6px 16px 6px 0;border-bottom:1px solid var(--line2);white-space:nowrap}
+.pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
+.pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
+.pt2 .n{text-align:right}
+.pt2 td.nw{white-space:nowrap}
+.pt2 td.v{color:var(--fg);font-weight:590}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -271,13 +286,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
 .auto li{display:flex;gap:10px;align-items:baseline}
 .auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
-.usage{font-size:var(--t-small);color:var(--fg3);margin-bottom:28px}
-.usage h3{font-size:var(--t-row);color:var(--fg2);margin:0 0 6px}
-.usage p{margin:0}
-.usage table{border-collapse:collapse;margin:10px 0}
-.usage th,.usage td{padding:6px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left}
-.usage th+td,.usage th+th{padding-left:32px;text-align:right}
-.usage tfoot th,.usage tfoot td{color:var(--fg);border-bottom:0}
+.ut{border-collapse:collapse;width:100%;margin:16px 0 12px;font-size:var(--t-row)}
+.ut th,.ut td{padding:9px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left;color:var(--fg2)}
+.ut thead th{font-size:var(--t-label);color:var(--fg3);border-bottom-color:var(--line2)}
+.ut th+td,.ut th+th{text-align:right;font-variant-numeric:tabular-nums}
+.ut tfoot th,.ut tfoot td{color:var(--fg);font-weight:590;border-bottom:0}
 .foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
 .foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
@@ -298,7 +311,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">8</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">8</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
 </nav>
 
 <div class="main">
@@ -323,7 +336,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>Safe 剛好付出你填的數量、至少收到你填的最少數量；池子的 hook 可以被 Uniswap 治理升級。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">8</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">8</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
   </details>
 </header>
 
@@ -333,22 +346,20 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="rows">
     <div class="row" data-state="warn" data-grade="key" data-result="trace.1.permit2.usdt.transferFrom">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t"><span class="grade"><span class="vh">等級：</span>重要</span>有動到錢的內部呼叫沒有說明</div>
+      <div><div class="t"><span class="grade"><span class="vh">等級：</span>重要</span>你的 Safe 付 usdt 給 0x000000000004444c5dc75cB358380D2e3dE08A90，模板沒有說明這一步</div>
         <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>讀了 0xf05d03904269e82861e30869445ce5a5f88acaf1048bf314837177561d5f4d52 的 trace（一個 EOA 賣 USDT）：Permit2 把 USDT 從呼叫者轉到 0x000000000004444c5dc75cB358380D2e3dE08A90，也就是 Uniswap 部署頁列出的 v4 PoolManager。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="meta">呼叫 1 底下 permit2 → usdt 的 <code>transferFrom</code></div>
-          <div class="meta">呼叫追蹤裡有一筆動到送出交易者的錢的代幣轉帳、授權或 ETH 轉帳，模板綁定的呼叫和流程線都沒有說明它。 共 1 筆過去交易。 不在登記表裡的地址：0x000000000004444c5dc75cB358380D2e3dE08A90。</div>
+          <div class="meta">在呼叫 1 底下。 呼叫追蹤裡有一筆動到送出交易者的錢的代幣轉帳、授權或 ETH 轉帳，模板綁定的呼叫和流程線都沒有說明它。 共 1 筆過去交易。 不在登記表裡的地址：0x000000000004444c5dc75cB358380D2e3dE08A90。</div>
           <div class="rec"><span class="aiw" data-ai><span>這是 SETTLE 付的錢。</span><span class="byai">AI 研究</span></span></div>
           <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>看收款方是不是 v4 PoolManager；只有賣 USDT 的 trace，沒有賣 USDC 的。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
     </div>
     <div class="row" data-state="warn" data-grade="key" data-result="trace.1.other.usdc.transfer">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t"><span class="grade"><span class="vh">等級：</span>重要</span>有動到錢的內部呼叫沒有說明</div>
+      <div><div class="t"><span class="grade"><span class="vh">等級：</span>重要</span>0x000000000004444c5dc75cB358380D2e3dE08A90 付 usdc 給你的 Safe，模板沒有說明這一步</div>
         <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>讀了同一個 trace：登記表以外的地址是 0x000000000004444c5dc75cB358380D2e3dE08A90，Uniswap 部署頁列出的 v4 PoolManager。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="meta">呼叫 1 底下 other → usdc 的 <code>transfer</code></div>
-          <div class="meta">呼叫追蹤裡有一筆動到送出交易者的錢的代幣轉帳、授權或 ETH 轉帳，模板綁定的呼叫和流程線都沒有說明它。 共 1 筆過去交易。 不在登記表裡的地址：0x000000000004444c5dc75cB358380D2e3dE08A90。</div>
+          <div class="meta">在呼叫 1 底下。 呼叫追蹤裡有一筆動到送出交易者的錢的代幣轉帳、授權或 ETH 轉帳，模板綁定的呼叫和流程線都沒有說明它。 共 1 筆過去交易。 不在登記表裡的地址：0x000000000004444c5dc75cB358380D2e3dE08A90。</div>
           <div class="rec"><span class="aiw" data-ai><span>它把買到的 USDC 直接付給呼叫者，這是 TAKE 這一步。</span><span class="byai">AI 研究</span></span></div>
           <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>看付款方是不是 v4 PoolManager、收款方是不是呼叫者。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
@@ -408,12 +419,17 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </svg>
   </div>
   <div class="scrollhint">圖可以左右滑動，最右邊是 代幣（buy-token）</div>
-  <div class="key">
-    <span class="k0">誰決定</span>
-    <span><span class="who you">你填</span>每次簽名填</span>
-    <span><span class="who you">你選</span>每次簽名選</span>
-    <span><span class="who">固定</span>改了就 MISMATCH</span>
-    <span><span class="who app">app 填，不限</span>換成別的值，結果一樣或交易失敗</span>
+  <div class="deciders">
+    <h3>每個值由誰決定</h3>
+    <dl>
+      <div class="grp"><dt class="gh">你</dt><dd class="defs">
+        <div><span class="who you">你填</span><span>每次簽名你自己填。</span></div>
+        <div><span class="who you">你選</span><span>每次簽名你從清單裡選。</span></div></dd></div>
+      <div class="grp"><dt class="gh">kiss-sign</dt><dd class="defs">
+        <div><span class="who">固定</span><span>模板定的。改了就 MISMATCH。</span></div></dd></div>
+      <div class="grp"><dt class="gh">app</dt><dd class="defs">
+        <div><span class="who app">不限</span><span>換成別的值，結果一樣或交易失敗。</span></div></dd></div>
+    </dl>
   </div>
   <p class="lead keylead">下面逐一列出交易的每個呼叫。每個參數都寫出由誰決定、它的值或必須符合的規則，以及它的作用。</p>
   
@@ -445,10 +461,15 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">[1]</div><div><div class="is"><code>SWAP_EXACT_IN_SINGLE</code> 的參數</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span><code>SWAP_EXACT_IN_SINGLE</code> 的參數。</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">params<div class="pchips"><span class="who">currency0、currency1、fee、tickSpacing、hooks、minHopPriceX36、hookData 固定</span><span class="who app">zeroForOne 不限</span><span class="who you">amountIn、amountOutMinimum 你填</span></div></div><div><div class="is">6 個部分</div>
+        <div class="part"><div class="pn">params</div><div><div class="is">6 個部分</div>
+      <dl class="mix">
+        <dt><span class="who you">你填</span></dt><dd><code>amountIn</code> <code>amountOutMinimum</code> </dd>
+        <dt><span class="who">固定</span></dt><dd><code>currency0</code> <code>currency1</code> <code>fee</code> <code>tickSpacing</code> <code>hooks</code> <code>minHopPriceX36</code> <code>hookData</code> </dd>
+        <dt><span class="who app">不限</span></dt><dd><code>zeroForOne</code> </dd>
+      </dl>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>兌換的內容：哪個池子、哪個方向、賣多少、最少要拿到多少。</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">zeroForOne</div><div><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
+        <div class="part"><div class="pn">zeroForOne</div><div><div class="is">每筆不同 <span class="f3">換成別的值測過，每次交易都失敗或不符合卡片</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>方向：true 是賣 USDC，false 是賣 USDT；兩種都在 Safe 交易裡看過。</span></span></div></div></div>
         <div class="part"><div class="pn">amountIn</div><div><div class="is">你填的金額（sell-amount）</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>賣出的數量，以代幣的最小單位計。</span></span></div></div></div>
@@ -509,7 +530,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       </div>
     </div>
     <div class="arg" data-field="1.execute.deadline">
-      <div class="nm"><span class="pn">deadline</span><span class="who app">app 填，不限</span></div>
+      <div class="nm"><span class="pn">deadline</span><span class="who app">不限</span></div>
       <div class="val"><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>過了這個時間 router 就拒絕這筆兌換，由 app 設定；三筆測試交易的期限是執行後 25 到 28 分鐘。</span></span></div></div>
     </div>
@@ -679,56 +700,32 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>過去交易</h2>
-  <p class="lead">過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 <span class="num">1</span> 筆：Safe <span class="num">0</span> 筆、EOA <span class="num">1</span> 筆（1 個地址，各自送模板的一個呼叫）。它成功執行：它是從 usdc 轉帳時、usdt 轉帳時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 1 筆：<a href="https://etherscan.io/tx/0xf05d03904269e82861e30869445ce5a5f88acaf1048bf314837177561d5f4d52">0xf05d0390…</a>。</p>
-  <p class="lead">模板留給 app 自由填的數字，在符合模板形狀的交易裡填了哪些值：最小、第 50、90、99 百分位和最大。模板宣告為時間的欄位，算的是它減掉交易所在區塊時間的秒數。這是證據，不是規則。</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt"><code>call.execute.deadline</code></span><span>EOA: 填的值</span></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pex">min <span class="num">1795460741</span>、p50 <span class="num">1795460741</span>、p90 <span class="num">1795460741</span>、p99 <span class="num">1795460741</span>、max <span class="num">1795460741</span></div></div></div>
-  </div>
-  <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 <span class="num">13</span> 筆跟你這筆不一樣：形狀一樣、但有地址不在 registry 裡的 <span class="num">0</span> 筆，形狀不同的 <span class="num">13</span> 筆</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>不符合的兌換在一次 <code>execute</code> 裡放了別的指令或更多次兌換。這 1 到 2 天搜到的交易裡沒有符合的 Safe；形狀的依據是另外兩個 Safe 的測試交易。</span><span class="byai">AI 研究</span></span></p>
-  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
+  <h3>1. 這個模板的交易以前成功過嗎？</h3>
+  <p class="ans"><b>研究過的交易裡沒有 Safe 這樣做過。</b> EOA：1 次，來自 1 個地址。最近一次是 2026-11-23。全部成功執行。</p>
+  <h3>2. app 填的值，一般是多少？</h3>
+  <div class="sh"><code>zeroForOne</code><span>填的值</span></div><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">值</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th></tr></thead><tbody>
+    <tr><td class="what"><span class="addr">false</span></td><td class="n"><span class="num">0</span></td><td class="n"><span class="num">1</span></td></tr></tbody></table></div>
+  <div class="sh"><code>deadline</code><span>填的值</span></div><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">值</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th></tr></thead><tbody>
+    <tr><td class="what"><span class="num">1,795,460,741</span></td><td class="n"><span class="num">0</span></td><td class="n"><span class="num">1</span></td></tr></tbody></table></div>
+  <h3>3. 其他交易哪裡不同？</h3>
+  <p class="ans">13 筆交易做了這個模板不允許的事。</p>
+  <p class="ans"><span class="aiw" data-ai><span>不符合的兌換在一次 <code>execute</code> 裡放了別的指令或更多次兌換。這 1 到 2 天搜到的交易裡沒有符合的 Safe；形狀的依據是另外兩個 Safe 的測試交易。</span><span class="byai">AI 研究</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="nw">例子</th></tr></thead><tbody>
+    <tr><td class="what"><code>execute.inputs</code> 有 3 項，模板是 2 項</td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">3</span></td><td class="nw">區塊 26482273</td><td class="nw"><a href="https://etherscan.io/tx/0x289d147783fc90e5118eca207224fe888e612488c047fc29d523d4a90870703a">0x289d1477…</a></td></tr>
+    <tr><td class="what">資料不是 <code>V4_SWAP(bytes,bytes[])</code> 的標準編碼</td><td class="n"><span class="num">0</span></td><td class="n"><span class="num">2</span></td><td class="nw">區塊 26480557</td><td class="nw"><a href="https://etherscan.io/tx/0x7c85ccb2514915d4ef1071ac87b43d2c87409c94f9cacd22ce0c758fb8cc3af0">0x7c85ccb2…</a></td></tr>
+    <tr><td class="what"><code>execute.inputs</code> 有 4 項，模板是 2 項</td><td class="n"><span class="num">0</span></td><td class="n"><span class="num">2</span></td><td class="nw">區塊 26479927</td><td class="nw"><a href="https://etherscan.io/tx/0x7240ac9bb07642c2e28cc8d3c995b3a2f9af283ed4f31069f916ad289e6c46b9">0x7240ac9b…</a></td></tr>
+    <tr><td class="what"><code>execute.inputs[0].V4_SWAP.params</code> 有 6 項，模板是 3 項</td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 26479318</td><td class="nw"><a href="https://etherscan.io/tx/0xcf503bc24daf1eb0b6629bd169057ef288db1e2b4ba91ebd37d5ac9f05acdd76">0xcf503bc2…</a></td></tr>
+    <tr><td class="what"><code>execute.inputs</code> 有 5 項，模板是 2 項</td><td class="n"><span class="num">0</span></td><td class="n"><span class="num">1</span></td><td class="nw">區塊 26486531</td><td class="nw"><a href="https://etherscan.io/tx/0x869efde3f807ecc82a33dfb436a3c038dc39547272791e460791a99cc1d36cda">0x869efde3…</a></td></tr>
+    <tr><td class="what">資料不是 <code>SETTLE(address,uint256,bool)</code> 的標準編碼</td><td class="n"><span class="num">0</span></td><td class="n"><span class="num">1</span></td><td class="nw">區塊 26479840</td><td class="nw"><a href="https://etherscan.io/tx/0xd554f550ecebc9bd550e195dbbc98b6df200aebacd7ffd8157cdd28874e57090">0xd554f550…</a></td></tr>
+    <tr><td class="what"><code>execute.inputs</code> 有 1 項，模板是 2 項</td><td class="n"><span class="num">0</span></td><td class="n"><span class="num">1</span></td><td class="nw">區塊 26481663</td><td class="nw"><a href="https://etherscan.io/tx/0x712e80981493075a4cf7393714e1480e49b9d841de2a55e92abd2149b52c796d">0x712e8098…</a></td></tr>
+    <tr><td class="what">除了模板的呼叫，還有別的：<code>usdt.approve → permit2.0x87517c45 → universal-router-2.1.2.execute</code></td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 26483880</td><td class="nw"><a href="https://etherscan.io/tx/0x9e6929eac015fe90f960198d762e6eb4aca4a712a774c278dafb1657cd897eab">0x9e6929ea…</a></td></tr></tbody></table></div>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>程式怎麼搜尋</span></summary>
   <h3>搜尋 usdc 的轉帳，找到 25728 筆，研究 240 筆，含證實為 Safe 的參與方的 227 筆中研究 180 筆</h3>
-  <p class="lead">記錄在 <code>testdata/research/uniswap-swap-usdc-v4.json</code>。從最新的區塊往回，搜尋了區塊 26477111（2026-11-23）到區塊 26486685（2026-11-24）的每一筆交易，共 9575 個區塊，約 1.3 天，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。Alchemy 和 Etherscan 找到的不一樣（<span class="num">25728 ≠ 25727</span>）。</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">2</span> 筆用了這個操作的呼叫（1 個 Safe），<span class="num">0</span> 筆跟模板一模一樣。</span></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div><code>inputs</code> 有 3 項，模板是 2 項<span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x376065625d981b9b6aba9a64f67e53db6451538c12595275d382727a26d3b772">0x37606562…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div><code>params</code> 有 6 項，模板是 3 項<span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xcf503bc24daf1eb0b6629bd169057ef288db1e2b4ba91ebd37d5ac9f05acdd76">0xcf503bc2…</a></div></div></div>
-  </div>
-  <div class="pblock">
-    <div class="ph"><span class="pt">EOA 直接呼叫 execute</span><span><span class="num">4</span> 筆用了這個操作的呼叫（4 個地址），<span class="num">0</span> 筆跟模板一模一樣。</span></div>
-    <div class="pg"><span class="pc num">2 筆</span><div><div><code>inputs</code> 有 3 項，模板是 2 項<span class="f3">，來自 2 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x145b1567fdbc5f68d3d9e65c401bdae9c3a667e2dd67d972356d59b1795bd566">0x145b1567…</a>、<a href="https://etherscan.io/tx/0x289d147783fc90e5118eca207224fe888e612488c047fc29d523d4a90870703a">0x289d1477…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div><code>call.execute.inputs[0].encoding</code> 的值跟模板不同：模板要 <span class="addr">canonical V4_SWAP(bytes,bytes[])</span>，交易是 <span class="addr">differs at byte 304</span><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x239164b999ad5de8e53297e98da018288891830a7793e6552b29fa473cadcdac">0x239164b9…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div><code>inputs</code> 有 5 項，模板是 2 項<span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x869efde3f807ecc82a33dfb436a3c038dc39547272791e460791a99cc1d36cda">0x869efde3…</a></div></div></div>
-  </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 234 筆是別的操作，不列入：<code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0x2260fac5</code> 34 筆、<code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0xa0b86991</code> 31 筆、<code>0x000000000004444c5dc75cB358380D2e3dE08A90.0x48c89491</code> 22 筆、<code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0x00000000</code> 21 筆，還有別的。</span></div>
+  <p class="cap">從最新的區塊往回，搜尋了區塊 26477111（2026-11-23）到區塊 26486685（2026-11-24）的每一筆交易，共 9575 個區塊，約 1.3 天，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。Alchemy 和 Etherscan 找到的不一樣（<span class="num">25728 ≠ 25727</span>）。</p>
+  <p class="cap">這些交易是從事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。</p>
+  <p class="cap">另外 234 筆是別的操作，不列入：<code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0x2260fac5</code> 34 筆、<code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0xa0b86991</code> 31 筆、<code>0x000000000004444c5dc75cB358380D2e3dE08A90.0x48c89491</code> 22 筆、<code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0x00000000</code> 21 筆，還有別的。</p>
   <h3>搜尋 usdt 的轉帳，找到 22815 筆，研究 240 筆，含證實為 Safe 的參與方的 92 筆全數研究</h3>
-  <p class="lead">記錄在 <code>testdata/research/uniswap-swap-usdt-v4.json</code>。從最新的區塊往回，搜尋了區塊 26471954（2026-11-22）到區塊 26486711（2026-11-24）的每一筆交易，共 14758 個區塊，約 2.1 天，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。Alchemy 和 Etherscan 找到的不一樣（<span class="num">22815 ≠ 22811</span>）。</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">1</span> 筆用了這個操作的呼叫（1 個 Safe），<span class="num">0</span> 筆跟模板一模一樣。</span></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>usdt.approve → permit2.0x87517c45 → universal-router-2.1.2.execute</code></div><div>呼叫跟模板不同，模板是 <code>execute</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x9e6929eac015fe90f960198d762e6eb4aca4a712a774c278dafb1657cd897eab">0x9e6929ea…</a></div></div></div>
-  </div>
-  <div class="pblock">
-    <div class="ph"><span class="pt">EOA 直接呼叫 execute</span><span><span class="num">7</span> 筆用了這個操作的呼叫（7 個地址），<span class="num">1</span> 筆跟模板一模一樣。</span></div>
-    <div class="pg"><span class="pc num">2 筆</span><div><div><code>inputs</code> 有 4 項，模板是 2 項<span class="f3">，來自 2 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x1a01789518a841fde4a930debf74f6e06712b9ff761660903cc83a694485bd5b">0x1a017895…</a>、<a href="https://etherscan.io/tx/0x7240ac9bb07642c2e28cc8d3c995b3a2f9af283ed4f31069f916ad289e6c46b9">0x7240ac9b…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div><code>inputs</code> 有 3 項，模板是 2 項<span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x620412a2f219b628db116d1d5d114a22c3415e83df0c79d1d5ba497847b8842e">0x620412a2…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div><code>call.execute.inputs[0].V4_SWAP.params[0].encoding</code> 的值跟模板不同：模板要 <span class="addr">canonical SETTLE(address,uint256,bool)</span>，交易是 <span class="addr">differs at byte 675</span><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xd554f550ecebc9bd550e195dbbc98b6df200aebacd7ffd8157cdd28874e57090">0xd554f550…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div><code>call.execute.inputs[0].encoding</code> 的值跟模板不同：模板要 <span class="addr">canonical V4_SWAP(bytes,bytes[])</span>，交易是 <span class="addr">differs at byte 304</span><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x7c85ccb2514915d4ef1071ac87b43d2c87409c94f9cacd22ce0c758fb8cc3af0">0x7c85ccb2…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div><code>inputs</code> 有 1 項，模板是 2 項<span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x712e80981493075a4cf7393714e1480e49b9d841de2a55e92abd2149b52c796d">0x712e8098…</a></div></div></div>
-  </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 232 筆是別的操作，不列入：<code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0x00000000</code> 25 筆、<code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0xa0b86991</code> 23 筆、<code>0x0000000aa232009084Bd71A5797d089AA4Edfad4.0x09c5eabe</code> 15 筆、<code>0x000000000004444c5dc75cB358380D2e3dE08A90.0x48c89491</code> 10 筆，還有別的。</span></div>
+  <p class="cap">從最新的區塊往回，搜尋了區塊 26471954（2026-11-22）到區塊 26486711（2026-11-24）的每一筆交易，共 14758 個區塊，約 2.1 天，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。Alchemy 和 Etherscan 找到的不一樣（<span class="num">22815 ≠ 22811</span>）。</p>
+  <p class="cap">另外 232 筆是別的操作，不列入：<code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0x00000000</code> 25 筆、<code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0xa0b86991</code> 23 筆、<code>0x0000000aa232009084Bd71A5797d089AA4Edfad4.0x09c5eabe</code> 15 筆、<code>0x000000000004444c5dc75cB358380D2e3dE08A90.0x48c89491</code> 10 筆，還有別的。</p>
   </details>
 </section>
 
@@ -769,7 +766,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<aside class="usage"><h3>製作這份報告的 AI 用量</h3><p>Opus 5.5 · 呼叫 64 次 · 41 分鐘</p><table><thead><tr><th scope="col">項目</th><th scope="col">token</th></tr></thead><tbody><tr><th scope="row">重複讀取（cache 讀取）</th><td class="num">8.2M</td></tr><tr><th scope="row">新讀入（input 與 cache 寫入）</th><td class="num">0.47M</td></tr><tr><th scope="row">output</th><td class="num">0.08M</td></tr></tbody><tfoot><tr><th scope="row">總共</th><td class="num">8.8M</td></tr></tfoot></table><p>來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者</p></aside>
+<section id="usage">
+  <h2>AI 用量</h2>
+  <p class="lead">Opus 5.5 用 64 次呼叫、41 分鐘做出這份報告。</p>
+  <table class="ut"><thead><tr><th scope="col">項目</th><th scope="col">token</th></tr></thead><tbody><tr><th scope="row">重複讀取（cache 讀取）</th><td class="num">8.2M</td></tr><tr><th scope="row">新讀入（input 與 cache 寫入）</th><td class="num">0.47M</td></tr><tr><th scope="row">output</th><td class="num">0.08M</td></tr></tbody><tfoot><tr><th scope="row">總共</th><td class="num">8.8M</td></tr></tfoot></table>
+  <p class="cap">來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者。這些數字程式不檢查。</p>
+</section>
+
 <footer class="foot">由 <code>pnpm report uniswap/swap --record</code> 從 <code>templates/uniswap/swap/template.json</code>、<code>templates/uniswap/swap/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/uniswap-swap.json</code>、<code>testdata/abi</code>、<code>testdata/research/uniswap-swap-usdc-v4.json</code>、<code>testdata/research/uniswap-swap-usdt-v4.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/uniswap/swap/notes.json</code>、<code>testdata/usage/uniswap-swap.json</code> 寫出，資料在 2026-11-25 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。用量的數字程式也不檢查。</footer>
 
 </div>

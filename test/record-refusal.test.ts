@@ -5,6 +5,7 @@ import { readRecording } from '../src/chain/bytecode.ts';
 import type { Exchange } from '../src/chain/recording.ts';
 import type { AbiCase } from '../src/contracts/abi-case.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
+import { withBlockTimes } from './block-times.ts';
 import { SUMMARY_FIXTURES, runOffline } from './run-offline.ts';
 import type { Http, Run } from './run-offline.ts';
 
@@ -63,8 +64,8 @@ test('past-txs --record writes the study when every read is answered, and nothin
   }
   const args = ['morpho/vault-deposit', '--token', 'steakhouse-prime-usdc-v2-0f51', '--anchor', 'mint', '--max-txs', '24', '--same-windows-as', name, '--record', 'offline'];
   const seed = [`${name}.json`];
-  assertRecorded(runOffline('past-txs.ts', args, 'research', { exchanges: [...recording.exchanges, ...transfers], http }, seed, undefined, SUMMARY_FIXTURES), 'offline.json');
-  const network = { exchanges: [...withheld(recording.exchanges, 'eth_getTransactionByHash'), ...transfers], http };
+  assertRecorded(runOffline('past-txs.ts', args, 'research', { exchanges: [...withBlockTimes(recording.exchanges), ...transfers], http }, seed, undefined, SUMMARY_FIXTURES), 'offline.json');
+  const network = { exchanges: [...withheld(withBlockTimes(recording.exchanges), 'eth_getTransactionByHash'), ...transfers], http };
   assertRefused(runOffline('past-txs.ts', args, 'research', network, seed, undefined, SUMMARY_FIXTURES), 'drpc eth_getTransactionByHash: unreachable');
 });
 

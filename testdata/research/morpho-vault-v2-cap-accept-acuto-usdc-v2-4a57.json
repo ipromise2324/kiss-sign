@@ -12,7 +12,7 @@
  "studiedWith": {
   "template": "0x5ffca1e5946d5a78fed71f0405b9dd3610fd2b011031b01afb2880a3ed303f67",
   "registry": "0x73c735d7a1f0614ae59742e3002c71f5493f80c3df94866c80b4e1957a9122e6",
-  "study": "0x94bfaaffbfc8c7dbc5b3874bc31cfe270d787964a427798536f92503545477bb"
+  "study": "0xb596923b6c289246962b4c2a301475010e93cfa8db57d91a981943ffeaa1e73d"
  },
  "search": {
   "year": {
@@ -53,6 +53,7 @@
   {
    "kind": "misfit",
    "hash": "0xfb6882b369d8c9d10efba0118e3eed66710428493eeed46ade016c5ba988697a",
+   "block": "24510161",
    "sender": {
     "kind": "safe",
     "address": "0xeb4af6fa3afa08b10d593ec8ff87efb03bc04645"
@@ -62,11 +63,13 @@
     "at": "call.multicall.data[0].increaseAbsoluteCap.idData.encoding",
     "expected": "capId(string,address,(address,address,address,address,uint256))",
     "actual": "the heads run past the end"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xd3c8af6d0e3e0fcb60b9fb6f06330483f71c11e603de3d2a27ceda754562f1ce",
+   "block": "24510206",
    "sender": {
     "kind": "safe",
     "address": "0xeb4af6fa3afa08b10d593ec8ff87efb03bc04645"
@@ -76,7 +79,8 @@
     "at": "call.multicall.data[0].increaseAbsoluteCap.idData.encoding",
     "expected": "capId(string,address,(address,address,address,address,uint256))",
     "actual": "the heads run past the end"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -151,6 +155,7 @@
   {
    "kind": "misfit",
    "hash": "0xe05aae837a09db7dd73f897ba7dc9c21282bbefa6db79424b59c4ce65dafe679",
+   "block": "24512902",
    "sender": {
     "kind": "safe",
     "address": "0xeb4af6fa3afa08b10d593ec8ff87efb03bc04645"
@@ -160,7 +165,8 @@
     "at": "call.multicall.data[0].increaseAbsoluteCap.idData.encoding",
     "expected": "capId(string,address,(address,address,address,address,uint256))",
     "actual": "the heads run past the end"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -235,6 +241,7 @@
   {
    "kind": "misfit",
    "hash": "0xbb0630752fa6b33a2ef180710e8bc8a0c0dc301b7384b6166a39b474c76a487a",
+   "block": "24549944",
    "sender": {
     "kind": "safe",
     "address": "0x6788c8ad65e85cca7224a0b46d061ef7d81f9da5"
@@ -250,11 +257,13 @@
       "selector": "0xf6f98fd5"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xe556bf5fb4bd20396992a881ee628257517268e4e4f99ef88ad748bb61ce1d84",
+   "block": "25626437",
    "sender": {
     "kind": "safe",
     "address": "0xeb4af6fa3afa08b10d593ec8ff87efb03bc04645"
@@ -298,11 +307,13 @@
       "selector": "0x2438525b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xfed23e8b11d753f637f8372aaf5d212c90cc55ee388305f1dd00dde793bb1581",
+   "block": "25715404",
    "sender": {
     "kind": "safe",
     "address": "0x6788c8ad65e85cca7224a0b46d061ef7d81f9da5"
@@ -330,11 +341,13 @@
       "selector": "0x2438525b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xbde5d3a7ece4fcf7ca1eb536022fba13710fff93e1d225f58b7522c44af1be08",
+   "block": "25740014",
    "sender": {
     "kind": "safe",
     "address": "0x6788c8ad65e85cca7224a0b46d061ef7d81f9da5"
@@ -362,7 +375,8 @@
       "selector": "0x2438525b"
      }
     ]
-   }
+   },
+   "free": []
   }
  ],
  "measurements": [],

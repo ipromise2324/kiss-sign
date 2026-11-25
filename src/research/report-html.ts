@@ -5,7 +5,7 @@ import type { Language } from '../language.ts';
 import type { Phrase, State } from './ledger.ts';
 import { NOTES_FILE, codeSpans, notesLanguages, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
-import type { AddressRow, AiSource, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, NewestResult, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, Span, UsageBlock, VaultBlock, WalletRows } from './report-page.ts';
+import type { AddressRow, AiSource, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, NewestResult, Page, PastAmounts, PastNumbers, PastTable, PastTokenAmounts, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, Span, UsageBlock, VaultBlock, WalletRows } from './report-page.ts';
 import { CSS, Html, SYMBOLS, escape, h, icon } from '../html.ts';
 import { WORDS } from './report-words.ts';
 import type { Words } from './report-words.ts';
@@ -59,6 +59,14 @@ const stateCounts = (count: Extract<RailCount, { kind: 'states' }>, r: R): Html 
   h`${count.counts.map((c) => h` <span class="cnt" data-state="${c.state}">${icon(c.state, r.language)}${c.grade === undefined ? '' : `${r.w.grade[c.grade]} `}${c.n}</span>`)}`;
 
 const railCount = (count: RailCount | undefined, r: R): Html => (count === undefined ? h`` : count.kind === 'text' ? h` <span class="cnt">${count.text}</span>` : stateCounts(count, r));
+
+const table = (t: PastTable): Html => {
+  const cell = (as: PastTable['head'][number]['as']): string => ({ plain: 'nw', num: 'n', wide: 'what', value: 'nw v' })[as];
+  return h`<div class="sc"><table class="pt2"><thead><tr>${t.head.map((c) => h`<th scope="col" class="${cell(c.as)}">${c.label}</th>`)}</tr></thead><tbody>${t.rows.map(
+    (row) => h`
+    <tr>${row.map((spans, i) => h`<td class="${cell(t.head[i]?.as ?? 'plain')}">${text(spans)}</td>`)}</tr>`,
+  )}</tbody></table></div>`;
+};
 
 const contents = (sections: readonly Section[], r: R): Html => h`<ol>${sections.map((s) => h`<li><a href="#${s.anchor}">${s.label}${railCount(s.count, r)}</a></li>`)}</ol>`;
 
@@ -239,9 +247,18 @@ const docLine = (doc: DocLine, r: R): Html =>
 function valueLines(row: ArgRow, r: R): Html {
   return h`${row.value === undefined ? '' : h`<div class="raw">${row.value}</div>`}<div class="is">${text(row.words)}${
     row.qualifier === undefined ? '' : h` <span class="f3">${text(row.qualifier)}</span>`
-  }</div>${row.doc === undefined ? '' : docLine(row.doc, r)}${row.id === undefined ? '' : h`<div class="mid">${text(row.id)}</div>`}${row.ai === undefined ? '' : h`
+  }</div>${mixList(row)}${row.more === undefined ? '' : h`<details class="more"><summary>${decor('chev')}${row.more.label}</summary><div class="meta">${row.more.text}</div></details>`}${row.doc === undefined ? '' : docLine(row.doc, r)}${row.id === undefined ? '' : h`<div class="mid">${text(row.id)}</div>`}${row.ai === undefined ? '' : h`
         <div class="ai">${ai(row.ai, r)}</div>`}`;
 }
+
+/** Who decides each part of an argument whose parts differ. */
+const mixList = (row: ArgRow): Html =>
+  row.mix.length === 0
+    ? h``
+    : h`
+      <dl class="mix">${row.mix.map((m) => h`
+        <dt>${chip(m)}</dt><dd>${m.parts.map((part) => h`<code>${part}</code> `)}</dd>`)}
+      </dl>`;
 
 /** A group's rows, the fixed ones folded under one line that counts them; inside a fold every row shows as it is. */
 function grouped(rows: readonly ArgRow[], one: (row: ArgRow, folded: boolean) => Html, folded: boolean, r: R): Html {
@@ -290,9 +307,12 @@ function flowBody(flow: Flow, r: R): Html {
     flow.key.length === 0
       ? ''
       : h`
-  <div class="key">
-    <span class="k0">${r.w.whoDecides}</span>${flow.key.map((item) => h`
-    <span>${chip(item)}${item.means}</span>`)}
+  <div class="deciders">
+    <h3>${r.w.whoDecides}</h3>
+    <dl>${flow.key.map((group) => h`
+      <div class="grp"><dt class="gh">${group.title}</dt><dd class="defs">${group.items.map((item) => h`
+        <div>${chip(item)}<span>${item.means}</span></div>`)}</dd></div>`)}
+    </dl>
   </div>`
   }
   <p class="lead keylead">${r.w.callsLead}</p>${
@@ -523,48 +543,42 @@ function addressBody(body: Extract<Body, { kind: 'addresses' }>, r: R): Html {
   </div>`;
 }
 
-function pastBody(body: Extract<Body, { kind: 'past' }>, r: R): Html {
-  if (body.recordings.length === 0) return h`<p class="lead">${r.w.noPast}</p>`;
+const pastAmounts = (a: PastAmounts, r: R): Html => {
+  const token = (t: PastTokenAmounts): Html => h`
+    <p class="cap">${t.lead}</p>${table(t.table)}`;
   return h`
-  <p class="lead">${text(body.same)}</p>${body.amounts.length === 0 ? '' : h`
-  <p class="lead">${r.w.amountsLead}</p>`}${body.amounts.map(
-    (a) => h`
-  <div class="pblock">
-    <div class="ph"><span class="pt"><code>${a.effect}</code></span><span>${a.tolerance}</span></div>${a.tokens.map(
-      (t) => h`
-    <div class="pg"><span class="pc num">${r.w.txCount(t.count)}</span><div><div>${t.lead}</div>${t.rows.map((row) => h`
-      <div class="pex">${row.party}${row.cells.map((c, i) => h`${i === 0 ? '' : r.w.sep}<span class="num">${c.by}</span> ${c.n}`)}</div>`)}</div></div>`,
-    )}${a.finding === undefined ? '' : h`
-    <div class="warnline">${icon('bad', r.language)}<span>FINDING: ${a.finding}</span></div>`}${a.unmeasured === undefined ? '' : h`
-    <div class="warnline">${decor('info')}<span>${a.unmeasured}</span></div>`}
-  </div>`,
-  )}${body.spreads.length === 0 ? '' : h`
-  <p class="lead">${r.w.spreadLead}</p>`}${body.spreads.map(
-    (sp) => h`
-  <div class="pblock">
-    <div class="ph"><span class="pt"><code>${sp.field}</code></span><span>${sp.who}: ${sp.lead}</span></div>
-    <div class="pg"><span class="pc num">${r.w.txCount(sp.count)}</span><div><div class="pex">${sp.cells.map((c, i) => h`${i === 0 ? '' : r.w.sep}${c.label} <span class="num">${c.value}</span>`)}</div></div></div>${sp.unrecorded === undefined ? '' : h`
-    <div class="warnline">${decor('info')}<span>${sp.unrecorded}</span></div>`}
-  </div>`,
-  )}
-  <details class="fold">
-  <summary>${decor('chev')}<span>${body.others === undefined ? r.w.otherWays : text(body.others)}</span></summary>${body.conclusion === undefined ? '' : h`
-  <p class="intro">${ai(body.conclusion, r)}</p>`}
-  <p class="lead">${r.w.otherWaysLead}</p>${body.recordings.map(
-    (rec) => h`
-  <h3>${rec.count}</h3>
-  <p class="lead">${around(r.w.recordedIn, rec.file)}${text(rec.search)}</p>${rec.blocks.map(
-    (block) => h`
-  <div class="pblock">
-    <div class="ph"><span class="pt">${block.title}</span><span>${text(block.lead)}</span></div>${block.groups.map(
-      (g) => h`
-    <div class="pg"><span class="pc num">${r.w.txCount(g.count)}</span><div>${g.calls === undefined ? '' : h`<div class="pcalls">${text(g.calls)}</div>`}<div>${text(g.reason)}<span class="f3">${r.w.fromSenders(g.senders)}</span></div>
-      <div class="pex">${r.w.examples}${g.examples.map((e, i) => h`${i === 0 ? '' : r.w.sep}${text([e])}`)}</div></div></div>`,
-    )}
-  </div>`,
-  )}${rec.others.map((line) => h`
-  <div class="warnline">${decor('info')}<span>${text(line)}</span></div>`)}`,
-  )}
+  <div class="sh"><code>${a.effect}</code><span>${a.tolerance}</span></div>${a.tokens.map(token)}${a.finding === undefined ? '' : h`
+  <div class="warnline">${icon('bad', r.language)}<span>FINDING: ${a.finding}</span></div>`}${a.outside === undefined ? '' : h`
+  <details class="fold"><summary>${decor('chev')}<span>${a.outside.label}</span></summary>${a.outside.tokens.map(token)}
+  </details>`}${a.unmeasured === undefined ? '' : h`
+  <div class="warnline">${decor('info')}<span>${a.unmeasured}</span></div>`}`;
+};
+
+const pastNumbers = (p: PastNumbers, r: R): Html => h`
+  <div class="sh"><code>${p.name}</code><span>${p.lead}</span></div>${p.table === undefined ? '' : table(p.table)}${p.says === undefined ? '' : h`
+  <p class="cap">${text(p.says)}</p>`}${p.limit === undefined ? '' : h`
+  <p class="cap">${p.limit[0]}<b class="lm">${p.limit[1]}</b>${p.limit[2]}</p>`}${p.notes.map((note) => h`
+  <p class="cap">${note}</p>`)}${p.exact === undefined ? '' : h`
+  <details class="more"><summary>${decor('chev')}${r.w.pastExact}</summary><div class="meta">${text(p.exact)}</div></details>`}`;
+
+function pastBody({ past }: Extract<Body, { kind: 'past' }>, r: R): Html {
+  if (past === undefined) return h`<p class="lead">${r.w.noPast}</p>`;
+  const { differ } = past;
+  return h`
+  <h3>${r.w.pastWorked}</h3>
+  <p class="ans"><b>${past.worked.answer}</b> ${past.worked.rest}</p>
+  <h3>${r.w.pastNumbers}</h3>${past.numbers.length === 0 ? h`
+  <p class="ans">${r.w.pastNoNumbers}</p>` : past.numbers.map((p) => pastNumbers(p, r))}
+  <h3>${r.w.pastDiffer}</h3>
+  <p class="ans">${differ.lead}</p>${past.conclusion === undefined ? '' : h`
+  <p class="ans">${ai(past.conclusion, r)}</p>`}${differ.open === undefined ? '' : table(differ.open)}${differ.more === undefined ? '' : h`
+  <details class="fold"><summary>${decor('chev')}<span>${differ.more.label}</span></summary>${table(differ.more.table)}
+  </details>`}${past.amounts.length === 0 ? '' : h`
+  <h3>${r.w.amountsTitle}</h3>
+  <p class="cap">${r.w.amountsLead}</p>`}${past.amounts.map((a) => pastAmounts(a, r))}
+  <details class="fold"><summary>${decor('chev')}<span>${r.w.pastSearch}</span></summary>${past.search.map((s) => h`
+  <h3>${s.count}</h3>${s.lines.map((line) => h`
+  <p class="cap">${text(line)}</p>`)}`)}
   </details>`;
 }
 
@@ -616,6 +630,8 @@ function section(s: Section, r: R): Html {
         return pastBody(s.body, r);
       case 'next':
         return nextBody(s.body, r);
+      case 'usage':
+        return usageBody(s.body.usage);
     }
   })();
   return h`
@@ -625,11 +641,13 @@ function section(s: Section, r: R): Html {
 `;
 }
 
-const usageAside = (usage: UsageBlock): Html => {
+function usageBody(usage: UsageBlock): Html {
   const row = ([label, value]: readonly [string, string]) => h`<tr><th scope="row">${label}</th><td class="num">${value}</td></tr>`;
-  const table = usage.table === undefined ? '' : h`<table><thead><tr><th scope="col">${usage.table.head[0]}</th><th scope="col">${usage.table.head[1]}</th></tr></thead><tbody>${usage.table.rows.map(row)}</tbody><tfoot>${row(usage.table.total)}</tfoot></table>`;
-  return h`<aside class="usage"><h3>${usage.title}</h3><p>${usage.lead}</p>${table}${usage.notes.map((note) => h`<p>${note}</p>`)}</aside>`;
-};
+  return h`
+  <p class="lead">${usage.lead}</p>${usage.table === undefined ? '' : h`
+  <table class="ut"><thead><tr><th scope="col">${usage.table.head[0]}</th><th scope="col">${usage.table.head[1]}</th></tr></thead><tbody>${usage.table.rows.map(row)}</tbody><tfoot>${row(usage.table.total)}</tfoot></table>`}${usage.notes.map((note) => h`
+  <p class="cap">${note}</p>`)}`;
+}
 
 /** The whole document, in the page's language. Deterministic: the same Page always gives the same bytes. */
 export function renderPage(page: Page): string {
@@ -661,7 +679,6 @@ ${SYMBOLS}
 
 ${header(page, r).text}
 ${page.sections.map((s) => section(s, r).text).join('')}
-${usageAside(page.usage).text}
 <footer class="foot">${text(page.footer).text}</footer>
 
 </div>

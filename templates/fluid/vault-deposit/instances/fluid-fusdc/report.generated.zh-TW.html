@@ -65,7 +65,7 @@ h1 .byai{vertical-align:6px}
 h1 .aiw>:first-child{margin-right:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
 .sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
-:is(.sub,h3,.intro,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
+:is(.sub,h3,.intro,.ans,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
 .verdict .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:flex;align-items:flex-start;gap:8px;font-size:var(--t-row);position:relative}
@@ -148,9 +148,19 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
 
-.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
-.key>span{display:inline-flex;gap:8px;align-items:center}
-.key .k0{color:var(--fg3);font-weight:590}
+.deciders{margin:36px 0 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}
+.deciders h3{margin:0 0 10px;font-size:var(--t-small);color:var(--fg2)}
+.deciders dl{margin:0;display:flex;flex-direction:column;gap:12px}
+.deciders .grp{display:grid;grid-template-columns:88px minmax(0,1fr);gap:0 16px;align-items:start}
+.deciders .gh{font-size:var(--t-small);line-height:24px;color:var(--fg);font-weight:590}
+.deciders .defs{margin:0;display:flex;flex-direction:column;gap:6px}
+.deciders .defs>div{display:grid;grid-template-columns:116px minmax(0,1fr);gap:0 14px;align-items:start;font-size:var(--t-small);line-height:24px;color:var(--fg2)}
+.deciders .who{justify-self:start}
+@media (max-width:560px){.deciders .grp{grid-template-columns:minmax(0,1fr)}}
+.mix{margin:10px 0 12px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 16px;align-items:start}
+.mix dt{justify-self:start}
+.mix dd{margin:0;display:flex;flex-wrap:wrap;gap:6px;line-height:24px}
+.mix code{font-size:var(--t-label)}
 .cb{margin-top:40px}
 .callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
 .callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
@@ -249,14 +259,19 @@ details.fold[open]>summary .chev{transform:rotate(90deg)}
 details.fold .ad:last-child{border-bottom:0}
 
 .warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
-.pblock{border-top:1px solid var(--line);margin-top:16px}
-.ph{display:flex;flex-direction:column;gap:4px;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
-.ph .pt{font-weight:590}
-.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
-.pg .pc{color:var(--fg)}
-.pg .pcalls{margin-bottom:4px}
-.pg .pex{font-size:var(--t-small);margin-top:4px}
-.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+.ans{margin:0 0 10px;color:var(--fg2)}
+.ans b{color:var(--fg)}
+.cap{margin:8px 0 0;font-size:var(--t-small);color:var(--fg3)}
+.lm{color:var(--warn)}
+.sh{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-size:var(--t-small);color:var(--fg2);margin-top:18px}
+.sc{overflow-x:auto;margin:12px 0 8px}
+.pt2{border-collapse:collapse;width:100%;font-size:var(--t-small);font-variant-numeric:tabular-nums}
+.pt2 th{font-size:var(--t-label);font-weight:400;color:var(--fg3);text-align:left;padding:6px 16px 6px 0;border-bottom:1px solid var(--line2);white-space:nowrap}
+.pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
+.pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
+.pt2 .n{text-align:right}
+.pt2 td.nw{white-space:nowrap}
+.pt2 td.v{color:var(--fg);font-weight:590}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -271,13 +286,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
 .auto li{display:flex;gap:10px;align-items:baseline}
 .auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
-.usage{font-size:var(--t-small);color:var(--fg3);margin-bottom:28px}
-.usage h3{font-size:var(--t-row);color:var(--fg2);margin:0 0 6px}
-.usage p{margin:0}
-.usage table{border-collapse:collapse;margin:10px 0}
-.usage th,.usage td{padding:6px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left}
-.usage th+td,.usage th+th{padding-left:32px;text-align:right}
-.usage tfoot th,.usage tfoot td{color:var(--fg);border-bottom:0}
+.ut{border-collapse:collapse;width:100%;margin:16px 0 12px;font-size:var(--t-row)}
+.ut th,.ut td{padding:9px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left;color:var(--fg2)}
+.ut thead th{font-size:var(--t-label);color:var(--fg3);border-bottom-color:var(--line2)}
+.ut th+td,.ut th+th{text-align:right;font-variant-numeric:tabular-nums}
+.ut tfoot th,.ut tfoot td{color:var(--fg);font-weight:590;border-bottom:0}
 .foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
 .foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
@@ -298,7 +311,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
 </nav>
 
 <div class="main">
@@ -321,7 +334,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>可以用。代幣實際放在 Fluid 的 Liquidity 合約，程式每次簽名都確認它的程式碼沒變；第一次先送小額。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
   </details>
 </header>
 
@@ -385,11 +398,15 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </svg>
   </div>
   <div class="scrollhint">圖可以左右滑動，最右邊是 fluid-liquidity</div>
-  <div class="key">
-    <span class="k0">誰決定</span>
-    <span><span class="who you">你填</span>每次簽名填</span>
-    <span><span class="who you">你選</span>每次簽名選</span>
-    <span><span class="who">固定</span>改了就 MISMATCH</span>
+  <div class="deciders">
+    <h3>每個值由誰決定</h3>
+    <dl>
+      <div class="grp"><dt class="gh">你</dt><dd class="defs">
+        <div><span class="who you">你填</span><span>每次簽名你自己填。</span></div>
+        <div><span class="who you">你選</span><span>每次簽名你從清單裡選。</span></div></dd></div>
+      <div class="grp"><dt class="gh">kiss-sign</dt><dd class="defs">
+        <div><span class="who">固定</span><span>模板定的。改了就 MISMATCH。</span></div></dd></div>
+    </dl>
   </div>
   <p class="lead keylead">下面逐一列出交易的每個呼叫。每個參數都寫出由誰決定、它的值或必須符合的規則，以及它的作用。</p>
   
@@ -574,24 +591,20 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>過去交易</h2>
-  <p class="lead">過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 <span class="num">97</span> 筆：Safe <span class="num">1</span> 筆（1 個 Safe）、EOA <span class="num">96</span> 筆（87 個地址，各自送模板的一個呼叫）。這些交易全部成功執行：它們是從 fluid-fusdc 鑄造（存款）時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0x65e8a75ca2a4d4f09052428a7b2de41d46c55ea3c04d43208dcb163a10366430">0x65e8a75c…</a>、<a href="https://etherscan.io/tx/0x5c8e02c495cf31e9d7cc4a46ed2eb4664544071e61520ca2dd0d3a600189958a">0x5c8e02c4…</a>、<a href="https://etherscan.io/tx/0x699557e62adab4d3465ec69cb6a275c1f124999515cf007b9bf7bcc92b6f8586">0x699557e6…</a>。</p>
-  <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 <span class="num">43</span> 筆跟你這筆不一樣：形狀一樣、但有地址不在 registry 裡的 <span class="num">0</span> 筆，形狀不同的 <span class="num">43</span> 筆</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>唯一不合的 Safe 交易呼叫的是別的合約的 <code>deposit</code>，由那個合約再存進 fUSDC，不是 Fluid app 的路線。</span><span class="byai">AI 研究</span></span></p>
-  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
+  <h3>1. 這個模板的交易以前成功過嗎？</h3>
+  <p class="ans"><b>成功過，1 個 Safe 一共做過 1 次。</b> EOA：96 次，來自 87 個地址，各自送模板的一個呼叫。最近一次是區塊 26401077。全部成功執行。</p>
+  <h3>2. app 填的值，一般是多少？</h3>
+  <p class="ans">這個模板沒有留任何值給 app 填。</p>
+  <h3>3. 其他交易哪裡不同？</h3>
+  <p class="ans">43 筆交易做了這個模板不允許的事。</p>
+  <p class="ans"><span class="aiw" data-ai><span>唯一不合的 Safe 交易呼叫的是別的合約的 <code>deposit</code>，由那個合約再存進 fUSDC，不是 Fluid app 的路線。</span><span class="byai">AI 研究</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="nw">例子</th></tr></thead><tbody>
+    <tr><td class="what">呼叫的合約是 <span class="addr">0x273DA948ACa9261043fbdb2a857BC255ECC29012</span>，不是模板的 fluid-fusdc</td><td class="n"><span class="num">0</span></td><td class="n"><span class="num">42</span></td><td class="nw">日期不明</td><td class="nw"><a href="https://etherscan.io/tx/0xc414006cb6065dea598827193afd72f685a4571a81bcd0b31db5924218d5812d">0xc414006c…</a></td></tr>
+    <tr><td class="what">沒有 <code>approve</code>：只有 <code>0x273DA948ACa9261043fbdb2a857BC255ECC29012.deposit</code></td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">日期不明</td><td class="nw"><a href="https://etherscan.io/tx/0x1128c3ee12632db7a14da947d8aa884874ba97d387d1d1624c5f6d9d442de475">0x1128c3ee…</a></td></tr></tbody></table></div>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>程式怎麼搜尋</span></summary>
   <h3>搜尋 fluid-fusdc 的鑄造（存款），找到 512 筆，研究 237 筆</h3>
-  <p class="lead">記錄在 <code>testdata/research/fluid-vault-deposit-fusdc.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">512 = 512</span>）。</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">2</span> 筆用了這個操作的呼叫（2 個 Safe），<span class="num">1</span> 筆跟模板一模一樣。</span></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>0x273DA948ACa9261043fbdb2a857BC255ECC29012.deposit</code></div><div>呼叫跟模板不同，模板是 <code>approve → deposit</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x1128c3ee12632db7a14da947d8aa884874ba97d387d1d1624c5f6d9d442de475">0x1128c3ee…</a></div></div></div>
-  </div>
-  <div class="pblock">
-    <div class="ph"><span class="pt">EOA 直接呼叫 deposit</span><span><span class="num">138</span> 筆用了這個操作的呼叫（127 個地址），<span class="num">96</span> 筆跟模板一模一樣。</span></div>
-    <div class="pg"><span class="pc num">42 筆</span><div><div>呼叫的合約是 <span class="addr">0x273DA948ACa9261043fbdb2a857BC255ECC29012</span>，不是模板的 fluid-fusdc<span class="f3">，來自 40 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xc414006cb6065dea598827193afd72f685a4571a81bcd0b31db5924218d5812d">0xc414006c…</a>、<a href="https://etherscan.io/tx/0xd1e82a6ce311fc25d147208029cd79b5617aa6cfe028c303495c4b17768350d5">0xd1e82a6c…</a>、<a href="https://etherscan.io/tx/0xd4f717913232cdc84898369963e6a76fb4783fff45f7f214caf8d664842703d8">0xd4f71791…</a></div></div></div>
-  </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 97 筆是別的操作，不列入：<code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 15 筆、<code>0x18f1FAC179feB0ee44F339a616feFb979A6961BE.0x248b1701</code> 6 筆、<code>0x3f04b65Ddbd87f9CE0A2e7Eb24d80e7fb87625b5.0x230ae89c</code> 5 筆、<code>0x3f04b65Ddbd87f9CE0A2e7Eb24d80e7fb87625b5.mint</code> 5 筆，還有別的。</span></div>
+  <p class="cap">Alchemy 和 Etherscan 找到的完全一樣（<span class="num">512 = 512</span>）。</p>
+  <p class="cap">這些交易是從事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。</p>
+  <p class="cap">另外 97 筆是別的操作，不列入：<code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 15 筆、<code>0x18f1FAC179feB0ee44F339a616feFb979A6961BE.0x248b1701</code> 6 筆、<code>0x3f04b65Ddbd87f9CE0A2e7Eb24d80e7fb87625b5.0x230ae89c</code> 5 筆、<code>0x3f04b65Ddbd87f9CE0A2e7Eb24d80e7fb87625b5.mint</code> 5 筆，還有別的。</p>
   </details>
 </section>
 
@@ -630,7 +643,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<aside class="usage"><h3>製作這份報告的 AI 用量</h3><p>未量測</p></aside>
+<section id="usage">
+  <h2>AI 用量</h2>
+  <p class="lead">這份報告的 AI 用量未量測。</p>
+</section>
+
 <footer class="foot">由 <code>pnpm report fluid/vault-deposit --instance-of fluid-fusdc --record</code> 從 <code>templates/fluid/vault-deposit/template.json</code>、<code>templates/fluid/vault-deposit/docs.json</code>、<code>templates/fluid/vault-deposit/instances/fluid-fusdc/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/fluid-vault-deposit/fluid-fusdc.json</code>、<code>testdata/abi</code>、<code>testdata/research/fluid-vault-deposit-fusdc.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/fluid/vault-deposit/notes.json</code>、<code>templates/fluid/vault-deposit/instances/fluid-fusdc/notes.json</code> 寫出，資料在 2026-11-17 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
 
 </div>

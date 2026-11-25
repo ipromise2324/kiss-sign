@@ -74,7 +74,7 @@ test('a hand-edited summary holding Markdown or HTML in a text it prints is refu
     const edited = { ...summary, studies: [{ kind: 'unreadable', hash: FIT, reason: `eth_getTransactionByHash: ${markup}` }, ...summary.studies] };
     assert.throws(() => parseSummary('testdata/research/edited.json', JSON.stringify(edited)), /^SummaryError: testdata\/research\/edited\.json: studies\[0\]\.reason: not text of the characters the program writes$/, markup);
   }
-  const field = { ...summary, studies: [{ kind: 'misfit', hash: FIT, sender: { kind: 'safe', address: `0x${'11'.repeat(20)}` }, reason: { kind: 'field', at: 'call.x', expected: '1', actual: '<b>2</b>' } }] };
+  const field = { ...summary, studies: [{ kind: 'misfit', hash: FIT, sender: { kind: 'safe', address: `0x${'11'.repeat(20)}` }, reason: { kind: 'field', at: 'call.x', expected: '1', actual: '<b>2</b>' }, free: [] }] };
   assert.throws(() => parseSummary('testdata/research/edited.json', JSON.stringify(field)), /studies\[0\]\.reason\.actual: not text/);
 });
 
@@ -139,7 +139,7 @@ test('a summary holds a string decoded from the chain whatever its characters, a
     assert.deepEqual(parseSummary('testdata/research/morpho-vault-deposit.json', text), edited, actual);
   }
   const plain = JSON.parse(summaryText(summary)) as { studies: unknown[] };
-  const encoded = { ...plain, studies: [{ kind: 'misfit', hash: FIT, sender: { kind: 'safe', address: `0x${'11'.repeat(20)}` }, reason: { kind: 'field', at: 'call.x', expected: '1', actual: { utf8: '0x32' } } }, ...plain.studies] };
+  const encoded = { ...plain, studies: [{ kind: 'misfit', hash: FIT, sender: { kind: 'safe', address: `0x${'11'.repeat(20)}` }, reason: { kind: 'field', at: 'call.x', expected: '1', actual: { utf8: '0x32' } }, free: [] }, ...plain.studies] };
   assert.throws(() => parseSummary('testdata/research/edited.json', JSON.stringify(encoded)), /studies\[0\]\.reason\.actual\.utf8: text of the characters the program writes, kept as it is/);
 });
 

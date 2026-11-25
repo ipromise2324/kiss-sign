@@ -110,7 +110,7 @@ test('a flow line is confirmed in N of M traced transactions, and a money call n
   const elsewhere = supply(true, SAFE).map((c) => (c.selector === SUPPLY ? { ...c, selector: '0x12345678' as Hex } : c));
   const partly = compareFlow(template, registry, [LINE], [traced('0x01', supply(true, SAFE)), traced('0x02', elsewhere)]);
   assert.deepEqual(partly.lines, [{ seen: 1, of: 2 }]);
-  assert.deepEqual(partly.uncovered, [{ call: 2, from: 'morpho-blue', to: 'usdc', kind: 'transferFrom', transactions: 1, others: [] }], "Morpho's pull is explained only where the line was seen");
+  assert.deepEqual(partly.uncovered, [{ call: 2, from: 'morpho-blue', to: 'usdc', kind: 'transferFrom', pays: [{ from: 'safe', to: MORPHO }], transactions: 1, others: [] }], "Morpho's pull is explained only where the line was seen");
   assert.deepEqual(
     flowResults(partly).map((r) => [r.id, r.finding.kind]),
     [
@@ -120,7 +120,7 @@ test('a flow line is confirmed in N of M traced transactions, and a money call n
   );
 
   const noLine = compareFlow(template, registry, [], both);
-  assert.deepEqual(noLine.uncovered, [{ call: 2, from: 'morpho-blue', to: 'usdc', kind: 'transferFrom', transactions: 2, others: [] }]);
+  assert.deepEqual(noLine.uncovered, [{ call: 2, from: 'morpho-blue', to: 'usdc', kind: 'transferFrom', pays: [{ from: 'safe', to: MORPHO }], transactions: 2, others: [] }]);
 });
 
 test('a line seen nowhere is red, one seen in some and a money call no line covers amber, and each counts on the 呼叫追蹤 line', () => {
@@ -152,7 +152,7 @@ test('ETH sent inside a call is a money call, and a delegation is no step betwee
   const eth = [...supply(), call(5, 'DELEGATECALL', MORPHO, `0x${'77'.repeat(20)}` as Address, '0xabcdef01'), call(6, 'CALL', MORPHO, SAFE, undefined, undefined, '0x1' as Hex)];
   assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', eth)]).uncovered, []);
   const deep = [...supply(), call(5, 'CALL', MORPHO, `0x${'77'.repeat(20)}` as Address, '0xabcdef01'), call(6, 'CALL', `0x${'77'.repeat(20)}` as Address, SAFE, undefined, undefined, '0x1' as Hex)];
-  assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', deep)]).uncovered, [{ call: 2, from: 'other', to: 'safe', kind: 'eth', transactions: 1, others: [`0x${'77'.repeat(20)}`] }]);
+  assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', deep)]).uncovered, [{ call: 2, from: 'other', to: 'safe', kind: 'eth', pays: [{ from: `0x${'77'.repeat(20)}`, to: 'safe' }], transactions: 1, others: [`0x${'77'.repeat(20)}`] }]);
 });
 
 test('only a money call that touches the sender is compared: one between two other addresses is not a finding', () => {
@@ -164,10 +164,10 @@ test('only a money call that touches the sender is compared: one between two oth
   const toSafe = [...supply(), call(5, 'CALL', MORPHO, USDC, '0xa9059cbb', [SAFE])];
   assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', toSafe)]).uncovered, [], 'a call made by a covered call is covered');
   const deepToSafe = [...supply(), call(5, 'CALL', MORPHO, OUTSIDE, '0xabcdef01'), call(6, 'CALL', OUTSIDE, USDC, '0xa9059cbb', [SAFE])];
-  assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', deepToSafe)]).uncovered, [{ call: 2, from: 'other', to: 'usdc', kind: 'transfer', transactions: 1, others: [OUTSIDE] }], 'a transfer to the Safe no line explains');
+  assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', deepToSafe)]).uncovered, [{ call: 2, from: 'other', to: 'usdc', kind: 'transfer', pays: [{ from: OUTSIDE, to: 'safe' }], transactions: 1, others: [OUTSIDE] }], 'a transfer to the Safe no line explains');
 
   const spends = [...supply(), call(5, 'CALL', MORPHO, OUTSIDE, '0xabcdef01'), call(6, 'CALL', OUTSIDE, USDC, '0x23b872dd', [SAFE, OUTSIDE])];
-  assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', spends)]).uncovered, [{ call: 2, from: 'other', to: 'usdc', kind: 'transferFrom', transactions: 1, others: [OUTSIDE] }], "a transferFrom spending the Safe's allowance");
+  assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', spends)]).uncovered, [{ call: 2, from: 'other', to: 'usdc', kind: 'transferFrom', pays: [{ from: 'safe', to: OUTSIDE }], transactions: 1, others: [OUTSIDE] }], "a transferFrom spending the Safe's allowance");
 });
 
 test('a trace nested deeper than the EVM allows is no trace, and a recording cannot hold one', () => {

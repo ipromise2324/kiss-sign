@@ -413,6 +413,7 @@ const NOTES_FIELDS = obj({
     ),
   ),
   fields: keyed((scope) => scope.fields, 'an argument of the template', true, () => text(2000)),
+  times: optList(where(str(400), (key, scope) => (scope.fields.includes(key) ? undefined : `${shown(key)} is not an argument of the template`))),
   pastTxsConclusion: opt(text(200)),
   context: optList(obj({ title: text(40), text: text(400), sources: where(list(url), (sources) => (sources.length === 0 ? 'names no source' : undefined)) }), 4),
 });

@@ -65,7 +65,7 @@ h1 .byai{vertical-align:6px}
 h1 .aiw>:first-child{margin-right:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
 .sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
-:is(.sub,h3,.intro,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
+:is(.sub,h3,.intro,.ans,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
 .verdict .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:flex;align-items:flex-start;gap:8px;font-size:var(--t-row);position:relative}
@@ -148,9 +148,19 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
 
-.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
-.key>span{display:inline-flex;gap:8px;align-items:center}
-.key .k0{color:var(--fg3);font-weight:590}
+.deciders{margin:36px 0 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}
+.deciders h3{margin:0 0 10px;font-size:var(--t-small);color:var(--fg2)}
+.deciders dl{margin:0;display:flex;flex-direction:column;gap:12px}
+.deciders .grp{display:grid;grid-template-columns:88px minmax(0,1fr);gap:0 16px;align-items:start}
+.deciders .gh{font-size:var(--t-small);line-height:24px;color:var(--fg);font-weight:590}
+.deciders .defs{margin:0;display:flex;flex-direction:column;gap:6px}
+.deciders .defs>div{display:grid;grid-template-columns:116px minmax(0,1fr);gap:0 14px;align-items:start;font-size:var(--t-small);line-height:24px;color:var(--fg2)}
+.deciders .who{justify-self:start}
+@media (max-width:560px){.deciders .grp{grid-template-columns:minmax(0,1fr)}}
+.mix{margin:10px 0 12px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 16px;align-items:start}
+.mix dt{justify-self:start}
+.mix dd{margin:0;display:flex;flex-wrap:wrap;gap:6px;line-height:24px}
+.mix code{font-size:var(--t-label)}
 .cb{margin-top:40px}
 .callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
 .callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
@@ -249,14 +259,19 @@ details.fold[open]>summary .chev{transform:rotate(90deg)}
 details.fold .ad:last-child{border-bottom:0}
 
 .warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
-.pblock{border-top:1px solid var(--line);margin-top:16px}
-.ph{display:flex;flex-direction:column;gap:4px;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
-.ph .pt{font-weight:590}
-.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
-.pg .pc{color:var(--fg)}
-.pg .pcalls{margin-bottom:4px}
-.pg .pex{font-size:var(--t-small);margin-top:4px}
-.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+.ans{margin:0 0 10px;color:var(--fg2)}
+.ans b{color:var(--fg)}
+.cap{margin:8px 0 0;font-size:var(--t-small);color:var(--fg3)}
+.lm{color:var(--warn)}
+.sh{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-size:var(--t-small);color:var(--fg2);margin-top:18px}
+.sc{overflow-x:auto;margin:12px 0 8px}
+.pt2{border-collapse:collapse;width:100%;font-size:var(--t-small);font-variant-numeric:tabular-nums}
+.pt2 th{font-size:var(--t-label);font-weight:400;color:var(--fg3);text-align:left;padding:6px 16px 6px 0;border-bottom:1px solid var(--line2);white-space:nowrap}
+.pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
+.pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
+.pt2 .n{text-align:right}
+.pt2 td.nw{white-space:nowrap}
+.pt2 td.v{color:var(--fg);font-weight:590}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -271,13 +286,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
 .auto li{display:flex;gap:10px;align-items:baseline}
 .auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
-.usage{font-size:var(--t-small);color:var(--fg3);margin-bottom:28px}
-.usage h3{font-size:var(--t-row);color:var(--fg2);margin:0 0 6px}
-.usage p{margin:0}
-.usage table{border-collapse:collapse;margin:10px 0}
-.usage th,.usage td{padding:6px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left}
-.usage th+td,.usage th+th{padding-left:32px;text-align:right}
-.usage tfoot th,.usage tfoot td{color:var(--fg);border-bottom:0}
+.ut{border-collapse:collapse;width:100%;margin:16px 0 12px;font-size:var(--t-row)}
+.ut th,.ut td{padding:9px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left;color:var(--fg2)}
+.ut thead th{font-size:var(--t-label);color:var(--fg3);border-bottom-color:var(--line2)}
+.ut th+td,.ut th+th{text-align:right;font-variant-numeric:tabular-nums}
+.ut tfoot th,.ut tfoot td{color:var(--fg);font-weight:590;border-bottom:0}
 .foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
 .foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
@@ -298,7 +311,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
 </nav>
 
 <div class="main">
@@ -321,7 +334,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>不動任何資產，但門檻決定幾把鑰匙就能動這個 Safe。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
   </details>
 </header>
 
@@ -355,9 +368,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </svg>
   </div>
   <div class="scrollhint">圖可以左右滑動，最右邊是 你的 Safe</div>
-  <div class="key">
-    <span class="k0">誰決定</span>
-    <span><span class="who you">你填</span>每次簽名填</span>
+  <div class="deciders">
+    <h3>每個值由誰決定</h3>
+    <dl>
+      <div class="grp"><dt class="gh">你</dt><dd class="defs">
+        <div><span class="who you">你填</span><span>每次簽名你自己填。</span></div></dd></div>
+    </dl>
   </div>
   <p class="lead keylead">下面逐一列出交易的每個呼叫。每個參數都寫出由誰決定、它的值或必須符合的規則，以及它的作用。</p>
   
@@ -437,26 +453,23 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>過去交易</h2>
-  <p class="lead">過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 <span class="num">76</span> 筆：Safe <span class="num">76</span> 筆（75 個 Safe）、EOA <span class="num">0</span> 筆。這些交易全部成功執行：它們是從 Safe ChangedThreshold時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0x2de9bdcf42b10cf32c834dad34d20c9486cd70327fc190b0398e803847c0d22e">0x2de9bdcf…</a>、<a href="https://etherscan.io/tx/0x02f571fca5cdda7b2269054c4586bbd7131848e37c4685b892e8657d9fa50ba0">0x02f571fc…</a>、<a href="https://etherscan.io/tx/0x1631a2a8b754122c0f989c0e61bf55ba6facea963ad7ec7b8fbf2d2eedd6ad0d">0x1631a2a8…</a>。</p>
-  <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 <span class="num">4</span> 筆跟你這筆不一樣：形狀一樣、但有地址不在 registry 裡的 <span class="num">0</span> 筆，形狀不同的 <span class="num">4</span> 筆</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>四筆不合的都同時改了簽署人，其中兩筆還呼叫 <code>enableModule</code>。kiss-sign 不接受這種批次，每個變更要各自一筆交易。</span><span class="byai">AI 研究</span></span></p>
-  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
+  <h3>1. 這個模板的交易以前成功過嗎？</h3>
+  <p class="ans"><b>成功過，75 個 Safe 一共做過 76 次。</b> EOA：0 次。最近一次是區塊 26459612。全部成功執行。</p>
+  <h3>2. app 填的值，一般是多少？</h3>
+  <p class="ans">這個模板沒有留任何值給 app 填。</p>
+  <h3>3. 其他交易哪裡不同？</h3>
+  <p class="ans">4 筆交易做了這個模板不允許的事。</p>
+  <p class="ans"><span class="aiw" data-ai><span>四筆不合的都同時改了簽署人，其中兩筆還呼叫 <code>enableModule</code>。kiss-sign 不接受這種批次，每個變更要各自一筆交易。</span><span class="byai">AI 研究</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="nw">例子</th></tr></thead><tbody>
+    <tr><td class="what">除了模板的呼叫，還有別的：<code>自己.addOwnerWithThreshold → 自己.changeThreshold</code></td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 25501061</td><td class="nw"><a href="https://etherscan.io/tx/0x0d8c0b4eb0ac585046931720b290490ce9d9b51803fc3833759fc24a69ecb64e">0x0d8c0b4e…</a></td></tr>
+    <tr><td class="what">除了模板的呼叫，還有別的：<code>自己.enableModule → 0xC46C6878390690764569a8E4eC597ecF465CEf5A.enableModule → 自己.swapOwner → 自己.changeThreshold</code></td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 25769923</td><td class="nw"><a href="https://etherscan.io/tx/0xbe9a9338a22280aac15b52fbec303f797f40c7a022a76669f11761fdc8c6782a">0xbe9a9338…</a></td></tr>
+    <tr><td class="what">除了模板的呼叫，還有別的：<code>自己.enableModule → 0xbbaFeA932970F753e40Ff33Ee10a8626FBdC61c4.enableModule → 自己.swapOwner → 自己.changeThreshold</code></td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 25869291</td><td class="nw"><a href="https://etherscan.io/tx/0xd5da73f81959bf7a3239750078454eba5e7f172ecd119822a28071c7acb2f84c">0xd5da73f8…</a></td></tr>
+    <tr><td class="what">除了模板的呼叫，還有別的：<code>自己.swapOwner → 自己.changeThreshold</code></td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 26363024</td><td class="nw"><a href="https://etherscan.io/tx/0x6a5e2601c372f2c7412804cf4223e0a444ab7943b90e1b0188631c02201f87e4">0x6a5e2601…</a></td></tr></tbody></table></div>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>程式怎麼搜尋</span></summary>
   <h3>搜尋 Safe 的ChangedThreshold，找到 8545 筆，研究 238 筆，含證實為 Safe 的參與方的 8509 筆中研究 202 筆</h3>
-  <p class="lead">記錄在 <code>testdata/research/safe-change-threshold.json</code>。搜尋了最近一年的每一筆交易，從區塊 23856505（2025-11-22）到區塊 26484504（2026-11-24），沒有遺漏。只有 Etherscan 搜尋事件，找到 <span class="num">8545</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">80</span> 筆用了這個操作的呼叫（79 個 Safe），<span class="num">76</span> 筆跟模板一模一樣。</span></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>0xce25a523b3962379E656FF405DA479B03fD976D7.addOwnerWithThreshold → 0xce25a523b3962379E656FF405DA479B03fD976D7.changeThreshold</code></div><div>呼叫跟模板不同，模板是 <code>changeThreshold</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x0d8c0b4eb0ac585046931720b290490ce9d9b51803fc3833759fc24a69ecb64e">0x0d8c0b4e…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>0x83386167C6dA070Be98C47371DD9F366a77A7E16.enableModule → 0xC46C6878390690764569a8E4eC597ecF465CEf5A.enableModule → 0x83386167C6dA070Be98C47371DD9F366a77A7E16.swapOwner → 0x83386167C6dA070Be98C47371DD9F366a77A7E16.changeThreshold</code></div><div>呼叫跟模板不同，模板是 <code>changeThreshold</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xbe9a9338a22280aac15b52fbec303f797f40c7a022a76669f11761fdc8c6782a">0xbe9a9338…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>0xb948141a73829bB4715283eB9018625bb5743986.enableModule → 0xbbaFeA932970F753e40Ff33Ee10a8626FBdC61c4.enableModule → 0xb948141a73829bB4715283eB9018625bb5743986.swapOwner → 0xb948141a73829bB4715283eB9018625bb5743986.changeThreshold</code></div><div>呼叫跟模板不同，模板是 <code>changeThreshold</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xd5da73f81959bf7a3239750078454eba5e7f172ecd119822a28071c7acb2f84c">0xd5da73f8…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>0x5fE176d6D94845880F43c0A7C5aa7686EF64A36A.swapOwner → 0x5fE176d6D94845880F43c0A7C5aa7686EF64A36A.changeThreshold</code></div><div>呼叫跟模板不同，模板是 <code>changeThreshold</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x6a5e2601c372f2c7412804cf4223e0a444ab7943b90e1b0188631c02201f87e4">0x6a5e2601…</a></div></div></div>
-  </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 127 筆是別的操作，不列入：<code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 5 筆、<code>0xC74a878bF33f054dC1e17cE1af6D031C29327Fc2.0xe3fb5c74</code> 2 筆、<code>0xe0c397708Ccec47fcb7ee397A608601903294e8E.0x8174d2dc</code> 2 筆、<code>0x1081601829726aEe316B871d2A39A125c0C33972.addOwnerWithThreshold</code> 2 筆，還有別的。</span></div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 31 筆來自不是 Safe 的合約、執行失敗或讀不到，不列入。</span></div>
+  <p class="cap">搜尋了最近一年的每一筆交易，從區塊 23856505（2025-11-22）到區塊 26484504（2026-11-24），沒有遺漏。只有 Etherscan 搜尋事件，找到 <span class="num">8545</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
+  <p class="cap">這些交易是從事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。</p>
+  <p class="cap">另外 127 筆是別的操作，不列入：<code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 5 筆、<code>0xC74a878bF33f054dC1e17cE1af6D031C29327Fc2.0xe3fb5c74</code> 2 筆、<code>0xe0c397708Ccec47fcb7ee397A608601903294e8E.0x8174d2dc</code> 2 筆、<code>0x1081601829726aEe316B871d2A39A125c0C33972.addOwnerWithThreshold</code> 2 筆，還有別的。</p>
+  <p class="cap">另外 31 筆來自不是 Safe 的合約、執行失敗或讀不到，不列入。</p>
   </details>
 </section>
 
@@ -492,7 +505,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<aside class="usage"><h3>製作這份報告的 AI 用量</h3><p>Opus 5.5 · 呼叫 40 次 · 62 分鐘</p><table><thead><tr><th scope="col">項目</th><th scope="col">token</th></tr></thead><tbody><tr><th scope="row">重複讀取（cache 讀取）</th><td class="num">3.3M</td></tr><tr><th scope="row">新讀入（input 與 cache 寫入）</th><td class="num">0.23M</td></tr><tr><th scope="row">output</th><td class="num">0.03M</td></tr></tbody><tfoot><tr><th scope="row">總共</th><td class="num">3.5M</td></tr></tfoot></table><p>來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者</p></aside>
+<section id="usage">
+  <h2>AI 用量</h2>
+  <p class="lead">Opus 5.5 用 40 次呼叫、62 分鐘做出這份報告。</p>
+  <table class="ut"><thead><tr><th scope="col">項目</th><th scope="col">token</th></tr></thead><tbody><tr><th scope="row">重複讀取（cache 讀取）</th><td class="num">3.3M</td></tr><tr><th scope="row">新讀入（input 與 cache 寫入）</th><td class="num">0.23M</td></tr><tr><th scope="row">output</th><td class="num">0.03M</td></tr></tbody><tfoot><tr><th scope="row">總共</th><td class="num">3.5M</td></tr></tfoot></table>
+  <p class="cap">來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者。這些數字程式不檢查。</p>
+</section>
+
 <footer class="foot">由 <code>pnpm report safe/change-threshold --record</code> 從 <code>templates/safe/change-threshold/template.json</code>、<code>templates/safe/change-threshold/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/safe-change-threshold.json</code>、<code>testdata/abi</code>、<code>testdata/research/safe-change-threshold.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/safe/change-threshold/notes.json</code>、<code>testdata/usage/safe-change-threshold.json</code> 寫出，資料在 2026-11-24 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。用量的數字程式也不檢查。</footer>
 
 </div>

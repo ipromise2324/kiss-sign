@@ -32,6 +32,7 @@ The exact shape and every limit are in step 6 of [First time an operation is don
 - `protocols`, by DefiLlama slug, one for every protocol the generated report's protocol facts cover: `intro`, one line; `audits`, a note citing the audit reports; `incidents`, one note per DefiLlama hack in date order, its cause with the post-mortem as a source, exactly as many as the facts list.
 - `judgments`: at most four, each with a `recommendation`.
 - `reviews`: below.
+- `times`, optional: the field keys of free numbers that are times, such as a deadline the template leaves free, so Past transactions shows how far ahead they were set instead of raw numbers; it changes no rule.
 - `pastTxsConclusion`, optional: one line of at most 200 on what the past transactions with other shapes teach.
 - `context`, optional and only in an instance's `notes.json`: at most four notes `{ "title", "text", "sources" }`, a title of at most 40 and a text of at most 400, each with at least one source, on what the signer may want to know about the instance, such as where the vault sends a deposit and why; the program shows them in the Instance section and refuses them in the template's file.
   Lead the text with the conclusion the signer needs, such as "a deposit stays in the vault until an allocator lends it out".

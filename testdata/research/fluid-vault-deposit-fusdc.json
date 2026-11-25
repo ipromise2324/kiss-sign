@@ -10,7 +10,7 @@
  "studiedWith": {
   "template": "0xd28e1e75854e17d54f42e1c116a3f20d0d6cd72f0be362f181972719becc3d5f",
   "registry": "0x175d10f2292c2f7d41489d7f2ee928983d333d2bf262733a51b6dfd2405ded4f",
-  "study": "0x94bfaaffbfc8c7dbc5b3874bc31cfe270d787964a427798536f92503545477bb"
+  "study": "0xb596923b6c289246962b4c2a301475010e93cfa8db57d91a981943ffeaa1e73d"
  },
  "search": {
   "windows": [
@@ -1434,7 +1434,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
@@ -1451,7 +1452,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
@@ -1468,7 +1470,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -1514,7 +1517,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -1560,7 +1564,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -1664,7 +1669,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
@@ -1681,7 +1687,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -1741,7 +1748,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1765,7 +1773,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -1945,7 +1954,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2034,7 +2044,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
@@ -2051,7 +2062,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2198,7 +2210,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
@@ -2215,7 +2228,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2275,7 +2289,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2335,7 +2350,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -2467,7 +2483,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2491,7 +2508,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
@@ -2508,7 +2526,8 @@
       "selector": "0x6e553f65"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
@@ -2525,7 +2544,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -2571,7 +2591,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
@@ -2588,7 +2609,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -2663,7 +2685,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
@@ -2680,7 +2703,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
@@ -2697,7 +2721,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
@@ -2714,7 +2739,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
@@ -2731,7 +2757,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -2777,7 +2804,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
@@ -2794,7 +2822,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2941,7 +2970,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2972,7 +3002,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
@@ -2989,7 +3020,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3013,7 +3045,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3037,7 +3070,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3090,7 +3124,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -3259,7 +3294,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -3305,7 +3341,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -3358,7 +3395,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -3404,7 +3442,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3529,7 +3568,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -3604,7 +3644,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
@@ -3621,7 +3662,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -3869,7 +3911,8 @@
      "fluid-fusdc"
     ],
     "actual": "0x273da948aca9261043fbdb2a857bc255ecc29012"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
