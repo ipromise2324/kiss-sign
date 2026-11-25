@@ -263,7 +263,6 @@ What it cost Claude Opus 5.5 to make reports, measured between 2026-11-22 and 20
 | Report | Calls | Tokens | Cache reads | Output | Minutes | USD |
 |---|---:|---:|---:|---:|---:|---:|
 | compound/supply (compound-v3-cusdcv3) | 79 | 6.68M | 96% | 39k | 26 | $3.22 |
-| morpho/vault-v2-reallocate (acuto-usdc-v2-4a57) | 41 | 4.67M | 92% | 61k | 25 | $3.66 |
 | safe/add-owner | 71 | 5.61M | 96% | 32k | 74 | $2.59 |
 | safe/change-threshold | 40 | 3.55M | 93% | 30k | 62 | $2.40 |
 | safe/remove-owner | 73 | 5.14M | 96% | 33k | 57 | $2.54 |
