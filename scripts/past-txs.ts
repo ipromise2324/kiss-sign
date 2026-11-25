@@ -275,6 +275,7 @@ const note = (read: string) => void unread.push(read);
 const sources = recordingAsk(shown.ask(liveAsk(process.env, note)));
 const messages = recordingMessages(liveMessages(httpsMessage, note));
 const reader = createReader(endpoints, chain.transport, { note, retryPausesMs: RETRY_PAUSES_MS });
+const batches = createReader(endpoints, chain.transport);
 const traces = drpcTraces(endpoints[1], httpsTransport(), note);
 const query = {
   template,
@@ -284,6 +285,7 @@ const query = {
 const run = await pastTxs(query, {
   ask: sources.ask,
   reader,
+  batches,
   registry,
   readMessage: messages.read,
   exclude,

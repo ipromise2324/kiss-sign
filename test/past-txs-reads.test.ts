@@ -30,6 +30,11 @@ test('a batch the providers disagree on, or that was never recorded, reads each 
   assert.deepEqual(await prove(recorded.exchanges.filter((e) => !isBatch(e))), await singly());
 });
 
+test('a batch with no answer, which the batch reader notes nowhere, leaves every party read alone and proven', async () => {
+  const failing = replayReader([]);
+  assert.deepEqual(await proveParties(replayReader(recorded.exchanges), recorded.parties, at, failing), await singly());
+});
+
 test('a transaction is read once in a run, until both providers give the same answer', async () => {
   const hash = `0x${'11'.repeat(32)}` as Hex;
   const answers: Read<Transaction | null>[] = [

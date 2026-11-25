@@ -48,6 +48,8 @@ export const yearBefore = (head: bigint): BlockRange => ({ fromBlock: searchTop(
 export type PastTxsDeps = {
   readonly ask: Ask;
   readonly reader: Reader;
+  /** Reads the anchor parties in batches, noting no read with no answer, since each party of such a batch is read alone; without it, `reader`. */
+  readonly batches?: Reader;
   readonly registry: Registry;
   readonly readMessage: ReadMessage;
   readonly exclude: Address | undefined;
@@ -221,6 +223,7 @@ async function chooseByParty(
   rule: PartyRule,
   at: bigint,
   reader: Reader,
+  batches: Reader | undefined,
   maxTxs: number,
 ): Promise<{ sample: Hex[]; check: PartyCheck; safeTxs: ReadonlySet<Hex> }> {
   const kept = new Set(hashes);
@@ -235,7 +238,7 @@ async function chooseByParty(
   const proofs = new Map<Address, PartyProof>();
   if (parties.length > 0) {
     const block = await reader.block(at);
-    const read = block.kind === 'unverifiable' ? parties.map((): PartyProof => ({ kind: 'unreadable', reason: block.reason })) : await proveParties(reader, parties, block.value);
+    const read = block.kind === 'unverifiable' ? parties.map((): PartyProof => ({ kind: 'unreadable', reason: block.reason })) : await proveParties(reader, parties, block.value, batches);
     parties.forEach((party, i) => proofs.set(party, read[i] as PartyProof));
   }
   const isSafe = (hash: Hex) => [...(partiesOf.get(hash) ?? [])].some((party) => proofs.get(party)?.kind === 'safe');
@@ -358,7 +361,7 @@ export async function pastTxs(query: PastTxsQuery, given: PastTxsDeps): Promise<
     for (const hit of hits.etherscan) if (hit.emitter !== undefined) emitters.set(hit.hash, (emitters.get(hit.hash) ?? new Set()).add(hit.emitter));
     const hashes = newest !== undefined || year?.kind === 'covered' ? byBlock([...window.found.keys()], hits) : [...window.found.keys()];
     const chosen =
-      newest !== undefined || (year?.kind === 'covered' && sampling.kind === 'year') ? await chooseByParty(hashes, hits, partyRule(query.anchor), range.toBlock, deps.reader, deps.maxTxs) : undefined;
+      newest !== undefined || (year?.kind === 'covered' && sampling.kind === 'year') ? await chooseByParty(hashes, hits, partyRule(query.anchor), range.toBlock, deps.reader, deps.batches, deps.maxTxs) : undefined;
     if (chosen !== undefined) byParty = chosen;
     searched.push({ asked, range, found: hashes, sample: chosen?.sample ?? spacedSample(hashes, perWindow) });
   }

@@ -335,7 +335,7 @@ export function createReader(endpoints: readonly [Endpoint, Endpoint], transport
   };
 }
 
-/** Alchemy and drpc on Ethereum mainnet. Throws `MissingKeyError` before any read when the Alchemy key is not set. */
+/** Alchemy and drpc on Ethereum mainnet. Throws `MissingKeyError` before any read when a key is not set. */
 export function openMainnetReader(env: Env, transport: Transport = httpsTransport(), options: ReaderOptions = {}): Reader {
   return createReader(mainnetEndpoints(env), transport, options);
 }

@@ -45,20 +45,20 @@ async function agreedWords(reader: Reader, header: BlockHeader, code: Hex, overr
   return addresses.map((_, i) => call.returnData.slice(2 + i * 64, 2 + (i + 1) * 64));
 }
 
-/** What `proveParty` proves of each address at `at`, read in batches, and alone where the providers give no agreed batch. */
-export async function proveParties(reader: Reader, parties: readonly Address[], at: BlockRef): Promise<PartyProof[]> {
-  const header = parties.length < MIN_BATCH_PARTIES ? undefined : await reader.header(at);
+/** What `proveParty` proves of each address at `at`, read in batches through `batches`, and alone through `reader` where the providers give no agreed batch. */
+export async function proveParties(reader: Reader, parties: readonly Address[], at: BlockRef, batches = reader): Promise<PartyProof[]> {
+  const header = parties.length < MIN_BATCH_PARTIES ? undefined : await batches.header(at);
   if (header?.kind !== 'agreed') return inPool(parties, SINGLE_WIDTH, (party) => proveParty(reader, party, at));
   const chunks = Array.from({ length: Math.ceil(parties.length / BATCH_SIZE) }, (_, i) => parties.slice(i * BATCH_SIZE, (i + 1) * BATCH_SIZE));
-  return (await inPool(chunks, BATCH_WIDTH, (chunk) => proveBatch(reader, chunk, header.value, at))).flat();
+  return (await inPool(chunks, BATCH_WIDTH, (chunk) => proveBatch(reader, batches, chunk, header.value, at))).flat();
 }
 
-async function proveBatch(reader: Reader, parties: readonly Address[], header: BlockHeader, at: BlockRef): Promise<PartyProof[]> {
+async function proveBatch(reader: Reader, batches: Reader, parties: readonly Address[], header: BlockHeader, at: BlockRef): Promise<PartyProof[]> {
   const singly = () => inPool(parties, SINGLE_WIDTH, (party) => proveParty(reader, party, at));
-  const hashes = await agreedWords(reader, header, CODE_HASHES, {}, parties);
+  const hashes = await agreedWords(batches, header, CODE_HASHES, {}, parties);
   if (hashes === undefined) return singly();
   const proxies = parties.filter((_, i) => PROXY_HASHES.has(hashes[i] as string));
-  const slots = proxies.length === 0 ? [] : await agreedWords(reader, header, FIRST_WORDS, Object.fromEntries(proxies.map((proxy) => [proxy, { code: SLOT_0 }])), proxies);
+  const slots = proxies.length === 0 ? [] : await agreedWords(batches, header, FIRST_WORDS, Object.fromEntries(proxies.map((proxy) => [proxy, { code: SLOT_0 }])), proxies);
   if (slots === undefined) return singly();
   const safes = new Set(proxies.filter((_, i) => officialSingleton(`0x${slots[i]}` as Hex)));
   return parties.map((party) => ({ kind: safes.has(party) ? 'safe' : 'not-safe' }));
