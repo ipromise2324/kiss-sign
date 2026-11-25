@@ -39,8 +39,8 @@ const feed = (byte: string, unit: string, rest: object = {}) =>
 const plainRegistry = { one: of('a1', 'token'), two: of('a2', 'token'), dex: of('a3', 'router') };
 const priced = {
   ...plainRegistry,
-  one: of('a1', 'token', { price: { feed: 'one-usd', peg: 'usd' } }),
-  two: of('a2', 'token', { price: { feed: 'two-usd', peg: 'usd' } }),
+  one: of('a1', 'token', { code: PIN, price: { feed: 'one-usd', peg: 'usd' } }),
+  two: of('a2', 'token', { code: PIN, price: { feed: 'two-usd', peg: 'usd' } }),
   'one-usd': feed('b1', 'ONE'),
   'two-usd': feed('b2', 'TWO'),
   pools: of('b3', 'factory', { instanceCheck: { function: 'getPool(address,address)', args: [{ attribute: 'token0' }, { attribute: 'token1' }] } }),
