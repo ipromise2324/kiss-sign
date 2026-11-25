@@ -12,7 +12,7 @@ The signer runs every command from the clone as `pnpm kiss-sign <command>`, afte
    It first fetches GitHub's `main` and stops, telling the signer to `git pull`, when the clone's `templates/` or `registry/` differ from it.
    It lists each contract, market or recipient with its full address; the signer picks by number, or by the exact name, full address or market id as listed.
    It asks each amount in whole tokens (commas between thousands allowed), reading a registry token's decimals on chain itself; ETH is 18 with no read, and a token outside the registry is asked in base units.
-   It does not ask a computed field, such as a vault deposit's `min-shares`: it reads the declared view, applies the template's slippage, and prints the value with its slippage and source for the signer to check.
+   It does not ask a computed field, such as a vault deposit's `min-shares`: it checks that every contract the read names runs its pinned code, reads the declared view, applies the template's slippage, and prints the value with its slippage and source for the signer to check.
    A swap's minimum (a field with a `floor`) follows the two tokens picked:
    - Both have a feed and the same peg, and the feeds' stated deviations sum to at most 50 bps: it asks only the slippage the app shows (Enter is 0.50%, at most 1.00%) and computes the minimum.
    - Both have a feed, otherwise: the signer types the app's minimum, and one more than 2.50% below the price must be typed twice.

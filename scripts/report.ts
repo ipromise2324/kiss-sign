@@ -45,13 +45,14 @@ import {
   evidenceEntries,
 } from '../src/research/report.ts';
 import type { TemplateTarget } from '../src/research/report.ts';
-import { NOTES_FILE } from '../src/research/notes.ts';
+import { NOTES_FILE, NotesError } from '../src/research/notes.ts';
 import type { Language } from '../src/language.ts';
 import { generatedHtml, generatedHtmlFile, writeHtmlPages } from '../src/research/report-html.ts';
 import { gatherSourcePages, httpsGet, retryingGet } from '../src/research/source-page.ts';
 import { readGithubToken } from '../src/research/github-token.ts';
 import { alchemyCall, vaultEvidenceText } from '../src/research/instance-evidence.ts';
 import type { Address } from '../src/safe/types.ts';
+import { UsageError } from '../src/research/usage.ts';
 import { requireJudged } from '../src/research/trace-addresses.ts';
 import { ensureVendored, nodeVendorIoWith } from '../src/vendor.ts';
 import { recordingText } from '../src/chain/bytecode.ts';
@@ -75,7 +76,8 @@ UNVERIFIABLE, never as FINDING, and --record then writes nothing.
 --record refuses before any read, naming every one, while an address the recorded call traces show
 moving the sender's money is neither checked at signing nor judged in the trace-addresses.json
 beside the report, while that file judges an address no trace names, or while no trace counts for
-a template that moves money and the file gives no "untraced" reason.
+a template that moves money and the file gives no "untraced" reason. --render and --offline refuse
+the same for a report recorded on 2026-11-26 (UTC) or later, or that has the file.
 The report prints no text from a page, a token, a descriptor or an API answer, and prints the
 template's reasons escaped and labelled as written by the AI. pnpm test fails when a committed
 report, or an HTML page, differs from what its recordings and notes.json give.
@@ -137,15 +139,18 @@ const target: TemplateTarget = { template: id, instance: flags['instance-of'] };
 
 const root = join(import.meta.dirname, '..');
 const fullRegistry = loadRegistry(root);
-let loaded: ReturnType<typeof loadReport>;
-try {
-  loaded = loadReport(root, fullRegistry, target);
-} catch (e) {
-  if (!(e instanceof ReportError)) throw e;
-  console.error(`REFUSED  ${e.message}`);
-  process.exit(2);
+
+async function orRefuse<T>(run: () => T | Promise<T>): Promise<T> {
+  try {
+    return await run();
+  } catch (e) {
+    if (!(e instanceof ReportError || e instanceof NotesError || e instanceof UsageError)) throw e;
+    console.error(`REFUSED  ${e.message}`);
+    process.exit(2);
+  }
 }
-const { subject, registry } = loaded;
+
+const { subject, registry } = await orRefuse(() => loadReport(root, fullRegistry, target));
 const mdFile = generatedPath(root, target);
 const dir = reportDir(root, target);
 if (!(await ensureVendored(['solc', 'psl']))) process.exit(1);
@@ -153,7 +158,7 @@ const suffixes = loadPublicSuffixList();
 const compilers = cachedCompilers();
 
 if (flags.offline) {
-  process.stdout.write(await replayReport(root, fullRegistry, target, compilers, suffixes));
+  process.stdout.write(await orRefuse(() => replayReport(root, fullRegistry, target, compilers, suffixes)));
   process.exit(0);
 }
 
@@ -169,20 +174,15 @@ async function writeGenerated(): Promise<void> {
 }
 
 if (flags.render) {
-  await writeGenerated();
+  await orRefuse(writeGenerated);
   process.exit(0);
 }
 
-const pastTxs = pastTxsRecordings(root, subject).map(({ file, recording }) => summarizePastTxs(root, registry, file, recording));
-if (flags.record) {
-  try {
-    requireJudged(root, subject, registry, pastTxs);
-  } catch (e) {
-    if (!(e instanceof ReportError)) throw e;
-    console.error(`REFUSED  ${e.message}`);
-    process.exit(2);
-  }
-}
+const pastTxs = await orRefuse(() => {
+  const studied = pastTxsRecordings(root, subject).map(({ file, recording }) => summarizePastTxs(root, registry, file, recording));
+  if (flags.record) requireJudged(root, subject, registry, studied);
+  return studied;
+});
 
 const entries = entriesOf(subject, registry);
 const endpoints = mainnetEndpoints(process.env);
@@ -276,5 +276,5 @@ if (flags.record) {
   mkdirSync(dirname(join(root, reportRecordingPath(target))), { recursive: true });
   writeFileSync(join(root, reportRecordingPath(target)), recording);
   console.error(`recorded ${reportRecordingPath(target)}`);
-  await writeGenerated();
+  await orRefuse(writeGenerated);
 }

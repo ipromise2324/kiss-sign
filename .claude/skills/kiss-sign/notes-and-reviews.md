@@ -1,6 +1,6 @@
 # Notes and reviews
 
-How to do step 8 of [Build a template](SKILL.md#build-a-template) and step 5 of [Add an instance's report](SKILL.md#add-an-instances-report): write `notes.json`, the AI's text beside the program's results.
+How to do step 8 of [Build a template](SKILL.md#build-a-template) and step 4 of [Add an instance's report](SKILL.md#add-an-instances-report): write `notes.json`, the AI's text beside the program's results.
 The exact shape and every limit are in step 6 of [First time an operation is done](../../../docs/design/flow.md#first-time-an-operation-is-done-build-its-template), the bold item Written by the AI, as data; `--render` refuses any other key or length.
 
 ## Write and render
@@ -23,23 +23,28 @@ The exact shape and every limit are in step 6 of [First time an operation is don
   The summary leads with what the transaction does, then what it needs first and what it refuses; leave counts and evidence to the sections that show them.
 - `verdict`: `{ "status": "safe" | "caution", "text" }`, one line of at most 100: your research advice on the operation's risk, despite the key's name.
   It is not a transaction's verdict, which only `verify` gives, and it never moves a program result; the Advice (建議) line's icon is the program's worst result, not your status.
-- `flow`: at most four lines of what happens inside a call, each `{ "after": <call number>, "from": <registry name>, "to": <registry name>, "function": <canonical signature>, "text", "sources" }`, between two contracts the calls or the effects' views target, the entries those name in `dependsOn`, or the tokens the effects move or touch; `text` is at most 100 characters.
+- `flow`: at most four lines of what happens inside a call, each `{ "after": <call number>, "from": <registry name>, "to": <registry name>, "function": <canonical signature>, "text", "sources" }`, between two contracts the calls or the effects' views target, the entries those name in `dependsOn`, the tokens the effects move or touch, or the token a card field holds, as `card.<field>`; `text` is at most 100 characters.
   `function` is the function `from` calls on `to`, canonical, such as `deposit(uint256,address)`; the program compares each line with the call traces `pnpm past-txs --record` keeps, in the traced transactions that make the template call it follows (`after`), and draws it solid only when every one of them shows it; with no such trace the line is not compared and gives no result.
   A line must hold on every traced transaction: one that some show and others do not is red, as one none show.
+  When the card chooses the token, write `card.<field>`, one line for every token the field can name, such as `"from": "permit2", "to": "card.sell-token", "function": "transferFrom(address,address,uint256)"` for a swap's pull; a literal token is red as soon as a trace sells another.
+  Each transaction is compared with the token its own calls hold where the template binds the field, so the one line holds in either direction; a transaction whose calls do not carry the field does not test it.
+  The line passes once the traces that test it hold every token the field can name and all show it; until then it is solid only for the tokens seen, which the program names beside it, and it counts neither as passed nor for review.
+  So study both directions of a swap first ([Study past transactions](build-template.md#study-past-transactions)).
+  When the traces cover both traded tokens, keep one line per step, such as the pull at `card.sell-token` and, when a fixed contract makes it, the payout at `card.buy-token`, never one per token or direction.
   A path that depends on state or on a choice, such as a call one vault makes and another does not, is not one line: split it by what the card asks, a card field the signer chooses, or into a template of its own, so the signer always knows which path they sign; when you cannot tell which path the signer means, ask them which operation it is.
   Before you write a line, find that call in a past transaction's internal calls (Etherscan's trace of one transaction `pnpm past-txs` found) and in the contract's source; `sources` holds both, the source pinned to a commit first, since a confirmed line links the first source, then the transaction's Etherscan page; the program checks only that `sources` is a list of https URLs, not empty.
   Name no call the template binds itself, such as a Bundler3 bundle item: the diagram draws those from the template, and the program refuses the line.
   Spend the four lines on the steps that move money inside the call: every `transfer`, `transferFrom`, `approve` or ETH transfer that touches the sender (made by it, paying it or paid to it, or spending its allowance) and is not a call the template binds or a line names, nor made directly by one, is a result for the signer that you review; a call between two other addresses is not.
   Every address outside the registry in those calls was settled before the notes, at [Study past transactions](build-template.md#study-past-transactions); its review says the same.
-- `protocols`, by DefiLlama slug, one for every protocol the generated report's protocol facts cover: `intro`, one line; `audits`, a note citing the audit reports; `incidents`, one note per DefiLlama hack in date order, its cause with the post-mortem as a source, exactly as many as the facts list.
-- `judgments`: at most four, each with a `recommendation`.
+- `protocols`, by DefiLlama slug, one for every protocol the generated report's protocol facts cover: `intro`, one line of at most 200; `audits`, a note citing the audit reports; `incidents`, one note per DefiLlama hack in date order, its cause with the post-mortem as a source, exactly as many as the facts list; each note is at most 2,000.
+- `judgments`: at most four, each `{ "text", "sources"?, "recommendation" }`, text and recommendation at most 200 each.
 - `reviews`: below.
-- `times`, optional: the field keys of free numbers that are times, such as a deadline the template leaves free, so Past transactions shows how far ahead they were set instead of raw numbers; it changes no rule.
-- `pastTxsConclusion`, optional: one line of at most 200 on what the past transactions with other shapes teach.
+- `times`, optional: a list of field keys, as under `fields`, of free numbers that are times, such as `1.execute.deadline`, so Past transactions shows how far ahead they were set instead of raw numbers; it changes no rule, and a field the template declares `time` or `withinSeconds` needs no entry.
+- `pastTxsConclusion`, optional: one line of at most 200 on what the past transactions with other shapes teach, and which of a swap's tokens no trace covers.
 - `context`, optional and only in an instance's `notes.json`: at most four notes `{ "title", "text", "sources" }`, a title of at most 40 and a text of at most 400, each with at least one source, on what the signer may want to know about the instance, such as where the vault sends a deposit and why; the program shows them in the Instance section and refuses them in the template's file.
   Lead the text with the conclusion the signer needs, such as "a deposit stays in the vault until an allocator lends it out".
   Put the evidence, such as function names, block numbers, the vault's history and full addresses, in `sources`, not in the text.
-- `entries`, by registry name: `role`, one line, and `sources`, each source you checked by hand as `{ "text", "url", "result": "pass" | "attention" | "fail" }`.
+- `entries`, by registry name: `role`, one line, and `sources`, each source you checked by hand as `{ "text", "url", "result": "pass" | "attention" | "fail" }`, role and text at most 200 each.
 - `fields`: a text for every argument, tuple part, array item, nested call's argument, packed part and signed-message member, by the HTML report's field key, such as `1.approve.spender` or `2.blueBundlesV1Supply.marketParams.oracle`, at most 150 characters each.
 - A note is `{ "text", "sources"? }` with https URLs.
 
@@ -70,7 +75,7 @@ The result stays as it is, your review sits under it, and a `FINDING` stays visi
 
 - Key: `reviews["<registry name>/<check key>"]`, or `reviews["fixture.<name>"]`; a documentation page's key names its function by selector, such as `usdc/doc.0x095ea7b3.page`.
 - The call traces give `flow.<n>`, a line not seen in every traced transaction that makes the template call it follows, `<n>` counting the template's lines first and then the instance's, from 1, and `trace.<call>.<from>.<to>.<kind>`, a money call no line covers, where `<from>` and `<to>` are `safe`, a registry name or `other` for an address outside the registry, and `<kind>` is `transfer`, `transferFrom`, `approve` or `eth`; in a per-instance report they go in the instance's `notes.json`. No printed output lists them: once the `flow` lines are written, `--render` names each such result that lacks a review, one per run, until every one has its review. Review an uncovered money call by naming each address outside the registry the page lists and what it is, from its source or Etherscan, or add the line that explains it.
-- Value: `{ "status": "confirmed" | "concern", "text", "recommendation" }`.
+- Value: `{ "status": "confirmed" | "concern", "text", "recommendation" }`, the recommendation at most 200 characters.
 - `text`, at most 300 characters, says only what you actually checked and what you saw, with full addresses, such as "Opened the page in a browser; the oracle address is 0x… (in full)." or "用瀏覽器打開頁面，oracle 地址就是 0x…（完整地址）。".
   If you could not check the thing the result names, say so and name the other evidence you have.
 - `confirmed` means you checked the exact thing the result names, such as the address on that very page, and it agrees; evidence about anything else, however strong, is `concern`.
