@@ -13,6 +13,13 @@ The signer runs every command from the clone as `pnpm kiss-sign <command>`, afte
    It lists each contract, market or recipient with its full address; the signer picks by number, or by the exact name, full address or market id as listed.
    It asks each amount in whole tokens (commas between thousands allowed), reading a registry token's decimals on chain itself; ETH is 18 with no read, and a token outside the registry is asked in base units.
    It does not ask a computed field, such as a vault deposit's `min-shares`: it reads the declared view, applies the template's slippage, and prints the value with its slippage and source for the signer to check.
+   A swap's minimum (a field with a `floor`) follows the two tokens picked:
+   - Both have a feed and the same peg, and the feeds' stated deviations sum to at most 50 bps: it asks only the slippage the app shows (Enter is 0.50%, at most 1.00%) and computes the minimum.
+   - Both have a feed, otherwise: the signer types the app's minimum, and one more than 2.50% below the price must be typed twice.
+   - Either token has no feed: it says there is no independent price, and the signer types the app's minimum once.
+
+   When the price is in doubt (a late feed, a lost peg, a pool that disagrees, is thin or gives no mean price) it says why, computes nothing, and the minimum must be typed twice.
+   It refuses the card, with nothing to type, when a feed's answer is not above 0, its time is 0 or in the future, it reverts, or its description or decimals are not the registry's; when a feed or pool runs other code than its pin; or when the providers disagree.
    It ends with the card in one box and asks the seal question; on the signer's yes it stores the card and prints its hash, which `verify --card` takes, before the signer sees the Safe transaction.
 3. After the transaction is proposed in the Safe web app: `pnpm kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>`.
 
