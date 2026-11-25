@@ -250,7 +250,23 @@ A factory, or an entry for itself, may also declare `size`, what `pnpm instance-
 `holders` says the instance is an ERC-20 share token whose holders are counted.
 An entry's own `size` replaces its factory's.
 
-### Intent card
+#### Prices
+
+Registry facts a swap's floor (see [Intent card](#intent-card)) is read with; each is a fact about one contract or token, and none can loosen the rule.
+
+- **A feed** is an `oracle` entry with `"feed": { "description", "decimals", "heartbeat", "deviationBps", "sourceClass", "quote" }`.
+  `description` and `decimals` are what the contract answers, such as `"USDC / USD"` and 8.
+  `heartbeat`, in seconds, and `deviationBps` are its publisher's own, and `sourceClass` is what the publisher's list says it reads, `cex_price` or `dex_state_price`.
+  `quote` is `usd`, or the feed that prices the unit the answer is in: `"weETH / ETH"` names the feed whose description starts with `ETH`.
+  Load refuses a chain of quotes that does not reach `usd` within three feeds, or a step whose units do not join.
+- **A token or vault** may carry `"price": { "feed", "peg"? }`: the feed of one whole token, and what it is meant to be worth one of, `usd` or a feed on its own chain.
+- **A pool** may carry `"twap": { "minLiquidity" }`, the least harmonic mean liquidity to read its mean price at, as a decimal string.
+  It is of kind `pool`, answers `observe` as a Uniswap v3 pool does, and names its `factory`, `token0` and `token1` as attributes, `token0` the lower address; one pool per pair.
+  Its factory's `instanceCheck` takes the pool's fee as `{"number": "fee"}`, read from the pool's own `"numbers": { "fee": "100" }`, so one factory entry vouches for pools of every fee: `getPool(address,address,uint24)` with `[{"attribute": "token0"}, {"attribute": "token1"}, {"number": "fee"}]`.
+
+`card new` reads each only after checking that it runs the code its entry pins.
+
+## Intent card
 
 The operation id plus this signing's values.
 The template is reviewed once; the card is the only thing the signer confirms at every signing.
@@ -322,11 +338,32 @@ Card values per operation, covering the operations in the Safe's history:
 - One Safe transaction can batch several operations, for example withdrawing from two vaults.
   The card then lists each operation with its values, and the MultiSend must contain exactly those calls.
   An approval belongs to the operation that spends it, not to its own line.
-- Swap limits are stated as a minimum amount, not a slippage percentage, so the program never needs a price.
-  The signer types the number.
-  The CoW Swap app asks no minimum, but shows it as the least the order receives: its slippage is set per quote (`smartSlippage` in the order's app data), not a fixed default a computed field could apply, and the price is CoW's off-chain quote, which no view on chain gives.
-  So a CoW card's minimum is typed, from what the app shows.
-  The Uniswap app is the same: its slippage is set per quote by Uniswap's trading API (auto slippage, from 0.5% to 5.5%), and its price is that API's route over many pools, which no single view on chain gives, so a Uniswap card's minimum is typed, from the minimum the app shows; the transaction's own minimum must be at least it (`atLeast`).
+- Swap limits are stated as a minimum amount, not a slippage percentage, and the sealed card holds that amount in base units, so no check `verify` runs needs a price.
+  `card new` needs one: copied from the app being checked, a minimum protects nothing when the app is the one that lies.
+  An amount field that declares `"floor": { "sells": "<amount field>" }` is the least of its own token to receive for that other amount, and `card new` fills it by a rule keyed only by the two tokens the signer picks, the same for every protocol (`FLOOR_RULE` in `src/price/reference.ts`, whose numbers no template or registry entry can change):
+  1. **Both tokens have a feed and the same peg, and the feeds may be off by at most 50 bps together.**
+     `card new` asks the slippage the app shows (Enter is 0.50%, at most 1.00%, at most two decimals) and computes the floor: the amount sold, at the price, less the slippage and a margin of 0.25%, as one integer division, rounded down.
+     The margin is room for the feeds' error and for a fee inside the app's minimum, a wallet's own swap fee included.
+  2. **Both tokens have a feed, otherwise.**
+     The signer types the app's minimum, and `card new` says how far below the price it is.
+     More than 2.50% below, it must be typed a second time, the same amount, to be kept.
+  3. **A token has no feed.**
+     The signer types it, and `card new` says there is no independent price.
+
+  The price is the higher, so the stricter, of the feeds' and the pool's, never their average: one source that lies can then never loosen the floor.
+  The pool is read only where it is independent of the feeds: each feed the pair does not share is `cex_price`, and a pool the template itself names is left out; the prompt says when there is one source only.
+  Its mean price over 30 minutes (5 for a pair that shares no peg) counts over the route of the fewest pools, at most two; with several such routes all are read and the highest counts.
+  **A price in doubt** computes nothing: a feed older than its heartbeat by more than an hour; a pegged token more than 1% from its peg; pool and feeds more than 15 bps apart (150 for a pair that shares no peg); a pool under its `minLiquidity`, or that gives no mean price for the window.
+  `card new` prints both prices and each doubt, then takes path 2, and the minimum must be typed twice; no single key keeps it.
+  **Refused outright:** the providers disagree on any read, or one fails; a feed or a pool does not run its pinned code; a feed reverts, or answers a price that is not above 0, an `updatedAt` of 0 or after the block, or another `description()` or `decimals()` than the registry's; the same token sold and bought; an amount worth less than one base unit; a floor of 0.
+  Example: 16,089.929021 USDT, with the feeds at 0.99894 and 0.99994 and the pool lower, is worth 16,073.838 USDC; at 0.50% the floor is that less 0.75%, 15,953.284 USDC, and an app minimum of 15,995.324415 meets it.
+  When the app's minimum is below the floor, `verify` says `MISMATCH`, and the signer types the slippage the app shows or lowers it in the app.
+  Template load refuses a `floor` beside `computed` or `max`; one whose `sells` is not another typed amount; a field or a `sells` that does not count a token a card `contract` field of kind `token` or `vault` picks; and one no `atLeast` compares with, which would bound nothing.
+  The floor is `card new`'s: `card seal` of a file checks only that it is not 0.
+  It does not give the best price, protect against what happens above the floor, or cover a token without a feed, and its feeds' owner can change the aggregator behind a proxy whose code stays as pinned (see [Known limits](known-limits.md#known-limits)).
+  Without `floor`, as for a template written before it, the minimum is typed from what the app shows.
+  The app's slippage is set per quote: CoW's in the order's app data (`smartSlippage`), Uniswap's by its trading API, 0.5% to 5% by its help page and not in its open client.
+  The transaction's own minimum must be at least the card's (`atLeast`).
 - A vault's slippage limit is stated the same way, as an amount: the fewest shares a deposit gets (`min-shares`), the most shares a withdrawal of an amount burns (`max-shares`), or the fewest assets a withdrawal of all gets (`min-assets`).
   Slippage protection acts when the transaction runs, which no simulation before it can see, so the transaction's own bound must carry the card's limit.
   A Morpho adapter takes the bound as a price in assets per share scaled by 1e27; the template binds it with `maxSharePrice` or `minSharePrice`, `{ "assets", "shares", "scale"? }`, and the field check requires it to be at least as strict as the price the card's amounts give.

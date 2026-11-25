@@ -18,12 +18,13 @@ import type { AbiFunction, AbiParam } from '../decode/abi.ts';
 import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, pageUrlsOf, parseHttpsUrl, sizeOf } from '../registry.ts';
 import type { CodePin, HttpsUrl, PinnedCode, Registry, RegistryEntry, Route, SelectorRouting } from '../registry.ts';
 import { wholeTokens } from '../chain/decimals.ts';
+import { FEED_VIEWS, FLOOR_RULE, POOL_VIEWS, pairFacts } from '../price/reference.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, computedOutput, effectTokenNames, inScope, isNamedToken, loadTemplate, namedEffectTokens, refNames, ruleLeaves, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
+import { TEMPLATES_DIR, WAD, callRules, callTargetEntries, callTargets, cardRefs, computedOutput, effectTokenNames, inScope, isNamedToken, loadTemplate, namedEffectTokens, refNames, ruleLeaves, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
 import type { MemberSource } from '../template/eip712.ts';
 import { GENERATED_FILE, INSTANCE_FOLDER, reportUnit, reportedInstancesIn, severalInstances } from '../template/vault-reports.ts';
-import type { CallNode, CardRef, Computed, ComputedRead, Effect, EffectToken, Quantity, Rule, Template, Tolerance, TokenRef, ViewEffect } from '../template/template.ts';
+import type { CallNode, CardField, CardRef, Computed, ComputedRead, Effect, EffectToken, Floor, Quantity, Rule, Template, Tolerance, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording, SiteOwner } from './listings.ts';
 import { checkSources, githubLine, listingsFor, recordedListingReads, sourcePagesOf, sourceSiteLine, trimForRecording, trimSourcePage } from './listings.ts';
 import { renderPastTxs } from './past-txs-render.ts';
@@ -185,6 +186,7 @@ export function functionsOn(subject: Subject, registry: Registry): Map<string, A
     for (const arg of r.args) if (arg.kind === 'read') read(arg.read);
   };
   for (const field of template.card.values()) if (field.kind === 'amount' && field.computed !== undefined) read(field.computed.read);
+  for (const entry of priceEntries(template, registry)) for (const { fn } of Object.values(entry.feed === undefined ? POOL_VIEWS : FEED_VIEWS)) add([entry.name], fn);
   return new Map([...on].map(([name, fns]) => [name, [...fns.values()]]));
 }
 
@@ -350,6 +352,27 @@ function namedInReads(template: Template): string[] {
   return [...template.card.values()].flatMap((field) => (field.kind === 'amount' && field.computed !== undefined ? read(field.computed.read) : []));
 }
 
+/** The feeds and pools `card new` can read a floor's price from, for every pair of tokens its card fields can name. */
+function priceEntries(template: Template, registry: Registry): RegistryEntry[] {
+  const found = new Set<RegistryEntry>();
+  const named = new Set(callRules(template).flatMap((rule) => (rule.kind === 'contract' ? [rule.name] : [])));
+  const candidates = (of: TokenRef): RegistryEntry[] => {
+    const field = of === 'eth' ? undefined : template.card.get(of.field);
+    return field?.kind === 'contract' ? scopeEntries(field.scope, registry) : [];
+  };
+  for (const field of template.card.values()) {
+    if (field.kind !== 'amount' || field.floor === undefined) continue;
+    const sold = template.card.get(field.floor.sells) as Extract<CardField, { kind: 'amount' }>;
+    for (const sell of candidates(sold.of)) {
+      for (const buy of candidates(field.of)) {
+        const facts = sell === buy ? undefined : pairFacts(sell, buy, registry, named);
+        if (facts?.kind === 'feeds') [...facts.sell, ...facts.buy, ...facts.routes.flat().map((pool) => pool.entry)].forEach((entry) => found.add(entry));
+      }
+    }
+  }
+  return [...found];
+}
+
 export const hasMarket = (template: Template): boolean => [...template.card.values()].some((field) => field.kind === 'market');
 
 /** Every registry entry a card field can name: a contract of the field's kind, or a part of any market. */
@@ -365,7 +388,7 @@ export const evidenceEntries = (subject: Subject): RegistryEntry[] => (subject.v
 
 function directlyTouched(subject: Subject, registry: Registry): Set<string> {
   const names = new Set<string>();
-  const roots = [...[...namedInRules(subject.template), ...namedInReads(subject.template)].map((n) => registry.entries.get(n) as RegistryEntry), ...cardCandidates(subject.template, registry)];
+  const roots = [...[...namedInRules(subject.template), ...namedInReads(subject.template)].map((n) => registry.entries.get(n) as RegistryEntry), ...cardCandidates(subject.template, registry), ...priceEntries(subject.template, registry)];
   const named = (entry: RegistryEntry): void => {
     if (names.has(entry.name)) return;
     names.add(entry.name);
@@ -435,6 +458,7 @@ function abiUsed(subject: Subject, registry: Registry): Set<string> {
     ...[...template.effects.gives, ...template.effects.gets].flatMap((effect) => effectTokenNames(effect.token, template, registry)),
     ...template.effects.touches.map((touch) => touch.token),
     ...[...template.card.values()].flatMap((field) => (field.kind === 'amount' ? [...token(field.of), ...(field.computed === undefined ? [] : read(field.computed.read))] : [])),
+    ...priceEntries(template, registry).map((entry) => entry.name),
   ].forEach((name) => names.add(name));
   return names;
 }
@@ -680,6 +704,11 @@ function readText(read: ComputedRead, template: Template, registry: Registry): s
   return `${code(read.fn.signature)} on ${to}${args.length === 0 ? '' : ` of ${args.join(', ')}`}${output}`;
 }
 
+function floorText({ sells }: Floor, token: string): string {
+  const rule = FLOOR_RULE;
+  return `the least of ${token} to receive for ${code(sells)}, in its base units. When both tokens picked have a price feed and share a peg, ${code('card new')} asks the slippage (${rule.slippageBps} bps when empty, at most ${rule.maxSlippageBps}) and computes it from the higher of the feeds' and the pool's price, less that and a margin of ${rule.marginBps} bps, rounded down; otherwise the signer types it and ${code('card new')} compares it with that price, or with nothing when a token has no feed. A price in doubt is never computed from`;
+}
+
 function computedText(computed: Computed, template: Template, registry: Registry): string {
   const margin = computed.margin === undefined ? '' : `, plus a margin of ${computed.margin.bps} bps, ${byAi(computed.margin.why)}`;
   return `${readText(computed.read, template, registry)}, ${computed.bound === 'floor' ? 'less' : 'plus'} ${slippageBps(computed)} bps and rounded ${computed.bound === 'floor' ? 'down' : 'up'}: the protocol's default of ${computed.default.bps} bps, from ${computed.default.source}${margin}`;
@@ -851,7 +880,9 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
       field.kind === 'contract'
         ? `a registry ${code(field.scope.registryKind)}${field.scope.protocol === undefined ? '' : ` of the DefiLlama protocol ${code(field.scope.protocol)}`}${field.scope.marketPart === undefined ? '' : ` that is the ${code(field.scope.marketPart)} of a market in ${code(MARKETS_PATH)}`}, picked by number from the list below`
         : field.kind === 'amount'
-          ? field.computed === undefined
+          ? field.floor !== undefined
+            ? floorText(field.floor, refText(field.of as CardRef))
+            : field.computed === undefined
             ? `an integer in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}${field.max === undefined ? '' : `, or ${code('max')}, ${field.max.value}: ${byAi(field.max.why)}`}`
             : `nothing: computed by ${code('card new')} in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}, ${computedText(field.computed, template, registry)}`
           : field.kind === 'percent'

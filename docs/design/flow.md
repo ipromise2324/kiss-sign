@@ -630,6 +630,7 @@ The AI fills nothing and decides nothing here.
    A token that is not a registry contract, which a template allows only through an `address` card field, has no decimals the program trusts, so its amount is typed as a base-unit integer and the prompt says why.
    A nonce is typed as a plain integer.
    A computed field is not asked: `card new` reads it as the template declares (see [Intent card](data-shapes.md#intent-card)), from contracts that run the code the registry pins, and prints each read, the slippage with its source, and the value in whole tokens; the card before the seal step's question gives it in base units too.
+   A field with a `floor` is computed or typed by the rule of the two tokens picked, after every other typed number: `card new` prints each feed and pool it read, with its address, the value of the amount sold by each, and any doubt; a doubted or far-off minimum is typed twice.
    A card with several operations names several templates.
    Terminal output is plain text when standard output is not a terminal or `NO_COLOR` is set; at a terminal, colour sets apart what the signer picked or typed, what the program computed, and dim provenance lines, and nothing is said by colour alone.
 10. **Seal it.**

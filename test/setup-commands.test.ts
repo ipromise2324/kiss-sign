@@ -537,7 +537,7 @@ for (const [what, views, message] of [
 }
 
 for (const [what, code, pin, message] of [
-  ['runs code its pin does not name', () => '0x01' as Hex, undefined, /steakhouse-prime-usdc-v2-0f51 0xbeef\S+, which a computed value is read from, is not shown to run the code the registry pins: steakhouse-prime-usdc-v2-0f51 0xbeef\S+ has code hash 0x[0-9a-f]{64} at block 21000000, the registry pins 0x[0-9a-f]{64}/],
+  ['runs code its pin does not name', () => '0x01' as Hex, undefined, /steakhouse-prime-usdc-v2-0f51 0xbeef\S+, which a value is read from, is not shown to run the code the registry pins: steakhouse-prime-usdc-v2-0f51 0xbeef\S+ has code hash 0x[0-9a-f]{64} at block 21000000, the registry pins 0x[0-9a-f]{64}/],
   ['runs code the providers disagree on', (provider: string) => (provider === 'drpc' ? '0x01' : VAULT_CODE) as Hex, undefined, /not shown to run the code the registry pins: eth_getCode: alchemy and drpc disagree/],
   ['has no code pin', () => VAULT_CODE, 'none', /not shown to run the code the registry pins: .* has no code pin in the registry/],
   ['delegates, though its pin names no implementation', () => `0x363d3d373d3d3d363d73${'11'.repeat(20)}5af43d82803e903d91602b57fd5bf3` as Hex, 'clone', /not shown to run the code the registry pins: .* delegates to 0x1{40} at block 21000000, the registry pins no implementation/],

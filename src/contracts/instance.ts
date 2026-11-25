@@ -50,10 +50,12 @@ function resolve(party: Party, instance: RegistryEntry, namer: RegistryEntry | u
   return entry === undefined ? { missing: party.kind === 'attribute' ? party.attribute : 'factory' } : { entry };
 }
 
-const word = (arg: Exclude<InstanceArg, { kind: 'party' }>): string =>
+type Constant = Exclude<InstanceArg, { kind: 'party' | 'number' }>;
+
+const word = (arg: Constant): string =>
   arg.kind === 'string' ? JSON.stringify(arg.value) : arg.kind === 'address' ? checksumAddress(arg.value) : arg.kind === 'bytes32' ? arg.value : `${arg.value}`;
 
-const constantValue = (arg: Exclude<InstanceArg, { kind: 'party' }>): AbiValue =>
+const constantValue = (arg: Constant): AbiValue =>
   arg.kind === 'string'
     ? { kind: 'string', value: utf8ToBytes(arg.value), span: [0, 0] }
     : arg.kind === 'bytes32'
@@ -70,6 +72,13 @@ function question(view: InstanceView, instance: RegistryEntry, namer: RegistryEn
   const words: string[] = [];
   const args: AbiValue[] = [];
   for (const arg of view.args) {
+    if (arg.kind === 'number') {
+      const value = instance.numbers?.[arg.name];
+      if (value === undefined || value >> BigInt(arg.bits) !== 0n) return { missing: arg.name };
+      words.push(`${value}`);
+      args.push({ kind: 'uint', value, span: [0, 0] });
+      continue;
+    }
     if (arg.kind !== 'party') {
       words.push(word(arg));
       args.push(constantValue(arg));

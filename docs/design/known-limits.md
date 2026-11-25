@@ -239,6 +239,8 @@ Listed so the path is clear.
 - **Clear signing on the wallet (ERC-7730).**
   Export templates as display descriptors so the device shows the decoded call.
   Wait until wallets decode Safe MultiSend batches and the descriptors stop hiding the nonce; until then, hash comparison stays.
+- **A floor's feeds trust their publisher.** The registry pins the code of a feed's proxy, not the aggregator behind it, which the publisher's owner can change, and a stablecoin feed may stop following a price above a cap. The second source, a pool's mean price, catches that only for a pair it covers, and an attacker who pays to move or thin the pool can force a pair to the typed path, where the signer types the minimum twice; it can never lower a computed floor.
+- **Only `card new` reads the floor.** A card sealed from a file holds whatever minimum the file says, and `verify` compares the transaction with that. A transaction that meets the floor can still be a worse trade than the market, by up to the slippage and the margin (0.75%, 1.25% at the most).
 
 ## Out of scope
 
