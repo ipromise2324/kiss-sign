@@ -159,6 +159,7 @@ The token to make is a fine-grained one with access to public repositories only,
 
 Services used while building a template, besides the providers above.
 None of them is read at signing.
+`pnpm find-sources` reads DefiLlama, CoinGecko, Immunefi, Etherscan, GitHub and the protocol's own pages to propose where an address is published; it records nothing and no check reads its output.
 
 | Service | What is checked with it | By |
 |---|---|---|

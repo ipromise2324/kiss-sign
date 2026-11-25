@@ -6,7 +6,8 @@ import { before, test } from 'node:test';
 import { loadRegistry, pageUrlsOf } from '../src/registry.ts';
 import type { Registry } from '../src/registry.ts';
 import { STANDARDS } from '../src/research/standards.ts';
-import { NOTES_FILE, notesLanguages, notesPath, readNotes } from '../src/research/notes.ts';
+import { NOTES_FILE, NotesError, notesLanguages, notesPath, readNotes } from '../src/research/notes.ts';
+import { notesNeeded } from '../src/research/notes-needed.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { h } from '../src/html.ts';
 import { LANGUAGES, isLanguage } from '../src/language.ts';
@@ -724,4 +725,65 @@ test('in the call ledger, each group keeps the rows the signer decides open and 
       assert.ok(shut === -1 || flow.lastIndexOf('</details>', row.index) > shut, `${language}: ${field} stays open`);
     }
   }
+});
+
+/** A repository that holds only the report's notes files, each as `files` gives it. */
+function repoWithNotes(files: Readonly<Record<string, unknown>>): string {
+  const repo = mkdtempSync(join(tmpdir(), 'kiss-sign-notes-'));
+  for (const [file, notes] of Object.entries(files)) {
+    mkdirSync(join(repo, file, '..'), { recursive: true });
+    writeFileSync(join(repo, file), JSON.stringify(notes));
+  }
+  return repo;
+}
+
+/** A skeleton with every empty text written. */
+function written(value: unknown, path: readonly string[] = []): unknown {
+  if (value === '') return path.at(-1) === 'url' ? 'https://example.com/' : path.at(-1) === 'result' ? 'pass' : path.at(-1) !== 'status' ? 'x' : path[0] === 'verdict' ? 'safe' : 'confirmed';
+  if (Array.isArray(value)) return value.map((item) => written(item, path));
+  return Object.fromEntries(Object.entries(value as object).map(([key, item]) => [key, written(item, [...path, key])]));
+}
+
+test('notes-needed asks, of a report with no notes, for exactly the texts the page needs, in the file each belongs in', () => {
+  for (const [dir, { inputs, title }] of pages) {
+    const { template, vault } = inputs.subject;
+    const shared = notesPath('', template.id);
+    const both: Record<string, Record<string, unknown>> = { [shared]: {}, ...(vault === undefined ? {} : { [notesPath('', template.id, vault.name)]: {} }) };
+    const needed = notesNeeded(repoWithNotes(both), inputs, ['zh-TW']);
+    const files: Record<string, Record<string, unknown>> = { ...both, ...(Object.fromEntries(Object.entries(needed.skeleton).map(([file, tree]) => [file, written(tree)])) as Record<string, Record<string, unknown>>) };
+    const pageOf = (notes: Readonly<Record<string, unknown>>) => generatedHtml(repoWithNotes(notes), inputs, title);
+    assert.deepEqual([...(pageOf(files) ?? assert.fail(dir)).keys()], ['zh-TW'], dir);
+    for (const [file, tree] of Object.entries(files)) {
+      for (const [key, value] of Object.entries(tree)) {
+        const { [key]: _, ...rest } = tree;
+        assert.throws(() => pageOf({ ...files, [file]: rest }), NotesError, `${dir}: the page is written without ${key}`);
+        if (!['reviews', 'fields', 'protocols'].includes(key)) continue;
+        const [first, ...others] = Object.entries(value as object);
+        if (first === undefined) continue;
+        assert.throws(() => pageOf({ ...files, [file]: { ...tree, [key]: Object.fromEntries(others) } }), NotesError, `${dir}: the page is written without ${key} ${first[0]}`);
+      }
+    }
+    for (const row of Object.keys(needed.toReview)) assert.ok(needed.about[`reviews ${row}`] !== undefined, `${dir}: ${row} is to review but not asked for`);
+  }
+});
+
+test('notes-needed asks nothing of a committed report, and names a text left empty, a language left out and a key the page refuses', () => {
+  for (const [dir, { inputs }] of pages) {
+    const { root } = reportOf(dir);
+    const needed = notesNeeded(root, inputs, ['zh-TW']);
+    assert.deepEqual([needed.skeleton, needed.remove], [{}, []], dir);
+  }
+  const { inputs } = pages.get(join(ROOT, TEMPLATES_DIR, 'safe/add-owner')) ?? assert.fail('safe/add-owner');
+  const path = notesPath('', 'safe/add-owner');
+  const notes = JSON.parse(readFileSync(join(ROOT, path), 'utf8'));
+  const [field] = Object.keys(notes.fields) as [string];
+  notes.fields[field].en = ' ';
+  delete notes.summary['zh-TW'];
+  notes.reviews['usdc/source.page'] = { status: 'confirmed', text: { en: 'x', 'zh-TW': 'x' }, recommendation: { en: 'x', 'zh-TW': 'x' } };
+  assert.throws(() => notesNeeded(repoWithNotes({ [path]: notes }), inputs, ['en']), /holds texts in/);
+  notes.summary['zh-TW'] = '';
+  const needed = notesNeeded(repoWithNotes({ [path]: notes }), inputs, ['en']);
+  assert.deepEqual(needed.skeleton, { [path]: { summary: { 'zh-TW': '' }, fields: { [field]: { en: '' } } } });
+  assert.deepEqual(needed.remove, [`${path} reviews usdc/source.page`]);
+  assert.match(needed.about.summary ?? '', /\[en 750, zh-TW 250\]/);
 });

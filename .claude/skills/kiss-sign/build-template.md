@@ -76,7 +76,7 @@ The program picks its own search: every transaction from the newest block back, 
 To read again the blocks an earlier recording searched, such as to add what a read with no answer left out, pass `--same-windows-as <name>`, which takes the head block and the search from the summary `testdata/research/<name>.json`.
 
 1. For each field, note how many transactions and senders held the template's rule, for Safes and for EOAs separately.
-2. Read every misfit group.
+2. Read every misfit group; `pnpm past-txs --show <name>` lists a recorded run's transactions, each Safe's first, and `--tx <start of a hash>` one with every value and call, so read no recording by a script of your own.
    A misfit shows a shape the template does not accept, such as an extra call or a longer trailer.
    Change the template only when the misfit is normal use, and say why in the report.
 3. Read `amounts against balances`: for each effect of an exact card amount, how far each sender's and receiver's balance ended from the amount the transaction states.
@@ -106,7 +106,7 @@ To read again the blocks an earlier recording searched, such as to add what a re
 
 ## Check the protocol's health
 
-Look for past hacks and incidents (DefiLlama's hack list, the protocol's post-mortems), audits, recent upgrades, admin or timelock changes, and paused or deprecated contracts.
+Look for past hacks and incidents (DefiLlama's hack list, which `pnpm find-sources` prints with each protocol, and the protocol's post-mortems), audits, recent upgrades, admin or timelock changes, and paused or deprecated contracts.
 Cite a URL for every claim; it goes into `protocols` in `notes.json`.
 
 ## Generate the report
@@ -120,12 +120,12 @@ Cite a URL for every claim; it goes into `protocols` in `notes.json`.
 2. Run `pnpm report <protocol>/<operation> --record`, with `--instance-of <instance>` for the instance the signer named when the template is reported per instance.
    It reads everything live but the past transactions, which it prints from the `pnpm past-txs` summaries in `testdata/research/`, and records the answers in `testdata/report/` and any missing ABI case in `testdata/abi/`, and writes `report.generated.md`.
    Last it writes the HTML report from `notes.json`; that step refuses, naming the problem, until the notes review exactly the results the signer must look at.
-   At this step a refusal that names `notes.json` is expected and comes after the recordings and `report.generated.md` are written: write the reviews ([notes-and-reviews.md](notes-and-reviews.md)) and run `--render`.
+   At this step a refusal that names `notes.json` is expected and comes after the recordings and `report.generated.md` are written: write the reviews ([notes-and-reviews.md](notes-and-reviews.md)), all the texts `pnpm notes-needed` lists in one pass, and run `--render`.
    Never edit the generated file; `pnpm test` fails if it differs from what the recordings give.
 
 ## Add the tests
 
-1. Record two or more past transactions from different Safes with `pnpm record-safe-tx <name> <safe> <nonce>`; never record the configured Safe.
+1. Choose two or more past transactions from different Safes, as `pnpm past-txs --show <name>` lists them, and record each with `pnpm record-safe-tx <name> <safe> <nonce>`; never record the configured Safe.
 2. In `test/`, require `MATCH` for each with its implied card, and require the mutation check to catch every bound field; `test/canaries/template.canary.ts` and `test/canaries/mutation.canary.ts` show both.
 3. For a template with a free field, record the perturbation test of every test transaction with `pnpm perturb <name> --card '<card json>' --record <name>`, one recording per transaction; `test/canaries/perturb.canary.ts` replays every recording.
    A failing field must be bound, not explained.

@@ -22,6 +22,7 @@
     "prove-instance": "node scripts/prove-instance.ts",
     "pin-code": "node scripts/pin-code.ts",
     "pin-solc": "node scripts/pin-solc.ts",
+    "find-sources": "node scripts/find-sources.ts",
     "check-sources": "node scripts/check-sources.ts",
     "instance-evidence": "node scripts/instance-evidence.ts",
     "erc7730": "node scripts/erc7730.ts",
@@ -33,6 +34,7 @@
     "history": "node scripts/history.ts",
     "attacks": "node scripts/attacks.ts",
     "report": "node scripts/report.ts",
+    "notes-needed": "node scripts/notes-needed.ts",
     "kiss-sign": "node bin/kiss-sign"
   },
   "devDependencies": {

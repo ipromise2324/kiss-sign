@@ -7,7 +7,9 @@ The exact shape and every limit are in step 6 of [First time an operation is don
 
 1. Write `templates/<protocol>/<operation>/notes.json`.
    Its `entries.<name>.sources` already hold what you saw at each address before any check ([addresses.md](addresses.md)); complete the rest around them, and write `reviews` only after `--record`, against the printed results.
-2. Run `pnpm report <protocol>/<operation> --render`, with `--instance-of <instance>` for a per-instance report.
+2. Once `--record` has run and the `flow` lines are written, run `pnpm notes-needed <protocol>/<operation>`, with `--instance-of <instance>` for a per-instance report: it prints every text still missing with its limit, in the file it belongs in, every result to review in the program's words, and every key to remove.
+   Write them all, then run it again: it prints an empty `skeleton` and `remove` when nothing is missing.
+3. Run `pnpm report <protocol>/<operation> --render`, with `--instance-of <instance>` for a per-instance report.
    It writes the signer's report from the recordings and your notes, `report.generated.en.html`, `report.generated.zh-TW.html` or both, one for each language the notes hold.
 
 ## Language and length
@@ -74,7 +76,7 @@ Your own observations went into `entries` before the checks ([addresses.md](addr
 The result stays as it is, your review sits under it, and a `FINDING` stays visible even when you confirmed the source another way.
 
 - Key: `reviews["<registry name>/<check key>"]`, or `reviews["fixture.<name>"]`; a documentation page's key names its function by selector, such as `usdc/doc.0x095ea7b3.page`.
-- The call traces give `flow.<n>`, a line not seen in every traced transaction that makes the template call it follows, `<n>` counting the template's lines first and then the instance's, from 1, and `trace.<call>.<from>.<to>.<kind>`, a money call no line covers, where `<from>` and `<to>` are `safe`, a registry name or `other` for an address outside the registry, and `<kind>` is `transfer`, `transferFrom`, `approve` or `eth`; in a per-instance report they go in the instance's `notes.json`. No printed output lists them: once the `flow` lines are written, `--render` names each such result that lacks a review, one per run, until every one has its review. Review an uncovered money call by naming each address outside the registry the page lists and what it is, from its source or Etherscan, or add the line that explains it.
+- The call traces give `flow.<n>`, a line not seen in every traced transaction that makes the template call it follows, `<n>` counting the template's lines first and then the instance's, from 1, and `trace.<call>.<from>.<to>.<kind>`, a money call no line covers, where `<from>` and `<to>` are `safe`, a registry name or `other` for an address outside the registry, and `<kind>` is `transfer`, `transferFrom`, `approve` or `eth`; in a per-instance report they go in the instance's `notes.json`. `pnpm notes-needed` lists them once the `flow` lines are written; a changed line can change them, so run it again after. Review an uncovered money call by naming each address outside the registry the page lists and what it is, from its source or Etherscan, or add the line that explains it.
 - Value: `{ "status": "confirmed" | "concern", "text", "recommendation" }`, the recommendation at most 200 characters.
 - `text`, at most 300 characters, says only what you actually checked and what you saw, with full addresses, such as "Opened the page in a browser; the oracle address is 0x… (in full)." or "用瀏覽器打開頁面，oracle 地址就是 0x…（完整地址）。".
   If you could not check the thing the result names, say so and name the other evidence you have.

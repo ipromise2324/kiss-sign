@@ -7,14 +7,16 @@ The rules the program applies are in step 2, Research addresses, of [First time 
 
 Do this for every registry entry the report covers: the entries the template names, those a card field can name and their attributes, every part of a market a field can name, the contracts `docs.json` names, and the entries any of these depends on.
 
-1. Find the address yourself in every place of the table below that has it, and check each: open the place, find the address next to the name of the contract or its role, and note what you saw.
+1. Run `pnpm find-sources <address>... --protocol <slug>` once for all the operation's addresses, with `--page <url>` for each page you already know: it lists the places it found with the registry field each would fill, and READ says what it did not read.
+   Its output is leads for this step, never a check or a place, and never the whole search.
+   Then find the address yourself in every place of the table below that has it, and check each: open the place, find the address next to the name of the contract or its role, and note what you saw.
    Always look in every place of the table, and in the protocol's docs, app and official GitHub organization on the default branch.
    Then also search beyond them, for the address and for more official pages that list it: deployment files and SDKs, audit reports, explorers, dashboards, forums and announcements.
    Only the places in the table count, so follow every lead back to one of them; a fork, an issue, a pull request, a sponsored search result, or a page anyone can edit is a lead, never a place.
    In `entries.<name>.sources`, write where you first saw each address and every other place that showed it, whether or not it counts.
 2. Confirm each address yourself in at least two independent official places, of two owners as [How the places count](#how-the-places-count) groups them.
    When you find fewer, tell the signer and say so in `entries.<name>.sources` (result `attention`) or in a judgment, and later also in the `<name>/address` review when that result is under To review; never count a place that does not show the address.
-3. Read the address's Etherscan page: the verified contract name, the creator and the creation transaction.
+3. Read the address's Etherscan page: the verified contract name, the creator and the creation transaction (`find-sources` prints what Etherscan's API and, where it is proven, the chain say of each).
    The creator must be the deployer or factory the official source names.
 4. Before you run any check, write what you saw in each place, Etherscan included, as `entries.<name>.sources` in `notes.json` ([notes-and-reviews.md](notes-and-reviews.md)).
 5. Record each place the program can read in the entry's registry field, as the table says.

@@ -25,7 +25,7 @@ export class NotesError extends Error {
 export const notesPath = (repoRoot: string, template: string, instance?: string): string =>
   join(instance === undefined ? join(TEMPLATES_DIR, template) : instanceReportDir(template, instance), NOTES_FILE);
 
-const readJson = (path: string): unknown => (existsSync(path) ? (JSON.parse(readFileSync(path, 'utf8')) as unknown) : undefined);
+export const readJson = (path: string): unknown => (existsSync(path) ? (JSON.parse(readFileSync(path, 'utf8')) as unknown) : undefined);
 
 /**
  * What a vault's notes may hold: the text about that vault alone, and `flow` lines, which name the vault or its asset
@@ -45,7 +45,7 @@ const KEYED = ['reviews', 'entries'];
  * names an entry in `owned` is refused, since another vault's report could not name it.
  */
 /** The results the call traces give, which a vault's notes review, since each vault's report traces only its own recordings. */
-const TRACED = /^(flow|trace)\./;
+export const TRACED = /^(flow|trace)\./;
 
 export function mergeNotes(shared: unknown, vault: unknown, vaultPath: string, owned: ReadonlySet<string>): unknown {
   const flow = isRecord(shared) ? own(shared, 'flow') : undefined;
@@ -77,7 +77,7 @@ export function mergeNotes(shared: unknown, vault: unknown, vaultPath: string, o
 const isText = (raw: unknown): raw is Record<string, unknown> => isRecord(raw) && Object.keys(raw).length > 0 && Object.keys(raw).every((key) => (LANGUAGES as readonly string[]).includes(key));
 
 /** The languages every text of one notes file holds, in `LANGUAGES` order, undefined with no text; a file whose texts differ is refused. */
-function fileLanguages(raw: unknown, path: string): readonly Language[] | undefined {
+export function fileLanguages(raw: unknown, path: string): readonly Language[] | undefined {
   const sets = new Set<string>();
   const walk = (value: unknown): void => {
     if (isText(value)) sets.add(LANGUAGES.filter((language) => own(value, language) !== undefined).join(' and '));
@@ -112,6 +112,9 @@ export function joinLanguages(shared: unknown, vault: unknown, sharedPath: strin
   return [keepLanguages(shared, both), keepLanguages(vault, both)];
 }
 
+/** The entries a vault's own notes cover: the vault, the entries its attributes name and those it depends on. */
+export const ownedEntries = (vault: RegistryEntry): ReadonlySet<string> => new Set([vault.name, ...Object.values(vault.attributes), ...(vault.dependsOn ?? [])]);
+
 /**
  * The notes a report reads, as JSON: the template's, merged with the vault's for a per-vault report, both in the
  * languages both hold; undefined without the template's.
@@ -124,7 +127,7 @@ export function readNotes(repoRoot: string, template: string, vault?: RegistryEn
   if (vault === undefined) return shared;
   const path = notesPath(repoRoot, template, vault.name);
   const [ours, theirs] = joinLanguages(shared, readJson(join(repoRoot, path)), sharedPath, path);
-  return mergeNotes(ours, theirs, path, new Set([vault.name, ...Object.values(vault.attributes), ...(vault.dependsOn ?? [])]));
+  return mergeNotes(ours, theirs, path, ownedEntries(vault));
 }
 
 /** What notes.json may name and must name, derived from the template, the report's inputs and its ledger. */
@@ -249,8 +252,8 @@ type Shape = Readonly<Record<string, P<unknown> | Opt<unknown>>>;
 type Parsed<S extends Shape> = { readonly [K in keyof S]: S[K] extends Opt<infer T> ? T : S[K] extends P<infer T> ? T : never };
 
 const CONTROL = /[\u0000-\u001f\u007f-\u009f\u061c\u200e\u200f\u2028\u2029\u202a-\u202e\u2066-\u2069]/;
-const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
-const own = (record: Record<string, unknown>, key: string): unknown => (Object.hasOwn(record, key) ? record[key] : undefined);
+export const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+export const own = (record: Record<string, unknown>, key: string): unknown => (Object.hasOwn(record, key) ? record[key] : undefined);
 const refuse = (path: string, rule: string): never => {
   throw new NotesError(`${path}: ${rule}`);
 };
@@ -284,7 +287,7 @@ const str =
     plainText(path, raw, max);
 
 /** How many characters a language may use for what Traditional Chinese says in `max`. */
-const LENGTH: Readonly<Record<Language, number>> = { 'zh-TW': 1, en: 3 };
+export const LENGTH: Readonly<Record<Language, number>> = { 'zh-TW': 1, en: 3 };
 /** Chinese characters and full-width punctuation, which the English page must not show. */
 const CHINESE = /[\u2e80-\u9fff\u3000-\u303f\uff00-\uffef]/u;
 
@@ -401,10 +404,13 @@ const where =
     return problem === undefined ? value : refuse(path, problem);
   };
 
+/** How many characters of Traditional Chinese each required text may hold. */
+export const LIMITS = { title: 100, summary: 250, verdict: 100, intro: 200, protocolNote: 2000, review: 300, recommendation: 200, role: 200, entrySource: 200, field: 150 } as const;
+
 const note = (max: number) => obj({ text: text(max), sources: optList(url) });
 
 const protocolNotes = (slug: string) =>
-  where(obj({ intro: text(200), audits: note(2000), incidents: list(note(2000)) }), (protocol, scope) => {
+  where(obj({ intro: text(LIMITS.intro), audits: note(LIMITS.protocolNote), incidents: list(note(LIMITS.protocolNote)) }), (protocol, scope) => {
     const hacks = scope.protocols.get(slug);
     return hacks === 'unread' || protocol.incidents.length === hacks ? undefined : `incidents lists ${protocol.incidents.length}; DefiLlama lists ${hacks} hacks`;
   });
@@ -421,21 +427,21 @@ const FLOW = optList(
 );
 
 const NOTES_FIELDS = obj({
-  title: text(100),
-  summary: text(250),
-  verdict: obj({ status: oneOf('safe', 'caution'), text: text(100) }),
+  title: text(LIMITS.title),
+  summary: text(LIMITS.summary),
+  verdict: obj({ status: oneOf('safe', 'caution'), text: text(LIMITS.verdict) }),
   flow: FLOW,
   protocols: keyed((scope) => [...scope.protocols.keys()], 'a protocol the protocol facts cover', true, protocolNotes),
   judgments: optList(obj({ text: text(200), sources: optList(url), recommendation: text(200) }), 4),
   reviews: keyed((scope) => scope.reviews, 'a result the signer must look at', true, () =>
-    obj({ status: oneOf('confirmed', 'concern'), text: text(300), recommendation: text(200) }),
+    obj({ status: oneOf('confirmed', 'concern'), text: text(LIMITS.review), recommendation: text(LIMITS.recommendation) }),
   ),
   entries: opt(
     keyed((scope) => [...scope.entries], 'a registry entry this report covers', false, () =>
-      obj({ role: opt(text(200)), sources: optList(obj({ text: text(200), url, result: oneOf('pass', 'attention', 'fail') })) }),
+      obj({ role: opt(text(LIMITS.role)), sources: optList(obj({ text: text(LIMITS.entrySource), url, result: oneOf('pass', 'attention', 'fail') })) }),
     ),
   ),
-  fields: keyed((scope) => scope.fields, 'an argument of the template', true, () => text(150)),
+  fields: keyed((scope) => scope.fields, 'an argument of the template', true, () => text(LIMITS.field)),
   times: optList(where(str(400), (key, scope) => (scope.fields.includes(key) ? undefined : `${shown(key)} is not an argument of the template`))),
   pastTxsConclusion: opt(text(200)),
   context: optList(obj({ title: text(40), text: text(400), sources: where(list(url), (sources) => (sources.length === 0 ? 'names no source' : undefined)) }), 4),

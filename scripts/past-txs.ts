@@ -16,6 +16,7 @@ import type { AnchorEvent, AnchorKind } from '../src/research/sources.ts';
 import { liveMessages, recordingMessages } from '../src/research/messages.ts';
 import { httpsMessage } from '../src/verify/messages.ts';
 import { DEFAULT_SAMPLING, MAX_PAGES, samplingFields, samplingOf, scrubRecording } from '../src/research/recording.ts';
+import { showSummary } from '../src/research/past-txs-show.ts';
 import { RECORDINGS_DIR, SUMMARIES_DIR, parseSummary, studyRecording, summaryFile } from '../src/research/past-txs-summary.ts';
 import type { PastTxsSummary } from '../src/research/past-txs-summary.ts';
 import { ReportError, pastTxsRegistry } from '../src/research/report.ts';
@@ -36,6 +37,7 @@ const USAGE = `usage: pnpm past-txs <protocol>/<operation>
   [--max-txs <n>] [--record <name>]
   [--from-block <n> --to-block <n> | --same-windows-as <name>]
        pnpm past-txs --restudy [<name>...]
+       pnpm past-txs --show <name> [--tx <start of a hash>]
 
 Finds executed transactions of one operation through an anchor: an ERC-20 Transfer of --token, or
 an event (--anchor event), as one of the two forms above.
@@ -122,6 +124,11 @@ Options:
                                  nothing is written when a read got no answer.
   --restudy [<name>...]          Rewrite each testdata/research/<name>.json from
                                  .cache/past-txs/<name>.json, reading nothing live.
+  --show <name>                  Print the recorded summary testdata/research/<name>.json, reading
+                                 nothing live: its query, how many transactions ended each way,
+                                 then each with its hash, block, sender and why it does not fit.
+  --tx <start of a hash>         With --show: only that transaction, with every value the study
+                                 read and its traced calls.
 
 Writes: .cache/past-txs/<name>.json and testdata/research/<name>.json with --record;
 testdata/research/<name>.json with --restudy; otherwise nothing.
@@ -147,6 +154,8 @@ const { values: flags, positionals } = parseArgs({
     'max-txs': { type: 'string', default: '240' },
     record: { type: 'string' },
     restudy: { type: 'boolean' },
+    show: { type: 'string' },
+    tx: { type: 'string' },
   },
 });
 
@@ -188,6 +197,22 @@ if (flags.restudy === true) {
     console.log(`wrote ${writeSummary(checkedSummary(name, summary, safe))}`);
     process.stdout.write(traceAddressesText(loadTemplate(ROOT, recording.query.template, studied), studied, summary));
   }
+  process.exit(0);
+}
+if (flags.show !== undefined) {
+  const path = join(ROOT, SUMMARIES_DIR, `${flags.show}.json`);
+  if (!/^[a-z0-9-]+$/.test(flags.show) || !existsSync(path)) {
+    console.error(`--show ${flags.show}: no summary ${join(SUMMARIES_DIR, `${flags.show}.json`)}`);
+    process.exit(64);
+  }
+  const summary = parseSummary(join(SUMMARIES_DIR, `${flags.show}.json`), readFileSync(path, 'utf8'));
+  const registry = loadRegistry(ROOT);
+  const text = showSummary(summary, loadTemplate(ROOT, summary.query.template, registry), registry, flags.tx);
+  if (text === '') {
+    console.error(`--tx ${flags.tx}: the summary studied no such transaction`);
+    process.exit(64);
+  }
+  await new Promise((done) => process.stdout.write(text, done));
   process.exit(0);
 }
 const [templateId] = positionals;

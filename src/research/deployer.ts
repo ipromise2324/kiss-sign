@@ -108,7 +108,7 @@ export async function proveCreation(address: Address, hint: CreationHint, reader
 }
 
 /** Each entry's creation, from Etherscan's hints, proved through both providers. */
-export async function gatherCreations(entries: readonly RegistryEntry[], hints: HintLookup, reader: Reader): Promise<Map<Address, Creation>> {
+export async function gatherCreations(entries: readonly Pick<RegistryEntry, 'address'>[], hints: HintLookup, reader: Reader): Promise<Map<Address, Creation>> {
   const addresses = [...new Set(entries.map((entry) => entry.address))];
   const creations = new Map<Address, Creation>();
   let found: ReadonlyMap<Address, CreationHint>;
@@ -134,7 +134,7 @@ export class CreationLookupError extends Error {
  * Each entry's creation read live, or undefined with why when a key it needs is not set: Etherscan's hints need
  * `ETHERSCAN_API_KEY`, and the proof reads through Alchemy, which needs `ALCHEMY_API_KEY`.
  */
-export async function liveCreations(entries: readonly RegistryEntry[], env: Env, note: NoteUnread, reader: () => Reader): Promise<Map<Address, Creation> | { readonly missing: string }> {
+export async function liveCreations(entries: readonly Pick<RegistryEntry, 'address'>[], env: Env, note: NoteUnread, reader: () => Reader): Promise<Map<Address, Creation> | { readonly missing: string }> {
   const spec = keySpec('etherscan') as KeySpec;
   const key = findKey(spec, env)?.value;
   if (key === undefined) return { missing: spec.env };

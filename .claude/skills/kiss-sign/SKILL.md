@@ -83,16 +83,17 @@ Research first, ask last.
 The route, the card, the checks, the registry entries and any extra limit are your job, decided from evidence ([Decide from evidence](build-template.md#decide-from-evidence)).
 Work on a branch.
 One report covers one concrete operation: for a template reported per instance, every `pnpm report` command takes `--instance-of <instance>`, and each instance the signer will use needs its own report.
+Use the program's own listings (`find-sources`, `past-txs --show`, `notes-needed`) before you write a script that reads an API or a recording.
 
 1. **State the intent.** Restate the signer's sentence as one operation `<protocol>/<operation>` and note what the protocol's own app asks a user to enter ([how](build-template.md#state-the-intent)).
-2. **Research the addresses.** For each contract the operation touches, find and check the address yourself in every place you can, write what you saw as `entries.<name>.sources` in `notes.json`, record in the registry each place the program can read, and only then run the program's checks ([addresses.md](addresses.md)).
+2. **Research the addresses.** For each contract the operation touches, start from `pnpm find-sources`'s leads, find and check the address yourself in every place you can, write what you saw as `entries.<name>.sources` in `notes.json`, record in the registry each place the program can read, and only then run the program's checks ([addresses.md](addresses.md)).
 3. **Establish the ABI.** Take function signatures only from a proven ABI ([how](build-template.md#establish-the-abi)).
 4. **Draft the template.** Start from the nearest existing template and bind every argument ([how](build-template.md#draft-the-template)).
 5. **Study past transactions.** Run `pnpm past-txs` with the program's own search, every transaction from the newest block back through the last year or as far as its page cap reaches, read every misfit and every balance difference, and change the template where they call for it.
    Then run it with `--record <name>` and settle every address it names in the call traces, registered or judged in `trace-addresses.json`, before any `flow` line or review ([how](build-template.md#study-past-transactions)).
 6. **Check the protocol's health.** Hacks, audits, upgrades, admin changes, paused contracts, each with a URL ([how](build-template.md#check-the-protocols-health)).
 7. **Generate the report.** Write `docs.json`, then `pnpm report ... --record` ([how](build-template.md#generate-the-report)).
-8. **Write the notes and reviews.** Complete `notes.json` around your step 2 observations, its `flow` lines from the recorded traces and its `times`, write a review of every result the signer must look at against the result as printed, then `pnpm report ... --render` ([notes-and-reviews.md](notes-and-reviews.md)).
+8. **Write the notes and reviews.** Complete `notes.json` around your step 2 observations, its `flow` lines from the recorded traces and its `times`, write every text `pnpm notes-needed` lists, a review of every result the signer must look at against the result as printed among them, then `pnpm report ... --render` ([notes-and-reviews.md](notes-and-reviews.md)).
 9. **Add the tests.** Record two or more transactions of other Safes, require `MATCH`, catch every bound field, and run `--render` again for every report of the template, since each judges the perturbation recordings ([how](build-template.md#add-the-tests)).
 10. **Check and open the pull request.** `pnpm test`, `pnpm typecheck` and `pnpm check-push origin/main..HEAD` must pass ([how](build-template.md#open-the-pull-request)).
 11. **Tell the signer.** Say what the card will ask, what will be checked and the findings, give the link, and give the next steps, checking the sources before merging among them ([how](build-template.md#tell-the-signer)).

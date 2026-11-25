@@ -481,6 +481,9 @@ type Context = {
   readonly comparison: FlowComparison;
 };
 
+/** What the program's results need, before any note is parsed. */
+type Judged = Omit<Context, 'notes'>;
+
 const fieldsNote = (context: Context, key: string): AiText => research(context.notes.fields.get(key) as string, [], 'ai');
 
 function decimalsOf(context: Context, token: Address): number | undefined {
@@ -800,7 +803,7 @@ function argRow(node: ArgNode, context: Context, withChips: boolean, inMessage =
 const cardTarget = (field: string, context: Context) => targetOf({ kind: 'card', ref: { field, attribute: undefined } }, context);
 
 /** Each card field a line names with its tokens: in how many transactions that held the token the line was seen, and the tokens none held. */
-const fieldWords = ({ fields }: LineTally, context: Context): string[] =>
+const fieldWords = ({ fields }: LineTally, context: Judged): string[] =>
   fields.map(({ field, tokens }) =>
     context.w.seenByToken(
       fieldWord(context.template, field, context.w),
@@ -1278,7 +1281,7 @@ function firstSentence(text: string): string {
 }
 
 /** One side of a past payment: whoever sent that transaction, or the full address with its registry name. */
-function partyWords(party: Payment['from'], context: Context): string {
+function partyWords(party: Payment['from'], context: Judged): string {
   if (party === 'safe') return context.w.money.sender;
   const name = context.registry.byAddress.get(party)?.name;
   return name === undefined ? checksumAddress(party) : `${name} ${checksumAddress(party)}`;
@@ -1288,7 +1291,7 @@ function partyWords(party: Payment['from'], context: Context): string {
  * A trace result's title: who paid whom in how many past transactions, and that the template does not describe it. It
  * never says what the signer's own Safe pays, since a past sender may have moved the tokens the other way.
  */
-function moneyTitle({ kind, to, pays, sides, call, transactions }: Uncovered, context: Context): string {
+function moneyTitle({ kind, to, pays, sides, call, transactions }: Uncovered, context: Judged): string {
   const { w } = context;
   const token = to === 'other' ? w.kind.token : to;
   const side = (parties: readonly Payment['from'][]): string => {
@@ -1309,7 +1312,7 @@ function moneyTitle({ kind, to, pays, sides, call, transactions }: Uncovered, co
 }
 
 /** What a result is about beyond its row's title, which already names its kind and its entry or test transaction, and why it is shown. */
-function reviewSubject(result: Result, context: Context): { readonly subject: Inline | undefined; readonly why: Inline } {
+function reviewSubject(result: Result, context: Judged): { readonly subject: Inline | undefined; readonly why: Inline } {
   const { w } = context;
   const words = findingWords(result, w);
   if (result.about.kind === 'fixture') {
@@ -1355,6 +1358,11 @@ function reviewSubject(result: Result, context: Context): { readonly subject: In
   return { subject: subject === undefined ? undefined : [subject], why: [`${words.why}${refused}`] };
 }
 
+function titleOf(result: Result, context: Judged): string {
+  const plain = result.about.kind === 'money' ? moneyTitle(result.about.uncovered, context) : findingWords(result, context.w).title;
+  return `${plain.charAt(0).toUpperCase()}${plain.slice(1)}${result.about.kind === 'entry' ? ` · ${result.about.entry.name}` : result.about.kind === 'fixture' ? ` · ${result.about.name}` : ''}`;
+}
+
 function reviewSection(context: Context): Section {
   const { notes, ledger } = context;
   const graded = (grade: Grade) => forSigner(ledger).filter((r) => weightOf(r) === grade);
@@ -1362,13 +1370,12 @@ function reviewSection(context: Context): Section {
   const rows = grades.flatMap((grade) => graded(grade).map((result): ReviewRow => {
     const review = notes.reviews.get(result.id) as Notes['reviews'] extends ReadonlyMap<string, infer R> ? R : never;
     const { subject, why } = reviewSubject(result, context);
-    const plain = result.about.kind === 'money' ? moneyTitle(result.about.uncovered, context) : findingWords(result, context.w).title;
     const { conclusion, rest } = splitFirst(review.text);
     return {
       id: result.id,
       state: stateOf(result),
       grade,
-      title: `${plain.charAt(0).toUpperCase()}${plain.slice(1)}${result.about.kind === 'entry' ? ` · ${result.about.entry.name}` : result.about.kind === 'fixture' ? ` · ${result.about.name}` : ''}`,
+      title: titleOf(result, context),
       conclusion,
       subject,
       why,
@@ -2230,16 +2237,12 @@ const usageBlock = (usage: Usage | undefined, w: Words): UsageBlock =>
 
 const usageSection = (usage: Usage | undefined, w: Words): Section => ({ anchor: anchor('usage'), label: w.usage, count: undefined, body: { kind: 'usage', usage: usageBlock(usage, w) } });
 
-/**
- * The signer's page in `language`, from the report's inputs and the raw notes.json. The ledger judges every result;
- * notes.json is parsed against the scope the template and the ledger derive, so it cannot name what the page does not
- * show nor leave out a review the page needs. Throws NotesError for notes the program refuses.
- */
-export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTitle, language: Language): Page {
-  const { subject, registry } = inputs;
-  const { template } = subject;
+/** The report's results, those of the notes' `flow` lines against the call traces included; with no notes, no line. */
+function withFlow(inputs: HtmlInputs, language: Language, rawNotes: unknown): Pick<Context, 'ledger' | 'comparison'> {
+  const { registry } = inputs;
+  const { template } = inputs.subject;
   const judged = judge(inputs, inputs.fixtures);
-  const flow = parseFlowLines(rawNotes, notesScope(inputs, judged, template, language));
+  const flow = rawNotes === undefined ? [] : parseFlowLines(rawNotes, notesScope(inputs, judged, template, language));
   const shapes = shapesOf(template);
   const comparison = compareFlow(
     template,
@@ -2248,7 +2251,33 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
     tracedOnce(inputs.pastTxs.flatMap(({ run }) => run.traces)),
     new Map(inputs.pastTxs.flatMap(({ run }) => run.studies).flatMap((study) => (study.kind === 'fit' ? [[study.hash, cardAddresses(study, shapes)] as const] : []))),
   );
-  const ledger: Ledger = { ...judged, results: [...judged.results, ...flowResults(comparison)] };
+  return { comparison, ledger: { ...judged, results: [...judged.results, ...flowResults(comparison)] } };
+}
+
+export type ToReview = { readonly id: ResultId; readonly state: State; readonly title: string; readonly why: string };
+
+/** Each result the notes must review and the report's ledger, with or without any notes yet, in the page's own words. */
+export function toReview(inputs: HtmlInputs, language: Language, rawNotes: unknown): { readonly ledger: Ledger; readonly rows: readonly ToReview[] } {
+  const w = WORDS[language];
+  const { ledger, comparison } = withFlow(inputs, language, rawNotes);
+  const context: Judged = { w, language, inputs, template: inputs.subject.template, registry: inputs.registry, facts: inputs.facts, ledger, comparison };
+  const words = (spans: Inline) => spans.map((s) => (typeof s === 'string' ? s : 'code' in s ? s.code : 'mono' in s ? s.mono : 'num' in s ? s.num : s.label)).join('');
+  const rows = forSigner(ledger).map((result): ToReview => {
+    const { subject, why } = reviewSubject(result, context);
+    return { id: result.id, state: stateOf(result), title: titleOf(result, context), why: [...(subject === undefined ? [] : [words(subject)]), words(why)].join(': ') };
+  });
+  return { ledger, rows };
+}
+
+/**
+ * The signer's page in `language`, from the report's inputs and the raw notes.json. The ledger judges every result;
+ * notes.json is parsed against the scope the template and the ledger derive, so it cannot name what the page does not
+ * show nor leave out a review the page needs. Throws NotesError for notes the program refuses.
+ */
+export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTitle, language: Language): Page {
+  const { subject, registry } = inputs;
+  const { template } = subject;
+  const { ledger, comparison } = withFlow(inputs, language, rawNotes);
   const notes = parseNotes(rawNotes, notesScope(inputs, ledger, template, language));
   const w = WORDS[language];
   const context: Context = {

@@ -11,7 +11,7 @@ const SEALED_OFF = pathToFileURL(join(import.meta.dirname, 'sealed-off.ts')).hre
 
 const SIGNING = [[], ['init'], ['key'], ['key', 'add'], ['key', 'list'], ['key', 'remove'], ['book'], ['book', 'add'], ['book', 'list'], ['template', 'approve'], ['card'], ['card', 'new'], ['card', 'seal'], ['verify'], ['replay']];
 const SCRIPTS = [
-  'attacks', 'check-sources', 'erc7730', 'fetch-vendored', 'history', 'instance-evidence', 'past-txs', 'perturb', 'pin-code', 'pin-packages',
+  'attacks', 'check-sources', 'erc7730', 'fetch-vendored', 'find-sources', 'history', 'instance-evidence', 'notes-needed', 'past-txs', 'perturb', 'pin-code', 'pin-packages',
   'pin-solc', 'prove-abi', 'prove-instance', 'record-abi-case', 'record-safe-proxy', 'record-safe-tx', 'simulate', 'verdict-core',
 ];
 

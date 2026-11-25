@@ -30,12 +30,14 @@ Every command below but `pnpm install`, `pnpm test` and `pnpm typecheck` prints 
 - `pnpm prove-instance <registry name>`: asks the entry's factory whether it vouches for the contract.
 - `pnpm instance-evidence <registry name>`: reads a vault's size over 12 months and its holders.
 - `pnpm pin-code [<registry name>...]`: pins each registry entry's code hash and the blocks it ran from.
+- `pnpm find-sources <address | registry name>...`: proposes where each address is published, with the registry field each place would fill; `check-sources` proves.
 - `pnpm check-sources [<registry name>...]`: compares each registry entry's sources with the protocol's sites and listings.
 - `pnpm erc7730 <registry name>...`: prints the structured facts of each entry's ERC-7730 descriptors and attestations.
-- `pnpm past-txs <protocol>/<operation> ...`: finds and studies other senders' executed transactions of one operation.
+- `pnpm past-txs <protocol>/<operation> ...`: finds and studies other senders' executed transactions of one operation; `--show <name>` lists a recorded run.
 - `pnpm record-safe-tx`, `pnpm record-safe-proxy`, `pnpm record-abi-case`: record a Safe transaction, Safe proxy or ABI-proof fixture into `testdata/`.
 - `pnpm simulate <safe-tx fixture>`: simulates an executed Safe transaction and prints its effects.
 - `pnpm perturb <safe-tx fixture> --card '<card json>'`: changes each free field and simulates every copy.
+- `pnpm notes-needed <protocol>/<operation>`: lists, offline, every text `notes.json` still lacks for `report --render`.
 - `pnpm report <protocol>/<operation>`: prints, records or renders a template's generated report.
 
 ### Signing
