@@ -600,7 +600,7 @@ test('a constant prints as cast decode-calldata prints it', () => {
   assert.equal(constCast({ kind: 'bool', value: false }), 'false');
 });
 
-test('過去交易 says no Safe made the template\'s transaction, and how the others differed, one row per reason', () => {
+test('past transactions count, per kind of sender, those using the operation and those with the template shape', () => {
   const { worked, differ, search } = past(pageOf(inputs));
   assert.equal(worked.answer, '研究過的交易裡沒有 Safe 這樣做過。');
   assert.equal(worked.rest, 'EOA：0 次。');
@@ -616,7 +616,7 @@ test('過去交易 says no Safe made the template\'s transaction, and how the ot
   assert.equal(plain(search[0]?.lines[0]), 'Alchemy 和 Etherscan 找到的完全一樣（528 = 528）。');
 });
 
-test('a bundle of few items is named by the functions its items call, a larger one by its size, each with its newest transaction linked to Etherscan', () => {
+test('a bundle with another number of items is grouped and named by the functions its items call, each example linked to Etherscan', () => {
   const { differ, search } = past(depositPage);
   assert.equal(differ.lead, '336 筆交易做了這個模板不允許的事。');
   assert.deepEqual(
@@ -633,7 +633,7 @@ test('a bundle of few items is named by the functions its items call, a larger o
   assert.ok(search.some((s) => s.lines.some((line) => /筆是別的操作，不列入：hyperithm-usdc-apex-v2-9e2f\.deposit \d+ 筆/.test(plain(line)))));
 });
 
-test('過去交易 leads with how often the template\'s transaction worked, each transaction counted once', () => {
+test('過去交易 leads with how many past transactions were exactly the template, had its shape outside the registry, or another shape, each counted once, and the latest of them', () => {
   const { worked } = past(depositPage);
   assert.equal(worked.answer, '成功過，2 個 Safe 一共做過 6 次。');
   assert.match(worked.rest, /^EOA：26 次，來自 17 個地址，各自送模板的一個呼叫。最近一次是 .+。全部成功執行。$/);

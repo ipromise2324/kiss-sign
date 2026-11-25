@@ -673,7 +673,7 @@ test('Next steps first asks the signer to open the sources the report lists for 
 const pastOf = (html: string): string => /<section id="past">.*?<\/section>/s.exec(html)?.[0] ?? assert.fail('a 過去交易 section');
 const textOf = (html: string): string => unescape(html.replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
 
-test("過去交易 leads with the transactions exactly like the signer's, says how the others differed, keeps each FINDING open, and folds how it searched", async () => {
+test("過去交易 leads with the transactions exactly like the signer's, keeps each FINDING open, and folds the rest under the one line that counts them", async () => {
   const { inputs, title } = pages.get(hyperithm()) ?? assert.fail('the frozen Hyperithm report');
   const page = buildPage(await withFixtures(hyperithm(), inputs), notesOf(hyperithm()), title, 'en');
   const finding = { effect: 'gives amount', tolerance: 'exact', tokens: [], outside: undefined, finding: 'beyond the tolerance', unmeasured: undefined };
