@@ -261,6 +261,8 @@ The AI designs the card: its values are what the protocol's own app asks for the
 This holds for every protocol.
 A value the protocol's own app fills in by itself, never asking its user, such as a slippage floor, a share-price cap, a minimum amount out or a deadline, is never asked at `card new`.
 When it is a limit the transaction's own bound must carry, the template declares its card field as computed (below): `card new` reads it on chain through both providers and applies the protocol's own default, which the template cites, and prints it with its source for the signer to check.
+It may instead be a limit no bound of the transaction carries, such as the fewest shares a plain `deposit(assets, receiver)` gives: the template then compares it with what the Safe gets (`atLeast` in the effects), so `verify` checks it on the simulated result before signing and on the receipt after, and nothing holds it when the transaction runs.
+The report says so, since a price that moves between the two is not caught.
 A value the program cannot compute that way is bound by the template or left free with a reason, as a deadline is, and is not asked either.
 The sealed card still holds the computed number in base units, like a typed one, so `card seal`, `verify` and `replay` treat it exactly as before: what `verify` checks does not change.
 
