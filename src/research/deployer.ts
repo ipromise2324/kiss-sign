@@ -132,7 +132,8 @@ export class CreationLookupError extends Error {
 
 /**
  * Each entry's creation read live, or undefined with why when a key it needs is not set: Etherscan's hints need
- * `ETHERSCAN_API_KEY`, and the proof reads through Alchemy, which needs `ALCHEMY_API_KEY`.
+ * `ETHERSCAN_API_KEY`, and the proof reads through Alchemy and drpc, which need
+ * `ALCHEMY_API_KEY` and `DRPC_API_KEY`.
  */
 export async function liveCreations(entries: readonly RegistryEntry[], env: Env, note: NoteUnread, reader: () => Reader): Promise<Map<Address, Creation> | { readonly missing: string }> {
   const spec = keySpec('etherscan') as KeySpec;

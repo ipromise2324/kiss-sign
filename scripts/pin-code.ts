@@ -32,7 +32,7 @@ Options:
   --history   Pin the local entries of $KISS_SIGN_HOME/history/registry.json instead.
 
 Writes: registry/contracts.json, or $KISS_SIGN_HOME/history/registry.json with --history.
-Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Keys: ALCHEMY_API_KEY and DRPC_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
 Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 2, Pin
 the code and Pin the routes); docs/design/engine-and-chain.md, "Engine checks that every template
 gets".`;

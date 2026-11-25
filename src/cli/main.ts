@@ -107,11 +107,12 @@ first"; docs/design/engine-and-chain.md, "Chain access".
 const KEY_ADD_HELP = `Asks for one API key at a hidden prompt and saves it in $KISS_SIGN_HOME/.env, readable by you
 only. It never prints the key. Run it in your own terminal with nothing piped into it, and never
 type a key on the command line. A key set in the environment wins over the file.
-alchemy is ALCHEMY_API_KEY, etherscan is ETHERSCAN_API_KEY, and github is GITHUB_TOKEN, which is
-optional: a fine-grained, read-only token with access to public repositories only. Only the
-research commands read GITHUB_TOKEN, and only for api.github.com, where it raises the limit from
-60 to 5,000 requests an hour and changes no answer. verify, card, template approve, replay and
-pnpm history never read it.
+alchemy is ALCHEMY_API_KEY, drpc is DRPC_API_KEY, etherscan is ETHERSCAN_API_KEY, and github is
+GITHUB_TOKEN, which is optional: a fine-grained, read-only token with access to public repositories
+only. A command that reads the chain needs both ALCHEMY_API_KEY and DRPC_API_KEY, since a read
+counts only when both providers answer it alike. Only the research commands read GITHUB_TOKEN, and
+only for api.github.com, where it raises the limit from 60 to 5,000 requests an hour and changes no
+answer. verify, card, template approve, replay and pnpm history never read it.
 
 Writes: $KISS_SIGN_HOME/.env.
 Keys: none.
@@ -126,7 +127,7 @@ Keys: none.
 Rules: docs/design/engine-and-chain.md, "Chain access".
 `;
 
-const KEY_REMOVE_HELP = `Takes one key (alchemy, etherscan or github) out of $KISS_SIGN_HOME/.env, and says when the same
+const KEY_REMOVE_HELP = `Takes one key (alchemy, drpc, etherscan or github) out of $KISS_SIGN_HOME/.env, and says when the same
 key is still set in your environment.
 
 Writes: $KISS_SIGN_HOME/.env.
@@ -182,7 +183,7 @@ providers of every chain read. Output is plain text when stdout is not a termina
 set.
 
 Writes: $KISS_SIGN_HOME/cards/<hash>.json, after your yes.
-Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env, when a template has an amount
+Keys: ALCHEMY_API_KEY and DRPC_API_KEY, from the environment or $KISS_SIGN_HOME/.env, when a template has an amount
 of a token or a computed amount.
 Rules: docs/design/flow.md, "Every signing" (steps 9 and 10); docs/design/data-shapes.md, "Intent
 card"; docs/design/program-ownership.md, "The program checks itself first".
@@ -225,7 +226,7 @@ Options:
   --safe-tx-hash <hash>  read the transaction from the Safe Transaction Service
 
 Writes: the verdict file and its page in $KISS_SIGN_HOME/verdicts/.
-Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Keys: ALCHEMY_API_KEY and DRPC_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
 Rules: docs/design/flow.md, "Every signing" (step 12);
 docs/design/program-ownership.md, "The program checks itself first";
 docs/design/data-shapes.md, "Verdict file";

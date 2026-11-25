@@ -125,7 +125,8 @@ Options:
 
 Writes: .cache/past-txs/<name>.json and testdata/research/<name>.json with --record;
 testdata/research/<name>.json with --restudy; otherwise nothing.
-Keys: ALCHEMY_API_KEY and ETHERSCAN_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Keys: ALCHEMY_API_KEY, DRPC_API_KEY and ETHERSCAN_API_KEY, from the environment or
+  $KISS_SIGN_HOME/.env.
 Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 4,
   Study past transactions, Call traces).`;
 

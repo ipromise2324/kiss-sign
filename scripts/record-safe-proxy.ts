@@ -23,7 +23,7 @@ recording mentions the Safe in $KISS_SIGN_HOME/config.json. <name> is lowercase 
 and hyphens.
 
 Writes: testdata/safe-proxy/<name>.json.
-Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Keys: ALCHEMY_API_KEY and DRPC_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
 Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 4,
   Who sent it, by type).`;
 

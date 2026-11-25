@@ -210,6 +210,7 @@ const EN = {
     usedBy: {
       alchemy: 'pnpm kiss-sign verify, pnpm kiss-sign card new, and the pnpm research scripts',
       etherscan: 'pnpm past-txs, pnpm check-sources and pnpm report',
+      drpc: 'every command that needs the Alchemy key to read the chain',
       github: 'nothing; optional, it only raises the GitHub API rate limit for pnpm check-sources, pnpm report, pnpm pin-solc and pnpm fetch-erc7730 (a fine-grained token, public repositories only, read-only)',
     } satisfies Record<KeyName, string>,
     next: 'Next',
@@ -443,6 +444,7 @@ const ZH: Labels = {
     usedBy: {
       alchemy: 'pnpm kiss-sign verify、pnpm kiss-sign card new 和 pnpm 研究腳本',
       etherscan: 'pnpm past-txs、pnpm check-sources 和 pnpm report',
+      drpc: '每個要用 Alchemy 金鑰讀鏈的指令',
       github: '沒有指令需要它；選用，只用來提高 pnpm check-sources、pnpm report、pnpm pin-solc 和 pnpm fetch-erc7730 的 GitHub API 速率上限（細粒度 token，只限公開 repository、唯讀）',
     },
     next: '下一步',
