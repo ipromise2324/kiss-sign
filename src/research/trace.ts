@@ -142,7 +142,7 @@ const asAnswer = (trace: RecordedTrace): TraceAnswer => ('calls' in trace ? { ki
  * Traces from drpc alone, retried after a pause; a trace with no answer after every retry is noted, so `--record`
  * writes nothing, and read as not traced. `recorded` gives every trace read, in the order they were asked for.
  */
-export function drpcTraces(endpoint: Endpoint, transport: Transport, note: NoteUnread): { readonly source: TraceSource; readonly recorded: () => RecordedTrace[] } {
+export function drpcTraces(endpoint: Endpoint, transport: Transport, note: NoteUnread, pausesMs?: readonly number[]): { readonly source: TraceSource; readonly recorded: () => RecordedTrace[] } {
   const traces = new Map<Hex, RecordedTrace | undefined>();
   const source = async (hash: Hex): Promise<TraceAnswer | undefined> => {
     traces.set(hash, undefined);
@@ -150,7 +150,7 @@ export function drpcTraces(endpoint: Endpoint, transport: Transport, note: NoteU
     const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'debug_traceTransaction', params: [hash, { tracer: 'callTracer' }] });
     let answer: HttpAnswer;
     try {
-      answer = await retried(label, () => transport(endpoint.url, body, AbortSignal.timeout(60_000)), (a) => transientStatus(a) ?? traceProblem(a.text), note);
+      answer = await retried(label, () => transport(endpoint.url, body, AbortSignal.timeout(60_000)), (a) => transientStatus(a) ?? traceProblem(a.text), note, pausesMs);
     } catch (error) {
       note(`${label}: ${(error as Error).message}`);
       return undefined;
@@ -173,7 +173,7 @@ const traceProblem = (text: string): string | undefined => {
   try {
     const answer = JSON.parse(text) as unknown;
     if (isRecord(answer) && isRecord(answer.result)) return undefined;
-    return isRecord(answer) && isRecord(answer.error) ? `error ${String(answer.error.message).slice(0, 80)}` : 'no trace in the answer';
+    return isRecord(answer) && isRecord(answer.error) ? typeof answer.error.code === 'number' ? `error ${answer.error.code}` : 'an error' : 'no trace in the answer';
   } catch {
     return 'not JSON';
   }

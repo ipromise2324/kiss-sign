@@ -3,6 +3,7 @@ import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadStoredConfig } from '../src/config.ts';
+import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { KEYS, findKey, kissSignHome } from '../src/keys.ts';
 import { checksumAddress, parseAddress, parseHex, parseOperation, parseUint256 } from '../src/safe/types.ts';
 import { exitOnHelp } from '../src/script-help.ts';
@@ -20,7 +21,7 @@ $KISS_SIGN_HOME/config.json, before it reads anything, and writes nothing when t
 mentions that Safe. <name> is lowercase letters, digits and hyphens.
 
 Writes: testdata/safe-tx/<name>.json.
-Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Keys: ALCHEMY_API_KEY and DRPC_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
 Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 7,
   Write the template).`;
 
@@ -35,13 +36,10 @@ if (name === undefined || safeArg === undefined || which === undefined || !/^[a-
 }
 if (alchemyKey === undefined || alchemyKey === '') throw new Error(`ALCHEMY_API_KEY is not set, in the environment or in $KISS_SIGN_HOME/.env\n${USAGE}`);
 
-const providers = [
-  { name: 'alchemy', url: `https://eth-mainnet.g.alchemy.com/v2/${alchemyKey}` },
-  { name: 'drpc', url: 'https://eth.drpc.org' },
-];
+const providers = mainnetEndpoints(process.env).map(({ provider, url }) => ({ name: provider, url }));
 
 async function rpc(provider: { name: string; url: string }, method: string, params: unknown[]): Promise<string> {
-  let body: { result?: unknown; error?: { message?: string } };
+  let body: { result?: unknown; error?: { code?: unknown } };
   try {
     const response = await fetch(provider.url, {
       method: 'POST',
@@ -52,7 +50,7 @@ async function rpc(provider: { name: string; url: string }, method: string, para
   } catch {
     throw new Error(`${provider.name}: ${method} failed`);
   }
-  if (typeof body.result !== 'string') throw new Error(`${provider.name}: ${method} gave ${body.error?.message ?? 'no result'}`);
+  if (typeof body.result !== 'string') throw new Error(`${provider.name}: ${method} gave ${typeof body.error?.code === 'number' ? `error ${body.error.code}` : 'no result'}`);
   return body.result;
 }
 

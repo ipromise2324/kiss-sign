@@ -313,9 +313,9 @@ async function timesOf(reader: Reader, range: BlockRange): Promise<Coverage['tim
   return from === undefined || to === undefined ? undefined : { from, to };
 }
 
-/** The most transactions studied, measured or traced at once. */
-const STUDY_WIDTH = 8;
-const TRACE_WIDTH = 4;
+/** The most transactions studied or measured, and traced, at once. */
+const STUDY_WIDTH = 16;
+const TRACE_WIDTH = 8;
 
 export async function pastTxs(query: PastTxsQuery, given: PastTxsDeps): Promise<PastTxs> {
   const deps = { ...given, reader: sharedReads(given.reader) };

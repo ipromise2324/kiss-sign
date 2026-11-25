@@ -1,7 +1,7 @@
 import type { Address, Hex } from '../safe/types.ts';
 import type { Env } from '../keys.ts';
 import { mainnetEndpoints } from './providers.ts';
-import type { Endpoint, ProviderName } from './providers.ts';
+import type { Endpoint, Load, ProviderName } from './providers.ts';
 import type { NoteUnread } from './https.ts';
 import { httpsTransport } from './rpc.ts';
 import type { Transport } from './rpc.ts';
@@ -48,7 +48,7 @@ export type ReaderOptions = {
   /** Pauses after a rate-limited answer, long enough for a public endpoint's window to pass. */
   readonly rateLimitPausesMs?: readonly number[];
   /** Requests each provider may have open at once; a rate-limited answer halves it, each answer raises it slowly back. */
-  readonly openRequests?: { readonly start: number; readonly max: number };
+  readonly openRequests?: Load;
   /** The most blocks the providers' heads may be apart for `block('latest')` to take the lower one; absent, any number. */
   readonly maxHeadGap?: bigint;
   /** Told of each provider that gave no answer after every retry, so a recording can refuse to keep the read. */
@@ -107,13 +107,15 @@ function attemptOf(text: string, method: Method): Attempt {
   return { kind: 'result', value: result };
 }
 
+const DEFAULT_LOAD: Load = { start: 8, max: 32 };
+
 type Gate = { enter(): Promise<number>; leave(round: number, cause: FailureCause | undefined): void };
 
 /**
  * Additive increase, multiplicative decrease: a provider that limits its rate is asked fewer things at once.
  * Only a refusal of a request sent after the last cut cuts again, so one burst of refusals halves the limit once.
  */
-function gate(start: number, max: number): Gate {
+function gate({ start, max }: Load): Gate {
   let limit = start;
   let open = 0;
   let round = 0;
@@ -178,8 +180,7 @@ export function createReader(endpoints: readonly [Endpoint, Endpoint], transport
   const timeoutMs = options.timeoutMs ?? 20_000;
   const pauses = options.retryPausesMs ?? [250, 750];
   const rateLimitPauses = options.rateLimitPausesMs ?? [1000, 2000, 4000, 8000, 16000, 32000, 60000];
-  const { start, max } = options.openRequests ?? { start: 8, max: 32 };
-  const gates = new Map(endpoints.map((endpoint) => [endpoint.url, gate(start, max)]));
+  const gates = new Map(endpoints.map(({ url, load = DEFAULT_LOAD }) => [url, gate(options.openRequests ?? load)]));
 
   async function send(endpoint: Endpoint, method: Method, params: readonly unknown[]): Promise<Attempt> {
     const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: method.name, params });

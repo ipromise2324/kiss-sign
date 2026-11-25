@@ -17,7 +17,8 @@ Options:
                     answers live into testdata/attacks/<case>/recording.json, then replay it.
 
 Writes: testdata/attacks/<case>/recording.json with --record; otherwise nothing.
-Keys: ALCHEMY_API_KEY with --record, from the environment or $KISS_SIGN_HOME/.env; none otherwise.
+Keys: ALCHEMY_API_KEY and DRPC_API_KEY with --record, from the environment or
+  $KISS_SIGN_HOME/.env; none otherwise.
 Rules: docs/design/program-ownership.md, "The program gate" (the canaries).`;
 
 exitOnHelp(HELP);

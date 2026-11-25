@@ -27,7 +27,8 @@ nothing when a read got no answer. <name> is lowercase letters, digits and hyphe
 
 Writes: testdata/abi/<name>.json; vendor/solc/ when a pinned compiler is missing or differs from
 its pin.
-Keys: ALCHEMY_API_KEY and ETHERSCAN_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Keys: ALCHEMY_API_KEY, DRPC_API_KEY and ETHERSCAN_API_KEY, from the environment or
+  $KISS_SIGN_HOME/.env.
 Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 3,
   Establish the ABI).`;
 

@@ -152,7 +152,7 @@ async function cardNew(id: string, { sell, buy, amount, then, waits = {} }: Type
   let stdout = '';
   let stderr = '';
   const code = await main(['card', 'new', id], {
-    env: { KISS_SIGN_HOME: home, ALCHEMY_API_KEY: 'test-key' },
+    env: { KISS_SIGN_HOME: home, ALCHEMY_API_KEY: 'test-key', DRPC_API_KEY: 'test-key-drpc' },
     stdout: (out) => void (stdout += out),
     stderr: (out) => void (stderr += out),
     platform: 'linux',

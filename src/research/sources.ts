@@ -303,8 +303,9 @@ export function recordingAsk(inner: Ask): { ask: Ask; exchanges: () => SourceExc
 }
 
 export function replayAsk(exchanges: readonly SourceExchange[]): Ask {
+  const recorded = new Map(exchanges.toReversed().map((exchange) => [JSON.stringify(exchange.request), exchange]));
   return async (req) => {
-    const found = exchanges.find((e) => JSON.stringify(e.request) === JSON.stringify(req));
+    const found = recorded.get(JSON.stringify(req));
     if (found === undefined) throw new ResearchError(`${req.source}: request not recorded`);
     return found.answer;
   };
@@ -330,7 +331,7 @@ type SendEtherscan = (query: EtherscanQuery, note: NoteUnread) => Promise<unknow
  * first empty page is asked page by page. A page asked ahead and never reached is dropped, answered or not, so what the
  * search asked and what it noted are the same as one page after the other.
  */
-function pagesAhead(send: SendEtherscan, note: NoteUnread): (query: EtherscanQuery, end: EtherscanEnd | undefined) => Promise<unknown> {
+export function pagesAhead(send: SendEtherscan, note: NoteUnread): (query: EtherscanQuery, end: EtherscanEnd | undefined) => Promise<unknown> {
   type Asked = { readonly answer: Promise<unknown>; readonly unread: readonly string[] };
   const early = new Map<string, Asked>();
   const ask = (query: EtherscanQuery): Asked => {

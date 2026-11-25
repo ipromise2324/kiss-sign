@@ -4,15 +4,18 @@ import { MissingKeyError, mainnetEndpoints } from '../src/chain/providers.ts';
 import type { Endpoint } from '../src/chain/providers.ts';
 import { createReader, openMainnetReader } from '../src/chain/reader.ts';
 import type { Read } from '../src/chain/reader.ts';
+import { recordingTransport } from '../src/chain/recording.ts';
+import { drpcTraces } from '../src/research/trace.ts';
 import type { Transport } from '../src/chain/rpc.ts';
 import type { BlockRef } from '../src/chain/types.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 
 const KEY = 'planted-key-123';
+const DRPC_KEY = 'planted-drpc-456';
 const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com/v2/${KEY}`;
 const ENDPOINTS: readonly [Endpoint, Endpoint] = [
   { provider: 'alchemy', company: 'Alchemy', url: ALCHEMY_URL },
-  { provider: 'drpc', company: 'drpc', url: 'https://eth.drpc.org' },
+  { provider: 'drpc', company: 'drpc', url: 'https://drpc.test' },
 ];
 
 type Rpc = { method: string; params: unknown[] };
@@ -150,16 +153,50 @@ test('a missing Alchemy key names the variable, the signup URL, and key add in y
   });
 });
 
+test('a missing drpc key is refused the same way, and both keys make each provider its keyed endpoint', () => {
+  const env = { KISS_SIGN_HOME: '/nonexistent/kiss-sign-home', ALCHEMY_API_KEY: KEY };
+  assert.throws(() => openMainnetReader(env), (error: unknown) => {
+    assert.ok(error instanceof MissingKeyError);
+    assert.match(error.message, /^drpc needs an API key in DRPC_API_KEY, and none is set\. Get a free key at https:\/\/drpc\.org\/login, then run `pnpm kiss-sign key add drpc` in your own terminal, not in a chat\.$/);
+    return true;
+  });
+  const endpoints = mainnetEndpoints({ ...env, DRPC_API_KEY: DRPC_KEY });
+  assert.deepEqual(endpoints.map(({ provider, url }) => [provider, url]), [
+    ['alchemy', ALCHEMY_URL],
+    ['drpc', `https://lb.drpc.live/ethereum/${DRPC_KEY}`],
+  ]);
+});
+
+test('a recording names the provider and holds no key, even when an answer quotes the URL', async () => {
+  const endpoints = mainnetEndpoints({ ALCHEMY_API_KEY: KEY, DRPC_API_KEY: DRPC_KEY });
+  const quoting: Transport = async (url) => ({ status: 200, text: JSON.stringify({ error: { code: -32000, message: `refused at ${url}` } }) });
+  const recorder = recordingTransport(quoting, endpoints);
+  await createReader(endpoints, recorder.transport, { timeoutMs: 50, retryPausesMs: [] }).getCode(ADDRESS, AT);
+  const [exchange] = recorder.exchanges();
+  assert.deepEqual(Object.keys(exchange?.errors ?? {}).sort(), ['alchemy', 'drpc']);
+  const text = JSON.stringify(recorder.exchanges());
+  assert.ok(!text.includes(KEY) && !text.includes(DRPC_KEY), text);
+});
+
+test("no trace note holds drpc's key, even when drpc's error quotes it", async () => {
+  const [, drpc] = mainnetEndpoints({ ALCHEMY_API_KEY: KEY, DRPC_API_KEY: DRPC_KEY });
+  const unread: string[] = [];
+  const quoting: Transport = async (url) => ({ status: 200, text: JSON.stringify({ error: { code: 15, message: `refused at ${url}` } }) });
+  const { source } = drpcTraces(drpc, quoting, (read) => void unread.push(read), []);
+  assert.equal(await source(HASH_A as Hex), undefined);
+  assert.deepEqual(unread, [`drpc debug_traceTransaction ${HASH_A}: error 15`]);
+});
+
 test('the key never appears in a reason, even when the provider error quotes the URL', async () => {
   const leaky: Transport = async (url) => {
     throw new Error(`request to ${url} failed`);
   };
-  const r = createReader(mainnetEndpoints({ ALCHEMY_API_KEY: KEY }), leaky, { timeoutMs: 50, retryPausesMs: [] });
+  const r = createReader(mainnetEndpoints({ ALCHEMY_API_KEY: KEY, DRPC_API_KEY: DRPC_KEY }), leaky, { timeoutMs: 50, retryPausesMs: [] });
   const reads = [await r.getCode(ADDRESS, AT), await r.block('latest'), await r.getTransaction(HASH_A as Hex)];
   for (const read of reads) {
     const text = JSON.stringify(read, (_k, v) => (typeof v === 'bigint' ? `${v}` : v));
     assert.equal(read.kind, 'unverifiable');
-    assert.ok(!text.includes(KEY), `key leaked: ${text}`);
+    assert.ok(!text.includes(KEY) && !text.includes(DRPC_KEY), `key leaked: ${text}`);
   }
 });
 
