@@ -24,6 +24,7 @@ const SUPPLY = 'supply((address,address,address,address,uint256),uint256,uint256
 const SCOPE: NotesScope = {
   calls: 2,
   contracts: new Set(['usdc', 'blue-bundles-v1', 'morpho-blue']),
+  tokenFields: new Map([['loan-token', ['usdc', 'cbbtc']]]),
   nested: [],
   entries: new Set(['usdc', 'morpho-blue', 'cbbtc']),
   routed: new Set(),
@@ -198,6 +199,29 @@ test("a flow line's function must be a canonical signature, and a line may not n
     () => parseNotes(edited(['flow', 0, 'function'], supply), bound),
     (e: unknown) => e instanceof NotesError && e.message === 'notes.json.flow[0]: names a call the template binds itself, which the diagram draws from the template',
   );
+});
+
+test('a flow line may name a card field that holds a token, and no other card field', () => {
+  const line = { ...VALID.flow[0], to: 'card.loan-token', function: 'transferFrom(address,address,uint256)' };
+  assert.deepEqual(parseNotes(edited(['flow', 0], line), SCOPE).flow[0]?.to, { kind: 'card', field: 'loan-token' });
+  for (const name of ['card.market', 'card.amount', 'card.loan-token.asset', 'card.']) {
+    refused(edited(['flow', 0], { ...line, to: name }), `notes.json.flow[0].to: "${name}" is not a card field that holds a token`);
+  }
+  const bound = { ...SCOPE, nested: [{ after: 2, from: ['blue-bundles-v1'], to: ['cbbtc'], selector: selectorOf('transferFrom(address,address,uint256)') }] };
+  assert.throws(() => parseNotes(edited(['flow', 0], line), bound), (e: unknown) => e instanceof NotesError && /names a call the template binds itself/.test(e.message));
+  const swap = loadTemplate(ROOT, 'uniswap/swap', registry);
+  const of = { subject: { kind: 'template', template: swap }, registry, facts: undefined } as unknown as ReportInputs;
+  const { tokenFields } = notesScope(of, { entries: [], results: [] }, swap, 'en');
+  assert.deepEqual([...tokenFields.keys()], ['sell-token', 'buy-token']);
+  assert.ok(tokenFields.get('sell-token')?.includes('usdt'));
+  const vaults = loadTemplate(ROOT, 'fluid/vault-deposit', registry);
+  assert.ok([...vaults.card.values()].some((field) => field.kind === 'contract'));
+  assert.equal(notesScope({ ...of, subject: { kind: 'template', template: vaults } } as unknown as ReportInputs, { entries: [], results: [] }, vaults, 'en').tokenFields.size, 0, 'a vault field holds no token');
+});
+
+test('a template flow line that names a card token is shared by every instance', () => {
+  const shared = { ...SHARED, flow: [{ ...VALID.flow[0], to: 'card.loan-token' }] };
+  assert.equal(mergeNotes(shared, undefined, VAULT_PATH, OWNED), shared);
 });
 
 test('more than four flow lines or judgments are refused', () => {

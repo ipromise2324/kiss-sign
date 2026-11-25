@@ -35,7 +35,7 @@ import type { PastTxsRecording } from './recording.ts';
 import { factsScope } from './protocol-facts.ts';
 import { isExact, newestFirst, pastDifferences, pastFields, studiedOnce } from './report-past.ts';
 import type { PastCall, PastDifference, PastField, SpreadRow, Studied } from './report-past.ts';
-import { functionNames, isOtherOperation } from './study.ts';
+import { cardAddresses, functionNames, isOtherOperation, shapesOf } from './study.ts';
 import type { MisfitReason } from './study.ts';
 import { readStoredEvidence } from './instance-evidence.ts';
 import type { StoredPoint } from './instance-evidence.ts';
@@ -43,8 +43,8 @@ import type { ProtocolFacts, ProtocolSheet } from './protocol-facts.ts';
 import { signedEntryNames } from './report.ts';
 import type { ReportInputs, ReportTitle } from './report.ts';
 import { WORDS, dateOf } from './report-words.ts';
-import { compareFlow } from './trace.ts';
-import type { FlowComparison, Payment, TracedTx, Uncovered } from './trace.ts';
+import { compareFlow, sideOf, tokenUntested } from './trace.ts';
+import type { FlowComparison, FlowEnd, LineTally, Payment, TracedTx, Uncovered } from './trace.ts';
 import type { By, FreeTest, SafeParties, SearchSpan, Words } from './report-words.ts';
 import { formatMillions, modelName, totalTokens, usagePath } from './usage.ts';
 import type { Usage } from './usage.ts';
@@ -155,15 +155,18 @@ export type CallBlock = { readonly n: number; readonly head: CallHead; readonly 
 export type AfterRow = { readonly label: Inline; readonly value: Inline; readonly note: Inline; readonly gains: boolean; readonly ai?: AiText };
 
 export type Lifeline = { readonly name: string; readonly role: string };
+export type SeenLine = { readonly seen: number; readonly of: number; readonly state: 'confirmed' | 'partial' | 'some-tokens'; readonly tokens: readonly string[]; readonly fields: readonly string[] };
 export type Arrow =
   | { readonly kind: 'call'; readonly n: number; readonly to: number; readonly fn: string }
   /** A call the template binds inside a call, such as a Bundler3 bundle item. */
   | { readonly kind: 'nested'; readonly from: number; readonly to: number; readonly fn: string }
   /**
-   * An AI `flow` line; `seen` when the call traces saw it, with in how many of the transactions they tested, and
-   * `confirmed` when they saw it in all of them and the AI names its sources.
+   * An AI `flow` line; `seen` when the call traces saw it, with in how many of the transactions they tested:
+   * `confirmed` in all of them and the AI names its sources, `partial` in some, `some-tokens` in all of them though none
+   * held some token its card field can name, so it is confirmed only for those in `tokens`. `fields` counts each card
+   * field it names by token.
    */
-  | { readonly kind: 'inside'; readonly from: number; readonly to: number; readonly text: AiText; readonly seen: { readonly seen: number; readonly of: number; readonly confirmed: boolean } | undefined }
+  | { readonly kind: 'inside'; readonly from: number; readonly to: number; readonly text: AiText; readonly seen: SeenLine | undefined }
   | { readonly kind: 'gets'; readonly from: number; readonly text: string };
 /** `traced` when a call trace confirmed a `flow` line, so the page says what a trace shows and what it does not. */
 export type Sequence = { readonly lifelines: readonly Lifeline[]; readonly arrows: readonly Arrow[]; readonly narration: string; readonly traced: boolean };
@@ -794,6 +797,28 @@ function argRow(node: ArgNode, context: Context, withChips: boolean, inMessage =
   };
 }
 
+const cardTarget = (field: string, context: Context) => targetOf({ kind: 'card', ref: { field, attribute: undefined } }, context);
+
+/** Each card field a line names with its tokens: in how many transactions that held the token the line was seen, and the tokens none held. */
+const fieldWords = ({ fields }: LineTally, context: Context): string[] =>
+  fields.map(({ field, tokens }) =>
+    context.w.seenByToken(
+      fieldWord(context.template, field, context.w),
+      tokens.filter(({ of }) => of > 0).map(({ name, seen, of }) => `${name} ${context.w.seenOf(seen, of)}`),
+      tokens.filter(({ of }) => of === 0).map(({ name }) => name),
+    ),
+  );
+
+function seenLine(line: LineTally, context: Context): SeenLine | undefined {
+  const { seen, of } = line;
+  if (seen === 0) return undefined;
+  const tokens = line.fields.map((field) => {
+    const held = context.w.list(field.tokens.filter((token) => token.seen > 0).map(({ name }) => name));
+    return line.fields.length === 1 ? held : context.w.tokensOf(fieldWord(context.template, field.field, context.w), held);
+  });
+  return { seen, of, state: seen < of ? 'partial' : tokenUntested(line) ? 'some-tokens' : 'confirmed', tokens, fields: fieldWords(line, context) };
+}
+
 function lifelines(context: Context): { readonly lines: Lifeline[]; readonly names: (readonly string[])[]; readonly callTo: number[]; readonly getsFrom: number[] } {
   const { template, registry, w } = context;
   const lines: Lifeline[] = [{ name: w.safe, role: w.role.sender }];
@@ -820,8 +845,14 @@ function lifelines(context: Context): { readonly lines: Lifeline[]; readonly nam
   for (const site of nestedSites(context)) {
     if (!names.some((of) => of.some((name) => site.names.includes(name)))) add(site.names.join(' | '), site.names, kindOf(site.names[0] as string));
   }
-  for (const name of context.notes.flow.flatMap((line) => [line.from, line.to])) {
-    if (!names.some((of) => of.includes(name))) add(name, [name], kindOf(name));
+  const ends = context.notes.flow.flatMap((line) => [line.from, line.to]);
+  for (const end of ends) {
+    if (end.kind === 'entry' && !names.some((of) => of.includes(end.name))) add(end.name, [end.name], kindOf(end.name));
+  }
+  for (const end of ends) {
+    if (end.kind !== 'card') continue;
+    const target = cardTarget(end.field, context);
+    add(target.label, target.names, target.role);
   }
   const getsFrom = template.effects.gets.map(({ token }) => {
     if (token === 'eth') return callTo.at(-1) ?? 0;
@@ -839,6 +870,7 @@ function sequence(context: Context): Sequence {
   const { template, notes, w, comparison } = context;
   const { lines, names, callTo, getsFrom } = lifelines(context);
   const at = (name: string): number => names.findIndex((of) => of.includes(name));
+  const endAt = (end: FlowEnd): number => (end.kind === 'entry' ? at(end.name) : lines.findIndex((line) => line.name === cardTarget(end.field, context).label));
   const nested = nestedSites(context);
   const arrows: Arrow[] = [];
   const narration: string[] = [];
@@ -853,8 +885,8 @@ function sequence(context: Context): Sequence {
     notes.flow.forEach((line, l) => {
       if (line.after !== i + 1) return;
       const tally = comparison.lines[l];
-      const seen = tally === undefined || tally.seen === 0 ? undefined : { ...tally, confirmed: tally.seen === tally.of };
-      arrows.push({ kind: 'inside', from: at(line.from), to: at(line.to), text: research(line.text, line.sources), seen });
+      const seen = tally === undefined ? undefined : seenLine(tally, context);
+      arrows.push({ kind: 'inside', from: endAt(line.from), to: endAt(line.to), text: research(line.text, line.sources), seen });
     });
   });
   template.effects.gets.forEach((effect, i) => {
@@ -871,7 +903,7 @@ function sequence(context: Context): Sequence {
       narration.push(w.result(text));
     }
   }
-  return { lifelines: lines, arrows, narration: w.sentences(narration), traced: arrows.some((arrow) => arrow.kind === 'inside' && arrow.seen?.confirmed === true) };
+  return { lifelines: lines, arrows, narration: w.sentences(narration), traced: arrows.some((arrow) => arrow.kind === 'inside' && arrow.seen !== undefined && arrow.seen.state !== 'partial') };
 }
 
 const zeroValue = (call: TemplateCall): boolean => call.value.kind === 'const' && call.value.value.kind === 'uint' && call.value.value.value === 0n;
@@ -1024,6 +1056,8 @@ function keyGroups(used: ReadonlySet<Who>, context: Context): KeyGroup[] {
   const item = (who: Who, means: string): KeyItem[] => (used.has(who) ? [{ who, label: w.who[who], means }] : []);
   const { rules, member } = freeRules(template);
   const claims = (['scalar', 'route', 'proof', 'unread'] as const).filter((claim) => rules.some((rule) => rule.claim === claim));
+  const amounts = new Set([...template.card.values()].flatMap((field) => (field.kind === 'amount' ? [sourceOfAmount(field).kind] : [])));
+  const computed = (['computed', 'floor'] as const).filter((kind) => amounts.has(kind)).map((kind) => w.whoMeans[kind]);
   const free = claims.map((claim) => {
     const tests = TESTED_CLAIMS.has(claim) ? rules.filter((rule) => rule.claim === claim).map((rule) => freeTest(rule, context)) : [];
     if (tests.includes('not-tested')) return tests.every((test) => test === 'not-tested') ? w.freeKeyNotTested : w.freeKeySomeNotTested;
@@ -1031,7 +1065,7 @@ function keyGroups(used: ReadonlySet<Who>, context: Context): KeyGroup[] {
   });
   return [
     { title: w.whoGroup.you, items: [...item('you-type', w.whoMeans['you-type']), ...item('you-pick', w.whoMeans['you-pick'])] },
-    { title: w.whoGroup.program, items: [...item('computed', w.whoMeans.computed), ...item('fixed', w.whoMeans.fixed)] },
+    { title: w.whoGroup.program, items: [...computed.flatMap((means) => item('computed', means)), ...item('fixed', w.whoMeans.fixed)] },
     { title: w.whoGroup.app, items: [...[...new Set(free)].flatMap((means) => item('free', means)), ...(member ? item('free', w.whoMeans.member) : []), ...item('bounded', w.whoMeans.bounded)] },
   ].filter((group) => group.items.length > 0);
 }
@@ -1254,17 +1288,24 @@ function partyWords(party: Payment['from'], context: Context): string {
  * A trace result's title: who paid whom in how many past transactions, and that the template does not describe it. It
  * never says what the signer's own Safe pays, since a past sender may have moved the tokens the other way.
  */
-function moneyTitle({ kind, to, pays, call, transactions }: Uncovered, context: Context): string {
+function moneyTitle({ kind, to, pays, sides, call, transactions }: Uncovered, context: Context): string {
   const { w } = context;
+  const token = to === 'other' ? w.kind.token : to;
   const side = (parties: readonly Payment['from'][]): string => {
     const distinct = [...new Set(parties)];
     return distinct.length === 1 ? partyWords(distinct[0] as Payment['from'], context) : w.money.several(distinct.length, w.money.addresses);
   };
   const past = (said: string): string => `${w.money.inPast(transactions)}${said}${w.money.notDescribed}`;
-  if (pays.length === 0) return past(w.money.unread(call, to === 'other' ? w.kind.token : to));
-  const [from, payee] = [side(pays.map((p) => p.from)), side(pays.map((p) => p.to))];
-  const said = kind === 'eth' ? w.money.eth(from, payee) : w.money[kind === 'approve' ? 'approve' : 'transfer'](from, payee, to === 'other' ? w.kind.token : to);
-  return past(said);
+  const said = (['out', 'in', 'between', 'unread'] as const).flatMap((s) => {
+    const n = sides[s];
+    if (n === undefined) return [];
+    const inSome = n === transactions ? '' : w.money.inSome(n);
+    if (s === 'unread') return [`${inSome}${w.money.unread(kind, call, token)}`];
+    const group = pays.filter((p) => sideOf(p) === s);
+    const [from, payee] = [side(group.map((p) => p.from)), side(group.map((p) => p.to))];
+    return [`${inSome}${kind === 'eth' ? w.money.eth(from, payee) : w.money[kind === 'approve' ? 'approve' : 'transfer'](from, payee, token)}`];
+  });
+  return past(w.money.and(said));
 }
 
 /** What a result is about beyond its row's title, which already names its kind and its entry or test transaction, and why it is shown. */
@@ -1276,7 +1317,9 @@ function reviewSubject(result: Result, context: Context): { readonly subject: In
     return { subject: undefined, why: [`${words.why}${detail}`] };
   }
   if (result.about.kind === 'flow') {
-    const counted = result.finding.kind === 'line-not-every' ? ` ${w.seenIn(result.finding.seen, result.finding.of)}` : '';
+    const tally = context.comparison.lines[result.about.line - 1];
+    const byToken = tally === undefined ? [] : fieldWords(tally, context);
+    const counted = result.finding.kind === 'line-not-every' ? ` ${w.seenIn(result.finding.seen, result.finding.of)}${byToken.length === 0 ? '' : ` ${w.sentences(byToken.map(w.sentence))}`}` : '';
     return { subject: [w.flowLine(result.about.line)], why: [`${words.why}${counted}`] };
   }
   if (result.about.kind === 'money') {
@@ -2147,12 +2190,13 @@ function stripItems(ledger: Ledger, template: Template, signed: ReadonlySet<stri
   const unprovable = named((r) => r.finding.kind === 'routed-proxy');
   const today = named((r) => r.id.endsWith('/code.today'));
   const routed = ledger.entries.filter((entry) => entry.routes !== undefined).map((entry) => entry.name);
+  const untested = ledger.results.filter((r) => r.finding.kind === 'line-token-untested').length;
   const explain: Readonly<Record<StripLine, (passed: number, counted: number) => string>> = {
     sources: (p, c) => (p === c ? w.sourcesOk(c, MIN_CONFIRMATIONS) : w.sourcesSome(c - p, p, MIN_CONFIRMATIONS)),
     abi: () => w.abiExplain(notCalled, unprovable),
     code: () => w.codeExplain(subjects === 1, reportOnly, today, routed),
     params: (_, c) => (!recorded ? unrecordedParams(template, w) : w.paramsExplain(c)),
-    trace: (p, c) => w.traceExplain(p, c),
+    trace: (p, c) => w.traceExplain(p, c, untested),
   };
   const items = strip(ledger)
     .filter((s) => s.line === 'params' || ledger.results.some((r) => r.line === s.line))
@@ -2196,11 +2240,13 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
   const { template } = subject;
   const judged = judge(inputs, inputs.fixtures);
   const flow = parseFlowLines(rawNotes, notesScope(inputs, judged, template, language));
+  const shapes = shapesOf(template);
   const comparison = compareFlow(
     template,
     registry,
     flow.map((line) => ({ after: line.after, from: line.from, to: line.to, selector: line.function.selector as Hex })),
     tracedOnce(inputs.pastTxs.flatMap(({ run }) => run.traces)),
+    new Map(inputs.pastTxs.flatMap(({ run }) => run.studies).flatMap((study) => (study.kind === 'fit' ? [[study.hash, cardAddresses(study, shapes)] as const] : []))),
   );
   const ledger: Ledger = { ...judged, results: [...judged.results, ...flowResults(comparison)] };
   const notes = parseNotes(rawNotes, notesScope(inputs, ledger, template, language));

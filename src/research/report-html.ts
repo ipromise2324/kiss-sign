@@ -5,7 +5,7 @@ import type { Language } from '../language.ts';
 import type { Phrase, State } from './ledger.ts';
 import { NOTES_FILE, codeSpans, notesLanguages, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
-import type { AddressRow, AiSource, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, NewestResult, Page, PastAmounts, PastNumbers, PastTable, PastTokenAmounts, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, Span, UsageBlock, VaultBlock, WalletRows } from './report-page.ts';
+import type { AddressRow, AiSource, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, NewestResult, Page, PastAmounts, PastNumbers, PastTable, PastTokenAmounts, ProtocolBlock, RailCount, Section, SeenLine, Sequence, SiteResult, SourceLine, Span, UsageBlock, VaultBlock, WalletRows } from './report-page.ts';
 import { CSS, Html, SYMBOLS, escape, h, icon } from '../html.ts';
 import { WORDS } from './report-words.ts';
 import type { Words } from './report-words.ts';
@@ -141,23 +141,25 @@ type Inside = Extract<Arrow, { kind: 'inside' }>;
 /** The mark of the `i`th flow line the traces were compared with: ①, ②, … */
 const markOf = (i: number): string => String.fromCodePoint(0x2460 + i);
 
+const MARK_STATE: Readonly<Record<SeenLine['state'], 'ok' | 'bad'>> = { confirmed: 'ok', 'some-tokens': 'ok', partial: 'bad' };
 /** Each flow line the traces were compared with, with its mark. */
 const markedLines = (sequence: Sequence): { readonly arrow: Inside; readonly seen: NonNullable<Inside['seen']>; readonly mark: string }[] =>
   sequence.arrows.flatMap((arrow) => (arrow.kind === 'inside' && arrow.seen !== undefined ? [{ arrow, seen: arrow.seen }] : [])).map((line, i) => ({ ...line, mark: markOf(i) }));
 
-/** The marks below the diagram: one sentence for the confirmed lines and one for those seen in only some transactions, each with its counts. */
+/** The marks below the diagram: one sentence each for the confirmed lines, those confirmed only for some tokens, and those seen in only some transactions, with their counts. */
 function legend(sequence: Sequence, r: R): Html {
   const marked = markedLines(sequence);
-  const counts = (confirmed: boolean): Span[] =>
+  const counts = (state: SeenLine['state']): Span[] =>
     marked
-      .filter(({ seen }) => seen.confirmed === confirmed)
+      .filter(({ seen }) => seen.state === state)
       .flatMap(({ arrow, seen, mark }, i): Span[] => {
-        const source = confirmed ? arrow.text.sources[0] : undefined;
-        return [...(i === 0 ? [] : [r.w.sep]), source === undefined ? mark : { href: source, label: mark }, ` ${r.w.seenOf(seen.seen, seen.of)}`];
+        const source = state !== 'partial' ? arrow.text.sources[0] : undefined;
+        return [...(i === 0 ? [] : [r.w.sep]), source === undefined ? mark : { href: source, label: mark }, ` ${r.w.seenOf(seen.seen, seen.of)}${seen.fields.map(r.w.inner).join('')}`];
       });
   const lines = [
-    { state: 'ok', counts: counts(true), words: r.w.legendConfirmed },
-    { state: 'bad', counts: counts(false), words: r.w.legendPartial },
+    { state: MARK_STATE.confirmed, counts: counts('confirmed'), words: r.w.legendConfirmed },
+    { state: MARK_STATE['some-tokens'], counts: counts('some-tokens'), words: r.w.legendSomeTokens },
+    { state: MARK_STATE.partial, counts: counts('partial'), words: r.w.legendPartial },
   ].filter((line) => line.counts.length > 0);
   return lines.length === 0
     ? h``
@@ -173,11 +175,12 @@ function diagram(sequence: Sequence, r: R): Html {
   // The last node may be wider than the spacing, so its lifeline moves right until the node clears its neighbour's.
   const x = (i: number) => FIRST_X + i * SPACING + (i === lastLine && i > 0 ? Math.max(0, Math.ceil(lastHalf - SPACING / 2 + 8)) : 0);
   const marks = new Map(markedLines(sequence).map(({ arrow, mark }) => [arrow, mark]));
-  const confirmed = (arrow: Inside) => arrow.seen?.confirmed === true;
+  const confirmed = (arrow: Inside) => arrow.seen !== undefined && arrow.seen.state !== 'partial';
+  const captionParts = (arrow: Inside) => [...aiParts(arrow.text.ai), ...(arrow.seen?.state === 'some-tokens' ? [{ text: r.w.onlyTokens(arrow.seen.tokens), code: false }] : [])];
   // The tag's box fits its word: 12px text is narrower than textWidth's 14px estimate, which leaves the margin.
   const tagWidth = (arrow: Inside) => (confirmed(arrow) ? 0 : Math.max(AI_TAG_WIDTH, Math.ceil(textWidth(r.w.tag[arrow.text.tag]))) + 8);
   const lead = (arrow: Inside) => (marks.has(arrow) ? MARK_WIDTH : 0) + tagWidth(arrow);
-  const captionWidth = (arrow: Inside) => lead(arrow) + aiParts(arrow.text.ai).reduce((w, part) => w + (part.code ? codeWidth(part.text) : textWidth(part.text)), 0);
+  const captionWidth = (arrow: Inside) => lead(arrow) + captionParts(arrow).reduce((w, part) => w + (part.code ? codeWidth(part.text) : textWidth(part.text)), 0);
   const width = Math.max(660, x(lastLine) + Math.max(FIRST_X, Math.ceil(lastHalf) + 12));
   const rows: Html[] = [];
   let y = NODE_TOP + NODE_HEIGHT + 32;
@@ -202,11 +205,11 @@ function diagram(sequence: Sequence, r: R): Html {
       const [from, to] = [x(arrow.from), arrow.to === arrow.from ? x(arrow.from) + 60 : x(arrow.to)];
       const left = Math.max(x(0) + 12, Math.min(Math.min(from, to) + 12, width - 8 - captionWidth(arrow)));
       const mark = marks.get(arrow);
-      const extra = (captionLines(aiParts(arrow.text.ai), width - 8 - left - lead(arrow)) - 1) * CAPTION_LINE;
+      const extra = (captionLines(captionParts(arrow), width - 8 - left - lead(arrow)) - 1) * CAPTION_LINE;
       rows.push(h`
-    <foreignObject x="${left}" y="${y - 17}" width="${width - left}" height="${CAPTION_HEIGHT + extra}"><div class="cap" data-ai>${mark === undefined ? '' : h`<span class="mark ${confirmed(arrow) ? 'ok' : 'bad'}">${mark}</span>`}${
+    <foreignObject x="${left}" y="${y - 17}" width="${width - left}" height="${CAPTION_HEIGHT + extra}"><div class="cap" data-ai>${mark === undefined ? '' : h`<span class="mark ${MARK_STATE[arrow.seen?.state ?? 'partial']}">${mark}</span>`}${
       confirmed(arrow) ? '' : h`<span class="byai">${r.w.tag[arrow.text.tag]}</span>`
-    }<span>${aiProse(arrow.text.ai)}</span></div></foreignObject>
+    }<span>${aiProse(arrow.text.ai)}${arrow.seen?.state === 'some-tokens' ? r.w.onlyTokens(arrow.seen.tokens) : ''}</span></div></foreignObject>
     <line class="${confirmed(arrow) ? 'inner seen' : 'inner'}" x1="${from}" y1="${y + 10 + extra}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10 + extra}" marker-end="url(#head)"/>`);
       y += 36 + extra;
     } else {

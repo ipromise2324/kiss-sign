@@ -347,6 +347,21 @@ export function shapesOf(template: Template): { readonly whole: Shape; readonly 
   return { whole: shape(template), calls: template.calls.map((call) => shape({ ...template, calls: [call] })) };
 }
 
+/**
+ * The address each card field holds in a transaction that fits the template, by field: what its calls hold where the
+ * template binds the field itself. A field none of its calls carries is absent.
+ */
+export function cardAddresses(fit: Extract<TxStudy, { kind: 'fit' }>, shapes: ReturnType<typeof shapesOf>): ReadonlyMap<string, Address> {
+  const shape = fit.sender.kind === 'safe' ? shapes.whole : shapes.calls[fit.sender.call];
+  return new Map(
+    (shape?.loosened.rules ?? []).flatMap((leaf, i): [string, Address][] => {
+      const rule = leaf.kind === 'address-word' ? leaf.rule : leaf;
+      const value = fit.values[i];
+      return rule.kind === 'card' && rule.ref.attribute === undefined && value !== undefined && /^0x[0-9a-f]{40}$/.test(value) ? [[rule.ref.field, value as Address]] : [];
+    }),
+  );
+}
+
 export type StudyContext = {
   readonly shapes: ReturnType<typeof shapesOf>;
   readonly readMessage: ReadMessage;

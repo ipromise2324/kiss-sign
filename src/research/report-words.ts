@@ -5,6 +5,7 @@ import type { Confidence, FindingKind, Phrase, State, StripLine } from './ledger
 import type { AiTag, AiSourceResult, Reviewed, Span, Who } from './report-page.ts';
 import type { PastGroupKind } from './report-past.ts';
 import type { OutsideKind } from './study.ts';
+import type { MoneyKind } from './trace.ts';
 
 /** Chinese text before a word, or after one, with a space only where the word's own end is in Latin script or a digit. */
 const before = (prefix: string, word: string): string => (/^[A-Za-z0-9]/.test(word) ? `${prefix} ${word}` : `${prefix}${word}`);
@@ -37,28 +38,40 @@ export const toleranceSpan = (less: bigint, more: bigint): string => {
   return `up to ${[less > 0n ? `${units(less)} lower` : '', more > 0n ? `${units(more)} higher` : ''].filter((t) => t !== '').join(' or ')}`;
 };
 
-const UNITS = [86400n, 3600n, 60n] as const;
+/** How a length loses its last digits: `up` for one nothing exceeds, such as the longest seen, `down` for one nothing is below, not at all for a limit. */
+type Rounding = 'up' | 'down' | 'exact';
+type Unit = 'second' | 'minute' | 'hour' | 'day' | 'year';
+/** Each unit, its seconds, and how many of it a length fills before it is said in that unit. */
+const LENGTHS: readonly (readonly [Unit, bigint, bigint])[] = [['year', 365n * 86400n, 2n], ['day', 86400n, 1n], ['hour', 3600n, 1n], ['minute', 60n, 1n], ['second', 1n, 0n]];
 
-/** Which way a length loses its last digits: `up` for one nothing exceeds, such as a limit, `down` for one nothing is below. */
-type Rounding = 'up' | 'down';
-
-/** A length of time in the largest unit it fills, such as `5.7 days`, or past two years in whole years. */
-function durationText(seconds: bigint, rounding: Rounding, unit: (n: string, of: 'second' | 'minute' | 'hour' | 'day' | 'year') => string): string {
-  const parts = (n: bigint, of: bigint): bigint => (rounding === 'up' ? (n + of - 1n) / of : n / of);
-  const year = 365n * 86400n;
-  if (seconds >= 2n * year) return unit(grouped(parts(seconds, year)), 'year');
-  const at = UNITS.findIndex((u) => seconds >= u);
-  const of = UNITS[at];
-  if (of === undefined) return unit(`${seconds}`, 'second');
-  const tenths = parts(seconds * 10n, of);
-  return unit(`${tenths / 10n}${tenths % 10n === 0n ? '' : `.${tenths % 10n}`}`, (['day', 'hour', 'minute'] as const)[at] as 'day');
+/**
+ * A length of time in the largest unit it fills, years from two on: in tenths when that says it exactly, such as
+ * `1.5 hours`, or else with the units under it, such as `1 hour 30 minutes 36 seconds`, a rounded one to the next unit
+ * alone, such as `1 hour 31 minutes`.
+ */
+function durationText(seconds: bigint, rounding: Rounding, unit: (n: string, of: Unit) => string): string {
+  const at = LENGTHS.findIndex(([, length, from]) => seconds >= from * length);
+  const [name, of] = LENGTHS[at] as (typeof LENGTHS)[number];
+  const tenths = (seconds * 10n) / of;
+  if (tenths * of === seconds * 10n) return unit(`${grouped(tenths / 10n)}${tenths % 10n === 0n ? '' : `.${tenths % 10n}`}`, name);
+  if (rounding !== 'exact') {
+    const [, part] = LENGTHS[at + 1] as (typeof LENGTHS)[number];
+    return durationText((rounding === 'up' ? (seconds + part - 1n) / part : seconds / part) * part, 'exact', unit);
+  }
+  let left = seconds;
+  const said = LENGTHS.slice(at).flatMap(([each, length]) => {
+    const n = left / length;
+    left %= length;
+    return n === 0n ? [] : [unit(grouped(n), each)];
+  });
+  return said.join(' ');
 }
 
-const opposite = (rounding: Rounding): Rounding => (rounding === 'up' ? 'down' : 'up');
+const opposite = (rounding: Rounding): Rounding => (rounding === 'up' ? 'down' : rounding === 'down' ? 'up' : 'exact');
 const grouped = (n: bigint): string => n.toString().replace(/\B(?=(\d{3})+$)/g, ',');
 const ZH_UNITS = { second: '秒', minute: '分鐘', hour: '小時', day: '天', year: '年' } as const;
-const zhDuration = (seconds: bigint, rounding: Rounding = 'up'): string => durationText(seconds, rounding, (n, of) => `${n} ${ZH_UNITS[of]}`);
-const enDuration = (seconds: bigint, rounding: Rounding = 'up'): string => durationText(seconds, rounding, (n, of) => `${n} ${of}${n === '1' ? '' : 's'}`);
+const zhDuration = (seconds: bigint, rounding: Rounding): string => durationText(seconds, rounding, (n, of) => `${n} ${ZH_UNITS[of]}`);
+const enDuration = (seconds: bigint, rounding: Rounding): string => durationText(seconds, rounding, (n, of) => `${n} ${of}${n === '1' ? '' : 's'}`);
 
 const ZH = {
   /** Joins the items of a list the way prose does: `a、b` in Chinese, `a, b` in English. */
@@ -191,7 +204,19 @@ const ZH = {
     transfer: (from: string, to: string, token: string): string => `${after(from, '付了')} ${token} ${before('給', to)}`,
     approve: (from: string, to: string, token: string): string => `${after(from, '讓')} ${to} ${before('動用它的', token)}`,
     eth: (from: string, to: string): string => `${after(from, '付了')} ETH ${before('給', to)}`,
-    unread: (call: number, token: string): string => `呼叫 ${call} 底下有一步動了送出方的 ${token}，付給誰沒有讀到`,
+    /** Put before what only some of the transactions did. */
+    inSome: (n: number): string => `其中 ${n} 筆裡，`,
+    /** A step whose addresses the trace did not keep. */
+    unread: (kind: MoneyKind, call: number, token: string): string => {
+      const step = {
+        transfer: `動了送出方的 ${token}，付給誰沒有讀到`,
+        transferFrom: `${before('是送出方做的 transferFrom，搬動', token)}，從誰到誰沒有讀到`,
+        approve: `${before('授權別人動用送出方的', token)}，授權給誰沒有讀到`,
+        eth: '付了 ETH，付給誰沒有讀到',
+      }[kind];
+      return `呼叫 ${call} 底下有一步${step}`;
+    },
+    and: (said: readonly string[]): string => said.join('；'),
     notDescribed: '，模板沒有說明這一步',
     several: (n: number, what: string): string => `${n} 個不同的${what}`,
     addresses: '地址',
@@ -218,7 +243,7 @@ const ZH = {
   role: { sender: '發起', contract: '合約', fixed: '固定的地址', picked: '你選' },
   who: { 'you-type': '你填', 'you-pick': '你選', computed: '程式算', fixed: '固定', free: '不限', bounded: '有上限' } satisfies Record<Who, string>,
   chip: (who: string, field: string): string => `${who}：${field}`,
-  whoMeans: { 'you-type': '每次簽名你自己填。', 'you-pick': '每次簽名你從清單裡選。', computed: 'card new 每次簽名從鏈上讀，你核對。', fixed: '模板定的。改了就 MISMATCH。', bounded: '超過上限就 MISMATCH。', member: '訂單裡的值，由訂單的雜湊鎖住。' },
+  whoMeans: { 'you-type': '每次簽名你自己填。', 'you-pick': '每次簽名你從清單裡選。', computed: 'card new 每次簽名從鏈上讀，你核對。', floor: 'card new 每次簽名用價格來源和池子算，你核對；沒有獨立價格可用時，你自己填。', fixed: '模板定的。改了就 MISMATCH。', bounded: '超過上限就 MISMATCH。', member: '訂單裡的值，由訂單的雜湊鎖住。' },
   whoGroup: { you: '你', program: 'kiss-sign', app: 'app' },
   change: { increases: '增加', decreases: '減少', same: '不變' } satisfies Record<ViewChange, string>,
   inParens: (items: readonly string[]): string => `（${items.join('、')}）`,
@@ -238,7 +263,7 @@ const ZH = {
   priceHow: '依卡片的金額和股份數算出，交易裡的要一樣嚴或更嚴',
   atLeastHow: '比這個少就 MISMATCH',
   atMostHow: '比這個多就 MISMATCH',
-  within: (seconds: bigint): string => `最多比區塊時間晚 ${zhDuration(seconds)}`,
+  within: (seconds: bigint): string => `最多比區塊時間晚 ${zhDuration(seconds, 'exact')}`,
   withinHow: (seconds: bigint): string => `剛好 ${seconds} 秒。區塊時間：還沒執行的交易用 verify 讀到的最新區塊，已執行的用它所在的區塊；更晚就 MISMATCH。`,
   withinLabel: '怎麼算',
   argsOf: (fn: Span): Span[] => [fn, ' 的參數'],
@@ -401,7 +426,7 @@ const ZH = {
     field: (at: Span, expected: Span, actual: Span): Span[] => [at, ' 是 ', actual, '，模板要 ', expected],
     notSender: (at: Span): Span[] => [at, ' 不是送出交易的 Safe 或地址'],
     differs: (at: Span, other: Span): Span[] => [at, ' 跟 ', other, ' 的值不同，模板要兩個一樣'],
-    late: (at: Span, seconds: bigint): Span[] => [at, ` 比交易所在區塊的時間晚超過 ${zhDuration(seconds, 'down')}，模板不允許`],
+    late: (at: Span, seconds: bigint): Span[] => [at, ` 比交易所在區塊的時間晚超過 ${zhDuration(seconds, 'exact')}，模板不允許`],
     trailer: (at: Span): Span[] => ['參數後面多了模板不允許的位元組，在 ', at],
     foreignDelegatecall: 'delegatecall 到不是官方 MultiSend 的合約',
     noncanonical: 'MultiSend 的編碼不標準',
@@ -470,7 +495,7 @@ const ZH = {
   pastGroup: { 'safe-exact': 'Safe，符合模板', 'safe-differs': 'Safe，別的地方不同', 'eoa-exact': 'EOA，呼叫符合模板', 'eoa-differs': 'EOA，別的地方不同' } satisfies Record<PastGroupKind, string>,
   pastHead: { transactions: '交易', count: '數量', shortest: '最短', smallest: '最小', half: '一半不超過', most: '99% 不超過', longest: '最長', largest: '最大', value: '值', distinct: '不同的值', commonest: '最常見', safe: 'Safe', eoa: 'EOA', what: '哪裡不同', newest: '最近', example: '例子（最多 3 筆）' },
   pastNone: '無',
-  pastLimit: (seconds: bigint): readonly [string, string, string] => ['模板上限：', zhDuration(seconds), '。更久就 MISMATCH。'],
+  pastLimit: (seconds: bigint): readonly [string, string, string] => ['模板上限：', zhDuration(seconds, 'exact'), '。更久就 MISMATCH。'],
   pastNotRecorded: '沒有記錄',
   pastUnrecorded: (group: string, n: number): string => `${group}：另外 ${n} 筆的區塊時間沒有記錄到，不在表裡。`,
   pastMost: (value: Span, times: number): Span[] => [value, `，${times} 筆`],
@@ -572,8 +597,8 @@ const ZH = {
   noTests: '沒有測試',
   providersExplain:
     '鏈上資料都同時問兩家節點，答案不一樣就不給結果。研究時有三種資料只有一個來源，都不會影響判定：過去交易的呼叫追蹤（drpc）、搜尋過去交易（Alchemy 或 Etherscan 找到的都算，找事件只用 Etherscan），和金庫曾經收過份額的地址名單（Alchemy，每個地址的餘額仍問兩家）。',
-  traceExplain: (passed: number, counted: number): string =>
-    `程式在過去交易的呼叫追蹤裡找 AI 寫的每條流程線，也確認每筆動到錢的內部呼叫都有模板或流程線說明；${counted} 項裡 ${passed} 項通過。追蹤只來自 drpc，其中代幣的轉帳和授權都跟兩家節點都同意的收據核對過。`,
+  traceExplain: (passed: number, counted: number, untested: number): string =>
+    `程式在過去交易的呼叫追蹤裡找 AI 寫的每條流程線，也確認每筆動到錢的內部呼叫都有模板或流程線說明；${counted} 項裡 ${passed} 項通過${untested === 0 ? '' : `，另有 ${untested} 條線只對看過的代幣確認，不計入`}。追蹤只來自 drpc，其中代幣的轉帳和授權都跟兩家節點都同意的收據核對過。`,
   usage: 'AI 用量',
   usageUnmeasured: '這份報告的 AI 用量未量測。',
   usageCalls: (models: string, calls: number, minutes: number): string => `${models} 用 ${calls} 次呼叫、${minutes} 分鐘做出這份報告。`,
@@ -627,6 +652,12 @@ const ZH = {
   callsLead: '下面逐一列出交易的每個呼叫。每個參數都寫出由誰決定、它的值或必須符合的規則，以及它的作用。',
   flowLead: '實線是 Safe 發出的呼叫、模板綁定的內部呼叫，和程式在過去交易裡看到的流程線；虛線是還沒核對的 AI 研究；綠線是你得到的。',
   seenOf: (seen: number, of: number): string => `${of} 筆中 ${seen} 筆`,
+  seenByToken: (field: string, tested: readonly string[], untested: readonly string[]): string => `${field}：${[...tested, ...(untested.length === 0 ? [] : [`沒有交易用過 ${untested.join('、')}`])].join('、')}`,
+  inner: (text: string): string => `［${text}］`,
+  sentence: (text: string): string => `${text}。`,
+  tokensOf: (field: string, tokens: string): string => `${field} ${tokens}`,
+  onlyTokens: (tokens: readonly string[]): string => `（只看過 ${tokens.join('；')}）`,
+  legendSomeTokens: (counts: readonly Span[]): Span[] => ['只對看過的代幣兩邊都確認：程式在過去交易的呼叫追蹤裡看到這條線（', ...counts, '），AI 也讀過合約原始碼；沒有交易用過的代幣還不算確認。每條線旁的說明是 AI 寫的。'],
   legendConfirmed: (counts: readonly Span[]): Span[] => ['兩邊都確認：程式在過去交易的呼叫追蹤裡看到這條線（', ...counts, '），AI 也讀過合約原始碼；每條線旁的說明是 AI 寫的。'],
   legendPartial: (counts: readonly Span[]): Span[] => ['程式只在部分過去交易的呼叫追蹤裡看到這條線（', ...counts, '），所以還不算確認。'],
   traceNote: '呼叫追蹤只顯示過去交易走過的路；合約可能依當時狀態走別條路，簽名時保護你的是效果檢查。',
@@ -834,7 +865,15 @@ const EN: Words = {
     transfer: (from, to, token) => `${from} paid ${token} to ${to}`,
     approve: (from, to, token) => `${from} let ${to} spend its ${token}`,
     eth: (from, to) => `${from} paid ETH to ${to}`,
-    unread: (call, token) => `a step under call ${call} moved the sender's ${token}, to whom was not read`,
+    inSome: (n) => `in ${n} of them `,
+    unread: (kind, call, token) =>
+      ({
+        transfer: `a step under call ${call} moved the sender's ${token}, to whom was not read`,
+        transferFrom: `a transferFrom the sender made under call ${call} moved ${token}, from whom to whom was not read`,
+        approve: `a step under call ${call} let a spender that was not read spend the sender's ${token}`,
+        eth: `a step under call ${call} paid ETH, to whom was not read`,
+      })[kind],
+    and: (said) => said.join('; '),
     notDescribed: '; the template does not describe this step',
     several: (n, what) => `${n} different ${what}`,
     addresses: 'addresses',
@@ -861,7 +900,7 @@ const EN: Words = {
   role: { sender: 'sender', contract: 'contract', fixed: 'fixed address', picked: 'you pick' },
   who: { 'you-type': 'you type', 'you-pick': 'you pick', computed: 'computed', fixed: 'fixed', free: 'any value', bounded: 'up to a limit' },
   chip: (who, field) => `${who}: ${field}`,
-  whoMeans: { 'you-type': 'You type it at each signing.', 'you-pick': 'You pick it from a list at each signing.', computed: 'card new reads it from the chain at each signing. You check it.', fixed: 'The template sets it. Any change is a MISMATCH.', bounded: 'Past the limit is a MISMATCH.', member: 'A value in the order, locked by the order\'s hash.' },
+  whoMeans: { 'you-type': 'You type it at each signing.', 'you-pick': 'You pick it from a list at each signing.', computed: 'card new reads it from the chain at each signing. You check it.', floor: 'card new computes it from price feeds and pools at each signing, and you check it; with no independent price to use, you type it.', fixed: 'The template sets it. Any change is a MISMATCH.', bounded: 'Past the limit is a MISMATCH.', member: 'A value in the order, locked by the order\'s hash.' },
   whoGroup: { you: 'You', program: 'kiss-sign', app: 'The app' },
   change: { increases: 'increases', decreases: 'decreases', same: 'unchanged' },
   inParens: (items) => ` (${items.join(', ')})`,
@@ -881,7 +920,7 @@ const EN: Words = {
   priceHow: "computed from the card's amount and shares; the transaction's must be as strict or stricter",
   atLeastHow: 'less than this is a MISMATCH',
   atMostHow: 'more than this is a MISMATCH',
-  within: (seconds) => `at most ${enDuration(seconds)} after the block's time`,
+  within: (seconds) => `at most ${enDuration(seconds, 'exact')} after the block's time`,
   withinHow: (seconds) => `Exactly ${seconds} seconds. The block's time: for a transaction not yet executed, the latest block verify reads; for an executed one, the block it ran in. Later is a MISMATCH.`,
   withinLabel: 'How it is counted',
   argsOf: (fn) => ['the arguments of ', fn],
@@ -1040,7 +1079,7 @@ const EN: Words = {
     field: (at, expected, actual) => [at, ' was ', actual, ', the template wants ', expected],
     notSender: (at) => [at, ' is not the Safe or address that sent the transaction'],
     differs: (at, other) => [at, ' differs from ', other, '; the template wants them the same'],
-    late: (at, seconds) => [at, ` is more than ${enDuration(seconds, 'down')} after the time of the block it ran in, which the template refuses`],
+    late: (at, seconds) => [at, ` is more than ${enDuration(seconds, 'exact')} after the time of the block it ran in, which the template refuses`],
     trailer: (at) => ['Bytes the template does not allow follow the arguments, at ', at],
     foreignDelegatecall: 'A delegatecall to a contract that is not the official MultiSend',
     noncanonical: 'A MultiSend encoding that is not the standard one',
@@ -1108,7 +1147,7 @@ const EN: Words = {
   pastGroup: { 'safe-exact': 'Safe, matches the template', 'safe-differs': 'Safe, differs elsewhere', 'eoa-exact': 'EOA, its call matches the template', 'eoa-differs': 'EOA, differs elsewhere' },
   pastHead: { transactions: 'Transactions', count: 'Count', shortest: 'Shortest', smallest: 'Smallest', half: 'Half at or under', most: '99% at or under', longest: 'Longest', largest: 'Largest', value: 'Value', distinct: 'Different values', commonest: 'Most common', safe: 'Safe', eoa: 'EOA', what: 'What was different', newest: 'Newest', example: 'Examples (up to 3)' },
   pastNone: 'none',
-  pastLimit: (seconds) => ['Template limit: ', enDuration(seconds), '. Longer is a MISMATCH.'],
+  pastLimit: (seconds) => ['Template limit: ', enDuration(seconds, 'exact'), '. Longer is a MISMATCH.'],
   pastNotRecorded: 'not recorded',
   pastUnrecorded: (group, n) => `${group}: ${n} more ${plural(n, 'has', 'have')} no recorded block time and ${plural(n, 'is', 'are')} not in the table.`,
   pastMost: (value, times) => [value, `, in ${times}`],
@@ -1222,8 +1261,8 @@ const EN: Words = {
   noTests: 'no tests',
   providersExplain:
     "Every chain read asks two providers; when they disagree, there is no result. Three research reads have one source, and none of them reaches a verdict: past transactions' call traces (drpc), the search for past transactions (a transaction either Alchemy or Etherscan finds counts; only Etherscan searches for an event), and the addresses that ever received a vault's shares (Alchemy; each one's balance is still read through both).",
-  traceExplain: (passed, counted) =>
-    `The program looks for each of the AI's flow lines in the call traces of past transactions, and checks that the template or a flow line explains every call inside that moves money; ${passed} of ${counted} passed. The traces come from drpc alone; their token transfers and approvals are checked against the receipt both providers agree on.`,
+  traceExplain: (passed, counted, untested) =>
+    `The program looks for each of the AI's flow lines in the call traces of past transactions, and checks that the template or a flow line explains every call inside that moves money; ${passed} of ${counted} passed${untested === 0 ? '' : `, not counting ${untested} ${plural(untested, 'line', 'lines')} confirmed only for the tokens seen`}. The traces come from drpc alone; their token transfers and approvals are checked against the receipt both providers agree on.`,
   usage: 'AI usage',
   usageUnmeasured: 'The AI usage of this report was not measured.',
   usageCalls: (models, calls, minutes) => `${models} made this report in ${calls} ${plural(calls, 'call', 'calls')} over ${minutes} ${plural(minutes, 'minute', 'minutes')}.`,
@@ -1276,6 +1315,12 @@ const EN: Words = {
   callsLead: "The transaction's calls, one by one. Each argument shows who decides it, its value or the rule it must follow, and what it does.",
   flowLead: "Solid lines are the Safe's calls, the calls the template binds inside them, and flow lines the program saw in past transactions; dashed lines are AI research not checked; green lines are what you get.",
   seenOf: (seen, of) => `${seen} of ${of}`,
+  seenByToken: (field, tested, untested) => `${field}: ${[...tested, ...(untested.length === 0 ? [] : [`no transaction with ${untested.join(', ')}`])].join(', ')}`,
+  inner: (text) => ` [${text}]`,
+  sentence: (text) => `${text.charAt(0).toUpperCase()}${text.slice(1)}.`,
+  tokensOf: (field, tokens) => `${field} ${tokens}`,
+  onlyTokens: (tokens) => ` (seen only with ${tokens.join('; ')})`,
+  legendSomeTokens: (counts) => ['Confirmed two ways only for the tokens seen: the program saw the line in the call traces of past transactions (', ...counts, "), and the AI read the contract's source; a token no transaction held is not confirmed. The words beside each line are the AI's."],
   legendConfirmed: (counts) => ['Confirmed two ways: the program saw the line in the call traces of past transactions (', ...counts, "), and the AI read the contract's source; the words beside each line are the AI's."],
   legendPartial: (counts) => ['Seen in the call traces of only some past transactions (', ...counts, '), so not confirmed.'],
   traceNote: 'A call trace shows only the path past transactions took; a contract may take another path on other state, and what protects you at signing is the effects check.',

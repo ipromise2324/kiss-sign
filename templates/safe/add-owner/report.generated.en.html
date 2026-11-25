@@ -135,7 +135,7 @@ svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
 svg .ah{fill:var(--fg)}
 svg .fn{fill:var(--fg);font:400 14px var(--mono)}
 svg .no{fill:var(--fg3);font:400 14px var(--mono)}
-svg .cap{display:flex;align-items:flex-start;gap:8px;padding-top:2px;color:var(--fg2);font:14px/20px var(--sans)}
+svg .cap{margin:0;display:flex;align-items:flex-start;gap:8px;padding-top:2px;color:var(--fg2);font:14px/20px var(--sans)}
 svg .cap code{font-size:13px;padding:2px 6px;white-space:nowrap}
 .mark{font-size:17px} .mark.ok{color:var(--ok)} .mark.bad{color:var(--bad)}
 svg .capg{fill:var(--ok);font:590 14px var(--sans)}
@@ -492,7 +492,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.swapOwner → itself.addOwnerWithThreshold → itself.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 26282584</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xc6397d3702401f94a7cb4d791d7fcbf3592540da39d485d470577a0e2284a6e6">0xc6397d37…</a></span></td></tr></tbody></table></div>
   <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>How the program searched</span></summary>
   <h3>Search of Safe AddedOwner: 23228 found, 237 studied, 177 of 23164 with a proven Safe party</h3>
-  <p class="cap">Every transaction from block 23965880 (2025-12-08) to block 26471479 (2026-11-22) was searched, newest first, 2505600 blocks, about 349.4 days, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched. Only Etherscan searches an event, and found <span class="num">23228</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
+  <p class="cap">Every transaction from block 23965880 (2025-12-08) to block 26471479 (2026-11-22) was searched, newest first, 2505600 blocks, about 349 days 10 hours, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched. Only Etherscan searches an event, and found <span class="num">23228</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
   <p class="cap">These transactions were found through event logs, and a failed transaction leaves none.</p>
   <p class="cap">104 more are other operations, not counted: <code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 16, <code>0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789.0x1fad948c</code> 10, <code>0x65b5fd50576255c2f46832b154C9a62576567C1C.0xaef05629</code> 9, <code>0xf620aF9Ab698F5F3914641d50e9d939F20AA0fa9.0x1688f0b9</code> 7, and others.</p>
   <p class="cap">40 more came from contracts that are not Safes, failed, or could not be read, and are not counted.</p>

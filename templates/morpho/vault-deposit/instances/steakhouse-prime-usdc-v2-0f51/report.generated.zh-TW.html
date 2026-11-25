@@ -135,7 +135,7 @@ svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
 svg .ah{fill:var(--fg)}
 svg .fn{fill:var(--fg);font:400 14px var(--mono)}
 svg .no{fill:var(--fg3);font:400 14px var(--mono)}
-svg .cap{display:flex;align-items:flex-start;gap:8px;padding-top:2px;color:var(--fg2);font:14px/20px var(--sans)}
+svg .cap{margin:0;display:flex;align-items:flex-start;gap:8px;padding-top:2px;color:var(--fg2);font:14px/20px var(--sans)}
 svg .cap code{font-size:13px;padding:2px 6px;white-space:nowrap}
 .mark{font-size:17px} .mark.ok{color:var(--ok)} .mark.bad{color:var(--bad)}
 svg .capg{fill:var(--ok);font:590 14px var(--sans)}
@@ -671,7 +671,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <tr><td class="what" data-label="交易"><span>Safe，別的地方不同</span></td><td class="n" data-label="數量"><span><span class="num">22</span></span></td><td class="n" data-label="不同的值"><span><span class="num">1</span></span></td><td class="what" data-label="最常見"><span><span class="addr">0x</span>，22 筆</span></td></tr>
     <tr><td class="what" data-label="交易"><span>EOA，別的地方不同</span></td><td class="n" data-label="數量"><span><span class="num">8</span></span></td><td class="n" data-label="不同的值"><span><span class="num">8</span></span></td><td class="what" data-label="最常見"><span><span class="addr">0x0000000000000000…(128 bytes)</span>，1 筆</span></td></tr></tbody></table></div>
   <div class="sh"><code>deadline</code><span>設在多久之後，從交易所在的區塊起算</span></div><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">交易</th><th scope="col" class="n">數量</th><th scope="col" class="nw v">最短</th><th scope="col" class="nw v">一半不超過</th><th scope="col" class="nw v">最長</th></tr></thead><tbody>
-    <tr><td class="what" data-label="交易"><span>Safe，符合模板</span></td><td class="n" data-label="數量"><span><span class="num">31</span></span></td><td class="nw v" data-label="最短"><span><span class="num">27.8 分鐘</span></span></td><td class="nw v" data-label="一半不超過"><span><span class="num">2 小時</span></span></td><td class="nw v" data-label="最長"><span><span class="num">5.8 天</span></span></td></tr>
+    <tr><td class="what" data-label="交易"><span>Safe，符合模板</span></td><td class="n" data-label="數量"><span><span class="num">31</span></span></td><td class="nw v" data-label="最短"><span><span class="num">27 分鐘 52 秒</span></span></td><td class="nw v" data-label="一半不超過"><span><span class="num">1 小時 58 分鐘</span></span></td><td class="nw v" data-label="最長"><span><span class="num">5 天 18 小時</span></span></td></tr>
     <tr><td class="what" data-label="交易"><span>Safe，別的地方不同</span></td><td class="n" data-label="數量"><span><span class="num">22</span></span></td><td class="nw v" data-label="最短"><span>沒有記錄</span></td><td class="nw v" data-label="一半不超過"><span>沒有記錄</span></td><td class="nw v" data-label="最長"><span>沒有記錄</span></td></tr>
     <tr><td class="what" data-label="交易"><span>EOA，別的地方不同</span></td><td class="n" data-label="數量"><span><span class="num">8</span></span></td><td class="nw v" data-label="最短"><span>沒有記錄</span></td><td class="nw v" data-label="一半不超過"><span>沒有記錄</span></td><td class="nw v" data-label="最長"><span>沒有記錄</span></td></tr></tbody></table></div>
   <p class="cap">模板上限：<b class="lm">7 天</b>。更久就 MISMATCH。</p>

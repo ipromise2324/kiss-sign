@@ -296,12 +296,13 @@ const resultOf = (ledger: Ledger, id: string) => ledger.results.find((r) => r.id
 /** `traced`, for a call traces' result, is the comparison of the flow lines with the traces, which `judge` does not read. */
 type Row = { readonly what: string; readonly change: Partial<Setup>; readonly traced?: FlowComparison; readonly id: string; readonly kind: FindingKind; readonly state: State };
 
-const UNCOVERED = { call: 2, from: 'morpho-blue', to: 'usdc', kind: 'transferFrom', pays: [], transactions: 1, others: [] } as const;
+const UNCOVERED = { call: 2, from: 'morpho-blue', to: 'usdc', kind: 'transferFrom', pays: [], sides: {}, transactions: 1, others: [] } as const;
 
 const ROWS: readonly Row[] = [
-  { what: 'a flow line every traced transaction shows', change: {}, traced: { lines: [{ seen: 2, of: 2 }], uncovered: [] }, id: 'flow.1', kind: 'agrees', state: 'ok' },
-  { what: 'a flow line no traced transaction shows', change: {}, traced: { lines: [{ seen: 0, of: 2 }], uncovered: [] }, id: 'flow.1', kind: 'line-not-every', state: 'bad' },
-  { what: 'a flow line only some traced transactions show', change: {}, traced: { lines: [{ seen: 1, of: 2 }], uncovered: [] }, id: 'flow.1', kind: 'line-not-every', state: 'bad' },
+  { what: 'a flow line every traced transaction shows', change: {}, traced: { lines: [{ seen: 2, of: 2, fields: [] }], uncovered: [] }, id: 'flow.1', kind: 'agrees', state: 'ok' },
+  { what: 'a flow line no traced transaction shows', change: {}, traced: { lines: [{ seen: 0, of: 2, fields: [] }], uncovered: [] }, id: 'flow.1', kind: 'line-not-every', state: 'bad' },
+  { what: 'a flow line only some traced transactions show', change: {}, traced: { lines: [{ seen: 1, of: 2, fields: [] }], uncovered: [] }, id: 'flow.1', kind: 'line-not-every', state: 'bad' },
+  { what: 'a flow line no traced transaction tested with one of the tokens its card field can name', change: {}, traced: { lines: [{ seen: 2, of: 2, fields: [{ field: 'sell-token', tokens: [{ name: 'usdc', seen: 2, of: 2 }, { name: 'usdt', seen: 0, of: 0 }] }] }], uncovered: [] }, id: 'flow.1', kind: 'line-token-untested', state: 'na' },
   { what: 'a money call in a trace no line covers', change: {}, traced: { lines: [], uncovered: [UNCOVERED] }, id: 'trace.2.morpho-blue.usdc.transferFrom', kind: 'money-uncovered', state: 'warn' },
   { what: 'the address next to its label', change: {}, id: 'vault/source.page', kind: 'agrees', state: 'ok' },
   { what: 'a source domain DefiLlama lists another site for', change: { protocol: { ...BASE.protocol!, url: new URL('https://other.org') } }, id: 'vault/source.site', kind: 'site-differs', state: 'bad' },

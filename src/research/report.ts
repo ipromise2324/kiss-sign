@@ -1,4 +1,4 @@
-import { lstatSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, readdirSync } from 'node:fs';
 import { LANGUAGES, LANGUAGE_NAMES } from '../language.ts';
 import type { Prose } from '../language.ts';
 import { join } from 'node:path';
@@ -46,6 +46,7 @@ import type { SourcePages } from './source-page.ts';
 import { chainAt, formatReports, studyEntries } from './erc7730.ts';
 import type { ChainAccess, EntryReport, Snapshot } from './erc7730.ts';
 import { constText } from './study.ts';
+import { TRACE_ADDRESSES_FILE, requireJudged } from './trace-addresses.ts';
 import { STANDARDS } from './standards.ts';
 import type { Standard } from './standards.ts';
 import { readRecording } from '../chain/bytecode.ts';
@@ -1494,7 +1495,14 @@ export async function reportFixtures(repoRoot: string, subject: Subject, full: R
   return judgeFixtures(repoRoot, subject.template, full);
 }
 
-/** Every input a generated report renders, from the repository and its recordings alone. */
+/** Every recording fetched from this day on was refused by `--record` while a trace's address was unjudged. */
+const JUDGED_SINCE = '2026-11-26';
+
+/**
+ * Every input a generated report renders, from the repository and its recordings alone. Refuses, as `--record` does, a
+ * report whose traces show an address its `trace-addresses.json` does not settle, such as after its summaries were studied
+ * again; a report with no such file recorded before `JUDGED_SINCE` is left until it is recorded again.
+ */
 export async function replayInputs(
   repoRoot: string,
   full: Registry,
@@ -1509,6 +1517,8 @@ export async function replayInputs(
   const docUrls = subject.docs.map((d) => d.url);
   const pages = sourcePagesOf(recording);
   const pastRecordings = pastTxsRecordings(repoRoot, subject);
+  const pastTxs = pastRecordings.map(({ file, recording: r }) => summarizePastTxs(repoRoot, registry, file, r));
+  if (recording.fetched >= JUDGED_SINCE || existsSync(join(repoRoot, subject.dir, TRACE_ADDRESSES_FILE))) requireJudged(repoRoot, subject, registry, pastTxs);
   const snapshot: Snapshot = { commit: recording.erc7730.commit, files: new Map(Object.entries(recording.erc7730.files)) };
   const inputs: ReportInputs = {
     subject,
@@ -1518,7 +1528,7 @@ export async function replayInputs(
     fetched: recording.fetched,
     abi: await replayAbiProofs(provedEntries(subject, registry), loadAbiCases(repoRoot), compilers),
     vaults: new Map(Object.entries(recording.vaults)),
-    pastTxs: pastRecordings.map(({ file, recording: r }) => summarizePastTxs(repoRoot, registry, file, r)),
+    pastTxs,
     spans: await checkSpans(replayReader(recording.code), entries),
     today: recording.today === undefined ? undefined : await readToday(replayReader(recording.code), subject, registry, { number: BigInt(recording.today.number), hash: recording.today.hash }),
     instances:

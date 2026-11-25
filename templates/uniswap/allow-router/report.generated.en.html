@@ -135,7 +135,7 @@ svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
 svg .ah{fill:var(--fg)}
 svg .fn{fill:var(--fg);font:400 14px var(--mono)}
 svg .no{fill:var(--fg3);font:400 14px var(--mono)}
-svg .cap{display:flex;align-items:flex-start;gap:8px;padding-top:2px;color:var(--fg2);font:14px/20px var(--sans)}
+svg .cap{margin:0;display:flex;align-items:flex-start;gap:8px;padding-top:2px;color:var(--fg2);font:14px/20px var(--sans)}
 svg .cap code{font-size:13px;padding:2px 6px;white-space:nowrap}
 .mark{font-size:17px} .mark.ok{color:var(--ok)} .mark.bad{color:var(--bad)}
 svg .capg{fill:var(--ok);font:590 14px var(--sans)}
@@ -597,7 +597,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <tr><td class="what" data-label="What was different"><span>Same shape, but <code>approve.token</code> is an address outside the registry</span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">1</span></span></td><td class="nw" data-label="Newest"><span>block 26463050</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x5be84810cb59fd3bf184c3e76e5420de12df5d3f1937ad2825c6a3fe42277be9">0x5be84810…</a></span></td></tr></tbody></table></div>
   <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>How the program searched</span></summary>
   <h3>Search of permit2 Approval: 25655 found, 240 studied</h3>
-  <p class="cap">Every transaction from block 26444052 (2026-11-18) to block 26484901 (2026-11-24) was searched, newest first, 40850 blocks, about 5.6 days, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched. Only Etherscan searches an event, and found <span class="num">25655</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
+  <p class="cap">Every transaction from block 26444052 (2026-11-18) to block 26484901 (2026-11-24) was searched, newest first, 40850 blocks, about 5 days 16 hours, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched. Only Etherscan searches an event, and found <span class="num">25655</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
   <p class="cap">These transactions were found through event logs, and a failed transaction leaves none.</p>
   <p class="cap">193 more are other operations, not counted: <code>0x881D40237659C251811CEC9c364ef91dC08D300C.0x5f575529</code> 55, <code>0xbEe162fa5ae892BE74f3f3E01c23dA89ADbcCCcc.0x6d7b7040</code> 11, <code>gpv2-settlement.0x13d79a0b</code> 10, <code>0x09Fc9B7545020f6A51D113e495e0A451597969d3.0x708909ad</code> 8, and others.</p>
   </details>

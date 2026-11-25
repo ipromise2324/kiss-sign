@@ -7,7 +7,9 @@ import { flowResults, stateOf, strip } from '../src/research/ledger.ts';
 import { TraceError, compareFlow, holdingTemplateCalls, parseRecordedTrace, tokenStepsDisagree, trimTrace } from '../src/research/trace.ts';
 import type { FlowLine, TraceCall, TracedTx } from '../src/research/trace.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
+import { cardAddresses, shapesOf } from '../src/research/study.ts';
 import { loadTemplate } from '../src/template/template.ts';
+import type { LeafRule } from '../src/template/template.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
 const ROOT = repoWithTestFixtures();
@@ -46,7 +48,7 @@ const supply = (morphoPulls = true, payer: Address = BUNDLES): TraceCall[] => [
   ...(morphoPulls ? [call(5, 'CALL', MORPHO, USDC, '0x23b872dd', [payer, MORPHO])] : []),
 ];
 const traced = (hash: string, calls: readonly TraceCall[]): Extract<TracedTx, { kind: 'traced' }> => ({ kind: 'traced', hash: hash as Hex, sender: { kind: 'safe', address: SAFE }, calls });
-const LINE: FlowLine = { after: 2, from: 'blue-bundles-v1', to: 'morpho-blue', selector: SUPPLY };
+const LINE: FlowLine = { after: 2, from: { kind: 'entry', name: 'blue-bundles-v1' }, to: { kind: 'entry', name: 'morpho-blue' }, selector: SUPPLY };
 
 test('a callTracer answer is cut down to depth, type, from, to, selector, value, reverted and a token call\'s addresses', () => {
   const answer = {
@@ -101,7 +103,7 @@ test("a trace's token steps must match the receipt's logs both ways", () => {
 
 test('a flow line is confirmed in N of M traced transactions, and a money call no line covers is a finding', () => {
   const both = [traced('0x01', supply(true, SAFE)), traced('0x02', supply(true, SAFE))];
-  assert.deepEqual(compareFlow(template, registry, [LINE], both), { lines: [{ seen: 2, of: 2 }], uncovered: [] });
+  assert.deepEqual(compareFlow(template, registry, [LINE], both), { lines: [{ seen: 2, of: 2, fields: [] }], uncovered: [] });
   assert.deepEqual(
     flowResults(compareFlow(template, registry, [LINE], both)).map((r) => [r.id, r.finding.kind]),
     [['flow.1', 'agrees']],
@@ -109,8 +111,8 @@ test('a flow line is confirmed in N of M traced transactions, and a money call n
 
   const elsewhere = supply(true, SAFE).map((c) => (c.selector === SUPPLY ? { ...c, selector: '0x12345678' as Hex } : c));
   const partly = compareFlow(template, registry, [LINE], [traced('0x01', supply(true, SAFE)), traced('0x02', elsewhere)]);
-  assert.deepEqual(partly.lines, [{ seen: 1, of: 2 }]);
-  assert.deepEqual(partly.uncovered, [{ call: 2, from: 'morpho-blue', to: 'usdc', kind: 'transferFrom', pays: [{ from: 'safe', to: MORPHO }], transactions: 1, others: [] }], "Morpho's pull is explained only where the line was seen");
+  assert.deepEqual(partly.lines, [{ seen: 1, of: 2, fields: [] }]);
+  assert.deepEqual(partly.uncovered, [{ call: 2, from: 'morpho-blue', to: 'usdc', kind: 'transferFrom', pays: [{ from: 'safe', to: MORPHO }], sides: { out: 1 }, transactions: 1, others: [] }], "Morpho's pull is explained only where the line was seen");
   assert.deepEqual(
     flowResults(partly).map((r) => [r.id, r.finding.kind]),
     [
@@ -120,7 +122,7 @@ test('a flow line is confirmed in N of M traced transactions, and a money call n
   );
 
   const noLine = compareFlow(template, registry, [], both);
-  assert.deepEqual(noLine.uncovered, [{ call: 2, from: 'morpho-blue', to: 'usdc', kind: 'transferFrom', pays: [{ from: 'safe', to: MORPHO }], transactions: 2, others: [] }]);
+  assert.deepEqual(noLine.uncovered, [{ call: 2, from: 'morpho-blue', to: 'usdc', kind: 'transferFrom', pays: [{ from: 'safe', to: MORPHO }], sides: { out: 2 }, transactions: 2, others: [] }]);
 });
 
 test('a line seen nowhere is red, one seen in some and a money call no line covers amber, and each counts on the 呼叫追蹤 line', () => {
@@ -152,7 +154,7 @@ test('ETH sent inside a call is a money call, and a delegation is no step betwee
   const eth = [...supply(), call(5, 'DELEGATECALL', MORPHO, `0x${'77'.repeat(20)}` as Address, '0xabcdef01'), call(6, 'CALL', MORPHO, SAFE, undefined, undefined, '0x1' as Hex)];
   assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', eth)]).uncovered, []);
   const deep = [...supply(), call(5, 'CALL', MORPHO, `0x${'77'.repeat(20)}` as Address, '0xabcdef01'), call(6, 'CALL', `0x${'77'.repeat(20)}` as Address, SAFE, undefined, undefined, '0x1' as Hex)];
-  assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', deep)]).uncovered, [{ call: 2, from: 'other', to: 'safe', kind: 'eth', pays: [{ from: `0x${'77'.repeat(20)}`, to: 'safe' }], transactions: 1, others: [`0x${'77'.repeat(20)}`] }]);
+  assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', deep)]).uncovered, [{ call: 2, from: 'other', to: 'safe', kind: 'eth', pays: [{ from: `0x${'77'.repeat(20)}`, to: 'safe' }], sides: { in: 1 }, transactions: 1, others: [`0x${'77'.repeat(20)}`] }]);
 });
 
 test('only a money call that touches the sender is compared: one between two other addresses is not a finding', () => {
@@ -164,10 +166,10 @@ test('only a money call that touches the sender is compared: one between two oth
   const toSafe = [...supply(), call(5, 'CALL', MORPHO, USDC, '0xa9059cbb', [SAFE])];
   assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', toSafe)]).uncovered, [], 'a call made by a covered call is covered');
   const deepToSafe = [...supply(), call(5, 'CALL', MORPHO, OUTSIDE, '0xabcdef01'), call(6, 'CALL', OUTSIDE, USDC, '0xa9059cbb', [SAFE])];
-  assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', deepToSafe)]).uncovered, [{ call: 2, from: 'other', to: 'usdc', kind: 'transfer', pays: [{ from: OUTSIDE, to: 'safe' }], transactions: 1, others: [OUTSIDE] }], 'a transfer to the Safe no line explains');
+  assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', deepToSafe)]).uncovered, [{ call: 2, from: 'other', to: 'usdc', kind: 'transfer', pays: [{ from: OUTSIDE, to: 'safe' }], sides: { in: 1 }, transactions: 1, others: [OUTSIDE] }], 'a transfer to the Safe no line explains');
 
   const spends = [...supply(), call(5, 'CALL', MORPHO, OUTSIDE, '0xabcdef01'), call(6, 'CALL', OUTSIDE, USDC, '0x23b872dd', [SAFE, OUTSIDE])];
-  assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', spends)]).uncovered, [{ call: 2, from: 'other', to: 'usdc', kind: 'transferFrom', pays: [{ from: 'safe', to: OUTSIDE }], transactions: 1, others: [OUTSIDE] }], "a transferFrom spending the Safe's allowance");
+  assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', spends)]).uncovered, [{ call: 2, from: 'other', to: 'usdc', kind: 'transferFrom', pays: [{ from: 'safe', to: OUTSIDE }], sides: { out: 1 }, transactions: 1, others: [OUTSIDE] }], "a transferFrom spending the Safe's allowance");
 });
 
 test('a trace nested deeper than the EVM allows is no trace, and a recording cannot hold one', () => {
@@ -182,4 +184,81 @@ test("a traced transaction whose trace does not hold the template's calls in ord
   const withoutSupply = supply().filter((c) => !(c.from === SAFE && c.to === BUNDLES));
   assert.deepEqual(holdingTemplateCalls(template, registry, traced('0x01', withoutSupply)), { kind: 'unverifiable', hash: '0x01', why: "the trace does not hold the template's calls in order" });
   assert.equal(holdingTemplateCalls(template, registry, traced('0x01', supply())).kind, 'traced');
+});
+
+const swapTemplate = loadTemplate(ROOT, 'uniswap/swap', registry);
+const [ROUTER, PERMIT2, USDT, POOL] = [at('universal-router-2.1.2'), at('permit2'), at('usdt'), `0x${'b0'.repeat(20)}` as Address];
+const swapTrace = (hash: string, sell: Address, buy: Address, pulled = sell): Extract<TracedTx, { kind: 'traced' }> => ({
+  kind: 'traced',
+  hash: hash as Hex,
+  sender: { kind: 'eoa', address: EOA, call: 0 },
+  calls: [
+    call(0, 'CALL', EOA, ROUTER, swapTemplate.calls[0]?.data !== 'empty' ? swapTemplate.calls[0]?.data.fn.selector : undefined),
+    call(1, 'CALL', ROUTER, PERMIT2, '0x36c78516'),
+    call(2, 'CALL', PERMIT2, pulled, '0x23b872dd', [EOA, POOL]),
+    call(1, 'CALL', ROUTER, POOL, '0xabcdef01'),
+    call(2, 'CALL', POOL, buy, '0xa9059cbb', [EOA]),
+  ],
+});
+const PULL: FlowLine = { after: 1, from: { kind: 'entry', name: 'permit2' }, to: { kind: 'card', field: 'sell-token' }, selector: '0x23b872dd' as Hex };
+const card = (sell: Address, buy: Address) => new Map([['sell-token', sell], ['buy-token', buy]]);
+const onlyTokens = (...names: readonly string[]): typeof registry => {
+  const entries = new Map([...registry.entries].filter(([name, entry]) => entry.kind !== 'token' || names.includes(name)));
+  return { ...registry, entries, byAddress: new Map([...entries.values()].map((entry) => [entry.address, entry] as const)) };
+};
+const pair = onlyTokens('usdc', 'usdt');
+
+test("a line naming a card field's token is compared with each transaction's own token, so one line holds for both directions", () => {
+  const both = [swapTrace('0x01', USDT, USDC), swapTrace('0x02', USDC, USDT)];
+  const cards = new Map([['0x01' as Hex, card(USDT, USDC)], ['0x02' as Hex, card(USDC, USDT)]]);
+  const compared = compareFlow(swapTemplate, pair, [PULL], both, cards);
+  assert.deepEqual(compared.lines, [{ seen: 2, of: 2, fields: [{ field: 'sell-token', tokens: [{ name: 'usdc', seen: 1, of: 1 }, { name: 'usdt', seen: 1, of: 1 }] }] }]);
+  assert.deepEqual(compared.uncovered.map((u) => `${u.from}.${u.to}.${u.kind}`), ['other.usdc.transfer', 'other.usdt.transfer'], 'the line explains the pull in each direction, not the payout');
+  assert.deepEqual(flowResults(compared).map((r) => r.finding.kind)[0], 'agrees');
+
+  const pays: FlowLine = { ...PULL, from: { kind: 'card', field: 'buy-token' }, to: { kind: 'entry', name: 'permit2' }, selector: '0xabcdef02' as Hex };
+  const bought = { ...both[0]!, calls: [...both[0]!.calls, call(1, 'CALL', USDC, PERMIT2, '0xabcdef02')] };
+  assert.deepEqual([compareFlow(swapTemplate, pair, [pays], [bought], cards).lines[0]?.seen], [1], 'a card token may be the caller, each field its own token');
+
+  const wrong = compareFlow(swapTemplate, pair, [PULL], [both[0]!, swapTrace('0x02', USDC, USDT, USDT)], cards);
+  assert.deepEqual([wrong.lines[0]?.seen, wrong.lines[0]?.of], [1, 2], 'another token than the transaction sells is not the line');
+  assert.deepEqual(flowResults(wrong).map((r) => [r.id, stateOf(r)])[0], ['flow.1', 'bad']);
+});
+
+test("a line whose card field can name a token no trace held is no finding and is not counted as passed", () => {
+  const one = compareFlow(swapTemplate, pair, [PULL], [swapTrace('0x01', USDT, USDC)], new Map([['0x01' as Hex, card(USDT, USDC)]]));
+  assert.deepEqual(one.lines, [{ seen: 1, of: 1, fields: [{ field: 'sell-token', tokens: [{ name: 'usdc', seen: 0, of: 0 }, { name: 'usdt', seen: 1, of: 1 }] }] }]);
+  const results = flowResults(one).filter((r) => r.id === 'flow.1');
+  assert.deepEqual(results.map((r) => [r.finding.kind, stateOf(r)]), [['line-token-untested', 'na']]);
+  assert.equal(strip({ entries: [], results }).find((s) => s.line === 'trace')?.counted, 0);
+});
+
+test("a transaction whose calls do not show the field's token does not test the line, and its money call stays uncovered", () => {
+  const compared = compareFlow(swapTemplate, pair, [PULL], [swapTrace('0x01', USDT, USDC)]);
+  assert.deepEqual([compared.lines[0]?.seen, compared.lines[0]?.of], [0, 0]);
+  assert.deepEqual(flowResults(compared).map((r) => r.id), ['trace.1.permit2.usdt.transferFrom', 'trace.1.other.usdc.transfer']);
+});
+
+test("a transaction's card tokens are read from the places the template binds to the field, in a Safe's calls and in a wallet's own", () => {
+  const shapes = shapesOf(swapTemplate);
+  const held: Readonly<Record<string, string>> = { 'sell-token': USDT, 'buy-token': USDC };
+  const fit = (sender: Extract<TracedTx, { kind: 'traced' }>['sender'], rules: readonly LeafRule[]) => ({
+    kind: 'fit' as const, hash: '0x01' as Hex, block: 1n, sender, paths: [], types: [], outside: [], time: undefined,
+    values: rules.map((rule) => (rule.kind === 'card' ? (held[rule.ref.field] ?? '1') : rule.kind === 'contract' ? at(rule.name) : '0')),
+  });
+  for (const tokens of [cardAddresses(fit({ kind: 'safe', address: SAFE }, shapes.whole.loosened.rules), shapes), cardAddresses(fit({ kind: 'eoa', address: EOA, call: 0 }, shapes.calls[0]!.loosened.rules), shapes)]) {
+    assert.deepEqual([...tokens], [['sell-token', USDT], ['buy-token', USDC]]);
+  }
+  const padded: LeafRule = { kind: 'address-word', rule: { kind: 'card', ref: { field: 'sell-token', attribute: undefined } } } as LeafRule;
+  const part: LeafRule = { kind: 'card', ref: { field: 'vault', attribute: 'asset' } } as LeafRule;
+  const whole = { ...shapes.whole, loosened: { ...shapes.whole.loosened, rules: [padded, part] } };
+  const read = cardAddresses({ ...fit({ kind: 'safe', address: SAFE }, []), values: [USDT, USDC] }, { ...shapes, whole });
+  assert.deepEqual([...read], [['sell-token', USDT]], "a left-padded address is read, another entry's attribute is not the field");
+});
+
+test('a money call whose addresses the trace did not keep is counted apart, once per transaction', () => {
+  const paid = [...supply(), call(5, 'CALL', MORPHO, SAFE, '0xabcdef01'), call(6, 'CALL', SAFE, USDC, '0xa9059cbb', [BUNDLES])];
+  const unread = [...paid, call(6, 'CALL', SAFE, USDC, '0xa9059cbb'), call(6, 'CALL', SAFE, USDC, '0xa9059cbb')];
+  const [group] = compareFlow(template, registry, [], [traced('0x01', paid), traced('0x02', unread)]).uncovered.filter((u) => u.kind === 'transfer');
+  assert.deepEqual([group?.transactions, group?.sides, group?.pays], [2, { out: 2, unread: 1 }, [{ from: 'safe', to: BUNDLES }]]);
 });
