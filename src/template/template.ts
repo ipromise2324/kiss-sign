@@ -1088,12 +1088,12 @@ function computed(path: string, raw: unknown, name: string, scope: Scope, order:
 }
 
 /** An amount field's `floor`: what it sells is another typed amount, and both count a token a card field picks from the registry. */
-function floor(path: string, raw: unknown, name: string, fields: CardFields): Floor {
+function floor(path: string, raw: unknown, name: string, fields: CardFields, floors: ReadonlyMap<string, unknown>): Floor {
   const value = object(path, raw);
   exactKeys(path, value, ['sells']);
   const sells = text(`${path}.sells`, value.sells);
   const [sold, own] = [fields.get(sells), fields.get(name)];
-  if (sells === name || sold?.kind !== 'amount' || sold.computed !== undefined || sold.floor !== undefined) throw new TemplateError(`${path}.sells`, `${JSON.stringify(sells)} is not another amount field the signer types`);
+  if (sells === name || sold?.kind !== 'amount' || sold.computed !== undefined || floors.has(sells)) throw new TemplateError(`${path}.sells`, `${JSON.stringify(sells)} is not another amount field the signer types`);
   const picked = (field: CardField | undefined): boolean => {
     if (field?.kind !== 'amount' || field.of === 'eth' || field.of.attribute !== undefined) return false;
     const token = fields.get(field.of.field);
@@ -1443,10 +1443,10 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
     const field = fields.get(name);
     if (isComputed && field?.kind === 'amount') fields.set(name, { ...field, computed: computed(`card.${name}.computed`, object(`card.${name}`, rawCard[name]).computed, name, scope, order) });
   }
-  for (const [name] of pending) {
-    const raw = object(`card.${name}`, rawCard[name]).floor;
+  const floors = new Map(pending.map(([name]) => [name, object(`card.${name}`, rawCard[name]).floor] as const).filter(([, raw]) => raw !== undefined));
+  for (const [name, raw] of floors) {
     const field = fields.get(name);
-    if (raw !== undefined && field?.kind === 'amount') fields.set(name, { ...field, floor: floor(`card.${name}.floor`, raw, name, fields) });
+    if (field?.kind === 'amount') fields.set(name, { ...field, floor: floor(`card.${name}.floor`, raw, name, fields, floors) });
   }
   const nonce = value.nonce === undefined ? undefined : rule('nonce', value.nonce, { kind: 'uint', bits: 256 }, scope);
   const same = value.same === undefined ? [] : array('same', value.same).map((ref, i) => cardToken(`same[${i}]`, text(`same[${i}]`, ref), fields, registry));

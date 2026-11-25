@@ -387,6 +387,7 @@ for (const [what, edit, path] of [
   ['a floor beside a max', (t: any) => (t.card['min-buy'].max = { value: '1', why: 'x' }), 'card.min-buy.floor'],
   ['a floor that sells itself', (t: any) => (t.card['min-buy'].floor.sells = 'min-buy'), 'card.min-buy.floor.sells'],
   ['a floor that sells a token field', (t: any) => (t.card['min-buy'].floor.sells = 'sell-token'), 'card.min-buy.floor.sells'],
+  ['a floor that sells another floor, declared before it', (t: any) => (t.card = { ...t.card, 'min-buy': { ...t.card['min-buy'], floor: { sells: 'late' } }, late: { kind: 'amount', of: 'sell-token', floor: { sells: 'sell-amount' } } }), 'card.min-buy.floor.sells'],
   ['a floor of ETH', (t: any) => (t.card['min-buy'].of = 'eth'), 'card.min-buy.floor'],
   ['a floor that sells ETH', (t: any) => (t.card['sell-amount'].of = 'eth'), 'card.min-buy.floor.sells'],
   ['a floor with a slippage of its own', (t: any) => (t.card['min-buy'].floor.bps = 500), 'card.min-buy.floor.bps'],
