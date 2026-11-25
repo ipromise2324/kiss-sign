@@ -91,6 +91,14 @@ To read again the blocks an earlier recording searched, such as to add what a re
 6. Record the runs the report studies with `--record <name>` before you generate the report.
    It writes the full recording to `.cache/past-txs/<name>.json`, which git ignores and you never commit, and a summary of what the study found to `testdata/research/<name>.json`, which the report reads.
    The summary also keeps the call trace of each transaction exactly the template, which the report compares with your `flow` lines ([Notes and reviews](notes-and-reviews.md)).
+   Before any note, settle every address the run prints that moves the sender's money and whose code verify does not check:
+   - a fixed contract of the operation, such as a pool manager that holds every pool: register it and list it in the reaching entry's `dependsOn` ([addresses.md](addresses.md#contracts-that-need-more)), then `--restudy` the summary;
+   - one that differs per transaction or is no fixed part of the operation, such as an aggregator's pools: judge it `not-fixed`;
+   - one the program cannot express: judge it `known-limit`, and stop and propose the change ([Program changes](#program-changes)) when it affects what `verify` binds.
+   Write a judgement in `trace-addresses.json` beside the report's files, in the instance's folder for a per-instance report: `{ "<address in full>": { "judgement": "not-fixed" | "known-limit", "reason", "sources": ["https://..."] } }`, with `"needs": "<the program change>"` for a `known-limit`; `reason` and `needs` hold at most 600 characters each.
+   `pnpm report --record` refuses while one is neither, naming all of them, and refuses a judgement of an address no recorded trace names.
+   When the run says nothing was found over 0 traced, it shows nothing: look for a search that traces the operation, and only when there is none say why beside the judgements, as `"untraced": { "reason" }`, without which `--record` refuses a template that moves money.
+   When the run prints a token a swap's card can choose in none of the traces, such as one direction of the swap, look for a search that traces it, and say in `pastTxsConclusion` what no trace covers.
    When `pnpm test` says a summary changed since it was studied, run `pnpm past-txs --restudy <name>` where `.cache/past-txs/<name>.json` exists, or run the summary's printed command again.
 
 ## Check the protocol's health
