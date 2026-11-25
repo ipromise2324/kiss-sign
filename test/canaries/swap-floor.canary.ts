@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
-import { chmodSync, existsSync, mkdtempSync, readFileSync, readdirSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { resolveCard } from '../../src/card.ts';
 import type { Transport } from '../../src/chain/rpc.ts';
@@ -14,7 +15,15 @@ import { parseRegistry } from '../../src/registry.ts';
 import type { Address, Hex, SafeTx } from '../../src/safe/types.ts';
 import { checkTemplateFields } from '../../src/template/check.ts';
 import { parseTemplate } from '../../src/template/template.ts';
-import { git, write } from './verify-harness.ts';
+
+const git = (cwd: string, ...args: string[]) =>
+  execFileSync('git', ['-c', 'user.name=test', '-c', 'user.email=test@example.com', ...args], { cwd, stdio: ['ignore', 'pipe', 'pipe'] });
+
+function write(path: string, text: string): string {
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, text);
+  return path;
+}
 
 const SAFE = `0x${'5a'.repeat(20)}` as Address;
 const CODE = '0x00' as Hex;
