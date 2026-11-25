@@ -15,11 +15,11 @@ import { openMainnetReader } from '../chain/reader.ts';
 import type { Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
 import { kissSignHome } from '../keys.ts';
-import { isMarketEntryPart, loadRegistry } from '../registry.ts';
+import { MARKET_ENTRY_PARTS, isMarketEntryPart, loadRegistry } from '../registry.ts';
 import type { Market, Registry, RegistryEntry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { TEMPLATES_DIR, loadTemplate, scopeEntries, slippageBps, WAD } from '../template/template.ts';
+import { TEMPLATES_DIR, loadTemplate, rulesUnder, scopeEntries, slippageBps, WAD } from '../template/template.ts';
 import type { CardField, CardRef, Computed, ComputedRead, Rule, Template, TokenRef } from '../template/template.ts';
 import { gatesInstances, isInstanceOf, reportUnit, reportedInstancesIn, severalInstances } from '../template/vault-reports.ts';
 import type { ReportedInstances } from '../template/vault-reports.ts';
@@ -264,6 +264,19 @@ function entryAt(ref: CardRef, values: Readonly<Record<string, string>>, sources
   return entry;
 }
 
+/** Every registry entry a read names in its target or its arguments: a card field's and its attribute's, and every part of a market. */
+function namedEntries(read: ComputedRead, values: Readonly<Record<string, string>>, registry: Registry): RegistryEntry[] {
+  const rules = read.args.flatMap((arg) => (arg.kind === 'bound' ? rulesUnder(arg.rule) : []));
+  const refs = [...(read.to.kind === 'card' ? [read.to.ref] : []), ...rules.flatMap((rule) => (rule.kind === 'card' ? [rule.ref] : []))];
+  const ofRef = ({ field, attribute }: CardRef): (RegistryEntry | undefined)[] => {
+    const chosen = values[field] as string;
+    const market = registry.markets.get(chosen);
+    return market === undefined ? [registry.entries.get(chosen), entryOf(chosen, attribute, registry)] : MARKET_ENTRY_PARTS.map((part) => market[part]);
+  };
+  const fixed = rules.map((rule) => (rule.kind === 'contract' ? registry.entries.get(rule.name) : undefined));
+  return [...refs.flatMap(ofRef), ...fixed].filter((entry) => entry !== undefined);
+}
+
 /** One view call `card new` made: what it called, on which contract, and its answer. */
 type Step = { readonly call: string; readonly on: RegistryEntry; readonly value: bigint };
 
@@ -279,7 +292,7 @@ async function readValue(read: ComputedRead, values: Readonly<Record<string, str
   };
   const bound = bindView({ ...read, args }, { safe, values: resolved, registry });
   if ('problem' in bound) return refuse(bound.problem);
-  await ctx.chain.pinned(to);
+  for (const entry of new Set([to, ...namedEntries(read, values, registry)])) await ctx.chain.pinned(entry);
   const answer = decodeValues(read.returns.map((param) => param.type), hexToBytes((await ctx.chain.call(to, bound.call.data, call)).slice(2)));
   if (answer === undefined) return refuse(ctx.L.notReturns(`(${read.returns.map((param) => canonicalType(param.type)).join(',')})`));
   const [first, ...rest] = read.output;

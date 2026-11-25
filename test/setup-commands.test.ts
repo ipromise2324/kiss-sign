@@ -569,6 +569,31 @@ test('card new refuses to compute a value from a contract one of whose dependsOn
   assert.match(result.stderr, /not shown to run the code the registry pins: .* has code hash 0x[0-9a-f]{64} at block 21000000/);
 });
 
+const MARKET_PARTS = ['morpho-blue', 'usdc', 'cbbtc', 'morpho-oracle-cbbtc-usdc-86', 'adaptive-curve-irm'];
+for (const [what, changed, read] of [
+  ['the token a card field\'s attribute names', 'usdc', { to: { card: 'vault' }, function: 'quote(address asset) returns (uint256 shares)', args: { asset: { card: 'vault.asset' } } }],
+  ['a registry contract an argument names', 'usdc', { to: { card: 'vault' }, function: 'quote(address asset) returns (uint256 shares)', args: { asset: { contract: 'usdc' } } }],
+  ['the oracle of a market it reads', 'morpho-oracle-cbbtc-usdc-86', { to: { card: 'market.lending' }, function: 'position(bytes32 id, address user) returns (uint256 shares)', args: { id: { card: 'market.id' }, user: { safe: true } } }],
+  ['the rate model of a market an argument names', 'adaptive-curve-irm', { to: { card: 'vault' }, function: 'quote(bytes32 id) returns (uint256 shares)', args: { id: { card: 'market.id' } } }],
+] as const) {
+  test(`card new refuses to compute a value when ${what} runs other code than its pin names`, async () => {
+    const home = freshHome();
+    configure(home);
+    const dir = dataClone();
+    for (const name of MARKET_PARTS) if (name !== changed) repinned(dir, name, { hash: keccakCode(VAULT_CODE), from: 0 });
+    const path = join(dir, 'templates', 'morpho', 'vault-deposit', 'template.json');
+    const template = JSON.parse(readFileSync(path, 'utf8'));
+    const reading = JSON.stringify(read).includes('market.');
+    if (reading) template.card.market = { kind: 'market' };
+    template.card['min-shares'].computed.read = read;
+    writeFileSync(path, JSON.stringify(template, null, 2));
+    const result = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), ...(reading ? ['usdc-cbbtc-86'] : []), '5', 'y'], { ...mainnet(() => 5_000_000_000_000_000_000n), repoRoot: publish(dir) });
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, new RegExp(`not shown to run the code the registry pins: ${changed} 0x\\S+ has code hash`));
+    assert.equal(existsSync(join(home, 'cards')), false);
+  });
+}
+
 test('card new takes commas between thousands, as the protocol\'s app shows an amount', async () => {
   const home = freshHome();
   configure(home);
