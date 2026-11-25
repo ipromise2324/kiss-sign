@@ -23,8 +23,8 @@
       },
       "audits": {
         "text": {
-          "en": "The v4 core contracts and the Universal Router have public audit reports (OpenZeppelin, Trail of Bits, Spearbit, Certora, ABDK; some are marked draft). The hook: OpenZeppelin reviewed its fee mechanism on 9-13 February 2026, with one high finding, resolved; Uniswap's security page says that review covered the earlier, non-upgradeable version, and the upgrade and role code came after it. The AI read that page, not the audit PDF.",
-          "zh-TW": "v4 核心合約和 Universal Router 有公開的審計報告（OpenZeppelin、Trail of Bits、Spearbit、Certora、ABDK，有些標為草稿）。hook 的部分：OpenZeppelin 在 2026 年 2 月 9 到 13 日審過它的手續費機制，一個高風險問題已解決；Uniswap 的安全頁寫明，當時審的是還不能升級的舊版，升級和角色的程式碼是之後才加的。AI 讀的是安全頁，沒有讀審計 PDF。"
+          "en": "The v4 core contracts and the Universal Router have public audit reports (OpenZeppelin, Trail of Bits, Spearbit, Certora, ABDK; some are marked draft). The hook: OpenZeppelin reviewed its fee code on 9-13 February 2026 (the AI read the PDF): the files are StableStableHook.sol, two base and library files and two interfaces, one high finding is resolved, and it names an owner and a configManager but no proxy or upgrade. That the review covered the earlier, non-upgradeable version, and the upgrade and role code came after it, is Uniswap's own statement on its security page.",
+          "zh-TW": "v4 核心合約和 Universal Router 有公開的審計報告（OpenZeppelin、Trail of Bits、Spearbit、Certora、ABDK，有些標為草稿）。hook 的部分：OpenZeppelin 在 2026 年 2 月 9 到 13 日審過它的手續費程式碼（AI 讀了 PDF）：範圍是 StableStableHook.sol、兩個 base 和 library 檔案和兩個介面，一個高風險問題已解決；PDF 寫到 owner 和 configManager，沒有提到 proxy 或升級。「當時審的是還不能升級的舊版，升級和角色的程式碼是之後才加的」是 Uniswap 自己在安全頁寫的。"
         },
         "sources": [
           "https://github.com/Uniswap/v4-core/tree/main/docs/security/audits",
@@ -59,8 +59,8 @@
     },
     {
       "text": {
-        "en": "The hook's audit came before it became upgradeable, so no audit we found covers its upgrade and role code. It was created on 2026-07-27 and has not been upgraded since.",
-        "zh-TW": "hook 的審計早於它變成可升級的版本，所以找到的審計都沒有涵蓋升級和角色的程式碼。它在 2026-07-27 建立，之後沒升級過。"
+        "en": "Uniswap's security page says the hook's audit came before it became upgradeable; the audit PDF has no word about a proxy or an upgrade. So no audit we found covers its upgrade and role code. It was created on 2026-07-27 and has not been upgraded since.",
+        "zh-TW": "Uniswap 的安全頁寫明，hook 的審計早於它變成可升級的版本；審計 PDF 沒有提到 proxy 或升級。所以找到的審計都沒有涵蓋升級和角色的程式碼。它在 2026-07-27 建立，之後沒升級過。"
       },
       "recommendation": {
         "en": "Decide whether you accept a young contract whose worst effect is the price, down to your minimum.",

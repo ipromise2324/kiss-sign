@@ -41,18 +41,20 @@ function safeTx(name: string): SafeTx {
 
 const withData = (tx: SafeTx, bytes: Uint8Array): SafeTx => ({ ...tx, data: `0x${bytesToHex(bytes)}` as Hex });
 
-/** Where `word`, a 32-byte value, first sits in `data`, so a test can change that one field. */
-function wordAt(tx: SafeTx, word: bigint | Address): number {
+/** Where `word`, a 32-byte value, sits in `data` for the `nth` time, so a test can change that one field. */
+function wordAt(tx: SafeTx, word: bigint | Address, nth: number): number {
   const hex = typeof word === 'bigint' ? word.toString(16).padStart(64, '0') : word.slice(2).padStart(64, '0');
-  const at = tx.data.slice(2).indexOf(hex);
+  const data = tx.data.slice(2);
+  let at = data.indexOf(hex);
+  for (let i = 0; i < nth && at >= 0; i++) at = data.indexOf(hex, at + 1);
   assert.ok(at >= 0 && at % 2 === 0, `${word} is in the data`);
   return at / 2;
 }
 
-function changed(tx: SafeTx, from: bigint | Address, to: bigint | Address): SafeTx {
+function changed(tx: SafeTx, from: bigint | Address, to: bigint | Address, nth = 0): SafeTx {
   const bytes = hexToBytes(tx.data.slice(2));
   const value = typeof to === 'bigint' ? to.toString(16).padStart(64, '0') : to.slice(2).padStart(64, '0');
-  bytes.set(hexToBytes(value), wordAt(tx, from));
+  bytes.set(hexToBytes(value), wordAt(tx, from, nth));
   return withData(tx, bytes);
 }
 
@@ -69,23 +71,24 @@ const swapOp = (sell: string, buy: string, amount: bigint, minBuy: bigint, templ
   values: { 'sell-token': sell, 'buy-token': buy, 'sell-amount': `${amount}`, 'min-buy': `${minBuy}` },
 });
 
-const BATCHED: Case = {
-  name: 'uniswap-swap-approve-usdt-usdc',
-  sell: 4342485506n,
-  minBuy: 4334865289n,
-  bound: 24,
-  card: {
-    operations: [
-      { template: 'uniswap/approve-permit2', values: { token: 'usdt' } },
-      { template: 'uniswap/allow-router', values: { token: 'usdt' } },
-      swapOp('usdt', 'usdc', 4342485506n, 4334865289n),
-    ],
-  },
-};
+const batchedCard = (amount: bigint, minBuy: bigint): Card => ({
+  operations: [
+    { template: 'uniswap/approve-permit2', values: { token: 'usdt' } },
+    { template: 'uniswap/allow-router', values: { token: 'usdt' } },
+    swapOp('usdt', 'usdc', amount, minBuy),
+  ],
+});
+
+const BATCHED: Case = { name: 'uniswap-swap-hook-approve-usdt-usdc', sell: 2000000000n, minBuy: 1987680455n, bound: 30, card: batchedCard(2000000000n, 1987680455n) };
+
+const HOOK_CASES: readonly Case[] = [
+  BATCHED,
+  { name: 'uniswap-swap-hook-usdc-usdt', sell: 20000000000n, minBuy: 19923502689n, bound: 21, card: { operations: [swapOp('usdc', 'usdt', 20000000000n, 19923502689n)] } },
+  { name: 'uniswap-swap-hook-usdc-usdt-2', sell: 20000000000n, minBuy: 19917340573n, bound: 21, card: { operations: [swapOp('usdc', 'usdt', 20000000000n, 19917340573n)] } },
+];
 
 const CASES: readonly Case[] = [
-  BATCHED,
-  { name: 'uniswap-swap-usdc-usdt', sell: 130000000n, minBuy: 129893802n, bound: 15, card: { operations: [swapOp('usdc', 'usdt', 130000000n, 129893802n)] } },
+  ...HOOK_CASES,
   {
     name: 'uniswap-swap-permit-usdc-usdt',
     sell: 24000000000n,
@@ -93,6 +96,12 @@ const CASES: readonly Case[] = [
     bound: 18,
     card: { operations: [swapOp('usdc', 'usdt', 24000000000n, 23978654164n, 'uniswap/swap-permit')] },
   },
+];
+
+/** Executed swaps of the app's unhooked shape (V4_SWAP alone, SWAP_EXACT_IN then SETTLE and TAKE), which uniswap/swap refuses. */
+const UNHOOKED: readonly { readonly name: string; readonly card: Card }[] = [
+  { name: 'uniswap-swap-approve-usdt-usdc', card: batchedCard(4342485506n, 4334865289n) },
+  { name: 'uniswap-swap-usdc-usdt', card: { operations: [swapOp('usdc', 'usdt', 130000000n, 129893802n)] } },
 ];
 
 function resolved(tx: SafeTx, card: Card): ResolvedCard {
@@ -117,6 +126,9 @@ for (const c of CASES) {
   const swapAt = c.card.operations.length === 1 ? 'call' : `multiSend[${c.card.operations.length - 1}]`;
   const permits = c.card.operations.some((op) => op.template === 'uniswap/swap-permit');
   const v4 = `${swapAt}.execute.inputs[${permits ? 1 : 0}].V4_SWAP`;
+  const swap = permits ? `${v4}.params[0].SWAP_EXACT_IN.params` : `${v4}.params[1].SWAP_EXACT_IN_SINGLE.params`;
+  const sells = permits ? [`${swap}.amountIn`] : [`${v4}.params[0].SETTLE.amount`, `${swap}.amountIn`];
+  const recipients = [`${v4}.params[2].TAKE.recipient`, ...(permits ? [] : [`${swapAt}.execute.inputs[1].SWEEP.recipient`])];
 
   test(`${c.name} matches its card`, () => {
     assert.deepEqual(check(tx, c.card), { kind: 'match' });
@@ -128,19 +140,47 @@ for (const c of CASES) {
     assert.equal(result.kind === 'pass' ? result.bound : -1, c.bound);
   });
 
-  test(`${c.name}: a recipient other than the Safe is a mismatch at TAKE's recipient`, () => {
-    assert.deepEqual(mismatchAt(check(changed(tx, tx.safe, OTHER), c.card)), [`${v4}.params[2].TAKE.recipient`]);
+  test(`${c.name}: a recipient other than the Safe is a mismatch at that recipient`, () => {
+    recipients.forEach((at, nth) => assert.deepEqual(mismatchAt(check(changed(tx, tx.safe, OTHER, nth), c.card)), [at]));
   });
 
   test(`${c.name}: a lower minimum out than the card's, or a card asking more than the transaction's minimum, is a mismatch`, () => {
-    assert.deepEqual(mismatchAt(check(changed(tx, c.minBuy, c.minBuy - 1n), c.card)), [`${v4}.params[0].SWAP_EXACT_IN.params.amountOutMinimum`]);
-    assert.deepEqual(mismatchAt(check(tx, withMinBuy(c.card, c.minBuy + 1n))), [`${v4}.params[0].SWAP_EXACT_IN.params.amountOutMinimum`]);
+    assert.deepEqual(mismatchAt(check(changed(tx, c.minBuy, c.minBuy - 1n), c.card)), [`${swap}.amountOutMinimum`]);
+    assert.deepEqual(mismatchAt(check(tx, withMinBuy(c.card, c.minBuy + 1n))), [`${swap}.amountOutMinimum`]);
     assert.deepEqual(check(changed(tx, c.minBuy, c.minBuy + 1n), c.card), { kind: 'match' });
     assert.deepEqual(check(tx, withMinBuy(c.card, c.minBuy - 1n)), { kind: 'match' });
   });
 
-  test(`${c.name}: another sell amount is a mismatch at amountIn`, () => {
-    assert.deepEqual(mismatchAt(check(changed(tx, c.sell, c.sell + 1n), c.card)), [`${v4}.params[0].SWAP_EXACT_IN.params.amountIn`]);
+  test(`${c.name}: another sell amount is a mismatch at each place the transaction names it`, () => {
+    sells.forEach((at, nth) => assert.deepEqual(mismatchAt(check(changed(tx, c.sell, c.sell + 1n, nth), c.card)), [at]));
+  });
+}
+
+for (const c of HOOK_CASES) {
+  const tx = safeTx(c.name);
+
+  test(`${c.name}: another hook in the pool key is a mismatch at hooks`, () => {
+    const at = mismatchAt(check(changed(tx, addressOf('uniswap-stable-pair-hook'), OTHER), c.card));
+    assert.equal(at.length, 1);
+    assert.match(at[0]!, /\.V4_SWAP\.params\[1\]\.SWAP_EXACT_IN_SINGLE\.params\.poolKey\.hooks$/);
+  });
+
+  test(`${c.name}: a card that swaps another token, or the two tokens the other way, is a mismatch`, () => {
+    const swapping = (sell: string, buy: string): Card => ({
+      operations: c.card.operations.map((op) => (op.template === 'uniswap/swap' ? { ...op, values: { ...op.values, 'sell-token': sell, 'buy-token': buy } } : op)),
+    });
+    const { 'sell-token': sell, 'buy-token': buy } = c.card.operations.at(-1)!.values as Record<string, string>;
+    for (const [from, to] of [['morpho', buy!], [sell!, 'morpho'], [buy!, sell!]] as const) assert.notDeepEqual(mismatchAt(check(tx, swapping(from, to))), []);
+  });
+}
+
+for (const { name, card } of UNHOOKED) {
+  test(`${name}: a swap of the app's unhooked shape is a mismatch, even under the card it was signed for`, () => {
+    const tx = safeTx(name);
+    const swapAt = card.operations.length === 1 ? 'call' : 'multiSend[2]';
+    const at = mismatchAt(check(tx, card));
+    assert.ok(at.includes(`${swapAt}.execute.commands`), at.join(', '));
+    assert.equal(at.every((path) => path.startsWith(`${swapAt}.execute`)), true, at.join(', '));
   });
 }
 
@@ -188,7 +228,7 @@ test('the batched swap leaves USDT approved to Permit2 and a Permit2 allowance t
       keptSeen(observed, card, templates, registry).map((k) => [k.via, k.spender, k.amount, k.expiration]),
       [
         ['erc20', addressOf('permit2'), MAX, undefined],
-        ['permit2', addressOf('universal-router-2.1.2'), PERMIT2_MAX, 1797234694n],
+        ['permit2', addressOf('universal-router-2.1.2'), PERMIT2_MAX, 1794727413n],
       ],
     );
   }
@@ -239,17 +279,22 @@ test('a trailer over 19 bytes is allowed only on a call to a registry contract t
 });
 
 test('a route claim needs every token the Safe gets bounded, since another pool gives another price', () => {
-  const swap = JSON.parse(readFileSync(join(ROOT, 'templates', 'uniswap', 'swap', 'template.json'), 'utf8'));
+  const swap = JSON.parse(readFileSync(join(ROOT, 'templates', 'uniswap', 'swap-permit', 'template.json'), 'utf8'));
   swap.effects.gets[0].amount = 'positive';
   assert.throws(() => parseTemplate(swap, registry), /a template with a route claim must bound each token the Safe gives or gets/);
 });
 
 test('a router input whose bytes do not re-encode exactly is a mismatch at its encoding', () => {
-  const tx = safeTx('uniswap-swap-usdc-usdt');
-  const card = { operations: [swapOp('usdc', 'usdt', 130000000n, 129893802n)] };
-  const bytes = hexToBytes(tx.data.slice(2));
-  const actions = tx.data.slice(2).indexOf('070b0e00');
-  assert.ok(actions > 0 && actions % 2 === 0, 'the action list is in the data');
-  bytes[actions / 2 + 3] = 1;
-  assert.deepEqual(mismatchAt(check(withData(tx, bytes), card)), ['call.execute.inputs[0].encoding']);
+  const cases = [
+    { name: 'uniswap-swap-hook-usdc-usdt', actions: '0b060e00', at: 'call.execute.inputs[0].encoding' },
+    { name: 'uniswap-swap-permit-usdc-usdt', actions: '070b0e00', at: 'call.execute.inputs[1].encoding' },
+  ];
+  for (const { name, actions, at } of cases) {
+    const tx = safeTx(name);
+    const bytes = hexToBytes(tx.data.slice(2));
+    const start = tx.data.slice(2).indexOf(actions);
+    assert.ok(start > 0 && start % 2 === 0, 'the action list is in the data');
+    bytes[start / 2 + 3] = 1;
+    assert.deepEqual(mismatchAt(check(withData(tx, bytes), CASES.find((c) => c.name === name)!.card)), [at]);
+  }
 });
