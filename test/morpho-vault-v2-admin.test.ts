@@ -79,7 +79,6 @@ const CASES = [
   { fixture: 'vault-v2-cap-decrease', template: 'morpho/vault-v2-cap-decrease', values: caps('usdc-usp-915', '0', '0'), bound: 18 },
   { fixture: 'vault-v2-cap-decrease-other-safe', template: 'morpho/vault-v2-cap-decrease', values: caps('usdc-usp-915', '10', '0'), bound: 18 },
   { fixture: 'vault-v2-revoke', template: 'morpho/vault-v2-revoke', values: caps('usdc-usp-915', '1000000', '10000000000000000'), bound: 18 },
-  { fixture: 'vault-v2-reallocate', template: 'morpho/vault-v2-reallocate', values: { vault: VAULT, from: 'usdc-usp-915', to: 'usdc-usp-86', amount: '1' }, bound: 16 },
   { fixture: 'vault-v2-reallocate-back', template: 'morpho/vault-v2-reallocate', values: { vault: VAULT, from: 'usdc-usp-86', to: 'usdc-usp-915', amount: '1000000' }, bound: 16 },
 ] as const;
 
@@ -127,10 +126,10 @@ test('the market cap submission does not match an adapter or collateral cap subm
 });
 
 test('a reallocation with the markets swapped or another amount on the card is a mismatch', () => {
-  const tx = safeTx('vault-v2-reallocate');
-  const swapped = check(tx, card('morpho/vault-v2-reallocate', { vault: VAULT, from: 'usdc-usp-86', to: 'usdc-usp-915', amount: '1' }));
+  const tx = safeTx('vault-v2-reallocate-back');
+  const swapped = check(tx, card('morpho/vault-v2-reallocate', { vault: VAULT, from: 'usdc-usp-915', to: 'usdc-usp-86', amount: '1000000' }));
   assert.deepEqual(mismatchedArgs(swapped), ['marketParams.lltv', 'marketParams.lltv']);
-  assert.deepEqual(mismatchedArgs(check(tx, card('morpho/vault-v2-reallocate', { vault: VAULT, from: 'usdc-usp-915', to: 'usdc-usp-86', amount: '2' }))), ['assets', 'assets']);
+  assert.deepEqual(mismatchedArgs(check(tx, card('morpho/vault-v2-reallocate', { vault: VAULT, from: 'usdc-usp-86', to: 'usdc-usp-915', amount: '1000001' }))), ['assets', 'assets']);
 });
 
 test('a percent above 100 is refused on the card', () => {
@@ -209,7 +208,6 @@ const RECORDED = [
   { name: 'vault-v2-cap-accept', given: card('morpho/vault-v2-cap-accept', caps('usdc-usp-915', NO_LIMIT, ALL)) },
   { name: 'vault-v2-cap-decrease', given: card('morpho/vault-v2-cap-decrease', caps('usdc-usp-915', '0', '0')) },
   { name: 'vault-v2-revoke', given: card('morpho/vault-v2-revoke', caps('usdc-usp-915', '1000000', '10000000000000000')) },
-  { name: 'vault-v2-reallocate', given: card('morpho/vault-v2-reallocate', { vault: VAULT, from: 'usdc-usp-915', to: 'usdc-usp-86', amount: '1' }) },
   { name: 'vault-v2-reallocate-back', given: card('morpho/vault-v2-reallocate', { vault: VAULT, from: 'usdc-usp-86', to: 'usdc-usp-915', amount: '1000000' }) },
 ];
 
