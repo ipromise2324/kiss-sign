@@ -2,28 +2,28 @@
   "verdict": {
     "status": "safe",
     "text": {
-      "en": "OK to use. Steakhouse's docs page, CoinGecko and Morpho's factory all confirm this vault. Send a small amount the first time.",
-      "zh-TW": "可以用。Steakhouse 文件頁、CoinGecko 和 Morpho 的工廠都確認這個 vault。第一次先送小額。"
+      "en": "OK to use after setting the app's unlimited approval to the deposit amount. Steakhouse's page, CoinGecko and the factory confirm the vault.",
+      "zh-TW": "可以用，但要先把 app 的無限授權改成存款額。Steakhouse 頁面、CoinGecko 和工廠都確認這個 vault。第一次先送小額。"
     }
   },
   "flow": [
     {
       "after": 2,
-      "from": "general-adapter-1",
+      "from": "vault-bundles-v1",
       "to": "usdc",
       "function": "transferFrom(address,address,uint256)",
       "text": {
-        "en": "Pulls the amount you type of the asset token from the Safe with `transferFrom`",
-        "zh-TW": "用 `transferFrom` 從 Safe 拉走你填的金額的資產代幣"
+        "en": "Pulls the amount you type of USDC from the Safe with `transferFrom`",
+        "zh-TW": "用 `transferFrom` 從 Safe 拉走你填的金額的 USDC"
       },
       "sources": [
-        "https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol#L381",
-        "https://etherscan.io/tx/0x8e5cb99365015578af956ada56138f1c0f7d7dae720573f0113d036d0aa5f674"
+        "https://github.com/morpho-org/bundles/blob/9726ac4250303893451664ba75f393360e17d6ca/src/libraries/TokenLib.sol#L81",
+        "https://etherscan.io/tx/0x684047aa7a593aa1f9b6233df5dcd2e3e74539d71d7b66bfc440707cf39c00a4"
       ]
     },
     {
       "after": 2,
-      "from": "general-adapter-1",
+      "from": "vault-bundles-v1",
       "to": "steakhouse-prime-usdc-v2-0f51",
       "function": "deposit(uint256,address)",
       "text": {
@@ -31,8 +31,8 @@
         "zh-TW": "用 `deposit` 把拉來的 USDC 存進這個 vault，vault 把份額鑄給 Safe"
       },
       "sources": [
-        "https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol#L89",
-        "https://etherscan.io/tx/0x8e5cb99365015578af956ada56138f1c0f7d7dae720573f0113d036d0aa5f674"
+        "https://github.com/morpho-org/bundles/blob/9726ac4250303893451664ba75f393360e17d6ca/src/vault/VaultBundlesV1.sol#L52",
+        "https://etherscan.io/tx/0x684047aa7a593aa1f9b6233df5dcd2e3e74539d71d7b66bfc440707cf39c00a4"
       ]
     },
     {
@@ -46,13 +46,13 @@
       },
       "sources": [
         "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L569-L575",
-        "https://etherscan.io/tx/0x8e5cb99365015578af956ada56138f1c0f7d7dae720573f0113d036d0aa5f674"
+        "https://etherscan.io/tx/0x684047aa7a593aa1f9b6233df5dcd2e3e74539d71d7b66bfc440707cf39c00a4"
       ]
     }
   ],
   "pastTxsConclusion": {
-    "en": "Most Safes that deposited differently went through Morpho's newer VaultBundlesV1, or called only `multicall` on an allowance given earlier. EOAs mostly put a USDC `permit` into the bundle instead.",
-    "zh-TW": "做法不同的 Safe 多半改走 Morpho 較新的 VaultBundlesV1，或只呼叫 `multicall`、用先前給的授權。EOA 多半把 USDC 的 `permit` 放進 bundle。"
+    "en": "Most misfits are the old Bundler3 route. Others deposited with an allowance given earlier, or approved another amount than they deposited, the newest of them unlimited. All are refused.",
+    "zh-TW": "不符的多半是 Bundler3 舊路線；其餘用先前給的授權直接存，或授權額不等於存款額（最新幾筆是無限）。這些都不接受。"
   },
   "judgments": [
     {
@@ -73,14 +73,14 @@
         "zh-TW": "存款去哪裡"
       },
       "text": {
-        "en": "Your USDC does not stay in the vault: in the same transaction the vault hands it to its liquidity adapter, which supplies it to one Morpho Blue market, USDC lent against cbBTC at 86% LLTV. The vault has had a liquidity adapter all year; the current one was set on 2026-04-23.",
-        "zh-TW": "USDC 不會留在 vault 裡：同一筆交易中 vault 就把它交給流動性 adapter，adapter 再供應到一個 Morpho Blue 市場：以 cbBTC 為抵押、LLTV 86% 的 USDC 市場。這個 vault 一整年都有設流動性 adapter，現在這個是 2026-04-23 設的。"
+        "en": "Your USDC does not stay in the vault: in the same transaction the vault hands it to its liquidity adapter, which supplies it to one Morpho Blue market, USDC lent against WBTC at 86% LLTV (block 26,490,392). An allocator can point it at another market at any time.",
+        "zh-TW": "USDC 不會留在 vault 裡：同一筆交易中 vault 就把它交給流動性 adapter，adapter 再供應到一個 Morpho Blue 市場：以 WBTC 為抵押、LLTV 86% 的 USDC 市場（區塊 26,490,392）。allocator 隨時可以改成別的市場。"
       },
       "sources": [
         "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L764-L774",
         "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L569-L575",
         "https://etherscan.io/address/0x2b9681015A1FA2225D1FC8ae40538d3D64C58290#code",
-        "https://etherscan.io/tx/0x69619dd21dab5d339b5f72e854044dd53507d6c6181985611f607b74eee86716"
+        "https://etherscan.io/address/0xbeef088055857739C12CD3765F20b7679Def0f51#readContract"
       ]
     },
     {
@@ -119,8 +119,8 @@
         "zh-TW": "怎麼把 USDC 拿回來"
       },
       "text": {
-        "en": "Nothing sits idle, so a withdrawal is paid from the cbBTC market the adapter supplies: about 55.8 million of the vault's 121.5 million USDC could leave that way at block 26,469,603. Beyond that, wait for an allocator to move USDC back, or call `forceDeallocate` and pay its penalty (0.001% now; the curator can raise it to 2% at once).",
-        "zh-TW": "vault 裡沒有閒置的 USDC，提款由 adapter 供應的 cbBTC 市場支付：區塊 26,469,603 時 vault 的 1.215 億 USDC 中約 5,580 萬能這樣提出。超過的部分要等 allocator 把 USDC 撤回，或呼叫 `forceDeallocate` 並付罰金（目前 0.001%，策展人可以立刻調高到 2%）。"
+        "en": "Nothing sits idle, so a withdrawal is paid from the WBTC market the adapter supplies: about 47.6 million of the vault's 114.7 million USDC could leave that way (Morpho's API, 2026-11-25). Beyond that, wait for an allocator to move USDC back, or call `forceDeallocate` and pay its penalty (0.001% now; the curator can raise it to 2% at once).",
+        "zh-TW": "vault 裡沒有閒置的 USDC，提款由 adapter 供應的 WBTC 市場支付：vault 的 1.147 億 USDC 中約 4,760 萬能這樣提出（Morpho 的 API，2026-11-25）。超過的部分要等 allocator 把 USDC 撤回，或呼叫 `forceDeallocate` 並付罰金（目前 0.001%，策展人可以立刻調高到 2%）。"
       },
       "sources": [
         "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L793-L811",

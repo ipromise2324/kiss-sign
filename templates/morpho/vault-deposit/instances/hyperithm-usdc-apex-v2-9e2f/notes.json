@@ -9,21 +9,21 @@
   "flow": [
     {
       "after": 2,
-      "from": "general-adapter-1",
+      "from": "vault-bundles-v1",
       "to": "usdc",
       "function": "transferFrom(address,address,uint256)",
       "text": {
-        "en": "Pulls the amount you type of the asset token from the Safe with `transferFrom`",
-        "zh-TW": "用 `transferFrom` 從 Safe 拉走你填的金額的資產代幣"
+        "en": "Pulls the amount you type of USDC from the Safe with `transferFrom` (read in the source)",
+        "zh-TW": "用 `transferFrom` 從 Safe 拉走你填的金額的 USDC（讀原始碼）"
       },
       "sources": [
-        "https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol#L381",
-        "https://etherscan.io/tx/0x7667a60ff42625518a709b06a447e9dac326f87e6731d065463c244585066521"
+        "https://github.com/morpho-org/bundles/blob/9726ac4250303893451664ba75f393360e17d6ca/src/libraries/TokenLib.sol#L81",
+        "https://etherscan.io/tx/0x03652285a11a34dd743131fa10047dc5baf4073986a7d27e523e9d3899707e32"
       ]
     },
     {
       "after": 2,
-      "from": "general-adapter-1",
+      "from": "vault-bundles-v1",
       "to": "hyperithm-usdc-apex-v2-9e2f",
       "function": "deposit(uint256,address)",
       "text": {
@@ -31,16 +31,29 @@
         "zh-TW": "用 `deposit` 把拉來的 USDC 存進這個 vault，vault 把份額鑄給 Safe"
       },
       "sources": [
-        "https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol#L89",
-        "https://etherscan.io/tx/0x7667a60ff42625518a709b06a447e9dac326f87e6731d065463c244585066521"
+        "https://github.com/morpho-org/bundles/blob/9726ac4250303893451664ba75f393360e17d6ca/src/vault/VaultBundlesV1.sol#L52",
+        "https://etherscan.io/tx/0x03652285a11a34dd743131fa10047dc5baf4073986a7d27e523e9d3899707e32"
       ]
     }
   ],
   "pastTxsConclusion": {
-    "en": "The other Safes that deposited differently called only `multicall`, with no `approve` in the same transaction, so they used an allowance given earlier. Most EOAs put a USDC `permit` into the bundle instead of a separate `approve`.",
-    "zh-TW": "做法不同的其他 Safe 只呼叫 `multicall`，同一筆交易裡沒有 `approve`，用的是先前給的授權。EOA 多半把 USDC 的 `permit` 放進 bundle，取代另外的 `approve`。"
+    "en": "No Safe has used the template's route on this vault: every Safe that deposited went through Bundler3, refused now. The one use of the new route is an EOA with a USDC `permit` in place of an approval.",
+    "zh-TW": "沒有 Safe 在這個 vault 走過模板的路線：存款的 Safe 都走 Bundler3，現在不接受。走新路線的只有一個 EOA，用 USDC 的 `permit` 取代授權。"
   },
   "judgments": [
+    {
+      "text": {
+        "en": "In the sample, 0 Safes and 1 EOA used the new route on this vault, so no past transaction shows it working for a Safe here. The evidence rests on the template's test transactions, Safe deposits into another Morpho V2 vault through the same VaultBundlesV1. Both vaults answered `isVaultV2` from the same factory.",
+        "zh-TW": "樣本裡這個 vault 走新路線的 Safe 是 0 個、EOA 是 1 個，沒有任何 Safe 在這裡做成過。證據靠模板的測試交易：Safe 經同一個 VaultBundlesV1 存進另一個 Morpho V2 vault；兩個 vault 都由同一個工廠確認。"
+      },
+      "sources": [
+        "https://etherscan.io/tx/0x03652285a11a34dd743131fa10047dc5baf4073986a7d27e523e9d3899707e32"
+      ],
+      "recommendation": {
+        "en": "Send a small amount first and check that the shares reach the Safe before you send the rest.",
+        "zh-TW": "先送小額，確認份額真的進了 Safe，再送剩下的。"
+      }
+    },
     {
       "text": {
         "en": "This vault's size moved sharply over the year: it rose from almost nothing to its peak within two months, then more than halved and doubled again several times. A few holders own most of the shares. The program's figures are in the Instance section.",
@@ -59,15 +72,13 @@
         "zh-TW": "存款去哪裡"
       },
       "text": {
-        "en": "Your USDC stays idle in the vault after you deposit: no liquidity adapter is set (`liquidityAdapter()` is the zero address at block 26,455,691), so nothing moves it on in the same transaction. An allocator lends it out later with `allocate`. One was set until 2026-05-14, so older deposits moved on at once.",
-        "zh-TW": "存進去後 USDC 先閒置在 vault：目前沒設流動性 adapter（區塊 26,455,691 的 `liquidityAdapter()` 是零地址），同一筆交易不會再轉走，之後由 allocator 用 `allocate` 借出去。2026-05-14 以前有設，所以更早的存款當下就被轉走。"
+        "en": "Your USDC stays idle in the vault after you deposit: no liquidity adapter is set (`liquidityAdapter()` is the zero address at block 26,490,392), so nothing moves it on in the same transaction. An allocator lends it out later with `allocate`.",
+        "zh-TW": "存進去後 USDC 先閒置在 vault：目前沒設流動性 adapter（區塊 26,490,392 的 `liquidityAdapter()` 是零地址），同一筆交易不會再轉走，之後由 allocator 用 `allocate` 借出去。"
       },
       "sources": [
         "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L764-L774",
         "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L615-L621",
-        "https://etherscan.io/tx/0xdf15d37677c950c85fe5d3cc7ce31503ee80cbed4c07aad9c1affe97c51680aa",
-        "https://etherscan.io/tx/0x40f2adbf810b179f5ced5aed0500246ffdeae1c7c4462f4b47dccf6fa5bfa855",
-        "https://etherscan.io/tx/0xca0b9bb9beae1ac4be8b5d45ba647eb3f587e50e0aae70a0d1566bc5b250b825"
+        "https://etherscan.io/address/0x093272C07700d3cA5301C3Bf9B3A392624179E2F#readContract"
       ]
     },
     {
@@ -76,8 +87,8 @@
         "zh-TW": "借給哪些市場"
       },
       "text": {
-        "en": "Allocators lend it to Morpho Blue USDC markets through the vault's one adapter, within caps the curator sets per adapter, collateral and market. Morpho's API shows most of it now in markets with PT-USDat-14JAN2027 and mHyperBTC as collateral; this changes whenever an allocator reallocates.",
-        "zh-TW": "allocator 透過 vault 唯一的 adapter，把 USDC 借給 Morpho Blue 的 USDC 市場，金額受策展人對 adapter、抵押品和市場設的上限限制。Morpho 的 API 顯示目前大部分在以 PT-USDat-14JAN2027 和 mHyperBTC 為抵押品的市場；allocator 重新分配就會變。"
+        "en": "Allocators lend it to Morpho Blue USDC markets through the vault's one adapter, within caps the curator sets. Morpho's API on 2026-11-25 shows most of it with PT-reUSD-10DEC2026, mHyperBTC and PT-USDat-14JAN2027 as collateral; this changes whenever an allocator reallocates.",
+        "zh-TW": "allocator 透過 vault 唯一的 adapter，把 USDC 借給 Morpho Blue 的 USDC 市場，金額受策展人設的上限限制。Morpho 的 API（2026-11-25）顯示大部分在以 PT-reUSD-10DEC2026、mHyperBTC 和 PT-USDat-14JAN2027 為抵押品的市場；allocator 重新分配就會變。"
       },
       "sources": [
         "https://github.com/morpho-org/vault-v2/blob/3aedc886637fe6edee27dbe2042baf12d8117be3/src/adapters/MorphoMarketV1AdapterV2.sol#L176-L199",
@@ -108,8 +119,8 @@
         "zh-TW": "怎麼把 USDC 拿回來"
       },
       "text": {
-        "en": "Only about 1.55 USDC sits idle (block 26,455,723). A larger withdrawal fails until an allocator moves USDC back, or someone calls `forceDeallocate`, which charges a penalty (0 now; the curator can raise it to 2% at once). A market can return only what its borrowers have not borrowed.",
-        "zh-TW": "vault 裡閒置的只有約 1.55 USDC（區塊 26,455,723）。比這多的提款會失敗，直到 allocator 把 USDC 撤回，或有人呼叫 `forceDeallocate` 並付罰金（目前是 0，策展人可以立刻調高到 2%）。市場也只能還出沒被借走的 USDC。"
+        "en": "About 300,001 of the vault's 7.21 million USDC sits idle (block 26,490,392). A larger withdrawal fails until an allocator moves USDC back, or someone calls `forceDeallocate`, which charges a penalty (0 now; the curator can raise it to 2% at once). A market can return only what its borrowers have not borrowed.",
+        "zh-TW": "vault 的 721 萬 USDC 裡閒置約 300,001（區塊 26,490,392）。比這多的提款會失敗，直到 allocator 把 USDC 撤回，或有人呼叫 `forceDeallocate` 並付罰金（目前是 0，策展人可以立刻調高到 2%）。市場也只能還出沒被借走的 USDC。"
       },
       "sources": [
         "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L793-L811",
