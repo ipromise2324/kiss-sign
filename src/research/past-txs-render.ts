@@ -13,7 +13,7 @@ import type { OutsideKind, Sender } from './study.ts';
 
 const ZERO = `0x${'00'.repeat(20)}`;
 
-export const PERCENTILES = [50, 90, 99] as const;
+const PERCENTILES = [50, 90, 99] as const;
 
 export type Spread = { readonly count: number; readonly min: bigint; readonly percentiles: readonly bigint[]; readonly max: bigint };
 
@@ -29,9 +29,9 @@ export function spreadOf(values: readonly bigint[]): Spread | undefined {
  * One free or `withinSeconds` `uint` or `int` field over the fitting transactions of one sender type: its values, or
  * for a time, each less its block's time; `unrecorded` counts transactions whose block time was not read.
  */
-export type FreeNumber = { readonly path: string; readonly time: boolean; readonly spread: Spread | undefined; readonly unrecorded: number };
+type FreeNumber = { readonly path: string; readonly time: boolean; readonly spread: Spread | undefined; readonly unrecorded: number };
 
-export function freeNumbers(fits: readonly Fit[], rules: readonly LeafRule[]): FreeNumber[] {
+function freeNumbers(fits: readonly Fit[], rules: readonly LeafRule[]): FreeNumber[] {
   const first = fits[0];
   if (first === undefined) return [];
   return rules.flatMap((rule, i): FreeNumber[] => {

@@ -12,7 +12,7 @@
  "studiedWith": {
   "template": "0xac046c3615abb96a1b471d05dcc34dd351e9a1bf3dcca3e01345bc75eb2900e3",
   "registry": "0x480ad915d51dccd03ea35efa3bbddc4b672eea38a21129d2dc5d78f54ff869a9",
-  "study": "0x94bfaaffbfc8c7dbc5b3874bc31cfe270d787964a427798536f92503545477bb"
+  "study": "0xb596923b6c289246962b4c2a301475010e93cfa8db57d91a981943ffeaa1e73d"
  },
  "search": {
   "year": {
@@ -93,6 +93,7 @@
   {
    "kind": "misfit",
    "hash": "0xc369256e0ce7944761dad6eb047953e1db2a0b99738cd37109c5268e84c421f4",
+   "block": "24936786",
    "sender": {
     "kind": "safe",
     "address": "0xf8182e5827c06a47a985ec565a3bcd56437a97be"
@@ -248,11 +249,13 @@
       "selector": "0x2438525b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x9abea3527ada54ebb0fc873a21ca044aa16daacbaa64f68330fce3531f96d00d",
+   "block": "25094501",
    "sender": {
     "kind": "eoa",
     "address": "0xf0cf1e3ec6264b03241826f5b2abda17b4352a75",
@@ -281,11 +284,13 @@
       "selector": "0x2438525b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xe060c571f3cc0b2acec58078edd5addd6f38fde7fcd408cb4f09efcc1d68e79c",
+   "block": "25223050",
    "sender": {
     "kind": "eoa",
     "address": "0xf0cf1e3ec6264b03241826f5b2abda17b4352a75",
@@ -296,11 +301,13 @@
     "at": "call.multicall.data[0].increaseAbsoluteCap.idData.encoding",
     "expected": "canonical capId(string,address)",
     "actual": "differs at byte 295"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x62e2257bdfc1ccf730fe1ab46d588e2ed41e7f62267937533859d2eef57b973c",
+   "block": "25682224",
    "sender": {
     "kind": "eoa",
     "address": "0x331d9c769185ae25233314859d53c2b9203a1204",
@@ -329,11 +336,13 @@
       "selector": "0x2438525b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xa5840cb778a0f9d65c789dbee8369f1d639b9b604fd12fff190cae1b53c15fb9",
+   "block": "26397987",
    "sender": {
     "kind": "eoa",
     "address": "0xaf150c6d108d0c2c96bbfc3cef9b4848b5d99440",
@@ -362,7 +371,8 @@
       "selector": "0x2438525b"
      }
     ]
-   }
+   },
+   "free": []
   }
  ],
  "measurements": [],

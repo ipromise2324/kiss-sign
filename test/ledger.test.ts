@@ -296,7 +296,7 @@ const resultOf = (ledger: Ledger, id: string) => ledger.results.find((r) => r.id
 /** `traced`, for a call traces' result, is the comparison of the flow lines with the traces, which `judge` does not read. */
 type Row = { readonly what: string; readonly change: Partial<Setup>; readonly traced?: FlowComparison; readonly id: string; readonly kind: FindingKind; readonly state: State };
 
-const UNCOVERED = { call: 2, from: 'morpho-blue', to: 'usdc', kind: 'transferFrom', transactions: 1, others: [] } as const;
+const UNCOVERED = { call: 2, from: 'morpho-blue', to: 'usdc', kind: 'transferFrom', pays: [], transactions: 1, others: [] } as const;
 
 const ROWS: readonly Row[] = [
   { what: 'a flow line every traced transaction shows', change: {}, traced: { lines: [{ seen: 2, of: 2 }], uncovered: [] }, id: 'flow.1', kind: 'agrees', state: 'ok' },

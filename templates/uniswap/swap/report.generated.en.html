@@ -27,6 +27,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-
 a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
 a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+[data-ai]{overflow-wrap:anywhere}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
 .addr.line{display:block;margin-top:4px}
@@ -65,7 +66,7 @@ h1 .byai{vertical-align:6px}
 h1 .aiw>:first-child{margin-right:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
 .sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
-:is(.sub,h3,.intro,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
+:is(.sub,h3,.intro,.ans,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
 .verdict .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:flex;align-items:flex-start;gap:8px;font-size:var(--t-row);position:relative}
@@ -148,9 +149,19 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
 
-.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
-.key>span{display:inline-flex;gap:8px;align-items:center}
-.key .k0{color:var(--fg3);font-weight:590}
+.deciders{margin:36px 0 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}
+.deciders h3{margin:0 0 10px;font-size:var(--t-small);color:var(--fg2)}
+.deciders dl{margin:0;display:flex;flex-direction:column;gap:12px}
+.deciders .grp{display:grid;grid-template-columns:88px minmax(0,1fr);gap:0 16px;align-items:start}
+.deciders .gh{font-size:var(--t-small);line-height:24px;color:var(--fg);font-weight:590}
+.deciders .defs{margin:0;display:flex;flex-direction:column;gap:6px}
+.deciders .defs>div{display:grid;grid-template-columns:116px minmax(0,1fr);gap:0 14px;align-items:start;font-size:var(--t-small);line-height:24px;color:var(--fg2)}
+.deciders .who{justify-self:start}
+@media (max-width:560px){.deciders .grp{grid-template-columns:minmax(0,1fr)}}
+.mix{margin:10px 0 12px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 16px;align-items:start}
+.mix dt{justify-self:start}
+.mix dd{margin:0;display:flex;flex-wrap:wrap;gap:6px;line-height:24px}
+.mix code{font-size:var(--t-label)}
 .cb{margin-top:40px}
 .callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
 .callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
@@ -202,7 +213,7 @@ details.fixed[open]>summary .chev{transform:rotate(90deg)}
 }
 
 .rows{border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
@@ -249,14 +260,31 @@ details.fold[open]>summary .chev{transform:rotate(90deg)}
 details.fold .ad:last-child{border-bottom:0}
 
 .warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
-.pblock{border-top:1px solid var(--line);margin-top:16px}
-.ph{display:flex;flex-direction:column;gap:4px;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
-.ph .pt{font-weight:590}
-.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
-.pg .pc{color:var(--fg)}
-.pg .pcalls{margin-bottom:4px}
-.pg .pex{font-size:var(--t-small);margin-top:4px}
-.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+.ans{margin:0 0 10px;color:var(--fg2)}
+.ans b{color:var(--fg)}
+.cap{margin:8px 0 0;font-size:var(--t-small);color:var(--fg3)}
+.lm{color:var(--warn)}
+.sh{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-size:var(--t-small);color:var(--fg2);margin-top:18px}
+.sc{overflow-x:auto;margin:12px 0 8px}
+.pt2{border-collapse:collapse;width:100%;font-size:var(--t-small);font-variant-numeric:tabular-nums}
+.pt2 th{font-size:var(--t-label);font-weight:400;color:var(--fg3);text-align:left;padding:6px 16px 6px 0;border-bottom:1px solid var(--line2);white-space:nowrap}
+.pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
+.pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
+.pt2 .n{text-align:right}
+.pt2 th{vertical-align:bottom}
+.pt2 th.n{white-space:normal}
+.pt2 td.nw{white-space:nowrap}
+.pt2 td.v{color:var(--fg);font-weight:590}
+.pt2 .tx{min-width:104px}
+@media (max-width:760px){
+  .pt2,.pt2 tbody,.pt2 tr{display:block}
+  .pt2 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .pt2 tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .pt2 td,.pt2 td.n{display:grid;grid-template-columns:minmax(0,130px) minmax(0,1fr);gap:12px;padding:3px 0;border-bottom:0;text-align:left}
+  .pt2 td::before{content:attr(data-label);font-size:var(--t-label);font-weight:400;color:var(--fg3)}
+  .pt2 td.nw{white-space:normal}
+  .pt2 td.what{min-width:0}
+}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -271,13 +299,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
 .auto li{display:flex;gap:10px;align-items:baseline}
 .auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
-.usage{font-size:var(--t-small);color:var(--fg3);margin-bottom:28px}
-.usage h3{font-size:var(--t-row);color:var(--fg2);margin:0 0 6px}
-.usage p{margin:0}
-.usage table{border-collapse:collapse;margin:10px 0}
-.usage th,.usage td{padding:6px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left}
-.usage th+td,.usage th+th{padding-left:32px;text-align:right}
-.usage tfoot th,.usage tfoot td{color:var(--fg);border-bottom:0}
+.ut{border-collapse:collapse;width:100%;margin:16px 0 12px;font-size:var(--t-row)}
+.ut th,.ut td{padding:9px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left;color:var(--fg2)}
+.ut thead th{font-size:var(--t-label);color:var(--fg3);border-bottom-color:var(--line2)}
+.ut th+td,.ut th+th{text-align:right;font-variant-numeric:tabular-nums}
+.ut tfoot th,.ut tfoot td{color:var(--fg);font-weight:590;border-bottom:0}
 .foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
 .foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
@@ -298,7 +324,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="Contents">
   <h2>Contents</h2>
-  <ol><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">8</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  <ol><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">8</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li><li><a href="#usage">AI usage</a></li></ol>
 </nav>
 
 <div class="main">
@@ -323,7 +349,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="warn"><span class="lbl">Advice</span><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg><span class="aiw" data-ai><span>The Safe gives exactly the amount you type and gets at least your minimum; the pool uses a hook that Uniswap governance can upgrade.</span><span class="byai">AI research: be careful</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
-    <ol><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">8</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+    <ol><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">8</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li><li><a href="#usage">AI usage</a></li></ol>
   </details>
 </header>
 
@@ -333,22 +359,20 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="rows">
     <div class="row" data-state="warn" data-grade="key" data-result="trace.1.permit2.usdt.transferFrom">
       <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
-      <div><div class="t"><span class="grade"><span class="vh">Grade: </span>key</span>A call inside moves money and nothing explains it</div>
+      <div><div class="t"><span class="grade"><span class="vh">Grade: </span>key</span>In 1 past transaction, the sender paid usdt to 0x000000000004444c5dc75cB358380D2e3dE08A90; the template does not describe this step</div>
         <div class="rec"><span class="lbl">AI confirmed</span><span class="aiw" data-ai><span>Read the recorded trace of 0xf05d03904269e82861e30869445ce5a5f88acaf1048bf314837177561d5f4d52 (an EOA selling USDT): Permit2 moves USDT from the caller to 0x000000000004444c5dc75cB358380D2e3dE08A90, Uniswap&#39;s v4 PoolManager, listed on its deployments page.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="meta">Under call 1, permit2 → usdt <code>transferFrom</code></div>
-          <div class="meta">A call trace holds a token transfer, approval or ETH transfer that touches the sender&#39;s money, and no call the template binds and no flow line explains it. In 1 past transaction. Addresses outside the registry: 0x000000000004444c5dc75cB358380D2e3dE08A90.</div>
+          <div class="meta">Under call 1. A call trace holds a token transfer, approval or ETH transfer that touches the sender&#39;s money, and no call the template binds and no flow line explains it. Addresses outside the registry: 0x000000000004444c5dc75cB358380D2e3dE08A90.</div>
           <div class="rec"><span class="aiw" data-ai><span>This is the payment SETTLE makes.</span><span class="byai">AI research</span></span></div>
           <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Check that the receiver is the v4 PoolManager. Only USDT has a trace here; no USDC sale was traced.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row" data-state="warn" data-grade="key" data-result="trace.1.other.usdc.transfer">
       <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
-      <div><div class="t"><span class="grade"><span class="vh">Grade: </span>key</span>A call inside moves money and nothing explains it</div>
+      <div><div class="t"><span class="grade"><span class="vh">Grade: </span>key</span>In 1 past transaction, 0x000000000004444c5dc75cB358380D2e3dE08A90 paid usdc to the sender; the template does not describe this step</div>
         <div class="rec"><span class="lbl">AI confirmed</span><span class="aiw" data-ai><span>Read the same trace: the address outside the registry is 0x000000000004444c5dc75cB358380D2e3dE08A90, Uniswap&#39;s v4 PoolManager, listed on its deployments page.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="meta">Under call 1, other → usdc <code>transfer</code></div>
-          <div class="meta">A call trace holds a token transfer, approval or ETH transfer that touches the sender&#39;s money, and no call the template binds and no flow line explains it. In 1 past transaction. Addresses outside the registry: 0x000000000004444c5dc75cB358380D2e3dE08A90.</div>
+          <div class="meta">Under call 1. A call trace holds a token transfer, approval or ETH transfer that touches the sender&#39;s money, and no call the template binds and no flow line explains it. Addresses outside the registry: 0x000000000004444c5dc75cB358380D2e3dE08A90.</div>
           <div class="rec"><span class="aiw" data-ai><span>It pays the bought USDC straight to the caller; this is the TAKE step.</span><span class="byai">AI research</span></span></div>
           <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Check that the payer is the v4 PoolManager and the receiver is the caller.</span><span class="byai">AI research</span></span></div>
         </details></div>
@@ -408,12 +432,17 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </svg>
   </div>
   <div class="scrollhint">Scroll the diagram sideways; token (buy-token) is at the far right</div>
-  <div class="key">
-    <span class="k0">Who decides</span>
-    <span><span class="who you">you type</span>typed at each signing</span>
-    <span><span class="who you">you pick</span>picked at each signing</span>
-    <span><span class="who">fixed</span>any change is a MISMATCH</span>
-    <span><span class="who app">app fills, any value</span>another value gives the same result or the transaction fails</span>
+  <div class="deciders">
+    <h3>Who decides each value</h3>
+    <dl>
+      <div class="grp"><dt class="gh">You</dt><dd class="defs">
+        <div><span class="who you">you type</span><span>You type it at each signing.</span></div>
+        <div><span class="who you">you pick</span><span>You pick it from a list at each signing.</span></div></dd></div>
+      <div class="grp"><dt class="gh">kiss-sign</dt><dd class="defs">
+        <div><span class="who">fixed</span><span>The template sets it. Any change is a MISMATCH.</span></div></dd></div>
+      <div class="grp"><dt class="gh">The app</dt><dd class="defs">
+        <div><span class="who app">any value</span><span>Another value gives the same result or the transaction fails.</span></div></dd></div>
+    </dl>
   </div>
   <p class="lead keylead">The transaction&#39;s calls, one by one. Each argument shows who decides it, its value or the rule it must follow, and what it does.</p>
   
@@ -445,10 +474,15 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">[1]</div><div><div class="is">the arguments of <code>SWAP_EXACT_IN_SINGLE</code></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The parameters of <code>SWAP_EXACT_IN_SINGLE</code>.</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">params<div class="pchips"><span class="who">currency0, currency1, fee, tickSpacing, hooks, minHopPriceX36, hookData fixed</span><span class="who app">zeroForOne any</span><span class="who you">amountIn, amountOutMinimum you type</span></div></div><div><div class="is">6 parts</div>
+        <div class="part"><div class="pn">params</div><div><div class="is">6 parts</div>
+      <dl class="mix">
+        <dt><span class="who you">you type</span></dt><dd><code>amountIn</code> <code>amountOutMinimum</code> </dd>
+        <dt><span class="who">fixed</span></dt><dd><code>currency0</code> <code>currency1</code> <code>fee</code> <code>tickSpacing</code> <code>hooks</code> <code>minHopPriceX36</code> <code>hookData</code> </dd>
+        <dt><span class="who app">any value</span></dt><dd><code>zeroForOne</code> </dd>
+      </dl>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>What the swap does: which pool, which direction, how much to sell, and the least to get.</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">zeroForOne</div><div><div class="is">differs each time <span class="f3">tested with other values: the same result or the transaction fails</span></div>
+        <div class="part"><div class="pn">zeroForOne</div><div><div class="is">differs each time <span class="f3">tested with other values: each time the transaction failed or did not match the card</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The direction: true sells USDC, false sells USDT. Both were seen in Safe transactions.</span></span></div></div></div>
         <div class="part"><div class="pn">amountIn</div><div><div class="is">the amount (sell-amount) you type</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The amount to sell, in the token&#39;s base units.</span></span></div></div></div>
@@ -509,7 +543,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       </div>
     </div>
     <div class="arg" data-field="1.execute.deadline">
-      <div class="nm"><span class="pn">deadline</span><span class="who app">app fills, any value</span></div>
+      <div class="nm"><span class="pn">deadline</span><span class="who app">any value</span></div>
       <div class="val"><div class="is">differs each time <span class="f3">tested with other values: the same result or the transaction fails</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>After this time the router refuses the swap. The app sets it; in the three test transactions it was 25 to 28 minutes after they ran.</span></span></div></div>
     </div>
@@ -679,56 +713,32 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>Past transactions</h2>
-  <p class="lead">In past records, <span class="num">1</span> transaction matches the template exactly, made the way yours is: Safe <span class="num">0</span>, EOA <span class="num">1</span> (1 address, each sending one call of the template). It succeeded: it was found through the event logs of usdc transfer, usdt transfer, and a failed transaction leaves no such log. The latest 1 exact match: <a href="https://etherscan.io/tx/0xf05d03904269e82861e30869445ce5a5f88acaf1048bf314837177561d5f4d52">0xf05d0390…</a>.</p>
-  <p class="lead">The values the fitting transactions set in each number the template leaves free: the smallest, the 50th, 90th and 99th percentile, and the largest. For a field the template declares a time, each is the value less the time of the block the transaction ran in, in seconds. This is evidence, not a rule.</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt"><code>call.execute.deadline</code></span><span>EOA: value set</span></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pex">min <span class="num">1795460741</span>, p50 <span class="num">1795460741</span>, p90 <span class="num">1795460741</span>, p99 <span class="num">1795460741</span>, max <span class="num">1795460741</span></div></div></div>
-  </div>
-  <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span><span class="num">13</span> more differ from yours: <span class="num">0</span> have the same shape but with an address outside the registry, <span class="num">13</span> have another shape</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>The swaps that did not fit put other commands or more swaps into one <code>execute</code>. No Safe in these 1 to 2 days fits; the shape rests on the test transactions of two other Safes.</span><span class="byai">AI research</span></span></p>
-  <p class="lead">Only transactions that used this operation&#39;s calls count. An exact match has the template&#39;s calls and argument positions, meets every rule the transaction itself can show (such as where the sender goes, or a fixed value), and uses a contract the template allows wherever the template binds a registry contract. Same shape but a market, token, vault or address outside the registry means the calls, argument positions and those rules are the same, but an address or market is not in the registry; the kind is named when the record shows it, otherwise only address. The rest are grouped by reason, each with up to 3 examples.</p>
+  <h3>1. Has this template&#39;s transaction worked before?</h3>
+  <p class="ans"><b>Not by a Safe, in what was studied.</b> EOA: 1 time, from 1 address. The newest: 2026-11-23. All of them succeeded. The newest one: <a href="https://etherscan.io/tx/0xf05d03904269e82861e30869445ce5a5f88acaf1048bf314837177561d5f4d52">0xf05d0390…</a></p>
+  <h3>2. What values are normal in what the app fills?</h3>
+  <div class="sh"><code>zeroForOne</code><span>the value that was set</span></div><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">Value</th><th scope="col" class="n">Safe, matches the template</th><th scope="col" class="n">EOA, its call matches the template</th></tr></thead><tbody>
+    <tr><td class="what" data-label="Value"><span><span class="addr">false</span></span></td><td class="n" data-label="Safe, matches the template"><span><span class="num">0</span></span></td><td class="n" data-label="EOA, its call matches the template"><span><span class="num">1</span></span></td></tr></tbody></table></div>
+  <div class="sh"><code>deadline</code><span>the value that was set</span></div><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">Value</th><th scope="col" class="n">Safe, matches the template</th><th scope="col" class="n">EOA, its call matches the template</th></tr></thead><tbody>
+    <tr><td class="what" data-label="Value"><span><span class="num">1,795,460,741</span></span></td><td class="n" data-label="Safe, matches the template"><span><span class="num">0</span></span></td><td class="n" data-label="EOA, its call matches the template"><span><span class="num">1</span></span></td></tr></tbody></table></div>
+  <h3>3. How did the others differ?</h3>
+  <p class="ans">13 transactions did something this template refuses.</p>
+  <p class="ans"><span class="aiw" data-ai><span>The swaps that did not fit put other commands or more swaps into one <code>execute</code>. No Safe in these 1 to 2 days fits; the shape rests on the test transactions of two other Safes.</span><span class="byai">AI research</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="tx">Examples (up to 3)</th></tr></thead><tbody>
+    <tr><td class="what" data-label="What was different"><span><code>execute.inputs</code> has 3 items; the template has 2</span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">3</span></span></td><td class="nw" data-label="Newest"><span>block 26482273</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x289d147783fc90e5118eca207224fe888e612488c047fc29d523d4a90870703a">0x289d1477…</a> <a href="https://etherscan.io/tx/0x376065625d981b9b6aba9a64f67e53db6451538c12595275d382727a26d3b772">0x37606562…</a> <a href="https://etherscan.io/tx/0x145b1567fdbc5f68d3d9e65c401bdae9c3a667e2dd67d972356d59b1795bd566">0x145b1567…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The data is not the standard encoding of <code>V4_SWAP(bytes,bytes[])</code></span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">2</span></span></td><td class="nw" data-label="Newest"><span>block 26480557</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x7c85ccb2514915d4ef1071ac87b43d2c87409c94f9cacd22ce0c758fb8cc3af0">0x7c85ccb2…</a> <a href="https://etherscan.io/tx/0x239164b999ad5de8e53297e98da018288891830a7793e6552b29fa473cadcdac">0x239164b9…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span><code>execute.inputs</code> has 4 items; the template has 2</span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">2</span></span></td><td class="nw" data-label="Newest"><span>block 26479927</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x7240ac9bb07642c2e28cc8d3c995b3a2f9af283ed4f31069f916ad289e6c46b9">0x7240ac9b…</a> <a href="https://etherscan.io/tx/0x1a01789518a841fde4a930debf74f6e06712b9ff761660903cc83a694485bd5b">0x1a017895…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span><code>execute.inputs[0].V4_SWAP.params</code> has 6 items; the template has 3</span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 26479318</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xcf503bc24daf1eb0b6629bd169057ef288db1e2b4ba91ebd37d5ac9f05acdd76">0xcf503bc2…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span><code>execute.inputs</code> has 5 items; the template has 2</span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">1</span></span></td><td class="nw" data-label="Newest"><span>block 26486531</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x869efde3f807ecc82a33dfb436a3c038dc39547272791e460791a99cc1d36cda">0x869efde3…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The data is not the standard encoding of <code>SETTLE(address,uint256,bool)</code></span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">1</span></span></td><td class="nw" data-label="Newest"><span>block 26479840</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xd554f550ecebc9bd550e195dbbc98b6df200aebacd7ffd8157cdd28874e57090">0xd554f550…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span><code>execute.inputs</code> has 1 item; the template has 2</span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">1</span></span></td><td class="nw" data-label="Newest"><span>block 26481663</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x712e80981493075a4cf7393714e1480e49b9d841de2a55e92abd2149b52c796d">0x712e8098…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>usdt.approve → permit2.0x87517c45 → universal-router-2.1.2.execute</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 26483880</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x9e6929eac015fe90f960198d762e6eb4aca4a712a774c278dafb1657cd897eab">0x9e6929ea…</a></span></td></tr></tbody></table></div>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>How the program searched</span></summary>
   <h3>Search of usdc transfer: 25728 found, 240 studied, 180 of 227 with a proven Safe party</h3>
-  <p class="lead">Recorded in <code>testdata/research/uniswap-swap-usdc-v4.json</code>. Every transaction from block 26477111 (2026-11-23) to block 26486685 (2026-11-24) was searched, newest first, 9575 blocks, about 1.3 days, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched. Alchemy and Etherscan found different transactions (<span class="num">25728 ≠ 25727</span>).</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">2</span> transactions used this operation&#39;s calls (1 Safe); <span class="num">0</span> match the template exactly.</span></div>
-    <div class="pg"><span class="pc num">1</span><div><div><code>inputs</code> has 3 items; the template has 2<span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x376065625d981b9b6aba9a64f67e53db6451538c12595275d382727a26d3b772">0x37606562…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div><code>params</code> has 6 items; the template has 3<span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xcf503bc24daf1eb0b6629bd169057ef288db1e2b4ba91ebd37d5ac9f05acdd76">0xcf503bc2…</a></div></div></div>
-  </div>
-  <div class="pblock">
-    <div class="ph"><span class="pt">EOA calls execute directly</span><span><span class="num">4</span> transactions used this operation&#39;s calls (4 addresses); <span class="num">0</span> match the template exactly.</span></div>
-    <div class="pg"><span class="pc num">2</span><div><div><code>inputs</code> has 3 items; the template has 2<span class="f3">, from 2 addresses</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x145b1567fdbc5f68d3d9e65c401bdae9c3a667e2dd67d972356d59b1795bd566">0x145b1567…</a>, <a href="https://etherscan.io/tx/0x289d147783fc90e5118eca207224fe888e612488c047fc29d523d4a90870703a">0x289d1477…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div><code>call.execute.inputs[0].encoding</code> differs from the template: the template wants <span class="addr">canonical V4_SWAP(bytes,bytes[])</span>, the transaction has <span class="addr">differs at byte 304</span><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x239164b999ad5de8e53297e98da018288891830a7793e6552b29fa473cadcdac">0x239164b9…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div><code>inputs</code> has 5 items; the template has 2<span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x869efde3f807ecc82a33dfb436a3c038dc39547272791e460791a99cc1d36cda">0x869efde3…</a></div></div></div>
-  </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>234 more are other operations, not counted: <code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0x2260fac5</code> 34, <code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0xa0b86991</code> 31, <code>0x000000000004444c5dc75cB358380D2e3dE08A90.0x48c89491</code> 22, <code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0x00000000</code> 21, and others.</span></div>
+  <p class="cap">Every transaction from block 26477111 (2026-11-23) to block 26486685 (2026-11-24) was searched, newest first, 9575 blocks, about 1.3 days, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched. Alchemy and Etherscan found different transactions (<span class="num">25728 ≠ 25727</span>).</p>
+  <p class="cap">These transactions were found through event logs, and a failed transaction leaves none.</p>
+  <p class="cap">234 more are other operations, not counted: <code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0x2260fac5</code> 34, <code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0xa0b86991</code> 31, <code>0x000000000004444c5dc75cB358380D2e3dE08A90.0x48c89491</code> 22, <code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0x00000000</code> 21, and others.</p>
   <h3>Search of usdt transfer: 22815 found, 240 studied, all 92 with a proven Safe party</h3>
-  <p class="lead">Recorded in <code>testdata/research/uniswap-swap-usdt-v4.json</code>. Every transaction from block 26471954 (2026-11-22) to block 26486711 (2026-11-24) was searched, newest first, 14758 blocks, about 2.1 days, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched. Alchemy and Etherscan found different transactions (<span class="num">22815 ≠ 22811</span>).</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">1</span> transaction used this operation&#39;s calls (1 Safe); <span class="num">0</span> match the template exactly.</span></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>usdt.approve → permit2.0x87517c45 → universal-router-2.1.2.execute</code></div><div>The calls differ from the template, which is <code>execute</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x9e6929eac015fe90f960198d762e6eb4aca4a712a774c278dafb1657cd897eab">0x9e6929ea…</a></div></div></div>
-  </div>
-  <div class="pblock">
-    <div class="ph"><span class="pt">EOA calls execute directly</span><span><span class="num">7</span> transactions used this operation&#39;s calls (7 addresses); <span class="num">1</span> matches the template exactly.</span></div>
-    <div class="pg"><span class="pc num">2</span><div><div><code>inputs</code> has 4 items; the template has 2<span class="f3">, from 2 addresses</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x1a01789518a841fde4a930debf74f6e06712b9ff761660903cc83a694485bd5b">0x1a017895…</a>, <a href="https://etherscan.io/tx/0x7240ac9bb07642c2e28cc8d3c995b3a2f9af283ed4f31069f916ad289e6c46b9">0x7240ac9b…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div><code>inputs</code> has 3 items; the template has 2<span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x620412a2f219b628db116d1d5d114a22c3415e83df0c79d1d5ba497847b8842e">0x620412a2…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div><code>call.execute.inputs[0].V4_SWAP.params[0].encoding</code> differs from the template: the template wants <span class="addr">canonical SETTLE(address,uint256,bool)</span>, the transaction has <span class="addr">differs at byte 675</span><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xd554f550ecebc9bd550e195dbbc98b6df200aebacd7ffd8157cdd28874e57090">0xd554f550…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div><code>call.execute.inputs[0].encoding</code> differs from the template: the template wants <span class="addr">canonical V4_SWAP(bytes,bytes[])</span>, the transaction has <span class="addr">differs at byte 304</span><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x7c85ccb2514915d4ef1071ac87b43d2c87409c94f9cacd22ce0c758fb8cc3af0">0x7c85ccb2…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div><code>inputs</code> has 1 item; the template has 2<span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x712e80981493075a4cf7393714e1480e49b9d841de2a55e92abd2149b52c796d">0x712e8098…</a></div></div></div>
-  </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>232 more are other operations, not counted: <code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0x00000000</code> 25, <code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0xa0b86991</code> 23, <code>0x0000000aa232009084Bd71A5797d089AA4Edfad4.0x09c5eabe</code> 15, <code>0x000000000004444c5dc75cB358380D2e3dE08A90.0x48c89491</code> 10, and others.</span></div>
+  <p class="cap">Every transaction from block 26471954 (2026-11-22) to block 26486711 (2026-11-24) was searched, newest first, 14758 blocks, about 2 days, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched. Alchemy and Etherscan found different transactions (<span class="num">22815 ≠ 22811</span>).</p>
+  <p class="cap">232 more are other operations, not counted: <code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0x00000000</code> 25, <code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0xa0b86991</code> 23, <code>0x0000000aa232009084Bd71A5797d089AA4Edfad4.0x09c5eabe</code> 15, <code>0x000000000004444c5dc75cB358380D2e3dE08A90.0x48c89491</code> 10, and others.</p>
   </details>
 </section>
 
@@ -769,7 +779,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<aside class="usage"><h3>AI usage to make this report</h3><p>Opus 5.5 · 64 calls · 41 minutes</p><table><thead><tr><th scope="col">Item</th><th scope="col">Tokens</th></tr></thead><tbody><tr><th scope="row">Re-read (cache reads)</th><td class="num">8.2M</td></tr><tr><th scope="row">Newly read (input and cache writes)</th><td class="num">0.47M</td></tr><tr><th scope="row">Output</th><td class="num">0.08M</td></tr></tbody><tfoot><tr><th scope="row">Total</th><td class="num">8.8M</td></tr></tfoot></table><p>Source: the usage the API reported, in Claude Code&#39;s transcripts, without the coordinator</p></aside>
+<section id="usage">
+  <h2>AI usage</h2>
+  <p class="lead">Opus 5.5 made this report in 64 calls over 41 minutes.</p>
+  <table class="ut"><thead><tr><th scope="col">Item</th><th scope="col">Tokens</th></tr></thead><tbody><tr><th scope="row">Re-read (cache reads)</th><td class="num">8.2M</td></tr><tr><th scope="row">Newly read (input and cache writes)</th><td class="num">0.47M</td></tr><tr><th scope="row">Output</th><td class="num">0.08M</td></tr></tbody><tfoot><tr><th scope="row">Total</th><td class="num">8.8M</td></tr></tfoot></table>
+  <p class="cap">Source: the usage the API reported, in Claude Code&#39;s transcripts, without the coordinator. No program checks these numbers.</p>
+</section>
+
 <footer class="foot">Written by <code>pnpm report uniswap/swap --record</code> from <code>templates/uniswap/swap/template.json</code>, <code>templates/uniswap/swap/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/uniswap-swap.json</code>, <code>testdata/abi</code>, <code>testdata/research/uniswap-swap-usdc-v4.json</code>, <code>testdata/research/uniswap-swap-usdt-v4.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/uniswap/swap/notes.json</code>, <code>testdata/usage/uniswap-swap.json</code>; the data was read on 2026-11-25. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI or the usage numbers.</footer>
 
 </div>

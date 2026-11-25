@@ -12,7 +12,7 @@
  "studiedWith": {
   "template": "0x269bd2712c49d1e8b9ae5df349506157e2f5e6c69fafa9e590295e54cd74ee9d",
   "registry": "0x26d4dee65d23afaa6e05d8f100022e3e3170f512f7e439737942100f729f8858",
-  "study": "0x94bfaaffbfc8c7dbc5b3874bc31cfe270d787964a427798536f92503545477bb"
+  "study": "0xb596923b6c289246962b4c2a301475010e93cfa8db57d91a981943ffeaa1e73d"
  },
  "search": {
   "year": {
@@ -53,6 +53,7 @@
   {
    "kind": "misfit",
    "hash": "0x3a113699ab2ca4e450a1cb3463bfaa2e1985631da5f5a9f1977a9258fb297077",
+   "block": "25077607",
    "sender": {
     "kind": "safe",
     "address": "0x1610142c98156a13970b55b900876da776865b55"
@@ -88,11 +89,13 @@
       "selector": "0xe90956cf"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x6fdc22628cbd3b8b8cd462a0e19a4757ae4d5f2e7dbbbf1fe03f323fef7f34fc",
+   "block": "25079028",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -102,11 +105,13 @@
     "at": "call.multicall.data[0].submit.data.selector",
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0xb192a84a"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x3c751ddf54327405d78d67dbda5c60784107520ec508f7c77ce32ef035f931f9",
+   "block": "25079032",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -116,11 +121,13 @@
     "at": "call.multicall.data[0].submit.data.selector",
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0xb192a84a"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x0b3ac5ac30f3065b13ab00d6f59a72402ecc1a47ade4cd20f432d4e3aa9a6c40",
+   "block": "25079053",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -130,11 +137,13 @@
     "at": "call.multicall.data[0].submit.data.selector",
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0xb192a84a"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x70e14db4869a15b9d4e504ce1334bda12b47386d617dbbcff5272dc9943ef769",
+   "block": "25079060",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -144,11 +153,13 @@
     "at": "call.multicall.data[0].submit.data.selector",
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0xb192a84a"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x363b4ded044c748a93096b0fb2c6826d4676acd7319371ed501f7ce43661cc41",
+   "block": "25079088",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -158,11 +169,13 @@
     "at": "call.multicall.data[0].submit.data.selector",
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0x6a5f1aa2"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x6e00d446822e7a82f7ded8661cc8477c672bfa2dc8c79b48504bf74fc373b3db",
+   "block": "25079350",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -172,11 +185,13 @@
     "at": "call.multicall.data[0].submit.data.selector",
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0x70897b23"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x06eb6e6f3f2fb9a5f42bbf9b38ed32d149847c0180a33c76e57dbbd420f5e752",
+   "block": "25079355",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -186,11 +201,13 @@
     "at": "call.multicall.data[0].submit.data.selector",
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0x60d54d41"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x2b071887e49e045ef83f99dae8f4c320ad642f1599d81397578ea6504a579a13",
+   "block": "25079592",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -218,11 +235,13 @@
       "selector": "0x2438525b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xdb5602e1503a5062517b1e6a04b7846f99f173e52706af457fd96f1aebd36596",
+   "block": "25079596",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -250,11 +269,13 @@
       "selector": "0x2438525b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x287c6cc44fd16ff82cdb79b03ed986457c2b27ddd4820c1dfc8cac77f9904cf8",
+   "block": "25079605",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -282,11 +303,13 @@
       "selector": "0x2438525b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xfb34d4947c4480145347b8580080a8633e1124604e75498da6ebadaf04e347b0",
+   "block": "25084378",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -296,11 +319,13 @@
     "at": "call.multicall.data[0].submit.data.selector",
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0x3e9d2ac7"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x651f415c47d59271df7283c3835168938e5e4a9555ec783c328eeea68bb9d8ab",
+   "block": "25090209",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -310,11 +335,13 @@
     "at": "call.multicall.data[0].submit.data.selector",
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0xb2e32848"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x939d7e335dfab9f84813b5e9a2a9f87f8eb9e3460f0f635b21de40b009fab398",
+   "block": "25090212",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -324,11 +351,13 @@
     "at": "call.multicall.data[0].submit.data.selector",
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0xb2e32848"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x84aca6bb8e91187fbc73db561a3d56c560d13315b1143c71763c996c0c7399bd",
+   "block": "25090215",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -338,11 +367,13 @@
     "at": "call.multicall.data[0].submit.data.selector",
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0xb2e32848"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x2905feb2fc8d113dd2c5020f5eca7ca6f87060a765773a28cbe70905064f6610",
+   "block": "25091668",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -378,7 +409,8 @@
       "selector": "0xef7fa71b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -453,6 +485,7 @@
   {
    "kind": "misfit",
    "hash": "0x2679802cdf18a670ba6d895235ba8a5f6e45957aff4f99fe1c33dc86ca643660",
+   "block": "25172994",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -462,11 +495,13 @@
     "at": "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.encoding",
     "expected": "capId(string,address,(address,address,address,address,uint256))",
     "actual": "the heads run past the end"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x9bd1f04db37df7b7dd6c5d76fe1e789dc97722943c59def508cc89efca75d976",
+   "block": "25594770",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -476,7 +511,8 @@
     "at": "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.encoding",
     "expected": "capId(string,address,(address,address,address,address,uint256))",
     "actual": "the heads run past the end"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -556,6 +592,7 @@
   {
    "kind": "misfit",
    "hash": "0x6b71314496aa1441f15d34020af86a0483a71f35d02584c9b4131ecb5430e2aa",
+   "block": "26023688",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -565,11 +602,13 @@
     "at": "call.multicall.data[0].submit.data.selector",
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0x70897b23"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xcae9b9ee5602f1f6166e2dd6faa12a5f942313e2ad8eddaae154764c004335e4",
+   "block": "26168827",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -579,7 +618,8 @@
     "at": "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.encoding",
     "expected": "capId(string,address,(address,address,address,address,uint256))",
     "actual": "the heads run past the end"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -659,6 +699,7 @@
   {
    "kind": "misfit",
    "hash": "0x7ac13fec6d02a4aa4c2bcbeb729159ab462ad9381367d7d7cf3bb4f3ace71f33",
+   "block": "26168832",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -674,11 +715,13 @@
       "selector": "0xef7fa71b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x318748362d96173e924669070dd5d74e466b75dfafacb2dc7c5cee4a72be55b2",
+   "block": "26224780",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -722,11 +765,13 @@
       "selector": "0xef7fa71b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x1caeb0db38e4efcb816a52d6c9f9af75ad2d8d2a48a2e2b267b9fed6eb2e6289",
+   "block": "26224789",
    "sender": {
     "kind": "safe",
     "address": "0xe5f7d857c129a6349f2a150665dcff4fef979744"
@@ -736,7 +781,8 @@
     "at": "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.encoding",
     "expected": "capId(string,address,(address,address,address,address,uint256))",
     "actual": "the heads run past the end"
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
