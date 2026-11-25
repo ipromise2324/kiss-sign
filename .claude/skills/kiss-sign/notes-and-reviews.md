@@ -19,7 +19,8 @@ The exact shape and every limit are in step 6 of [First time an operation is don
 
 ## The keys
 
-- `title`, at most 100 characters, and `summary`.
+- `title`, at most 100 characters, and `summary`, at most 250.
+  The summary leads with what the transaction does, then what it needs first and what it refuses; leave counts and evidence to the sections that show them.
 - `verdict`: `{ "status": "safe" | "caution", "text" }`, one line of at most 100: your research advice on the operation's risk, despite the key's name.
   It is not a transaction's verdict, which only `verify` gives, and it never moves a program result; the Advice (建議) line's icon is the program's worst result, not your status.
 - `flow`: at most four lines of what happens inside a call, each `{ "after": <call number>, "from": <registry name>, "to": <registry name>, "function": <canonical signature>, "text", "sources" }`, between two contracts the calls or the effects' views target, the entries those name in `dependsOn`, or the tokens the effects move or touch; `text` is at most 100 characters.
@@ -33,12 +34,13 @@ The exact shape and every limit are in step 6 of [First time an operation is don
 - `protocols`, by DefiLlama slug, one for every protocol the generated report's protocol facts cover: `intro`, one line; `audits`, a note citing the audit reports; `incidents`, one note per DefiLlama hack in date order, its cause with the post-mortem as a source, exactly as many as the facts list.
 - `judgments`: at most four, each with a `recommendation`.
 - `reviews`: below.
+- `times`, optional: the field keys of free numbers that are times, such as a deadline the template leaves free, so Past transactions shows how far ahead they were set instead of raw numbers; it changes no rule.
 - `pastTxsConclusion`, optional: one line of at most 200 on what the past transactions with other shapes teach.
 - `context`, optional and only in an instance's `notes.json`: at most four notes `{ "title", "text", "sources" }`, a title of at most 40 and a text of at most 400, each with at least one source, on what the signer may want to know about the instance, such as where the vault sends a deposit and why; the program shows them in the Instance section and refuses them in the template's file.
   Lead the text with the conclusion the signer needs, such as "a deposit stays in the vault until an allocator lends it out".
   Put the evidence, such as function names, block numbers, the vault's history and full addresses, in `sources`, not in the text.
 - `entries`, by registry name: `role`, one line, and `sources`, each source you checked by hand as `{ "text", "url", "result": "pass" | "attention" | "fail" }`.
-- `fields`: a text for every argument, tuple part, array item, nested call's argument, packed part and signed-message member, by the HTML report's field key, such as `1.approve.spender` or `2.blueBundlesV1Supply.marketParams.oracle`.
+- `fields`: a text for every argument, tuple part, array item, nested call's argument, packed part and signed-message member, by the HTML report's field key, such as `1.approve.spender` or `2.blueBundlesV1Supply.marketParams.oracle`, at most 150 characters each.
 - A note is `{ "text", "sources"? }` with https URLs.
 
 ## What to write
@@ -46,7 +48,8 @@ The exact shape and every limit are in step 6 of [First time an operation is don
 Write no claim the program already checks: the page prints the facts, values and results itself, and your text sits beside them with an AI tag.
 
 - **Addresses.** Where you found each address, the protocol API's query and answer when there is one, and the Etherscan verified contract name and creator, as `entries.<name>.sources`, written before any check ([addresses.md](addresses.md)); a review only answers a result.
-- **Fields.** What each argument does, from the contract's source and documentation, and for a free field what values past transactions held, such as "`receiver` equalled the sender in all 42".
+- **Fields.** What each argument does, from the contract's source and documentation: the conclusion first, in at most three or four sentences, such as what a value the app fills changes and what it cannot.
+  Write no statistics, transaction hashes, file paths or past values: the Past transactions section shows them beside the template's limit.
   The rules themselves are in the generated report.
 - **Instances.** Your judgment of each instance's evidence, read as the size it declares: whether it grew suddenly or was held long, and any young, sudden or concentrated instance, as a judgment.
 - **Past transactions.** The page prints the sender counts by type, both sources and their agreement, and every misfit group with examples; do not repeat them.

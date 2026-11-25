@@ -83,9 +83,10 @@ To read again the blocks an earlier recording searched, such as to add what a re
    A difference beyond 10, or one that grows with the amount, such as a fee, is not rounding: stop and tell the signer.
 5. Read the spread `pnpm past-txs` prints for every `uint` or `int` the template leaves free or bounds with `withinSeconds`, over the transactions that fit, a value the signer does not choose, such as an order's `validTo` less the block's time, a deadline or a fee.
    Ask what the largest normal value is, and what a far larger one would let happen after the signer stops watching, such as an order or approval still valid in a year.
-   For a time, declare it `{"free": {"time": {"<language>": "<why>"}}}` first, so the spread counts from the block's time, then replace that with `{"withinSeconds": <seconds>}` ([Template](../../../docs/design/data-shapes.md#template)), a whole number from 1 to 31,536,000, at or above the largest value real Safes used (when that is above a year, stop and tell the signer), and cite the spread in the field's note in `notes.json`, such as "136 Safe orders: median 1,720 s, 99th percentile 10,478 s, largest 604,767 s; bound 7 days".
+   For a time, declare it `{"free": {"time": {"<language>": "<why>"}}}` first, so the spread counts from the block's time, then replace that with `{"withinSeconds": <seconds>}` ([Template](../../../docs/design/data-shapes.md#template)), a whole number from 1 to 31,536,000, at or above the largest value real Safes used (when that is above a year, stop and tell the signer).
+   The report's Past transactions section shows the spread beside the limit, so do not repeat it in `notes.json`.
    For another number, when the spread shows a bound is needed and no rule in the vocabulary can hold it, stop and propose a generic program change.
-   When no bound is needed, say why in that note.
+   When no bound is needed, say why in the field's text in `notes.json`.
 6. Record the runs the report studies with `--record <name>` before you generate the report.
    It writes the full recording to `.cache/past-txs/<name>.json`, which git ignores and you never commit, and a summary of what the study found to `testdata/research/<name>.json`, which the report reads.
    The summary also keeps the call trace of each transaction exactly the template, which the report compares with your `flow` lines ([Notes and reviews](notes-and-reviews.md)).
