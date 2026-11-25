@@ -111,6 +111,7 @@ const ZH = {
   freeNotTested: '模板允許任何值，沒有測試換過別的值',
   freeAllFailed: '換成別的值測過，每次交易都失敗或不符合卡片',
   freeKeyNotTested: '模板允許任何值，沒有測試換過別的值。',
+  freeKeyAllFailed: '換成別的值測過，每次交易都失敗或不符合卡片。',
   freeKey: {
     scalar: '換成別的值，結果一樣或交易失敗。',
     proof: '換成別的值，交易就失敗。',
@@ -718,6 +719,7 @@ const EN: Words = {
   freeNotTested: 'the template allows any value, and no test tried another',
   freeAllFailed: 'tested with other values: each time the transaction failed or did not match the card',
   freeKeyNotTested: 'The template allows any value; no test tried another.',
+  freeKeyAllFailed: 'Every other value tested made the transaction fail or not match the card.',
   freeKey: {
     scalar: 'Another value gives the same result or the transaction fails.',
     proof: 'Another value makes the transaction fail.',

@@ -1013,8 +1013,9 @@ function keyGroups(used: ReadonlySet<Who>, context: Context): KeyGroup[] {
   const { rules, member } = freeRules(template);
   const claims = (['scalar', 'route', 'proof', 'unread'] as const).filter((claim) => rules.some((rule) => rule.claim === claim));
   const free = claims.map((claim) => {
-    const untested = TESTED_CLAIMS.has(claim) && rules.some((rule) => rule.claim === claim && freeTest(rule, context) === 'not-tested');
-    return untested ? w.freeKeyNotTested : w.freeKey[claim];
+    const tests = TESTED_CLAIMS.has(claim) ? rules.filter((rule) => rule.claim === claim).map((rule) => freeTest(rule, context)) : [];
+    if (tests.includes('not-tested')) return w.freeKeyNotTested;
+    return tests.length > 0 && tests.every((test) => test === 'all-failed') ? w.freeKeyAllFailed : w.freeKey[claim];
   });
   return [
     { title: w.whoGroup.you, items: [...item('you-type', w.whoMeans['you-type']), ...item('you-pick', w.whoMeans['you-pick'])] },

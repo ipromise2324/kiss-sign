@@ -872,6 +872,7 @@ test('a free number says a test tried other values only when one did', () => {
       : { name, outcome: { ...outcome, perturbation: { ...outcome.perturbation, runs: outcome.perturbation.runs.map((run) => ({ ...run, outcome: 'reverted' as const })) } } },
   );
   assert.ok(words({ ...inputs, fixtures: failed }).includes('換成別的值測過，每次交易都失敗或不符合卡片'));
+  assert.ok(freeItems(pageOf({ ...inputs, fixtures: failed })).some((k) => k.means === '換成別的值測過，每次交易都失敗或不符合卡片。'), 'the legend says so too');
 });
 
 test('a money call no line covers is titled by who pays whom, with full addresses', () => {
