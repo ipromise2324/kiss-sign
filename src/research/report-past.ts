@@ -35,23 +35,29 @@ export function studiedOnce(runs: readonly PastTxs[], template: Template): Studi
   return [...best.values()];
 }
 
-/** The newest of `of`, undefined with none; one whose block was not kept is the oldest. */
-export const newestOf = (of: readonly Studied[]): Studied | undefined =>
-  of.reduce<Studied | undefined>((top, s) => (top === undefined || (s.block ?? -1n) > (top.block ?? -1n) ? s : top), undefined);
+/** `of` from the newest block to the oldest, undefined when one's block was not kept, since that one may be the newest. */
+export function newestFirst(of: readonly Studied[]): Studied[] | undefined {
+  const placed = of.flatMap((study) => (study.block === undefined ? [] : [{ study, block: study.block }]));
+  if (placed.length < of.length) return undefined;
+  return placed.sort((a, b) => (a.block > b.block ? -1 : a.block < b.block ? 1 : 0)).map(({ study }) => study);
+}
 
 /**
  * The past values at one place the template leaves to the app. `time`: each value's distance from its block's time.
  * `numbers`: too many different numbers to list. `values`: each value, few enough to list. `distinct`: too many to list
- * and no number.
+ * and no number. Each keeps the transactions the template accepts apart from those it refuses.
  */
 export type PastValues =
   | { readonly kind: 'time'; readonly limit: bigint | undefined; readonly rows: readonly SpreadRow[] }
   | { readonly kind: 'numbers'; readonly rows: readonly SpreadRow[] }
-  | { readonly kind: 'values'; readonly values: readonly ValueCount[] }
-  | { readonly kind: 'distinct'; readonly distinct: number; readonly safe: number; readonly eoa: number; readonly most: ValueCount };
+  | { readonly kind: 'values'; readonly groups: readonly PastGroupKind[]; readonly values: readonly ValueCount[] }
+  | { readonly kind: 'distinct'; readonly rows: readonly DistinctRow[] };
 /** One group's values; `unrecorded` counts those whose block's time was not recorded. */
 export type SpreadRow = { readonly group: PastGroupKind; readonly spread: Spread | undefined; readonly unrecorded: number };
-export type ValueCount = { readonly value: string; readonly safe: number; readonly eoa: number };
+/** How many transactions of each group held the value. */
+export type ValueCount = { readonly value: string; readonly counts: Readonly<Record<PastGroupKind, number>> };
+/** One group's `count` transactions, how many different values they held, and the commonest of those. */
+export type DistinctRow = { readonly group: PastGroupKind; readonly count: number; readonly distinct: number; readonly most: { readonly value: string; readonly times: number } };
 export type PastField = { readonly name: string; readonly key: string; readonly past: PastValues };
 
 const MOST_LISTED = 6;
@@ -103,18 +109,26 @@ function pastValues(place: Place, entries: readonly Entry[], declared: boolean):
   if (number && (isTime(rule) || declared)) {
     return { kind: 'time', limit: rule.kind === 'within-seconds' ? rule.seconds : undefined, rows: rows(entries, ({ study, value }) => (study.time === undefined ? undefined : BigInt(value) - study.time)) };
   }
-  const counts = new Map<string, { safe: number; eoa: number }>();
+  const total = (count: ValueCount): number => PAST_GROUPS.reduce((n, group) => n + count.counts[group], 0);
+  const counts = new Map<string, Record<PastGroupKind, number>>();
   for (const { study, value } of entries) {
-    const count = counts.get(value) ?? { safe: 0, eoa: 0 };
-    count[study.sender.kind] += 1;
+    const count = counts.get(value) ?? { 'safe-exact': 0, 'safe-differs': 0, 'eoa-exact': 0, 'eoa-differs': 0 };
+    count[groupOf(study)] += 1;
     counts.set(value, count);
   }
-  const values = [...counts].map(([value, n]): ValueCount => ({ value, ...n })).sort((a, b) => b.safe + b.eoa - (a.safe + a.eoa));
-  const [most] = values;
-  if (most === undefined || (values.length <= MOST_LISTED && values.every(({ value }) => value.length <= LONGEST_LISTED))) return { kind: 'values', values };
+  const values = [...counts].map(([value, of]): ValueCount => ({ value, counts: of })).sort((a, b) => total(b) - total(a));
+  const held = (group: PastGroupKind): ValueCount[] => values.filter((v) => v.counts[group] > 0);
+  const groups = PAST_GROUPS.filter((group) => group === 'safe-exact' || held(group).length > 0);
+  if (values.length <= MOST_LISTED && values.every(({ value }) => number || value.length <= LONGEST_LISTED)) return { kind: 'values', groups, values };
   if (number) return { kind: 'numbers', rows: rows(entries, (e) => BigInt(e.value)) };
-  const total = (kind: 'safe' | 'eoa'): number => values.reduce((n, count) => n + count[kind], 0);
-  return { kind: 'distinct', distinct: values.length, safe: total('safe'), eoa: total('eoa'), most };
+  return {
+    kind: 'distinct',
+    rows: groups.flatMap((group): DistinctRow[] => {
+      const mine = held(group);
+      const most = mine.reduce<ValueCount | undefined>((top, v) => (top === undefined || v.counts[group] > top.counts[group] ? v : top), undefined);
+      return most === undefined ? [] : [{ group, count: mine.reduce((n, v) => n + v.counts[group], 0), distinct: mine.length, most: { value: most.value, times: most.counts[group] } }];
+    }),
+  };
 }
 
 /** Each place the template leaves to the app, with its past values; `times` holds the keys the notes declare times. */

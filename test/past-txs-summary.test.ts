@@ -13,6 +13,8 @@ import type { PastTxsSummary } from '../src/research/past-txs-summary.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { replayPastTxs } from '../src/research/recording.ts';
 import { pastTxsRegistry, summarizePastTxs } from '../src/research/report.ts';
+import { appFills, shapesOf } from '../src/research/study.ts';
+import type { FreeValue } from '../src/research/study.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { loadTemplate } from '../src/template/template.ts';
 import { repoWithBundler3Deposit } from './bundler3-deposit.ts';
@@ -169,6 +171,22 @@ test('a summary whose amounts, traces or one-source hashes name transactions it 
   assert.ok(hash !== undefined && measured?.kind === 'measured');
   const beyond = { ...summary, measurements: new Map([[hash, { ...measured, differences: [{ ...(measured.differences[0] as Difference), effect: 9 }] }]]) };
   assert.throws(() => runOf(beyond, loadTemplate(ROOT, summary.query.template, registry)), /names effect 9, and the template states 1$/);
+});
+
+test('a summary whose misfit holds a value at a place the template binds or lacks is refused, and one at a place the app fills is kept', () => {
+  const name = 'cow-swap-presign';
+  const text = readFileSync(join(ROOT, SUMMARIES_DIR, `${name}.json`), 'utf8');
+  const summary = parseSummary(`testdata/research/${name}.json`, text);
+  const template = loadTemplate(ROOT, summary.query.template, registry);
+  const held = summary.studies.find((s) => s.kind === 'misfit' && s.free.length > 0);
+  assert.ok(held?.kind === 'misfit');
+  assert.deepEqual(runOf(summary, template).studies.find((s) => s.kind === 'misfit' && s.hash === held.hash), held);
+  const { rules } = shapesOf(template).whole.loosened;
+  const bound = rules.findIndex((rule) => !appFills(rule));
+  for (const field of [bound, rules.length]) {
+    const edited = { ...summary, studies: [{ ...held, free: [{ ...(held.free[0] as FreeValue), field }] }] };
+    assert.throws(() => runOf(edited, template), new RegExp(`^SummaryError: the misfit ${held.hash} holds a value at field ${field}, which the template does not leave to the app$`));
+  }
 });
 
 test('every committed past-txs summary names a template and was studied with its template, registry entries and study code as this checkout holds them', () => {

@@ -274,7 +274,7 @@ A `<nav>` in the left column, sticky 32px from the top: a 13px 590 Ink 3 "目錄
 `<details>` with a hidden marker, a chevron and Ink 2 15px summary text that lightens to Ink on hover. Used only for things that passed or ran automatically, for the arguments the template fixes, for the numbers a chart already draws, for the details of a 待確認 row under its open title and conclusion, for an address's AI 補查 sources when the AI judged every one 沒問題, for how a time rule counts and a past value's exact numbers, and under 過去交易 for the rarer ways others differed, the tokens outside the registry and how the program searched, which are context, not results.
 
 ### Past Transactions
-Three 16px 590 questions, each answered by one 16px Ink 2 sentence or a table. A table has 13px Ink 3 headings over a Strong Hairline and 14px rows over Hairlines, counts right-aligned in tabular figures, and scrolls sideways in its own frame when the column is too narrow. A limit is Attention Amber in the 14px Ink 3 caption under its table.
+Three 16px 590 questions, each answered by one 16px Ink 2 sentence or a table. A table has 13px Ink 3 headings over a Strong Hairline and 14px rows over Hairlines, counts right-aligned in tabular figures, and at 760px and below each row stacks, every cell under its own 13px Ink 3 heading at its left, so no column is cut. A limit is Attention Amber in the 14px Ink 3 caption under its table.
 
 ### AI Usage
 One 14px Ink 3 sentence, a full-width 15px table of the tokens with its total in 590 Ink, and the source as a 14px Ink 3 caption.

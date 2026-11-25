@@ -27,6 +27,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-
 a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
 a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+[data-ai]{overflow-wrap:anywhere}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
 .addr.line{display:block;margin-top:4px}
@@ -212,7 +213,7 @@ details.fixed[open]>summary .chev{transform:rotate(90deg)}
 }
 
 .rows{border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
@@ -270,8 +271,20 @@ details.fold .ad:last-child{border-bottom:0}
 .pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
 .pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
 .pt2 .n{text-align:right}
+.pt2 th{vertical-align:bottom}
+.pt2 th.n{white-space:normal}
 .pt2 td.nw{white-space:nowrap}
 .pt2 td.v{color:var(--fg);font-weight:590}
+.pt2 .tx{min-width:104px}
+@media (max-width:760px){
+  .pt2,.pt2 tbody,.pt2 tr{display:block}
+  .pt2 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .pt2 tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .pt2 td,.pt2 td.n{display:grid;grid-template-columns:minmax(0,130px) minmax(0,1fr);gap:12px;padding:3px 0;border-bottom:0;text-align:left}
+  .pt2 td::before{content:attr(data-label);font-size:var(--t-label);font-weight:400;color:var(--fg3)}
+  .pt2 td.nw{white-space:normal}
+  .pt2 td.what{min-width:0}
+}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -792,17 +805,17 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>過去交易</h2>
   <h3>1. 這個模板的交易以前成功過嗎？</h3>
-  <p class="ans"><b>成功過，1 個 Safe 一共做過 1 次。</b> EOA：0 次。最近一次是區塊 26328163。全部成功執行。</p>
+  <p class="ans"><b>成功過，1 個 Safe 一共做過 1 次。</b> EOA：0 次。最近一次是區塊 26328163。全部成功執行。最近 1 筆：<a href="https://etherscan.io/tx/0xb1c61a05a69389071a77a493b5a6928a094877416f9b26981a5878e2fa064bd9">0xb1c61a05…</a></p>
   <h3>2. app 填的值，一般是多少？</h3>
   <p class="ans">這個模板沒有留任何值給 app 填。</p>
   <h3>3. 其他交易哪裡不同？</h3>
   <p class="ans">10 筆交易做了這個模板不允許的事。</p>
-  <p class="ans"><span class="aiw" data-ai><span>有 2 筆這個形狀的提交，市場不在 registry 裡。不合的是在一個 multicall 或 MultiSend 裡放好幾個上限，或提交其他設定；都會是 MISMATCH。</span><span class="byai">AI 研究</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="nw">例子</th></tr></thead><tbody>
-    <tr><td class="what">資料不是 <code>capId(string,address,(address,address,address,address,uint256))</code> 的標準編碼</td><td class="n"><span class="num">3</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 26328171</td><td class="nw"><a href="https://etherscan.io/tx/0x71497a279b6c03466a74b00fa240730146f2ced7bc91dc01d7030d65f5a30bc6">0x71497a27…</a></td></tr>
-    <tr><td class="what">一次超過 4 個呼叫的批次</td><td class="n"><span class="num">2</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 24907264</td><td class="nw"><a href="https://etherscan.io/tx/0x31aa282431e5a0ac9dcefa7b1555054f8dca56158b85d32b6e3bca208fa05055">0x31aa2824…</a></td></tr>
-    <tr><td class="what"><code>multicall.data[0].submit.data.selector</code> 是 2 種別的值，模板要 <span class="addr">0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)</span></td><td class="n"><span class="num">2</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 25539399</td><td class="nw"><a href="https://etherscan.io/tx/0x6a83c548fb066c7e34d85f0665ae15aa92a08be671f0f8fd6d552e7a38473757">0x6a83c548…</a></td></tr>
-    <tr><td class="what">形狀一樣，但 <code>multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams</code> 用的是 registry 外的市場</td><td class="n"><span class="num">2</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 25553477</td><td class="nw"><a href="https://etherscan.io/tx/0x7941b67103ad0cf62d6f9f47c86d5a883a282940f0e92bc09cda412b271cbb37">0x7941b671…</a></td></tr>
-    <tr><td class="what">除了模板的呼叫，還有別的：<code>kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall</code></td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 25072978</td><td class="nw"><a href="https://etherscan.io/tx/0x424927ac76f0871f71b19d92312070128c5f63452032d26d8f89d89cece6eb06">0x424927ac…</a></td></tr></tbody></table></div>
+  <p class="ans"><span class="aiw" data-ai><span>有 2 筆這個形狀的提交，市場不在 registry 裡。不合的是在一個 multicall 或 MultiSend 裡放好幾個上限，或提交其他設定；都會是 MISMATCH。</span><span class="byai">AI 研究</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="tx">例子（最多 3 筆）</th></tr></thead><tbody>
+    <tr><td class="what" data-label="哪裡不同"><span>資料不是 <code>capId(string,address,(address,address,address,address,uint256))</code> 的標準編碼</span></td><td class="n" data-label="Safe"><span><span class="num">3</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26328171</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x71497a279b6c03466a74b00fa240730146f2ced7bc91dc01d7030d65f5a30bc6">0x71497a27…</a> <a href="https://etherscan.io/tx/0xea0241166034c7ce5575b70759b7c9f5946140ea2ce207765ecdab28f3408cfd">0xea024116…</a> <a href="https://etherscan.io/tx/0xbe20832384d44da4cb14607856df3dcae254595ca0caa4f5c208cd624dbb7ffd">0xbe208323…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>一次超過 4 個呼叫的批次</span></td><td class="n" data-label="Safe"><span><span class="num">2</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 24907264</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x31aa282431e5a0ac9dcefa7b1555054f8dca56158b85d32b6e3bca208fa05055">0x31aa2824…</a> <a href="https://etherscan.io/tx/0x58b56805e71abafbf38cee9440ec7df5d26a34cb10a5ec5281691ab146fd3bdd">0x58b56805…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span><code>multicall.data[0].submit.data.selector</code> 是 2 種別的值，模板要 <span class="addr">0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)</span></span></td><td class="n" data-label="Safe"><span><span class="num">2</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 25539399</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x6a83c548fb066c7e34d85f0665ae15aa92a08be671f0f8fd6d552e7a38473757">0x6a83c548…</a> <a href="https://etherscan.io/tx/0xc8252b8fd3ad2269ec4a6f6c3891a14f5bbb81eb6521b20c789678dac0f3b0ab">0xc8252b8f…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>形狀一樣，但 <code>multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams</code> 用的是 registry 外的市場</span></td><td class="n" data-label="Safe"><span><span class="num">2</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 25553477</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x7941b67103ad0cf62d6f9f47c86d5a883a282940f0e92bc09cda412b271cbb37">0x7941b671…</a> <a href="https://etherscan.io/tx/0x5cd9e4d28fb77ef933b3a4fbc72328a24f81b8e30fca87f47a2472c6ccd46dfe">0x5cd9e4d2…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 25072978</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x424927ac76f0871f71b19d92312070128c5f63452032d26d8f89d89cece6eb06">0x424927ac…</a></span></td></tr></tbody></table></div>
   <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>程式怎麼搜尋</span></summary>
   <h3>搜尋 kpk-usdc-prime-v2-9ee6 的Submit，找到 25 筆，研究 25 筆</h3>
   <p class="cap">只有 Etherscan 搜尋事件，找到 <span class="num">25</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>

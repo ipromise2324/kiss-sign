@@ -27,6 +27,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-
 a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
 a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+[data-ai]{overflow-wrap:anywhere}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
 .addr.line{display:block;margin-top:4px}
@@ -212,7 +213,7 @@ details.fixed[open]>summary .chev{transform:rotate(90deg)}
 }
 
 .rows{border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
@@ -270,8 +271,20 @@ details.fold .ad:last-child{border-bottom:0}
 .pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
 .pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
 .pt2 .n{text-align:right}
+.pt2 th{vertical-align:bottom}
+.pt2 th.n{white-space:normal}
 .pt2 td.nw{white-space:nowrap}
 .pt2 td.v{color:var(--fg);font-weight:590}
+.pt2 .tx{min-width:104px}
+@media (max-width:760px){
+  .pt2,.pt2 tbody,.pt2 tr{display:block}
+  .pt2 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .pt2 tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .pt2 td,.pt2 td.n{display:grid;grid-template-columns:minmax(0,130px) minmax(0,1fr);gap:12px;padding:3px 0;border-bottom:0;text-align:left}
+  .pt2 td::before{content:attr(data-label);font-size:var(--t-label);font-weight:400;color:var(--fg3)}
+  .pt2 td.nw{white-space:normal}
+  .pt2 td.what{min-width:0}
+}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -803,19 +816,19 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>Past transactions</h2>
   <h3>1. Has this template&#39;s transaction worked before?</h3>
-  <p class="ans"><b>Yes, 1 time, by 1 Safe.</b> EOA: 0. The newest: block 25172991. All of them succeeded.</p>
+  <p class="ans"><b>Yes, 1 time, by 1 Safe.</b> EOA: 0. The newest: block 25172991. All of them succeeded. The newest one: <a href="https://etherscan.io/tx/0xf49e1f05b2b985b5d09511d99d322f56da0aeffee62d0c0ea172fc347b912f17">0xf49e1f05…</a></p>
   <h3>2. What values are normal in what the app fills?</h3>
   <p class="ans">This template leaves no value for the app to fill.</p>
   <h3>3. How did the others differ?</h3>
   <p class="ans">26 transactions did something this template refuses.</p>
-  <p class="ans"><span class="aiw" data-ai><span>3 submissions of this shape name markets outside the registry. Misfits submit and execute in one multicall, batch several caps, or change other settings.</span><span class="byai">AI research</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="nw">Example</th></tr></thead><tbody>
-    <tr><td class="what"><code>multicall.data[0].submit.data.selector</code> was 6 other values, the template wants <span class="addr">0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)</span></td><td class="n"><span class="num">12</span></td><td class="n"><span class="num">0</span></td><td class="nw">block 26023688</td><td class="nw"><a href="https://etherscan.io/tx/0x6b71314496aa1441f15d34020af86a0483a71f35d02584c9b4131ecb5430e2aa">0x6b713144…</a></td></tr>
-    <tr><td class="what">The data is not the standard encoding of <code>capId(string,address,(address,address,address,address,uint256))</code></td><td class="n"><span class="num">4</span></td><td class="n"><span class="num">0</span></td><td class="nw">block 26224789</td><td class="nw"><a href="https://etherscan.io/tx/0x1caeb0db38e4efcb816a52d6c9f9af75ad2d8d2a48a2e2b267b9fed6eb2e6289">0x1caeb0db…</a></td></tr>
-    <tr><td class="what"><code>multicall.data</code> has 4 items; the template has 2, calling <code>flowmark-fgenesis-v2-6439.submit → flowmark-fgenesis-v2-6439.increaseAbsoluteCap → flowmark-fgenesis-v2-6439.submit → flowmark-fgenesis-v2-6439.increaseRelativeCap</code></td><td class="n"><span class="num">3</span></td><td class="n"><span class="num">0</span></td><td class="nw">block 25079605</td><td class="nw"><a href="https://etherscan.io/tx/0x287c6cc44fd16ff82cdb79b03ed986457c2b27ddd4820c1dfc8cac77f9904cf8">0x287c6cc4…</a></td></tr>
-    <tr><td class="what">Same shape, but <code>multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams</code> is a market outside the registry</td><td class="n"><span class="num">3</span></td><td class="n"><span class="num">0</span></td><td class="nw">block 26224811</td><td class="nw"><a href="https://etherscan.io/tx/0xc552b9e3919b3f422ca082b32473b521c0bc75c1a62e40838518bfade707fb1d">0xc552b9e3…</a></td></tr>
-    <tr><td class="what"><code>multicall.data</code> has 6 items; the template has 2</td><td class="n"><span class="num">2</span></td><td class="n"><span class="num">0</span></td><td class="nw">block 25091668</td><td class="nw"><a href="https://etherscan.io/tx/0x2905feb2fc8d113dd2c5020f5eca7ca6f87060a765773a28cbe70905064f6610">0x2905feb2…</a></td></tr>
-    <tr><td class="what"><code>multicall.data</code> has 1 item; the template has 2, calling <code>flowmark-fgenesis-v2-6439.submit</code></td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">block 26168832</td><td class="nw"><a href="https://etherscan.io/tx/0x7ac13fec6d02a4aa4c2bcbeb729159ab462ad9381367d7d7cf3bb4f3ace71f33">0x7ac13fec…</a></td></tr>
-    <tr><td class="what"><code>multicall.data</code> has 8 items; the template has 2</td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">block 26224780</td><td class="nw"><a href="https://etherscan.io/tx/0x318748362d96173e924669070dd5d74e466b75dfafacb2dc7c5cee4a72be55b2">0x31874836…</a></td></tr></tbody></table></div>
+  <p class="ans"><span class="aiw" data-ai><span>3 submissions of this shape name markets outside the registry. Misfits submit and execute in one multicall, batch several caps, or change other settings.</span><span class="byai">AI research</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="tx">Examples (up to 3)</th></tr></thead><tbody>
+    <tr><td class="what" data-label="What was different"><span><code>multicall.data[0].submit.data.selector</code> was 6 other values, the template wants <span class="addr">0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)</span></span></td><td class="n" data-label="Safe"><span><span class="num">12</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 26023688</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x6b71314496aa1441f15d34020af86a0483a71f35d02584c9b4131ecb5430e2aa">0x6b713144…</a> <a href="https://etherscan.io/tx/0x84aca6bb8e91187fbc73db561a3d56c560d13315b1143c71763c996c0c7399bd">0x84aca6bb…</a> <a href="https://etherscan.io/tx/0x939d7e335dfab9f84813b5e9a2a9f87f8eb9e3460f0f635b21de40b009fab398">0x939d7e33…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The data is not the standard encoding of <code>capId(string,address,(address,address,address,address,uint256))</code></span></td><td class="n" data-label="Safe"><span><span class="num">4</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 26224789</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x1caeb0db38e4efcb816a52d6c9f9af75ad2d8d2a48a2e2b267b9fed6eb2e6289">0x1caeb0db…</a> <a href="https://etherscan.io/tx/0xcae9b9ee5602f1f6166e2dd6faa12a5f942313e2ad8eddaae154764c004335e4">0xcae9b9ee…</a> <a href="https://etherscan.io/tx/0x9bd1f04db37df7b7dd6c5d76fe1e789dc97722943c59def508cc89efca75d976">0x9bd1f04d…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span><code>multicall.data</code> has 4 items; the template has 2, calling <code>flowmark-fgenesis-v2-6439.submit → flowmark-fgenesis-v2-6439.increaseAbsoluteCap → flowmark-fgenesis-v2-6439.submit → flowmark-fgenesis-v2-6439.increaseRelativeCap</code></span></td><td class="n" data-label="Safe"><span><span class="num">3</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 25079605</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x287c6cc44fd16ff82cdb79b03ed986457c2b27ddd4820c1dfc8cac77f9904cf8">0x287c6cc4…</a> <a href="https://etherscan.io/tx/0xdb5602e1503a5062517b1e6a04b7846f99f173e52706af457fd96f1aebd36596">0xdb5602e1…</a> <a href="https://etherscan.io/tx/0x2b071887e49e045ef83f99dae8f4c320ad642f1599d81397578ea6504a579a13">0x2b071887…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>Same shape, but <code>multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams</code> is a market outside the registry</span></td><td class="n" data-label="Safe"><span><span class="num">3</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 26224811</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xc552b9e3919b3f422ca082b32473b521c0bc75c1a62e40838518bfade707fb1d">0xc552b9e3…</a> <a href="https://etherscan.io/tx/0xde6f1265301b9e1c40b209b8364c5d435bc1f74899d573764304c9591b78a66d">0xde6f1265…</a> <a href="https://etherscan.io/tx/0x7d11443234cac3fbac5ea1df2a44904028ac8d64928a2c983e5fe943f1d98020">0x7d114432…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span><code>multicall.data</code> has 6 items; the template has 2</span></td><td class="n" data-label="Safe"><span><span class="num">2</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 25091668</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x2905feb2fc8d113dd2c5020f5eca7ca6f87060a765773a28cbe70905064f6610">0x2905feb2…</a> <a href="https://etherscan.io/tx/0x3a113699ab2ca4e450a1cb3463bfaa2e1985631da5f5a9f1977a9258fb297077">0x3a113699…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span><code>multicall.data</code> has 1 item; the template has 2, calling <code>flowmark-fgenesis-v2-6439.submit</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 26168832</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x7ac13fec6d02a4aa4c2bcbeb729159ab462ad9381367d7d7cf3bb4f3ace71f33">0x7ac13fec…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span><code>multicall.data</code> has 8 items; the template has 2</span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 26224780</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x318748362d96173e924669070dd5d74e466b75dfafacb2dc7c5cee4a72be55b2">0x31874836…</a></span></td></tr></tbody></table></div>
   <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>How the program searched</span></summary>
   <h3>Search of flowmark-fgenesis-v2-6439 Submit: 27 found, 27 studied</h3>
   <p class="cap">Only Etherscan searches an event, and found <span class="num">27</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>

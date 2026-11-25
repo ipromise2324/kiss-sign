@@ -67,6 +67,8 @@ test('past-txs --record writes the study when every read is answered, and nothin
   assertRecorded(runOffline('past-txs.ts', args, 'research', { exchanges: [...withBlockTimes(recording.exchanges), ...transfers], http }, seed, undefined, SUMMARY_FIXTURES), 'offline.json');
   const network = { exchanges: [...withheld(withBlockTimes(recording.exchanges), 'eth_getTransactionByHash'), ...transfers], http };
   assertRefused(runOffline('past-txs.ts', args, 'research', network, seed, undefined, SUMMARY_FIXTURES), 'drpc eth_getTransactionByHash: unreachable');
+  const noBlocks = { exchanges: [...withheld(withBlockTimes(recording.exchanges), 'eth_getBlockByNumber'), ...transfers], http };
+  assertRefused(runOffline('past-txs.ts', args, 'research', noBlocks, seed, undefined, SUMMARY_FIXTURES), 'drpc eth_getBlockByNumber: unreachable');
 });
 
 test('past-txs --record of a template reported per vault refuses a search anchored on no registry entry before any read', () => {

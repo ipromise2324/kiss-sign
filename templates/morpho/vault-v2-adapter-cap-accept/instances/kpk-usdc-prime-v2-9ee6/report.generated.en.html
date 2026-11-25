@@ -27,6 +27,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-
 a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
 a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+[data-ai]{overflow-wrap:anywhere}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
 .addr.line{display:block;margin-top:4px}
@@ -212,7 +213,7 @@ details.fixed[open]>summary .chev{transform:rotate(90deg)}
 }
 
 .rows{border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
@@ -270,8 +271,20 @@ details.fold .ad:last-child{border-bottom:0}
 .pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
 .pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
 .pt2 .n{text-align:right}
+.pt2 th{vertical-align:bottom}
+.pt2 th.n{white-space:normal}
 .pt2 td.nw{white-space:nowrap}
 .pt2 td.v{color:var(--fg);font-weight:590}
+.pt2 .tx{min-width:104px}
+@media (max-width:760px){
+  .pt2,.pt2 tbody,.pt2 tr{display:block}
+  .pt2 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .pt2 tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .pt2 td,.pt2 td.n{display:grid;grid-template-columns:minmax(0,130px) minmax(0,1fr);gap:12px;padding:3px 0;border-bottom:0;text-align:left}
+  .pt2 td::before{content:attr(data-label);font-size:var(--t-label);font-weight:400;color:var(--fg3)}
+  .pt2 td.nw{white-space:normal}
+  .pt2 td.what{min-width:0}
+}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -589,15 +602,15 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>Past transactions</h2>
   <h3>1. Has this template&#39;s transaction worked before?</h3>
-  <p class="ans"><b>Yes, 1 time, by 1 Safe.</b> EOA: 0. The newest: block 24929062. All of them succeeded.</p>
+  <p class="ans"><b>Yes, 1 time, by 1 Safe.</b> EOA: 0. The newest: block 24929062. All of them succeeded. The newest one: <a href="https://etherscan.io/tx/0xc86672ea25ab95736afedcd4e77859b2c6a5e51a563b606ee79d8c6a2ba813fb">0xc86672ea…</a></p>
   <h3>2. What values are normal in what the app fills?</h3>
   <p class="ans">This template leaves no value for the app to fill.</p>
   <h3>3. How did the others differ?</h3>
   <p class="ans">5 transactions did something this template refuses.</p>
-  <p class="ans"><span class="aiw" data-ai><span>One Safe transaction accepted 18 cap ids at once, and EOAs accepted two cap ids together; each gives MISMATCH.</span><span class="byai">AI research</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="nw">Example</th></tr></thead><tbody>
-    <tr><td class="what"><code>multicall.data</code> has 4 items; the template has 2, calling <code>kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap</code></td><td class="n"><span class="num">0</span></td><td class="n"><span class="num">3</span></td><td class="nw">block 26397987</td><td class="nw"><a href="https://etherscan.io/tx/0xa5840cb778a0f9d65c789dbee8369f1d639b9b604fd12fff190cae1b53c15fb9">0xa5840cb7…</a></td></tr>
-    <tr><td class="what"><code>multicall.data</code> has 36 items; the template has 2</td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">block 24936786</td><td class="nw"><a href="https://etherscan.io/tx/0xc369256e0ce7944761dad6eb047953e1db2a0b99738cd37109c5268e84c421f4">0xc369256e…</a></td></tr>
-    <tr><td class="what">The data is not the standard encoding of <code>capId(string,address)</code></td><td class="n"><span class="num">0</span></td><td class="n"><span class="num">1</span></td><td class="nw">block 25223050</td><td class="nw"><a href="https://etherscan.io/tx/0xe060c571f3cc0b2acec58078edd5addd6f38fde7fcd408cb4f09efcc1d68e79c">0xe060c571…</a></td></tr></tbody></table></div>
+  <p class="ans"><span class="aiw" data-ai><span>One Safe transaction accepted 18 cap ids at once, and EOAs accepted two cap ids together; each gives MISMATCH.</span><span class="byai">AI research</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="tx">Examples (up to 3)</th></tr></thead><tbody>
+    <tr><td class="what" data-label="What was different"><span><code>multicall.data</code> has 4 items; the template has 2, calling <code>kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseAbsoluteCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap → kpk-usdc-prime-v2-9ee6.increaseRelativeCap</code></span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">3</span></span></td><td class="nw" data-label="Newest"><span>block 26397987</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xa5840cb778a0f9d65c789dbee8369f1d639b9b604fd12fff190cae1b53c15fb9">0xa5840cb7…</a> <a href="https://etherscan.io/tx/0x62e2257bdfc1ccf730fe1ab46d588e2ed41e7f62267937533859d2eef57b973c">0x62e2257b…</a> <a href="https://etherscan.io/tx/0x9abea3527ada54ebb0fc873a21ca044aa16daacbaa64f68330fce3531f96d00d">0x9abea352…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span><code>multicall.data</code> has 36 items; the template has 2</span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 24936786</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xc369256e0ce7944761dad6eb047953e1db2a0b99738cd37109c5268e84c421f4">0xc369256e…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The data is not the standard encoding of <code>capId(string,address)</code></span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">1</span></span></td><td class="nw" data-label="Newest"><span>block 25223050</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xe060c571f3cc0b2acec58078edd5addd6f38fde7fcd408cb4f09efcc1d68e79c">0xe060c571…</a></span></td></tr></tbody></table></div>
   <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>How the program searched</span></summary>
   <h3>Search of kpk-usdc-prime-v2-9ee6 IncreaseAbsoluteCap: 6 found, 6 studied</h3>
   <p class="cap">Only Etherscan searches an event, and found <span class="num">6</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>

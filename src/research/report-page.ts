@@ -14,7 +14,7 @@ import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
 import { TEMPLATES_DIR, addressWord, callSites, isNamedToken, refNames, slippageBps, viewTargetNames } from '../template/template.ts';
-import type { CardField, CardRef, ConstValue, EffectToken, KeptApproval, FreeClaim, Rule, Template, TemplateCall, Tolerance, TokenRef, ViewEffect, ViewExpectation } from '../template/template.ts';
+import type { CardField, CardRef, Computed, ConstValue, EffectToken, KeptApproval, FreeClaim, Rule, Template, TemplateCall, Tolerance, TokenRef, ViewEffect, ViewExpectation } from '../template/template.ts';
 import { distributionOf, effectText } from './amounts.ts';
 import type { Difference } from './amounts.ts';
 import type { FieldFact } from './erc7730.ts';
@@ -32,7 +32,7 @@ import { foundBy } from './past-txs.ts';
 import type { PastTxs } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { factsScope } from './protocol-facts.ts';
-import { isExact, newestOf, pastDifferences, pastFields, studiedOnce } from './report-past.ts';
+import { isExact, newestFirst, pastDifferences, pastFields, studiedOnce } from './report-past.ts';
 import type { PastCall, PastDifference, PastField, SpreadRow, Studied } from './report-past.ts';
 import { functionNames, isOtherOperation } from './study.ts';
 import type { MisfitReason } from './study.ts';
@@ -89,7 +89,7 @@ export type Page = {
 export type UsageBlock = { readonly lead: string; readonly table: { readonly head: readonly [string, string]; readonly rows: readonly (readonly [string, string])[]; readonly total: readonly [string, string] } | undefined; readonly notes: readonly string[] };
 
 /** A table of past transactions; a `num` column's cells align right, a `wide` one's wrap, and a `value` one's are what the table is for. */
-export type PastTable = { readonly head: readonly { readonly label: string; readonly as: 'num' | 'wide' | 'plain' | 'value' }[]; readonly rows: readonly (readonly Inline[])[] };
+export type PastTable = { readonly head: readonly { readonly label: string; readonly as: 'num' | 'wide' | 'plain' | 'value' | 'links' }[]; readonly rows: readonly (readonly Inline[])[] };
 
 export type Section = { readonly anchor: Anchor; readonly label: string; readonly count: RailCount | undefined; readonly body: Body };
 
@@ -284,7 +284,7 @@ export type PastAmounts = {
 /** The past values at one place the app fills. */
 export type PastNumbers = { readonly name: string; readonly lead: string; readonly table: PastTable | undefined; readonly says: Inline | undefined; readonly limit: readonly [string, string, string] | undefined; readonly notes: readonly string[]; readonly exact: Inline | undefined };
 export type PastBlock = {
-  readonly worked: { readonly answer: string; readonly rest: string };
+  readonly worked: { readonly answer: string; readonly rest: Inline };
   readonly numbers: readonly PastNumbers[];
   readonly differ: { readonly lead: string; readonly open: PastTable | undefined; readonly more: { readonly label: string; readonly table: PastTable } | undefined };
   readonly conclusion: AiText | undefined;
@@ -517,9 +517,16 @@ function targetOf(rule: Rule, context: Context): { readonly label: string; reado
   return { label: refWord(context.template, rule.ref, w), names, role: w.role.picked };
 }
 
+/**
+ * Where a card amount comes from: the chip, the words of its rules, `card new`'s step and the trial line all ask here.
+ * A new source, such as a minimum the program computes from a price, is one more member, which `promptStep` must then word.
+ */
+type AmountSource = { readonly kind: 'typed' } | { readonly kind: 'computed'; readonly computed: Computed };
+const sourceOfAmount = (field: Extract<CardField, { kind: 'amount' }>): AmountSource => (field.computed === undefined ? { kind: 'typed' } : { kind: 'computed', computed: field.computed });
+
 const isComputed = (template: Template, name: string): boolean => {
   const field = template.card.get(name);
-  return field?.kind === 'amount' && field.computed !== undefined;
+  return field?.kind === 'amount' && sourceOfAmount(field).kind === 'computed';
 };
 
 function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly field: string | undefined } | undefined {
@@ -1014,7 +1021,7 @@ function keyGroups(used: ReadonlySet<Who>, context: Context): KeyGroup[] {
   const claims = (['scalar', 'route', 'proof', 'unread'] as const).filter((claim) => rules.some((rule) => rule.claim === claim));
   const free = claims.map((claim) => {
     const tests = TESTED_CLAIMS.has(claim) ? rules.filter((rule) => rule.claim === claim).map((rule) => freeTest(rule, context)) : [];
-    if (tests.includes('not-tested')) return w.freeKeyNotTested;
+    if (tests.includes('not-tested')) return tests.every((test) => test === 'not-tested') ? w.freeKeyNotTested : w.freeKeySomeNotTested;
     return tests.length > 0 && tests.every((test) => test === 'all-failed') ? w.freeKeyAllFailed : w.freeKey[claim];
   });
   return [
@@ -1231,24 +1238,28 @@ function firstSentence(text: string): string {
   return text;
 }
 
-/** One side of a payment: the signer's Safe, or the full address with its registry name. */
+/** One side of a past payment: whoever sent that transaction, or the full address with its registry name. */
 function partyWords(party: Payment['from'], context: Context): string {
-  if (party === 'safe') return context.w.safe;
+  if (party === 'safe') return context.w.money.sender;
   const name = context.registry.byAddress.get(party)?.name;
   return name === undefined ? checksumAddress(party) : `${name} ${checksumAddress(party)}`;
 }
 
-/** A trace result's title: who pays whom, and that the template does not describe it. */
-function moneyTitle({ kind, to, pays, call }: Uncovered, context: Context): string {
+/**
+ * A trace result's title: who paid whom in how many past transactions, and that the template does not describe it. It
+ * never says what the signer's own Safe pays, since a past sender may have moved the tokens the other way.
+ */
+function moneyTitle({ kind, to, pays, call, transactions }: Uncovered, context: Context): string {
   const { w } = context;
   const side = (parties: readonly Payment['from'][]): string => {
     const distinct = [...new Set(parties)];
     return distinct.length === 1 ? partyWords(distinct[0] as Payment['from'], context) : w.money.several(distinct.length, w.money.addresses);
   };
-  if (pays.length === 0) return `${w.needsReview} · ${w.money.under(call)}`;
+  const past = (said: string): string => `${w.money.inPast(transactions)}${said}${w.money.notDescribed}`;
+  if (pays.length === 0) return past(w.money.unread(call, to === 'other' ? w.kind.token : to));
   const [from, payee] = [side(pays.map((p) => p.from)), side(pays.map((p) => p.to))];
   const said = kind === 'eth' ? w.money.eth(from, payee) : w.money[kind === 'approve' ? 'approve' : 'transfer'](from, payee, to === 'other' ? w.kind.token : to);
-  return `${said}${w.money.notDescribed}`;
+  return past(said);
 }
 
 /** What a result is about beyond its row's title, which already names its kind and its entry or test transaction, and why it is shown. */
@@ -1265,10 +1276,9 @@ function reviewSubject(result: Result, context: Context): { readonly subject: In
   }
   if (result.about.kind === 'money') {
     const { call, pays, others } = result.about.uncovered;
-    const counted = result.finding.kind === 'money-uncovered' ? ` ${w.inTransactions(result.finding.transactions)}` : '';
     const pairs = pays.length < 2 ? '' : ` ${w.money.parties(pays.slice(0, 5).map((p) => `${partyWords(p.from, context)} → ${partyWords(p.to, context)}`), pays.length)}`;
     const outside = others.length === 0 ? '' : ` ${w.outsideRegistry(others.slice(0, 5).map(checksumAddress), others.length)}`;
-    return { subject: undefined, why: [`${w.money.under(call)} ${words.why}${counted}${pairs}${outside}`] };
+    return { subject: undefined, why: [`${w.money.under(call)} ${words.why}${pairs}${outside}`] };
   }
   const doc = /\/doc\.(0x[0-9a-f]{8})\.(\w+)$/.exec(result.id);
   if (doc !== null) {
@@ -1603,6 +1613,10 @@ function knownFunctions(context: Context): Map<string, string> {
   return names;
 }
 
+/** The most past transactions linked for one group. */
+const MOST_LINKS = 3;
+const txLinks = (of: readonly Studied[]): Span[] => of.slice(0, MOST_LINKS).flatMap((s, i) => [...(i === 0 ? [] : [' ']), txLink(s.hash)]);
+
 const txLink = (hash: Hex): Span => ({ href: parseHttpsUrl(`https://etherscan.io/tx/${hash}`) as HttpsUrl, label: `${hash.slice(0, 10)}…` });
 
 function safeParties(search: PastTxs['search']): SafeParties | undefined {
@@ -1622,8 +1636,16 @@ function searchSpan(search: PastTxs['search']): SearchSpan | undefined {
 const ranAt = (s: Studied, w: Words): string =>
   s.time !== undefined ? dateOf(s.time) : s.block !== undefined ? w.atBlockNumber(s.block) : w.dateUnknown;
 
-/** A past value in a table: a number with its thousands grouped, anything else as it is. */
-const shownValue = (value: string): Span => (/^-?\d+$/.test(value) ? { num: grouped(BigInt(value)) } : { mono: value });
+const isNumber = (value: string): boolean => /^-?\d+$/.test(value);
+
+/** A number with its thousands grouped, or by name when it is the largest a wide unsigned type holds. */
+function numberText(n: bigint): string {
+  const bits = n > 0n ? n.toString(2) : '';
+  return bits.length >= 96 && bits.length % 8 === 0 && !bits.includes('0') ? `uint${bits.length} max (2^${bits.length} - 1)` : grouped(n);
+}
+
+/** A past value in a table: a number in full, anything else as it is. */
+const shownValue = (value: string): Span => (isNumber(value) ? { num: numberText(BigInt(value)) } : { mono: value });
 const grouped = (n: bigint): string => groupedTokens(n, 0);
 
 /** The fewest values whose 99th percentile says more than their largest. */
@@ -1632,7 +1654,7 @@ const PERCENTILE_VALUES = 100;
 function spreadTable(rows: readonly SpreadRow[], time: boolean, w: Words): PastTable {
   const { pastHead } = w;
   const most = rows.some((row) => (row.spread?.count ?? 0) >= PERCENTILE_VALUES);
-  const shown = (n: bigint | undefined, row: SpreadRow): Inline => [n !== undefined ? { num: time ? w.duration(n) : grouped(n) } : row.unrecorded > 0 ? w.pastNotRecorded : w.pastNone];
+  const shown = (n: bigint | undefined, row: SpreadRow, at: 'up' | 'down' = 'up'): Inline => [n !== undefined ? { num: time ? w.duration(n, at) : numberText(n) } : row.unrecorded > 0 ? w.pastNotRecorded : w.pastNone];
   return {
     head: [
       { label: pastHead.transactions, as: 'wide' },
@@ -1647,7 +1669,7 @@ function spreadTable(rows: readonly SpreadRow[], time: boolean, w: Words): PastT
       return [
         [w.pastGroup[group]],
         [{ num: `${spread?.count ?? unrecorded}` }],
-        shown(spread?.min, row),
+        shown(spread?.min, row, 'down'),
         shown(spread?.percentiles[0], row),
         ...(most ? [(spread?.count ?? 0) >= PERCENTILE_VALUES ? shown(spread?.percentiles[2], row) : []] : []),
         shown(spread?.max, row),
@@ -1679,12 +1701,24 @@ function pastNumbers({ name, key, past }: PastField, w: Words): PastNumbers {
         ...base,
         lead: w.pastValueLead,
         table: {
-          head: [{ label: w.pastHead.value, as: 'wide' }, { label: w.pastHead.safe, as: 'num' }, { label: w.pastHead.eoa, as: 'num' }],
-          rows: past.values.map((v) => [[shownValue(v.value)], [{ num: `${v.safe}` }], [{ num: `${v.eoa}` }]]),
+          head: [{ label: w.pastHead.value, as: 'wide' }, ...past.groups.map((group) => ({ label: w.pastGroup[group], as: 'num' as const }))],
+          rows: past.values.map((v) => [[shownValue(v.value)], ...past.groups.map((group): Inline => [{ num: `${v.counts[group]}` }])]),
         },
       };
     case 'distinct':
-      return { ...base, lead: w.pastValueLead, table: undefined, says: w.pastDistinct(past.distinct, past.safe, past.eoa, cutHex(past.most.value), past.most.safe + past.most.eoa) };
+      return {
+        ...base,
+        lead: w.pastValueLead,
+        table: {
+          head: [
+            { label: w.pastHead.transactions, as: 'wide' },
+            { label: w.pastHead.count, as: 'num' },
+            { label: w.pastHead.distinct, as: 'num' },
+            { label: w.pastHead.commonest, as: 'wide' },
+          ],
+          rows: past.rows.map(({ group, count, distinct, most }) => [[w.pastGroup[group]], [{ num: `${count}` }], [{ num: `${distinct}` }], w.pastMost(cutValue(most.value), most.times)]),
+        },
+      };
   }
 }
 
@@ -1694,13 +1728,14 @@ const placeOf = (at: string): string => at.replace(/^(call|multiSend\[\d+\])\./,
 /** Hex that reads as a short word, such as a string argument's. */
 const WORD = /^0x((?:2d|5f|3[0-9]|[46][1-9a-f]|[57][0-9a])+)$/;
 
-/** A value in a difference: one too long for a table's cell cut with its length, and a short word shown as text beside its hex. */
+/** A value in a difference: a number in full, hex or text too long for a table's cell cut with its length, and a short word as text beside its hex. */
 const cutValue = (value: string): Span => {
+  if (isNumber(value)) return { mono: numberText(BigInt(value)) };
   const text = value.length <= 34 ? WORD.exec(value)?.[1] : undefined;
   if (text !== undefined && text.length >= 6) return { mono: `"${Buffer.from(text, 'hex').toString('latin1')}" (${value})` };
-  return cutHex(value);
+  if (value.length <= 66) return { mono: value };
+  return { mono: /^0x(?:[0-9a-f]{2})*$/i.test(value) ? `${value.slice(0, 18)}…(${(value.length - 2) / 2} bytes)` : `${value.slice(0, 60)}…` };
 };
-const cutHex = (value: string): Span => ({ mono: value.length <= 66 ? value : `${value.slice(0, 18)}…(${(value.length - 2) / 2} bytes)` });
 
 /** What the past transactions of one group did differently, in the signer's words. */
 function differenceWords({ reason }: PastDifference, context: Context, sequence: (calls: readonly PastCall[]) => Span): Inline {
@@ -1764,11 +1799,18 @@ function differ(differences: readonly PastDifference[], context: Context, sequen
       { label: pastHead.safe, as: 'num' },
       { label: pastHead.eoa, as: 'num' },
       { label: pastHead.newest, as: 'plain' },
-      { label: pastHead.example, as: 'plain' },
+      { label: pastHead.example, as: 'links' },
     ],
     rows: list.map((difference) => {
-      const newest = newestOf(difference.studies) as Studied;
-      return [differenceWords(difference, context, sequence), by(difference.studies, 'safe'), by(difference.studies, 'eoa'), [ranAt(newest, w)], [txLink(newest.hash)]];
+      const sorted = newestFirst(difference.studies);
+      const [newest] = sorted ?? [];
+      return [
+        differenceWords(difference, context, sequence),
+        by(difference.studies, 'safe'),
+        by(difference.studies, 'eoa'),
+        [newest === undefined ? w.pastNotRecorded : ranAt(newest, w)],
+        txLinks(sorted ?? difference.studies),
+      ];
     }),
   });
   const [open, rest] = [differences.slice(0, OPEN_DIFFERENCES), differences.slice(OPEN_DIFFERENCES)];
@@ -1786,10 +1828,14 @@ function worked(exact: readonly Studied[], template: Template, w: Words): PastBl
     return { times: mine.length, senders: new Set(mine.map((s) => s.sender.address)).size };
   };
   const [safe, eoa] = [senders('safe'), senders('eoa')];
-  const newest = newestOf(exact);
+  const sorted = newestFirst(exact);
+  const [newest] = sorted ?? [];
   return {
     answer: safe.times === 0 ? w.pastNo : w.pastYes(safe.times, safe.senders),
-    rest: w.sentences([w.pastEoa(eoa.times, eoa.senders, template.calls.length === 1), ...(newest === undefined ? [] : [w.pastNewest(ranAt(newest, w)), w.pastSucceeded])]),
+    rest: [
+      w.sentences([w.pastEoa(eoa.times, eoa.senders, template.calls.length === 1), ...(newest === undefined ? [] : [w.pastNewest(ranAt(newest, w))]), ...(exact.length === 0 ? [] : [w.pastSucceeded])]),
+      ...(exact.length === 0 ? [] : [w.pastLinks(Math.min(exact.length, MOST_LINKS), sorted !== undefined), ...txLinks(sorted ?? exact)]),
+    ],
   };
 }
 
@@ -1926,22 +1972,26 @@ function promptStep(name: string, field: CardField, context: Context): NextStep 
       return step([...cardNewPrompt, w.pickOwner]);
     case 'amount': {
       const token = field.of === 'eth' ? 'ETH' : (onlyName(field.of, context)?.name ?? w.picked(refWord(context.template, field.of, w)));
-      if (field.computed === undefined) {
-        return step(
-          [...cardNewPrompt, ...w.typeAmount(token, { code: '1250.5' }, { code: '1,000,611.448606' })],
-          [[w.amountPrints], ...(field.max === undefined ? [] : [w.orMax({ code: 'max' }, `${field.max.value}`)])],
-        );
+      const source = sourceOfAmount(field);
+      switch (source.kind) {
+        case 'typed':
+          return step(
+            [...cardNewPrompt, ...w.typeAmount(token, { code: '1250.5' }, { code: '1,000,611.448606' })],
+            [[w.amountPrints], ...(field.max === undefined ? [] : [w.orMax({ code: 'max' }, `${field.max.value}`)])],
+          );
+        case 'computed': {
+          const { computed } = source;
+          const bps = (n: number | bigint): string => percent(BigInt(n), 10_000n, w);
+          const margin = computed.margin === undefined ? '' : w.margin(bps(computed.margin.bps));
+          return step(
+            [...cardNewPrompt, w.computedPrompt(carries(context.template, name))],
+            [
+              w.computedHow({ code: computed.read.fn.name }, token, computed.bound === 'floor', bps(slippageBps(computed)), bps(computed.default.bps), margin),
+              w.presetSource({ href: computed.default.source, label: shortUrl(computed.default.source) }),
+            ],
+          );
+        }
       }
-      const { computed } = field;
-      const bps = (n: number | bigint): string => percent(BigInt(n), 10_000n, w);
-      const margin = computed.margin === undefined ? '' : w.margin(bps(computed.margin.bps));
-      return step(
-        [...cardNewPrompt, w.computedPrompt(carries(context.template, name))],
-        [
-          w.computedHow({ code: computed.read.fn.name }, token, computed.bound === 'floor', bps(slippageBps(computed)), bps(computed.default.bps), margin),
-          w.presetSource({ href: computed.default.source, label: shortUrl(computed.default.source) }),
-        ],
-      );
     }
   }
 }
@@ -1987,9 +2037,9 @@ function nextSection(context: Context): Section {
   const { template, w } = context;
   const fields = [...template.card];
   const typed = (field: CardField): boolean => field.kind === 'amount' || field.kind === 'nonce' || field.kind === 'threshold' || field.kind === 'percent';
-  const computed = (field: CardField): boolean => field.kind === 'amount' && field.computed !== undefined;
+  const computed = (field: CardField): boolean => field.kind === 'amount' && sourceOfAmount(field).kind === 'computed';
   const vault = context.inputs.subject.vault !== undefined;
-  const trial = fields.some(([, f]) => f.kind === 'amount' && f.computed === undefined) ? w.trial(vault) : '';
+  const trial = fields.some(([, f]) => f.kind === 'amount' && sourceOfAmount(f).kind === 'typed') ? w.trial(vault) : '';
   const prompts = [
     ...fields.filter(([, f]) => !typed(f)),
     ...fields.filter(([, f]) => typed(f) && !computed(f)),

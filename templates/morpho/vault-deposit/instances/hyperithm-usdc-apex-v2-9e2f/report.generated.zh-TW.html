@@ -27,6 +27,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-
 a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
 a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+[data-ai]{overflow-wrap:anywhere}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
 .addr.line{display:block;margin-top:4px}
@@ -212,7 +213,7 @@ details.fixed[open]>summary .chev{transform:rotate(90deg)}
 }
 
 .rows{border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
@@ -270,8 +271,20 @@ details.fold .ad:last-child{border-bottom:0}
 .pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
 .pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
 .pt2 .n{text-align:right}
+.pt2 th{vertical-align:bottom}
+.pt2 th.n{white-space:normal}
 .pt2 td.nw{white-space:nowrap}
 .pt2 td.v{color:var(--fg);font-weight:590}
+.pt2 .tx{min-width:104px}
+@media (max-width:760px){
+  .pt2,.pt2 tbody,.pt2 tr{display:block}
+  .pt2 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .pt2 tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .pt2 td,.pt2 td.n{display:grid;grid-template-columns:minmax(0,130px) minmax(0,1fr);gap:12px;padding:3px 0;border-bottom:0;text-align:left}
+  .pt2 td::before{content:attr(data-label);font-size:var(--t-label);font-weight:400;color:var(--fg3)}
+  .pt2 td.nw{white-space:normal}
+  .pt2 td.what{min-width:0}
+}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -662,17 +675,17 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h3>1. 這個模板的交易以前成功過嗎？</h3>
   <p class="ans"><b>研究過的交易裡沒有 Safe 這樣做過。</b> EOA：0 次。</p>
   <h3>2. app 填的值，一般是多少？</h3>
-  <div class="sh"><code>data</code><span>填的值</span></div>
-  <p class="cap">1 個不同的值（Safe 0 筆、EOA 1 筆）。最常見的是 <span class="addr">0x0000000000000000…(128 bytes)</span>，1 筆。</p>
+  <div class="sh"><code>data</code><span>填的值</span></div><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">交易</th><th scope="col" class="n">數量</th><th scope="col" class="n">不同的值</th><th scope="col" class="what">最常見</th></tr></thead><tbody>
+    <tr><td class="what" data-label="交易"><span>EOA，別的地方不同</span></td><td class="n" data-label="數量"><span><span class="num">1</span></span></td><td class="n" data-label="不同的值"><span><span class="num">1</span></span></td><td class="what" data-label="最常見"><span><span class="addr">0x0000000000000000…(128 bytes)</span>，1 筆</span></td></tr></tbody></table></div>
   <div class="sh"><code>deadline</code><span>設在多久之後，從交易所在的區塊起算</span></div><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">交易</th><th scope="col" class="n">數量</th><th scope="col" class="nw v">最短</th><th scope="col" class="nw v">一半不超過</th><th scope="col" class="nw v">最長</th></tr></thead><tbody>
-    <tr><td class="what">Safe，符合模板</td><td class="n"><span class="num">0</span></td><td class="nw v">無</td><td class="nw v">無</td><td class="nw v">無</td></tr>
-    <tr><td class="what">EOA，別的地方不同</td><td class="n"><span class="num">1</span></td><td class="nw v">沒有記錄</td><td class="nw v">沒有記錄</td><td class="nw v">沒有記錄</td></tr></tbody></table></div>
+    <tr><td class="what" data-label="交易"><span>Safe，符合模板</span></td><td class="n" data-label="數量"><span><span class="num">0</span></span></td><td class="nw v" data-label="最短"><span>無</span></td><td class="nw v" data-label="一半不超過"><span>無</span></td><td class="nw v" data-label="最長"><span>無</span></td></tr>
+    <tr><td class="what" data-label="交易"><span>EOA，別的地方不同</span></td><td class="n" data-label="數量"><span><span class="num">1</span></span></td><td class="nw v" data-label="最短"><span>沒有記錄</span></td><td class="nw v" data-label="一半不超過"><span>沒有記錄</span></td><td class="nw v" data-label="最長"><span>沒有記錄</span></td></tr></tbody></table></div>
   <p class="cap">模板上限：<b class="lm">7 天</b>。更久就 MISMATCH。</p>
   <h3>3. 其他交易哪裡不同？</h3>
   <p class="ans">7 筆交易做了這個模板不允許的事。</p>
-  <p class="ans"><span class="aiw" data-ai><span>沒有 Safe 在這個 vault 走過模板的路線：存款的 Safe 都走 Bundler3，現在不接受。走新路線的只有一個 EOA，用 USDC 的 <code>permit</code> 取代授權。</span><span class="byai">AI 研究</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="nw">例子</th></tr></thead><tbody>
-    <tr><td class="what">呼叫了別的函式：<code>usdc.approve → bundler3.0x374f435d</code></td><td class="n"><span class="num">6</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 24922291</td><td class="nw"><a href="https://etherscan.io/tx/0xbbcae7b746b4e3e6c9cb56ed15301e39a7f32b4eb5ea55dcda4c1f7a6de17704">0xbbcae7b7…</a></td></tr>
-    <tr><td class="what"><code>vaultBundlesV1Deposit.assetPermit.kind</code> 是 <span class="addr">1</span>，模板要 <span class="addr">0</span></td><td class="n"><span class="num">0</span></td><td class="n"><span class="num">1</span></td><td class="nw">區塊 26319532</td><td class="nw"><a href="https://etherscan.io/tx/0x03652285a11a34dd743131fa10047dc5baf4073986a7d27e523e9d3899707e32">0x03652285…</a></td></tr></tbody></table></div>
+  <p class="ans"><span class="aiw" data-ai><span>沒有 Safe 在這個 vault 走過模板的路線：存款的 Safe 都走 Bundler3，現在不接受。走新路線的只有一個 EOA，用 USDC 的 <code>permit</code> 取代授權。</span><span class="byai">AI 研究</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="tx">例子（最多 3 筆）</th></tr></thead><tbody>
+    <tr><td class="what" data-label="哪裡不同"><span>呼叫了別的函式：<code>usdc.approve → bundler3.0x374f435d</code></span></td><td class="n" data-label="Safe"><span><span class="num">6</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 24922291</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xbbcae7b746b4e3e6c9cb56ed15301e39a7f32b4eb5ea55dcda4c1f7a6de17704">0xbbcae7b7…</a> <a href="https://etherscan.io/tx/0x8243b00308694a896022c9dc2147c751d06cbf4f26e85beba27fcde5af46bad0">0x8243b003…</a> <a href="https://etherscan.io/tx/0xd95f848f0c3cb89a0eabc88c15fbb06abaddf534c74fe7fcd879b3f15ad7b350">0xd95f848f…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span><code>vaultBundlesV1Deposit.assetPermit.kind</code> 是 <span class="addr">1</span>，模板要 <span class="addr">0</span></span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">1</span></span></td><td class="nw" data-label="最近"><span>區塊 26319532</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x03652285a11a34dd743131fa10047dc5baf4073986a7d27e523e9d3899707e32">0x03652285…</a></span></td></tr></tbody></table></div>
   <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>程式怎麼搜尋</span></summary>
   <h3>搜尋 hyperithm-usdc-apex-v2-9e2f 的鑄造（存款），找到 7038 筆，研究 240 筆，含證實為 Safe 的參與方的 17 筆全數研究</h3>
   <p class="cap">搜尋了最近一年的每一筆交易，從區塊 23862266（2025-11-23）到區塊 26490265（2026-11-25），沒有遺漏。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">7038 = 7038</span>）。</p>

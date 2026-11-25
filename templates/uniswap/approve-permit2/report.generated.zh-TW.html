@@ -27,6 +27,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-
 a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
 a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+[data-ai]{overflow-wrap:anywhere}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
 .addr.line{display:block;margin-top:4px}
@@ -212,7 +213,7 @@ details.fixed[open]>summary .chev{transform:rotate(90deg)}
 }
 
 .rows{border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
@@ -270,8 +271,20 @@ details.fold .ad:last-child{border-bottom:0}
 .pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
 .pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
 .pt2 .n{text-align:right}
+.pt2 th{vertical-align:bottom}
+.pt2 th.n{white-space:normal}
 .pt2 td.nw{white-space:nowrap}
 .pt2 td.v{color:var(--fg);font-weight:590}
+.pt2 .tx{min-width:104px}
+@media (max-width:760px){
+  .pt2,.pt2 tbody,.pt2 tr{display:block}
+  .pt2 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .pt2 tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .pt2 td,.pt2 td.n{display:grid;grid-template-columns:minmax(0,130px) minmax(0,1fr);gap:12px;padding:3px 0;border-bottom:0;text-align:left}
+  .pt2 td::before{content:attr(data-label);font-size:var(--t-label);font-weight:400;color:var(--fg3)}
+  .pt2 td.nw{white-space:normal}
+  .pt2 td.what{min-width:0}
+}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -531,26 +544,26 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>過去交易</h2>
   <h3>1. 這個模板的交易以前成功過嗎？</h3>
-  <p class="ans"><b>研究過的交易裡沒有 Safe 這樣做過。</b> EOA：4 次，來自 4 個地址。最近一次是區塊 26484778。全部成功執行。</p>
+  <p class="ans"><b>研究過的交易裡沒有 Safe 這樣做過。</b> EOA：4 次，來自 4 個地址。最近一次是區塊 26484778。全部成功執行。最近 3 筆：<a href="https://etherscan.io/tx/0xdde00dd4dcc869cf18dd540dfaa45bedc1581ad972df58f4f8639bb36aaf0c7d">0xdde00dd4…</a> <a href="https://etherscan.io/tx/0xb3eecf7364fdc0769a2d423c58418a5c110930725d60ffde2c31221002fdc3f3">0xb3eecf73…</a> <a href="https://etherscan.io/tx/0x53913a968b6bffc7b9aaf2abaf1ecc4b841afa4b884fa4bdb1328bb2ec776af5">0x53913a96…</a></p>
   <h3>2. app 填的值，一般是多少？</h3>
   <p class="ans">這個模板沒有留任何值給 app 填。</p>
   <h3>3. 其他交易哪裡不同？</h3>
   <p class="ans">258 筆交易做了這個模板不允許的事。</p>
-  <p class="ans"><span class="aiw" data-ai><span>兩次搜尋都沒涵蓋一整年：都停在 50 頁上限，usdc 只到 13.8 小時，morpho 只到 45.8 天。「沒有 Safe 授權 Permit2」只對這次樣本成立。morpho 的 183 個 Safe 有 182 個是同一種批次，授權的是別的 spender。符合的 4 筆都是 EOA。</span><span class="byai">AI 研究</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="nw">例子</th></tr></thead><tbody>
-    <tr><td class="what">除了模板的呼叫，還有別的：<code>0xBEeF007ECFBfdF9B919d0050821A9B6DbD634fF0.approve → 0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae.0xbdac7ca3 → 0x5F7827FDeb7c20b443265Fc2F40845B715385Ff2.approve → morpho.approve</code></td><td class="n"><span class="num">182</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 26481598</td><td class="nw"><a href="https://etherscan.io/tx/0xba1813588868365d179a55b78c7d0ff6ce645b6c469143f7d970893d5069db56">0xba181358…</a></td></tr>
-    <tr><td class="what"><code>approve.value</code> 是 55 種別的值，模板要 <span class="addr">115792089237316195…(38 bytes)</span></td><td class="n"><span class="num">0</span></td><td class="n"><span class="num">64</span></td><td class="nw">區塊 26484805</td><td class="nw"><a href="https://etherscan.io/tx/0x2556b41c1a2b9eda317fdbf27d19f450673433d5f4af4568b229bac304cf1e18">0x2556b41c…</a></td></tr>
-    <tr><td class="what"><code>approve.spender</code> 是 6 個別的地址，不是模板的 permit2</td><td class="n"><span class="num">0</span></td><td class="n"><span class="num">8</span></td><td class="nw">區塊 26483322</td><td class="nw"><a href="https://etherscan.io/tx/0x9345cbb064e0792663fa16f46a8776552a2f3cedbdb363ce2d4815e82be3cd59">0x9345cbb0…</a></td></tr>
-    <tr><td class="what">除了模板的呼叫，還有別的：<code>morpho.approve → 0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74.0x0d0d9800</code></td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 26349950</td><td class="nw"><a href="https://etherscan.io/tx/0xaa4613b6315ce836309807fccca893bb84fd41d65fb926342317188a87d9bd2e">0xaa4613b6…</a></td></tr>
-    <tr><td class="what">delegatecall 到不是官方 MultiSend 的合約</td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 26481205</td><td class="nw"><a href="https://etherscan.io/tx/0x0044797db135d9f3922d8361397149882b6de98a88ea1e13721a9a7464b19e78">0x0044797d…</a></td></tr>
-    <tr><td class="what">除了模板的呼叫，還有別的：<code>usdc.approve → 0xc3aD34De18B59A24BD0877e454Fb924181F09C8f.0xa0712d68</code></td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 26481252</td><td class="nw"><a href="https://etherscan.io/tx/0xa4966bf4308aa20fea793ad0cf6a64314d0d40c9e84b66e5b204f46234d97047">0xa4966bf4…</a></td></tr>
-    <tr><td class="what">除了模板的呼叫，還有別的：<code>usdc.approve → 0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE.0xf434d6ca</code></td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 26484426</td><td class="nw"><a href="https://etherscan.io/tx/0xdc8add1362335eb6fae4401075e81b5f5e836ee5de91b47b385fb1935c5e2b35">0xdc8add13…</a></td></tr></tbody></table></div>
+  <p class="ans"><span class="aiw" data-ai><span>兩次搜尋都沒涵蓋一整年：都停在 50 頁上限，usdc 只到 13.8 小時，morpho 只到 45.8 天。「沒有 Safe 授權 Permit2」只對這次樣本成立。morpho 的 183 個 Safe 有 182 個是同一種批次，授權的是別的 spender。符合的 4 筆都是 EOA。</span><span class="byai">AI 研究</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="tx">例子（最多 3 筆）</th></tr></thead><tbody>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>0xBEeF007ECFBfdF9B919d0050821A9B6DbD634fF0.approve → 0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae.0xbdac7ca3 → 0x5F7827FDeb7c20b443265Fc2F40845B715385Ff2.approve → morpho.approve</code></span></td><td class="n" data-label="Safe"><span><span class="num">182</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26481598</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xba1813588868365d179a55b78c7d0ff6ce645b6c469143f7d970893d5069db56">0xba181358…</a> <a href="https://etherscan.io/tx/0x01673a2bd7bb27e459bb4101c2494972ce5b2cd9f334e3d1270609f02626e3bb">0x01673a2b…</a> <a href="https://etherscan.io/tx/0xa08fca9b9401fd94c053dfcf4a634ade4aff0f58e5f7db7967d30bbe320b8851">0xa08fca9b…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span><code>approve.value</code> 是 55 種別的值，模板要 <span class="addr">uint256 max (2^256 - 1)</span></span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">64</span></span></td><td class="nw" data-label="最近"><span>區塊 26484805</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x2556b41c1a2b9eda317fdbf27d19f450673433d5f4af4568b229bac304cf1e18">0x2556b41c…</a> <a href="https://etherscan.io/tx/0xaa8315fc500f43a90bb5058940147520e83fe26d3b4103b36c757a11a10e8736">0xaa8315fc…</a> <a href="https://etherscan.io/tx/0xefd4452d6d11450e93e20afe341b1aacc8a8fb5c24164de711d62e8a4110deb0">0xefd4452d…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span><code>approve.spender</code> 是 6 個別的地址，不是模板的 permit2</span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">8</span></span></td><td class="nw" data-label="最近"><span>區塊 26483322</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x9345cbb064e0792663fa16f46a8776552a2f3cedbdb363ce2d4815e82be3cd59">0x9345cbb0…</a> <a href="https://etherscan.io/tx/0x84105518f8c6015b265d3030685be8c8373b92449d0887fa1eef1094e2e00527">0x84105518…</a> <a href="https://etherscan.io/tx/0x86371fa7ccd2b3e84579a5eb2f3b6bc51684eb6ac08f21356082209fcd8f2d13">0x86371fa7…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>morpho.approve → 0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74.0x0d0d9800</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26349950</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xaa4613b6315ce836309807fccca893bb84fd41d65fb926342317188a87d9bd2e">0xaa4613b6…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>delegatecall 到不是官方 MultiSend 的合約</span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26481205</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x0044797db135d9f3922d8361397149882b6de98a88ea1e13721a9a7464b19e78">0x0044797d…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>usdc.approve → 0xc3aD34De18B59A24BD0877e454Fb924181F09C8f.0xa0712d68</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26481252</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xa4966bf4308aa20fea793ad0cf6a64314d0d40c9e84b66e5b204f46234d97047">0xa4966bf4…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>usdc.approve → 0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE.0xf434d6ca</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26484426</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xdc8add1362335eb6fae4401075e81b5f5e836ee5de91b47b385fb1935c5e2b35">0xdc8add13…</a></span></td></tr></tbody></table></div>
   <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>程式怎麼搜尋</span></summary>
   <h3>搜尋 morpho 的Approval，找到 26661 筆，研究 240 筆</h3>
-  <p class="cap">從最新的區塊往回，搜尋了區塊 26156110（2026-10-09）到區塊 26484833（2026-11-24）的每一筆交易，共 328724 個區塊，約 45.8 天，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。只有 Etherscan 搜尋事件，找到 <span class="num">26661</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
+  <p class="cap">從最新的區塊往回，搜尋了區塊 26156110（2026-10-09）到區塊 26484833（2026-11-24）的每一筆交易，共 328724 個區塊，約 45.7 天，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。只有 Etherscan 搜尋事件，找到 <span class="num">26661</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
   <p class="cap">這些交易是從事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。</p>
   <p class="cap">另外 42 筆是別的操作，不列入：<code>0xBdb3ba9ffe392549E1f8658DD2630c141fDF47B6.0x000000c3</code> 16 筆、<code>0xE41698520E4817B55C1841859a36847d50F0c82F.0x00000000</code> 5 筆、<code>0xD1c6aca7eA7eD44E1873dAFa054c28Ceb690c7Eb.0x9eb723c7</code> 4 筆、<code>0x111111125421cA6dc452d289314280a0f8842A65.0x07ed2379</code> 2 筆，還有別的。</p>
   <h3>搜尋 usdc 的Approval，找到 18893 筆，研究 240 筆</h3>
-  <p class="cap">從最新的區塊往回，搜尋了區塊 26480689（2026-11-23）到區塊 26484819（2026-11-24）的每一筆交易，共 4131 個區塊，約 13.8 小時，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。只有 Etherscan 搜尋事件，找到 <span class="num">18893</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
+  <p class="cap">從最新的區塊往回，搜尋了區塊 26480689（2026-11-23）到區塊 26484819（2026-11-24）的每一筆交易，共 4131 個區塊，約 13.7 小時，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。只有 Etherscan 搜尋事件，找到 <span class="num">18893</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
   <p class="cap">另外 176 筆是別的操作，不列入：<code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 26 筆、<code>0x5567954cD026CEbFE486062cb75848e0f1c12E58.0x0a2b8f36</code> 13 筆、<code>gpv2-settlement.0x13d79a0b</code> 11 筆、<code>0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108.0x765e827f</code> 7 筆，還有別的。</p>
   </details>
 </section>

@@ -27,6 +27,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-
 a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
 a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+[data-ai]{overflow-wrap:anywhere}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
 .addr.line{display:block;margin-top:4px}
@@ -212,7 +213,7 @@ details.fixed[open]>summary .chev{transform:rotate(90deg)}
 }
 
 .rows{border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
@@ -270,8 +271,20 @@ details.fold .ad:last-child{border-bottom:0}
 .pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
 .pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
 .pt2 .n{text-align:right}
+.pt2 th{vertical-align:bottom}
+.pt2 th.n{white-space:normal}
 .pt2 td.nw{white-space:nowrap}
 .pt2 td.v{color:var(--fg);font-weight:590}
+.pt2 .tx{min-width:104px}
+@media (max-width:760px){
+  .pt2,.pt2 tbody,.pt2 tr{display:block}
+  .pt2 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .pt2 tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .pt2 td,.pt2 td.n{display:grid;grid-template-columns:minmax(0,130px) minmax(0,1fr);gap:12px;padding:3px 0;border-bottom:0;text-align:left}
+  .pt2 td::before{content:attr(data-label);font-size:var(--t-label);font-weight:400;color:var(--fg3)}
+  .pt2 td.nw{white-space:normal}
+  .pt2 td.what{min-width:0}
+}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -781,14 +794,14 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>過去交易</h2>
   <h3>1. 這個模板的交易以前成功過嗎？</h3>
-  <p class="ans"><b>成功過，2 個 Safe 一共做過 2 次。</b> EOA：0 次。最近一次是區塊 25091171。全部成功執行。</p>
+  <p class="ans"><b>成功過，2 個 Safe 一共做過 2 次。</b> EOA：0 次。最近一次是區塊 25091171。全部成功執行。最近 2 筆：<a href="https://etherscan.io/tx/0x00d506d450bb2583a70c8887f6bb78bab6f237c35fe40a5925b2f6e69625e890">0x00d506d4…</a> <a href="https://etherscan.io/tx/0x04c283eac9c0cb3fdcd7970c513c10b6c31c493e5e580493af5e33a830273d9a">0x04c283ea…</a></p>
   <h3>2. app 填的值，一般是多少？</h3>
   <p class="ans">這個模板沒有留任何值給 app 填。</p>
   <h3>3. 其他交易哪裡不同？</h3>
   <p class="ans">2 筆交易做了這個模板不允許的事。</p>
-  <p class="ans"><span class="aiw" data-ai><span>不合的是降低別種上限，或在一個 multicall 裡同時降低抵押品和市場的上限；都會是 MISMATCH。</span><span class="byai">AI 研究</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="nw">例子</th></tr></thead><tbody>
-    <tr><td class="what">資料不是 <code>capId(string,address,(address,address,address,address,uint256))</code> 的標準編碼</td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 25129557</td><td class="nw"><a href="https://etherscan.io/tx/0x3252736cbe7bd97faea5f0bfb62b6f78127fff89ae9dc550b9cb6cd4c40c06e5">0x3252736c…</a></td></tr>
-    <tr><td class="what"><code>multicall.data</code> 有 4 項，模板是 2 項，呼叫 <code>acuto-usdc-v2-4a57.decreaseAbsoluteCap → acuto-usdc-v2-4a57.decreaseRelativeCap → acuto-usdc-v2-4a57.decreaseAbsoluteCap → acuto-usdc-v2-4a57.decreaseRelativeCap</code></td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 25688245</td><td class="nw"><a href="https://etherscan.io/tx/0x4fc24efbc06d7617548c9226db78f4b18dbaa224a5bffb8ee0952c316f38578b">0x4fc24efb…</a></td></tr></tbody></table></div>
+  <p class="ans"><span class="aiw" data-ai><span>不合的是降低別種上限，或在一個 multicall 裡同時降低抵押品和市場的上限；都會是 MISMATCH。</span><span class="byai">AI 研究</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="tx">例子（最多 3 筆）</th></tr></thead><tbody>
+    <tr><td class="what" data-label="哪裡不同"><span>資料不是 <code>capId(string,address,(address,address,address,address,uint256))</code> 的標準編碼</span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 25129557</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x3252736cbe7bd97faea5f0bfb62b6f78127fff89ae9dc550b9cb6cd4c40c06e5">0x3252736c…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span><code>multicall.data</code> 有 4 項，模板是 2 項，呼叫 <code>acuto-usdc-v2-4a57.decreaseAbsoluteCap → acuto-usdc-v2-4a57.decreaseRelativeCap → acuto-usdc-v2-4a57.decreaseAbsoluteCap → acuto-usdc-v2-4a57.decreaseRelativeCap</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 25688245</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x4fc24efbc06d7617548c9226db78f4b18dbaa224a5bffb8ee0952c316f38578b">0x4fc24efb…</a></span></td></tr></tbody></table></div>
   <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>程式怎麼搜尋</span></summary>
   <h3>搜尋 acuto-usdc-v2-4a57 的DecreaseAbsoluteCap，找到 4 筆，研究 4 筆</h3>
   <p class="cap">只有 Etherscan 搜尋事件，找到 <span class="num">4</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>

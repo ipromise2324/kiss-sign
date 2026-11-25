@@ -27,6 +27,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-
 a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
 a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+[data-ai]{overflow-wrap:anywhere}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
 .addr.line{display:block;margin-top:4px}
@@ -212,7 +213,7 @@ details.fixed[open]>summary .chev{transform:rotate(90deg)}
 }
 
 .rows{border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
@@ -270,8 +271,20 @@ details.fold .ad:last-child{border-bottom:0}
 .pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
 .pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
 .pt2 .n{text-align:right}
+.pt2 th{vertical-align:bottom}
+.pt2 th.n{white-space:normal}
 .pt2 td.nw{white-space:nowrap}
 .pt2 td.v{color:var(--fg);font-weight:590}
+.pt2 .tx{min-width:104px}
+@media (max-width:760px){
+  .pt2,.pt2 tbody,.pt2 tr{display:block}
+  .pt2 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .pt2 tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .pt2 td,.pt2 td.n{display:grid;grid-template-columns:minmax(0,130px) minmax(0,1fr);gap:12px;padding:3px 0;border-bottom:0;text-align:left}
+  .pt2 td::before{content:attr(data-label);font-size:var(--t-label);font-weight:400;color:var(--fg3)}
+  .pt2 td.nw{white-space:normal}
+  .pt2 td.what{min-width:0}
+}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -577,23 +590,23 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>Past transactions</h2>
   <h3>1. Has this template&#39;s transaction worked before?</h3>
-  <p class="ans"><b>Yes, 2 times, by 2 Safes.</b> EOA: 83 times, from 82 addresses, each sending one of the template&#39;s calls. The newest: 2026-11-18. All of them succeeded.</p>
+  <p class="ans"><b>Yes, 2 times, by 2 Safes.</b> EOA: 83 times, from 82 addresses, each sending one of the template&#39;s calls. The newest: 2026-11-18. All of them succeeded. The newest 3: <a href="https://etherscan.io/tx/0x0ed042ba6bf0237fe6ff3b6aeb692725f98fee91066a51eeae0ed96e24c8f629">0x0ed042ba…</a> <a href="https://etherscan.io/tx/0x68e8d982a71005c1cb65188752bee3e9b2b14a573687d8e02fc6d176d83da97a">0x68e8d982…</a> <a href="https://etherscan.io/tx/0xcaffc59c958f94826a064ef9e07265b6c20a14c10f8ac76bbf2b1b894c217740">0xcaffc59c…</a></p>
   <h3>2. What values are normal in what the app fills?</h3>
   <p class="ans">This template leaves no value for the app to fill.</p>
   <h3>3. How did the others differ?</h3>
   <p class="ans">77 transactions did something this template refuses.</p>
-  <p class="ans"><span class="aiw" data-ai><span>Most Safes sent <code>supply</code> alone, spending an allowance given earlier, and some went through DeFi Saver&#39;s contract by delegatecall; verify gives MISMATCH for both. Propose the exact approval and the supply together as one batch.</span><span class="byai">AI research</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="nw">Example</th></tr></thead><tbody>
-    <tr><td class="what">No <code>approve</code> in it: only <code>compound-v3-cusdcv3.supply</code></td><td class="n"><span class="num">60</span></td><td class="n"><span class="num">0</span></td><td class="nw">block 26377193</td><td class="nw"><a href="https://etherscan.io/tx/0x099c0d2dae1ae1fc15fef1883a67d4a649a59c209af5d5f79c71036177f27670">0x099c0d2d…</a></td></tr>
-    <tr><td class="what">A delegatecall to a contract that is not the official MultiSend</td><td class="n"><span class="num">12</span></td><td class="n"><span class="num">0</span></td><td class="nw">block 26178043</td><td class="nw"><a href="https://etherscan.io/tx/0x6d186ea987391f9607ae5b1f1c8493475e3f342fcd5a9c70470be00622ab3d90">0x6d186ea9…</a></td></tr>
-    <tr><td class="what">The template&#39;s calls and others: <code>0x8E5ce3c78D099667499aceD49B4D5E3D21c81510.0x6a761202 → usdc.approve → compound-v3-cusdcv3.supply</code></td><td class="n"><span class="num">3</span></td><td class="n"><span class="num">0</span></td><td class="nw">block 26276992</td><td class="nw"><a href="https://etherscan.io/tx/0xa856766fbe8dbbc40ca1b97eeabf3f9fff3683f40df0b7c7c4ca5d611ed6e679">0xa856766f…</a></td></tr>
-    <tr><td class="what">A batch of more than 4 calls</td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">block 24137961</td><td class="nw"><a href="https://etherscan.io/tx/0x79cd605220e51649c8055fccf8afcd22044bfc5f42e2010f662ff5a3c61f6555">0x79cd6052…</a></td></tr>
-    <tr><td class="what">The template&#39;s calls and others: <code>0x6B175474E89094C44Da98b954EedeAC495271d0F.approve → 0xf6e72Db5454dd049d0788e411b06CfAF16853042.0x8d7ef9bb → usdc.approve → compound-v3-cusdcv3.supply</code></td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">block 24629375</td><td class="nw"><a href="https://etherscan.io/tx/0x4a2bbdda41e98aa51a14264fb499efedd6eaadfa73ce9b7dad64d2dad82e4d34">0x4a2bbdda…</a></td></tr></tbody></table></div>
+  <p class="ans"><span class="aiw" data-ai><span>Most Safes sent <code>supply</code> alone, spending an allowance given earlier, and some went through DeFi Saver&#39;s contract by delegatecall; verify gives MISMATCH for both. Propose the exact approval and the supply together as one batch.</span><span class="byai">AI research</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="tx">Examples (up to 3)</th></tr></thead><tbody>
+    <tr><td class="what" data-label="What was different"><span>No <code>approve</code> in it: only <code>compound-v3-cusdcv3.supply</code></span></td><td class="n" data-label="Safe"><span><span class="num">60</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 26377193</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x099c0d2dae1ae1fc15fef1883a67d4a649a59c209af5d5f79c71036177f27670">0x099c0d2d…</a> <a href="https://etherscan.io/tx/0x80e4e2704ce22e2ecbad92690fcac6e003f8d664b1fe65f348687c4627abd939">0x80e4e270…</a> <a href="https://etherscan.io/tx/0x4ffaef50a7ad730b04edff22d392f016882fb0a5f12acc7e4553f90330fd5361">0x4ffaef50…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>A delegatecall to a contract that is not the official MultiSend</span></td><td class="n" data-label="Safe"><span><span class="num">12</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 26178043</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x6d186ea987391f9607ae5b1f1c8493475e3f342fcd5a9c70470be00622ab3d90">0x6d186ea9…</a> <a href="https://etherscan.io/tx/0xa5dec9c6307ccac74e4e2e5e76501aeb8893b179e00eb30d577e6b731c1d64b0">0xa5dec9c6…</a> <a href="https://etherscan.io/tx/0xc5bdc26f0e5f6770c8dfc883eef98152efa20d2b437d551ae9958d2c55275657">0xc5bdc26f…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>0x8E5ce3c78D099667499aceD49B4D5E3D21c81510.0x6a761202 → usdc.approve → compound-v3-cusdcv3.supply</code></span></td><td class="n" data-label="Safe"><span><span class="num">3</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 26276992</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xa856766fbe8dbbc40ca1b97eeabf3f9fff3683f40df0b7c7c4ca5d611ed6e679">0xa856766f…</a> <a href="https://etherscan.io/tx/0x421d37f137a65b098a08ccba382618b32158d840366c3632e04750ca11877197">0x421d37f1…</a> <a href="https://etherscan.io/tx/0x7ab2382f83b2f6d0df204d0ddd0a131e74a362d0274dcc5593184168e45193aa">0x7ab2382f…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>A batch of more than 4 calls</span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 24137961</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x79cd605220e51649c8055fccf8afcd22044bfc5f42e2010f662ff5a3c61f6555">0x79cd6052…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>0x6B175474E89094C44Da98b954EedeAC495271d0F.approve → 0xf6e72Db5454dd049d0788e411b06CfAF16853042.0x8d7ef9bb → usdc.approve → compound-v3-cusdcv3.supply</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 24629375</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x4a2bbdda41e98aa51a14264fb499efedd6eaadfa73ce9b7dad64d2dad82e4d34">0x4a2bbdda…</a></span></td></tr></tbody></table></div>
   <h3>Did the balances move by exactly the stated amount?</h3>
   <p class="cap">Each matching transaction was run again alone on its parent block, and the balances before and after it were compared with the amount it states.</p>
   <div class="sh"><code>gets card.amount of card.market</code><span>The template&#39;s tolerance: up to 2 base units lower, 0 higher</span></div>
     <p class="cap">compound-v3-cusdcv3: 85 transactions (2 from Safes, 83 from EOAs)</p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">The balance ended</th><th scope="col" class="n">Sender</th></tr></thead><tbody>
-    <tr><td class="what">2 base units lower</td><td class="n"><span class="num">15</span></td></tr>
-    <tr><td class="what">1 base unit lower</td><td class="n"><span class="num">70</span></td></tr></tbody></table></div>
+    <tr><td class="what" data-label="The balance ended"><span>2 base units lower</span></td><td class="n" data-label="Sender"><span><span class="num">15</span></span></td></tr>
+    <tr><td class="what" data-label="The balance ended"><span>1 base unit lower</span></td><td class="n" data-label="Sender"><span><span class="num">70</span></span></td></tr></tbody></table></div>
   <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>How the program searched</span></summary>
   <h3>Search of compound-v3-cusdcv3 mint (deposit): 9261 found, 480 studied, all 218 with a proven Safe party</h3>
   <p class="cap">Every transaction of the last year was searched, from block 23842922 (2025-11-20) to block 26470921 (2026-11-22), with no gap. Alchemy and Etherscan found exactly the same (<span class="num">9261 = 9261</span>).</p>

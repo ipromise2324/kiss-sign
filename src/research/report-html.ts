@@ -61,10 +61,10 @@ const stateCounts = (count: Extract<RailCount, { kind: 'states' }>, r: R): Html 
 const railCount = (count: RailCount | undefined, r: R): Html => (count === undefined ? h`` : count.kind === 'text' ? h` <span class="cnt">${count.text}</span>` : stateCounts(count, r));
 
 const table = (t: PastTable): Html => {
-  const cell = (as: PastTable['head'][number]['as']): string => ({ plain: 'nw', num: 'n', wide: 'what', value: 'nw v' })[as];
+  const cell = (as: PastTable['head'][number]['as']): string => ({ plain: 'nw', num: 'n', wide: 'what', value: 'nw v', links: 'tx' })[as];
   return h`<div class="sc"><table class="pt2"><thead><tr>${t.head.map((c) => h`<th scope="col" class="${cell(c.as)}">${c.label}</th>`)}</tr></thead><tbody>${t.rows.map(
     (row) => h`
-    <tr>${row.map((spans, i) => h`<td class="${cell(t.head[i]?.as ?? 'plain')}">${text(spans)}</td>`)}</tr>`,
+    <tr>${row.map((spans, i) => h`<td class="${cell(t.head[i]?.as ?? 'plain')}" data-label="${t.head[i]?.label ?? ''}"><span>${text(spans)}</span></td>`)}</tr>`,
   )}</tbody></table></div>`;
 };
 
@@ -566,7 +566,7 @@ function pastBody({ past }: Extract<Body, { kind: 'past' }>, r: R): Html {
   const { differ } = past;
   return h`
   <h3>${r.w.pastWorked}</h3>
-  <p class="ans"><b>${past.worked.answer}</b> ${past.worked.rest}</p>
+  <p class="ans"><b>${past.worked.answer}</b> ${text(past.worked.rest)}</p>
   <h3>${r.w.pastNumbers}</h3>${past.numbers.length === 0 ? h`
   <p class="ans">${r.w.pastNoNumbers}</p>` : past.numbers.map((p) => pastNumbers(p, r))}
   <h3>${r.w.pastDiffer}</h3>

@@ -27,6 +27,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-
 a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
 a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+[data-ai]{overflow-wrap:anywhere}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
 .addr.line{display:block;margin-top:4px}
@@ -212,7 +213,7 @@ details.fixed[open]>summary .chev{transform:rotate(90deg)}
 }
 
 .rows{border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
@@ -270,8 +271,20 @@ details.fold .ad:last-child{border-bottom:0}
 .pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
 .pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
 .pt2 .n{text-align:right}
+.pt2 th{vertical-align:bottom}
+.pt2 th.n{white-space:normal}
 .pt2 td.nw{white-space:nowrap}
 .pt2 td.v{color:var(--fg);font-weight:590}
+.pt2 .tx{min-width:104px}
+@media (max-width:760px){
+  .pt2,.pt2 tbody,.pt2 tr{display:block}
+  .pt2 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .pt2 tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .pt2 td,.pt2 td.n{display:grid;grid-template-columns:minmax(0,130px) minmax(0,1fr);gap:12px;padding:3px 0;border-bottom:0;text-align:left}
+  .pt2 td::before{content:attr(data-label);font-size:var(--t-label);font-weight:400;color:var(--fg3)}
+  .pt2 td.nw{white-space:normal}
+  .pt2 td.what{min-width:0}
+}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -662,17 +675,17 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h3>1. Has this template&#39;s transaction worked before?</h3>
   <p class="ans"><b>Not by a Safe, in what was studied.</b> EOA: 0.</p>
   <h3>2. What values are normal in what the app fills?</h3>
-  <div class="sh"><code>data</code><span>the value that was set</span></div>
-  <p class="cap">1 different values (0 from Safes, 1 from EOAs). The most common is <span class="addr">0x0000000000000000…(128 bytes)</span>, in 1.</p>
+  <div class="sh"><code>data</code><span>the value that was set</span></div><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">Transactions</th><th scope="col" class="n">Count</th><th scope="col" class="n">Different values</th><th scope="col" class="what">Most common</th></tr></thead><tbody>
+    <tr><td class="what" data-label="Transactions"><span>EOA, differs elsewhere</span></td><td class="n" data-label="Count"><span><span class="num">1</span></span></td><td class="n" data-label="Different values"><span><span class="num">1</span></span></td><td class="what" data-label="Most common"><span><span class="addr">0x0000000000000000…(128 bytes)</span>, in 1</span></td></tr></tbody></table></div>
   <div class="sh"><code>deadline</code><span>how far ahead it was set, counted from the block the transaction ran in</span></div><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">Transactions</th><th scope="col" class="n">Count</th><th scope="col" class="nw v">Shortest</th><th scope="col" class="nw v">Half at or under</th><th scope="col" class="nw v">Longest</th></tr></thead><tbody>
-    <tr><td class="what">Safe, matches the template</td><td class="n"><span class="num">0</span></td><td class="nw v">none</td><td class="nw v">none</td><td class="nw v">none</td></tr>
-    <tr><td class="what">EOA, differs elsewhere</td><td class="n"><span class="num">1</span></td><td class="nw v">not recorded</td><td class="nw v">not recorded</td><td class="nw v">not recorded</td></tr></tbody></table></div>
+    <tr><td class="what" data-label="Transactions"><span>Safe, matches the template</span></td><td class="n" data-label="Count"><span><span class="num">0</span></span></td><td class="nw v" data-label="Shortest"><span>none</span></td><td class="nw v" data-label="Half at or under"><span>none</span></td><td class="nw v" data-label="Longest"><span>none</span></td></tr>
+    <tr><td class="what" data-label="Transactions"><span>EOA, differs elsewhere</span></td><td class="n" data-label="Count"><span><span class="num">1</span></span></td><td class="nw v" data-label="Shortest"><span>not recorded</span></td><td class="nw v" data-label="Half at or under"><span>not recorded</span></td><td class="nw v" data-label="Longest"><span>not recorded</span></td></tr></tbody></table></div>
   <p class="cap">Template limit: <b class="lm">7 days</b>. Longer is a MISMATCH.</p>
   <h3>3. How did the others differ?</h3>
   <p class="ans">7 transactions did something this template refuses.</p>
-  <p class="ans"><span class="aiw" data-ai><span>No Safe has used the template&#39;s route on this vault: every Safe that deposited went through Bundler3, refused now. The one use of the new route is an EOA with a USDC <code>permit</code> in place of an approval.</span><span class="byai">AI research</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="nw">Example</th></tr></thead><tbody>
-    <tr><td class="what">Called other functions: <code>usdc.approve → bundler3.0x374f435d</code></td><td class="n"><span class="num">6</span></td><td class="n"><span class="num">0</span></td><td class="nw">block 24922291</td><td class="nw"><a href="https://etherscan.io/tx/0xbbcae7b746b4e3e6c9cb56ed15301e39a7f32b4eb5ea55dcda4c1f7a6de17704">0xbbcae7b7…</a></td></tr>
-    <tr><td class="what"><code>vaultBundlesV1Deposit.assetPermit.kind</code> was <span class="addr">1</span>, the template wants <span class="addr">0</span></td><td class="n"><span class="num">0</span></td><td class="n"><span class="num">1</span></td><td class="nw">block 26319532</td><td class="nw"><a href="https://etherscan.io/tx/0x03652285a11a34dd743131fa10047dc5baf4073986a7d27e523e9d3899707e32">0x03652285…</a></td></tr></tbody></table></div>
+  <p class="ans"><span class="aiw" data-ai><span>No Safe has used the template&#39;s route on this vault: every Safe that deposited went through Bundler3, refused now. The one use of the new route is an EOA with a USDC <code>permit</code> in place of an approval.</span><span class="byai">AI research</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="tx">Examples (up to 3)</th></tr></thead><tbody>
+    <tr><td class="what" data-label="What was different"><span>Called other functions: <code>usdc.approve → bundler3.0x374f435d</code></span></td><td class="n" data-label="Safe"><span><span class="num">6</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 24922291</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xbbcae7b746b4e3e6c9cb56ed15301e39a7f32b4eb5ea55dcda4c1f7a6de17704">0xbbcae7b7…</a> <a href="https://etherscan.io/tx/0x8243b00308694a896022c9dc2147c751d06cbf4f26e85beba27fcde5af46bad0">0x8243b003…</a> <a href="https://etherscan.io/tx/0xd95f848f0c3cb89a0eabc88c15fbb06abaddf534c74fe7fcd879b3f15ad7b350">0xd95f848f…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span><code>vaultBundlesV1Deposit.assetPermit.kind</code> was <span class="addr">1</span>, the template wants <span class="addr">0</span></span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">1</span></span></td><td class="nw" data-label="Newest"><span>block 26319532</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x03652285a11a34dd743131fa10047dc5baf4073986a7d27e523e9d3899707e32">0x03652285…</a></span></td></tr></tbody></table></div>
   <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>How the program searched</span></summary>
   <h3>Search of hyperithm-usdc-apex-v2-9e2f mint (deposit): 7038 found, 240 studied, all 17 with a proven Safe party</h3>
   <p class="cap">Every transaction of the last year was searched, from block 23862266 (2025-11-23) to block 26490265 (2026-11-25), with no gap. Alchemy and Etherscan found exactly the same (<span class="num">7038 = 7038</span>).</p>

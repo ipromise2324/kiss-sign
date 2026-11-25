@@ -27,6 +27,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-
 a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
 a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+[data-ai]{overflow-wrap:anywhere}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
 .addr.line{display:block;margin-top:4px}
@@ -212,7 +213,7 @@ details.fixed[open]>summary .chev{transform:rotate(90deg)}
 }
 
 .rows{border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
@@ -270,8 +271,20 @@ details.fold .ad:last-child{border-bottom:0}
 .pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
 .pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
 .pt2 .n{text-align:right}
+.pt2 th{vertical-align:bottom}
+.pt2 th.n{white-space:normal}
 .pt2 td.nw{white-space:nowrap}
 .pt2 td.v{color:var(--fg);font-weight:590}
+.pt2 .tx{min-width:104px}
+@media (max-width:760px){
+  .pt2,.pt2 tbody,.pt2 tr{display:block}
+  .pt2 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .pt2 tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .pt2 td,.pt2 td.n{display:grid;grid-template-columns:minmax(0,130px) minmax(0,1fr);gap:12px;padding:3px 0;border-bottom:0;text-align:left}
+  .pt2 td::before{content:attr(data-label);font-size:var(--t-label);font-weight:400;color:var(--fg3)}
+  .pt2 td.nw{white-space:normal}
+  .pt2 td.what{min-width:0}
+}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -463,20 +476,20 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>過去交易</h2>
   <h3>1. 這個模板的交易以前成功過嗎？</h3>
-  <p class="ans"><b>成功過，64 個 Safe 一共做過 64 次。</b> EOA：0 次。最近一次是區塊 26447743。全部成功執行。</p>
+  <p class="ans"><b>成功過，64 個 Safe 一共做過 64 次。</b> EOA：0 次。最近一次是區塊 26447743。全部成功執行。最近 3 筆：<a href="https://etherscan.io/tx/0xcad90e0aaa911df76132d4f428d5d48dbc71a319d4aeadf4b77115900c8f0d3e">0xcad90e0a…</a> <a href="https://etherscan.io/tx/0x28a333b660dcfafdae2a043fdb81b7f0e40d64dd05ee7371632d1f14504e6f6c">0x28a333b6…</a> <a href="https://etherscan.io/tx/0xf33c9e766e11fb9fe9c35febd7cd5bbf9f94693cdcbefcd6a22442af78749c50">0xf33c9e76…</a></p>
   <h3>2. app 填的值，一般是多少？</h3>
   <p class="ans">這個模板沒有留任何值給 app 填。</p>
   <h3>3. 其他交易哪裡不同？</h3>
   <p class="ans">29 筆交易做了這個模板不允許的事。</p>
-  <p class="ans"><span class="aiw" data-ai><span>不合的全是在一個 MultiSend 裡改好幾個 owner：好幾個 <code>addOwnerWithThreshold</code>，或再加 <code>swapOwner</code>、<code>removeOwner</code>。一張卡片只放一項變更，verify 會拒絕這種批次；每項變更要各自一筆交易。</span><span class="byai">AI 研究</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="nw">例子</th></tr></thead><tbody>
-    <tr><td class="what">除了模板的呼叫，還有別的：<code>自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></td><td class="n"><span class="num">13</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 26242294</td><td class="nw"><a href="https://etherscan.io/tx/0x3b4dd50147e96ccf1eae7ded88b5c70aa1bac128c3d5c7797a35bb2e938fdfb3">0x3b4dd501…</a></td></tr>
-    <tr><td class="what">一次超過 4 個呼叫的批次</td><td class="n"><span class="num">4</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 25034401</td><td class="nw"><a href="https://etherscan.io/tx/0x2153b1f655667c69fc0282ea36100d0be80da64ef4c4751a747d4bd9fb2723e9">0x2153b1f6…</a></td></tr>
-    <tr><td class="what">除了模板的呼叫，還有別的：<code>自己.swapOwner → 自己.swapOwner → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></td><td class="n"><span class="num">3</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 24641705</td><td class="nw"><a href="https://etherscan.io/tx/0xb7721598b5977ba70428ad780dd2a956b362e69c4bfffa8f7510576d91746c84">0xb7721598…</a></td></tr>
-    <tr><td class="what">除了模板的呼叫，還有別的：<code>自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></td><td class="n"><span class="num">3</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 26384475</td><td class="nw"><a href="https://etherscan.io/tx/0xcf33c43a0bf0b17daa1665857ea0cd4e480ac73c99954a71fdec8b30c8750f59">0xcf33c43a…</a></td></tr>
-    <tr><td class="what">除了模板的呼叫，還有別的：<code>自己.swapOwner → 自己.addOwnerWithThreshold</code></td><td class="n"><span class="num">2</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 26415760</td><td class="nw"><a href="https://etherscan.io/tx/0x236ae79edcac3e266abae27906422432afb286a6de272b6e5cafcb8dea1e5f90">0x236ae79e…</a></td></tr>
-    <tr><td class="what">除了模板的呼叫，還有別的：<code>自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></td><td class="n"><span class="num">2</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 25296536</td><td class="nw"><a href="https://etherscan.io/tx/0xdd3d6489a1ca413fd86b836906e67e2c547a3b091b19e3c1b33dfcd9dd9402a9">0xdd3d6489…</a></td></tr>
-    <tr><td class="what">除了模板的呼叫，還有別的：<code>自己.removeOwner → 自己.addOwnerWithThreshold</code></td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 25189558</td><td class="nw"><a href="https://etherscan.io/tx/0x9b284f0d30c2fcc6c0d06ff4a27bc38ea348c3739cc18a9b5a5edeb939cac5a5">0x9b284f0d…</a></td></tr>
-    <tr><td class="what">除了模板的呼叫，還有別的：<code>自己.swapOwner → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></td><td class="n"><span class="num">1</span></td><td class="n"><span class="num">0</span></td><td class="nw">區塊 26282584</td><td class="nw"><a href="https://etherscan.io/tx/0xc6397d3702401f94a7cb4d791d7fcbf3592540da39d485d470577a0e2284a6e6">0xc6397d37…</a></td></tr></tbody></table></div>
+  <p class="ans"><span class="aiw" data-ai><span>不合的全是在一個 MultiSend 裡改好幾個 owner：好幾個 <code>addOwnerWithThreshold</code>，或再加 <code>swapOwner</code>、<code>removeOwner</code>。一張卡片只放一項變更，verify 會拒絕這種批次；每項變更要各自一筆交易。</span><span class="byai">AI 研究</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="tx">例子（最多 3 筆）</th></tr></thead><tbody>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">13</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26242294</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x3b4dd50147e96ccf1eae7ded88b5c70aa1bac128c3d5c7797a35bb2e938fdfb3">0x3b4dd501…</a> <a href="https://etherscan.io/tx/0x550e4f86a3221810570f2a978db1b0ecf6f9aca343a6b28ca1a6dbb63e50c136">0x550e4f86…</a> <a href="https://etherscan.io/tx/0x2eb5d830bfecd71232b38979c8f31743a5eb4f7cda2289cd3cd763c24450b31c">0x2eb5d830…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>一次超過 4 個呼叫的批次</span></td><td class="n" data-label="Safe"><span><span class="num">4</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 25034401</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x2153b1f655667c69fc0282ea36100d0be80da64ef4c4751a747d4bd9fb2723e9">0x2153b1f6…</a> <a href="https://etherscan.io/tx/0x0f28825573d70df219b3b5cb6b11865a82f656f9728fa7660bdf138151bab360">0x0f288255…</a> <a href="https://etherscan.io/tx/0x6bc4b88d18c96aa17b24bd48b74af439797028b6dca7b620f353c4b0937e8174">0x6bc4b88d…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.swapOwner → 自己.swapOwner → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">3</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 24641705</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xb7721598b5977ba70428ad780dd2a956b362e69c4bfffa8f7510576d91746c84">0xb7721598…</a> <a href="https://etherscan.io/tx/0x834bbe10b0951706e0687f718aedf73a612a472bd525c3ce2c52b56917e26b92">0x834bbe10…</a> <a href="https://etherscan.io/tx/0xaaf5f4ebb593853097e8def5f7709ea42b5233db9ec4ce52aeabb1784d363960">0xaaf5f4eb…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">3</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26384475</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xcf33c43a0bf0b17daa1665857ea0cd4e480ac73c99954a71fdec8b30c8750f59">0xcf33c43a…</a> <a href="https://etherscan.io/tx/0x1e76197019237dd366cc5bcc1c5c0b56f0ee235c355d94cc1f49b6ba06b389f4">0x1e761970…</a> <a href="https://etherscan.io/tx/0x760f4f5b40f474462a07641bf67c032345a35defe00460d615f14d683c07c911">0x760f4f5b…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.swapOwner → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">2</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26415760</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x236ae79edcac3e266abae27906422432afb286a6de272b6e5cafcb8dea1e5f90">0x236ae79e…</a> <a href="https://etherscan.io/tx/0x9b63e4d5d89c2b766345f5631475b56060ea9cf24dcd707d732c2a27368956e9">0x9b63e4d5…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">2</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 25296536</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xdd3d6489a1ca413fd86b836906e67e2c547a3b091b19e3c1b33dfcd9dd9402a9">0xdd3d6489…</a> <a href="https://etherscan.io/tx/0x1cb961b161a2cc6dbbb29cc76686607a08a9ae81cfa4a7d8acc71f36b923dfa9">0x1cb961b1…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.removeOwner → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 25189558</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x9b284f0d30c2fcc6c0d06ff4a27bc38ea348c3739cc18a9b5a5edeb939cac5a5">0x9b284f0d…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.swapOwner → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26282584</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xc6397d3702401f94a7cb4d791d7fcbf3592540da39d485d470577a0e2284a6e6">0xc6397d37…</a></span></td></tr></tbody></table></div>
   <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>程式怎麼搜尋</span></summary>
   <h3>搜尋 Safe 的AddedOwner，找到 23228 筆，研究 237 筆，含證實為 Safe 的參與方的 23164 筆中研究 177 筆</h3>
   <p class="cap">從最新的區塊往回，搜尋了區塊 23965880（2025-12-08）到區塊 26471479（2026-11-22）的每一筆交易，共 2505600 個區塊，約 349.4 天，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。只有 Etherscan 搜尋事件，找到 <span class="num">23228</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>

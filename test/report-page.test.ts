@@ -12,7 +12,9 @@ import type { EntryReport, FieldFact } from '../src/research/erc7730.ts';
 import type { State } from '../src/research/ledger.ts';
 import { NotesError, argumentTree, notesScope, readNotes } from '../src/research/notes.ts';
 import type { ArgNode } from '../src/research/notes.ts';
-import type { Misfit } from '../src/research/past-txs.ts';
+import type { Kept, Misfit } from '../src/research/past-txs.ts';
+import type { Measurement } from '../src/research/amounts.ts';
+import { SUMMARIES_DIR, parseSummary, runOf } from '../src/research/past-txs-summary.ts';
 import { factsScope } from '../src/research/protocol-facts.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { renderPage } from '../src/research/report-html.ts';
@@ -603,7 +605,7 @@ test('a constant prints as cast decode-calldata prints it', () => {
 test('past transactions count, per kind of sender, those using the operation and those with the template shape', () => {
   const { worked, differ, search } = past(pageOf(inputs));
   assert.equal(worked.answer, '研究過的交易裡沒有 Safe 這樣做過。');
-  assert.equal(worked.rest, 'EOA：0 次。');
+  assert.equal(plain(worked.rest), 'EOA：0 次。');
   assert.equal(differ.lead, '8 筆交易做了這個模板不允許的事。');
   assert.deepEqual(
     differ.open?.rows.map((row) => row.slice(0, 3).map(plain)),
@@ -636,7 +638,7 @@ test('a bundle with another number of items is grouped and named by the function
 test('過去交易 leads with how many past transactions were exactly the template, had its shape outside the registry, or another shape, each counted once, and the latest of them', () => {
   const { worked } = past(depositPage);
   assert.equal(worked.answer, '成功過，2 個 Safe 一共做過 6 次。');
-  assert.match(worked.rest, /^EOA：26 次，來自 17 個地址，各自送模板的一個呼叫。最近一次是 .+。全部成功執行。$/);
+  assert.match(plain(worked.rest), /^EOA：26 次，來自 17 個地址，各自送模板的一個呼叫。最近一次是 .+。全部成功執行。最近 3 筆：0x88258583… 0xa56ce3d8… 0x15133c00…$/);
   const noFits = depositInputs.pastTxs.map((p) => ({ ...p, run: { ...p.run, studies: p.run.studies.filter((s) => s.kind !== 'fit') } }));
   assert.equal(past(buildPage({ ...depositInputs, pastTxs: noFits }, depositNotes, depositTitle, 'zh-TW')).worked.answer, '研究過的交易裡沒有 Safe 這樣做過。');
   const onlyExact = depositInputs.pastTxs.map((p) => ({ ...p, run: { ...p.run, studies: p.run.studies.filter((s) => s.kind === 'fit') } }));
@@ -664,9 +666,98 @@ test('the values the app fills come from transactions that match and from those 
   assert.deepEqual(timed.rows.map((r) => [r.group, r.spread?.count, r.spread?.min, r.spread?.max]), [['safe-exact', undefined, undefined, undefined], ['safe-differs', 2, 60n, 7200n], ['eoa-differs', 1, 600n, 600n]]);
   assert.deepEqual(timed.rows.map((r) => r.unrecorded), [0, 1, 0]);
   const listed = values([study(1, 'safe', 0n, 7n), study(2, 'eoa', 0n, 7n), study(3, 'eoa', 0n, 8n)], []);
-  assert.deepEqual(listed, { kind: 'values', values: [{ value: '7', safe: 1, eoa: 1 }, { value: '8', safe: 0, eoa: 1 }] });
+  assert.deepEqual(listed, {
+    kind: 'values',
+    groups: ['safe-exact', 'safe-differs', 'eoa-differs'],
+    values: [
+      { value: '7', counts: { 'safe-exact': 0, 'safe-differs': 1, 'eoa-exact': 0, 'eoa-differs': 1 } },
+      { value: '8', counts: { 'safe-exact': 0, 'safe-differs': 0, 'eoa-exact': 0, 'eoa-differs': 1 } },
+    ],
+  });
   const many = values(Array.from({ length: 7 }, (_, i) => study(i, 'safe', 0n, BigInt(i))), []);
   assert.equal(many.kind, 'numbers', 'more different numbers than a list holds give their spread');
+});
+
+/** The page of a template whose past transactions are exactly `studies`. */
+const studiedPage = (studies: readonly Kept[], of: HtmlInputs = inputs, language: 'en' | 'zh-TW' = 'en'): PastBlock =>
+  past(buildPage({ ...of, pastTxs: of.pastTxs.slice(0, 1).map((r) => ({ ...r, run: { ...r.run, studies } })) }, notesFor(of), title, language));
+
+const hashOf = (n: number): Hex => `0x${`${n}`.padStart(64, '0')}` as Hex;
+const SENDER: Misfit['sender'] = { kind: 'safe', address: '0x1111111111111111111111111111111111111111' as Address };
+const misfitAt = (n: number, reason: Misfit['reason'], more: Partial<Misfit> = {}): Misfit => ({ kind: 'misfit', hash: hashOf(n), block: BigInt(n), sender: SENDER, reason, free: [], time: undefined, ...more });
+
+test('the values of a free number show 99% only over 100 values, and never a length below the true one', () => {
+  const { template } = inputs.subject;
+  const { key, rule } = fieldsOf(template).find(({ param, rule }) => rule.kind === 'free' && param?.type.kind === 'uint') ?? assert.fail('a free number');
+  const field = shapesOf(template).whole.loosened.rules.findIndex((leaf) => leaf === rule);
+  const page = (count: number, seconds: (i: number) => bigint) => {
+    const studies = Array.from({ length: count }, (_, i) => misfitAt(i + 1, { kind: 'other' }, { time: 1_000n, free: [{ field, type: { kind: 'uint', bits: 256 }, value: `${1_000n + seconds(i)}` }] }));
+    const run = { ...inputs, pastTxs: inputs.pastTxs.slice(0, 1).map((r) => ({ ...r, run: { ...r.run, studies } })) };
+    const block = past(buildPage(run, { ...notesFor(run), times: [key] }, title, 'en'));
+    return block.numbers.find((n) => n.name === key.split('.').at(-1))?.table ?? assert.fail('a table');
+  };
+  const heads = (count: number) => page(count, (i) => BigInt(i)).head.map((h) => h.label);
+  assert.ok(!heads(99).includes('99% at or under'));
+  assert.ok(heads(100).includes('99% at or under'));
+  const row = page(1, () => 5_436n).rows.find((r) => plain(r[0]) === 'Safe, differs elsewhere') ?? assert.fail('a row');
+  assert.deepEqual(row.slice(1).map(plain), ['1', '1.5 hours', '1.6 hours', '1.6 hours'], '5,436 seconds are 1.51 hours: at least 1.5 and at or under 1.6');
+});
+
+test('a difference in a number shows it as a number, the largest uint256 by name, and bytes by their length', () => {
+  const max = `${2n ** 256n - 1n}`;
+  const { differ } = studiedPage([
+    misfitAt(1, { kind: 'field', at: 'call.approve.value', expected: max, actual: '1234567' }),
+    misfitAt(2, { kind: 'field', at: 'call.approve.value', expected: '1', actual: `${2n ** 255n}` }),
+    misfitAt(3, { kind: 'field', at: 'call.approve.data', expected: '0x', actual: `0x${'ab'.repeat(128)}` }),
+  ]);
+  assert.deepEqual(differ.open?.rows.map((r) => plain(r[0])).sort(), [
+    `approve.data was 0x${'ab'.repeat(8)}…(128 bytes), the template wants 0x`,
+    'approve.value was 1,234,567, the template wants uint256 max (2^256 - 1)',
+    `approve.value was ${(2n ** 255n).toLocaleString('en-US')}, the template wants 1`,
+  ]);
+});
+
+test('the eight commonest differences are open and the rarer ones fold under their count', () => {
+  const { differ } = studiedPage(Array.from({ length: 10 }, (_, i) => Array.from({ length: 11 - i }, (_, n) => misfitAt(i * 100 + n, { kind: 'field', at: `call.f.a${i}`, expected: '1', actual: '2' }))).flat());
+  assert.equal(differ.open?.rows.length, 8);
+  assert.equal(differ.more?.label, '2 more ways, 5 transactions');
+  assert.equal(differ.more?.table.rows.length, 2);
+});
+
+test('a difference names its newest transaction and links the newest three, and names none as the newest when a block was not kept', () => {
+  const reason = { kind: 'field', at: 'call.f.a', expected: '1', actual: '2' } as const;
+  const row = (studies: readonly Misfit[]) => studiedPage(studies).differ.open?.rows[0] ?? assert.fail('a row');
+  const links = (spans: Inline | undefined) => (spans ?? []).flatMap((s) => (typeof s !== 'string' && 'href' in s ? [s.href] : []));
+  const tx = (n: number) => `https://etherscan.io/tx/${hashOf(n)}`;
+  const dated = row([misfitAt(2, reason), misfitAt(9, reason, { time: 1_700_000_000n }), misfitAt(1, reason), misfitAt(5, reason)]);
+  assert.equal(plain(dated[3]), '2023-11-14');
+  assert.deepEqual(links(dated[4]), [tx(9), tx(5), tx(2)]);
+  const undated = row([misfitAt(2, reason, { block: undefined }), misfitAt(9, reason)]);
+  assert.equal(plain(undated[3]), 'not recorded');
+  assert.deepEqual(links(undated[4]), [tx(2), tx(9)]);
+});
+
+test('the amounts table has a receiver column only when the receiver was measured, and folds the tokens outside the registry', () => {
+  const usdc = registry.entries.get('usdc')?.address ?? assert.fail('usdc');
+  const outside = '0x7777777777777777777777777777777777777777' as Address;
+  const file = `${SUMMARIES_DIR}/erc20-transfer-usdc.json`;
+  const run = runOf(parseSummary(file, readFileSync(join(ROOT, file), 'utf8')), loadTemplate(ROOT, 'erc20/transfer', registry));
+  const [first, second] = run.studies.filter((s) => s.kind === 'fit');
+  assert.ok(first !== undefined && second !== undefined);
+  const measured = (token: Address, receiver: boolean): Measurement => ({
+    kind: 'measured',
+    differences: [{ effect: 0, party: 'sender', token, by: -1n }, ...(receiver ? [{ effect: 0, party: 'receiver' as const, token, by: -1n }] : [])],
+  });
+  const amounts = (receiver: boolean) => {
+    const measurements = new Map([[first.hash, measured(usdc, receiver)], [second.hash, measured(outside, receiver)]]);
+    const recorded = inputs.pastTxs[0] ?? assert.fail('a recording');
+    return past(buildPage({ ...inputs, pastTxs: [{ ...recorded, run: { ...run, studies: [first, second], measurements, traces: [] } }] }, notesFor(inputs), title, 'en')).amounts[0] ?? assert.fail('amounts');
+  };
+  assert.equal(amounts(true).tokens[0]?.table.head.length, 3);
+  assert.equal(amounts(false).tokens[0]?.table.head.length, 2);
+  assert.match(amounts(true).tokens[0]?.lead ?? '', /^usdc/);
+  assert.equal(amounts(true).tokens.length, 1);
+  assert.deepEqual(amounts(true).outside?.tokens.map((t) => t.lead.includes(checksumAddress(outside))), [true]);
 });
 
 test('待確認 counts the program results apart from the AI judgments, in the rail and the heading', () => {
@@ -893,7 +984,14 @@ test('a money call no line covers is titled by who pays whom, with full addresse
   const id = 'trace.2.morpho-blue.usdc.transferFrom';
   const page = buildPage(traced, { ...raw, flow: [], reviews: { ...(raw.reviews as object), [id]: { status: 'confirmed', text: both('checked'), recommendation: both('none') } } }, title, 'zh-TW');
   const row = body(page, 'review').rows.find((r) => r.id === id) ?? assert.fail('the trace row');
-  assert.equal(row.title, `你的 Safe 付 usdc 給 morpho-blue ${checksumAddress(morpho)}，模板沒有說明這一步`);
+  assert.equal(row.title, `1 筆過去交易裡，送出方付了 usdc 給 morpho-blue ${checksumAddress(morpho)}，模板沒有說明這一步`);
+  const english = body(buildPage(traced, { ...raw, flow: [], reviews: { ...(raw.reviews as object), [id]: { status: 'confirmed', text: both('checked'), recommendation: both('none') } } }, title, 'en'), 'review').rows.find((r) => r.id === id);
+  assert.equal(english?.title, `In 1 past transaction, the sender paid usdc to morpho-blue ${checksumAddress(morpho)}; the template does not describe this step`);
+  const unread = [...calls.slice(0, -1), call(3, safe, usdc, '0xa9059cbb')];
+  const untold = { ...traced, pastTxs: pastTxs.map((r) => ({ ...r, run: { ...r.run, traces: r.run.traces.map((t) => (t.kind === 'traced' ? { ...t, calls: unread } : t)) } })) };
+  const untoldId = 'trace.2.safe.usdc.transfer';
+  const untoldRow = body(buildPage(untold, { ...notesFor(untold), flow: [], reviews: { ...(notesFor(untold).reviews as object), [untoldId]: { status: 'confirmed', text: both('checked'), recommendation: both('none') } } }, title, 'en'), 'review').rows.find((r) => r.id === untoldId);
+  assert.equal(untoldRow?.title, "In 1 past transaction, a step under call 2 moved the sender's usdc, to whom was not read; the template does not describe this step");
 });
 
 test('a computed field the transaction does not carry is never said to be typed or filled by the app', () => {

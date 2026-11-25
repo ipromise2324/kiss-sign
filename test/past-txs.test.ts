@@ -661,6 +661,21 @@ test('a signed message read from the lookup is studied member by member, so an o
   assert.match(text, new RegExp(`digest\\.receiver {2}\\[the Safe\\]\\n {4}equalled the Safe in ${fits} of ${fits} `));
 });
 
+test('a transaction that differs from the template keeps what it set at the places left to the app, and at no other', async () => {
+  const run = await cowRun();
+  const seen = new Map(run.studies.flatMap((s) => (s.kind === 'fit' && s.sender.kind === 'safe' ? [[s.hash, s.values[s.paths.findIndex((p) => p.endsWith('digest.validTo'))]] as const] : [])));
+  const bounded = await cowRun({ withinSeconds: 1 });
+  const late = bounded.studies.flatMap((s) => (s.kind === 'misfit' && s.reason.kind === 'late' && seen.has(s.hash) ? [s] : []));
+  assert.ok(late.length > 0);
+  for (const s of late) {
+    const places = s.free.map(({ field }) => bounded.shapes.whole.loosened.rules[field]?.kind);
+    assert.ok(places.every((kind) => kind === 'free' || kind === 'within-seconds'), `${places}`);
+    const validTo = s.free.find(({ field }) => bounded.shapes.whole.loosened.rules[field]?.kind === 'within-seconds');
+    assert.equal(validTo?.value, seen.get(s.hash));
+    assert.ok(s.block !== undefined && s.time !== undefined);
+  }
+});
+
 test('a transaction whose signed message the recording does not hold is unreadable, saying where it was read from', async () => {
   const text = renderPastTxs(await cowRun({ messages: [] }), registry);
   assert.match(text, /^ {2}\d+ unreadable, no Order read from api\.cow\.fi: not recorded: 0x[0-9a-f]{64}/m);

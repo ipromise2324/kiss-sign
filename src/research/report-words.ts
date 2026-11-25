@@ -6,8 +6,9 @@ import type { AiTag, AiSourceResult, Reviewed, Span, Who } from './report-page.t
 import type { PastGroupKind } from './report-past.ts';
 import type { OutsideKind } from './study.ts';
 
-/** Chinese text before a word, with a space only when the word starts in Latin script or a digit. */
+/** Chinese text before a word, or after one, with a space only where the word's own end is in Latin script or a digit. */
 const before = (prefix: string, word: string): string => (/^[A-Za-z0-9]/.test(word) ? `${prefix} ${word}` : `${prefix}${word}`);
+const after = (word: string, suffix: string): string => (/[A-Za-z0-9]$/.test(word) ? `${word} ${suffix}` : `${word}${suffix}`);
 /** A card field in words, and whether the program computes it instead of the signer typing it. */
 export type By = { readonly field: string; readonly computed: boolean };
 
@@ -38,20 +39,26 @@ export const toleranceSpan = (less: bigint, more: bigint): string => {
 
 const UNITS = [86400n, 3600n, 60n] as const;
 
+/** Which way a length loses its last digits: `up` for one nothing exceeds, such as a limit, `down` for one nothing is below. */
+type Rounding = 'up' | 'down';
+
 /** A length of time in the largest unit it fills, such as `5.7 days`, or past two years in whole years. */
-function durationText(seconds: bigint, unit: (n: string, of: 'second' | 'minute' | 'hour' | 'day' | 'year') => string): string {
-  if (seconds >= 2n * 365n * 86400n) return unit(grouped(seconds / (365n * 86400n)), 'year');
+function durationText(seconds: bigint, rounding: Rounding, unit: (n: string, of: 'second' | 'minute' | 'hour' | 'day' | 'year') => string): string {
+  const parts = (n: bigint, of: bigint): bigint => (rounding === 'up' ? (n + of - 1n) / of : n / of);
+  const year = 365n * 86400n;
+  if (seconds >= 2n * year) return unit(grouped(parts(seconds, year)), 'year');
   const at = UNITS.findIndex((u) => seconds >= u);
   const of = UNITS[at];
   if (of === undefined) return unit(`${seconds}`, 'second');
-  const value = Number(seconds) / Number(of);
-  return unit(`${Number.isInteger(value) ? value : value.toFixed(1)}`, (['day', 'hour', 'minute'] as const)[at] as 'day');
+  const tenths = parts(seconds * 10n, of);
+  return unit(`${tenths / 10n}${tenths % 10n === 0n ? '' : `.${tenths % 10n}`}`, (['day', 'hour', 'minute'] as const)[at] as 'day');
 }
 
+const opposite = (rounding: Rounding): Rounding => (rounding === 'up' ? 'down' : 'up');
 const grouped = (n: bigint): string => n.toString().replace(/\B(?=(\d{3})+$)/g, ',');
 const ZH_UNITS = { second: '秒', minute: '分鐘', hour: '小時', day: '天', year: '年' } as const;
-const zhDuration = (seconds: bigint): string => durationText(seconds, (n, of) => `${n} ${ZH_UNITS[of]}`);
-const enDuration = (seconds: bigint): string => durationText(seconds, (n, of) => `${n} ${of}${n === '1' ? '' : 's'}`);
+const zhDuration = (seconds: bigint, rounding: Rounding = 'up'): string => durationText(seconds, rounding, (n, of) => `${n} ${ZH_UNITS[of]}`);
+const enDuration = (seconds: bigint, rounding: Rounding = 'up'): string => durationText(seconds, rounding, (n, of) => `${n} ${of}${n === '1' ? '' : 's'}`);
 
 const ZH = {
   /** Joins the items of a list the way prose does: `a、b` in Chinese, `a, b` in English. */
@@ -111,6 +118,7 @@ const ZH = {
   freeNotTested: '模板允許任何值，沒有測試換過別的值',
   freeAllFailed: '換成別的值測過，每次交易都失敗或不符合卡片',
   freeKeyNotTested: '模板允許任何值，沒有測試換過別的值。',
+  freeKeySomeNotTested: '模板允許任何值；其中有些沒有測試換過別的值。',
   freeKeyAllFailed: '換成別的值測過，每次交易都失敗或不符合卡片。',
   freeKey: {
     scalar: '換成別的值，結果一樣或交易失敗。',
@@ -178,9 +186,12 @@ const ZH = {
   needsReview: '要你看',
   flowLine: (n: number): string => `流程線 ${n}`,
   money: {
-    transfer: (from: string, to: string, token: string): string => `${from} 付 ${token} ${before('給', to)}`,
-    approve: (from: string, to: string, token: string): string => `${from} 讓 ${to} ${before('動用它的', token)}`,
-    eth: (from: string, to: string): string => `${from} 付 ETH ${before('給', to)}`,
+    sender: '送出方',
+    inPast: (n: number): string => `${n} 筆過去交易裡，`,
+    transfer: (from: string, to: string, token: string): string => `${after(from, '付了')} ${token} ${before('給', to)}`,
+    approve: (from: string, to: string, token: string): string => `${after(from, '讓')} ${to} ${before('動用它的', token)}`,
+    eth: (from: string, to: string): string => `${after(from, '付了')} ETH ${before('給', to)}`,
+    unread: (call: number, token: string): string => `呼叫 ${call} 底下有一步動了送出方的 ${token}，付給誰沒有讀到`,
     notDescribed: '，模板沒有說明這一步',
     several: (n: number, what: string): string => `${n} 個不同的${what}`,
     addresses: '地址',
@@ -188,7 +199,6 @@ const ZH = {
     parties: (pairs: readonly string[], all: number): string => `付款方 → 收款方${all > pairs.length ? `（共 ${all} 組，列出 ${pairs.length} 組）` : ''}：${pairs.join('、')}。`,
   },
   seenIn: (seen: number, of: number): string => `在 ${of} 筆裡看到 ${seen} 筆。`,
-  inTransactions: (n: number): string => `共 ${n} 筆過去交易。`,
   outsideRegistry: (shown: readonly string[], all: number): string => `不在登記表裡的地址${all > shown.length ? `（共 ${all} 個，列出 ${shown.length} 個）` : ''}：${shown.join('、')}。`,
   docSubject: (page: string, fn: Span): Span[] => [`${page} `, fn],
   notInStandard: (standard: string): string => `標準頁上沒有這個函式在 ${standard} 裡的宣告。`,
@@ -391,7 +401,7 @@ const ZH = {
     field: (at: Span, expected: Span, actual: Span): Span[] => [at, ' 是 ', actual, '，模板要 ', expected],
     notSender: (at: Span): Span[] => [at, ' 不是送出交易的 Safe 或地址'],
     differs: (at: Span, other: Span): Span[] => [at, ' 跟 ', other, ' 的值不同，模板要兩個一樣'],
-    late: (at: Span, seconds: bigint): Span[] => [at, ` 比交易所在區塊的時間晚超過 ${zhDuration(seconds)}，模板不允許`],
+    late: (at: Span, seconds: bigint): Span[] => [at, ` 比交易所在區塊的時間晚超過 ${zhDuration(seconds, 'down')}，模板不允許`],
     trailer: (at: Span): Span[] => ['參數後面多了模板不允許的位元組，在 ', at],
     foreignDelegatecall: 'delegatecall 到不是官方 MultiSend 的合約',
     noncanonical: 'MultiSend 的編碼不標準',
@@ -425,7 +435,7 @@ const ZH = {
     const at = (block: bigint, seconds: bigint | undefined) => `區塊 ${block}${seconds === undefined ? '' : `（${dateOf(seconds)}）`}`;
     const blocks = `${at(from, time?.from)}到${at(to, time?.to)}`;
     if (kind === 'year') return `搜尋了最近一年的每一筆交易，從${blocks}，沒有遺漏。`;
-    const length = `${to - from + 1n} 個區塊${time === undefined ? '' : `，約 ${zhDuration(time.to - time.from)}`}`;
+    const length = `${to - from + 1n} 個區塊${time === undefined ? '' : `，約 ${zhDuration(time.to - time.from, 'down')}`}`;
     return `從最新的區塊往回，搜尋了${blocks}的每一筆交易，共 ${length}，沒有遺漏；搜尋到 ${cap} 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。`;
   },
   searchEtherscanOnly: (count: Span): Span[] => ['只有 Etherscan 搜尋事件，找到 ', count, ' 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。'],
@@ -448,6 +458,7 @@ const ZH = {
   pastEoa: (times: number, senders: number, oneCall: boolean): string => (times === 0 ? 'EOA：0 次。' : `EOA：${times} 次，來自 ${senders} 個地址${oneCall ? '' : '，各自送模板的一個呼叫'}。`),
   pastNewest: (when: string): string => `${before('最近一次是', when)}。`,
   pastSucceeded: '全部成功執行。',
+  pastLinks: (n: number, newest: boolean): string => `${newest ? `最近 ${n} 筆` : `其中 ${n} 筆`}：`,
   pastSucceededWhy: '這些交易是從事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。',
   atBlockNumber: (block: bigint): string => `區塊 ${block}`,
   pastNumbers: '2. app 填的值，一般是多少？',
@@ -457,15 +468,15 @@ const ZH = {
   pastNumberLead: '填的數字',
   pastValueLead: '填的值',
   pastGroup: { 'safe-exact': 'Safe，符合模板', 'safe-differs': 'Safe，別的地方不同', 'eoa-exact': 'EOA，呼叫符合模板', 'eoa-differs': 'EOA，別的地方不同' } satisfies Record<PastGroupKind, string>,
-  pastHead: { transactions: '交易', count: '數量', shortest: '最短', smallest: '最小', half: '一半不超過', most: '99% 不超過', longest: '最長', largest: '最大', value: '值', safe: 'Safe', eoa: 'EOA', what: '哪裡不同', newest: '最近', example: '例子' },
+  pastHead: { transactions: '交易', count: '數量', shortest: '最短', smallest: '最小', half: '一半不超過', most: '99% 不超過', longest: '最長', largest: '最大', value: '值', distinct: '不同的值', commonest: '最常見', safe: 'Safe', eoa: 'EOA', what: '哪裡不同', newest: '最近', example: '例子（最多 3 筆）' },
   pastNone: '無',
   pastLimit: (seconds: bigint): readonly [string, string, string] => ['模板上限：', zhDuration(seconds), '。更久就 MISMATCH。'],
   pastNotRecorded: '沒有記錄',
   pastUnrecorded: (group: string, n: number): string => `${group}：另外 ${n} 筆的區塊時間沒有記錄到，不在表裡。`,
-  pastDistinct: (n: number, safe: number, eoa: number, most: Span, times: number): Span[] => [`${n} 個不同的值（Safe ${safe} 筆、EOA ${eoa} 筆）。最常見的是 `, most, `，${times} 筆。`],
+  pastMost: (value: Span, times: number): Span[] => [value, `，${times} 筆`],
   pastExact: '完整數字',
   pastExactTime: (path: Span): Span[] => [path, '，單位是秒：'],
-  duration: (seconds: bigint): string => (seconds < 0n ? `區塊前 ${zhDuration(-seconds)}` : zhDuration(seconds)),
+  duration: (seconds: bigint, rounding: Rounding): string => (seconds < 0n ? `區塊前 ${zhDuration(-seconds, opposite(rounding))}` : zhDuration(seconds, rounding)),
   pastDiffer: '3. 其他交易哪裡不同？',
   pastDifferLead: (n: number): string => `${n} 筆交易做了這個模板不允許的事。`,
   pastNoDiffer: '研究過的交易裡，沒有這個操作的其他做法。',
@@ -719,6 +730,7 @@ const EN: Words = {
   freeNotTested: 'the template allows any value, and no test tried another',
   freeAllFailed: 'tested with other values: each time the transaction failed or did not match the card',
   freeKeyNotTested: 'The template allows any value; no test tried another.',
+  freeKeySomeNotTested: 'The template allows any value; for some of these, no test tried another.',
   freeKeyAllFailed: 'Every other value tested made the transaction fail or not match the card.',
   freeKey: {
     scalar: 'Another value gives the same result or the transaction fails.',
@@ -814,9 +826,12 @@ const EN: Words = {
   needsReview: 'needs your review',
   flowLine: (n) => `Flow line ${n}`,
   money: {
-    transfer: (from, to, token) => `${from} pays ${token} to ${to}`,
-    approve: (from, to, token) => `${from} lets ${to} spend its ${token}`,
-    eth: (from, to) => `${from} pays ETH to ${to}`,
+    sender: 'the sender',
+    inPast: (n) => `In ${n} past ${plural(n, 'transaction', 'transactions')}, `,
+    transfer: (from, to, token) => `${from} paid ${token} to ${to}`,
+    approve: (from, to, token) => `${from} let ${to} spend its ${token}`,
+    eth: (from, to) => `${from} paid ETH to ${to}`,
+    unread: (call, token) => `a step under call ${call} moved the sender's ${token}, to whom was not read`,
     notDescribed: '; the template does not describe this step',
     several: (n, what) => `${n} different ${what}`,
     addresses: 'addresses',
@@ -824,7 +839,6 @@ const EN: Words = {
     parties: (pairs, all) => `From → to${all > pairs.length ? ` (${pairs.length} of ${all})` : ''}: ${pairs.join(', ')}.`,
   },
   seenIn: (seen, of) => `Seen in ${seen} of ${of}.`,
-  inTransactions: (n) => `In ${n} past ${plural(n, 'transaction', 'transactions')}.`,
   outsideRegistry: (shown, all) => `Addresses outside the registry${all > shown.length ? ` (${shown.length} of ${all})` : ''}: ${shown.join(', ')}.`,
   docSubject: (page, fn) => [`${page} `, fn],
   notInStandard: (standard) => `The standard's page does not hold this function's declaration in ${standard}.`,
@@ -1023,7 +1037,7 @@ const EN: Words = {
     field: (at, expected, actual) => [at, ' was ', actual, ', the template wants ', expected],
     notSender: (at) => [at, ' is not the Safe or address that sent the transaction'],
     differs: (at, other) => [at, ' differs from ', other, '; the template wants them the same'],
-    late: (at, seconds) => [at, ` is more than ${enDuration(seconds)} after the time of the block it ran in, which the template refuses`],
+    late: (at, seconds) => [at, ` is more than ${enDuration(seconds, 'down')} after the time of the block it ran in, which the template refuses`],
     trailer: (at) => ['Bytes the template does not allow follow the arguments, at ', at],
     foreignDelegatecall: 'A delegatecall to a contract that is not the official MultiSend',
     noncanonical: 'A MultiSend encoding that is not the standard one',
@@ -1056,7 +1070,7 @@ const EN: Words = {
     const at = (block: bigint, seconds: bigint | undefined) => `block ${block}${seconds === undefined ? '' : ` (${dateOf(seconds)})`}`;
     const blocks = `from ${at(from, time?.from)} to ${at(to, time?.to)}`;
     if (kind === 'year') return `Every transaction of the last year was searched, ${blocks}, with no gap. `;
-    const length = `${to - from + 1n} blocks${time === undefined ? '' : `, about ${enDuration(time.to - time.from)}`}`;
+    const length = `${to - from + 1n} blocks${time === undefined ? '' : `, about ${enDuration(time.to - time.from, 'down')}`}`;
     return `Every transaction ${blocks} was searched, newest first, ${length}, with no gap; the search stops at its cap of ${cap} pages of 1,000, so the year's older transactions were not searched. `;
   },
   searchEtherscanOnly: (count) => ['Only Etherscan searches an event, and found ', count, "; Alchemy's eth_getLogs reads at most 10 blocks at a time on the free plan."],
@@ -1079,6 +1093,7 @@ const EN: Words = {
   pastEoa: (times, senders, oneCall) => (times === 0 ? 'EOA: 0.' : `EOA: ${times} ${plural(times, 'time', 'times')}, from ${senders} ${plural(senders, 'address', 'addresses')}${oneCall ? '' : ", each sending one of the template's calls"}.`),
   pastNewest: (when) => `The newest: ${when}.`,
   pastSucceeded: 'All of them succeeded.',
+  pastLinks: (n, newest) => ` ${newest ? (n === 1 ? 'The newest one' : `The newest ${n}`) : `${n} of them`}: `,
   pastSucceededWhy: 'These transactions were found through event logs, and a failed transaction leaves none.',
   atBlockNumber: (block) => `block ${block}`,
   pastNumbers: '2. What values are normal in what the app fills?',
@@ -1088,15 +1103,15 @@ const EN: Words = {
   pastNumberLead: 'the number that was set',
   pastValueLead: 'the value that was set',
   pastGroup: { 'safe-exact': 'Safe, matches the template', 'safe-differs': 'Safe, differs elsewhere', 'eoa-exact': 'EOA, its call matches the template', 'eoa-differs': 'EOA, differs elsewhere' },
-  pastHead: { transactions: 'Transactions', count: 'Count', shortest: 'Shortest', smallest: 'Smallest', half: 'Half at or under', most: '99% at or under', longest: 'Longest', largest: 'Largest', value: 'Value', safe: 'Safe', eoa: 'EOA', what: 'What was different', newest: 'Newest', example: 'Example' },
+  pastHead: { transactions: 'Transactions', count: 'Count', shortest: 'Shortest', smallest: 'Smallest', half: 'Half at or under', most: '99% at or under', longest: 'Longest', largest: 'Largest', value: 'Value', distinct: 'Different values', commonest: 'Most common', safe: 'Safe', eoa: 'EOA', what: 'What was different', newest: 'Newest', example: 'Examples (up to 3)' },
   pastNone: 'none',
   pastLimit: (seconds) => ['Template limit: ', enDuration(seconds), '. Longer is a MISMATCH.'],
   pastNotRecorded: 'not recorded',
   pastUnrecorded: (group, n) => `${group}: ${n} more ${plural(n, 'has', 'have')} no recorded block time and ${plural(n, 'is', 'are')} not in the table.`,
-  pastDistinct: (n, safe, eoa, most, times) => [`${n} different values (${safe} from Safes, ${eoa} from EOAs). The most common is `, most, `, in ${times}.`],
+  pastMost: (value, times) => [value, `, in ${times}`],
   pastExact: 'Exact numbers',
   pastExactTime: (path) => [path, ', in seconds: '],
-  duration: (seconds) => (seconds < 0n ? `${enDuration(-seconds)} before` : enDuration(seconds)),
+  duration: (seconds, rounding) => (seconds < 0n ? `${enDuration(-seconds, opposite(rounding))} before` : enDuration(seconds, rounding)),
   pastDiffer: '3. How did the others differ?',
   pastDifferLead: (n) => `${n} ${plural(n, 'transaction', 'transactions')} did something this template refuses.`,
   pastNoDiffer: 'No studied transaction did this operation another way.',
