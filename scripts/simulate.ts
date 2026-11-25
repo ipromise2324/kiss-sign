@@ -8,7 +8,7 @@ import { createReader } from '../src/chain/reader.ts';
 import type { Read } from '../src/chain/reader.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
 import { recordingTransport } from '../src/chain/recording.ts';
-import { unreadRefusal } from '../src/chain/https.ts';
+import { RETRY_PAUSES_MS, unreadRefusal } from '../src/chain/https.ts';
 import { attributesText, marketsText, registryFromTexts } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
 import { checksumAddress, parseAddress, parseUint256 } from '../src/safe/types.ts';
@@ -84,7 +84,7 @@ async function serviceTx(): Promise<{ service: Record<string, unknown>; version:
 const endpoints = mainnetEndpoints(process.env);
 const recorder = recordingTransport(httpsTransport(), endpoints);
 const unread: string[] = [];
-const reader = createReader(endpoints, recorder.transport, { note: (read) => void unread.push(read) });
+const reader = createReader(endpoints, recorder.transport, { note: (read) => void unread.push(read), retryPausesMs: RETRY_PAUSES_MS });
 const agreed = <T>(read: Read<T>): T => {
   if (read.kind === 'unverifiable') throw new Error(read.reason);
   return read.value;

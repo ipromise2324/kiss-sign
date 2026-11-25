@@ -27,7 +27,7 @@ import { parseAddress } from '../src/safe/types.ts';
 import type { Address } from '../src/safe/types.ts';
 import { loadTemplate } from '../src/template/template.ts';
 import { readRecording, recordingText } from '../src/chain/bytecode.ts';
-import { unreadRefusal } from '../src/chain/https.ts';
+import { RETRY_PAUSES_MS, unreadRefusal } from '../src/chain/https.ts';
 import { exitOnHelp } from '../src/script-help.ts';
 
 const USAGE = `usage: pnpm past-txs <protocol>/<operation>
@@ -274,7 +274,7 @@ const unread: string[] = [];
 const note = (read: string) => void unread.push(read);
 const sources = recordingAsk(shown.ask(liveAsk(process.env, note)));
 const messages = recordingMessages(liveMessages(httpsMessage, note));
-const reader = createReader(endpoints, chain.transport, { note });
+const reader = createReader(endpoints, chain.transport, { note, retryPausesMs: RETRY_PAUSES_MS });
 const traces = drpcTraces(endpoints[1], httpsTransport(), note);
 const query = {
   template,
