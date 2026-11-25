@@ -52,6 +52,7 @@ import { gatherSourcePages, httpsGet, retryingGet } from '../src/research/source
 import { readGithubToken } from '../src/research/github-token.ts';
 import { alchemyCall, vaultEvidenceText } from '../src/research/instance-evidence.ts';
 import type { Address } from '../src/safe/types.ts';
+import { requireJudged } from '../src/research/trace-addresses.ts';
 import { ensureVendored, nodeVendorIoWith } from '../src/vendor.ts';
 import { recordingText } from '../src/chain/bytecode.ts';
 import { exitOnHelp } from '../src/script-help.ts';
@@ -71,6 +72,10 @@ studies only the past-txs recordings whose --token is that instance. Without
 --instance-of such a template is refused, naming the instances that have a report.
 A read with no answer is asked again after each pause; one still without an answer prints as
 UNVERIFIABLE, never as FINDING, and --record then writes nothing.
+--record refuses before any read, naming every one, while an address the recorded call traces show
+moving the sender's money is neither checked at signing nor judged in the trace-addresses.json
+beside the report, while that file judges an address no trace names, or while no trace counts for
+a template that moves money and the file gives no "untraced" reason.
 The report prints no text from a page, a token, a descriptor or an API answer, and prints the
 template's reasons escaped and labelled as written by the AI. pnpm test fails when a committed
 report, or an HTML page, differs from what its recordings and notes.json give.
@@ -168,6 +173,17 @@ if (flags.render) {
   process.exit(0);
 }
 
+const pastTxs = pastTxsRecordings(root, subject).map(({ file, recording }) => summarizePastTxs(root, registry, file, recording));
+if (flags.record) {
+  try {
+    requireJudged(root, subject, registry, pastTxs);
+  } catch (e) {
+    if (!(e instanceof ReportError)) throw e;
+    console.error(`REFUSED  ${e.message}`);
+    process.exit(2);
+  }
+}
+
 const entries = entriesOf(subject, registry);
 const endpoints = mainnetEndpoints(process.env);
 const githubToken = readGithubToken(process.env);
@@ -233,7 +249,6 @@ const factsChain = recordingTransport(httpsTransport(), endpoints);
 const scope = subject.kind === 'template' ? factsScope(subject.template, registry, entries) : undefined;
 const facts = scope === undefined ? undefined : await protocolFacts(scope, registry, { defillama: listing, reader: createReader(endpoints, factsChain.transport, { note }), block: latest.value });
 
-const pastTxs = await Promise.all(pastTxsRecordings(root, subject).map(({ file, recording }) => summarizePastTxs(root, registry, file, recording)));
 const fetched = new Date();
 const fixtures = await reportFixtures(root, subject, fullRegistry);
 const live = { subject, registry, listings, pages, fetched: fetched.toISOString().slice(0, 10), abi, vaults, pastTxs, spans, today, instances, erc7730, facts, fixtures };
