@@ -552,12 +552,12 @@ test("a newest-first search's lead says which blocks it read whole and their dat
   const year: Coverage = { kind: 'year', range: { fromBlock: 23810401n, toBlock: 26438400n }, pages: 12, time: { from: 1_758_464_000n, to: 1_790_000_000n } };
   const expected: Readonly<Record<Language, readonly [recent: string, year: string, timeless: string]>> = {
     en: [
-      'Every transaction from block 26378401 (2026-09-13) to block 26438400 (2026-09-21) was searched, newest first, 60000 blocks, about 8.3 days, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched.',
+      'Every transaction from block 26378401 (2026-09-13) to block 26438400 (2026-09-21) was searched, newest first, 60000 blocks, about 8 days 8 hours, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched.',
       'Every transaction of the last year was searched, from block 23810401 (2025-09-21) to block 26438400 (2026-09-21), with no gap.',
       'Every transaction from block 26378401 to block 26438400 was searched, newest first, 60000 blocks, with no gap;',
     ],
     'zh-TW': [
-      '從最新的區塊往回，搜尋了區塊 26378401（2026-09-13）到區塊 26438400（2026-09-21）的每一筆交易，共 60000 個區塊，約 8.3 天，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。',
+      '從最新的區塊往回，搜尋了區塊 26378401（2026-09-13）到區塊 26438400（2026-09-21）的每一筆交易，共 60000 個區塊，約 8 天 8 小時，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。',
       '搜尋了最近一年的每一筆交易，從區塊 23810401（2025-09-21）到區塊 26438400（2026-09-21），沒有遺漏。',
       '從最新的區塊往回，搜尋了區塊 26378401到區塊 26438400的每一筆交易，共 60000 個區塊，沒有遺漏；',
     ],

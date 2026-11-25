@@ -216,6 +216,10 @@ test("a line naming a card field's token is compared with each transaction's own
   assert.deepEqual(compared.uncovered.map((u) => `${u.from}.${u.to}.${u.kind}`), ['other.usdc.transfer', 'other.usdt.transfer'], 'the line explains the pull in each direction, not the payout');
   assert.deepEqual(flowResults(compared).map((r) => r.finding.kind)[0], 'agrees');
 
+  const pays: FlowLine = { ...PULL, from: { kind: 'card', field: 'buy-token' }, to: { kind: 'entry', name: 'permit2' }, selector: '0xabcdef02' as Hex };
+  const bought = { ...both[0]!, calls: [...both[0]!.calls, call(1, 'CALL', USDC, PERMIT2, '0xabcdef02')] };
+  assert.deepEqual([compareFlow(swapTemplate, pair, [pays], [bought], cards).lines[0]?.seen], [1], 'a card token may be the caller, each field its own token');
+
   const wrong = compareFlow(swapTemplate, pair, [PULL], [both[0]!, swapTrace('0x02', USDC, USDT, USDT)], cards);
   assert.deepEqual([wrong.lines[0]?.seen, wrong.lines[0]?.of], [1, 2], 'another token than the transaction sells is not the line');
   assert.deepEqual(flowResults(wrong).map((r) => [r.id, stateOf(r)])[0], ['flow.1', 'bad']);

@@ -135,7 +135,7 @@ svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
 svg .ah{fill:var(--fg)}
 svg .fn{fill:var(--fg);font:400 14px var(--mono)}
 svg .no{fill:var(--fg3);font:400 14px var(--mono)}
-svg .cap{display:flex;align-items:flex-start;gap:8px;padding-top:2px;color:var(--fg2);font:14px/20px var(--sans)}
+svg .cap{margin:0;display:flex;align-items:flex-start;gap:8px;padding-top:2px;color:var(--fg2);font:14px/20px var(--sans)}
 svg .cap code{font-size:13px;padding:2px 6px;white-space:nowrap}
 .mark{font-size:17px} .mark.ok{color:var(--ok)} .mark.bad{color:var(--bad)}
 svg .capg{fill:var(--ok);font:590 14px var(--sans)}
@@ -559,11 +559,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>usdc.approve → 0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE.0xf434d6ca</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 26484426</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xdc8add1362335eb6fae4401075e81b5f5e836ee5de91b47b385fb1935c5e2b35">0xdc8add13…</a></span></td></tr></tbody></table></div>
   <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>How the program searched</span></summary>
   <h3>Search of morpho Approval: 26661 found, 240 studied</h3>
-  <p class="cap">Every transaction from block 26156110 (2026-10-09) to block 26484833 (2026-11-24) was searched, newest first, 328724 blocks, about 45.7 days, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched. Only Etherscan searches an event, and found <span class="num">26661</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
+  <p class="cap">Every transaction from block 26156110 (2026-10-09) to block 26484833 (2026-11-24) was searched, newest first, 328724 blocks, about 45 days 19 hours, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched. Only Etherscan searches an event, and found <span class="num">26661</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
   <p class="cap">These transactions were found through event logs, and a failed transaction leaves none.</p>
   <p class="cap">42 more are other operations, not counted: <code>0xBdb3ba9ffe392549E1f8658DD2630c141fDF47B6.0x000000c3</code> 16, <code>0xE41698520E4817B55C1841859a36847d50F0c82F.0x00000000</code> 5, <code>0xD1c6aca7eA7eD44E1873dAFa054c28Ceb690c7Eb.0x9eb723c7</code> 4, <code>0x111111125421cA6dc452d289314280a0f8842A65.0x07ed2379</code> 2, and others.</p>
   <h3>Search of usdc Approval: 18893 found, 240 studied</h3>
-  <p class="cap">Every transaction from block 26480689 (2026-11-23) to block 26484819 (2026-11-24) was searched, newest first, 4131 blocks, about 13.7 hours, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched. Only Etherscan searches an event, and found <span class="num">18893</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
+  <p class="cap">Every transaction from block 26480689 (2026-11-23) to block 26484819 (2026-11-24) was searched, newest first, 4131 blocks, about 13 hours 47 minutes, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched. Only Etherscan searches an event, and found <span class="num">18893</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
   <p class="cap">176 more are other operations, not counted: <code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 26, <code>0x5567954cD026CEbFE486062cb75848e0f1c12E58.0x0a2b8f36</code> 13, <code>gpv2-settlement.0x13d79a0b</code> 11, <code>0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108.0x765e827f</code> 7, and others.</p>
   </details>
 </section>

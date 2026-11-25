@@ -214,6 +214,9 @@ test('a flow line may name a card field that holds a token, and no other card fi
   const { tokenFields } = notesScope(of, { entries: [], results: [] }, swap, 'en');
   assert.deepEqual([...tokenFields.keys()], ['sell-token', 'buy-token']);
   assert.ok(tokenFields.get('sell-token')?.includes('usdt'));
+  const vaults = loadTemplate(ROOT, 'fluid/vault-deposit', registry);
+  assert.ok([...vaults.card.values()].some((field) => field.kind === 'contract'));
+  assert.equal(notesScope({ ...of, subject: { kind: 'template', template: vaults } } as unknown as ReportInputs, { entries: [], results: [] }, vaults, 'en').tokenFields.size, 0, 'a vault field holds no token');
 });
 
 test('a template flow line that names a card token is shared by every instance', () => {
