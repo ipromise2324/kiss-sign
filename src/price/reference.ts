@@ -4,11 +4,12 @@ import type { AbiValue } from '../decode/codec.ts';
 import type { Feed, Registry, RegistryEntry } from '../registry.ts';
 import { feedChain, twapPools } from '../registry.ts';
 import type { TwapPool } from '../registry.ts';
+import { visible } from '../verify/checklist.ts';
 import { harmonicLiquidity, meanTick, sqrtRatioAtTick } from './tick.ts';
 
 /**
- * The rule of a swap's floor, the same for every pair and protocol. A registry change cannot loosen it: the registry
- * holds only facts about a token, a feed or a pool.
+ * The rule of a swap's floor, the same for every pair and protocol. No template or registry entry changes these numbers,
+ * but the rule trusts the registry's facts, which load cannot check against their sources.
  */
 export const FLOOR_RULE = {
   /** The slippage an empty answer takes and the most the signer may type, for a pair that shares a peg. */
@@ -84,7 +85,7 @@ function routesOf(sell: RegistryEntry, buy: RegistryEntry, pools: readonly TwapP
   return [];
 }
 
-export function pairFacts(sell: RegistryEntry, buy: RegistryEntry, registry: Registry, named: ReadonlySet<string>): PairFacts {
+export function pairFacts(sell: RegistryEntry, buy: RegistryEntry, registry: Registry, tradedThrough: ReadonlySet<string>): PairFacts {
   const without = [sell, buy].filter((token) => token.price === undefined);
   if (sell.price === undefined || buy.price === undefined) return { kind: 'no-feed', tokens: without };
   const chains = { sell: feedChain(sell.price.feed, registry) as readonly FeedEntry[], buy: feedChain(buy.price.feed, registry) as readonly FeedEntry[] };
@@ -94,7 +95,7 @@ export function pairFacts(sell: RegistryEntry, buy: RegistryEntry, registry: Reg
   const pegged = peg === undefined || own.length === 0 || deviation > FLOOR_RULE.maxDeviationBps ? undefined : { sell: peggedLegs(chains.sell, peg), buy: peggedLegs(chains.buy, peg) };
   const pools = twapPools(registry);
   const all = routesOf(sell, buy, pools);
-  const routes = routesOf(sell, buy, pools.filter(({ entry }) => !named.has(entry.name)));
+  const routes = routesOf(sell, buy, pools.filter(({ entry }) => !tradedThrough.has(entry.name)));
   const alone: Alone | undefined = all.length === 0 ? 'no-pool' : own.some(({ feed }) => feed.sourceClass !== 'cex_price') ? 'shared-upstream' : routes.length === 0 ? 'own-pool' : undefined;
   return { kind: 'feeds', ...chains, pegged, routes: alone === undefined ? routes : [], alone };
 }
@@ -165,7 +166,7 @@ const numbersAt = (values: readonly AbiValue[], i: number): bigint[] => (values[
 async function readFeed(entry: FeedEntry, reads: PriceReads): Promise<FeedRead> {
   const [description] = await reads.view(entry, FEED_VIEWS.description, []);
   const said = new TextDecoder().decode((description as Extract<AbiValue, { kind: 'bytes' | 'string' }>).value);
-  if (said !== entry.feed.description) throw new FeedError(entry, 'description', JSON.stringify(said.slice(0, 80)));
+  if (said !== entry.feed.description) throw new FeedError(entry, 'description', JSON.stringify(visible(said.slice(0, 80))));
   const decimals = numberAt(await reads.view(entry, FEED_VIEWS.decimals, []), 0);
   if (decimals !== BigInt(entry.feed.decimals)) throw new FeedError(entry, 'decimals', `${decimals}`);
   const round = await reads.view(entry, FEED_VIEWS.latestRoundData, []);

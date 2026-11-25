@@ -49,7 +49,9 @@ if (unknown.length > 0) {
   process.exit(1);
 }
 const attributes = attributesText(root);
-const parse = () => registryFromTexts(flags.history ? mergeRegistry(readFileSync(repoPath, 'utf8'), file, attributes) : JSON.stringify(file), undefined, attributes);
+/** A feed or pool without a pin does not load, and this script writes the first one. */
+const withoutPrices = () => Object.fromEntries(Object.entries(file).map(([name, { feed, price, twap, ...rest }]) => [name, rest]));
+const parse = () => registryFromTexts(flags.history ? mergeRegistry(readFileSync(repoPath, 'utf8'), withoutPrices(), attributes) : JSON.stringify(withoutPrices()), undefined, attributes);
 const recorded = parse();
 
 const routeJson = ({ address, hash, selectors }: Route) => ({ address: checksumAddress(address), hash, selectors });

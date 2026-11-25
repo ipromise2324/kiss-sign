@@ -1480,9 +1480,7 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
     facts: [],
     instanceField: value.instanceField === undefined ? undefined : instanceField(text('instanceField', value.instanceField), fields),
   };
-  const atLeast = atLeastFields(template);
-  const loose = [...fields].find(([name, field]) => field.kind === 'amount' && field.floor !== undefined && !atLeast.has(name));
-  if (loose !== undefined) throw new TemplateError(`card.${loose[0]}.floor`, 'no atLeast of the calls or of what the Safe gets compares with this field, so it bounds nothing');
+  for (const [name, field] of fields) if (field.kind === 'amount' && field.floor !== undefined) requireBindingFloor(template, name, field.floor);
   const unbounded = [...template.effects.gives, ...template.effects.gets].some((effect) => effect.amount.kind === 'positive' || effect.amount.kind === 'any');
   if (unbounded && routes(template)) throw new TemplateError('effects', 'a template with a route claim must bound each token the Safe gives or gets by a card amount, atLeast, atMost or all, since a route may change the price');
   const protocols = calledProtocols(template, registry);
@@ -1577,13 +1575,68 @@ export function floorFields(template: Template): ReadonlySet<string> {
   ]);
 }
 
-/** The card amount fields an `atLeast` of a call or of what the Safe gets compares with. */
-function atLeastFields(template: Template): ReadonlySet<string> {
-  return new Set([
-    ...callRules(template).flatMap((rule) => (rule.kind === 'at-least' ? [rule.field] : [])),
-    ...template.effects.gets.flatMap(({ amount }) => (amount.kind === 'at-least' ? [amount.field] : [])),
-  ]);
+/** Values that sit side by side: the arguments of one call, the members of one struct or message, the items of one array. */
+type Siblings = { readonly of: 'arguments' | 'message'; readonly members: readonly { readonly type: AbiType; readonly rule: Rule }[] };
+
+function siblingsIn(of: Siblings['of'], types: readonly AbiType[], rules: readonly Rule[]): Siblings[] {
+  const members = rules.map((rule, i) => ({ type: types[i] as AbiType, rule }));
+  return [{ of, members }, ...members.flatMap(({ type, rule }) => siblingsUnder(type, rule))];
 }
+
+const typesOf = (params: readonly AbiParam[]): AbiType[] => params.map(({ type }) => type);
+
+function siblingsUnder(type: AbiType, rule: Rule): Siblings[] {
+  switch (rule.kind) {
+    case 'call':
+      return siblingsIn('arguments', typesOf(rule.call.fn.params), rule.call.args);
+    case 'fields':
+      return type.kind === 'tuple' ? siblingsIn('arguments', typesOf(type.components), rule.fields) : [];
+    case 'items':
+      return type.kind === 'array' || type.kind === 'fixed-array' ? rule.items.flatMap((item) => siblingsUnder(type.item, item)) : [];
+    case 'packed':
+      return siblingsIn('arguments', rule.parts.map((part) => part.type), rule.parts.map((part) => part.rule));
+    case 'eip712':
+      return siblingsIn('message', typesOf(rule.message.struct.members), rule.message.fields);
+    default:
+      return [];
+  }
+}
+
+/**
+ * A floor must bound what the Safe receives, for exactly what it sells. Another free number of the floor's type beside it
+ * could be the real minimum, leaving the floor on a deadline. A transaction that moves no token signs an order, so each
+ * message must bind it.
+ */
+function requireBindingFloor(template: Template, name: string, { sells }: Floor): void {
+  const path = `card.${name}.floor`;
+  const { gives, gets } = template.effects;
+  const tokenOf = (field: string): string => refKey((template.card.get(field) as Extract<CardField, { kind: 'amount' }>).of);
+  const groups = template.calls.flatMap(({ data }) => (data === 'empty' ? [] : siblingsIn('arguments', typesOf(data.fn.params), data.args)));
+  const sold = (rule: Rule): boolean => (rule.kind === 'card' && rule.ref.field === sells) || (rule.kind === 'at-most' && rule.field === sells);
+  const bounds = ({ members }: Siblings): boolean =>
+    members.some(
+      (least) =>
+        least.rule.kind === 'at-least' &&
+        least.rule.field === name &&
+        members.some(({ type, rule }) => sold(rule) && canonicalType(type) === canonicalType(least.type)) &&
+        !members.some(({ type, rule }) => rule.kind === 'free' && rule.time !== true && canonicalType(type) === canonicalType(least.type)),
+    );
+  if (!groups.some(({ members }) => members.some(({ rule }) => sold(rule)))) throw new TemplateError(`${path}.sells`, `no call sells exactly, or at most, ${sells}`);
+  if (!groups.some(bounds)) throw new TemplateError(path, `no atLeast of it sits beside ${sells} with the same type and no free number of that type, so it does not bound what is received`);
+  if (gives.length === 0 && gets.length === 0) {
+    const names = ({ members }: Siblings, token: string): boolean => members.some(({ rule }) => rule.kind === 'card' && refKey(rule.ref) === token);
+    const messages = groups.filter(({ of }) => of === 'message');
+    const whole = messages.every((message) => bounds(message) && names(message, tokenOf(sells)) && names(message, tokenOf(name)));
+    if (messages.length === 0 || !whole) throw new TemplateError(path, `the transaction moves no token, and a message it signs does not hold both tokens, ${sells} and an atLeast of ${name}`);
+    return;
+  }
+  const moves = (effects: readonly Effect[], field: string, kinds: readonly EffectAmount['kind'][]): boolean =>
+    effects.some(({ token, amount }) => !isNamedToken(token) && refKey(token) === tokenOf(field) && 'field' in amount && amount.field === field && kinds.includes(amount.kind));
+  if (!moves(gives, sells, ['card', 'at-most'])) throw new TemplateError(`${path}.sells`, `effects.gives does not give exactly, or at most, ${sells}`);
+  if (!moves(gets, name, ['at-least'])) throw new TemplateError(path, 'effects.gets has no atLeast of it in its own token, so it does not bound what is received');
+}
+
+const refKey = (ref: TokenRef): string => (ref === 'eth' ? 'eth' : `${ref.field}${ref.attribute === undefined ? '' : `.${ref.attribute}`}`);
 
 /** Every card reference the template makes. */
 export function cardRefs(template: Template): CardRef[] {

@@ -222,7 +222,8 @@
     "kind": "token",
     "source": "https://docs.uniswap.org/contracts/v3/reference/deployments/ethereum-deployments",
     "price": {
-      "feed": "eth-usd"
+      "feed": "eth-usd",
+      "unit": "ETH"
     }
   },
   "uniswap-v3-factory": {

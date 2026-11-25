@@ -40,7 +40,7 @@ const EN = {
     percentBase: (value: string) => `${value} base units, 100% being 10^18`,
     id: 'id',
     lltv: (text: string, raw: string) => `lltv ${text} (${raw})`,
-    chainReads: (block: bigint, providers: readonly string[]) => `chain reads at block ${block}, where ${providers.join(' and ')} agree`,
+    chainReads: (block: bigint, time: string, providers: readonly string[]) => `chain reads at block ${block} of ${time}, where ${providers.join(' and ')} agree`,
     noDecimals: 'card seal reads no decimals, so token amounts other than ETH are in base units only',
     askNumber: (name: string, range: string) => `${name}: type its number (${range}): `,
     askPercent: (name: string) => `${name} (a percent, 100 at most, such as 100 or 35.5): `,
@@ -111,6 +111,8 @@ const EN = {
     notSlippage: (name: string, shown: string) => `${name}: ${shown} is not a slippage such as 0.5, in plain digits with at most 2 decimals`,
     overSlippage: (name: string, shown: string, most: string) => `${name}: ${shown} percent is more than ${most}`,
     noBlockTime: (why: string) => `cannot read the block's time: ${why}`,
+    notFresh: (block: bigint, seconds: bigint, limit: bigint) =>
+      `block ${block}, the latest both providers have, is ${seconds < 0n ? -seconds : seconds} s ${seconds < 0n ? 'after' : 'behind'} this computer's clock, more than ${limit} s; a provider that lags or lies, or a wrong clock, would make an old answer look current`,
     feedRefused: (feed: string, address: string, why: string) => `${feed} ${address} gives no price: ${why}`,
     feedWhy: {
       description: (said: string, feed: { readonly description: string }) => `description() answers ${said}, the registry says ${JSON.stringify(feed.description)}`,
@@ -273,7 +275,7 @@ const ZH: Labels = {
     percentBase: (value) => `${value} 最小單位，100% 是 10^18`,
     id: 'id',
     lltv: (text, raw) => `lltv ${text} (${raw})`,
-    chainReads: (block, providers) => `鏈上資料在區塊 ${block} 讀取，${providers.join(' 和 ')} 的答案一致`,
+    chainReads: (block, time, providers) => `鏈上資料在區塊 ${block}（${time}）讀取，${providers.join(' 和 ')} 的答案一致`,
     noDecimals: 'card seal 不讀 decimals，所以 ETH 以外的代幣數量只用最小單位顯示',
     askNumber: (name, range) => `${name}：輸入編號 (${range}): `,
     askPercent: (name) => `${name} (百分比，最多 100，例如 100 或 35.5): `,
@@ -343,6 +345,8 @@ const ZH: Labels = {
     notSlippage: (name, shown) => `${name}：${shown} 不是滑價，要像 0.5 這樣的一般數字，小數最多 2 位`,
     overSlippage: (name, shown, most) => `${name}：${shown}% 超過 ${most}`,
     noBlockTime: (why) => `讀不到區塊的時間：${why}`,
+    notFresh: (block, seconds, limit) =>
+      `兩個供應商都有的最新區塊 ${block} 比這台電腦的時鐘${seconds < 0n ? '晚' : '早'} ${seconds < 0n ? -seconds : seconds} 秒，超過 ${limit} 秒；供應商落後或說謊、或時鐘不準，會讓舊的答案看起來像現在的`,
     feedRefused: (feed, address, why) => `${feed} ${address} 給不出價格：${why}`,
     feedWhy: {
       description: (said, feed) => `description() 回答 ${said}，登記表寫的是 ${JSON.stringify(feed.description)}`,

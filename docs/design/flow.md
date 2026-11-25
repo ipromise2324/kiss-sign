@@ -651,6 +651,9 @@ The AI fills nothing and decides nothing here.
    A token that is not a registry contract, which a template allows only through an `address` card field, has no decimals the program trusts, so its amount is typed as a base-unit integer and the prompt says why.
    A nonce is typed as a plain integer.
    A computed field is not asked: `card new` reads it as the template declares (see [Intent card](data-shapes.md#intent-card)), from contracts that run the code the registry pins, and prints each read, the slippage with its source, and the value in whole tokens; the card before the seal step's question gives it in base units too.
+   Every read of a card is made at one block, the lower of the two providers' heads, and the box before the seal question prints its time.
+   `card new` refuses when that block is more than 300 seconds from this computer's clock, either way, or the heads are more than 25 blocks apart, 25 slots being the same five minutes: one provider that lags or lies could otherwise choose an old block, at which an old feed answer looks fresh.
+   Providers that serve wallets are normally within a few blocks of each other, and the shortest feed heartbeat in use is an hour, so five minutes refuses neither normal lag nor an unsynchronised clock.
    A field with a `floor` is computed or typed by the rule of the two tokens picked, after every other typed number: `card new` prints each feed and pool it read, with its address, the value of the amount sold by each, and any doubt; a doubted or far-off minimum is typed twice.
    A card with several operations names several templates.
    Terminal output is plain text when standard output is not a terminal or `NO_COLOR` is set; at a terminal, colour sets apart what the signer picked or typed, what the program computed, and dim provenance lines, and nothing is said by colour alone.

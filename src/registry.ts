@@ -129,8 +129,11 @@ export type Feed = {
   readonly quote: string;
 };
 
-/** `feed` names a registry feed; `peg` is `usd` or the feed on the token's own chain of feeds that prices what it is pegged to. */
-export type TokenPrice = { readonly feed: string; readonly peg: string | undefined };
+/**
+ * `feed` names a registry feed, and `unit` what it prices when that is not the token's own name, as a wrapped token is
+ * worth one of what it wraps; `peg` is `usd` or the feed on the token's own chain of feeds that prices what it is pegged to.
+ */
+export type TokenPrice = { readonly feed: string; readonly unit: string | undefined; readonly peg: string | undefined };
 
 /** A pool whose mean price may be read, its tokens in the pool's order, and the least harmonic mean liquidity to read it at. */
 export type TwapPool = { readonly entry: RegistryEntry; readonly token0: RegistryEntry; readonly token1: RegistryEntry; readonly minLiquidity: bigint };
@@ -722,7 +725,8 @@ function decimalString(path: string, raw: unknown): bigint {
 
 const FEED_DESCRIPTION = /^[A-Za-z0-9.]{1,16} \/ [A-Za-z0-9.]{1,16}$/;
 const MAX_FEED_DECIMALS = 36;
-const MAX_HEARTBEAT = 7 * 86_400;
+/** The longest heartbeat publishers of dollar feeds state; a longer one calls a dead feed fresh. */
+const MAX_HEARTBEAT = 86_400;
 const MAX_FEED_DEVIATION = 1000;
 /** A feed's chain of quotes ends in the dollar within this many feeds. */
 const MAX_FEEDS = 3;
@@ -751,10 +755,11 @@ function feedOf(path: string, raw: unknown): Feed {
 
 function priceOf(path: string, raw: unknown): TokenPrice {
   const value = record(path, raw);
-  onlyKeys(path, value, ['feed', 'peg']);
+  onlyKeys(path, value, ['feed', 'unit', 'peg']);
   if (typeof value.feed !== 'string') throw new RegistryError(`${path}.feed`, 'not the name of a feed');
   if (value.peg !== undefined && typeof value.peg !== 'string') throw new RegistryError(`${path}.peg`, `not ${DOLLAR} or the name of a feed`);
-  return { feed: value.feed, peg: value.peg };
+  if (value.unit !== undefined && typeof value.unit !== 'string') throw new RegistryError(`${path}.unit`, 'not the unit a feed prices');
+  return { feed: value.feed, unit: value.unit, peg: value.peg };
 }
 
 function numbersOf(path: string, raw: unknown): { [name: string]: bigint } {
@@ -796,8 +801,10 @@ export function twapPools(registry: Pick<Registry, 'entries'>): readonly TwapPoo
   );
 }
 
-/** Every feed ends in the dollar, every price names a feed and a peg on its own chain, and every pool its factory and its two tokens in order. */
 function checkPrices(entries: ReadonlyMap<string, RegistryEntry>): void {
+  for (const { name, feed, twap, code } of entries.values()) {
+    if ((feed !== undefined || twap !== undefined) && code === undefined) throw new RegistryError(`${name}.code`, `missing, and a price is read from it; run pnpm pin-code ${name}`);
+  }
   for (const { name, feed } of entries.values()) {
     if (feed === undefined) continue;
     let at: Feed = feed;
@@ -812,7 +819,14 @@ function checkPrices(entries: ReadonlyMap<string, RegistryEntry>): void {
   }
   for (const { name, price } of entries.values()) {
     if (price === undefined) continue;
-    if (entries.get(price.feed)?.feed === undefined) throw new RegistryError(`${name}.price.feed`, `${JSON.stringify(price.feed)} is not a feed in the registry`);
+    const feed = entries.get(price.feed)?.feed;
+    if (feed === undefined) throw new RegistryError(`${name}.price.feed`, `${JSON.stringify(price.feed)} is not a feed in the registry`);
+    const [priced] = feedUnits(feed.description);
+    if (price.unit !== undefined && price.unit !== priced) throw new RegistryError(`${name}.price.unit`, `${price.feed} prices ${priced}`);
+    if (priced.toLowerCase() !== name) {
+      if (price.unit === undefined) throw new RegistryError(`${name}.price.feed`, `${price.feed} prices ${priced}, which is not ${name}'s name; a token worth one ${priced} says so in unit`);
+      if (entries.has(priced.toLowerCase())) throw new RegistryError(`${name}.price.unit`, `${priced} is another entry's name`);
+    }
     const peg = price.peg;
     if (peg !== undefined && peg !== DOLLAR && !feedChain(price.feed, { entries }).some((feed) => feed.name === peg)) {
       throw new RegistryError(`${name}.price.peg`, `${JSON.stringify(peg)} is not ${DOLLAR} or a feed on the way from ${price.feed} to it`);

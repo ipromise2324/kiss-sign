@@ -13,7 +13,7 @@ import { decodeValues, encodeCall } from '../decode/codec.ts';
 import type { AbiValue } from '../decode/codec.ts';
 import { openMainnetReader } from '../chain/reader.ts';
 import type { Reader } from '../chain/reader.ts';
-import type { BlockRef } from '../chain/types.ts';
+import type { BlockHeader } from '../chain/types.ts';
 import { kissSignHome } from '../keys.ts';
 import { isMarketEntryPart, loadRegistry } from '../registry.ts';
 import type { Market, Registry, RegistryEntry } from '../registry.ts';
@@ -21,7 +21,7 @@ import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { FLOOR_RULE, FeedError, floorOf, moreThan, pairFacts, readReference, valueOf } from '../price/reference.ts';
 import type { Doubt, PairFacts, PriceReads, Reference, ViewFunction } from '../price/reference.ts';
-import { TEMPLATES_DIR, callRules, loadTemplate, scopeEntries, slippageBps, WAD } from '../template/template.ts';
+import { TEMPLATES_DIR, callRules, cardRefs, loadTemplate, scopeEntries, slippageBps, WAD } from '../template/template.ts';
 import type { CardField, CardRef, Computed, ComputedRead, Floor, Rule, Template, TokenRef } from '../template/template.ts';
 import { gatesInstances, isInstanceOf, reportUnit, reportedInstancesIn, severalInstances } from '../template/vault-reports.ts';
 import type { ReportedInstances } from '../template/vault-reports.ts';
@@ -127,6 +127,14 @@ function unitOf(of: TokenRef, values: Readonly<Record<string, string>>, registry
 
 const UINT256_LIMIT = 1n << 256n;
 
+/**
+ * A card is read at the lower of the two heads, so one provider that lags or lies could choose an old block, at which an
+ * old feed answer looks fresh.
+ */
+const MAX_BLOCK_DRIFT_SECONDS = 300n;
+const SLOT_SECONDS = 12n;
+const MAX_HEAD_GAP = MAX_BLOCK_DRIFT_SECONDS / SLOT_SECONDS;
+
 /** Every chain read of one card, through both providers at the one block they agree on. */
 type Chain = {
   readonly decimals: (entry: RegistryEntry) => Promise<number>;
@@ -144,19 +152,25 @@ type Chain = {
   readonly provenance: () => string | undefined;
 };
 
-function openChain(reader: Reader | undefined, registry: Registry, L: CardWords): Chain {
-  let at: BlockRef | undefined;
-  const agreedBlock = async (refuse: (why: string) => never): Promise<{ readonly reader: Reader; readonly at: BlockRef }> => {
+function openChain(reader: Reader | undefined, registry: Registry, now: () => number, L: CardWords): Chain {
+  let at: BlockHeader | undefined;
+  const noTime = (why: string): never => {
+    throw new CardError(L.noBlockTime(why));
+  };
+  const agreedBlock = async (refuse: (why: string) => never): Promise<{ readonly reader: Reader; readonly at: BlockHeader }> => {
     if (reader === undefined) throw new Error('no chain reader');
     if (at === undefined) {
       const latest = await reader.block('latest');
-      at = latest.kind === 'agreed' ? latest.value : refuse(latest.reason);
+      const header = await reader.header(latest.kind === 'agreed' ? latest.value : refuse(latest.reason));
+      const block = header.kind === 'agreed' ? header.value : noTime(header.reason);
+      const behind = BigInt(Math.floor(now() / 1000)) - block.time;
+      if (behind > MAX_BLOCK_DRIFT_SECONDS || -behind > MAX_BLOCK_DRIFT_SECONDS) throw new CardError(L.notFresh(block.number, behind, MAX_BLOCK_DRIFT_SECONDS));
+      at = block;
     }
     return { reader, at };
   };
   const known = new Map<Address, number>();
   const pinned = new Set<string>();
-  let time: bigint | undefined;
   const callOrRevert: Chain['callOrRevert'] = async (to, data, call) => {
     const refuse = (why: string): never => {
       throw new CardError(L.noRead(call, to.name, checksumAddress(to.address), why));
@@ -168,7 +182,7 @@ function openChain(reader: Reader | undefined, registry: Registry, L: CardWords)
   };
   return {
     known,
-    provenance: () => (at === undefined || reader === undefined ? undefined : L.chainReads(at.number, reader.providers)),
+    provenance: () => (at === undefined || reader === undefined ? undefined : L.chainReads(at.number, utc(at.time), reader.providers)),
     decimals: async (entry) => {
       const cached = known.get(entry.address);
       if (cached !== undefined) return cached;
@@ -192,16 +206,7 @@ function openChain(reader: Reader | undefined, registry: Registry, L: CardWords)
       if (check.kind === 'unverifiable') refuse(check.reasons.join('; '));
       for (const { name } of entries) pinned.add(name);
     },
-    time: async () => {
-      if (time !== undefined) return time;
-      const refuse = (why: string): never => {
-        throw new CardError(L.noBlockTime(why));
-      };
-      const { reader: r, at: ref } = await agreedBlock(refuse);
-      const header = await r.header(ref);
-      if (header.kind === 'unverifiable') return refuse(header.reason);
-      return (time = header.value.time);
-    },
+    time: async () => (await agreedBlock(noTime)).at.time,
     callOrRevert,
     call: async (to, data, call) => {
       const answer = await callOrRevert(to, data, call);
@@ -210,6 +215,8 @@ function openChain(reader: Reader | undefined, registry: Registry, L: CardWords)
     },
   };
 }
+
+const utc = (seconds: bigint): string => new Date(Number(seconds) * 1000).toISOString().replace('T', ' ').replace('.000Z', ' UTC');
 
 /** Whole tokens in plain digits, or with commas between groups of exactly three digits before the point. */
 const AMOUNT = /^(0|[1-9][0-9]*|[1-9][0-9]{0,2}(?:,[0-9]{3})+)(?:\.([0-9]+))?$/;
@@ -441,6 +448,13 @@ function typedSlippage(name: string, typed: string, L: CardWords): number {
   return bps;
 }
 
+/** A pool the swap may trade through is no independent price; one a router finds from two tokens and a fee is not seen. */
+function tradedNames(template: Template, values: Readonly<Record<string, string>>, registry: Registry): ReadonlySet<string> {
+  const ruled = callRules(template).flatMap((rule) => (rule.kind === 'contract' ? [rule.name] : []));
+  const picks = cardRefs(template).map(({ field, attribute }) => entryOf(values[field] ?? '', attribute, registry)?.name);
+  return new Set([...ruled, ...picks].filter((name) => name !== undefined));
+}
+
 type Filled = { readonly value: string; readonly by: 'computed' | 'typed' };
 
 /**
@@ -458,8 +472,7 @@ async function floorValue(name: string, field: TypedField & { readonly kind: 'am
   const sell = tokenOf((ctx.template.card.get(sells) as Extract<CardField, { kind: 'amount' }>).of);
   const buy = tokenOf(field.of);
   if (sell.address === buy.address) throw new CardError(L.sameToken(name, sell.name));
-  const named = new Set(callRules(ctx.template).flatMap((rule) => (rule.kind === 'contract' ? [rule.name] : [])));
-  const facts = pairFacts(sell, buy, registry, named);
+  const facts = pairFacts(sell, buy, registry, tradedNames(ctx.template, values, registry));
   if (facts.kind === 'no-feed') {
     io.stdout(text(rows([['', L.noIndependentPrice(facts.tokens.map((token) => token.name)), p.warn]], 2)));
     return { value: await typedValue(name, field, values, ctx), by: 'typed' };
@@ -603,8 +616,8 @@ export async function cardNew(args: readonly string[], io: Io, w: Labels): Promi
     if (!existsSync(join(io.repoRoot, TEMPLATES_DIR, id, 'template.json'))) throw new CardError(L.noTemplate(id, TEMPLATES_DIR));
     return loadTemplate(io.repoRoot, id, sources.registry);
   });
-  const reader = templates.some(readsChain) ? openMainnetReader(io.env, io.transport) : undefined;
-  const chain = openChain(reader, sources.registry, L);
+  const reader = templates.some(readsChain) ? openMainnetReader(io.env, io.transport, { maxHeadGap: MAX_HEAD_GAP }) : undefined;
+  const chain = openChain(reader, sources.registry, io.now ?? Date.now, L);
   const ctx = { sources, io, ask, chain, p: paint(io.color === true), L, language: w.language, reported: (id: string) => reportedInstancesIn(io.repoRoot, id) };
   const operations: CardOperation[] = [];
   const computed = new Set<string>();
