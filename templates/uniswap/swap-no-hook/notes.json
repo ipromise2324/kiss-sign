@@ -200,6 +200,9 @@
       "zh-TW": "過了這個時間 router 就拒絕這筆兌換，由 app 設定：Safe 交易是區塊時間後約 29 分鐘，413 筆 EOA 呼叫是 14 到 30 分鐘（AI 的證據）。不需要限制：晚一點執行，付出的還是剛好那個賣出數量，拿到的還是至少最少數量。"
     }
   },
+  "times": [
+    "1.execute.deadline"
+  ],
   "pastTxsConclusion": {
     "en": "The swaps that did not fit carry other commands, several swaps or another token. The search covers only 1 to 2 days and no Safe fits in it; the one Safe test transaction came from the AI's own search of older blocks.",
     "zh-TW": "不符合的兌換帶了別的指令、多次兌換或別的代幣。這次只搜到 1 到 2 天的交易，裡面沒有符合的 Safe；那一筆 Safe 測試交易是 AI 自己在更早的區塊裡找到的。"

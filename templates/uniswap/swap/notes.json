@@ -542,6 +542,9 @@
       "zh-TW": "過了這個時間 router 就拒絕這筆兌換，由 app 設定；三筆測試交易的期限是執行後 25 到 28 分鐘。"
     }
   },
+  "times": [
+    "1.execute.deadline"
+  ],
   "pastTxsConclusion": {
     "en": "The swaps that did not fit put other commands or more swaps into one `execute`. No Safe in these 1 to 2 days fits; the shape rests on the test transactions of two other Safes.",
     "zh-TW": "不符合的兌換在一次 `execute` 裡放了別的指令或更多次兌換。這 1 到 2 天搜到的交易裡沒有符合的 Safe；形狀的依據是另外兩個 Safe 的測試交易。"

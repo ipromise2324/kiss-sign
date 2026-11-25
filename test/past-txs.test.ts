@@ -13,6 +13,7 @@ import type { Transport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import type { Registry } from '../src/registry.ts';
 import { foundBy, pastTxs } from '../src/research/past-txs.ts';
+import { withBlockTimes } from './block-times.ts';
 import { renderPastTxs, spreadOf } from '../src/research/past-txs-render.ts';
 import { DEFAULT_SAMPLING, MAX_PAGES, YEAR_PAGES, samplingFields, samplingOf, scrubRecording } from '../src/research/recording.ts';
 import { replayMessages } from '../src/research/messages.ts';
@@ -540,7 +541,7 @@ const noAmounts = (): Template => {
 };
 
 function replayDroppingDrpc(hash: string, fails: number): Transport {
-  const replay = replayTransport(recording.exchanges, REPLAY_ENDPOINTS);
+  const replay = replayTransport(withBlockTimes(recording.exchanges), REPLAY_ENDPOINTS);
   let left = fails;
   return async (url, body, signal) => {
     if (url === REPLAY_ENDPOINTS[1].url && body.includes(hash) && left-- > 0) throw Object.assign(new Error('read ECONNRESET'), { code: 'ECONNRESET' });
@@ -551,7 +552,7 @@ function replayDroppingDrpc(hash: string, fails: number): Transport {
 test('a read that fails on the way is asked again, so a dropped connection that heals changes nothing', async () => {
   const unread: string[] = [];
   const reader = createReader(REPLAY_ENDPOINTS, replayDroppingDrpc(FIT, 2), { retryPausesMs: [0, 0], note: (read) => void unread.push(read) });
-  assert.equal(await report({ reader, template: noAmounts() }), await report({ template: noAmounts() }));
+  assert.equal(await report({ reader, template: noAmounts() }), await report({ reader: replayReader(withBlockTimes(recording.exchanges)), template: noAmounts() }));
   assert.deepEqual(unread, []);
 });
 
@@ -658,6 +659,21 @@ test('a signed message read from the lookup is studied member by member, so an o
   const fits = /^fit the template's shape: (\d+) transactions from \d+ Safes;/m.exec(text)?.[1];
   assert.ok(Number(fits) > 0, 'some Safe orders fit');
   assert.match(text, new RegExp(`digest\\.receiver {2}\\[the Safe\\]\\n {4}equalled the Safe in ${fits} of ${fits} `));
+});
+
+test('a transaction that differs from the template keeps what it set at the places left to the app, and at no other', async () => {
+  const run = await cowRun();
+  const seen = new Map(run.studies.flatMap((s) => (s.kind === 'fit' && s.sender.kind === 'safe' ? [[s.hash, s.values[s.paths.findIndex((p) => p.endsWith('digest.validTo'))]] as const] : [])));
+  const bounded = await cowRun({ withinSeconds: 1 });
+  const late = bounded.studies.flatMap((s) => (s.kind === 'misfit' && s.reason.kind === 'late' && seen.has(s.hash) ? [s] : []));
+  assert.ok(late.length > 0);
+  for (const s of late) {
+    const places = s.free.map(({ field }) => bounded.shapes.whole.loosened.rules[field]?.kind);
+    assert.ok(places.every((kind) => kind === 'free' || kind === 'within-seconds'), `${places}`);
+    const validTo = s.free.find(({ field }) => bounded.shapes.whole.loosened.rules[field]?.kind === 'within-seconds');
+    assert.equal(validTo?.value, seen.get(s.hash));
+    assert.ok(s.block !== undefined && s.time !== undefined);
+  }
 });
 
 test('a transaction whose signed message the recording does not hold is unreadable, saying where it was read from', async () => {

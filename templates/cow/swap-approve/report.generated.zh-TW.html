@@ -27,6 +27,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-
 a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
 a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+[data-ai]{overflow-wrap:anywhere}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
 .addr.line{display:block;margin-top:4px}
@@ -65,7 +66,7 @@ h1 .byai{vertical-align:6px}
 h1 .aiw>:first-child{margin-right:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
 .sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
-:is(.sub,h3,.intro,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
+:is(.sub,h3,.intro,.ans,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
 .verdict .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:flex;align-items:flex-start;gap:8px;font-size:var(--t-row);position:relative}
@@ -148,9 +149,19 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
 
-.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
-.key>span{display:inline-flex;gap:8px;align-items:center}
-.key .k0{color:var(--fg3);font-weight:590}
+.deciders{margin:36px 0 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}
+.deciders h3{margin:0 0 10px;font-size:var(--t-small);color:var(--fg2)}
+.deciders dl{margin:0;display:flex;flex-direction:column;gap:12px}
+.deciders .grp{display:grid;grid-template-columns:88px minmax(0,1fr);gap:0 16px;align-items:start}
+.deciders .gh{font-size:var(--t-small);line-height:24px;color:var(--fg);font-weight:590}
+.deciders .defs{margin:0;display:flex;flex-direction:column;gap:6px}
+.deciders .defs>div{display:grid;grid-template-columns:116px minmax(0,1fr);gap:0 14px;align-items:start;font-size:var(--t-small);line-height:24px;color:var(--fg2)}
+.deciders .who{justify-self:start}
+@media (max-width:560px){.deciders .grp{grid-template-columns:minmax(0,1fr)}}
+.mix{margin:10px 0 12px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 16px;align-items:start}
+.mix dt{justify-self:start}
+.mix dd{margin:0;display:flex;flex-wrap:wrap;gap:6px;line-height:24px}
+.mix code{font-size:var(--t-label)}
 .cb{margin-top:40px}
 .callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
 .callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
@@ -202,7 +213,7 @@ details.fixed[open]>summary .chev{transform:rotate(90deg)}
 }
 
 .rows{border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
@@ -249,14 +260,31 @@ details.fold[open]>summary .chev{transform:rotate(90deg)}
 details.fold .ad:last-child{border-bottom:0}
 
 .warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
-.pblock{border-top:1px solid var(--line);margin-top:16px}
-.ph{display:flex;flex-direction:column;gap:4px;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
-.ph .pt{font-weight:590}
-.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
-.pg .pc{color:var(--fg)}
-.pg .pcalls{margin-bottom:4px}
-.pg .pex{font-size:var(--t-small);margin-top:4px}
-.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+.ans{margin:0 0 10px;color:var(--fg2)}
+.ans b{color:var(--fg)}
+.cap{margin:8px 0 0;font-size:var(--t-small);color:var(--fg3)}
+.lm{color:var(--warn)}
+.sh{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-size:var(--t-small);color:var(--fg2);margin-top:18px}
+.sc{overflow-x:auto;margin:12px 0 8px}
+.pt2{border-collapse:collapse;width:100%;font-size:var(--t-small);font-variant-numeric:tabular-nums}
+.pt2 th{font-size:var(--t-label);font-weight:400;color:var(--fg3);text-align:left;padding:6px 16px 6px 0;border-bottom:1px solid var(--line2);white-space:nowrap}
+.pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
+.pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
+.pt2 .n{text-align:right}
+.pt2 th{vertical-align:bottom}
+.pt2 th.n{white-space:normal}
+.pt2 td.nw{white-space:nowrap}
+.pt2 td.v{color:var(--fg);font-weight:590}
+.pt2 .tx{min-width:104px}
+@media (max-width:760px){
+  .pt2,.pt2 tbody,.pt2 tr{display:block}
+  .pt2 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .pt2 tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .pt2 td,.pt2 td.n{display:grid;grid-template-columns:minmax(0,130px) minmax(0,1fr);gap:12px;padding:3px 0;border-bottom:0;text-align:left}
+  .pt2 td::before{content:attr(data-label);font-size:var(--t-label);font-weight:400;color:var(--fg3)}
+  .pt2 td.nw{white-space:normal}
+  .pt2 td.what{min-width:0}
+}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -271,13 +299,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
 .auto li{display:flex;gap:10px;align-items:baseline}
 .auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
-.usage{font-size:var(--t-small);color:var(--fg3);margin-bottom:28px}
-.usage h3{font-size:var(--t-row);color:var(--fg2);margin:0 0 6px}
-.usage p{margin:0}
-.usage table{border-collapse:collapse;margin:10px 0}
-.usage th,.usage td{padding:6px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left}
-.usage th+td,.usage th+th{padding-left:32px;text-align:right}
-.usage tfoot th,.usage tfoot td{color:var(--fg);border-bottom:0}
+.ut{border-collapse:collapse;width:100%;margin:16px 0 12px;font-size:var(--t-row)}
+.ut th,.ut td{padding:9px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left;color:var(--fg2)}
+.ut thead th{font-size:var(--t-label);color:var(--fg3);border-bottom-color:var(--line2)}
+.ut th+td,.ut th+th{text-align:right;font-variant-numeric:tabular-nums}
+.ut tfoot th,.ut tfoot td{color:var(--fg);font-weight:590;border-bottom:0}
 .foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
 .foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
@@ -298,7 +324,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">8</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">8</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
 </nav>
 
 <div class="main">
@@ -321,7 +347,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>訂單內容由雜湊鎖住，授權剛好是賣出數量；verify 依賴 CoW API。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">8</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">8</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
   </details>
 </header>
 
@@ -384,13 +410,18 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </svg>
   </div>
   <div class="scrollhint">圖可以左右滑動，最右邊是 gpv2-settlement</div>
-  <div class="key">
-    <span class="k0">誰決定</span>
-    <span><span class="who you">你填</span>每次簽名填</span>
-    <span><span class="who you">你選</span>每次簽名選</span>
-    <span><span class="who">固定</span>改了就 MISMATCH</span>
-    <span><span class="who app">app 填，不限</span>訂單裡的值，由雜湊鎖住</span>
-    <span><span class="who app">app 填，有上限</span>超過上限就 MISMATCH</span>
+  <div class="deciders">
+    <h3>每個值由誰決定</h3>
+    <dl>
+      <div class="grp"><dt class="gh">你</dt><dd class="defs">
+        <div><span class="who you">你填</span><span>每次簽名你自己填。</span></div>
+        <div><span class="who you">你選</span><span>每次簽名你從清單裡選。</span></div></dd></div>
+      <div class="grp"><dt class="gh">kiss-sign</dt><dd class="defs">
+        <div><span class="who">固定</span><span>模板定的。改了就 MISMATCH。</span></div></dd></div>
+      <div class="grp"><dt class="gh">app</dt><dd class="defs">
+        <div><span class="who app">不限</span><span>訂單裡的值，由訂單的雜湊鎖住。</span></div>
+        <div><span class="who app">有上限</span><span>超過上限就 MISMATCH。</span></div></dd></div>
+    </dl>
   </div>
   <p class="lead keylead">下面逐一列出交易的每個呼叫。每個參數都寫出由誰決定、它的值或必須符合的規則，以及它的作用。</p>
   
@@ -412,8 +443,15 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="cb">
     <div class="callh"><span class="no">2</span><span class="fnn"><span class="ct">gpv2-settlement.</span>setPreSignature</span><span class="sel">0xec6cb13f</span></div><div class="cdoc"><div class="doc" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><span class="f3">文件：</span><a href="https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/src/contracts/mixins/GPv2Signing.sol">github.com/cowprotocol/contracts</a></span></div></div>
     <div class="arg" data-field="2.setPreSignature.orderUid">
-      <div class="nm"><span class="pn">orderUid</span><span class="who you">sellToken、buyToken 你選</span><span class="who">receiver、feeAmount、kind、partiallyFillable、sellTokenBalance、buyTokenBalance、owner 固定</span><span class="who you">sellAmount、buyAmount 你填</span><span class="who app">validTo 有上限</span><span class="who app">appData 不限</span></div>
+      <div class="nm"><span class="pn">orderUid</span></div>
       <div class="val"><div class="is">56 bytes，3 段接在一起</div>
+      <dl class="mix">
+        <dt><span class="who you">你選</span></dt><dd><code>sellToken</code> <code>buyToken</code> </dd>
+        <dt><span class="who you">你填</span></dt><dd><code>sellAmount</code> <code>buyAmount</code> </dd>
+        <dt><span class="who">固定</span></dt><dd><code>receiver</code> <code>feeAmount</code> <code>kind</code> <code>partiallyFillable</code> <code>sellTokenBalance</code> <code>buyTokenBalance</code> <code>owner</code> </dd>
+        <dt><span class="who app">有上限</span></dt><dd><code>validTo</code> </dd>
+        <dt><span class="who app">不限</span></dt><dd><code>appData</code> </dd>
+      </dl>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>訂單 uid，56 bytes：訂單雜湊、擁有者、到期時間接在一起。合約只把它記成「已預簽」，不檢查內容。</span></span></div></div>
       <div class="parts">
         <div class="part"><div class="pn">digest</div><div><div class="is"><code>Order</code> 的 EIP-712 雜湊 <span class="f3">verify 從 lookup 讀回原文，算出的雜湊要一樣</span></div>
@@ -427,7 +465,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要賣的數量，賣單整筆賣出。</span></span></div></div></div>
         <div class="part"><div class="pn">buyAmount</div><div><div class="is">至少你填的金額（min-buy） <span class="f3">比這個少就 MISMATCH</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>最少要買到的數量（限價）。結算合約保證成交不少於這個數。</span></span></div></div></div>
-        <div class="part"><div class="pn">validTo</div><div><div class="is">最多比區塊時間晚 604800 秒（約 7 天） <span class="f3">區塊時間：還沒執行的交易用 verify 讀到的最新區塊，已執行的用它所在的區塊；更晚就 MISMATCH</span></div>
+        <div class="part"><div class="pn">validTo</div><div><div class="is">最多比區塊時間晚 7 天</div><details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>怎麼算</summary><div class="meta">剛好 604800 秒。區塊時間：還沒執行的交易用 verify 讀到的最新區塊，已執行的用它所在的區塊；更晚就 MISMATCH。</div></details>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>訂單在這個時間到期（Unix 秒），app 設為報價後 30 分鐘。較晚到期只讓訂單開著更久：仍最多成交一次，不少於卡片的最低值，付給 Safe。可用 <code>invalidateOrder</code> 取消；過期就不能成交。有上限，是因為開著的訂單在你不再注意後很久仍能成交；7 天和 cow/swap 相同。</span></span></div></div></div>
         <div class="part"><div class="pn">appData</div><div><div class="is">每筆不同 <span class="f3">訂單裡的值，由雜湊鎖住；模板不限，也不換值測試</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>app 附在訂單上的 JSON 的雜湊（app 名稱、滑價、手續費、hooks）。結算合約不讀它。</span></span></div></div></div>
@@ -617,66 +655,52 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>過去交易</h2>
-  <p class="lead">過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 <span class="num">5</span> 筆：Safe <span class="num">3</span> 筆（3 個 Safe）、EOA <span class="num">2</span> 筆（2 個地址，各自送模板的一個呼叫）。這些交易全部成功執行：它們是從 gpv2-settlement PreSignature時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0x11b767bc8faec1b76ad98a27c0f24788697e5819afc6a0618704a8203d49721a">0x11b767bc…</a>、<a href="https://etherscan.io/tx/0x9896526f4a6297b981ce209c393eabc4e99701bc4a89cb6a2eef7b294606516e">0x9896526f…</a>、<a href="https://etherscan.io/tx/0xca5ea53a08955bfcf6499cee32ebe3bd91fd470d6a19baede57091857e804150">0xca5ea53a…</a>。</p>
-  <p class="lead">模板留給 app 自由填的數字，在符合模板形狀的交易裡填了哪些值：最小、第 50、90、99 百分位和最大。模板宣告為時間的欄位，算的是它減掉交易所在區塊時間的秒數。這是證據，不是規則。</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt"><code>multiSend[1].setPreSignature.orderUid.digest.validTo</code></span><span>Safe: 減掉區塊時間後的秒數</span></div>
-    <div class="pg"><span class="pc num">29 筆</span><div><div class="pex">min <span class="num">710 秒（約 11.8 分鐘）</span>、p50 <span class="num">1726 秒（約 28.8 分鐘）</span>、p90 <span class="num">10195 秒（約 2.8 小時）</span>、p99 <span class="num">86327 秒（約 24.0 小時）</span>、max <span class="num">86327 秒（約 24.0 小時）</span></div></div></div>
-  </div>
-  <div class="pblock">
-    <div class="ph"><span class="pt"><code>call.setPreSignature.orderUid.digest.validTo</code></span><span>EOA: 減掉區塊時間後的秒數</span></div>
-    <div class="pg"><span class="pc num">14 筆</span><div><div class="pex">min <span class="num">571 秒（約 9.5 分鐘）</span>、p50 <span class="num">1745 秒（約 29.1 分鐘）</span>、p90 <span class="num">1771 秒（約 29.5 分鐘）</span>、p99 <span class="num">1772 秒（約 29.5 分鐘）</span>、max <span class="num">1772 秒（約 29.5 分鐘）</span></div></div></div>
-  </div>
-  <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 <span class="num">295</span> 筆跟你這筆不一樣：形狀一樣、但用的是 registry 外的地址的 <span class="num">38</span> 筆，形狀不同的 <span class="num">257</span> 筆</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>2026-06-15 到 2026-11-24 的抽樣裡（搜尋止於 50 頁上限，更早的沒查），39 個 Safe 的 39 筆批次授權和賣出數量不同：28 筆無上限，11 筆多於賣出數量。這些都不符合模板，授權必須剛好是要賣的數量。</span><span class="byai">AI 研究</span></span></p>
-  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
+  <h3>1. 這個模板的交易以前成功過嗎？</h3>
+  <p class="ans"><b>成功過，3 個 Safe 一共做過 3 次。</b> EOA：2 次，來自 2 個地址，各自送模板的一個呼叫。最近一次是 2026-11-17。全部成功執行。最近 3 筆：<a href="https://etherscan.io/tx/0x11b767bc8faec1b76ad98a27c0f24788697e5819afc6a0618704a8203d49721a">0x11b767bc…</a> <a href="https://etherscan.io/tx/0x9896526f4a6297b981ce209c393eabc4e99701bc4a89cb6a2eef7b294606516e">0x9896526f…</a> <a href="https://etherscan.io/tx/0xca5ea53a08955bfcf6499cee32ebe3bd91fd470d6a19baede57091857e804150">0xca5ea53a…</a></p>
+  <h3>2. app 填的值，一般是多少？</h3>
+  <div class="sh"><code>validTo</code><span>設在多久之後，從交易所在的區塊起算</span></div><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">交易</th><th scope="col" class="n">數量</th><th scope="col" class="nw v">最短</th><th scope="col" class="nw v">一半不超過</th><th scope="col" class="nw v">最長</th></tr></thead><tbody>
+    <tr><td class="what" data-label="交易"><span>Safe，符合模板</span></td><td class="n" data-label="數量"><span><span class="num">3</span></span></td><td class="nw v" data-label="最短"><span><span class="num">28.9 分鐘</span></span></td><td class="nw v" data-label="一半不超過"><span><span class="num">29.2 分鐘</span></span></td><td class="nw v" data-label="最長"><span><span class="num">2.9 小時</span></span></td></tr>
+    <tr><td class="what" data-label="交易"><span>Safe，別的地方不同</span></td><td class="n" data-label="數量"><span><span class="num">26</span></span></td><td class="nw v" data-label="最短"><span><span class="num">11.8 分鐘</span></span></td><td class="nw v" data-label="一半不超過"><span><span class="num">28.6 分鐘</span></span></td><td class="nw v" data-label="最長"><span><span class="num">24 小時</span></span></td></tr>
+    <tr><td class="what" data-label="交易"><span>EOA，呼叫符合模板</span></td><td class="n" data-label="數量"><span><span class="num">2</span></span></td><td class="nw v" data-label="最短"><span><span class="num">29.4 分鐘</span></span></td><td class="nw v" data-label="一半不超過"><span><span class="num">29.5 分鐘</span></span></td><td class="nw v" data-label="最長"><span><span class="num">29.6 分鐘</span></span></td></tr>
+    <tr><td class="what" data-label="交易"><span>EOA，別的地方不同</span></td><td class="n" data-label="數量"><span><span class="num">12</span></span></td><td class="nw v" data-label="最短"><span><span class="num">9.5 分鐘</span></span></td><td class="nw v" data-label="一半不超過"><span><span class="num">25.9 分鐘</span></span></td><td class="nw v" data-label="最長"><span><span class="num">29.6 分鐘</span></span></td></tr></tbody></table></div>
+  <p class="cap">模板上限：<b class="lm">7 天</b>。更久就 MISMATCH。</p>
+  <p class="cap">Safe，別的地方不同：另外 65 筆的區塊時間沒有記錄到，不在表裡。</p>
+  <p class="cap">EOA，別的地方不同：另外 1 筆的區塊時間沒有記錄到，不在表裡。</p>
+  <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>完整數字</summary><div class="meta"><code>setPreSignature.orderUid.digest.validTo</code>，單位是秒：Safe，符合模板: 1735 / 1750 / 10195; Safe，別的地方不同: 710 / 1714 / 86327; EOA，呼叫符合模板: 1765 / 1765 / 1772; EOA，別的地方不同: 571 / 1553 / 1771</div></details>
+  <div class="sh"><code>appData</code><span>填的值</span></div><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">交易</th><th scope="col" class="n">數量</th><th scope="col" class="n">不同的值</th><th scope="col" class="what">最常見</th></tr></thead><tbody>
+    <tr><td class="what" data-label="交易"><span>Safe，符合模板</span></td><td class="n" data-label="數量"><span><span class="num">3</span></span></td><td class="n" data-label="不同的值"><span><span class="num">3</span></span></td><td class="what" data-label="最常見"><span><span class="addr">0xa2674c9ec9404c70cd2ed79f84da30fa696366f89512c689e4458831636f8236</span>，1 筆</span></td></tr>
+    <tr><td class="what" data-label="交易"><span>Safe，別的地方不同</span></td><td class="n" data-label="數量"><span><span class="num">91</span></span></td><td class="n" data-label="不同的值"><span><span class="num">84</span></span></td><td class="what" data-label="最常見"><span><span class="addr">0x0000000000000000000000000000000000000000000000000000000000000000</span>，3 筆</span></td></tr>
+    <tr><td class="what" data-label="交易"><span>EOA，呼叫符合模板</span></td><td class="n" data-label="數量"><span><span class="num">2</span></span></td><td class="n" data-label="不同的值"><span><span class="num">2</span></span></td><td class="what" data-label="最常見"><span><span class="addr">0x1ff2771f83b5afa8e8ae48e52861db2d04c275cb1330157bced7ea9c8f38cb7f</span>，1 筆</span></td></tr>
+    <tr><td class="what" data-label="交易"><span>EOA，別的地方不同</span></td><td class="n" data-label="數量"><span><span class="num">13</span></span></td><td class="n" data-label="不同的值"><span><span class="num">12</span></span></td><td class="what" data-label="最常見"><span><span class="addr">0x0000000000000000000000000000000000000000000000000000000000000000</span>，2 筆</span></td></tr></tbody></table></div>
+  <h3>3. 其他交易哪裡不同？</h3>
+  <p class="ans">295 筆交易做了這個模板不允許的事。</p>
+  <p class="ans"><span class="aiw" data-ai><span>2026-06-15 到 2026-11-24 的抽樣裡（搜尋止於 50 頁上限，更早的沒查），39 個 Safe 的 39 筆批次授權和賣出數量不同：28 筆無上限，11 筆多於賣出數量。這些都不符合模板，授權必須剛好是要賣的數量。</span><span class="byai">AI 研究</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="tx">例子（最多 3 筆）</th></tr></thead><tbody>
+    <tr><td class="what" data-label="哪裡不同"><span>沒有 <code>approve</code>：只有 <code>gpv2-settlement.setPreSignature</code></span></td><td class="n" data-label="Safe"><span><span class="num">182</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26479455</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x8fd114cf9f41cc905a303c24e19ff191f3dd2614c405f72980b0f16c098fec61">0x8fd114cf…</a> <a href="https://etherscan.io/tx/0xe2dadd1919cac949c4c48f49292fcd144bb54d9012d8a6e4b109ac993e96bf5a">0xe2dadd19…</a> <a href="https://etherscan.io/tx/0x24770c6d1ea415e430ff78c2f5fdea9078182b9b32d928284f661ebc191bf394">0x24770c6d…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span><code>approve.value</code> 跟 <code>setPreSignature.orderUid.digest.sellAmount</code> 的值不同，模板要兩個一樣</span></td><td class="n" data-label="Safe"><span><span class="num">39</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26485226</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x56b2fc54d08a65dc8b2d9259424a09d784714c5e6fd59d2d32c81020284e2f35">0x56b2fc54…</a> <a href="https://etherscan.io/tx/0x1cf078986562a32d652939dd847794b3c30905ca33e50b636ff561ccee1ef48d">0x1cf07898…</a> <a href="https://etherscan.io/tx/0x834dbcba3815b8eb2594bff3917a7ec644e0290670471bc3498120b8313aacb5">0x834dbcba…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>呼叫了別的函式：<code>0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2.0xd0e30db0 → gpv2-settlement.setPreSignature</code></span></td><td class="n" data-label="Safe"><span><span class="num">19</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26462519</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x0222837f43c31570288468a512fb9c050ee4bad4d03b53067f532ff2ff8a5591">0x0222837f…</a> <a href="https://etherscan.io/tx/0x8347c67d5e980964d280c09972a20f894b7bf6287baa2cb82ecf3c1a687286dd">0x8347c67d…</a> <a href="https://etherscan.io/tx/0x57f4048870d37ce97b5b676662cec83a10642047447300bc2d9ba737ca684f94">0x57f40488…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>形狀一樣，但 <code>to</code> 用的是 registry 外的地址、<code>setPreSignature.orderUid.digest.sellToken</code> 用的是 registry 外的地址</span></td><td class="n" data-label="Safe"><span><span class="num">14</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-11-24</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x4e3f085ff070c15e35239fab9d968b2f05dedd78c2ad65860ddcbeaebde9c3c7">0x4e3f085f…</a> <a href="https://etherscan.io/tx/0xe0286cd5ff7baf8251ad084824c20c34b60a099a1f424e3134872e1a94d75bd8">0xe0286cd5…</a> <a href="https://etherscan.io/tx/0xf0451efb4c20564a4304896146ff7b6ea97eb5866ddac7f322d6c064a95729b1">0xf0451efb…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>形狀一樣，但 <code>to</code> 用的是 registry 外的地址、<code>setPreSignature.orderUid.digest.sellToken</code> 用的是 registry 外的地址、<code>setPreSignature.orderUid.digest.buyToken</code> 用的是 registry 外的地址</span></td><td class="n" data-label="Safe"><span><span class="num">8</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-09-19</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xe578b3b41984a5dbd76bdfe9c6703525ae82fa5bfc154881f23f8b4e9d62a4e2">0xe578b3b4…</a> <a href="https://etherscan.io/tx/0xac43b58294852e99f957cd256d11e9860586b5002ebb08200ba2940b59f638cd">0xac43b582…</a> <a href="https://etherscan.io/tx/0xf555b451b3a033bdb4cb798ab3a3ffd31827c063bbfde4a3d099ad9f039365ee">0xf555b451…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2.0xd0e30db0 → 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2.approve → gpv2-settlement.setPreSignature</code></span></td><td class="n" data-label="Safe"><span><span class="num">7</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26103544</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x05b4dac4086b598f398fae2810c5feac564967148bb1f54510ea1c6cd7477634">0x05b4dac4…</a> <a href="https://etherscan.io/tx/0x41d8089f48ea1a5edda374f8fb39241abefba89fb61cdab9791f494671364f2e">0x41d8089f…</a> <a href="https://etherscan.io/tx/0xcdb2fe3b4612307113a6e199ea47c27e47033e534444382ff4a9b4742cbb18d4">0xcdb2fe3b…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>形狀一樣，但 <code>setPreSignature.orderUid.digest.sellToken</code> 用的是 registry 外的地址</span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">6</span></span></td><td class="nw" data-label="最近"><span>2026-10-19</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x080e313087636b4873be613a14a8399ee31274e6322878d0bb3eb9bced85678f">0x080e3130…</a> <a href="https://etherscan.io/tx/0x79cf6fda7a7b62fc5901b3590d0b663bacee5c93a20cfd41a2ba3fcd2e2812d0">0x79cf6fda…</a> <a href="https://etherscan.io/tx/0x24fa07f6758bd4301772f5c7b88f55167b386c724808438c4dd7786e16b652fb">0x24fa07f6…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>形狀一樣，但 <code>setPreSignature.orderUid.digest.sellToken</code> 用的是 registry 外的地址、<code>setPreSignature.orderUid.digest.buyToken</code> 用的是 registry 外的地址</span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">6</span></span></td><td class="nw" data-label="最近"><span>2026-11-23</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x8b8c315a0ec8f200d689bb6dcd82ca2e5b4172da86ae3eefafcb5359b8750156">0x8b8c315a…</a> <a href="https://etherscan.io/tx/0xac7622e61bd69a3305c9758126f77b1aa673e2cfe1d10502e79ebf5d481ff329">0xac7622e6…</a> <a href="https://etherscan.io/tx/0x7997aedae0adc17349a30e337c44948a0b9c86d7e3fd24086b4911beb4aa0a7d">0x7997aeda…</a></span></td></tr></tbody></table></div>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 10 種，共 14 筆</span></summary><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="tx">例子（最多 3 筆）</th></tr></thead><tbody>
+    <tr><td class="what" data-label="哪裡不同"><span>形狀一樣，但 <code>setPreSignature.orderUid.digest.buyToken</code> 用的是 registry 外的地址</span></td><td class="n" data-label="Safe"><span><span class="num">4</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-11-02</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x6269504420a53ef18da52988d104bb4a3d37b668613b1756d5380d9c24d22738">0x62695044…</a> <a href="https://etherscan.io/tx/0x0c574a874730f0154bf7d785e119442ce7d8b7d9dd44b27c733f1a91f9671bc3">0x0c574a87…</a> <a href="https://etherscan.io/tx/0x5beca799066d63ce4c52bde8372851c9576a209f8f3031a4992afdc35de7d560">0x5beca799…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span><code>setPreSignature.orderUid.digest.partiallyFillable</code> 是 <span class="addr">true</span>，模板要 <span class="addr">false</span></span></td><td class="n" data-label="Safe"><span><span class="num">2</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26269708</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xcd53548d797d8d9d5286de15baa202bb320fd20e7fb6f742afeec515a6c0435f">0xcd53548d…</a> <a href="https://etherscan.io/tx/0xfc31ee8171cb06df846a6fda13c27c6f35bae48e4c65aa9c231579d8ac489f7a">0xfc31ee81…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>usdt.approve → usdt.approve → gpv2-settlement.setPreSignature → usdt.transfer</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 25574110</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x3482e96dc2e777603e63547acedea276d766a070f15c3c8d975134cf3aaf0f11">0x3482e96d…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>0x365AccFCa291e7D3914637ABf1F7635dB165Bb09.approve → 0x365AccFCa291e7D3914637ABf1F7635dB165Bb09.approve → gpv2-settlement.setPreSignature</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 25840788</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x8388a866e776f7269a67379782feb0928494d489a6a79ed7b6bdf46c0d5f2287">0x8388a866…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>呼叫了別的函式：<code>0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2.0xa415bcad → gpv2-settlement.setPreSignature</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 25930757</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xec6d0599917cbdb4c109c7028e6aad6b9a32003563f8f24fd92ee377c85d4692">0xec6d0599…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span><code>approve.spender</code> 是 gpv2-settlement，不是模板的 gpv2-vault-relayer</span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26304248</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xaaf7f39f8e2ca1ab96fabf50ff8c491ac6d71a5336f8d8bda79b535f5d3340c1">0xaaf7f39f…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>呼叫了別的函式：<code>gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26305006</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x634cf8cbc9c92fa3af417dec277e694035616f38f203f89c81f68b38728271c9">0x634cf8cb…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>呼叫了別的函式：<code>gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26342717</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x7dc004332d123b354d1ef72fd95c2ef2287ac6555f3c991dbccd2e11c529bda5">0x7dc00433…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span><code>setPreSignature.orderUid.digest.kind</code> 是 <span class="addr">&#34;buy&#34; (0x627579)</span>，模板要 <span class="addr">&#34;sell&#34; (0x73656c6c)</span></span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">1</span></span></td><td class="nw" data-label="最近"><span>區塊 26405029</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x9057c04eb617fea94e61335e039a199b4efd01af94378f61f00f34dab5f15f73">0x9057c04e…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>usdc.approve → gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26453892</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xc6ede007c9b5e198742c192574063a155ea50718587e7e88746da73591b26db7">0xc6ede007…</a></span></td></tr></tbody></table></div>
+  </details>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>程式怎麼搜尋</span></summary>
   <h3>搜尋 gpv2-settlement 的PreSignature，找到 20513 筆，研究 480 筆</h3>
-  <p class="lead">記錄在 <code>testdata/research/cow-swap-approve-presign.json</code>。從最新的區塊往回，搜尋了區塊 25324737（2026-06-15）到區塊 26486320（2026-11-24）的每一筆交易，共 1161584 個區塊，約 161.9 天，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。只有 Etherscan 搜尋事件，找到 <span class="num">20513</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">285</span> 筆用了這個操作的呼叫（227 個 Safe），<span class="num">3</span> 筆跟模板一模一樣，<span class="num">26</span> 筆形狀一樣、但用的是 registry 外的地址。</span></div>
-    <div class="pg"><span class="pc num">14 筆</span><div><div>形狀一樣，但 <code>multiSend[0].to</code> 用的是 registry 外的地址、<code>sellToken</code> 用的是 registry 外的地址<span class="f3">，來自 13 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x9734ffd1fb6dc120eafc3cb58bd246fa7935c0e6624a89694b7f824efc8a8b20">0x9734ffd1…</a>、<a href="https://etherscan.io/tx/0x436ccff1ea11ec58348341754c9935306a8164a6489b717625f67af651517f6b">0x436ccff1…</a>、<a href="https://etherscan.io/tx/0xc0708ccdca0317509867e58f07607e0f257b23706e862d1b0a7e7855b3bf85d5">0xc0708ccd…</a></div></div></div>
-    <div class="pg"><span class="pc num">8 筆</span><div><div>形狀一樣，但 <code>multiSend[0].to</code> 用的是 registry 外的地址、<code>sellToken</code> 用的是 registry 外的地址、<code>buyToken</code> 用的是 registry 外的地址<span class="f3">，來自 8 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xdff02a4883fad2baf3356cc69e5e1c53113cc01f48b481730b5613cae9396c2e">0xdff02a48…</a>、<a href="https://etherscan.io/tx/0x96ab70d3f828658651458b2b7d97a1564b64903269b046a573c7d43bd965702e">0x96ab70d3…</a>、<a href="https://etherscan.io/tx/0xd79018d874ce0d6bba9e97f3ac2c8db5f26f692874ca91ac8d8a5ebfe3422a56">0xd79018d8…</a></div></div></div>
-    <div class="pg"><span class="pc num">4 筆</span><div><div>形狀一樣，但 <code>buyToken</code> 用的是 registry 外的地址<span class="f3">，來自 4 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xdd8437bd2672806173329ea2a8e3da50460594d5dd6176398af181d6d84fd1af">0xdd8437bd…</a>、<a href="https://etherscan.io/tx/0x5beca799066d63ce4c52bde8372851c9576a209f8f3031a4992afdc35de7d560">0x5beca799…</a>、<a href="https://etherscan.io/tx/0x0c574a874730f0154bf7d785e119442ce7d8b7d9dd44b27c733f1a91f9671bc3">0x0c574a87…</a></div></div></div>
-    <div class="pg"><span class="pc num">182 筆</span><div><div class="pcalls"><code>gpv2-settlement.setPreSignature</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 135 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x4ba2541b7e14e7f2bae03cf36f0ca82dcc68ac5fe33c17113138fc5cf9e10394">0x4ba2541b…</a>、<a href="https://etherscan.io/tx/0xa4c07fa23fedc1da93780cab8bae90011ced18738afd536b2a74d93123d102ec">0xa4c07fa2…</a>、<a href="https://etherscan.io/tx/0xa5023f83afcfb570e727b4e0a5c36ecde624691a2996dc671696fcd68726aeb0">0xa5023f83…</a></div></div></div>
-    <div class="pg"><span class="pc num">39 筆</span><div><div><code>multiSend[0].approve.value</code> 跟 <code>multiSend[1].setPreSignature.orderUid.digest.sellAmount</code> 的值不同，模板要兩個一樣<span class="f3">，來自 39 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x926a837fc5f3fbcb0ed9e66686341cc5c79006759c6d7b9cc311611719ec54e1">0x926a837f…</a>、<a href="https://etherscan.io/tx/0xf9fa05dee5b0043ad1c82d0c3b9616a3489bcb4f61f55b7dc31459c45ed06267">0xf9fa05de…</a>、<a href="https://etherscan.io/tx/0x0e636d8e16ac1b8497adeed0f082e2af2936d61c0de7c2df72e64a75453935c8">0x0e636d8e…</a></div></div></div>
-    <div class="pg"><span class="pc num">19 筆</span><div><div class="pcalls"><code>0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2.0xd0e30db0 → gpv2-settlement.setPreSignature</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 18 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x9f482375b5c0b8d6cd8f31715d8b8dc2b7b2a82b68229b15db054495cbe30bd7">0x9f482375…</a>、<a href="https://etherscan.io/tx/0xd40e6cafd880ea27a7d78a73e6489ae330ef16c38c0ba2aaad9d4f97bca7c897">0xd40e6caf…</a>、<a href="https://etherscan.io/tx/0xd656e3ef7427f4e5cdd688e47b0ea317e15345fc197bedf6046b9f586b6505be">0xd656e3ef…</a></div></div></div>
-    <div class="pg"><span class="pc num">7 筆</span><div><div class="pcalls"><code>0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2.0xd0e30db0 → 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2.approve → gpv2-settlement.setPreSignature</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 7 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xe88e3d66392c7acc1e9214bcc890152b18234645d178a6bab6674e9c8776a862">0xe88e3d66…</a>、<a href="https://etherscan.io/tx/0x4fa9c7671d22cb67ad629c6555d6c3bf3d899ee4dfa323510f0eeb28df189201">0x4fa9c767…</a>、<a href="https://etherscan.io/tx/0xadddab7411ae8055ca901990b376d7cf3d9d888da547d1eeff94b18901c21d45">0xadddab74…</a></div></div></div>
-    <div class="pg"><span class="pc num">2 筆</span><div><div><code>multiSend[1].setPreSignature.orderUid.digest.partiallyFillable</code> 的值跟模板不同：模板要 <span class="addr">false</span>，交易是 <span class="addr">true</span><span class="f3">，來自 2 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xfc31ee8171cb06df846a6fda13c27c6f35bae48e4c65aa9c231579d8ac489f7a">0xfc31ee81…</a>、<a href="https://etherscan.io/tx/0xcd53548d797d8d9d5286de15baa202bb320fd20e7fb6f742afeec515a6c0435f">0xcd53548d…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>usdt.approve → usdt.approve → gpv2-settlement.setPreSignature → usdt.transfer</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x3482e96dc2e777603e63547acedea276d766a070f15c3c8d975134cf3aaf0f11">0x3482e96d…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>0x365AccFCa291e7D3914637ABf1F7635dB165Bb09.approve → 0x365AccFCa291e7D3914637ABf1F7635dB165Bb09.approve → gpv2-settlement.setPreSignature</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x8388a866e776f7269a67379782feb0928494d489a6a79ed7b6bdf46c0d5f2287">0x8388a866…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2.0xa415bcad → gpv2-settlement.setPreSignature</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xec6d0599917cbdb4c109c7028e6aad6b9a32003563f8f24fd92ee377c85d4692">0xec6d0599…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div><code>spender</code> 是 gpv2-settlement，不是模板的 gpv2-vault-relayer<span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xaaf7f39f8e2ca1ab96fabf50ff8c491ac6d71a5336f8d8bda79b535f5d3340c1">0xaaf7f39f…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x634cf8cbc9c92fa3af417dec277e694035616f38f203f89c81f68b38728271c9">0x634cf8cb…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x7dc004332d123b354d1ef72fd95c2ef2287ac6555f3c991dbccd2e11c529bda5">0x7dc00433…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>usdc.approve → gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xc6ede007c9b5e198742c192574063a155ea50718587e7e88746da73591b26db7">0xc6ede007…</a></div></div></div>
-  </div>
-  <div class="pblock">
-    <div class="ph"><span class="pt">EOA 直接呼叫 setPreSignature</span><span><span class="num">15</span> 筆用了這個操作的呼叫（15 個地址），<span class="num">2</span> 筆跟模板一模一樣，<span class="num">12</span> 筆形狀一樣、但用的是 registry 外的地址。</span></div>
-    <div class="pg"><span class="pc num">6 筆</span><div><div>形狀一樣，但 <code>sellToken</code> 用的是 registry 外的地址<span class="f3">，來自 6 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xbbac8dea6a1e11592d1fa041b9fcd4f8dd0ebe002599fadade742f1f04dcacbc">0xbbac8dea…</a>、<a href="https://etherscan.io/tx/0xcbebd6968c83aa394240030df0ac5eea36fd07fc51374552c88222a0920aa0d9">0xcbebd696…</a>、<a href="https://etherscan.io/tx/0x7a774dcc1d3c00179322f784277a597da8ee07a9a2fb89d6627ecd07d364ec64">0x7a774dcc…</a></div></div></div>
-    <div class="pg"><span class="pc num">6 筆</span><div><div>形狀一樣，但 <code>sellToken</code> 用的是 registry 外的地址、<code>buyToken</code> 用的是 registry 外的地址<span class="f3">，來自 6 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xb3681fe55d580be9f5335b1a30a22050088b386123d9ee53893d79bd1a863f7e">0xb3681fe5…</a>、<a href="https://etherscan.io/tx/0x1a38ef607152d257a416883e73e2b89060ce8aebb3c72ebd03f3a1bc0203733c">0x1a38ef60…</a>、<a href="https://etherscan.io/tx/0xd06f1a230027b7b49a18b0f43ea63bbc8f1d50575272b84fe73623e0c934a3a3">0xd06f1a23…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div><code>call.setPreSignature.orderUid.digest.kind</code> 的值跟模板不同：模板要 <span class="addr">0x73656c6c</span>，交易是 <span class="addr">0x627579</span><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x9057c04eb617fea94e61335e039a199b4efd01af94378f61f00f34dab5f15f73">0x9057c04e…</a></div></div></div>
-  </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 172 筆是別的操作，不列入：<code>0xd52C765872067bf6bF487f5C8A559FcD38553A12.0x3f965e56</code> 19 筆、<code>0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108.0x765e827f</code> 11 筆、<code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 8 筆、<code>multisend-call-only-1.4.1.0x8d80ff0a</code> 6 筆，還有別的。</span></div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 8 筆來自不是 Safe 的合約、執行失敗或讀不到，不列入。</span></div>
+  <p class="cap">從最新的區塊往回，搜尋了區塊 25324737（2026-06-15）到區塊 26486320（2026-11-24）的每一筆交易，共 1161584 個區塊，約 161.9 天，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。只有 Etherscan 搜尋事件，找到 <span class="num">20513</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
+  <p class="cap">這些交易是從事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。</p>
+  <p class="cap">另外 172 筆是別的操作，不列入：<code>0xd52C765872067bf6bF487f5C8A559FcD38553A12.0x3f965e56</code> 19 筆、<code>0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108.0x765e827f</code> 11 筆、<code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 8 筆、<code>multisend-call-only-1.4.1.0x8d80ff0a</code> 6 筆，還有別的。</p>
+  <p class="cap">另外 8 筆來自不是 Safe 的合約、執行失敗或讀不到，不列入。</p>
   </details>
 </section>
 
@@ -716,7 +740,14 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<aside class="usage"><h3>製作這份報告的 AI 用量</h3><p>Opus 5.5 · 呼叫 28 次 · 12 分鐘</p><table><thead><tr><th scope="col">項目</th><th scope="col">token</th></tr></thead><tbody><tr><th scope="row">重複讀取（cache 讀取）</th><td class="num">1.6M</td></tr><tr><th scope="row">新讀入（input 與 cache 寫入）</th><td class="num">0.17M</td></tr><tr><th scope="row">output</th><td class="num">0.02M</td></tr></tbody><tfoot><tr><th scope="row">總共</th><td class="num">1.8M</td></tr></tfoot></table><p>這次只重跑過去交易的搜尋，用量只算這部分</p><p>來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者</p></aside>
+<section id="usage">
+  <h2>AI 用量</h2>
+  <p class="lead">Opus 5.5 用 28 次呼叫、12 分鐘做出這份報告。</p>
+  <table class="ut"><thead><tr><th scope="col">項目</th><th scope="col">token</th></tr></thead><tbody><tr><th scope="row">重複讀取（cache 讀取）</th><td class="num">1.6M</td></tr><tr><th scope="row">新讀入（input 與 cache 寫入）</th><td class="num">0.17M</td></tr><tr><th scope="row">output</th><td class="num">0.02M</td></tr></tbody><tfoot><tr><th scope="row">總共</th><td class="num">1.8M</td></tr></tfoot></table>
+  <p class="cap">這次只重跑過去交易的搜尋，用量只算這部分。</p>
+  <p class="cap">來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者。這些數字程式不檢查。</p>
+</section>
+
 <footer class="foot">由 <code>pnpm report cow/swap-approve --record</code> 從 <code>templates/cow/swap-approve/template.json</code>、<code>templates/cow/swap-approve/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/cow-swap-approve.json</code>、<code>testdata/abi</code>、<code>testdata/research/cow-swap-approve-presign.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/cow/swap-approve/notes.json</code>、<code>testdata/usage/cow-swap-approve.json</code> 寫出，資料在 2026-11-24 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。用量的數字程式也不檢查。</footer>
 
 </div>

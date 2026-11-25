@@ -12,7 +12,7 @@
  "studiedWith": {
   "template": "0x58e5449287bc528e1ff4488676ffcae7ebbdf6db7bec0a5aef04566d7f9bb542",
   "registry": "0x208938729f44b8459fc752c1c4cebe5837da6c62dfe54125be6a012edae3b405",
-  "study": "0x94bfaaffbfc8c7dbc5b3874bc31cfe270d787964a427798536f92503545477bb"
+  "study": "0xb596923b6c289246962b4c2a301475010e93cfa8db57d91a981943ffeaa1e73d"
  },
  "search": {
   "coverage": {
@@ -180,6 +180,7 @@
   {
    "kind": "misfit",
    "hash": "0x6baa348805e7332cd142131a7de0c8443d4b8468e7b34406f65476fd73fceb34",
+   "block": "26472166",
    "sender": {
     "kind": "eoa",
     "address": "0xe47d89055ec080a057a158f436a4b7d4d936b71e",
@@ -190,7 +191,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 3
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -293,6 +295,7 @@
   {
    "kind": "misfit",
    "hash": "0x010a93111db6455b604bfef947c29cd5b303353ddd1a3ce23efce8007c142800",
+   "block": "26472350",
    "sender": {
     "kind": "eoa",
     "address": "0x562b52dbbdb1f450c5604a7bdbdbc869722a9604",
@@ -303,7 +306,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 2
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -350,6 +354,7 @@
   {
    "kind": "misfit",
    "hash": "0x62c7b08ef863e2e8dedf495fa9dbd75202fec8d48d78a4db73a4fee933cc5e16",
+   "block": "26472389",
    "sender": {
     "kind": "eoa",
     "address": "0x3b1349288d6cb8f5de2c6bfb77c0b0e1355c979c",
@@ -360,7 +365,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 2
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -379,6 +385,7 @@
   {
    "kind": "misfit",
    "hash": "0x8194a84c4f25b8a8869c08db214d632d1ac29e35e4fecc451b7e0f174080c336",
+   "block": "26472417",
    "sender": {
     "kind": "eoa",
     "address": "0xeb25d6a1cf726e77a2a82b0fa23495fbdb2140c6",
@@ -389,7 +396,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 6
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -450,6 +458,7 @@
   {
    "kind": "misfit",
    "hash": "0x07c2b06de7885ee824ad4f65bfc857b2529ab1068a32f13afdd85fa3e3344ae8",
+   "block": "26472523",
    "sender": {
     "kind": "eoa",
     "address": "0x788233eeb55e8b124b6bde9df6db308ebdbe1a07",
@@ -460,7 +469,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 2
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1116,6 +1126,7 @@
   {
    "kind": "misfit",
    "hash": "0x069b7bb503abed6dae1d529edaddfec37bc8da58775bd810c90102ba20899287",
+   "block": "26473775",
    "sender": {
     "kind": "eoa",
     "address": "0xea081b3c086b96ffa928ae2f61363b9b19cea393",
@@ -1126,7 +1137,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 2
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1152,6 +1164,7 @@
   {
    "kind": "misfit",
    "hash": "0xbb21e58d734973c027900360d58da477bd0aba1fb6434c9d4f77d0991e624709",
+   "block": "26473835",
    "sender": {
     "kind": "eoa",
     "address": "0x1fb933190ec6a09c29ce85386c4dc36844b9ca00",
@@ -1162,7 +1175,8 @@
     "at": "call.execute.inputs[0].V4_SWAP.params[0].encoding",
     "expected": "canonical SETTLE(address,uint256,bool)",
     "actual": "differs at byte 643"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1223,6 +1237,7 @@
   {
    "kind": "misfit",
    "hash": "0x71001791e24f95120d1c0700a8067e137b157ed64857dea996d1b351ce55116d",
+   "block": "26473977",
    "sender": {
     "kind": "eoa",
     "address": "0xb36c03b9ea7d6e3488c88bc44a7b027aebba35ca",
@@ -1233,7 +1248,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 8
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1497,6 +1513,7 @@
   {
    "kind": "misfit",
    "hash": "0xd4381e68f859345883a778df1ba40170078f8a35acecad5bf1b8677bd098f248",
+   "block": "26474491",
    "sender": {
     "kind": "eoa",
     "address": "0x23c1e36e3ce446ca91325510e35897ca2f9960a1",
@@ -1507,7 +1524,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 2
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1519,6 +1537,7 @@
   {
    "kind": "misfit",
    "hash": "0x3bec5afff781293390b233ec3845bd7631d6b6d19380910749e7691f5ef97808",
+   "block": "26474518",
    "sender": {
     "kind": "eoa",
     "address": "0x8525506e8a86f808b45044712cee0a7dc71e50cd",
@@ -1529,7 +1548,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 3
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1653,6 +1673,7 @@
   {
    "kind": "misfit",
    "hash": "0xa75b8081807fb6a52624d9673d068ee54330978fe54d2611019736adbabb586b",
+   "block": "26474827",
    "sender": {
     "kind": "eoa",
     "address": "0xad511bb19a3225798c3c7f04ac1236651287ca2f",
@@ -1663,7 +1684,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 3
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2011,6 +2033,7 @@
   {
    "kind": "misfit",
    "hash": "0xcb7aba85842365109a6e4b8969fe410b7713f15cd6cc31dfbf7642fab0f06935",
+   "block": "26475347",
    "sender": {
     "kind": "eoa",
     "address": "0x77239cedb137398a553ccb33453203f0d2241ba3",
@@ -2021,7 +2044,8 @@
     "at": "call.execute.inputs[0].V4_SWAP.params[0].encoding",
     "expected": "canonical SETTLE(address,uint256,bool)",
     "actual": "differs at byte 643"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2250,6 +2274,7 @@
   {
    "kind": "misfit",
    "hash": "0x3f649f38108ade78736c7fdabac94151c0f551fcfa2b2a0aa4d6a1b64d839359",
+   "block": "26475793",
    "sender": {
     "kind": "eoa",
     "address": "0x4c3a43d1d27aec0f900a4b4f5b35469a1a67c014",
@@ -2260,7 +2285,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 4
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2335,6 +2361,7 @@
   {
    "kind": "misfit",
    "hash": "0xd316c9e0cba48ca4d96cb5eb6b0120b5dd8f4a52a37df9c1707176e42ea404a7",
+   "block": "26475916",
    "sender": {
     "kind": "eoa",
     "address": "0xdfdbbb128ddebdc7a7dfa7959395c3f9a0d03fc8",
@@ -2345,7 +2372,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 2
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2364,6 +2392,7 @@
   {
    "kind": "misfit",
    "hash": "0x9fc9af74f1f89188e4d21fbcf7937a205c8cdbd99c8930b5e48d43be0d0ba210",
+   "block": "26475970",
    "sender": {
     "kind": "eoa",
     "address": "0xdfdbbb128ddebdc7a7dfa7959395c3f9a0d03fc8",
@@ -2374,7 +2403,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 5
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2512,6 +2542,7 @@
   {
    "kind": "misfit",
    "hash": "0x7d86dc6cb40442073acdaa713ac65d32311c1326a51cb863d500dee7f092e50e",
+   "block": "26476264",
    "sender": {
     "kind": "eoa",
     "address": "0xe59636fbba8bbf38444e3f98934a3dc7d18ab099",
@@ -2522,7 +2553,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 10
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3066,6 +3098,7 @@
   {
    "kind": "misfit",
    "hash": "0x7858e4869ed81794c0887fb0abbdfc47111839a893d3e311b9a5c923181d3e07",
+   "block": "26477301",
    "sender": {
     "kind": "eoa",
     "address": "0xf5c08e356a3fcc78d701eedc6ad724f12ba0a4f5",
@@ -3076,7 +3109,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 9
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3144,6 +3178,7 @@
   {
    "kind": "misfit",
    "hash": "0xb67a6c4c69381ec61306470336a4aaae6ab0cbc683afc819aeec9d02cd591c55",
+   "block": "26477418",
    "sender": {
     "kind": "eoa",
     "address": "0x2c2fbd030d348ce91f7ad24fa7cc55495f8edb15",
@@ -3154,11 +3189,13 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 2
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x8039fc6c719f194004fc70353ccab04b3f4f4e9edce735dc5c60dc3b289f1d51",
+   "block": "26477436",
    "sender": {
     "kind": "eoa",
     "address": "0x971ca6c5956d219cc64d7eec1c883e4c685f68ba",
@@ -3169,7 +3206,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 3
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3342,6 +3380,7 @@
   {
    "kind": "misfit",
    "hash": "0x1e23a6835c5370007b2583aafb2ecb066795555f51be8b979029acddf3982fb9",
+   "block": "26477832",
    "sender": {
     "kind": "eoa",
     "address": "0xa1381dfffc61309c27e5c8a448c26875976730bc",
@@ -3352,7 +3391,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 5
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3784,6 +3824,7 @@
   {
    "kind": "misfit",
    "hash": "0xfed246c7d569c7f04054e59409c84a5af261c9e478e3b3667988bc6800574f69",
+   "block": "26478536",
    "sender": {
     "kind": "eoa",
     "address": "0x61e0c387ea0df8bb8a825c667aef17f606eaad59",
@@ -3794,7 +3835,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 4
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3911,6 +3953,7 @@
   {
    "kind": "misfit",
    "hash": "0xdedb7773529cf64e2a9170beab859853b73848aa80412ccc32d0a4e9e23c3a1d",
+   "block": "26478716",
    "sender": {
     "kind": "safe",
     "address": "0x8a25a24ede9482c4fc0738f99611be58f1c839ab"
@@ -3931,11 +3974,13 @@
       "selector": "0x96122b62"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xe51e7b95e8cd9491f27635a7a9cd385d99e26c1efacdb40434fb7ec850082387",
+   "block": "26478731",
    "sender": {
     "kind": "safe",
     "address": "0x8a25a24ede9482c4fc0738f99611be58f1c839ab"
@@ -3968,7 +4013,8 @@
       "selector": "0x90893cbe"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3980,6 +4026,7 @@
   {
    "kind": "misfit",
    "hash": "0xafed5181bd4ea6840436346c02b2648cf0af9b6390e93f6d948fa76065582155",
+   "block": "26478763",
    "sender": {
     "kind": "safe",
     "address": "0x8a25a24ede9482c4fc0738f99611be58f1c839ab"
@@ -4000,7 +4047,8 @@
       "selector": "0x96122b62"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -4012,6 +4060,7 @@
   {
    "kind": "misfit",
    "hash": "0x8dc437ecc08fc1df825dcdca893ed1018dcd8e821f640c3cbb2c9659b1689702",
+   "block": "26478793",
    "sender": {
     "kind": "safe",
     "address": "0x8a25a24ede9482c4fc0738f99611be58f1c839ab"
@@ -4032,7 +4081,8 @@
       "selector": "0x96122b62"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -4140,7 +4190,8 @@
     "0",
     "1795451108"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795449335"
   },
   {
    "kind": "not-studied",
@@ -4173,6 +4224,7 @@
   {
    "kind": "misfit",
    "hash": "0x09ecb82363badebca68c57e48c04de6e2bb009ad75adcd54370f9eea4510c184",
+   "block": "26478938",
    "sender": {
     "kind": "safe",
     "address": "0x8a25a24ede9482c4fc0738f99611be58f1c839ab"
@@ -4205,7 +4257,8 @@
       "selector": "0x90893cbe"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -4364,6 +4417,7 @@
   {
    "kind": "misfit",
    "hash": "0xf43ee92de86e216518b5442ed3741b26642b92e72f644ce75849945cf48429fe",
+   "block": "26479235",
    "sender": {
     "kind": "eoa",
     "address": "0x8816d3ca88bf7777931189377146bca2b0f78e2c",
@@ -4374,7 +4428,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 4
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -4575,6 +4630,7 @@
   {
    "kind": "misfit",
    "hash": "0xf592a39f7c582032005221d50b93f04948cbd0a272007d838659555cc001979e",
+   "block": "26479580",
    "sender": {
     "kind": "eoa",
     "address": "0xbf720002883a42f6582af012af488d333570838a",
@@ -4585,7 +4641,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 8
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -4632,6 +4689,7 @@
   {
    "kind": "misfit",
    "hash": "0xf05d03904269e82861e30869445ce5a5f88acaf1048bf314837177561d5f4d52",
+   "block": "26479666",
    "sender": {
     "kind": "eoa",
     "address": "0x20b7bb994060c3ca3193ccad78b59e0cd31d54f4",
@@ -4642,7 +4700,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 2
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -5179,6 +5238,7 @@
   {
    "kind": "misfit",
    "hash": "0xf6a90624e3c1cae2087257ed357b073851aa6b081f8173b4aff32a40f806fd0b",
+   "block": "26480533",
    "sender": {
     "kind": "eoa",
     "address": "0x0d51c279f8544bf556bb590fd1005dec2bae9f9f",
@@ -5189,7 +5249,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 2
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -5467,6 +5528,7 @@
   {
    "kind": "misfit",
    "hash": "0x56ab81c2768907fb8a8ae00481de2ebb42947f50399e86821404d766e6dde85b",
+   "block": "26481041",
    "sender": {
     "kind": "eoa",
     "address": "0x8e43301507b4d6283aed87f249eb5b01736f352c",
@@ -5477,7 +5539,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 8
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -5524,6 +5587,7 @@
   {
    "kind": "misfit",
    "hash": "0xba02b1c8b9cc5508fcfae970bd3a303f9e7ee3e369131d81e7210bb65a7703f2",
+   "block": "26481177",
    "sender": {
     "kind": "eoa",
     "address": "0xc7d5859c09ac8696d406ecfcb737d7e8281ce73b",
@@ -5534,7 +5598,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 9
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -5826,6 +5891,7 @@
   {
    "kind": "misfit",
    "hash": "0x41f83f983152f6b86117967be8052fa028fe933df7121ee425118ae7234dd92c",
+   "block": "26481736",
    "sender": {
     "kind": "eoa",
     "address": "0x1234568f5e84eeeac83f453f7e88b2f09ef26525",
@@ -5836,7 +5902,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 4
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -6065,6 +6132,7 @@
   {
    "kind": "misfit",
    "hash": "0xf3d899dc82b4bdddcae4719bd24d0ffe102ec12f676e59582ea3b6731fd037bf",
+   "block": "26482100",
    "sender": {
     "kind": "eoa",
     "address": "0xbc2561ecdad28555e686303d71d446706f204a12",
@@ -6075,11 +6143,13 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 9
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x0e3b2d9408412abaec13afd98a8a5a6f934a70207712a96c6f06d8f90e127570",
+   "block": "26482108",
    "sender": {
     "kind": "eoa",
     "address": "0x6e06d5f95d60a9adcac391a099404fe0af925e62",
@@ -6090,7 +6160,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 9
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -6200,6 +6271,7 @@
   {
    "kind": "misfit",
    "hash": "0x7b8f44e21129ba21e12d12f29e694e9bc1d3dbfbd2f57cc851406452f0950e33",
+   "block": "26482252",
    "sender": {
     "kind": "eoa",
     "address": "0x9d7521086214fb636c4cc16d15fc0367d6337724",
@@ -6210,7 +6282,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 13
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -6278,6 +6351,7 @@
   {
    "kind": "misfit",
    "hash": "0xce9034b3a093dc8a0c1abf9cbf5af52dd427b238fee4ac7f525a567b37e27ddb",
+   "block": "26482366",
    "sender": {
     "kind": "eoa",
     "address": "0xbc2561ecdad28555e686303d71d446706f204a12",
@@ -6288,7 +6362,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 7
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -6314,6 +6389,7 @@
   {
    "kind": "misfit",
    "hash": "0x9ec34578828c3c1863e5da09be7f0ebc78adbb02d071cb079af9e7ded4eb9648",
+   "block": "26482411",
    "sender": {
     "kind": "eoa",
     "address": "0xb60058233b9dc6811192dc85281c4022a31126af",
@@ -6324,7 +6400,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 2
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -6602,6 +6679,7 @@
   {
    "kind": "misfit",
    "hash": "0x781b15f3ce37478be093a4f1b22fc0bd343a9e9ab29abc291e97920bfa063e94",
+   "block": "26482953",
    "sender": {
     "kind": "eoa",
     "address": "0xdfdbbb128ddebdc7a7dfa7959395c3f9a0d03fc8",
@@ -6612,7 +6690,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 7
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -6624,6 +6703,7 @@
   {
    "kind": "misfit",
    "hash": "0x5593b1d234349fd0b449b60d8328bd849b6f167db8aa8e08e86731a6a9c30591",
+   "block": "26482977",
    "sender": {
     "kind": "eoa",
     "address": "0xeb742e43956e0ea89a2db6bf6237c79ee4645981",
@@ -6634,7 +6714,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 2
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -6814,6 +6895,7 @@
   {
    "kind": "misfit",
    "hash": "0x9d964127e1c0e7a298b256db6d4ce694c9d1754f16d768b98059b8b824d16be0",
+   "block": "26483337",
    "sender": {
     "kind": "eoa",
     "address": "0x0fa0c76152925ddb58ae82494e1b72772963be04",
@@ -6824,7 +6906,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 3
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -6836,6 +6919,7 @@
   {
    "kind": "misfit",
    "hash": "0x4b6c538e1300d65e00dcec7377f2acf270cb997c85e1373f083153d4151ee442",
+   "block": "26483378",
    "sender": {
     "kind": "eoa",
     "address": "0xcf36363eea51f669c391eafc2ec2c3ff1b7a4be5",
@@ -6846,7 +6930,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 4
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -6998,6 +7083,7 @@
   {
    "kind": "misfit",
    "hash": "0x6f1ae33ec7a84d1d67a596b8944742a5cdb0862c75f32068aea03116dbb5fc4d",
+   "block": "26483721",
    "sender": {
     "kind": "eoa",
     "address": "0x11182f786af5165ea50a98ad6f7bdfaa1435c204",
@@ -7008,7 +7094,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 6
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -7090,6 +7177,7 @@
   {
    "kind": "misfit",
    "hash": "0x9e6929eac015fe90f960198d762e6eb4aca4a712a774c278dafb1657cd897eab",
+   "block": "26483880",
    "sender": {
     "kind": "safe",
     "address": "0x0bd9b8914945b381717d4d73ef65eea10dc8234c"
@@ -7110,7 +7198,24 @@
       "selector": "0x3593564c"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 9,
+     "type": "uint24",
+     "value": "500"
+    },
+    {
+     "field": 12,
+     "type": "bool",
+     "value": "false"
+    },
+    {
+     "field": 20,
+     "type": "uint256",
+     "value": "1795511376"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -7171,6 +7276,7 @@
   {
    "kind": "misfit",
    "hash": "0x1d386e11fd3314ef1a349f39e1c67bad231af6719b9cbe08d16265319ebfd4df",
+   "block": "26483965",
    "sender": {
     "kind": "eoa",
     "address": "0x41c8a9d130b0e7547b3f6abc87150fcf11db8571",
@@ -7181,7 +7287,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 3
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -7249,6 +7356,7 @@
   {
    "kind": "misfit",
    "hash": "0x166665e1dd5852266183ddcfa4e74fbdf4bd69c4bd79cd8ac7b776527774a88e",
+   "block": "26484048",
    "sender": {
     "kind": "eoa",
     "address": "0x298542744149d89ee87df4018b8fe3e53cd3ce54",
@@ -7259,7 +7367,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 3
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -7285,6 +7394,7 @@
   {
    "kind": "misfit",
    "hash": "0xf3cfcb742f9292e527d312af1b76a1c8e8bd70ef41f49c16e9bc3a719e5ab7fa",
+   "block": "26484087",
    "sender": {
     "kind": "eoa",
     "address": "0x18e9c9339280dbba16ab17aeeca42423329e46e1",
@@ -7295,7 +7405,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 12
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -7328,6 +7439,7 @@
   {
    "kind": "misfit",
    "hash": "0x94e7ba7d5d7b7b98be5b68e488ba9bb7fcd7203854921e4cffda0f8abd195b4e",
+   "block": "26484131",
    "sender": {
     "kind": "eoa",
     "address": "0xbfbf55d1a9ebd146636530cbcc3cde39b9efb0e8",
@@ -7338,7 +7450,8 @@
     "at": "call.execute.inputs[0].V4_SWAP.params",
     "expected": 3,
     "got": 4
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -7462,6 +7575,7 @@
   {
    "kind": "misfit",
    "hash": "0x382f1457ebc1bf7795c4c92a118a070ce3b640bc6e5fcf8bce270b3d45b1cf27",
+   "block": "26484327",
    "sender": {
     "kind": "eoa",
     "address": "0xa8cfd1628b208186e1a9c0ffd0491c0aff663539",
@@ -7472,7 +7586,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 5
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -7645,6 +7760,7 @@
   {
    "kind": "misfit",
    "hash": "0xe417700d629781f4cc92b7f83697c7647757d02ee730e49f48d577476e0be9e4",
+   "block": "26484601",
    "sender": {
     "kind": "eoa",
     "address": "0xcd5adcb3a1f63180f8d4f75d8f12de8883f7c641",
@@ -7655,7 +7771,24 @@
     "at": "call.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.poolKey.tickSpacing",
     "expected": "1",
     "actual": "10"
-   }
+   },
+   "free": [
+    {
+     "field": 9,
+     "type": "uint24",
+     "value": "500"
+    },
+    {
+     "field": 12,
+     "type": "bool",
+     "value": "false"
+    },
+    {
+     "field": 20,
+     "type": "uint256",
+     "value": "1795520066"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -7730,6 +7863,7 @@
   {
    "kind": "misfit",
    "hash": "0x46b4b9ca2cab1214744b1ed45c309cf465f6e1b85793c5146540ae32f1074933",
+   "block": "26484720",
    "sender": {
     "kind": "eoa",
     "address": "0xc50185b35af3d88592aac37361f9cce5b34fafb6",
@@ -7740,7 +7874,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 3
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -7864,6 +7999,7 @@
   {
    "kind": "misfit",
    "hash": "0x5b2f1ce963383f48bc1b5957997f35231ca342c34cd989f21734f64376f67196",
+   "block": "26484880",
    "sender": {
     "kind": "eoa",
     "address": "0x13195c371d3ba7e88799cd40ea45a81dd57cc58a",
@@ -7874,7 +8010,8 @@
     "at": "call.execute.inputs[0].V4_SWAP.params[0].encoding",
     "expected": "canonical SETTLE(address,uint256,bool)",
     "actual": "differs at byte 642"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -7928,6 +8065,7 @@
   {
    "kind": "misfit",
    "hash": "0x985d5fe98efe42e4d357d50a3eb841a495a1bd341602a689bc6f4dd0151e0c4b",
+   "block": "26485001",
    "sender": {
     "kind": "eoa",
     "address": "0xbc405144ea9d55e286e50c86334bdc4ff3c80c01",
@@ -7938,7 +8076,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 8
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8132,6 +8271,7 @@
   {
    "kind": "misfit",
    "hash": "0xb7151e8f2c125337828b870df91ce499e52203618180853ba6cb7b00d7151acf",
+   "block": "26485242",
    "sender": {
     "kind": "eoa",
     "address": "0x99a2bac0485de865ba152a81d208b95ee35dbf5a",
@@ -8142,7 +8282,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 5
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8252,6 +8393,7 @@
   {
    "kind": "misfit",
    "hash": "0x1b1e790ae4b738abcc648fafbd737f9deb6b2aa96c0c66e4a82af4954363bc16",
+   "block": "26485411",
    "sender": {
     "kind": "eoa",
     "address": "0xb59ff79008458c021e489ff51ad6cb342d9736cb",
@@ -8262,7 +8404,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 2
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8498,6 +8641,7 @@
   {
    "kind": "misfit",
    "hash": "0xfd5dd3a81048bad62009d6bec59bb1c2a78349bd74ee7543b55c0bd0df9dc630",
+   "block": "26485786",
    "sender": {
     "kind": "eoa",
     "address": "0x2d080ff7070b76bbd974b271522e31ac236e1954",
@@ -8508,7 +8652,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 4
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8548,6 +8693,7 @@
   {
    "kind": "misfit",
    "hash": "0x82209a2af1941b1afde203fa505e800ee0011426fee2c6e13a0aefb91cce543c",
+   "block": "26485872",
    "sender": {
     "kind": "eoa",
     "address": "0xfb054de87c048fe9f9d859afe6059d023529e0d8",
@@ -8558,7 +8704,8 @@
     "at": "call.execute.inputs[0].V4_SWAP.params",
     "expected": 3,
     "got": 4
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8794,6 +8941,7 @@
   {
    "kind": "misfit",
    "hash": "0x47d8ca8a02aa2b8ed0ab9da05b3d6305d9848bfbb58adebb2f51078cb1404fdb",
+   "block": "26486242",
    "sender": {
     "kind": "eoa",
     "address": "0xe6ee7eb11eb88ed0cebc4c40cda94801b1371c48",
@@ -8804,7 +8952,8 @@
     "at": "call.execute.inputs[0].V4_SWAP.params[0].encoding",
     "expected": "canonical SETTLE(address,uint256,bool)",
     "actual": "differs at byte 643"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -9033,6 +9182,7 @@
   {
    "kind": "misfit",
    "hash": "0x15d8fe9013a5ee1632fc9925371e282782d10becc9a91344458835e23c41db49",
+   "block": "26486632",
    "sender": {
     "kind": "eoa",
     "address": "0x347356fdaa0da18d035c37ba448c4f420cd7b83a",
@@ -9043,7 +9193,8 @@
     "at": "call.execute.inputs",
     "expected": 1,
     "got": 2
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",

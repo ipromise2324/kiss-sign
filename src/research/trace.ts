@@ -312,11 +312,24 @@ const MONEY_PARTIES: Readonly<Record<MoneyKind, (call: TraceCall) => readonly (A
   eth: (call) => [call.from, call.to],
 };
 
+/** Who a money call takes money from and gives it to, `safe` for the sender. */
+export type Payment = { readonly from: Address | 'safe'; readonly to: Address | 'safe' };
+
+/** The owner and the receiver, or for an approval the spender, of a money call; the caller is the owner of all but a `transferFrom`. */
+function paymentOf(kind: MoneyKind, call: TraceCall, sender: Address): Payment | undefined {
+  const [first, second] = call.args ?? [];
+  const from = kind === 'transferFrom' ? first : call.from;
+  const to = kind === 'eth' ? call.to : kind === 'transferFrom' ? second : first;
+  const name = (address: Address) => (address === sender ? 'safe' : address);
+  return from === undefined || to === undefined ? undefined : { from: name(from), to: name(to) };
+}
+
 /**
  * A money call no line covers, grouped: under which call (from 1), between whom, of which kind, in how many
  * transactions, and every address outside the registry among its parties and token arguments, so a review names them.
+ * `pays` holds each pair the calls move money between: who pays whom, or for an approval who lets whom spend.
  */
-export type Uncovered = { readonly call: number; readonly from: string; readonly to: string; readonly kind: MoneyKind; readonly transactions: number; readonly others: readonly Address[] };
+export type Uncovered = { readonly call: number; readonly from: string; readonly to: string; readonly kind: MoneyKind; readonly pays: readonly Payment[]; readonly transactions: number; readonly others: readonly Address[] };
 
 /** Each line seen in `seen` of the `of` traced transactions that make its call, and the money calls no line covers. */
 export type FlowComparison = { readonly lines: readonly { readonly seen: number; readonly of: number }[]; readonly uncovered: readonly Uncovered[] };
@@ -409,7 +422,10 @@ export function compareFlow(template: Template, registry: Registry, lines: reado
         const before = uncovered.get(id);
         const outside = [call.from, call.to, ...(call.args ?? [])].filter((a) => label(a) === 'other');
         const others = [...new Set([...(before?.others ?? []), ...outside])];
-        uncovered.set(id, { ...group, transactions: (before?.transactions ?? 0) + (counted.has(id) ? 0 : 1), others });
+        const payment = paymentOf(kind, call, sender);
+        const seenPays = before?.pays ?? [];
+        const pays = payment === undefined || seenPays.some((p) => p.from === payment.from && p.to === payment.to) ? seenPays : [...seenPays, payment];
+        uncovered.set(id, { ...group, pays, transactions: (before?.transactions ?? 0) + (counted.has(id) ? 0 : 1), others });
         counted.add(id);
       }
     }
