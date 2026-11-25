@@ -38,7 +38,7 @@
     {
       "text": {
         "en": "You type the card's minimum to receive yourself; it is your only price protection. The pool's fee is left free, so the transaction may use another pool than the quote showed, even one anyone made with a bad price, but never below your minimum. On its one recorded transaction the program tried fees 34, 36 and 0 and all three reverted, so the program never saw a swap through another pool, whatever the row's legend says. Example: the other Safe sold 8.029841 USDC with a minimum of 7.995463 USDT, 0.5% under what it got. A minimum of 7 would let it lose about 1.",
-        "zh-TW": "卡片的「最少收到的數量」由你填，價格只靠它保護。池子的手續費不限，所以交易用的池子可能和報價不同，甚至是別人開的、價格很差的池子，但不會低於你填的最少數量。程式在錄下的那筆上試過手續費 34、36、0，都 revert，所以圖例寫的「走另一個池子」程式沒看到過。例子：另一個 Safe 賣 8.029841 USDC，最少寫 7.995463 USDT，比實際拿到的少 0.5%。填 7 就等於允許少拿約 1。"
+        "zh-TW": "卡片的「最少收到的數量」由你填，價格只靠它保護。手續費不限，所以池子可能和報價不同，甚至是別人開的、價格很差的池子，但不會低於你填的數量。程式在錄下的那筆上試過手續費 34、36、0，都 revert，所以程式沒看過圖例寫的「走另一個池子」。例子：另一個 Safe 賣 8.029841 USDC，最少寫 7.995463 USDT，比實際拿到的少 0.5%。填 7 就等於允許少拿約 1。"
       },
       "recommendation": {
         "en": "Type the minimum shown on the app's confirm screen, no lower.",
