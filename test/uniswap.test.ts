@@ -23,8 +23,9 @@ import { checkMutations } from '../src/template/mutation.ts';
 import { TemplateError, loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { parseRegistryAt } from './registry-at.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = repoWithTestFixtures();
 const load = (dir: string, name: string) => JSON.parse(readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8'));
 const registry = loadRegistry(ROOT);
 const IDS = ['uniswap/swap', 'uniswap/swap-no-hook', 'uniswap/swap-permit', 'uniswap/approve-permit2', 'uniswap/allow-router'];
@@ -219,6 +220,14 @@ test('each swap template refuses the other one\'s transaction, whatever card val
   const at = mismatchAt(check(safeTx(NO_HOOK.name), under(NO_HOOK.card, 'uniswap/swap-no-hook', 'uniswap/swap')));
   assert.ok(at.includes('call.execute.commands'), at.join(', '));
   assert.ok(at.every((path) => path.startsWith('call.execute')), at.join(', '));
+});
+
+test('a swap with a signed Permit2 permit first is a mismatch under each shipped swap template', () => {
+  for (const template of ['uniswap/swap', 'uniswap/swap-no-hook']) {
+    const card: Card = { operations: [swapOp('usdc', 'usdt', 24000000000n, 23978654164n, template)] };
+    const at = mismatchAt(check(safeTx('uniswap-swap-permit-usdc-usdt'), card));
+    assert.ok(at.includes('call.execute.commands'), at.join(', '));
+  }
 });
 
 test('uniswap/swap-no-hook refuses its own swap with a SWEEP added', () => {
