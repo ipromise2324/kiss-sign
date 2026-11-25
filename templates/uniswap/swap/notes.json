@@ -315,6 +315,70 @@
           "result": "pass"
         }
       ]
+    },
+    "uniswap-stable-pair-hook": {
+      "role": {
+        "en": "Uniswap Labs' StablePairHook, the hook of the one v4 pool the swap may use: it sets the pool's fee on each swap",
+        "zh-TW": "Uniswap Labs 的 StablePairHook，這筆 swap 唯一能用的 v4 池子的 hook：每次 swap 時設定池子的手續費"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "First seen in the transactions: every swap of this shape read names this hook or, in 5 of 2,024, another one",
+            "zh-TW": "第一次看到是在交易裡：讀過的這種形狀的 swap 都寫這個 hook，2,024 筆裡只有 5 筆是另一個"
+          },
+          "url": "https://etherscan.io/tx/0xefe5f035a51e233612ab0ea86f5a82f06dbf66e535dec5f46c2fb449b6761bef",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Uniswap's StablePair deployments page lists this address next to StablePairHook (hook) under Ethereum: 1, with its implementation 0x5f216d21b1C81346938EDDc1Df7e0111A0F64000 and the USDC / USDT pool id, dynamic fee 0x800000 and tick spacing 1",
+            "zh-TW": "Uniswap 的 StablePair 部署頁在 Ethereum: 1 下的 StablePairHook (hook) 旁列出這個地址、implementation 0x5f216d21b1C81346938EDDc1Df7e0111A0F64000，以及 USDC / USDT 池子的 id、動態手續費 0x800000 和 tick spacing 1"
+          },
+          "url": "https://developers.uniswap.org/llms.mdx/docs/protocols/uniswap-labs-hooks/stable-pair/deployments",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "The README of Uniswap's v4-hooks-public lists this address for Ethereum under StablePairHook",
+            "zh-TW": "Uniswap 的 v4-hooks-public README 在 StablePairHook 下列出 Ethereum 的這個地址"
+          },
+          "url": "https://github.com/Uniswap/v4-hooks-public/blob/e354058156f8f4f1aff1594a932513e7064956c7/README.md",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "The same repository's deploy script names this address as the mined proxy address, with the Governance Timelock as owner and configManager",
+            "zh-TW": "同一個 repo 的部署腳本把這個地址寫為挖出的 proxy 地址，owner 和 configManager 是 Governance Timelock"
+          },
+          "url": "https://github.com/Uniswap/v4-hooks-public/blob/e354058156f8f4f1aff1594a932513e7064956c7/script/deploy/stable-pair-hook/Parameters.sol",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Uniswap's hooklist repository lists this address as StablePairHook, upgradeable, with no return-delta flag; anyone can submit a hook there, so it adds little",
+            "zh-TW": "Uniswap 的 hooklist repo 把這個地址列為 StablePairHook、可升級、沒有 return-delta 權限；任何人都能提交 hook，所以份量很輕"
+          },
+          "url": "https://github.com/Uniswap/hooklist/blob/3017a8368cb2d610d63dacff7feba8a850e9186d/hooks/ethereum/0x0000113dcf4add69999fad8f20f2b63f979bfcc0.json",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "Etherscan: verified ERC1967Proxy, created on 2026-07-27 by 0xE49ACc3B16c097ec88Dc9352CE4Cd57aB7e35B95 through the public CREATE2 deployer, never upgraded since; the README names that account only as the Sepolia test deployer",
+            "zh-TW": "Etherscan：已驗證的 ERC1967Proxy，2026-07-27 由 0xE49ACc3B16c097ec88Dc9352CE4Cd57aB7e35B95 透過公開的 CREATE2 deployer 建立，之後沒升級過；README 只把這個帳戶寫為 Sepolia 的測試部署者"
+          },
+          "url": "https://etherscan.io/tx/0x09688cef7e724472f0d822cec48fcc47ecca5ddb9365488bd0d44345f2490ff7",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "Uniswap's security page: the Governance Timelock upgrades the hook and sets its fees, a Uniswap Labs Safe creates pools, and the address's permission flags never change; read on chain at block 26489660, the roles are the same",
+            "zh-TW": "Uniswap 的安全頁：升級 hook 和設定手續費的是 Governance Timelock，建立池子的是 Uniswap Labs 的 Safe，地址裡的權限位元永遠不變；在區塊 26489660 讀鏈上的角色，結果相同"
+          },
+          "url": "https://developers.uniswap.org/llms.mdx/docs/protocols/uniswap-labs-hooks/stable-pair/security",
+          "result": "pass"
+        }
+      ]
     }
   },
   "fields": {

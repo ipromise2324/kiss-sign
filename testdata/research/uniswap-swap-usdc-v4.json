@@ -10,8 +10,8 @@
  },
  "head": "26486749",
  "studiedWith": {
-  "template": "0x69d730527fc7f792d52a9c3c63241fd5b3eec8d96f9aeeb3d10ad5fdf139933c",
-  "registry": "0x208938729f44b8459fc752c1c4cebe5837da6c62dfe54125be6a012edae3b405",
+  "template": "0x92b1e16c7309562bf7ea4195818c04b7a5b558326adbaf8f26ee57608e4c8d77",
+  "registry": "0xf0e71a72592fc6812ed2f558ee9ef5939250b917b2392ca7ffc6624a67c9e2d4",
   "study": "0x94bfaaffbfc8c7dbc5b3874bc31cfe270d787964a427798536f92503545477bb"
  },
  "search": {
@@ -262,7 +262,7 @@
    "reason": {
     "kind": "items",
     "at": "call.execute.inputs",
-    "expected": 1,
+    "expected": 2,
     "got": 3
    }
   },
@@ -352,10 +352,10 @@
     "call": 0
    },
    "reason": {
-    "kind": "items",
-    "at": "call.execute.inputs",
-    "expected": 1,
-    "got": 2
+    "kind": "field",
+    "at": "call.execute.inputs[0].encoding",
+    "expected": "canonical V4_SWAP(bytes,bytes[])",
+    "actual": "differs at byte 304"
    }
   },
   {
@@ -494,7 +494,7 @@
    "reason": {
     "kind": "items",
     "at": "call.execute.inputs",
-    "expected": 1,
+    "expected": 2,
     "got": 3
    }
   },
@@ -514,9 +514,9 @@
    },
    "reason": {
     "kind": "items",
-    "at": "call.execute.inputs",
-    "expected": 1,
-    "got": 2
+    "at": "call.execute.inputs[0].V4_SWAP.params",
+    "expected": 3,
+    "got": 6
    }
   },
   {
@@ -892,7 +892,7 @@
    "reason": {
     "kind": "items",
     "at": "call.execute.inputs",
-    "expected": 1,
+    "expected": 2,
     "got": 3
    }
   },
@@ -1803,7 +1803,7 @@
    "reason": {
     "kind": "items",
     "at": "call.execute.inputs",
-    "expected": 1,
+    "expected": 2,
     "got": 5
    }
   }
