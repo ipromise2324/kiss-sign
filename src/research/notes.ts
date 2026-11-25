@@ -410,7 +410,7 @@ const FLOW = optList(
 
 const NOTES_FIELDS = obj({
   title: text(100),
-  summary: text(2000),
+  summary: text(250),
   verdict: obj({ status: oneOf('safe', 'caution'), text: text(100) }),
   flow: FLOW,
   protocols: keyed((scope) => [...scope.protocols.keys()], 'a protocol the protocol facts cover', true, protocolNotes),
@@ -423,7 +423,7 @@ const NOTES_FIELDS = obj({
       obj({ role: opt(text(200)), sources: optList(obj({ text: text(200), url, result: oneOf('pass', 'attention', 'fail') })) }),
     ),
   ),
-  fields: keyed((scope) => scope.fields, 'an argument of the template', true, () => text(2000)),
+  fields: keyed((scope) => scope.fields, 'an argument of the template', true, () => text(150)),
   times: optList(where(str(400), (key, scope) => (scope.fields.includes(key) ? undefined : `${shown(key)} is not an argument of the template`))),
   pastTxsConclusion: opt(text(200)),
   context: optList(obj({ title: text(40), text: text(400), sources: where(list(url), (sources) => (sources.length === 0 ? 'names no source' : undefined)) }), 4),

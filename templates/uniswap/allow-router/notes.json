@@ -416,5 +416,8 @@
       "en": "When Permit2 stops honouring the allowance; the template leaves it free. The 2 fitting past transactions set it about 30 days ahead; verify's page shows the one you sign.",
       "zh-TW": "Permit2 停止承認這筆授權的時間，模板不限定。過去符合的 2 筆都設在約 30 天後；verify 的網頁會顯示你要簽的。"
     }
-  }
+  },
+  "times": [
+    "1.approve.expiration"
+  ]
 }
