@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { REPORT_RECORDINGS_DIR } from '../src/research/report.ts';
 import { RECORDINGS_DIR, SUMMARIES_DIR } from '../src/research/past-txs-summary.ts';
 import { USAGE_DIR } from '../src/research/usage.ts';
+import { PERTURB_DIR } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -22,9 +23,9 @@ export const FROZEN_REPORTS = [
 export const FROZEN_RECORDINGS_DIR = join(RECORDINGS_DIR, 'frozen');
 
 /** The folders the frozen copy holds in place of the repository's. */
-const FROZEN_PARTS = [TEMPLATES_DIR, 'registry', REPORT_RECORDINGS_DIR, SUMMARIES_DIR];
+const FROZEN_PARTS = [TEMPLATES_DIR, 'registry', REPORT_RECORDINGS_DIR, SUMMARIES_DIR, PERTURB_DIR];
 
-/** A repository whose templates, registry, report recordings and past-txs summaries are the frozen ones, which holds no usage file, and whose other test data is this checkout's. */
+/** A repository whose templates, registry, report recordings, past-txs summaries and perturbation recordings are the frozen ones, which holds no usage file, and whose other test data is this checkout's. */
 export function repoWithFrozenReports(): string {
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-frozen-'));
   process.on('exit', () => rmSync(root, { recursive: true, force: true }));

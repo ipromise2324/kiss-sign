@@ -13,19 +13,21 @@ import { checkMutations } from '../../src/template/mutation.ts';
 import type { Checker, MutationResult } from '../../src/template/mutation.ts';
 import { loadTemplate, parseTemplate } from '../../src/template/template.ts';
 import type { Template } from '../../src/template/template.ts';
+import { repoWithTestFixtures } from '../repo-with-test-fixtures.ts';
 
 const ROOT = join(import.meta.dirname, '..', '..');
+const FIXTURES = repoWithTestFixtures();
 const fixture = JSON.parse(readFileSync(join(ROOT, 'testdata', 'safe-tx', 'morpho-vault-deposit.json'), 'utf8'));
 const deposit = parseServiceTx(fixture.service, { chainId: 1n, version: fixture.chain.version });
 const registry = loadRegistry(ROOT);
-const template = loadTemplate(ROOT, 'morpho/vault-deposit', registry);
-const rawTemplate = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
+const template = loadTemplate(FIXTURES, 'morpho/vault-deposit-bundler3', registry);
+const rawTemplate = JSON.parse(readFileSync(join(FIXTURES, 'templates', 'morpho', 'vault-deposit-bundler3', 'template.json'), 'utf8'));
 const DEPOSIT_PATH = 'multiSend[1].multicall.bundle[1].data.erc4626Deposit';
 
 const templatesOf = (t: Template) => new Map([[t.id, t]]);
 
 function card(templates: ReadonlyMap<string, Template>, amount = '1800000000180'): ResolvedCard {
-  const operations = [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount, 'min-shares': '1741863305677219101283940' } }];
+  const operations = [{ template: 'morpho/vault-deposit-bundler3', values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount, 'min-shares': '1741863305677219101283940' } }];
   const result = resolveCard({ operations }, { templates, registry, addressBook: new Map(), safe: deposit.safe });
   assert.equal(result.kind, 'resolved');
   return (result as Extract<typeof result, { kind: 'resolved' }>).card;
@@ -42,6 +44,19 @@ const RECEIVER = (() => {
 
 test('every bound field of the Morpho deposit, changed alone, gives a mismatch', () => {
   assert.deepEqual(mutations(), { kind: 'pass', bound: 21, free: 0 });
+});
+
+test('every bound field of the shipped Morpho deposit, changed alone, gives a mismatch', () => {
+  const { service, chain } = JSON.parse(readFileSync(join(ROOT, 'testdata', 'safe-tx', 'morpho-vault-bundles-deposit.json'), 'utf8'));
+  const tx = parseServiceTx(service, { chainId: 1n, version: chain.version });
+  const id = 'morpho/vault-deposit';
+  const templates = templatesOf(loadTemplate(ROOT, id, registry));
+  const operations = [{ template: id, values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount: '10000000000', 'min-shares': '9609712613964437589511' } }];
+  const result = resolveCard({ operations }, { templates, registry, addressBook: new Map(), safe: tx.safe });
+  assert.equal(result.kind, 'resolved');
+  const { card } = result as Extract<typeof result, { kind: 'resolved' }>;
+  const blockTime = { kind: 'read', number: BigInt(service.blockNumber), time: BigInt(Date.parse(service.executionDate) / 1000) } as const;
+  assert.deepEqual(checkMutations(tx, card, templates, registry, [], { blockTime }), { kind: 'pass', bound: 13, free: 1 });
 });
 
 test('a template that frees the deposited assets still passes, with one more free field and one fewer bound', () => {

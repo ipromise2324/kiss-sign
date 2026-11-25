@@ -419,7 +419,10 @@ function reasonsClone(reason: (both: Record<string, string>) => unknown): string
   const template = JSON.parse(readFileSync(path, 'utf8'));
   const margin = template.card['min-shares'].computed.margin;
   margin.why = reason(margin.why);
-  for (const call of template.calls) call.trailer.why = reason(call.trailer.why);
+  const [, deposit] = template.calls;
+  deposit.trailer.why = reason(deposit.trailer.why);
+  const { free } = deposit.args.assetPermit.fields.data;
+  free.unread = reason(free.unread);
   writeFileSync(path, JSON.stringify(template, null, 2));
   return publish(dir);
 }

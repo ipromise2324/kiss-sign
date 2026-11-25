@@ -17,19 +17,20 @@ import { TemplateError, loadTemplate, parseTemplate } from '../../src/template/t
 import { repoWithTestFixtures } from '../repo-with-test-fixtures.ts';
 
 const ROOT = join(import.meta.dirname, '..', '..');
+const FIXTURES = repoWithTestFixtures();
 const fixture = JSON.parse(readFileSync(join(ROOT, 'testdata', 'safe-tx', 'morpho-vault-deposit.json'), 'utf8'));
 const deposit = parseServiceTx(fixture.service, { chainId: 1n, version: fixture.chain.version });
 const registry = loadRegistry(ROOT);
-const template = loadTemplate(ROOT, 'morpho/vault-deposit', registry);
+const template = loadTemplate(FIXTURES, 'morpho/vault-deposit-bundler3', registry);
 const templates = new Map([[template.id, template]]);
-const rawTemplate = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
+const rawTemplate = JSON.parse(readFileSync(join(FIXTURES, 'templates', 'morpho', 'vault-deposit-bundler3', 'template.json'), 'utf8'));
 
 const DEPOSIT_PATH = 'multiSend[1].multicall.bundle[1].data.erc4626Deposit';
 const TRANSFER_PATH = 'multiSend[1].multicall.bundle[0].data.erc20TransferFrom';
 const OTHER = '0x1111111111111111111111111111111111111111';
 
 const depositCard = (amount = '1800000000180', count = 1): Card => ({
-  operations: Array.from({ length: count }, () => ({ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount, 'min-shares': '1741863305677219101283940' } })),
+  operations: Array.from({ length: count }, () => ({ template: 'morpho/vault-deposit-bundler3', values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount, 'min-shares': '1741863305677219101283940' } })),
 });
 
 function resolved(card: Card): ResolvedCard {

@@ -16,10 +16,10 @@ import { callTree } from '../src/verify/expected.ts';
 import type { CallTree } from '../src/verify/expected.ts';
 import { evaluateTx } from '../src/verify/verify.ts';
 import type { VerdictFile } from '../src/verify/verify.ts';
-import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
+import { repoWithBundler3Deposit } from './bundler3-deposit.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
 
-const ROOT = repoWithTestFixtures();
+const ROOT = repoWithBundler3Deposit();
 const load = (dir: string, name: string) => readRecording<any>(join(ROOT, 'testdata', dir, `${name}.json`));
 const registry = loadRegistry(ROOT);
 const USDC = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' as Address;
