@@ -317,6 +317,49 @@ function requiredKey(name: 'alchemy' | 'etherscan', env: Env): string {
   return key;
 }
 
+/** How many pages of an Etherscan listing are asked past a full one before the search reaches them. */
+const PAGES_AHEAD = 4;
+
+type EtherscanQuery = Extract<SourceRequest, { source: 'etherscan' }>['query'];
+
+/** An Etherscan request, spaced and asked again as `liveAsk` does, with the reads that never got an answer noted to `note`. */
+type SendEtherscan = (query: EtherscanQuery, note: NoteUnread) => Promise<unknown>;
+
+/**
+ * Asks Etherscan for a listing's next pages as soon as a page comes back full, since a listing the search ends by its
+ * first empty page is asked page by page. A page asked ahead and never reached is dropped, answered or not, so what the
+ * search asked and what it noted are the same as one page after the other.
+ */
+function pagesAhead(send: SendEtherscan, note: NoteUnread): (query: EtherscanQuery, end: EtherscanEnd | undefined) => Promise<unknown> {
+  type Asked = { readonly answer: Promise<unknown>; readonly unread: readonly string[] };
+  const early = new Map<string, Asked>();
+  const ask = (query: EtherscanQuery): Asked => {
+    const unread: string[] = [];
+    return { answer: send(query, (read) => void unread.push(read)), unread };
+  };
+  const askAhead = (query: EtherscanQuery) => {
+    const last = Math.min(Number(query.page) + PAGES_AHEAD, RANGE_PAGES);
+    for (let page = Number(query.page) + 1; page <= last; page++) {
+      const next = { ...query, page: String(page) };
+      if (early.has(JSON.stringify(next))) continue;
+      const asked = ask(next);
+      asked.answer.catch(() => undefined);
+      early.set(JSON.stringify(next), asked);
+    }
+  };
+  return async (query, end) => {
+    const asked = early.get(JSON.stringify(query)) ?? ask(query);
+    early.delete(JSON.stringify(query));
+    try {
+      const answer = await asked.answer;
+      if (end === 'empty' && isRecord(answer) && Array.isArray(answer.result) && answer.result.length >= PAGE) askAhead(query);
+      return answer;
+    } finally {
+      asked.unread.forEach(note);
+    }
+  };
+}
+
 /**
  * The live sources, with keys from the environment or `$KISS_SIGN_HOME/.env`. A failure names the source only, never a
  * URL, since both URLs carry a key.
@@ -325,8 +368,9 @@ export function liveAsk(env: Env, note: NoteUnread, transport: Transport = https
   const alchemyUrl = mainnetEndpoints(env)[0].url;
   const etherscanKey = requiredKey('etherscan', env);
   const lookup = fallbackLookup();
-  let lastEtherscan = 0;
-  return async (req) => {
+  let nextEtherscan = 0;
+  const etherscan = pagesAhead(sendEtherscan, note);
+  return async (req, end) => {
     if (req.source === 'alchemy') {
       const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'alchemy_getAssetTransfers', params: [req.params] });
       let answer;
@@ -340,12 +384,16 @@ export function liveAsk(env: Env, note: NoteUnread, transport: Transport = https
       if (parsed.error !== undefined) throw new ResearchError(`alchemy refused: ${String(parsed.error.message).slice(0, 120)}`);
       return parsed.result;
     }
+    return etherscan(req.query, end);
+  };
+
+  async function sendEtherscan(query: EtherscanQuery, unread: NoteUnread): Promise<unknown> {
     // The free Etherscan plan allows a few requests a second.
     for (let tries = 0; ; tries++) {
-      const wait = lastEtherscan + 400 - Date.now();
-      if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
-      lastEtherscan = Date.now();
-      const path = `/v2/api?${new URLSearchParams({ ...req.query, apikey: etherscanKey })}`;
+      const at = Math.max(Date.now(), nextEtherscan);
+      nextEtherscan = at + 400;
+      if (at > Date.now()) await new Promise((resolve) => setTimeout(resolve, at - Date.now()));
+      const path = `/v2/api?${new URLSearchParams({ ...query, apikey: etherscanKey })}`;
       let answer;
       try {
         answer = await retried(
@@ -358,7 +406,7 @@ export function liveAsk(env: Env, note: NoteUnread, transport: Transport = https
               16 * 1024 * 1024,
             ),
           (a) => transientStatus(a),
-          note,
+          unread,
         );
       } catch {
         throw new ResearchError('etherscan unreachable');
@@ -368,5 +416,5 @@ export function liveAsk(env: Env, note: NoteUnread, transport: Transport = https
       if (parsed.status === '0' && /rate limit/i.test(String(parsed.result)) && tries < 3) continue;
       return parsed;
     }
-  };
+  }
 }

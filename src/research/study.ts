@@ -385,7 +385,7 @@ async function proveSafe(reader: Reader, address: Address, blockNumber: bigint):
   return officialSingleton(slot.value) ? { kind: 'proven' } : { kind: 'unproven', why: 'its singleton is not an official Safe singleton' };
 }
 
-const officialSingleton = (slot0: Hex): boolean => OFFICIAL_SAFE_SINGLETONS.some((s) => slot0 === `0x${'00'.repeat(12)}${s.address.slice(2)}`);
+export const officialSingleton = (slot0: Hex): boolean => OFFICIAL_SAFE_SINGLETONS.some((s) => slot0 === `0x${'00'.repeat(12)}${s.address.slice(2)}`);
 
 export type PartyProof = { readonly kind: 'safe' } | { readonly kind: 'not-safe' } | { readonly kind: 'unreadable'; readonly reason: string };
 

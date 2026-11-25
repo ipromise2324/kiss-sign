@@ -8,7 +8,10 @@ import { PAGE, RANGE_PAGES, ResearchError, SOURCES, search, searchedBy } from '.
 import type { Anchor, Ask, Hit, Hits, SourceName } from './sources.ts';
 import type { ReadMessage } from './messages.ts';
 import type { Sampling } from './recording.ts';
-import { proveParty, shapesOf, studyTx } from './study.ts';
+import { inPool } from './pool.ts';
+import { proveParties } from './safe-parties.ts';
+import { sharedReads } from './shared-reads.ts';
+import { shapesOf, studyTx } from './study.ts';
 import type { PartyProof, TxStudy } from './study.ts';
 import { checkTrace, holdingTemplateCalls } from './trace.ts';
 import type { TraceSource, TracedTx } from './trace.ts';
@@ -183,19 +186,6 @@ function hashesBySource(hits: Hits, exclude: Address | undefined, excludedHashes
   return { found, excluded };
 }
 
-async function inPool<T, R>(items: readonly T[], width: number, run: (item: T) => Promise<R>): Promise<R[]> {
-  const results: R[] = new Array(items.length);
-  let next = 0;
-  const worker = async () => {
-    while (next < items.length) {
-      const i = next++;
-      results[i] = await run(items[i] as T);
-    }
-  };
-  await Promise.all(Array.from({ length: Math.min(width, items.length) }, worker));
-  return results;
-}
-
 function byBlock(hashes: readonly Hex[], hits: Hits): Hex[] {
   const first = new Map<Hex, bigint>();
   for (const hit of SOURCES.flatMap((source) => hits[source])) {
@@ -225,8 +215,6 @@ function safesFirst<T>(safes: readonly T[], rest: readonly T[], maxTxs: number):
   return { safes: chosen, rest: spacedSample(rest, maxTxs - chosen.length) };
 }
 
-const PROBE_WIDTH = 8;
-
 async function chooseByParty(
   hashes: readonly Hex[],
   hits: Hits,
@@ -247,7 +235,7 @@ async function chooseByParty(
   const proofs = new Map<Address, PartyProof>();
   if (parties.length > 0) {
     const block = await reader.block(at);
-    const read = block.kind === 'unverifiable' ? parties.map((): PartyProof => ({ kind: 'unreadable', reason: block.reason })) : await inPool(parties, PROBE_WIDTH, (party) => proveParty(reader, party, block.value));
+    const read = block.kind === 'unverifiable' ? parties.map((): PartyProof => ({ kind: 'unreadable', reason: block.reason })) : await proveParties(reader, parties, block.value);
     parties.forEach((party, i) => proofs.set(party, read[i] as PartyProof));
   }
   const isSafe = (hash: Hex) => [...(partiesOf.get(hash) ?? [])].some((party) => proofs.get(party)?.kind === 'safe');
@@ -325,7 +313,12 @@ async function timesOf(reader: Reader, range: BlockRange): Promise<Coverage['tim
   return from === undefined || to === undefined ? undefined : { from, to };
 }
 
-export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<PastTxs> {
+/** The most transactions studied, measured or traced at once. */
+const STUDY_WIDTH = 8;
+const TRACE_WIDTH = 4;
+
+export async function pastTxs(query: PastTxsQuery, given: PastTxsDeps): Promise<PastTxs> {
+  const deps = { ...given, reader: sharedReads(given.reader) };
   const { sampling } = query;
   const head = sampling.kind === 'range' ? undefined : (sampling.head ?? (await chainHead(deps.reader)));
   let year: YearSearch | undefined;
@@ -373,7 +366,7 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
   const shapes = shapesOf(query.template);
   const token = query.anchor.token?.toLowerCase() as Address | undefined;
   const context = { shapes, registry: deps.registry, readMessage: deps.readMessage, exclude: deps.exclude, anchor: { kind: query.anchor.kind, ...(token === undefined ? {} : { token }) } };
-  const all = await inPool(searched.flatMap((w) => w.sample), 4, async (hash) => ({
+  const all = await inPool(searched.flatMap((w) => w.sample), STUDY_WIDTH, async (hash) => ({
     hash,
     study: deps.excludedByRecording?.sampled.has(hash) === true ? ({ kind: 'excluded' } as const) : await studyTx(deps.reader, hash, context),
   }));
@@ -389,7 +382,7 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
   const effects = statedEffects(query.template);
   const fits = studies.filter((s): s is Fit => s.kind === 'fit');
   const rulesOf = (fit: Fit) => (fit.sender.kind === 'safe' ? shapes.whole : (shapes.calls[fit.sender.call] as (typeof shapes.calls)[number])).loosened.rules;
-  const measured = await inPool(fits, 4, (fit) => measure(deps.reader, { hash: fit.hash, sender: fit.sender, rules: rulesOf(fit), values: fit.values }, effects, deps.registry));
+  const measured = await inPool(fits, STUDY_WIDTH, (fit) => measure(deps.reader, { hash: fit.hash, sender: fit.sender, rules: rulesOf(fit), values: fit.values }, effects, deps.registry));
   const measurements = new Map(fits.flatMap((fit, i) => (measured[i] === undefined ? [] : [[fit.hash, measured[i]] as const])));
   const traces = deps.traces === undefined ? [] : await traceExact(query.template, fits, deps.traces, deps.reader, deps.registry);
   const kept = (hashes: readonly Hex[]) => hashes.filter((hash) => !excludedFound.has(hash) && !excludedSampled.has(hash)).length;
@@ -414,18 +407,16 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
 }
 
 /**
- * Traces each transaction exactly the template, one at a time, and checks each trace that came back: against the
+ * Traces each transaction exactly the template and checks each trace that came back: against the
  * transaction and its receipt, and that it holds the template's calls in order.
  */
 async function traceExact(template: Template, fits: readonly Fit[], source: TraceSource, reader: Reader, registry: Registry): Promise<TracedTx[]> {
   const tokens = new Set([...registry.entries.values()].filter((entry) => entry.kind === 'token' || entry.kind === 'vault').map((entry) => entry.address.toLowerCase() as Address));
-  const traced: TracedTx[] = [];
-  for (const fit of fits.filter((f) => f.outside.length === 0)) {
+  const traced = await inPool(fits.filter((f) => f.outside.length === 0), TRACE_WIDTH, async (fit) => {
     const calls = await source(fit.hash);
-    if (calls === undefined) continue;
-    traced.push(holdingTemplateCalls(template, registry, await checkTrace(fit.hash, fit.sender, calls, reader, tokens)));
-  }
-  return traced;
+    return calls === undefined ? undefined : holdingTemplateCalls(template, registry, await checkTrace(fit.hash, fit.sender, calls, reader, tokens));
+  });
+  return traced.filter((tx) => tx !== undefined);
 }
 
 async function chainHead(reader: Reader): Promise<bigint> {

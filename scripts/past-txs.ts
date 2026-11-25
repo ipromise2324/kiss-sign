@@ -94,7 +94,7 @@ grouped by reason. For each fitting transaction it runs the transaction alone on
 and compares each stated amount with the balances, printing FINDING for a sender's difference
 beyond the effect's tolerance in a registry token, or a tolerance no difference supports.
 For each transaction exactly the template it reads the call trace from drpc alone
-(debug_traceTransaction with callTracer, one at a time), and checks the trace's token transfers and
+(debug_traceTransaction with callTracer), and checks the trace's token transfers and
 approvals against the receipt both providers agree on; --record keeps each trace cut down to each
 call's depth, type, from, to, selector, value, whether it reverted, and the address arguments of a
 transfer, transferFrom, approve or permit.

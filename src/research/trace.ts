@@ -139,13 +139,13 @@ export type TraceSource = (hash: Hex) => Promise<TraceAnswer | undefined>;
 const asAnswer = (trace: RecordedTrace): TraceAnswer => ('calls' in trace ? { kind: 'calls', calls: trace.calls } : { kind: 'unreadable', why: trace.unreadable });
 
 /**
- * Traces from drpc alone, one transaction at a time, retried after a pause; a trace with no answer after every retry is
- * noted, so `--record` writes nothing, and read as not traced. `recorded` gives every trace read, by hash.
+ * Traces from drpc alone, retried after a pause; a trace with no answer after every retry is noted, so `--record`
+ * writes nothing, and read as not traced. `recorded` gives every trace read, in the order they were asked for.
  */
 export function drpcTraces(endpoint: Endpoint, transport: Transport, note: NoteUnread): { readonly source: TraceSource; readonly recorded: () => RecordedTrace[] } {
-  const traces = new Map<Hex, RecordedTrace>();
-  let queue = Promise.resolve();
-  const read = async (hash: Hex): Promise<TraceAnswer | undefined> => {
+  const traces = new Map<Hex, RecordedTrace | undefined>();
+  const source = async (hash: Hex): Promise<TraceAnswer | undefined> => {
+    traces.set(hash, undefined);
     const label = `${endpoint.provider} debug_traceTransaction ${hash}`;
     const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'debug_traceTransaction', params: [hash, { tracer: 'callTracer' }] });
     let answer: HttpAnswer;
@@ -166,15 +166,7 @@ export function drpcTraces(endpoint: Endpoint, transport: Transport, note: NoteU
     traces.set(hash, trace);
     return asAnswer(trace);
   };
-  const source: TraceSource = (hash) => {
-    const next = queue.then(() => read(hash));
-    queue = next.then(
-      () => undefined,
-      () => undefined,
-    );
-    return next;
-  };
-  return { source, recorded: () => [...traces.values()] };
+  return { source, recorded: () => [...traces.values()].filter((trace) => trace !== undefined) };
 }
 
 const traceProblem = (text: string): string | undefined => {
