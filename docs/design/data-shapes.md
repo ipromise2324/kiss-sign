@@ -47,7 +47,7 @@ A contract is never written as an address: a rule names it from the contract reg
     A later value is `MISMATCH`, naming the field, its value, the block and its time, and the seconds; a block time the providers do not agree on is `UNVERIFIABLE`.
     The seconds are a whole number from 1 to 31,536,000 (365 days); a bound beyond a year bounds next to nothing.
     An earlier value, an order already expired, is left alone: it can only fail.
-    It is a bound the program checks, like `atMost`, not a claim it takes on trust, so it carries no reason; the evidence for the number is the spread `pnpm past-txs` prints for it (see Free numbers under Study past transactions, step 4 of [the flow](flow.md#first-time-an-operation-is-done-build-its-template)), and the AI cites it in the field's note.
+    It is a bound the program checks, like `atMost`, not a claim it takes on trust, so it carries no reason; the evidence for the number is the spread `pnpm past-txs` prints for it (see Free numbers under Study past transactions, step 4 of [the flow](flow.md#first-time-an-operation-is-done-build-its-template)), which the report's 過去交易 section shows.
     It exists because a pre-signed order or approval that stays valid far longer than normal use needs keeps a door open after the signer stops watching, as in the Drift exploit of April 2026; a CoW order's `validTo` left free lets an order that expires in a year match.
     The mutation check sets it to one second past the bound, from the block time it read; when that time was not read or the value does not fit the type, it changes the value by one instead (see [Engine checks that every template gets](engine-and-chain.md#engine-checks-that-every-template-gets)).
     The perturbation test (`pnpm perturb`, replayed by `pnpm test` and the report) changes only free fields, so it never changes this one; it counts the bound, as the mutation check of a recorded test transaction does, from the time of the block the transaction ran in, read through both providers, so a recorded transaction later than its bound is not perturbed, since its fields give `MISMATCH`;
@@ -250,7 +250,26 @@ A factory, or an entry for itself, may also declare `size`, what `pnpm instance-
 `holders` says the instance is an ERC-20 share token whose holders are counted.
 An entry's own `size` replaces its factory's.
 
-### Intent card
+#### Prices
+
+Registry facts a swap's floor (see [Intent card](#intent-card)) is read with.
+They are facts about one contract or token, not the rule's numbers, but the rule trusts them: an overstated `heartbeat` calls a late feed fresh, an understated `deviationBps` or `minLiquidity` computes a floor the rule would not, and a wrong `peg` or `sourceClass` joins tokens or counts a source twice.
+Load refuses only what it can check alone, so a reviewer compares each with its source.
+
+- **A feed** is an `oracle` entry with `"feed": { "description", "decimals", "heartbeat", "deviationBps", "sourceClass", "quote" }`.
+  `description` and `decimals` are what the contract answers, such as `"USDC / USD"` and 8.
+  `heartbeat`, in seconds and at most a day, and `deviationBps` are its publisher's own, and `sourceClass` is what the publisher's list says it reads, `cex_price` or `dex_state_price`.
+  `quote` is `usd`, or the feed that prices the unit the answer is in: `"weETH / ETH"` names the feed whose description starts with `ETH`.
+  Load refuses a chain of quotes that does not reach `usd` within three feeds, or a step whose units do not join.
+- **A token or vault** may carry `"price": { "feed", "unit"?, "peg"? }`: the feed of one whole token, and what it is meant to be worth one of, `usd` or a feed on its own chain.
+- **A pool** may carry `"twap": { "minLiquidity" }`, the least harmonic mean liquidity to read its mean price at, as a decimal string.
+  It is of kind `pool`, answers `observe` as a Uniswap v3 pool does, and names its `factory`, `token0` and `token1` as attributes, `token0` the lower address; one pool per pair.
+  Its factory's `instanceCheck` takes the pool's fee as `{"number": "fee"}`, read from the pool's own `"numbers": { "fee": "100" }`, so one factory entry vouches for pools of every fee: `getPool(address,address,uint24)` with `[{"attribute": "token0"}, {"attribute": "token1"}, {"number": "fee"}]`.
+
+The description of a token's feed must start with the token's name, in any case, so `usdt` cannot be priced by `"USDC / USD"`; a token worth one of something else, as a wrapped one is, says so in `unit`: `weth` with `"unit": "ETH"`, which load refuses when another entry has that name.
+A feed or pool without a code pin does not load, and `card new` reads each only after checking that it runs that code; `pnpm pin-code` reads the registry without its prices, so it can write the first pin.
+
+## Intent card
 
 The operation id plus this signing's values.
 The template is reviewed once; the card is the only thing the signer confirms at every signing.
@@ -325,11 +344,40 @@ Card values per operation, covering the operations in the Safe's history:
 - One Safe transaction can batch several operations, for example withdrawing from two vaults.
   The card then lists each operation with its values, and the MultiSend must contain exactly those calls.
   An approval belongs to the operation that spends it, not to its own line.
-- Swap limits are stated as a minimum amount, not a slippage percentage, so the program never needs a price.
-  The signer types the number.
-  The CoW Swap app asks no minimum, but shows it as the least the order receives: its slippage is set per quote (`smartSlippage` in the order's app data), not a fixed default a computed field could apply, and the price is CoW's off-chain quote, which no view on chain gives.
-  So a CoW card's minimum is typed, from what the app shows.
-  The Uniswap app is the same: its slippage is set per quote by Uniswap's trading API (auto slippage, from 0.5% to 5.5%), and its price is that API's route over many pools, which no single view on chain gives, so a Uniswap card's minimum is typed, from the minimum the app shows; the transaction's own minimum must be at least it (`atLeast`).
+- Swap limits are stated as a minimum amount, not a slippage percentage, and the sealed card holds that amount in base units, so no check `verify` runs needs a price.
+  `card new` needs one: copied from the app being checked, a minimum protects nothing when the app is the one that lies.
+  An amount field that declares `"floor": { "sells": "<amount field>" }` is the least of its own token to receive for that other amount, and `card new` fills it by a rule keyed only by the two tokens the signer picks, the same for every protocol (`FLOOR_RULE` in `src/price/reference.ts`, whose numbers no template or registry entry can change, though it trusts the registry's [facts](#prices)):
+  1. **Both tokens have a feed and the same peg, and the feeds may be off by at most 50 bps together.**
+     `card new` asks the slippage the app shows (Enter is 0.50%, at most 1.00%, at most two decimals) and computes the floor: the amount sold, at the price, less the slippage and a margin of 0.25%, as one integer division, rounded down.
+     The margin is room for the feeds' error and for a fee inside the app's minimum, a wallet's own swap fee included.
+  2. **Both tokens have a feed, otherwise.**
+     The signer types the app's minimum, and `card new` says how far below the price it is.
+     More than 2.50% below, it must be typed a second time, the same amount, to be kept.
+  3. **A token has no feed.**
+     The signer types it, and `card new` says there is no independent price.
+
+  The price is the higher, so the stricter, of the feeds' and the pool's, never their average: one source that lies can then never loosen the floor.
+  The pool is read only where it is independent of the feeds: each feed the pair does not share is `cex_price`, and a pool the template names, or the signer picks for the swap, is left out (one a router finds from two tokens and a fee is not recognised); the prompt says when there is one source only.
+  Its mean price over 30 minutes (5 for a pair that shares no peg) counts over the route of the fewest pools, at most two; with several such routes all are read and the highest counts.
+  **A price in doubt** computes nothing: a feed older than its heartbeat by more than an hour; a pegged token more than 1% from its peg; pool and feeds more than 15 bps apart (150 for a pair that shares no peg); a pool under its `minLiquidity`, or that gives no mean price for the window.
+  `card new` prints both prices and each doubt, then takes path 2, and the minimum must be typed twice; no single key keeps it.
+  **Refused outright:** the providers disagree on any read, or one fails; the block is too old or too new (step 9 of [the flow](flow.md)); a feed, a pool or one of the two tokens, whose `decimals()` scale the price, does not run its pinned code or has no pin; a feed reverts, or answers a price that is not above 0, an `updatedAt` of 0 or after the block, or another `description()` or `decimals()` than the registry's; the same token sold and bought; an amount worth less than one base unit; a floor of 0.
+  Example: 16,089.929021 USDT, with the feeds at 0.99894 and 0.99994 and the pool lower, is worth 16,073.838 USDC; at 0.50% the floor is that less 0.75%, 15,953.284 USDC, and an app minimum of 15,995.324415 meets it.
+  When the app's minimum is below the floor, `verify` says `MISMATCH`, and the signer types the slippage the app shows or lowers it in the app.
+  Template load refuses a `floor` beside `computed` or `max`; one whose `sells` is not another typed amount; a field or a `sells` that does not count a token a card `contract` field of kind `token` or `vault` picks; and one that does not bind.
+  To bind, an `atLeast` of it must sit beside the sold amount (exactly the card's, or `atMost` it) in one call, struct or message, with the same type, so it cannot be a deadline's.
+  Any other value of that type there must be a `const`, a `withinSeconds` time, or one free `time`, so an honest deadline is declared a time; a second free time, a plain `free`, `equals`, or another card amount is refused.
+  Beside a free time, an exact amount sold must come before the floor, and an `atMost` one after it, with the time not between them: the order in Uniswap's v2 and v3 routers, where the minimum declared a time and the floor put on the deadline shows.
+  A transaction that moves tokens must also name both amounts in its effects: `sells` in `gives`, an `atLeast` of the floor in `gets`, each in its own token.
+  One that moves none signs an order, and each message it signs must hold both tokens and both amounts.
+  Load does not know which number the contract reads as its minimum.
+  The review compares the floor's parameter with the contract's source, and that the real minimum is not: a `const` (0 bounds nothing) or a `withinSeconds`; a free time where the contract's own order has the deadline between the amount sold and the minimum, or the minimum before the amount sold; a number of another width, a `bytes32`, or one in `bytes`; or one in another struct, in an array, or among the arguments around a struct.
+  It also checks that the message's sell and buy tokens are not exchanged, as load only requires both.
+  The floor is `card new`'s: `card seal` of a file checks only that it is not 0.
+  It does not give the best price, protect against what happens above the floor, or cover a token without a feed, and its feeds' owner can change the aggregator behind a proxy whose code stays as pinned (see [Known limits](known-limits.md#known-limits)).
+  Without `floor`, as for a template written before it, the minimum is typed from what the app shows.
+  The app's slippage is set per quote: CoW's in the order's app data (`smartSlippage`), Uniswap's by its trading API, 0.5% to 5% by its help page and not in its open client.
+  The transaction's own minimum must be at least the card's (`atLeast`).
 - A vault's slippage limit is stated the same way, as an amount: the fewest shares a deposit gets (`min-shares`), the most shares a withdrawal of an amount burns (`max-shares`), or the fewest assets a withdrawal of all gets (`min-assets`).
   Slippage protection acts when the transaction runs, which no simulation before it can see, so the transaction's own bound must carry the card's limit, except in the effects-only form above, where there is no bound to carry it.
   A Morpho adapter takes the bound as a price in assets per share scaled by 1e27; the template binds it with `maxSharePrice` or `minSharePrice`, `{ "assets", "shares", "scale"? }`, and the field check requires it to be at least as strict as the price the card's amounts give.
@@ -358,6 +406,8 @@ Card values per operation, covering the operations in the Safe's history:
     Each of `default.bps` and `margin.bps` is a whole number from 0 to 1,000; the slippage is their sum.
 
   `card new` makes every read at the one block both providers agree on, the block it reads `decimals()` at, inner reads first, and refuses the card when the providers disagree, a call reverts, or an answer is not the canonical encoding of the function's returns, and when the value comes to 0, which as a floor bounds nothing, or to 2^256 or more.
+  Before it calls a contract it checks, at that block and as `verify` does, that the contract, each registry entry the read's target or arguments name (a card field's, its attribute's, and every part of a market), and each entry any of these names in `dependsOn` run the code the registry pins; code that differs, an entry with no pin, or code the providers disagree on refuses the card, since changed code could answer any limit.
+  It does not check what those contracts call beyond that, nor a token before `decimals()`, unless it is one a floor is priced with (see [Known limits](known-limits.md#known-limits)).
   A margin's reason may hold no control or bidirectional character, since `card new` prints it at the signer's terminal; the tests hold a committed template's margin and `max` reasons to at most 200 characters in each language, and the parser does not, so a verdict recorded with a longer one still replays.
   Every read of a card is made at that one block, before any of its operations runs, so a computed field of a later operation does not see an earlier operation's effect, such as a deposit before a withdrawal of all; its limit then differs from the app's: a stricter one makes the app's transaction `MISMATCH`, and a looser one protects less, so such a card is best split into one card per transaction.
   It prints each read with its answer, the slippage as a percentage with the default's source and the margin's reason, and the value in whole tokens; the card before the seal step's question lists it with the typed amounts in whole tokens and base units, with the block of every read.

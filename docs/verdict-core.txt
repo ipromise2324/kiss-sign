@@ -41,6 +41,8 @@ src/floor/summary.ts
 src/html.ts
 src/keys.ts
 src/language.ts
+src/price/reference.ts
+src/price/tick.ts
 src/registry.ts
 src/research/api-source.ts
 src/research/github-token.ts

@@ -172,7 +172,11 @@ Where the template is reported per instance, the list holds only the instances w
 it, and it stops when there is none.
 Amounts are typed in whole tokens, such as 5, 1.25 or 1,000,611.448606, or max where the field
 declares one; a token outside the registry is typed in base units. A percent, such as 100 or 35.5, is at most 100 with at most 16 decimals. Decimals
-are read through both providers at one block they agree on. A computed field is read, not asked.
+are read through both providers at one block they agree on. A computed field is read, not asked,
+and only once the contracts the read names run, at that block, the code the registry pins.
+A floor, the least a swap may give, is computed from price feeds and a pool for two tokens of one
+peg, asking only the slippage; typed and compared with the price for others; and typed twice when
+the price is in doubt or the minimum is far below it.
 It ends with the card in one box, each amount in whole tokens and base units, and the block and
 providers of every chain read. Output is plain text when stdout is not a terminal or NO_COLOR is
 set.

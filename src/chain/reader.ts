@@ -49,6 +49,8 @@ export type ReaderOptions = {
   readonly rateLimitPausesMs?: readonly number[];
   /** Requests each provider may have open at once; a rate-limited answer halves it, each answer raises it slowly back. */
   readonly openRequests?: { readonly start: number; readonly max: number };
+  /** The most blocks the providers' heads may be apart for `block('latest')` to take the lower one; absent, any number. */
+  readonly maxHeadGap?: bigint;
   /** Told of each provider that gave no answer after every retry, so a recording can refuse to keep the read. */
   readonly note?: NoteUnread;
 };
@@ -257,7 +259,11 @@ export function createReader(endpoints: readonly [Endpoint, Endpoint], transport
     const [a, b] = heads;
     if (a.kind !== 'answered' || b.kind !== 'answered') return judge('latest block', heads);
     const [x, y] = [a.value as bigint, b.value as bigint];
-    return blockAt(x < y ? x : y);
+    const [lower, gap] = x < y ? [x, y - x] : [y, x - y];
+    if (options.maxHeadGap !== undefined && gap > options.maxHeadGap) {
+      return { kind: 'unverifiable', reason: `latest block: ${a.provider} is at ${x} and ${b.provider} at ${y}, more than ${options.maxHeadGap} blocks apart`, answers: heads };
+    }
+    return blockAt(lower);
   }
 
   // EIP-1898: name the block by hash, so both providers read the very block they agreed on.

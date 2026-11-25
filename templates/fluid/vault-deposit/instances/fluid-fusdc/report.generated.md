@@ -270,6 +270,7 @@ senders, of 237 transactions studied:
   EOA calling a function of the template directly: 138, from 127 EOAs
   neither: 97
     97 calls no function the template calls (called 0xe9ae5c53 in 20, 0x765e827f in 15, 0x00000000 in 7, 0x248b1701 in 6, …)
+call traces, from drpc, of the transactions exactly the template: 97 transactions, 97 checked against the receipt both providers agree on
 by proven Safes, the whole template in one transaction:
 fit the template's shape: 1 transaction from 1 Safe; misfits: 1 from 1 Safe
 fields, over the 1 fitting transaction:

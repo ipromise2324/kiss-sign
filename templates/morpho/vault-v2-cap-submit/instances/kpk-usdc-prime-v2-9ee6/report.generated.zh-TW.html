@@ -27,6 +27,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-
 a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
 a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+[data-ai]{overflow-wrap:anywhere}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
 .addr.line{display:block;margin-top:4px}
@@ -65,7 +66,7 @@ h1 .byai{vertical-align:6px}
 h1 .aiw>:first-child{margin-right:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
 .sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
-:is(.sub,h3,.intro,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
+:is(.sub,h3,.intro,.ans,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
 .verdict .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:flex;align-items:flex-start;gap:8px;font-size:var(--t-row);position:relative}
@@ -148,9 +149,19 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
 
-.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
-.key>span{display:inline-flex;gap:8px;align-items:center}
-.key .k0{color:var(--fg3);font-weight:590}
+.deciders{margin:36px 0 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}
+.deciders h3{margin:0 0 10px;font-size:var(--t-small);color:var(--fg2)}
+.deciders dl{margin:0;display:flex;flex-direction:column;gap:12px}
+.deciders .grp{display:grid;grid-template-columns:88px minmax(0,1fr);gap:0 16px;align-items:start}
+.deciders .gh{font-size:var(--t-small);line-height:24px;color:var(--fg);font-weight:590}
+.deciders .defs{margin:0;display:flex;flex-direction:column;gap:6px}
+.deciders .defs>div{display:grid;grid-template-columns:116px minmax(0,1fr);gap:0 14px;align-items:start;font-size:var(--t-small);line-height:24px;color:var(--fg2)}
+.deciders .who{justify-self:start}
+@media (max-width:560px){.deciders .grp{grid-template-columns:minmax(0,1fr)}}
+.mix{margin:10px 0 12px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 16px;align-items:start}
+.mix dt{justify-self:start}
+.mix dd{margin:0;display:flex;flex-wrap:wrap;gap:6px;line-height:24px}
+.mix code{font-size:var(--t-label)}
 .cb{margin-top:40px}
 .callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
 .callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
@@ -202,7 +213,7 @@ details.fixed[open]>summary .chev{transform:rotate(90deg)}
 }
 
 .rows{border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
@@ -249,14 +260,31 @@ details.fold[open]>summary .chev{transform:rotate(90deg)}
 details.fold .ad:last-child{border-bottom:0}
 
 .warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
-.pblock{border-top:1px solid var(--line);margin-top:16px}
-.ph{display:flex;flex-direction:column;gap:4px;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
-.ph .pt{font-weight:590}
-.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
-.pg .pc{color:var(--fg)}
-.pg .pcalls{margin-bottom:4px}
-.pg .pex{font-size:var(--t-small);margin-top:4px}
-.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+.ans{margin:0 0 10px;color:var(--fg2)}
+.ans b{color:var(--fg)}
+.cap{margin:8px 0 0;font-size:var(--t-small);color:var(--fg3)}
+.lm{color:var(--warn)}
+.sh{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-size:var(--t-small);color:var(--fg2);margin-top:18px}
+.sc{overflow-x:auto;margin:12px 0 8px}
+.pt2{border-collapse:collapse;width:100%;font-size:var(--t-small);font-variant-numeric:tabular-nums}
+.pt2 th{font-size:var(--t-label);font-weight:400;color:var(--fg3);text-align:left;padding:6px 16px 6px 0;border-bottom:1px solid var(--line2);white-space:nowrap}
+.pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
+.pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
+.pt2 .n{text-align:right}
+.pt2 th{vertical-align:bottom}
+.pt2 th.n{white-space:normal}
+.pt2 td.nw{white-space:nowrap}
+.pt2 td.v{color:var(--fg);font-weight:590}
+.pt2 .tx{min-width:104px}
+@media (max-width:760px){
+  .pt2,.pt2 tbody,.pt2 tr{display:block}
+  .pt2 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .pt2 tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .pt2 td,.pt2 td.n{display:grid;grid-template-columns:minmax(0,130px) minmax(0,1fr);gap:12px;padding:3px 0;border-bottom:0;text-align:left}
+  .pt2 td::before{content:attr(data-label);font-size:var(--t-label);font-weight:400;color:var(--fg3)}
+  .pt2 td.nw{white-space:normal}
+  .pt2 td.what{min-width:0}
+}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -271,13 +299,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
 .auto li{display:flex;gap:10px;align-items:baseline}
 .auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
-.usage{font-size:var(--t-small);color:var(--fg3);margin-bottom:28px}
-.usage h3{font-size:var(--t-row);color:var(--fg2);margin:0 0 6px}
-.usage p{margin:0}
-.usage table{border-collapse:collapse;margin:10px 0}
-.usage th,.usage td{padding:6px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left}
-.usage th+td,.usage th+th{padding-left:32px;text-align:right}
-.usage tfoot th,.usage tfoot td{color:var(--fg);border-bottom:0}
+.ut{border-collapse:collapse;width:100%;margin:16px 0 12px;font-size:var(--t-row)}
+.ut th,.ut td{padding:9px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left;color:var(--fg2)}
+.ut thead th{font-size:var(--t-label);color:var(--fg3);border-bottom-color:var(--line2)}
+.ut th+td,.ut th+th{text-align:right;font-variant-numeric:tabular-nums}
+.ut tfoot th,.ut tfoot td{color:var(--fg);font-weight:590;border-bottom:0}
 .foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
 .foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
@@ -298,7 +324,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 3</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 3</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
 </nav>
 
 <div class="main">
@@ -321,7 +347,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用。KPK 文件、CoinGecko 和工廠都確認這個 vault。</span><span class="byai">AI 研究：可以用</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 3</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 3</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
   </details>
 </header>
 
@@ -334,8 +360,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div><div class="t"><span class="grade"><span class="vh">等級：</span>重要</span>地址確認的地方不夠 · morpho-oracle-cbbtc-usdc-86</div>
         <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="meta">只在 1 個地方確認：協議 API</div>
-          <div class="meta">至少要 2 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-cbbtc-usdc-86">看來源</a></div>
+          <div class="meta">只在 協議 API 找到 <span class="addr">0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a</span>；至少要 2 個地方。<a href="#a-morpho-oracle-cbbtc-usdc-86">看來源</a></div>
           <div class="rec"><span class="aiw" data-ai><span>AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>（市場 id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64），回答的 oracle 就是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
           <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
@@ -345,8 +370,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div><div class="t"><span class="grade"><span class="vh">等級：</span>重要</span>地址確認的地方不夠 · morpho-oracle-usp-usdc</div>
         <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>：usdc-usp-915 和 usdc-usp-86 兩個市場回答的 oracle 都是 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="meta">只在 1 個地方確認：協議 API</div>
-          <div class="meta">至少要 2 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-usp-usdc">看來源</a></div>
+          <div class="meta">只在 協議 API 找到 <span class="addr">0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d</span>；至少要 2 個地方。<a href="#a-morpho-oracle-usp-usdc">看來源</a></div>
           <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這兩個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
     </div>
@@ -355,8 +379,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div><div class="t"><span class="grade"><span class="vh">等級：</span>重要</span>地址確認的地方不夠 · morpho-oracle-weeth-usdc-86</div>
         <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="meta">只在 1 個地方確認：協議 API</div>
-          <div class="meta">至少要 2 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-weeth-usdc-86">看來源</a></div>
+          <div class="meta">只在 協議 API 找到 <span class="addr">0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411</span>；至少要 2 個地方。<a href="#a-morpho-oracle-weeth-usdc-86">看來源</a></div>
           <div class="rec"><span class="aiw" data-ai><span>AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>（市場 id 0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e），回答的 oracle 就是 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411；換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
           <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
@@ -412,11 +435,15 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </svg>
   </div>
   <div class="scrollhint">圖可以左右滑動，最右邊是 kpk-usdc-prime-v2-9ee6</div>
-  <div class="key">
-    <span class="k0">誰決定</span>
-    <span><span class="who you">你填</span>每次簽名填</span>
-    <span><span class="who you">你選</span>每次簽名選</span>
-    <span><span class="who">固定</span>改了就 MISMATCH</span>
+  <div class="deciders">
+    <h3>每個值由誰決定</h3>
+    <dl>
+      <div class="grp"><dt class="gh">你</dt><dd class="defs">
+        <div><span class="who you">你填</span><span>每次簽名你自己填。</span></div>
+        <div><span class="who you">你選</span><span>每次簽名你從清單裡選。</span></div></dd></div>
+      <div class="grp"><dt class="gh">kiss-sign</dt><dd class="defs">
+        <div><span class="who">固定</span><span>模板定的。改了就 MISMATCH。</span></div></dd></div>
+    </dl>
   </div>
   <p class="lead keylead">下面逐一列出交易的每個呼叫。每個參數都寫出由誰決定、它的值或必須符合的規則，以及它的作用。</p>
   
@@ -777,31 +804,23 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>過去交易</h2>
-  <p class="lead">過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 <span class="num">1</span> 筆：Safe <span class="num">1</span> 筆（1 個 Safe）、EOA <span class="num">0</span> 筆。它成功執行：它是從 kpk-usdc-prime-v2-9ee6 Submit時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 1 筆：<a href="https://etherscan.io/tx/0xb1c61a05a69389071a77a493b5a6928a094877416f9b26981a5878e2fa064bd9">0xb1c61a05…</a>。</p>
-  <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 <span class="num">10</span> 筆跟你這筆不一樣：形狀一樣、但用的是 registry 外的市場的 <span class="num">2</span> 筆，形狀不同的 <span class="num">8</span> 筆</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>有 2 筆這個形狀的提交，市場不在 registry 裡。不合的是在一個 multicall 或 MultiSend 裡放好幾個上限，或提交其他設定；都會是 MISMATCH。</span><span class="byai">AI 研究</span></span></p>
-  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
+  <h3>1. 這個模板的交易以前成功過嗎？</h3>
+  <p class="ans"><b>成功過，1 個 Safe 一共做過 1 次。</b> EOA：0 次。最近一次是區塊 26328163。全部成功執行。最近 1 筆：<a href="https://etherscan.io/tx/0xb1c61a05a69389071a77a493b5a6928a094877416f9b26981a5878e2fa064bd9">0xb1c61a05…</a></p>
+  <h3>2. app 填的值，一般是多少？</h3>
+  <p class="ans">這個模板沒有留任何值給 app 填。</p>
+  <h3>3. 其他交易哪裡不同？</h3>
+  <p class="ans">10 筆交易做了這個模板不允許的事。</p>
+  <p class="ans"><span class="aiw" data-ai><span>有 2 筆這個形狀的提交，市場不在 registry 裡。不合的是在一個 multicall 或 MultiSend 裡放好幾個上限，或提交其他設定；都會是 MISMATCH。</span><span class="byai">AI 研究</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="tx">例子（最多 3 筆）</th></tr></thead><tbody>
+    <tr><td class="what" data-label="哪裡不同"><span>資料不是 <code>capId(string,address,(address,address,address,address,uint256))</code> 的標準編碼</span></td><td class="n" data-label="Safe"><span><span class="num">3</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26328171</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x71497a279b6c03466a74b00fa240730146f2ced7bc91dc01d7030d65f5a30bc6">0x71497a27…</a> <a href="https://etherscan.io/tx/0xea0241166034c7ce5575b70759b7c9f5946140ea2ce207765ecdab28f3408cfd">0xea024116…</a> <a href="https://etherscan.io/tx/0xbe20832384d44da4cb14607856df3dcae254595ca0caa4f5c208cd624dbb7ffd">0xbe208323…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>一次超過 4 個呼叫的批次</span></td><td class="n" data-label="Safe"><span><span class="num">2</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 24907264</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x31aa282431e5a0ac9dcefa7b1555054f8dca56158b85d32b6e3bca208fa05055">0x31aa2824…</a> <a href="https://etherscan.io/tx/0x58b56805e71abafbf38cee9440ec7df5d26a34cb10a5ec5281691ab146fd3bdd">0x58b56805…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span><code>multicall.data[0].submit.data.selector</code> 是 2 種別的值，模板要 <span class="addr">0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)</span></span></td><td class="n" data-label="Safe"><span><span class="num">2</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 25539399</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x6a83c548fb066c7e34d85f0665ae15aa92a08be671f0f8fd6d552e7a38473757">0x6a83c548…</a> <a href="https://etherscan.io/tx/0xc8252b8fd3ad2269ec4a6f6c3891a14f5bbb81eb6521b20c789678dac0f3b0ab">0xc8252b8f…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>形狀一樣，但 <code>multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams</code> 用的是 registry 外的市場</span></td><td class="n" data-label="Safe"><span><span class="num">2</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 25553477</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x7941b67103ad0cf62d6f9f47c86d5a883a282940f0e92bc09cda412b271cbb37">0x7941b671…</a> <a href="https://etherscan.io/tx/0x5cd9e4d28fb77ef933b3a4fbc72328a24f81b8e30fca87f47a2472c6ccd46dfe">0x5cd9e4d2…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 25072978</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x424927ac76f0871f71b19d92312070128c5f63452032d26d8f89d89cece6eb06">0x424927ac…</a></span></td></tr></tbody></table></div>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>程式怎麼搜尋</span></summary>
   <h3>搜尋 kpk-usdc-prime-v2-9ee6 的Submit，找到 25 筆，研究 25 筆</h3>
-  <p class="lead">記錄在 <code>testdata/research/morpho-vault-v2-cap-submit-kpk-usdc-prime-v2-9ee6.json</code>。只有 Etherscan 搜尋事件，找到 <span class="num">25</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">11</span> 筆用了這個操作的呼叫（1 個 Safe），<span class="num">1</span> 筆跟模板一模一樣，<span class="num">2</span> 筆形狀一樣、但用的是 registry 外的市場。</span></div>
-    <div class="pg"><span class="pc num">2 筆</span><div><div>形狀一樣，但 <code>marketParams</code> 用的是 registry 外的市場<span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x5cd9e4d28fb77ef933b3a4fbc72328a24f81b8e30fca87f47a2472c6ccd46dfe">0x5cd9e4d2…</a>、<a href="https://etherscan.io/tx/0x7941b67103ad0cf62d6f9f47c86d5a883a282940f0e92bc09cda412b271cbb37">0x7941b671…</a></div></div></div>
-    <div class="pg"><span class="pc num">3 筆</span><div><div><code>call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.encoding</code> 的值跟模板不同：模板要 <span class="addr">capId(string,address,(address,address,address,address,uint256))</span>，交易是 <span class="addr">the heads run past the end</span><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xbe20832384d44da4cb14607856df3dcae254595ca0caa4f5c208cd624dbb7ffd">0xbe208323…</a>、<a href="https://etherscan.io/tx/0xea0241166034c7ce5575b70759b7c9f5946140ea2ce207765ecdab28f3408cfd">0xea024116…</a>、<a href="https://etherscan.io/tx/0x71497a279b6c03466a74b00fa240730146f2ced7bc91dc01d7030d65f5a30bc6">0x71497a27…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall</code></div><div>呼叫跟模板不同，模板是 <code>multicall</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x58b56805e71abafbf38cee9440ec7df5d26a34cb10a5ec5281691ab146fd3bdd">0x58b56805…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall</code></div><div>呼叫跟模板不同，模板是 <code>multicall</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x31aa282431e5a0ac9dcefa7b1555054f8dca56158b85d32b6e3bca208fa05055">0x31aa2824…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>kpk-usdc-prime-v2-9ee6.multicall → kpk-usdc-prime-v2-9ee6.multicall</code></div><div>呼叫跟模板不同，模板是 <code>multicall</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x424927ac76f0871f71b19d92312070128c5f63452032d26d8f89d89cece6eb06">0x424927ac…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div><code>call.multicall.data[0].submit.data.selector</code> 的值跟模板不同：模板要 <span class="addr">0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)</span>，交易是 <span class="addr">0xb192a84a</span><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xc8252b8fd3ad2269ec4a6f6c3891a14f5bbb81eb6521b20c789678dac0f3b0ab">0xc8252b8f…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div><code>call.multicall.data[0].submit.data.selector</code> 的值跟模板不同：模板要 <span class="addr">0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)</span>，交易是 <span class="addr">0x3e9d2ac7</span><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x6a83c548fb066c7e34d85f0665ae15aa92a08be671f0f8fd6d552e7a38473757">0x6a83c548…</a></div></div></div>
-  </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 14 筆是別的操作，不列入：<code>kpk-usdc-prime-v2-9ee6.submit</code> 7 筆、<code>0xD5b66FD462b46B9A08c427ddAf7DC50C05a8dF7d.0xc6fe8747</code> 5 筆、<code>multisend-call-only-1.4.1.0x8d80ff0a</code> 1 筆、<code>morpho-market-v1-adapter-v2-factory.createMorphoMarketV1AdapterV2</code> 1 筆。</span></div>
+  <p class="cap">只有 Etherscan 搜尋事件，找到 <span class="num">25</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
+  <p class="cap">這些交易是從事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。</p>
+  <p class="cap">另外 14 筆是別的操作，不列入：<code>kpk-usdc-prime-v2-9ee6.submit</code> 7 筆、<code>0xD5b66FD462b46B9A08c427ddAf7DC50C05a8dF7d.0xc6fe8747</code> 5 筆、<code>multisend-call-only-1.4.1.0x8d80ff0a</code> 1 筆、<code>morpho-market-v1-adapter-v2-factory.createMorphoMarketV1AdapterV2</code> 1 筆。</p>
   </details>
 </section>
 
@@ -845,7 +864,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<aside class="usage"><h3>製作這份報告的 AI 用量</h3><p>未量測</p></aside>
+<section id="usage">
+  <h2>AI 用量</h2>
+  <p class="lead">這份報告的 AI 用量未量測。</p>
+</section>
+
 <footer class="foot">由 <code>pnpm report morpho/vault-v2-cap-submit --instance-of kpk-usdc-prime-v2-9ee6 --record</code> 從 <code>templates/morpho/vault-v2-cap-submit/template.json</code>、<code>templates/morpho/vault-v2-cap-submit/docs.json</code>、<code>templates/morpho/vault-v2-cap-submit/instances/kpk-usdc-prime-v2-9ee6/docs.json</code>、<code>registry/contracts.json</code>、<code>registry/markets.json</code>、<code>testdata/report/morpho-vault-v2-cap-submit/kpk-usdc-prime-v2-9ee6.json</code>、<code>testdata/abi</code>、<code>testdata/research/morpho-vault-v2-cap-submit-kpk-usdc-prime-v2-9ee6.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/morpho/vault-v2-cap-submit/notes.json</code>、<code>templates/morpho/vault-v2-cap-submit/instances/kpk-usdc-prime-v2-9ee6/notes.json</code> 寫出，資料在 2026-11-17 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
 
 </div>

@@ -27,6 +27,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-
 a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
 a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+[data-ai]{overflow-wrap:anywhere}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
 .addr.line{display:block;margin-top:4px}
@@ -65,7 +66,7 @@ h1 .byai{vertical-align:6px}
 h1 .aiw>:first-child{margin-right:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
 .sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
-:is(.sub,h3,.intro,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
+:is(.sub,h3,.intro,.ans,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
 .verdict .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:flex;align-items:flex-start;gap:8px;font-size:var(--t-row);position:relative}
@@ -148,9 +149,19 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
 
-.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
-.key>span{display:inline-flex;gap:8px;align-items:center}
-.key .k0{color:var(--fg3);font-weight:590}
+.deciders{margin:36px 0 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}
+.deciders h3{margin:0 0 10px;font-size:var(--t-small);color:var(--fg2)}
+.deciders dl{margin:0;display:flex;flex-direction:column;gap:12px}
+.deciders .grp{display:grid;grid-template-columns:88px minmax(0,1fr);gap:0 16px;align-items:start}
+.deciders .gh{font-size:var(--t-small);line-height:24px;color:var(--fg);font-weight:590}
+.deciders .defs{margin:0;display:flex;flex-direction:column;gap:6px}
+.deciders .defs>div{display:grid;grid-template-columns:116px minmax(0,1fr);gap:0 14px;align-items:start;font-size:var(--t-small);line-height:24px;color:var(--fg2)}
+.deciders .who{justify-self:start}
+@media (max-width:560px){.deciders .grp{grid-template-columns:minmax(0,1fr)}}
+.mix{margin:10px 0 12px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 16px;align-items:start}
+.mix dt{justify-self:start}
+.mix dd{margin:0;display:flex;flex-wrap:wrap;gap:6px;line-height:24px}
+.mix code{font-size:var(--t-label)}
 .cb{margin-top:40px}
 .callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
 .callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
@@ -202,7 +213,7 @@ details.fixed[open]>summary .chev{transform:rotate(90deg)}
 }
 
 .rows{border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
@@ -249,14 +260,31 @@ details.fold[open]>summary .chev{transform:rotate(90deg)}
 details.fold .ad:last-child{border-bottom:0}
 
 .warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
-.pblock{border-top:1px solid var(--line);margin-top:16px}
-.ph{display:flex;flex-direction:column;gap:4px;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
-.ph .pt{font-weight:590}
-.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
-.pg .pc{color:var(--fg)}
-.pg .pcalls{margin-bottom:4px}
-.pg .pex{font-size:var(--t-small);margin-top:4px}
-.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+.ans{margin:0 0 10px;color:var(--fg2)}
+.ans b{color:var(--fg)}
+.cap{margin:8px 0 0;font-size:var(--t-small);color:var(--fg3)}
+.lm{color:var(--warn)}
+.sh{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-size:var(--t-small);color:var(--fg2);margin-top:18px}
+.sc{overflow-x:auto;margin:12px 0 8px}
+.pt2{border-collapse:collapse;width:100%;font-size:var(--t-small);font-variant-numeric:tabular-nums}
+.pt2 th{font-size:var(--t-label);font-weight:400;color:var(--fg3);text-align:left;padding:6px 16px 6px 0;border-bottom:1px solid var(--line2);white-space:nowrap}
+.pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
+.pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
+.pt2 .n{text-align:right}
+.pt2 th{vertical-align:bottom}
+.pt2 th.n{white-space:normal}
+.pt2 td.nw{white-space:nowrap}
+.pt2 td.v{color:var(--fg);font-weight:590}
+.pt2 .tx{min-width:104px}
+@media (max-width:760px){
+  .pt2,.pt2 tbody,.pt2 tr{display:block}
+  .pt2 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .pt2 tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .pt2 td,.pt2 td.n{display:grid;grid-template-columns:minmax(0,130px) minmax(0,1fr);gap:12px;padding:3px 0;border-bottom:0;text-align:left}
+  .pt2 td::before{content:attr(data-label);font-size:var(--t-label);font-weight:400;color:var(--fg3)}
+  .pt2 td.nw{white-space:normal}
+  .pt2 td.what{min-width:0}
+}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -271,13 +299,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
 .auto li{display:flex;gap:10px;align-items:baseline}
 .auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
-.usage{font-size:var(--t-small);color:var(--fg3);margin-bottom:28px}
-.usage h3{font-size:var(--t-row);color:var(--fg2);margin:0 0 6px}
-.usage p{margin:0}
-.usage table{border-collapse:collapse;margin:10px 0}
-.usage th,.usage td{padding:6px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left}
-.usage th+td,.usage th+th{padding-left:32px;text-align:right}
-.usage tfoot th,.usage tfoot td{color:var(--fg);border-bottom:0}
+.ut{border-collapse:collapse;width:100%;margin:16px 0 12px;font-size:var(--t-row)}
+.ut th,.ut td{padding:9px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left;color:var(--fg2)}
+.ut thead th{font-size:var(--t-label);color:var(--fg3);border-bottom-color:var(--line2)}
+.ut th+td,.ut th+th{text-align:right;font-variant-numeric:tabular-nums}
+.ut tfoot th,.ut tfoot td{color:var(--fg);font-weight:590;border-bottom:0}
 .foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
 .foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
@@ -298,7 +324,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="Contents">
   <h2>Contents</h2>
-  <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>1</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">2</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>1</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">2</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li><li><a href="#usage">AI usage</a></li></ol>
 </nav>
 
 <div class="main">
@@ -321,7 +347,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="ok"><span class="lbl">Advice</span><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span class="aiw" data-ai><span>Moves no asset, but changes who controls this Safe: check the new signer&#39;s address against a source outside the chat.</span><span class="byai">AI research: be careful</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
-    <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>1</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">2</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+    <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>1</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">2</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li><li><a href="#usage">AI usage</a></li></ol>
   </details>
 </header>
 
@@ -355,10 +381,14 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </svg>
   </div>
   <div class="scrollhint">Scroll the diagram sideways; your Safe is at the far right</div>
-  <div class="key">
-    <span class="k0">Who decides</span>
-    <span><span class="who you">you pick</span>picked at each signing</span>
-    <span><span class="who">fixed</span>any change is a MISMATCH</span>
+  <div class="deciders">
+    <h3>Who decides each value</h3>
+    <dl>
+      <div class="grp"><dt class="gh">You</dt><dd class="defs">
+        <div><span class="who you">you pick</span><span>You pick it from a list at each signing.</span></div></dd></div>
+      <div class="grp"><dt class="gh">kiss-sign</dt><dd class="defs">
+        <div><span class="who">fixed</span><span>The template sets it. Any change is a MISMATCH.</span></div></dd></div>
+    </dl>
   </div>
   <p class="lead keylead">The transaction&#39;s calls, one by one. Each argument shows who decides it, its value or the rule it must follow, and what it does.</p>
   
@@ -454,62 +484,38 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>Past transactions</h2>
-  <p class="lead">In past records, <span class="num">71</span> transactions match the template exactly, made the way yours is: Safe <span class="num">71</span> (71 Safes), EOA <span class="num">0</span>. All of them succeeded: they were found through the event logs of Safe RemovedOwner, and a failed transaction leaves no such log. The latest 3 exact matches: <a href="https://etherscan.io/tx/0xa4bc52cda4304cdb025fe712f343c386ab07a78cb7c7bdfe368b03484b055aad">0xa4bc52cd…</a>, <a href="https://etherscan.io/tx/0x24385d26730c7745408d4e50efe4ca9089024002c762f3e5b7b1fc8f842fbbff">0x24385d26…</a>, <a href="https://etherscan.io/tx/0x5053537cf659ab1734de61cff1dd6c748dcc2deaef76611e293feb50872cae72">0x5053537c…</a>.</p>
-  <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span><span class="num">22</span> more differ from yours: <span class="num">0</span> have the same shape but with an address outside the registry, <span class="num">22</span> have another shape</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>Every misfit batches <code>swapOwner</code> with more calls in one MultiSend: more <code>swapOwner</code>, <code>addOwnerWithThreshold</code> or <code>removeOwner</code> calls; five also call <code>enableModule</code>, four of them on another contract as well and with <code>changeThreshold</code>. A card holds one change, so verify refuses such a batch; make each change its own transaction.</span><span class="byai">AI research</span></span></p>
-  <p class="lead">Only transactions that used this operation&#39;s calls count. An exact match has the template&#39;s calls and argument positions, meets every rule the transaction itself can show (such as where the sender goes, or a fixed value), and uses a contract the template allows wherever the template binds a registry contract. Same shape but a market, token, vault or address outside the registry means the calls, argument positions and those rules are the same, but an address or market is not in the registry; the kind is named when the record shows it, otherwise only address. The rest are grouped by reason, each with up to 3 examples.</p>
+  <h3>1. Has this template&#39;s transaction worked before?</h3>
+  <p class="ans"><b>Yes, 71 times, by 71 Safes.</b> EOA: 0. The newest: block 26472172. All of them succeeded. The newest 3: <a href="https://etherscan.io/tx/0xa4bc52cda4304cdb025fe712f343c386ab07a78cb7c7bdfe368b03484b055aad">0xa4bc52cd…</a> <a href="https://etherscan.io/tx/0x24385d26730c7745408d4e50efe4ca9089024002c762f3e5b7b1fc8f842fbbff">0x24385d26…</a> <a href="https://etherscan.io/tx/0x5053537cf659ab1734de61cff1dd6c748dcc2deaef76611e293feb50872cae72">0x5053537c…</a></p>
+  <h3>2. What values are normal in what the app fills?</h3>
+  <p class="ans">This template leaves no value for the app to fill.</p>
+  <h3>3. How did the others differ?</h3>
+  <p class="ans">22 transactions did something this template refuses.</p>
+  <p class="ans"><span class="aiw" data-ai><span>Every misfit batches <code>swapOwner</code> with more calls in one MultiSend: more <code>swapOwner</code>, <code>addOwnerWithThreshold</code> or <code>removeOwner</code> calls; five also call <code>enableModule</code>, four of them on another contract as well and with <code>changeThreshold</code>. A card holds one change, so verify refuses such a batch; make each change its own transaction.</span><span class="byai">AI research</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="tx">Examples (up to 3)</th></tr></thead><tbody>
+    <tr><td class="what" data-label="What was different"><span>A batch of more than 4 calls</span></td><td class="n" data-label="Safe"><span><span class="num">3</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 24937987</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x7d92754f5ea3d45a51517b306196e6388bbfd3b0e82ac9d5dd07341d4458201a">0x7d92754f…</a> <a href="https://etherscan.io/tx/0xa4a7cfa391f8e0eaef571caec15f94fa38c0c13625f5466dbde33813e332d277">0xa4a7cfa3…</a> <a href="https://etherscan.io/tx/0x09ec63dc4220a6079d07d5d61eff72f15dc6d78853f47d0e7601ffe5b2ef0237">0x09ec63dc…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.swapOwner → itself.removeOwner → itself.removeOwner</code></span></td><td class="n" data-label="Safe"><span><span class="num">2</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 24850042</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x7b4cd681afd72b1b807a4cd84ba1adcf5c0f55b1575a45ac7322117ca5ec758f">0x7b4cd681…</a> <a href="https://etherscan.io/tx/0xaffe51bddbb55cb8ef4eebc4bcc47edf1d7c410193d49d80146f23e449e5bc67">0xaffe51bd…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.swapOwner → itself.swapOwner</code></span></td><td class="n" data-label="Safe"><span><span class="num">2</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 26371755</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x6423eb6b239281990ecd37686b36963191292f47eddd92c0c1ae0077ba09cfa4">0x6423eb6b…</a> <a href="https://etherscan.io/tx/0x301f80801d8b0860d9574956959898e3a5f43838e7a08bf25be74251548a7b4c">0x301f8080…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.swapOwner → itself.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">2</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 25676071</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x33652287867f226f2146e4eb2b34a69e690f3b12f577c497b635ac8faee31820">0x33652287…</a> <a href="https://etherscan.io/tx/0x4a44faf5a0c3dadc119440fe70026eefed8308439481324c7b3ed9d60b29ebe4">0x4a44faf5…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.swapOwner → itself.swapOwner → itself.swapOwner → itself.swapOwner</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 23926486</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x7aa3ae5e83057b849b7cb5b2295a73e56ae3586c90395e76fb7adffa9ccd697c">0x7aa3ae5e…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.swapOwner → itself.swapOwner → itself.addOwnerWithThreshold → itself.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 24783501</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xeb8df3aea5fa964cdd7f80debaad02b76e914713de40d45c385e54f910843ffd">0xeb8df3ae…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.removeOwner → itself.swapOwner</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 24952269</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x1929416062c2ce903b5372bcaadb2a913c4b7ec771fc3e76a85aed1cd4daa4ad">0x19294160…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.swapOwner → itself.addOwnerWithThreshold → itself.addOwnerWithThreshold → itself.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 25141824</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x4085cb8e866b87b9be2a6b7b0434a87cf5554ff349c1cf41e0030712eabf1157">0x4085cb8e…</a></span></td></tr></tbody></table></div>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>9 more ways, 9 transactions</span></summary><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="tx">Examples (up to 3)</th></tr></thead><tbody>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.swapOwner → itself.swapOwner → itself.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 25573766</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x973fd7ea5a9554409d4b1f70c82f6c0fa727398d6fee6ae6620a77d92b470bb2">0x973fd7ea…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.swapOwner → itself.removeOwner → itself.removeOwner → itself.removeOwner</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 25660309</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x18ca29421ff1fb8ca89a2aa96b956d2afff3fef090548c8634479c9754aae80e">0x18ca2942…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.enableModule → 0x7bf2e2F1eC86587f848dFBfBb988eDC54768EF8f.enableModule → itself.swapOwner → itself.changeThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 25776821</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x6f36c01d0156eee81a7ac8614746a5e96a7cf025a0ccc745e03cdbf9a1bf9e51">0x6f36c01d…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.swapOwner → itself.removeOwner</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 25997317</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xaa0a3f56be48780cf8c81e064aedf7006d225b1ecac030120379028e1d24463b">0xaa0a3f56…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.enableModule → itself.enableModule → itself.swapOwner</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 26063084</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xc0d1e99fcbec1c863b0e825fe5637c2f0b284331683fa79ea302c48ecaa14b3c">0xc0d1e99f…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.enableModule → 0x50c849eBe736D040c3AA1895EcBa0f9259C72692.enableModule → itself.swapOwner → itself.changeThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 26139842</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x68ac2dc63430044082c7fec091b1e00f753f16ff745b1f5f8fbb42d0975fcae3">0x68ac2dc6…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.enableModule → 0xe9CE12889BeCD7221BbC1d948e514A8E10cF5A4c.enableModule → itself.swapOwner → itself.changeThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 26147398</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xf98bc4d48348ce049c1a44407b68fe3b187ec7a52fd9b532d66fa06828b365ec">0xf98bc4d4…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.enableModule → 0xc82C2C2552939E7473E08788d2aE95CDBF0E9a24.enableModule → itself.swapOwner → itself.changeThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 26246672</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xf7e97adb6dfa8b5bea0539a0e60301a0c01b60df635ff3a1cfd0bc986deb1405">0xf7e97adb…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.swapOwner → itself.addOwnerWithThreshold → itself.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 26282584</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xc6397d3702401f94a7cb4d791d7fcbf3592540da39d485d470577a0e2284a6e6">0xc6397d37…</a></span></td></tr></tbody></table></div>
+  </details>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>How the program searched</span></summary>
   <h3>Search of Safe RemovedOwner: 15942 found, 238 studied, 205 of 15909 with a proven Safe party</h3>
-  <p class="lead">Recorded in <code>testdata/research/safe-swap-owner.json</code>. Every transaction of the last year was searched, from block 23856083 (2025-11-22) to block 26484082 (2026-11-24), with no gap. Only Etherscan searches an event, and found <span class="num">15942</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">93</span> transactions used this operation&#39;s calls (93 Safes); <span class="num">71</span> match the template exactly.</span></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x6D8D914205bB14104c0f95BfaDb4B1680EF60CCC.swapOwner → 0x6D8D914205bB14104c0f95BfaDb4B1680EF60CCC.swapOwner → 0x6D8D914205bB14104c0f95BfaDb4B1680EF60CCC.swapOwner → 0x6D8D914205bB14104c0f95BfaDb4B1680EF60CCC.swapOwner</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x7aa3ae5e83057b849b7cb5b2295a73e56ae3586c90395e76fb7adffa9ccd697c">0x7aa3ae5e…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x9D49f5FC659038D601246767A95d7E7a1F2C879E.swapOwner → 0x9D49f5FC659038D601246767A95d7E7a1F2C879E.swapOwner → 0x9D49f5FC659038D601246767A95d7E7a1F2C879E.swapOwner → 0x9D49f5FC659038D601246767A95d7E7a1F2C879E.swapOwner → 0x9D49f5FC659038D601246767A95d7E7a1F2C879E.addOwnerWithThreshold</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x09ec63dc4220a6079d07d5d61eff72f15dc6d78853f47d0e7601ffe5b2ef0237">0x09ec63dc…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x7224159A90673661A5507EDAf5109bBB89Af2528.swapOwner → 0x7224159A90673661A5507EDAf5109bBB89Af2528.swapOwner → 0x7224159A90673661A5507EDAf5109bBB89Af2528.swapOwner → 0x7224159A90673661A5507EDAf5109bBB89Af2528.removeOwner → 0x7224159A90673661A5507EDAf5109bBB89Af2528.removeOwner → 0x7224159A90673661A5507EDAf5109bBB89Af2528.removeOwner</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xa4a7cfa391f8e0eaef571caec15f94fa38c0c13625f5466dbde33813e332d277">0xa4a7cfa3…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x87787389BB2Eb2EC8Fe4aA6a2e33D671d925A60f.swapOwner → 0x87787389BB2Eb2EC8Fe4aA6a2e33D671d925A60f.removeOwner → 0x87787389BB2Eb2EC8Fe4aA6a2e33D671d925A60f.removeOwner</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xaffe51bddbb55cb8ef4eebc4bcc47edf1d7c410193d49d80146f23e449e5bc67">0xaffe51bd…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x896b7Dd9b5bE5F87BA526b37Cd363343f9C8bC54.swapOwner → 0x896b7Dd9b5bE5F87BA526b37Cd363343f9C8bC54.swapOwner → 0x896b7Dd9b5bE5F87BA526b37Cd363343f9C8bC54.addOwnerWithThreshold → 0x896b7Dd9b5bE5F87BA526b37Cd363343f9C8bC54.addOwnerWithThreshold</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xeb8df3aea5fa964cdd7f80debaad02b76e914713de40d45c385e54f910843ffd">0xeb8df3ae…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0xdEEA92F820c1b5b20e5072E6B7a683A6b8cFF5D8.swapOwner → 0xdEEA92F820c1b5b20e5072E6B7a683A6b8cFF5D8.removeOwner → 0xdEEA92F820c1b5b20e5072E6B7a683A6b8cFF5D8.removeOwner</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x7b4cd681afd72b1b807a4cd84ba1adcf5c0f55b1575a45ac7322117ca5ec758f">0x7b4cd681…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0xaB29e0D283E4f1D58076B924e540EA5998c7Cc51.swapOwner → 0xaB29e0D283E4f1D58076B924e540EA5998c7Cc51.addOwnerWithThreshold → 0xaB29e0D283E4f1D58076B924e540EA5998c7Cc51.addOwnerWithThreshold → 0xaB29e0D283E4f1D58076B924e540EA5998c7Cc51.addOwnerWithThreshold → 0xaB29e0D283E4f1D58076B924e540EA5998c7Cc51.addOwnerWithThreshold</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x7d92754f5ea3d45a51517b306196e6388bbfd3b0e82ac9d5dd07341d4458201a">0x7d92754f…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x0d7138B07B443D1E7577D45c2Dea3283Da6042b5.removeOwner → 0x0d7138B07B443D1E7577D45c2Dea3283Da6042b5.swapOwner</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x1929416062c2ce903b5372bcaadb2a913c4b7ec771fc3e76a85aed1cd4daa4ad">0x19294160…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x623b471a2977AE0EC1807D1Ca0D3cDe03b5FE9f6.swapOwner → 0x623b471a2977AE0EC1807D1Ca0D3cDe03b5FE9f6.swapOwner</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x301f80801d8b0860d9574956959898e3a5f43838e7a08bf25be74251548a7b4c">0x301f8080…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0xFc927413011F0Bc4dDeaBC988DD7f97cAbd58bEb.swapOwner → 0xFc927413011F0Bc4dDeaBC988DD7f97cAbd58bEb.addOwnerWithThreshold → 0xFc927413011F0Bc4dDeaBC988DD7f97cAbd58bEb.addOwnerWithThreshold → 0xFc927413011F0Bc4dDeaBC988DD7f97cAbd58bEb.addOwnerWithThreshold</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x4085cb8e866b87b9be2a6b7b0434a87cf5554ff349c1cf41e0030712eabf1157">0x4085cb8e…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x4af31b40CC722638c92A8bE2c2016f164B1C16Cf.swapOwner → 0x4af31b40CC722638c92A8bE2c2016f164B1C16Cf.swapOwner → 0x4af31b40CC722638c92A8bE2c2016f164B1C16Cf.addOwnerWithThreshold</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x973fd7ea5a9554409d4b1f70c82f6c0fa727398d6fee6ae6620a77d92b470bb2">0x973fd7ea…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0xfE37Cf091c325F4246921224889Aa230998C106B.swapOwner → 0xfE37Cf091c325F4246921224889Aa230998C106B.addOwnerWithThreshold</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x4a44faf5a0c3dadc119440fe70026eefed8308439481324c7b3ed9d60b29ebe4">0x4a44faf5…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x3Fbb5fD838311E189f06D6CB9965E4Dd39C1A6D4.swapOwner → 0x3Fbb5fD838311E189f06D6CB9965E4Dd39C1A6D4.removeOwner → 0x3Fbb5fD838311E189f06D6CB9965E4Dd39C1A6D4.removeOwner → 0x3Fbb5fD838311E189f06D6CB9965E4Dd39C1A6D4.removeOwner</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x18ca29421ff1fb8ca89a2aa96b956d2afff3fef090548c8634479c9754aae80e">0x18ca2942…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x7Cb325d864EAa3012b9F6BC7c0fD8ac4074bC72c.swapOwner → 0x7Cb325d864EAa3012b9F6BC7c0fD8ac4074bC72c.addOwnerWithThreshold</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x33652287867f226f2146e4eb2b34a69e690f3b12f577c497b635ac8faee31820">0x33652287…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0xC87cC7C6a9FadFD952Bea9aC2981BdF3FB5776d4.enableModule → 0x7bf2e2F1eC86587f848dFBfBb988eDC54768EF8f.enableModule → 0xC87cC7C6a9FadFD952Bea9aC2981BdF3FB5776d4.swapOwner → 0xC87cC7C6a9FadFD952Bea9aC2981BdF3FB5776d4.changeThreshold</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x6f36c01d0156eee81a7ac8614746a5e96a7cf025a0ccc745e03cdbf9a1bf9e51">0x6f36c01d…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x8290362Aba20D17c51995085369E001Bad99B21c.swapOwner → 0x8290362Aba20D17c51995085369E001Bad99B21c.removeOwner</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xaa0a3f56be48780cf8c81e064aedf7006d225b1ecac030120379028e1d24463b">0xaa0a3f56…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x8940e3ae90033851dAC813D8FeE02A3d2Bbd93BD.enableModule → 0x8940e3ae90033851dAC813D8FeE02A3d2Bbd93BD.enableModule → 0x8940e3ae90033851dAC813D8FeE02A3d2Bbd93BD.swapOwner</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xc0d1e99fcbec1c863b0e825fe5637c2f0b284331683fa79ea302c48ecaa14b3c">0xc0d1e99f…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x95293ca3f08EFB2A8C9B0aFcABB78bFD4FeC0Fc4.enableModule → 0x50c849eBe736D040c3AA1895EcBa0f9259C72692.enableModule → 0x95293ca3f08EFB2A8C9B0aFcABB78bFD4FeC0Fc4.swapOwner → 0x95293ca3f08EFB2A8C9B0aFcABB78bFD4FeC0Fc4.changeThreshold</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x68ac2dc63430044082c7fec091b1e00f753f16ff745b1f5f8fbb42d0975fcae3">0x68ac2dc6…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0xDeD831eb9C20A09F9ceac15d772f2bf133fD2B9C.enableModule → 0xe9CE12889BeCD7221BbC1d948e514A8E10cF5A4c.enableModule → 0xDeD831eb9C20A09F9ceac15d772f2bf133fD2B9C.swapOwner → 0xDeD831eb9C20A09F9ceac15d772f2bf133fD2B9C.changeThreshold</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xf98bc4d48348ce049c1a44407b68fe3b187ec7a52fd9b532d66fa06828b365ec">0xf98bc4d4…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x813281602C9016F91a67C249363881F00d4168A9.enableModule → 0xc82C2C2552939E7473E08788d2aE95CDBF0E9a24.enableModule → 0x813281602C9016F91a67C249363881F00d4168A9.swapOwner → 0x813281602C9016F91a67C249363881F00d4168A9.changeThreshold</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xf7e97adb6dfa8b5bea0539a0e60301a0c01b60df635ff3a1cfd0bc986deb1405">0xf7e97adb…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x059C849311fbD97ffFC5BEef5D187c27a1072567.swapOwner → 0x059C849311fbD97ffFC5BEef5D187c27a1072567.addOwnerWithThreshold → 0x059C849311fbD97ffFC5BEef5D187c27a1072567.addOwnerWithThreshold</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xc6397d3702401f94a7cb4d791d7fcbf3592540da39d485d470577a0e2284a6e6">0xc6397d37…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x3b9338614b1Fd8D8C6a44260b82AdEf390FA19fD.swapOwner → 0x3b9338614b1Fd8D8C6a44260b82AdEf390FA19fD.swapOwner</code></div><div>The calls differ from the template, which is <code>swapOwner</code><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x6423eb6b239281990ecd37686b36963191292f47eddd92c0c1ae0077ba09cfa4">0x6423eb6b…</a></div></div></div>
-  </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>119 more are other operations, not counted: <code>0x65b5fd50576255c2f46832b154C9a62576567C1C.0xaef05629</code> 14, <code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 7, <code>0x00000000005aD9ce1f5035FD62CA96CEf16AdAAF.0x8f5c3522</code> 7, <code>0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789.0x1fad948c</code> 6, and others.</span></div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>26 more came from contracts that are not Safes, failed, or could not be read, and are not counted.</span></div>
+  <p class="cap">Every transaction of the last year was searched, from block 23856083 (2025-11-22) to block 26484082 (2026-11-24), with no gap. Only Etherscan searches an event, and found <span class="num">15942</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
+  <p class="cap">These transactions were found through event logs, and a failed transaction leaves none.</p>
+  <p class="cap">119 more are other operations, not counted: <code>0x65b5fd50576255c2f46832b154C9a62576567C1C.0xaef05629</code> 14, <code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 7, <code>0x00000000005aD9ce1f5035FD62CA96CEf16AdAAF.0x8f5c3522</code> 7, <code>0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789.0x1fad948c</code> 6, and others.</p>
+  <p class="cap">26 more came from contracts that are not Safes, failed, or could not be read, and are not counted.</p>
   </details>
 </section>
 
@@ -548,7 +554,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<aside class="usage"><h3>AI usage to make this report</h3><p>Opus 5.5 · 37 calls · 55 minutes</p><table><thead><tr><th scope="col">Item</th><th scope="col">Tokens</th></tr></thead><tbody><tr><th scope="row">Re-read (cache reads)</th><td class="num">2.6M</td></tr><tr><th scope="row">Newly read (input and cache writes)</th><td class="num">0.20M</td></tr><tr><th scope="row">Output</th><td class="num">0.03M</td></tr></tbody><tfoot><tr><th scope="row">Total</th><td class="num">2.8M</td></tr></tfoot></table><p>Source: the usage the API reported, in Claude Code&#39;s transcripts, without the coordinator</p></aside>
+<section id="usage">
+  <h2>AI usage</h2>
+  <p class="lead">Opus 5.5 made this report in 37 calls over 55 minutes.</p>
+  <table class="ut"><thead><tr><th scope="col">Item</th><th scope="col">Tokens</th></tr></thead><tbody><tr><th scope="row">Re-read (cache reads)</th><td class="num">2.6M</td></tr><tr><th scope="row">Newly read (input and cache writes)</th><td class="num">0.20M</td></tr><tr><th scope="row">Output</th><td class="num">0.03M</td></tr></tbody><tfoot><tr><th scope="row">Total</th><td class="num">2.8M</td></tr></tfoot></table>
+  <p class="cap">Source: the usage the API reported, in Claude Code&#39;s transcripts, without the coordinator. No program checks these numbers.</p>
+</section>
+
 <footer class="foot">Written by <code>pnpm report safe/swap-owner --record</code> from <code>templates/safe/swap-owner/template.json</code>, <code>templates/safe/swap-owner/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/safe-swap-owner.json</code>, <code>testdata/abi</code>, <code>testdata/research/safe-swap-owner.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/safe/swap-owner/notes.json</code>, <code>testdata/usage/safe-swap-owner.json</code>; the data was read on 2026-11-24. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI or the usage numbers.</footer>
 
 </div>

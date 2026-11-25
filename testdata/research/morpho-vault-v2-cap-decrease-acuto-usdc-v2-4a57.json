@@ -12,7 +12,7 @@
  "studiedWith": {
   "template": "0x612970d01d210e21cd0a3d4505522be1999fb59e8e7e4350f958fdd862177fe1",
   "registry": "0x73c735d7a1f0614ae59742e3002c71f5493f80c3df94866c80b4e1957a9122e6",
-  "study": "0x94bfaaffbfc8c7dbc5b3874bc31cfe270d787964a427798536f92503545477bb"
+  "study": "0x666083030893f4947cba22a732c03d67881bc2dabdffd8ad91d58fe8978d8fa1"
  },
  "search": {
   "year": {
@@ -193,6 +193,7 @@
   {
    "kind": "misfit",
    "hash": "0x3252736cbe7bd97faea5f0bfb62b6f78127fff89ae9dc550b9cb6cd4c40c06e5",
+   "block": "25129557",
    "sender": {
     "kind": "safe",
     "address": "0x6788c8ad65e85cca7224a0b46d061ef7d81f9da5"
@@ -202,11 +203,13 @@
     "at": "call.multicall.data[0].decreaseAbsoluteCap.idData.encoding",
     "expected": "capId(string,address,(address,address,address,address,uint256))",
     "actual": "the heads run past the end"
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x4fc24efbc06d7617548c9226db78f4b18dbaa224a5bffb8ee0952c316f38578b",
+   "block": "25688245",
    "sender": {
     "kind": "safe",
     "address": "0x6788c8ad65e85cca7224a0b46d061ef7d81f9da5"
@@ -234,7 +237,8 @@
       "selector": "0x57975270"
      }
     ]
-   }
+   },
+   "free": []
   }
  ],
  "measurements": [],

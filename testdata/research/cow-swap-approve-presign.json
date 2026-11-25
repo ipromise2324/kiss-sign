@@ -12,7 +12,7 @@
  "studiedWith": {
   "template": "0x21f1862f92336b90f96c42ec05478921c62373bab743eb7b3903efaf56b00859",
   "registry": "0x79770038baf3954c42f7d1284e408d5862cf4a64675baabaaa8f19768585ae0a",
-  "study": "0x94bfaaffbfc8c7dbc5b3874bc31cfe270d787964a427798536f92503545477bb"
+  "study": "0x666083030893f4947cba22a732c03d67881bc2dabdffd8ad91d58fe8978d8fa1"
  },
  "search": {
   "coverage": {
@@ -52,6 +52,7 @@
   {
    "kind": "misfit",
    "hash": "0x4ba2541b7e14e7f2bae03cf36f0ca82dcc68ac5fe33c17113138fc5cf9e10394",
+   "block": "25324746",
    "sender": {
     "kind": "safe",
     "address": "0xb496c9866b6d0b9e8c63ff6c072270cf5f9b4230"
@@ -64,7 +65,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -232,6 +234,7 @@
   {
    "kind": "misfit",
    "hash": "0xa4c07fa23fedc1da93780cab8bae90011ced18738afd536b2a74d93123d102ec",
+   "block": "25332011",
    "sender": {
     "kind": "safe",
     "address": "0x425d39a089b643bc1c16135ceae00f6bb071106e"
@@ -244,11 +247,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x926a837fc5f3fbcb0ed9e66686341cc5c79006759c6d7b9cc311611719ec54e1",
+   "block": "25337112",
    "sender": {
     "kind": "safe",
     "address": "0x610f7c56fee37de01ece79af60e17e1f99d8fcde"
@@ -257,7 +262,19 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1781699188"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xc1a78bb9478638e6e591db15b8250f38494a4014c1a3a13a825659298804ef85"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -269,6 +286,7 @@
   {
    "kind": "misfit",
    "hash": "0xf9fa05dee5b0043ad1c82d0c3b9616a3489bcb4f61f55b7dc31459c45ed06267",
+   "block": "25340304",
    "sender": {
     "kind": "safe",
     "address": "0xb6806e26401a9a4ac55f9d13afda24db59c81771"
@@ -277,11 +295,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1781737598"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xbc9cc7a3f203adcc5c0b9b8734738c04cb0380693a7dc178dd169641ef9a9cf5"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0xa5023f83afcfb570e727b4e0a5c36ecde624691a2996dc671696fcd68726aeb0",
+   "block": "25344462",
    "sender": {
     "kind": "safe",
     "address": "0x0a152c957fd7bcc1212eab27233da0433b7c8ea4"
@@ -294,7 +325,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -373,6 +405,7 @@
   {
    "kind": "misfit",
    "hash": "0x1fa035151ecd5d96f180b529eda6479717d52dcf3a09f62bc07a5b15655103a3",
+   "block": "25352016",
    "sender": {
     "kind": "safe",
     "address": "0x9530971d0b0d0033682fcc2ac1b9ae3da49abbac"
@@ -385,7 +418,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -479,6 +513,7 @@
   {
    "kind": "misfit",
    "hash": "0x0e636d8e16ac1b8497adeed0f082e2af2936d61c0de7c2df72e64a75453935c8",
+   "block": "25366832",
    "sender": {
     "kind": "safe",
     "address": "0x0035ee9ddeaa0aabc5649da02e492da9de85a0df"
@@ -487,11 +522,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1782057108"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xb30ffcd95f2927c56b4dc7a4f8bed35f34d9a0bca29999c1ac04e6bf23d19a01"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x64e6e757368f1f8d432732364f57384f85ed9b6f4a084cfc6bcb0b69a07318b7",
+   "block": "25372220",
    "sender": {
     "kind": "safe",
     "address": "0x7b5cfcee3f1d97c5846b6c028ce7c8bab96fca59"
@@ -504,11 +552,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xf9b3694f081806fab1b4e7a5f8d821b211befc882e1bcca0cbfced2ac9f9ff69",
+   "block": "25374187",
    "sender": {
     "kind": "safe",
     "address": "0x6156ec8cafc48f50f2747a4dad9c0937c0d1c459"
@@ -521,7 +571,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -607,6 +658,7 @@
   {
    "kind": "misfit",
    "hash": "0x201fcd447c9c4814960d57ec6fa95c14cd97ac7050d464154501955f564c233a",
+   "block": "25382569",
    "sender": {
     "kind": "safe",
     "address": "0x8dee8780383cc4b426ba398b82df636c4ad55a34"
@@ -619,11 +671,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xeedf5c7a6aa56369b7503a5d381c4b7ed9b3bafeb091a58084ade8ee0676aef0",
+   "block": "25387525",
    "sender": {
     "kind": "safe",
     "address": "0xc9b5caead28d9fb4fbca386aa90b8deb647e5a12"
@@ -636,7 +690,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -648,6 +703,7 @@
   {
    "kind": "misfit",
    "hash": "0x61a710da342f2c0cd1abff7dde895af84e5d7498e1dec329c8f52b3936e451ad",
+   "block": "25389943",
    "sender": {
     "kind": "safe",
     "address": "0x2b30c60d32b1cceeecabfc59579f214a94dedfca"
@@ -660,11 +716,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x3678950288a0565eb8edc6332c9f4635def7ec2ab2859add9589d88806e84102",
+   "block": "25394507",
    "sender": {
     "kind": "safe",
     "address": "0x55098e524eb59af482d0e1f4b39fa48a3968a383"
@@ -677,11 +735,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xb954d8f208b21932e93fdde51e68fd860b401e41ea019a8b17127d81d8f1995f",
+   "block": "25395411",
    "sender": {
     "kind": "safe",
     "address": "0xba8c3dd56154bde7635253b8dbe4cce6b84c5f74"
@@ -694,11 +754,13 @@
       "selector": "0x6a761202"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x13577f8e002a0a6ea12bed4494fbb125760b7ee9a8da3c5b40149292f4b69850",
+   "block": "25396857",
    "sender": {
     "kind": "safe",
     "address": "0xaab1779ab538d7c43094934c3e797e053660a981"
@@ -711,11 +773,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x706504ecc2d2c93fb93c0d5d76e4503f79e6d70875fad8923c88756f2086efd9",
+   "block": "25401012",
    "sender": {
     "kind": "safe",
     "address": "0xbaf1821963f682db4f14285b124468a4dfc1e122"
@@ -728,11 +792,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xd162c4d000ff911c6d7b355bb1059bea69783fa0ca608d385fbb45d6d0e2069b",
+   "block": "25402824",
    "sender": {
     "kind": "safe",
     "address": "0xd96f56b0e4aefcc8679403a6e903687b743e7035"
@@ -745,11 +811,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x9c78d69fa04e5025b803c205225625a7b02c37254834283e09c87c5b11b426ed",
+   "block": "25409021",
    "sender": {
     "kind": "safe",
     "address": "0x1ec3cbe8fb1d8019092500cca2111c158a35bc82"
@@ -762,7 +830,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -774,6 +843,7 @@
   {
    "kind": "misfit",
    "hash": "0x44b4b9ed9732387adedd00840c1979c5dedd30a8a7db50c85fb79806762e5365",
+   "block": "25424092",
    "sender": {
     "kind": "safe",
     "address": "0x6e32cc77d62bf1888467e3cf296ce074e7e46c7c"
@@ -786,11 +856,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x354e838c7d87fa2408eec4442d0847417b37f1fd42cb3a8a4e8a35105f302c51",
+   "block": "25425961",
    "sender": {
     "kind": "safe",
     "address": "0xeb3fc0501ccf69aff0bf46ad733c0f4eea103365"
@@ -803,11 +875,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x212bd55d73b7c31da11d256d8927fe4077f2d6559791af810434d337a103f82b",
+   "block": "25430162",
    "sender": {
     "kind": "safe",
     "address": "0xfe9e452e1a2750825181319a9846a56ba37f0322"
@@ -820,11 +894,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xd3f25927ed35395efcdb20e62540a640b68a368f16ea5b7981d17df9b9543903",
+   "block": "25431295",
    "sender": {
     "kind": "safe",
     "address": "0xad2906faf5efec651f54372b121414ff0eec6b1d"
@@ -833,11 +909,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1782833778"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xf9207f3cad2e39c4a19f9e5c9928595004a7fc97d2efadad8b54d6c257ff65f2"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0xd2898700224827a379ff51d4dff4a74cf2d2911b8271ed4254662f4eb95159ae",
+   "block": "25431794",
    "sender": {
     "kind": "safe",
     "address": "0x945acf74950e60b41a5198554a446f0f1cdb4285"
@@ -850,11 +939,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xfce16f3bf51f7501bb21cbb2623b577945166bcfcf7f693aede3ba96c2b498a1",
+   "block": "25434283",
    "sender": {
     "kind": "safe",
     "address": "0xb65f4a49904b3eff8a42291fc858511f3047c603"
@@ -867,7 +958,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -879,6 +971,7 @@
   {
    "kind": "misfit",
    "hash": "0x5245d7a30bda28a995f1d0593617f03f15c07e77b78c0149adcba0cd991cd7f6",
+   "block": "25439418",
    "sender": {
     "kind": "safe",
     "address": "0x770f4e38615e24e9e438b30cfabf411ec499f9b6"
@@ -891,7 +984,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -976,6 +1070,7 @@
   {
    "kind": "misfit",
    "hash": "0x6dd243b3180c3b095c85990edd2134831feba5bea1982224c764aa231280bad7",
+   "block": "25445354",
    "sender": {
     "kind": "safe",
     "address": "0x6ab536bc3d486cfb0b4b59f4054c1071009720ef"
@@ -988,7 +1083,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1000,6 +1096,7 @@
   {
    "kind": "misfit",
    "hash": "0xba625913db38b980220035829bd4bd0229e169230ea4b697fb270b38af877726",
+   "block": "25450625",
    "sender": {
     "kind": "safe",
     "address": "0x172b1ac777358148317f6b5a7b1f4df07f1bfdc4"
@@ -1012,11 +1109,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x9f482375b5c0b8d6cd8f31715d8b8dc2b7b2a82b68229b15db054495cbe30bd7",
+   "block": "25453170",
    "sender": {
     "kind": "safe",
     "address": "0x293c5d7d5c1d9730a948832663e7ed0ac605e385"
@@ -1033,11 +1132,24 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1783097672"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xdfc8c1ceda67db74220362a1205883209ad2ce435142f5b0517206f07b95e7f5"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x6fb708e40dd3606cfabca5bdeb3269650bb88db1f65fc63c93811b06d0d33ab4",
+   "block": "25459976",
    "sender": {
     "kind": "safe",
     "address": "0xb496c9866b6d0b9e8c63ff6c072270cf5f9b4230"
@@ -1050,7 +1162,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1062,6 +1175,7 @@
   {
    "kind": "misfit",
    "hash": "0x386500a919871a6a6d4bf927e765ddd70aa48dbff334d33de90682effc86f86e",
+   "block": "25473692",
    "sender": {
     "kind": "safe",
     "address": "0xfc2593b618530c8740888dfca4e8960dcabeea40"
@@ -1074,7 +1188,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1086,6 +1201,7 @@
   {
    "kind": "misfit",
    "hash": "0x53872e83ed58646f86f3376db79dad0f89a862683d6a8e2d48fd8285c88b7e11",
+   "block": "25479696",
    "sender": {
     "kind": "safe",
     "address": "0xccccebdbda2d68baba6da99449b9ca41dba9d4ff"
@@ -1098,11 +1214,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xe88e3d66392c7acc1e9214bcc890152b18234645d178a6bab6674e9c8776a862",
+   "block": "25481588",
    "sender": {
     "kind": "safe",
     "address": "0x64f67fb85205bd48457cf89d9216e772fc6cf334"
@@ -1123,11 +1241,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x2e9dfec49f7483942a09db7a6e1605e78f58a53863737e2d7b119aa10161e174",
+   "block": "25486947",
    "sender": {
     "kind": "safe",
     "address": "0x66dbcee7fea3287b3356227d6f3dff3cefbc6f3c"
@@ -1140,7 +1260,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1152,6 +1273,7 @@
   {
    "kind": "misfit",
    "hash": "0x600dfa1a708d39cc75e8d8a92209e56dc5afddbc0f2d4545f155c96713d20f9b",
+   "block": "25492911",
    "sender": {
     "kind": "safe",
     "address": "0xd6a2d6ee1209e938f297b41b631aed3f10684e07"
@@ -1160,7 +1282,19 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1783576386"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xb37f3ba4e0bb71925414ae6e85d142fc83807e816ae6f663fd7a6260b396a014"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -1172,6 +1306,7 @@
   {
    "kind": "misfit",
    "hash": "0x1fa8bc66273b66d523b1afc6f93272d1aaa06f21253ea66bc4121f826e8e1f00",
+   "block": "25502466",
    "sender": {
     "kind": "safe",
     "address": "0xe6f8ad24367c1038ad1ce15af72a62408ba33c46"
@@ -1184,11 +1319,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x0d5f3c6cb11d53c16c5141d940dd2e0cec4f4c2713ab5b54160bfacb85fddfa3",
+   "block": "25507247",
    "sender": {
     "kind": "safe",
     "address": "0x6c84a4282190fdcf0437ce6c8998d58ba791c4c3"
@@ -1197,11 +1334,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1815304073"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xa230867f2fd5faa7d4bfa721993e1126642b7b94152e4a511a3e5003759e2d6c"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x40328d6b9c754eba9e1607f3e9ef89b2044330857515fd7eb6f3afceba249ce2",
+   "block": "25518017",
    "sender": {
     "kind": "safe",
     "address": "0x60e0cf4bb4c5cd8e7a03e5b886d7c4681eb975d8"
@@ -1214,11 +1364,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x37fe44167951832030ac43cec4582a5eb8a060fc5835e1294014d64be88cbab7",
+   "block": "25523057",
    "sender": {
     "kind": "safe",
     "address": "0x09ad6dc5a1df1d3675ff9918257cf018cee3ca31"
@@ -1231,11 +1383,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x9a334411c2e11d39f14fc12a5da0985bab4c85fd2a34492d07cb961102152435",
+   "block": "25524398",
    "sender": {
     "kind": "safe",
     "address": "0x2304eb247ae2dcf91ba372b458fc7e4ccc55ee42"
@@ -1248,7 +1402,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1260,6 +1415,7 @@
   {
    "kind": "misfit",
    "hash": "0x19bb350c13fa95bd347023294f95d3e0af77e3a6479be8138926a46082db0a49",
+   "block": "25532395",
    "sender": {
     "kind": "safe",
     "address": "0x043fa01a603d2bcf72b3a99ec77265b22995ceec"
@@ -1272,7 +1428,8 @@
       "selector": "0xc6fe8747"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -1351,6 +1508,7 @@
   {
    "kind": "misfit",
    "hash": "0x41c10b178a0838a2e2e0189c8d5ffb32edbc93429e0a4c73e90fbde0afc37686",
+   "block": "25538783",
    "sender": {
     "kind": "safe",
     "address": "0xebc7c1ef872c6e96ed2b6e7076731e7804401c03"
@@ -1363,7 +1521,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1375,6 +1534,7 @@
   {
    "kind": "misfit",
    "hash": "0xafe037e3b834e5ae94e5fdb48fa55634185dad8af4024d7c6fc6a8fba4ffa702",
+   "block": "25545879",
    "sender": {
     "kind": "safe",
     "address": "0x5212812dccef951eae1b3e66f7759230b19cf67b"
@@ -1387,7 +1547,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1509,6 +1670,7 @@
   {
    "kind": "misfit",
    "hash": "0x3482e96dc2e777603e63547acedea276d766a070f15c3c8d975134cf3aaf0f11",
+   "block": "25574110",
    "sender": {
     "kind": "safe",
     "address": "0x2921668e39d92256e57a1c624023edcde6cd7d05"
@@ -1533,11 +1695,13 @@
       "selector": "0xa9059cbb"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xc3e34bcd1a5b7046c7d6301d52526d8fef22d330ee3a81a147f2303909b14f91",
+   "block": "25579521",
    "sender": {
     "kind": "safe",
     "address": "0x0e8e5f47de40a18bc8baf36280537d55e4b8da0d"
@@ -1546,7 +1710,19 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1784619626"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xef724ce1cd2de3d184fce41349a86ee811ab6a28a3df34006e025e30f36e926d"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -1558,6 +1734,7 @@
   {
    "kind": "misfit",
    "hash": "0x0e6338abc7f6e60f166a685c8fa08ac0191eed0e4dfad18db58f4aab50b3a1b3",
+   "block": "25582973",
    "sender": {
     "kind": "safe",
     "address": "0x58e237c08ea78abd15a0abf72ea22580cd515f52"
@@ -1566,11 +1743,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1784661202"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xc9d3559c66836b79a0a8cea161c586b0082625f970ab23b4a8181f9df9c79cbb"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x2f6c84b9f1138546dae7311f67b05a43ad2b235d6b0878b7e69c99e969044dba",
+   "block": "25588719",
    "sender": {
     "kind": "safe",
     "address": "0x60716991acda9e990bfb3b1224f1f0fb81538267"
@@ -1583,11 +1773,13 @@
       "selector": "0xc6fe8747"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xd9d35cd04687fc015264b42208528387e8a4706f91c66db2e83fbd870f6a744e",
+   "block": "25589983",
    "sender": {
     "kind": "safe",
     "address": "0xb1748c79709f4ba2dd82834b8c82d4a505003f27"
@@ -1600,11 +1792,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xd40e6cafd880ea27a7d78a73e6489ae330ef16c38c0ba2aaad9d4f97bca7c897",
+   "block": "25594828",
    "sender": {
     "kind": "safe",
     "address": "0x3a11f4c84688a1264690d696d8d807a25ee02dd2"
@@ -1621,11 +1815,24 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1784803917"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x23331657f50ec6de117cb78381ddac6f786fbc940a20a22f540a6cf2c182339e"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0xd656e3ef7427f4e5cdd688e47b0ea317e15345fc197bedf6046b9f586b6505be",
+   "block": "25596490",
    "sender": {
     "kind": "safe",
     "address": "0x4ff1b9d9ba8558f5eafcec096318ea0d8b541971"
@@ -1642,11 +1849,24 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1784823817"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x0c661e9524f481ff40409fdb0b178ec17b8a5dad54d39c8227cfb10ad8ac3a37"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0xc76c8bf437192894fcc32a7c11ef4441657c17480d72f7557100ecf20daf6c26",
+   "block": "25600849",
    "sender": {
     "kind": "safe",
     "address": "0xf7c40919a01780fe6f477c1535de0a969854bb48"
@@ -1663,11 +1883,13 @@
       "selector": "0x569d3489"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xa146c99f2fc4a9b33e5b021adcdf5e1aa8ef66da746c29b812a10a519a376855",
+   "block": "25603595",
    "sender": {
     "kind": "safe",
     "address": "0x04decb637869964115441b0be8fa530146323887"
@@ -1680,11 +1902,13 @@
       "selector": "0xc6fe8747"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x7faaa7e36291aeb7af09d93e975ccabcfa239b50ef3017caea390a5b3f9cc078",
+   "block": "25606423",
    "sender": {
     "kind": "safe",
     "address": "0x4358f4940283e6357128941a5c508e5f314d79cb"
@@ -1697,11 +1921,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x0418d9ca1f55af6bcac8f93eaff3e1b87e358ca0a7c206f5086911d33a3507a5",
+   "block": "25611126",
    "sender": {
     "kind": "safe",
     "address": "0x92e0207eac0809f88ff1319f8b50e72b47b819c6"
@@ -1710,11 +1936,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1785000437"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x204e85a69f4b5ca8b6bda50e68be8bd4b54955e9427c57705cda80c7a746475e"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x5a9587082ad71d07fdc2b1deb162fa5ea0ffb6b2ec638ae2403ee7831dc1f131",
+   "block": "25616915",
    "sender": {
     "kind": "safe",
     "address": "0xcf273e36cbb1358c2871220344f389f605afa634"
@@ -1727,7 +1966,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1739,6 +1979,7 @@
   {
    "kind": "misfit",
    "hash": "0xde38c8a18acdf37ca86d8257be8d6e1ea634f4d6e4773fdd93e8138a500eba85",
+   "block": "25624938",
    "sender": {
     "kind": "safe",
     "address": "0x9237c025954acebdfa80c7d0d3f5abdd4b003b1f"
@@ -1755,7 +1996,19 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1785166645"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xd78cfe9992b72149df20a02b6cb0401b37c46d73420909ab9df84c6c2c84de4f"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -1767,6 +2020,7 @@
   {
    "kind": "misfit",
    "hash": "0xc6f346299bd127540c9bd0306469e0f95be6eadf9f42ededaa58573738e438f6",
+   "block": "25631799",
    "sender": {
     "kind": "safe",
     "address": "0xf3d913de4b23ddb9cfdfaf955bac5634cbae95f4"
@@ -1779,11 +2033,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xdd7409a4b695bba8e9f16e3f8484d6869424f8235f73a5fce5a1d9ba298059d7",
+   "block": "25636191",
    "sender": {
     "kind": "safe",
     "address": "0xd27f5299e1cf050faa86ecc943dbfc5f815b8d61"
@@ -1796,11 +2052,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xd5ae826f153a46c3bcf19ed4935f1cd7d10bec09e3959e482130fed5c755d19e",
+   "block": "25639531",
    "sender": {
     "kind": "safe",
     "address": "0xbbed4a3dbac797b0e27f33c645533621d8da39d2"
@@ -1809,11 +2067,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1785342251"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x64e286f0a2647b971b018618f18f091811c852f059b3429ab4f8fb4feb80d088"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x646bc67b18df951349c82a916a059c1d9a8f475fd70eff27ecb66fcc581ff605",
+   "block": "25641685",
    "sender": {
     "kind": "safe",
     "address": "0xde3299453da8459db216086d55562863d96eb307"
@@ -1826,11 +2097,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xce23598c42be04446f629e2e03646fd6b6eb594403ac70efc63db5eaf02446dd",
+   "block": "25646101",
    "sender": {
     "kind": "safe",
     "address": "0x1676d23711186076fa74aa53511dda750a1f0d9a"
@@ -1843,7 +2116,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1862,6 +2136,7 @@
   {
    "kind": "misfit",
    "hash": "0xc5b3b490dabccbcdf0cee5078a0fb21262485dcfb532077b1daa22999e1d29a4",
+   "block": "25653970",
    "sender": {
     "kind": "safe",
     "address": "0xf326e4de8f66a0bdc0970b79e0924e33c79f1915"
@@ -1878,7 +2153,19 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1785515887"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x750bac4503941d6170c23a07c48968c933b8e68ae56834851089cb775d5a96c2"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -1890,6 +2177,7 @@
   {
    "kind": "misfit",
    "hash": "0x35d817f6db8f6a45d2ddb2f41f59a72d4909de2076db25a258647b30910da123",
+   "block": "25658052",
    "sender": {
     "kind": "safe",
     "address": "0xad3b4cfa11d9736aa902c51a23e8620ff74d3702"
@@ -1898,11 +2186,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1785565235"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x9191d0cbf2809774089dfd454b7f6d73dd0adaf6a1c6ff1f6c973aff58e748d3"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0xdb000947b74cedd285c605e5c953e9f90bbf891c2d6263d8256ef46d3bfe2dda",
+   "block": "25661621",
    "sender": {
     "kind": "safe",
     "address": "0x243ec491e3a63c467dce844a427fb7fb35adb6cf"
@@ -1915,7 +2216,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1927,6 +2229,7 @@
   {
    "kind": "misfit",
    "hash": "0x4fa9c7671d22cb67ad629c6555d6c3bf3d899ee4dfa323510f0eeb28df189201",
+   "block": "25670115",
    "sender": {
     "kind": "safe",
     "address": "0xbe19c48b0025b28ca91c916467b0637260652e61"
@@ -1947,7 +2250,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1959,6 +2263,7 @@
   {
    "kind": "misfit",
    "hash": "0xe23bd1d35fefb16e9395661b6d2bdc1f49a32606d59f2068769470bb2a89b408",
+   "block": "25674047",
    "sender": {
     "kind": "safe",
     "address": "0xc3a3293c92a45d25b77943b8f7c50776823acab2"
@@ -1971,7 +2276,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2083,6 +2389,7 @@
   {
    "kind": "misfit",
    "hash": "0x37e8eabeedee5eed4a07a78e3e2d7609e88f9e1d478ddd4cd413debcfc4828cb",
+   "block": "25682233",
    "sender": {
     "kind": "safe",
     "address": "0x60716991acda9e990bfb3b1224f1f0fb81538267"
@@ -2095,7 +2402,8 @@
       "selector": "0xc6fe8747"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -2200,6 +2508,7 @@
   {
    "kind": "misfit",
    "hash": "0xcd356d16d4c42470c529159810ceff213a7097185427da740259ff4940c3e71e",
+   "block": "25689425",
    "sender": {
     "kind": "safe",
     "address": "0x32787cd59244581a358a068d52e460eb00df6543"
@@ -2216,11 +2525,24 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1785942697"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xa356ac664566944f6aad9e66c4d6cb1c33fd290d57af7b81bafbf78fded468dc"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x13b3db3456ad397c01245a0d88cc67c3e34113dca72eb87dbbe0afac3db398ea",
+   "block": "25690886",
    "sender": {
     "kind": "safe",
     "address": "0x6b790e2b5173bfbc01226a50bac82085b3266b6b"
@@ -2233,11 +2555,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x97597e3b62d3c3422be40b78bb9e0fe70aaa3d1ebdb6d19f9fd4970cf8bbb9f3",
+   "block": "25695243",
    "sender": {
     "kind": "safe",
     "address": "0xfc2593b618530c8740888dfca4e8960dcabeea40"
@@ -2250,7 +2574,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2262,6 +2587,7 @@
   {
    "kind": "misfit",
    "hash": "0xf20b635c8e03a9020d4d451e64c3aa2336c82c7a856d0d7d5cc936f696e4553b",
+   "block": "25697845",
    "sender": {
     "kind": "safe",
     "address": "0xac3713c55985ab6326e8cb222630b9eba43a463a"
@@ -2270,7 +2596,19 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1786044346"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x6395f4a17d224fb872d9a81d5dab68aa5e61284702050ab77b9b945fbfa9f222"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -2282,6 +2620,7 @@
   {
    "kind": "misfit",
    "hash": "0xf03bc3edcb6f857dc1c198daad374ab6b0e279be8ca4d2fd3f319aa9fe6ef798",
+   "block": "25703403",
    "sender": {
     "kind": "safe",
     "address": "0xb5852a92a3853bfde15a8b2d88e92e240f020a14"
@@ -2294,11 +2633,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xadddab7411ae8055ca901990b376d7cf3d9d888da547d1eeff94b18901c21d45",
+   "block": "25704689",
    "sender": {
     "kind": "safe",
     "address": "0xd6d4bf6edca7086cf7df3619120fd6b5ad558b17"
@@ -2319,7 +2660,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2424,6 +2766,7 @@
   {
    "kind": "misfit",
    "hash": "0x89885f4850037599a174f90804ca4fcf72905482648fa0cb3dad36a7c4a5b915",
+   "block": "25714122",
    "sender": {
     "kind": "safe",
     "address": "0x4358f4940283e6357128941a5c508e5f314d79cb"
@@ -2436,7 +2779,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2448,6 +2792,7 @@
   {
    "kind": "misfit",
    "hash": "0x7e0aced867844bfb2d94d3eeffe2a2bbe6888fde26a6a2c8848f860b8fb491e3",
+   "block": "25724875",
    "sender": {
     "kind": "safe",
     "address": "0x0591926d5d3b9cc48ae6efb8db68025ddc3adfa5"
@@ -2460,11 +2805,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xb39a20f0bef8ed18a1f649d754ff0d618a26eeac88f15df3e9e31647461e98ea",
+   "block": "25726439",
    "sender": {
     "kind": "safe",
     "address": "0x9953f65e00ce71d7aa5a3f7889f63fee0f1ba63c"
@@ -2477,7 +2824,8 @@
       "selector": "0xc6fe8747"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2510,6 +2858,7 @@
   {
    "kind": "misfit",
    "hash": "0x5d0a1f815b6382cd11b58be933bf438c6379426c7b20a875032bdd81b1e92cf1",
+   "block": "25739881",
    "sender": {
     "kind": "safe",
     "address": "0x315a8034ea2a342f55e4c332408f07b9bf7d0a62"
@@ -2522,7 +2871,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2534,6 +2884,7 @@
   {
    "kind": "misfit",
    "hash": "0x99aaf21873aaf62a5c60c6b97a95b7588054e6b1781bbaa9c23e9d0d68269ffe",
+   "block": "25744913",
    "sender": {
     "kind": "safe",
     "address": "0xa5a7dcd7f107e205ee0006685b0efc59f398ff24"
@@ -2546,11 +2897,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xce3305425518c4720dd61923f60299fd7e6a8a232b91d659746c77f39a447656",
+   "block": "25746971",
    "sender": {
     "kind": "safe",
     "address": "0xd38b839b70f607b7147c1190e4ec15cd32b06c3e"
@@ -2563,7 +2916,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2575,6 +2929,7 @@
   {
    "kind": "misfit",
    "hash": "0x9c9b616ebf944c43bb82016ed39b8ef32c9a258fdca7a61a8320836024dd8f18",
+   "block": "25754269",
    "sender": {
     "kind": "safe",
     "address": "0x315a8034ea2a342f55e4c332408f07b9bf7d0a62"
@@ -2587,11 +2942,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xfc31ee8171cb06df846a6fda13c27c6f35bae48e4c65aa9c231579d8ac489f7a",
+   "block": "25758805",
    "sender": {
     "kind": "safe",
     "address": "0xd9bb597fbfa363b76629451d7bcbdf7250204616"
@@ -2601,11 +2958,24 @@
     "at": "multiSend[1].setPreSignature.orderUid.digest.partiallyFillable",
     "expected": "false",
     "actual": "true"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1787381855"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x5c9731ed6e6595999246ebe021560d66260404d0045db4563156d7a49cb83ff9",
+   "block": "25762663",
    "sender": {
     "kind": "safe",
     "address": "0x6a6803c44b95d67f07dd9990a9e95ca6a20f323f"
@@ -2614,7 +2984,19 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1786825342"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xc3ab88495be6c7a96869416fbfe125ae2ee17fb019b9c8c43405a356f6b92c28"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -2640,6 +3022,7 @@
   {
    "kind": "misfit",
    "hash": "0xd80393127fa07a02d8acdee41bfd6ef2d2a74f50c59110383f4299f96da4c0b3",
+   "block": "25780148",
    "sender": {
     "kind": "safe",
     "address": "0xffe549e22f2ec1ad79dbbf0289ca3977b2447ab1"
@@ -2652,11 +3035,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x7a4ba360b6f8c111f4ecc0610aa9f4415bc4e76fadb0ede1e3d79d95c2c2efc3",
+   "block": "25782450",
    "sender": {
     "kind": "safe",
     "address": "0x5764d132e0603bd0d9f9ec95ee5e360c52e8631a"
@@ -2677,11 +3062,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x182cd04ff4891814392617b11febdc016812ef29da2f293f501061ef668ccd9b",
+   "block": "25784276",
    "sender": {
     "kind": "safe",
     "address": "0xb7133f46b713e808253cb13d315aac15ef134bab"
@@ -2694,11 +3081,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x882cc7dfb4a7d299ebcc41f49bd0b36edc8db02e95431df569fe219da42b3598",
+   "block": "25788701",
    "sender": {
     "kind": "safe",
     "address": "0xc4ed309c3001bb70f393b9bd4c9f1b8953cd1882"
@@ -2711,11 +3100,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xbf6dde822de425355f2b32e5dd3c998e0aa918cfc36b8da32d80b275c64307db",
+   "block": "25790212",
    "sender": {
     "kind": "safe",
     "address": "0x3887d605a519253f3a8cd29a062c71a13d0d7f1c"
@@ -2728,7 +3119,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2740,6 +3132,7 @@
   {
    "kind": "misfit",
    "hash": "0x2db2a10d13c36bab73c882653b34fcaac2b30a86290215fdc62f49637902c183",
+   "block": "25793114",
    "sender": {
     "kind": "safe",
     "address": "0x03969341cd113fb53b18414673fa24200cafeb66"
@@ -2752,7 +3145,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -2864,6 +3258,7 @@
   {
    "kind": "misfit",
    "hash": "0xea26a4ec0af64a5afdd55c4e3ee22ed1e5656df35c32126029fd0de11ac8619a",
+   "block": "25800556",
    "sender": {
     "kind": "safe",
     "address": "0x7651fe38fd055f0ca05bc8381ab47d5f6a54e267"
@@ -2880,11 +3275,24 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1787281389"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xf2cf04101867aaf78c798190a28c2adf34420d997e7fef90c268f756c61cf603"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x8ca8846d2bc49186d0d9c98de6a5a7d22e439518ee18a0b490ea92bfbbe10e88",
+   "block": "25802447",
    "sender": {
     "kind": "safe",
     "address": "0xbdbe09e0b88be48f8d0f28d484b067e3d755e7d5"
@@ -2897,11 +3305,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x47631f6a02c9ac49c09e70b5ac85f7629203fa2594c3b8999a28d8a8e3d3c197",
+   "block": "25803905",
    "sender": {
     "kind": "safe",
     "address": "0xc7bb929ba991d9a142518f52744f42d44a2f29b1"
@@ -2914,11 +3324,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x5dc68855907af122289ba9913ee74dd0a377ccdf7f0f7a35af9c947a8cdca96f",
+   "block": "25805173",
    "sender": {
     "kind": "safe",
     "address": "0xdf0061710a2a70b6195266b3d618310488e1fe05"
@@ -2935,7 +3347,19 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1787336716"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xceb1fb5796d4d31b5c95a9ce0af8719abcb179fa539d7dac607ed84090814756"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -2947,6 +3371,7 @@
   {
    "kind": "misfit",
    "hash": "0x5794e46d66dce43a709ed8b1ce5534cdca8c8de891f2c4a7cfbb28fdd67fd60f",
+   "block": "25809344",
    "sender": {
     "kind": "safe",
     "address": "0xc97e1bb9a83c6fed9c112b9a9d36299d984dbecc"
@@ -2955,11 +3380,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1818939587"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x12c9fb8d507681eb44fbda706952312da197e4b8a7f2025ff115a03f205bdb07"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0xf0d493718c9fcdc399602916c7279d6d4e3629fab95e0f8aa942dbadca3e7777",
+   "block": "25810931",
    "sender": {
     "kind": "safe",
     "address": "0x24f8aae425c39396ea0f3f32bc566012c349014b"
@@ -2972,11 +3410,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x570bdeca2439180dc627acebf45aea118f4521e112cd3459c806dedc47e9af39",
+   "block": "25814266",
    "sender": {
     "kind": "safe",
     "address": "0x315a8034ea2a342f55e4c332408f07b9bf7d0a62"
@@ -2989,7 +3429,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3001,6 +3442,7 @@
   {
    "kind": "misfit",
    "hash": "0x2e3095f28316a03e199e46ba7c08089c0ef3ee28e7617a27eb0879dd61712de9",
+   "block": "25821896",
    "sender": {
     "kind": "safe",
     "address": "0x4358f4940283e6357128941a5c508e5f314d79cb"
@@ -3013,7 +3455,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3025,6 +3468,7 @@
   {
    "kind": "misfit",
    "hash": "0xf06dfd4231e99af54866bb9168b591b21fc10b0f07e331a47a4a281bdc974f1e",
+   "block": "25825210",
    "sender": {
     "kind": "safe",
     "address": "0x5b60f537a713641d362c04695e1e1e7c2e68fe44"
@@ -3041,11 +3485,24 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1787578084"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x9d7cb77ecd36c08f077c23e5ba453fadc589fe8482a20a22f4185382f1bfd3fc"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x85a988a570445d4ab139fd6b68782b3e9ad010bf5629031cd1a3ec8a46d66cc6",
+   "block": "25826019",
    "sender": {
     "kind": "safe",
     "address": "0x2542c7010aa101c610299a1db457631d8147a54d"
@@ -3058,11 +3515,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xe07e5a415e9d8e3d52df6f281b5c552e78c420ae938909bf1147dc3d193a12c6",
+   "block": "25827198",
    "sender": {
     "kind": "safe",
     "address": "0xc6131800460c8fc1aa2ff73febfeb471b6e32507"
@@ -3075,11 +3534,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xa29c7e39eca777af22897d0a2006134d78600a46ab9b5ed1a48f2e590a4f7e0c",
+   "block": "25830339",
    "sender": {
     "kind": "safe",
     "address": "0xe78be2fdbd1b967db15e690306a56620d19c585c"
@@ -3092,11 +3553,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x594e25fbf4d3fd34fa78135012aadb6d0b4de35eaca63aa349dd780ed431848d",
+   "block": "25832251",
    "sender": {
     "kind": "safe",
     "address": "0x315a8034ea2a342f55e4c332408f07b9bf7d0a62"
@@ -3109,11 +3572,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xd3971fbccff76341de04a25f2fdea112f8e276b6e658adca46c6059bee972d98",
+   "block": "25833411",
    "sender": {
     "kind": "safe",
     "address": "0x97843608a00e2bbc75ab0c1911387e002565dede"
@@ -3130,7 +3595,19 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1787677046"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x2c95e12a643aff4da1814c0b60a1a5eb5a671c1d974cbf46a7fed88a558b3e76"
+    }
+   ]
   },
   {
    "kind": "fit",
@@ -3209,6 +3686,7 @@
   {
    "kind": "misfit",
    "hash": "0xb508c97b21444d4ece797c0e68fe01b2b27380aac2e762d1a064c4bf05e1178e",
+   "block": "25838127",
    "sender": {
     "kind": "safe",
     "address": "0x0a210ac838a866fbeb213f27a08a3a3fa27a6baf"
@@ -3217,11 +3695,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1787733894"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xb37f3ba4e0bb71925414ae6e85d142fc83807e816ae6f663fd7a6260b396a014"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x0c353ded9568554f237c0dd2d41d047253beffe8d9fa93fadb305e89bae42a65",
+   "block": "25839722",
    "sender": {
     "kind": "safe",
     "address": "0x0def510a2fa9c83f8fe9b37e318411675099173e"
@@ -3234,11 +3725,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x8388a866e776f7269a67379782feb0928494d489a6a79ed7b6bdf46c0d5f2287",
+   "block": "25840788",
    "sender": {
     "kind": "safe",
     "address": "0x80608f852d152024c0a2087b16939235fec2400c"
@@ -3259,11 +3752,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x726c3f79cfbb3b5d9541b2cce3d2b32bb743bc8dd2990f1282ba01dea8a1f318",
+   "block": "25843917",
    "sender": {
     "kind": "safe",
     "address": "0x4358f4940283e6357128941a5c508e5f314d79cb"
@@ -3276,7 +3771,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3387,6 +3883,7 @@
   {
    "kind": "misfit",
    "hash": "0x8717abcb56086aeb8ece7715a2e29e6ab7e1a9e20e6e6fccb86474a8ea308a6d",
+   "block": "25859532",
    "sender": {
     "kind": "safe",
     "address": "0xee6ec2555a7e6ddd1672f589261bb82789cf3255"
@@ -3399,11 +3896,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xd24e84a79841a10cd3290e0adbf5b4c01b1129e580c4d1c8a30d6c391ca83234",
+   "block": "25863764",
    "sender": {
     "kind": "safe",
     "address": "0xb9eed1bafd90f9da0c69ecc70f8bf183e0e9994f"
@@ -3416,7 +3915,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3428,6 +3928,7 @@
   {
    "kind": "misfit",
    "hash": "0x50c12df8b532e5c61e5d8ebb29ccf3dff2e6b91f3f4d99718970055b2522ee2d",
+   "block": "25870210",
    "sender": {
     "kind": "safe",
     "address": "0x1ec3cbe8fb1d8019092500cca2111c158a35bc82"
@@ -3440,11 +3941,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xfed2ab5adb663a2aa9d533f5be50db53ec1d4c88ed310d3960aae36bcf5c1486",
+   "block": "25873770",
    "sender": {
     "kind": "safe",
     "address": "0xee6ec2555a7e6ddd1672f589261bb82789cf3255"
@@ -3457,7 +3960,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3582,6 +4086,7 @@
   {
    "kind": "misfit",
    "hash": "0xbcc738b518ed3bccc8622bfc6c33471e3d5027dcc74f6bc4a73356206652bc13",
+   "block": "25884482",
    "sender": {
     "kind": "safe",
     "address": "0xab588213c60cf60f9bc473c89c45ac21e8735206"
@@ -3594,7 +4099,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3606,6 +4112,7 @@
   {
    "kind": "misfit",
    "hash": "0x402b07b8c0d133137a5febf43438b5206bf630437421a835a5053ecd45ab057a",
+   "block": "25889652",
    "sender": {
     "kind": "safe",
     "address": "0xa031993edff6a81ed07018dcb68136fc0bc996ed"
@@ -3618,11 +4125,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x39cf8215da6685ae7a17b8c035e5e42aff5fa493171c580f1f5058e099dcaa4c",
+   "block": "25890818",
    "sender": {
     "kind": "safe",
     "address": "0xb496c9866b6d0b9e8c63ff6c072270cf5f9b4230"
@@ -3635,7 +4144,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -3818,6 +4328,7 @@
   {
    "kind": "misfit",
    "hash": "0x9185ee6b3b865fae878301f2318fbdd447928a70d77b79a3f1b8841a2cf75686",
+   "block": "25898023",
    "sender": {
     "kind": "safe",
     "address": "0xdc22ca4476fd57cac78a71a44042c7b43cba55f2"
@@ -3830,11 +4341,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xab65d9baaa3966902ba7aa9afdde7f9f39eab17179142768f56d54eeac653684",
+   "block": "25899907",
    "sender": {
     "kind": "safe",
     "address": "0xc0de401dfb531ec15a453c3301e5807cf2c8323e"
@@ -3847,11 +4360,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x6f7f7bbaef25c8634bbbbe0d560b38fd638f56167c3c1fcc5b69284f2ccb2b6d",
+   "block": "25902577",
    "sender": {
     "kind": "safe",
     "address": "0x520cf2bbcf78a5e84b3e7db4a76559070d99b4c1"
@@ -3864,7 +4379,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3876,6 +4392,7 @@
   {
    "kind": "misfit",
    "hash": "0x07841647b2b6fa33f5e044faa6d81e23f7db48437adee8bed18e7e9cca9cef1f",
+   "block": "25905934",
    "sender": {
     "kind": "safe",
     "address": "0xb7133f46b713e808253cb13d315aac15ef134bab"
@@ -3888,11 +4405,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x5319195afc0ff572165a71d4bdca5440715a8805ff59bff8e7c7df4a071fd5e0",
+   "block": "25910193",
    "sender": {
     "kind": "safe",
     "address": "0xe85d9b9c59c21b18adda8355ad971a397dd9f67d"
@@ -3905,11 +4424,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xd1e2df7d052cde64db44f35d0ae681050af1e619f5dd920d8011888c3a9c2156",
+   "block": "25912583",
    "sender": {
     "kind": "safe",
     "address": "0x20552599b4612b339e1a6ceef8a856c38ab2c606"
@@ -3918,7 +4439,19 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1788630439"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xb0808dad635f76d4182189da57fd13751bd28ae6ffcf225be7fbe88611a01b10"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -4026,6 +4559,7 @@
   {
    "kind": "misfit",
    "hash": "0x2f201ca6416ee135d45c8b7f5a00cc51ca69a5859c0231066d81f94e2d5dcb34",
+   "block": "25926150",
    "sender": {
     "kind": "safe",
     "address": "0x6e32cc77d62bf1888467e3cf296ce074e7e46c7c"
@@ -4038,11 +4572,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xceb0410c67542f54ce6eb219dcfb2b48e3e8e91fe52902c4c3a015781a22d0de",
+   "block": "25927578",
    "sender": {
     "kind": "safe",
     "address": "0xaa1868d2d2c4bc6e5b484629382f296789812858"
@@ -4051,11 +4587,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1788810510"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xed2fc48ee3f40492aa1dc719f603879498db61db0a80f27909cf65e3a3b8b13f"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0xec6d0599917cbdb4c109c7028e6aad6b9a32003563f8f24fd92ee377c85d4692",
+   "block": "25930757",
    "sender": {
     "kind": "safe",
     "address": "0x27b06e8d52d6ed7ba65b43ad30af71bbe607f687"
@@ -4072,7 +4621,19 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1788849464"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -4084,6 +4645,7 @@
   {
    "kind": "misfit",
    "hash": "0xc8f5a37cc012f9e51faa3d3850f824e5c53d42df9a14890ac9e78054db51067d",
+   "block": "25933510",
    "sender": {
     "kind": "safe",
     "address": "0xafe42696730f41bbb9d26814e19ca87ff526f14e"
@@ -4092,7 +4654,19 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1788882513"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x2b410a53d94ab635a52f9b0be70d7cf74d30e20d724d5a1cae1f0f9e8a2d445e"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -4104,6 +4678,7 @@
   {
    "kind": "misfit",
    "hash": "0xf7af5870891fa61aa9a7f82652f080906f9193b4655a75eca61888c2fe1cbd55",
+   "block": "25939161",
    "sender": {
     "kind": "safe",
     "address": "0xe85d9b9c59c21b18adda8355ad971a397dd9f67d"
@@ -4116,7 +4691,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -4221,6 +4797,7 @@
   {
    "kind": "misfit",
    "hash": "0x37d79bb4fede02003b5805ba2554f76f8e506636ae02cf87cc30ab61a346b151",
+   "block": "25945612",
    "sender": {
     "kind": "safe",
     "address": "0x66ca70f1a348bdc66bb201e09eae4009d1d1e7e8"
@@ -4233,11 +4810,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x185e7c8cacae5a7f394de45048e2128810a90c88e52ed5f61739c3fa8cb8a785",
+   "block": "25947231",
    "sender": {
     "kind": "safe",
     "address": "0x0d379d76eea530552457742673f48867f3d55aa3"
@@ -4246,7 +4825,19 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1789047575"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xa844c99a981e5d4357c389224b24a0eae0d1b4ed9eac5cb3b26806bfa8d0bcff"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -4314,6 +4905,7 @@
   {
    "kind": "misfit",
    "hash": "0x7873c6c9c776f3d223c09d4d42735861fa1c4ae467b246f12a8eb0a273d203f0",
+   "block": "25976670",
    "sender": {
     "kind": "safe",
     "address": "0xcc2a77c8d74b131dce45e9c2d873254bc469e7c5"
@@ -4322,11 +4914,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1789402381"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x94d0bcba4f1f1c6e5c7497a2a740420a161f16081fa5ba41e5d872eb0229fb3e"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0xb0108f2d66e713368f29732d1aa5de9eae9e290f55c2b4b402062ae4dd6330a2",
+   "block": "25979222",
    "sender": {
     "kind": "safe",
     "address": "0xc64bc02594ba7f777f26b7a1eec6e6dc4a56362b"
@@ -4339,7 +4944,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -4358,6 +4964,7 @@
   {
    "kind": "misfit",
    "hash": "0xbde1c5f887f9757ea06b6b843e9cd5a30cb9d4932d8812f2d9a69bf872c947d0",
+   "block": "25984932",
    "sender": {
     "kind": "safe",
     "address": "0xb496c9866b6d0b9e8c63ff6c072270cf5f9b4230"
@@ -4370,11 +4977,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xb9fabe462421b8181c56f662c4ca222cdef2f94dcf28c2b3484ff56b927aab4c",
+   "block": "25988335",
    "sender": {
     "kind": "safe",
     "address": "0x0299c87b831f4fa01a45aa9f303a02ed4711fa4d"
@@ -4383,7 +4992,19 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1789541186"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x5d1e65c287c439124bef5d63afd2f3f6b8f4ff98fd31279f4211bd043a6cc2ad"
+    }
+   ]
   },
   {
    "kind": "fit",
@@ -4566,6 +5187,7 @@
   {
    "kind": "misfit",
    "hash": "0x6047e367215ce41f4582b43738d1ab76f94c19fe84e40df755c0df41b107d791",
+   "block": "25992500",
    "sender": {
     "kind": "safe",
     "address": "0x5389d69314f459dd0c176c8f58e70b7d57606c94"
@@ -4578,11 +5200,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x5ff91f87d2144b4e6f561cb3c74319ae2a7bbe94b7305410fb5fe8f6cff3add0",
+   "block": "25996224",
    "sender": {
     "kind": "safe",
     "address": "0xa02f001fd10cbc99b1e1290647e20da5ff9cfcff"
@@ -4595,11 +5219,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x727c20bf15c28c46e0228f118f1d0a4bcaaf3a5d635fec352c7dd4d6c9a3449a",
+   "block": "25997392",
    "sender": {
     "kind": "safe",
     "address": "0xa5a7dcd7f107e205ee0006685b0efc59f398ff24"
@@ -4612,11 +5238,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xd103ed28a0feebb6c1c4cd25252fd1de80588e161fd3a16fbf16144707a59823",
+   "block": "25998162",
    "sender": {
     "kind": "safe",
     "address": "0x663b844e3779cd7250f8ad7b1c8c07cf4d055afa"
@@ -4629,11 +5257,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x34f0929b51a92c5a06bed76515ca80d970cd991019e6646dd2fb87e6337324a1",
+   "block": "25999534",
    "sender": {
     "kind": "safe",
     "address": "0x6b790e2b5173bfbc01226a50bac82085b3266b6b"
@@ -4646,7 +5276,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -4658,6 +5289,7 @@
   {
    "kind": "misfit",
    "hash": "0x91733fc99b578e27a04a1e90d2850cd4ecd790a0385602d81677e9d1fb1e1ef8",
+   "block": "26004466",
    "sender": {
     "kind": "safe",
     "address": "0x9babfc1a1952a6ed2cac1922bffe80c0506364a2"
@@ -4666,7 +5298,19 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1789745968"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xd657b34939f276bed6dde8c28c9fdd8e8180767666f25b7f1b8f207a4da88f42"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -4792,6 +5436,7 @@
   {
    "kind": "misfit",
    "hash": "0x534d72ef5c447d82295a3fd9bf11092feb1b20d07a8bc52fef7777d030b0edd4",
+   "block": "26018413",
    "sender": {
     "kind": "safe",
     "address": "0x78a66cb62cec86d688433dd386456981dec680ce"
@@ -4804,11 +5449,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xe339155031644b29ecd54209b3a6a0f364fbc173472175017c024fb501d3dba4",
+   "block": "26021845",
    "sender": {
     "kind": "safe",
     "address": "0x75d58a4d7296a0edaff15c3debd24d0a9efa750d"
@@ -4821,11 +5468,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x099eaa58285b2bc36414005ef0a8786f58faefe71f902e306bad04a56f2d2872",
+   "block": "26024935",
    "sender": {
     "kind": "safe",
     "address": "0xdea40f4f022ab2f5b66a3db08701d6123dbea20d"
@@ -4838,11 +5487,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x743742f0bf151d5ed0558bbad838a682b061148c030fab3f7832062533db2bb0",
+   "block": "26025913",
    "sender": {
     "kind": "safe",
     "address": "0xf689ff62304827a191c8b79615a4cd8df7c9b905"
@@ -4859,7 +5510,19 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1789995762"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xf2cf04101867aaf78c798190a28c2adf34420d997e7fef90c268f756c61cf603"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -4871,6 +5534,7 @@
   {
    "kind": "misfit",
    "hash": "0x7f121361df76a6597a05cab9d57c4d10cde5b03e6a5d993b2513130e0dc47403",
+   "block": "26028015",
    "sender": {
     "kind": "safe",
     "address": "0x552421fd1ffd0890017f589da1834904773e889c"
@@ -4879,11 +5543,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1790021061"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xdb6c7d41d2d258032aa6dc45deb6928e7918309cd1862c4dae637ce03e4f2dfb"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x4808d59f58c6f4bc1854a165b33c0957150af84e78afcb27f2ee97b02c101ad9",
+   "block": "26029786",
    "sender": {
     "kind": "safe",
     "address": "0x4504db1ca6659fa04b5bc9c96deee4691c58f034"
@@ -4896,7 +5573,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -4908,6 +5586,7 @@
   {
    "kind": "misfit",
    "hash": "0x24fbf76d3b1426378e695f714d07b6db5f25f36ac11107b8b50b575a58ef42a0",
+   "block": "26032823",
    "sender": {
     "kind": "safe",
     "address": "0x60fa5de6efd69f149c361e4f8a381800c8848286"
@@ -4920,11 +5599,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x91aa58cfe3839c147af43799c032e3d0e151e95602d887fdf6b89a52685ad81c",
+   "block": "26033697",
    "sender": {
     "kind": "safe",
     "address": "0xf07ccf37001c3142cfe4ba22cdfe6d6204babdb1"
@@ -4941,11 +5622,24 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1790089747"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x6abc3b83f14b0b2c035969ca46efcb378e8c2bb2e3d76eba8e7b42a6235c603c"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0xcdb2fe3b4612307113a6e199ea47c27e47033e534444382ff4a9b4742cbb18d4",
+   "block": "26034380",
    "sender": {
     "kind": "safe",
     "address": "0x33d30058eb99e170e3cb83cf49cfc90994595e46"
@@ -4966,11 +5660,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xe76f636593a5349c536983b7d852d644f72a70d03db8ec7da73581fa506556d3",
+   "block": "26035628",
    "sender": {
     "kind": "safe",
     "address": "0x249c6b7af15dc5c40a38522a84c477d25b419df4"
@@ -4983,7 +5679,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "unproven",
@@ -4994,6 +5691,7 @@
   {
    "kind": "misfit",
    "hash": "0xddcc2c4223aea090148555e7ddb597f090a8f680d9b050d65d90d7e2157aebf3",
+   "block": "26039338",
    "sender": {
     "kind": "safe",
     "address": "0x320a1edc33dc35c66bedc70b50cf0b08e5c1747f"
@@ -5006,11 +5704,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x662126681b0276c155905af02a32e24229b87bd87029db8e877a5efa769cd111",
+   "block": "26040277",
    "sender": {
     "kind": "safe",
     "address": "0xee7983b9449c74cc1eff5793dcc336275015fba0"
@@ -5023,7 +5723,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -5049,6 +5750,7 @@
   {
    "kind": "misfit",
    "hash": "0xcc59c093d190d1bec4ab970942c4d767b44849fbd32ad5025fff4119e794db17",
+   "block": "26045948",
    "sender": {
     "kind": "safe",
     "address": "0x9d5df30f475cea915b1ed4c0cca59255c897b61b"
@@ -5061,7 +5763,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -5073,6 +5776,7 @@
   {
    "kind": "misfit",
    "hash": "0xb6f1fc4308c255a56c2f97d9ffe3a8a1f07e7be52b2563743018e3332f4fe382",
+   "block": "26048036",
    "sender": {
     "kind": "safe",
     "address": "0xa6c8d90bd2af993a8347ce3c972cd916094fa889"
@@ -5085,11 +5789,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x757cf5c314e3f0c4efa18d342d5c1dbc30de483d0f4835da36c8dc23f8c03897",
+   "block": "26049493",
    "sender": {
     "kind": "safe",
     "address": "0x7b00d28b3a3507e93aebcfaf155ed252aa7ede91"
@@ -5102,11 +5808,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x6a723c4bdb4db16223beff08faa6367e09eef48ab73071f9aa68f1d0d8c6052b",
+   "block": "26053159",
    "sender": {
     "kind": "safe",
     "address": "0x75d58a4d7296a0edaff15c3debd24d0a9efa750d"
@@ -5119,11 +5827,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xf05cf6b3d5e451242bdd3a5bdc9a36eb5505f916e085abd42054988373a458c3",
+   "block": "26053934",
    "sender": {
     "kind": "safe",
     "address": "0xa6c8d90bd2af993a8347ce3c972cd916094fa889"
@@ -5136,11 +5846,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x10fd39ad6c8b90b959dc8510832076480da51756bb211ec5396b9ae6dc8ed831",
+   "block": "26054669",
    "sender": {
     "kind": "safe",
     "address": "0x7bb6f683d6defd7d82c6f4198fed7073160ca848"
@@ -5153,7 +5865,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -5193,6 +5906,7 @@
   {
    "kind": "misfit",
    "hash": "0x3bd9489b8e08391e07189d99c16e1fc0359b91e9b32b9b6428cdbc54a4280b02",
+   "block": "26069548",
    "sender": {
     "kind": "safe",
     "address": "0x8b4d85a333001ebe9dc96f9985a62b24fdce514d"
@@ -5205,11 +5919,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xb4fe1a29829afae9ebe3bc9ff6bdbddf5aaf100500ecf2f49446c1d1b80f86c1",
+   "block": "26071871",
    "sender": {
     "kind": "safe",
     "address": "0x8b4d85a333001ebe9dc96f9985a62b24fdce514d"
@@ -5222,7 +5938,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -5321,6 +6038,7 @@
   {
    "kind": "misfit",
    "hash": "0x9b4ec6e273b1a354c66e1c44a497233c41a4f4a21c6843b31dad99507a2d2160",
+   "block": "26079470",
    "sender": {
     "kind": "safe",
     "address": "0x569fa1a5d7a2d47a4c13e884160b4959a89b449b"
@@ -5333,11 +6051,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x4187b289b9695dab068d2294289c3ebe846f1fb1fca17f1bf58f3268723535a1",
+   "block": "26081543",
    "sender": {
     "kind": "safe",
     "address": "0x073997396b83b8ca325777bc08e4b65c65b4a190"
@@ -5350,11 +6070,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x42958a7f22ecc3dda12f04b271e5757aeb7b3bbc554aee3fd4a16cc2d853bfe8",
+   "block": "26083031",
    "sender": {
     "kind": "safe",
     "address": "0x569fa1a5d7a2d47a4c13e884160b4959a89b449b"
@@ -5367,11 +6089,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xcebdf339c2b9279bdd41d40a8966055a448d7db75a82c54fb6153cb45eba4411",
+   "block": "26084065",
    "sender": {
     "kind": "safe",
     "address": "0xb228a0fa1118b6f4fc4c8999fef2189e5da2fdfd"
@@ -5384,7 +6108,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -5396,6 +6121,7 @@
   {
    "kind": "misfit",
    "hash": "0x41d8089f48ea1a5edda374f8fb39241abefba89fb61cdab9791f494671364f2e",
+   "block": "26088649",
    "sender": {
     "kind": "safe",
     "address": "0xeaa234e20627df4f7b26e871876050f30e22495e"
@@ -5416,7 +6142,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -5428,6 +6155,7 @@
   {
    "kind": "misfit",
    "hash": "0xd7fb59739054b25f8f59c89170c2f465e517b1b9ff3299460e7be94383192ba5",
+   "block": "26091403",
    "sender": {
     "kind": "safe",
     "address": "0x660f6d6c9bcd08b86b50e8e53b537f2b40f243bd"
@@ -5440,11 +6168,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xa69a08dac309592a89375fd9a10eb002418a755330e78f9a3842c28bbb65b76a",
+   "block": "26092285",
    "sender": {
     "kind": "safe",
     "address": "0xb1748c79709f4ba2dd82834b8c82d4a505003f27"
@@ -5457,7 +6187,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -5469,6 +6200,7 @@
   {
    "kind": "misfit",
    "hash": "0xd6b7227436b36b4c4b3d248c56544c50f971d7a86ffd5a213abe2d68c2b2c56f",
+   "block": "26096511",
    "sender": {
     "kind": "safe",
     "address": "0x172f55a916ce84dcaa514f4ed41fc843eb9b1aac"
@@ -5481,11 +6213,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x1e6f57db68fd9f70837a79b1117bc5f60088911a0a4bc93a7e06e909d51965c7",
+   "block": "26097933",
    "sender": {
     "kind": "safe",
     "address": "0x4266583fd6245654b115626e3e139a2c4585dda0"
@@ -5498,11 +6232,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xcc70be6c0578546fb786dd225cd72303b6cc003df991686e686948f6ccfc2903",
+   "block": "26099066",
    "sender": {
     "kind": "safe",
     "address": "0x2e33e8f1e2a0371ca97f8da0662cf21f594aba7c"
@@ -5511,11 +6247,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1790878720"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x2b058269edd5c8f226a0aaeac49cc49c3bc41b93dfe74de36699148048254cb0"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x1cdb9c1a451d02ab2981ccc13994960bc803113aac6369a330694b4b85df1c6a",
+   "block": "26101461",
    "sender": {
     "kind": "safe",
     "address": "0x4504db1ca6659fa04b5bc9c96deee4691c58f034"
@@ -5528,11 +6277,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x05b4dac4086b598f398fae2810c5feac564967148bb1f54510ea1c6cd7477634",
+   "block": "26103544",
    "sender": {
     "kind": "safe",
     "address": "0x6ca58d7a506fc12622abd211b0dd6cb0a1207a4a"
@@ -5553,7 +6304,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -5565,6 +6317,7 @@
   {
    "kind": "misfit",
    "hash": "0x3637b96973618555ae833819e6a9967bfc44987e1c4324af8781f250a2595b93",
+   "block": "26105744",
    "sender": {
     "kind": "safe",
     "address": "0x15f2a457eca34432ad4e79e789da1a1f38fe4eb7"
@@ -5577,11 +6330,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x7a558e5b61c1ef7ade1c72999b79f4e0b0bf16be844ad04578527b32d015ca5f",
+   "block": "26106766",
    "sender": {
     "kind": "safe",
     "address": "0x0591926d5d3b9cc48ae6efb8db68025ddc3adfa5"
@@ -5594,11 +6349,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x0181e069b443b982f1aa9bba7125de4937f0962c1e6faf838797b9099a0e0720",
+   "block": "26110609",
    "sender": {
     "kind": "safe",
     "address": "0xaca2c6028d74f71319f00b9931edaa7d96300814"
@@ -5611,11 +6368,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xc6f5275e2ccaef6c9916f9ff4cd73548258782003b62fae31db61ccefd038af8",
+   "block": "26113471",
    "sender": {
     "kind": "safe",
     "address": "0x4504db1ca6659fa04b5bc9c96deee4691c58f034"
@@ -5628,7 +6387,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -5736,6 +6496,7 @@
   {
    "kind": "misfit",
    "hash": "0xd99c7bf8d79cb554dd5e6122fd50e59ba4ddc9e965141f0932d17727fa272283",
+   "block": "26126355",
    "sender": {
     "kind": "safe",
     "address": "0x61add937008ea6853e9bc20f397abe02bb180218"
@@ -5744,7 +6505,19 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1791207078"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x31a2bd1f57484e2af983a8a1eaecec0d2c57068c05cf58e98e2e41ccf0271648"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -5836,6 +6609,7 @@
   {
    "kind": "misfit",
    "hash": "0x69c4ae8f1a847003d5ec088fd43f73174eb28228c3545f5be221acca95eabc29",
+   "block": "26131900",
    "sender": {
     "kind": "safe",
     "address": "0x4263dff7e2b5ffda84aae9fab61bd9e71e8293c4"
@@ -5848,7 +6622,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -5867,6 +6642,7 @@
   {
    "kind": "misfit",
    "hash": "0xd40e7d66e8b79726d3739dd4c8fcb282cfce939e36d4bd67e73943b19756a7b6",
+   "block": "26136573",
    "sender": {
     "kind": "safe",
     "address": "0x05fae9d85485dc6044f1a79ef9a7ac50691b4aed"
@@ -5879,11 +6655,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x06da98daefe516c18d6eff5db7315e091dd56dc699292f8c8ff440dedfdc6b92",
+   "block": "26138769",
    "sender": {
     "kind": "safe",
     "address": "0x569fa1a5d7a2d47a4c13e884160b4959a89b449b"
@@ -5896,11 +6674,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x78ceda29901a962a49bb2a90c1a2b54eae867a482567f076aae77a5cc0f604dd",
+   "block": "26140519",
    "sender": {
     "kind": "safe",
     "address": "0x1ec3cbe8fb1d8019092500cca2111c158a35bc82"
@@ -5913,11 +6693,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x35e2833f9f8d3169dfbb016bd93c99462d3f780e70bcee0df9cdafa3fea0a2cd",
+   "block": "26142980",
    "sender": {
     "kind": "safe",
     "address": "0xb1748c79709f4ba2dd82834b8c82d4a505003f27"
@@ -5930,11 +6712,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x54e64f07304907b26da6aaedbad5667f9d4ac8e65823787d9d6aa94b6dc4f4b7",
+   "block": "26145430",
    "sender": {
     "kind": "safe",
     "address": "0xffe549e22f2ec1ad79dbbf0289ca3977b2447ab1"
@@ -5947,11 +6731,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xccbf503eee346aa33f113fad268bd87eef052a1f0122ea8ee4598b824262d251",
+   "block": "26148069",
    "sender": {
     "kind": "safe",
     "address": "0x0591926d5d3b9cc48ae6efb8db68025ddc3adfa5"
@@ -5964,11 +6750,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xf8ab9868379db03a9ad6194ed98f9997a3afcfd4e090a4424704bd2760dcfac2",
+   "block": "26149297",
    "sender": {
     "kind": "safe",
     "address": "0x5f789b0eca5ff0d9462d7980a27b0dc4aec282aa"
@@ -5977,11 +6765,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1791483691"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x6c2f5e65f897787aa7d715fa4cc74935d841d7f7b5d60a2d2de49791082047c7"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x72391b7cba668c5b1f9de592f636d5f6a7c43cad42636c233feab0e92ae9cc01",
+   "block": "26149918",
    "sender": {
     "kind": "safe",
     "address": "0x49afbb19ebad01274707a7226a34d5297b6daf75"
@@ -5994,7 +6795,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -6088,6 +6890,7 @@
   {
    "kind": "misfit",
    "hash": "0xa2dc3bbdcab610e93fda95600cb828b176814dc567e31efcc9a574780bcf0808",
+   "block": "26155362",
    "sender": {
     "kind": "safe",
     "address": "0xe85d9b9c59c21b18adda8355ad971a397dd9f67d"
@@ -6100,11 +6903,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x813e0631a644986176835a36723488e7ae07830ded9f09da34319ef200ff7167",
+   "block": "26156778",
    "sender": {
     "kind": "safe",
     "address": "0x4317d259fcce32ebbb508c27b12f4afaca074ae3"
@@ -6113,7 +6918,19 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1791573608"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x63263a81ac4b7ed9dae86b88259cc847899f145620664d1651ceb58ae7d9bf93"
+    }
+   ]
   },
   {
    "kind": "fit",
@@ -6299,6 +7116,7 @@
   {
    "kind": "misfit",
    "hash": "0xfd4f88a7a98ca827d54a8862ac4f4a1b8392554bb2b89088e09fe475a0d97f56",
+   "block": "26171160",
    "sender": {
     "kind": "safe",
     "address": "0x50b32d5f87d0b52f1897a2d33a37d620596487ff"
@@ -6311,7 +7129,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -6426,6 +7245,7 @@
   {
    "kind": "misfit",
    "hash": "0x9ca4f8f39864f5c33f9d3ce91c0b0a07301a24f87db5a6c41395d76d60a265c5",
+   "block": "26183248",
    "sender": {
     "kind": "safe",
     "address": "0xea3290590dd491739f5f731266631a2649eba661"
@@ -6438,11 +7258,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xac1e1906b478c875a81ef089baf16ee4c3c950dc0e6c635eb75ded2bb0414aab",
+   "block": "26184353",
    "sender": {
     "kind": "safe",
     "address": "0xde3a199760165bb99acdfad09edfe3aaec149543"
@@ -6455,11 +7277,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x798e7efdaf07bbb6c56d61c55b24c47bf8f1adfb2779e35e4943ca2a0896c65c",
+   "block": "26185342",
    "sender": {
     "kind": "safe",
     "address": "0x9284205bb73efd293e310b12a37788114a7724a9"
@@ -6472,7 +7296,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -6484,6 +7309,7 @@
   {
    "kind": "misfit",
    "hash": "0x7d06e98a666583685b84635f6d617fcfe2147b463f7a1bdd4af52c1621c232bd",
+   "block": "26190944",
    "sender": {
     "kind": "safe",
     "address": "0x447c705e73a58ae95bdd14fc7369a16f7f0d1590"
@@ -6496,7 +7322,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -6590,6 +7417,7 @@
   {
    "kind": "misfit",
    "hash": "0xbd59e10362490232f724b42d7f9ac4a08fed7a7b3a6e880d71731f700a189693",
+   "block": "26193256",
    "sender": {
     "kind": "safe",
     "address": "0x6b790e2b5173bfbc01226a50bac82085b3266b6b"
@@ -6602,11 +7430,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x4121668f4d23563a0aefca0f7b830101b79e99cc0fcbb30ea36271474ff034c0",
+   "block": "26195921",
    "sender": {
     "kind": "safe",
     "address": "0x45e6cf87bd0d465aacc33ba668375057c4f72cfc"
@@ -6615,11 +7445,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1792045032"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x176fa8a60cea9b3d7b83a4a2d4562f87a1e0d2023506170404b0fa9e5019253e"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x1381c0d26522c8c264bcd974abc7756827f1bc91afc80dc1781ee7cf37fefcf1",
+   "block": "26197330",
    "sender": {
     "kind": "safe",
     "address": "0x1ec3cbe8fb1d8019092500cca2111c158a35bc82"
@@ -6632,7 +7475,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -6715,6 +7559,7 @@
   {
    "kind": "misfit",
    "hash": "0x0c8dce235df5523692139c27df0282a53f09387d931312d8f43a2fef213cf172",
+   "block": "26198705",
    "sender": {
     "kind": "safe",
     "address": "0x4358f4940283e6357128941a5c508e5f314d79cb"
@@ -6727,7 +7572,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -6739,6 +7585,7 @@
   {
    "kind": "misfit",
    "hash": "0xb045b49cd16f73bb147fd30400657a49bf8678000e86ab667627dc5e07afaea8",
+   "block": "26201418",
    "sender": {
     "kind": "safe",
     "address": "0xe851cf7292f20047899ee1b195d4a1723065d8da"
@@ -6751,7 +7598,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -6841,6 +7689,7 @@
   {
    "kind": "misfit",
    "hash": "0x1060e038a099fc9d75d53f6b7d5a75d6386096ea6f04d5b9c110b79ae8ba042e",
+   "block": "26205760",
    "sender": {
     "kind": "safe",
     "address": "0xb423e0f6e7430fa29500c5cc9bd83d28c8bd8978"
@@ -6857,7 +7706,8 @@
       "selector": "0xc6fe8747"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -6869,6 +7719,7 @@
   {
    "kind": "misfit",
    "hash": "0xc682acc73458d737ab815d1173b071aed961133328b4c1ce9d2e1247f628937f",
+   "block": "26212583",
    "sender": {
     "kind": "safe",
     "address": "0xf330b5fe72e91d1a3782e65eed876cf3624c7802"
@@ -6881,7 +7732,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -7077,6 +7929,7 @@
   {
    "kind": "misfit",
    "hash": "0x1f5da56d90efeaa539447483e48d100d610dc4d014c1faadefd216cf23397ff8",
+   "block": "26232918",
    "sender": {
     "kind": "safe",
     "address": "0xed95f483e3f58d2bcc318fe0cd6a47e5e32abbf8"
@@ -7089,7 +7942,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -7101,6 +7955,7 @@
   {
    "kind": "misfit",
    "hash": "0x7637ca96c41d8594dcb07e55c72a16f0b9892daa495e7b6f110bed9c31d21a34",
+   "block": "26236287",
    "sender": {
     "kind": "safe",
     "address": "0xf93edc3cbd5250170c947c2f7d132137e734a188"
@@ -7113,11 +7968,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xeeae38f6cc733b2d47f416ae8c109df0b70504de425a3c51259acbc110ba5e19",
+   "block": "26239579",
    "sender": {
     "kind": "safe",
     "address": "0x563c8da5f7ace1303bc8398832d89fa082512acf"
@@ -7126,11 +7983,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1792570516"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x1a4b73710a6d2fa44e631224eb6472a68b1edb8fb9ab41bec292c77adb847b6e"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x1fb8e0b256b7ba141b179a387d60f40aadc312aa69b4efb446a38653cce44eca",
+   "block": "26242181",
    "sender": {
     "kind": "safe",
     "address": "0x73eb240a06f0e0747c698a219462059be6aaccc8"
@@ -7143,11 +8013,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xaff22df967aa792f025b7aaa6d0f2fc36dc7bf11526f4a674e9ec142cb9c1657",
+   "block": "26243112",
    "sender": {
     "kind": "safe",
     "address": "0x2542c7010aa101c610299a1db457631d8147a54d"
@@ -7160,11 +8032,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x1271a129139040d84166126a3c7bb32dbc1f26ba07e8b242b2ab32325214e5f1",
+   "block": "26245511",
    "sender": {
     "kind": "safe",
     "address": "0x5ad30fca5a031c850b817f6f4de1ee2d713ef850"
@@ -7177,11 +8051,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x9d7868180200124d8222b76b03c1976cf87876041f8897cf9b95b6abc87fd2e5",
+   "block": "26247763",
    "sender": {
     "kind": "safe",
     "address": "0x569fa1a5d7a2d47a4c13e884160b4959a89b449b"
@@ -7194,7 +8070,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -7220,6 +8097,7 @@
   {
    "kind": "misfit",
    "hash": "0x3563d7151fb0e20aa65edb679e292c66a51b10324c235cdcd87e0ba6afcf41dd",
+   "block": "26254466",
    "sender": {
     "kind": "safe",
     "address": "0x6e3094a718b3472c0b143bab4d503d2a14b1b4ff"
@@ -7228,11 +8106,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1792749758"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xd5e76d80672fb4f8360cee02ad945ef7a2385447c1cc37fd62df4ec34b127ca8"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0xc2f3ede62db3f5fa06f7a6d6fb4cadbe5df4faa14eb861c816dc40446e056e4e",
+   "block": "26256364",
    "sender": {
     "kind": "safe",
     "address": "0x7e5013302dc94c1efa6632aaf6f542251e146a81"
@@ -7245,7 +8136,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -7257,6 +8149,7 @@
   {
    "kind": "misfit",
    "hash": "0xf935a5fa9151fef74dfa4fa10466242608b7f0c2cb8f2dd098acb8c4d7319289",
+   "block": "26262819",
    "sender": {
     "kind": "safe",
     "address": "0x143b83cfc0b070872a05c36997192d5e6c37bfa3"
@@ -7269,11 +8162,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xee891ebe6b8936c55b6925a1793a2034e6f21fe4d558f1dbbb5f978a7bd4daba",
+   "block": "26265615",
    "sender": {
     "kind": "safe",
     "address": "0xa82f28d5668447c3684b75d3249c33ba38da2895"
@@ -7286,11 +8181,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xcd53548d797d8d9d5286de15baa202bb320fd20e7fb6f742afeec515a6c0435f",
+   "block": "26269708",
    "sender": {
     "kind": "safe",
     "address": "0xd645e0e2a370b3bbc0e0bfcbf00fa241c172cc38"
@@ -7300,11 +8197,24 @@
     "at": "multiSend[1].setPreSignature.orderUid.digest.partiallyFillable",
     "expected": "false",
     "actual": "true"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1792933174"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x4579a31cada3e7eda9fa427bda70a4e32836d8577184ff45f12aa3d5bec5e1eb"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x8e720c0bbf33e8800790fcdc570b1ba7176dd8eb32c2fd24a5c4abf94829d8e1",
+   "block": "26275654",
    "sender": {
     "kind": "safe",
     "address": "0xaaf024c4299a85461f39bd4f6f74b99427f9c0c3"
@@ -7317,11 +8227,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xbe7e443cfde181d114324b5752a831a72550e38f32d9fd175ef705090f17b68e",
+   "block": "26277523",
    "sender": {
     "kind": "safe",
     "address": "0x4e0dc29df1847b37b8d217b1d6b85ca600184375"
@@ -7330,7 +8242,19 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1793027409"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xc538f32c38359badeadc11a11b446e462b2c38833eb14d29945abe35280a407a"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -7356,6 +8280,7 @@
   {
    "kind": "misfit",
    "hash": "0x80819e1913540a7f3e135826ac67ebd6af3d74528b2c902a0c4b25d70ff53d32",
+   "block": "26286481",
    "sender": {
     "kind": "safe",
     "address": "0xd5c71e38be810c7fd996b752f53fd4de1699b789"
@@ -7368,7 +8293,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -7380,6 +8306,7 @@
   {
    "kind": "misfit",
    "hash": "0x645857095c9d87de961adb7612808f2ebd4e13218eacdd20f3d92923737245dd",
+   "block": "26291448",
    "sender": {
     "kind": "safe",
     "address": "0x710477218a0cdd3e7ebf40c8b2dbea333b8db703"
@@ -7392,11 +8319,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xc83c0ed72b4af72140a5536a7989bf8959d5cf00becce3ead900a08041137c3e",
+   "block": "26293020",
    "sender": {
     "kind": "safe",
     "address": "0x40c5c15ec27526ad769b04e767cd319551f7f4e4"
@@ -7409,11 +8338,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x6a244dd6bbe2bad5af52696dfa53c2630ad11db0230d60227bfca77c2fd2217c",
+   "block": "26295554",
    "sender": {
     "kind": "safe",
     "address": "0xf623e28a09e08a6c0844b8da03d8436096c86a91"
@@ -7426,11 +8357,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x5e5f690ca9763515d27bfb0d7b99b8f7dad196a08bcb5af14f0d5a51059812f2",
+   "block": "26298486",
    "sender": {
     "kind": "safe",
     "address": "0x60716991acda9e990bfb3b1224f1f0fb81538267"
@@ -7443,7 +8376,8 @@
       "selector": "0xc6fe8747"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -7537,6 +8471,7 @@
   {
    "kind": "misfit",
    "hash": "0x2caff1044daae7b6313bab78174adc3e60203adbd27f114676b1059077d004bc",
+   "block": "26301029",
    "sender": {
     "kind": "safe",
     "address": "0x9284205bb73efd293e310b12a37788114a7724a9"
@@ -7553,7 +8488,19 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1793310342"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x6d2022ac55910afee65edd71423e96a8d1c88a7db2dabbfbd47a3b96231d5493"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -7565,6 +8512,7 @@
   {
    "kind": "misfit",
    "hash": "0x11c75ee26352d2fa47862949ccc1c1eeb8e66fa27d46d389883d6b67aa32b85e",
+   "block": "26302590",
    "sender": {
     "kind": "safe",
     "address": "0x89780b0b10b669d82efb020c07cf7f13838d2391"
@@ -7577,11 +8525,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xaaf7f39f8e2ca1ab96fabf50ff8c491ac6d71a5336f8d8bda79b535f5d3340c1",
+   "block": "26304248",
    "sender": {
     "kind": "safe",
     "address": "0x8616b00f779ada7df11f27d3b0e06c754b6582e2"
@@ -7593,11 +8543,24 @@
      "gpv2-vault-relayer"
     ],
     "actual": "0x9008d19f58aabd9ed0d60971565aa8510560ab41"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1793952021"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x634cf8cbc9c92fa3af417dec277e694035616f38f203f89c81f68b38728271c9",
+   "block": "26305006",
    "sender": {
     "kind": "safe",
     "address": "0x6e0a1ddad894e6466d405bb73377f0a257278d74"
@@ -7614,11 +8577,24 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1793356941"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xcd29268f07013a64a0809c8503648964bc9e6a09e99b6eec4f9efc2e5ae83c40"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x4fc7e892a50dfb1c35601c0f34726e845cbec489706e41720e712c4e177d8954",
+   "block": "26305946",
    "sender": {
     "kind": "safe",
     "address": "0x4504db1ca6659fa04b5bc9c96deee4691c58f034"
@@ -7631,7 +8607,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -7657,6 +8634,7 @@
   {
    "kind": "misfit",
    "hash": "0xd807aa72a109848db3a2c11d2a73e0bd3e1ced520269cf9c19e41aa9ba291548",
+   "block": "26313171",
    "sender": {
     "kind": "safe",
     "address": "0xf163c0f7cfed872f749facabc19175abe7147d3a"
@@ -7669,7 +8647,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -7695,6 +8674,7 @@
   {
    "kind": "misfit",
    "hash": "0x5333864dbc07a18e442d1c63413f9878984d7f0e9ffc5fa0130ddc5f68a70fa8",
+   "block": "26325020",
    "sender": {
     "kind": "safe",
     "address": "0xb95c3358392523b954dd91fd84cacf206be424e3"
@@ -7707,7 +8687,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -7797,6 +8778,7 @@
   {
    "kind": "misfit",
    "hash": "0xa9bd5b0e9161d1593b3fedf81e0b3e39acb4442d732a1d3e1182f2413cb09336",
+   "block": "26328051",
    "sender": {
     "kind": "safe",
     "address": "0x569fa1a5d7a2d47a4c13e884160b4959a89b449b"
@@ -7809,11 +8791,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x21a1af68585d19614aefd20cfde1d6e22ebdba88d0d9ca08c42e764f4a57da30",
+   "block": "26329531",
    "sender": {
     "kind": "safe",
     "address": "0x42d77b72e69488ebe9ba4914387b524be0f1bbdf"
@@ -7826,7 +8810,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -7838,6 +8823,7 @@
   {
    "kind": "misfit",
    "hash": "0xdf5c38e66fac73a5dda380ccfeca3258d62ef054f0b6c5cebe2612a1a3aeafa3",
+   "block": "26334712",
    "sender": {
     "kind": "safe",
     "address": "0x4504db1ca6659fa04b5bc9c96deee4691c58f034"
@@ -7850,11 +8836,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x09b27cb028f132e4204fe00e668d4fdb726bb5d8316ae10a612c933530d52108",
+   "block": "26335712",
    "sender": {
     "kind": "safe",
     "address": "0x5d25e98a748233f647877aab53ac424bea2a5f43"
@@ -7871,11 +8859,24 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1793727968"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xa356ac664566944f6aad9e66c4d6cb1c33fd290d57af7b81bafbf78fded468dc"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0xc37574cda426f63ff6ce0c9412e7b5c60e2ae04ad56482081081b100f0fe9890",
+   "block": "26337002",
    "sender": {
     "kind": "safe",
     "address": "0x569fa1a5d7a2d47a4c13e884160b4959a89b449b"
@@ -7888,11 +8889,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x65f68dd47beeddfeec2f8a08b1f8c9b9788d34406d07f8f76d889c6b24a9e8b1",
+   "block": "26340278",
    "sender": {
     "kind": "safe",
     "address": "0x75d065e038f93784febd23b1c39614a0e2691dbd"
@@ -7905,11 +8908,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x03d3c515dabb754ce8a62a3513cc1481f38f72a10de3ce1c43caad54701f7761",
+   "block": "26341591",
    "sender": {
     "kind": "safe",
     "address": "0xba8c3dd56154bde7635253b8dbe4cce6b84c5f74"
@@ -7926,11 +8931,24 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1793798800"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x21c93c5be6eea85dce28eab1527b52af829efe2bcec63ba0d6aeab6e817a74f2"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x7dc004332d123b354d1ef72fd95c2ef2287ac6555f3c991dbccd2e11c529bda5",
+   "block": "26342717",
    "sender": {
     "kind": "safe",
     "address": "0xdc22ca4476fd57cac78a71a44042c7b43cba55f2"
@@ -7955,11 +8973,24 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1825366885"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x280a21c875603b9e71c87d3ff7b50382eb4750212d54f3d324e585772407de47"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x173379909b953921358970b09692f9d519fb56636aedc182bdc3555987b0b4c7",
+   "block": "26343700",
    "sender": {
     "kind": "safe",
     "address": "0x9d5df30f475cea915b1ed4c0cca59255c897b61b"
@@ -7972,7 +9003,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -7998,6 +9030,7 @@
   {
    "kind": "misfit",
    "hash": "0x310cedfa7e40fd58b49e557d3475e2332904d4fdcf3b123abc597bf211dfd835",
+   "block": "26349974",
    "sender": {
     "kind": "safe",
     "address": "0x5389d69314f459dd0c176c8f58e70b7d57606c94"
@@ -8010,7 +9043,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8029,6 +9063,7 @@
   {
    "kind": "misfit",
    "hash": "0xb141ce1325efe035a9bbdad3572d156dbb8d040346007ce4b780f1463386921a",
+   "block": "26356808",
    "sender": {
     "kind": "safe",
     "address": "0xea5b5991f761ced44ffa99beacb72d691ee334ec"
@@ -8045,11 +9080,24 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1794023195"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x56bfa63e504b55ea2dc896f53d8f407c1f523cb73e5f39b93bedc20129789748"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0xa1efffa359e73243a06ccc16e50a12d5de08b751bf95e779cc164fb5e1d7a567",
+   "block": "26357974",
    "sender": {
     "kind": "safe",
     "address": "0x78a66cb62cec86d688433dd386456981dec680ce"
@@ -8062,11 +9110,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x96af0a756e07bd6cde2f6e56c0e29582881053906ed81cd6e009d5997125c3ec",
+   "block": "26359498",
    "sender": {
     "kind": "safe",
     "address": "0xb6e6f6c2422efb194bedff46308f917618f0d03b"
@@ -8079,7 +9129,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8098,6 +9149,7 @@
   {
    "kind": "misfit",
    "hash": "0xf7e6939ff27d7ca8cb8ee517edd0e78654c05494c9d5aa15f30463e8d91ba89f",
+   "block": "26369620",
    "sender": {
     "kind": "safe",
     "address": "0x4c499a14d2a898658d1edb4eecfae15a50aacefa"
@@ -8106,11 +9158,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1794136188"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xd49e339d18ceaae777c714ea8867f3a4afbfaf53a563cdf38942cbf603db9f61"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x57f4048870d37ce97b5b676662cec83a10642047447300bc2d9ba737ca684f94",
+   "block": "26372307",
    "sender": {
     "kind": "safe",
     "address": "0x3a52ea60f61036afbbec25f46a64485ac4477ccc"
@@ -8127,7 +9192,19 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1794168432"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x33de9277a9317392d8cfd3075646563bd427864ea72497fb5b2d46e4b5d9761b"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -8160,6 +9237,7 @@
   {
    "kind": "misfit",
    "hash": "0xa5873fedd739a8b74b150bc4ff749d00613c1ac8a15c96eeb97f160babc137f7",
+   "block": "26379153",
    "sender": {
     "kind": "safe",
     "address": "0x9d5df30f475cea915b1ed4c0cca59255c897b61b"
@@ -8172,7 +9250,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8205,6 +9284,7 @@
   {
    "kind": "misfit",
    "hash": "0x2f2bde3cdc6ce8db8c71e45335459acdc7aa9876ecfa5a4cf125b9e3d7e746d6",
+   "block": "26389374",
    "sender": {
     "kind": "safe",
     "address": "0x7651fe38fd055f0ca05bc8381ab47d5f6a54e267"
@@ -8217,7 +9297,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8229,6 +9310,7 @@
   {
    "kind": "misfit",
    "hash": "0x92ba297aab60d96130d78e1340b808cd891a46393400aaa8c3f266df0cfae5be",
+   "block": "26392928",
    "sender": {
     "kind": "safe",
     "address": "0x162c92aaca2825b3763a9bc5d8fbf52f5f902ab5"
@@ -8237,7 +9319,19 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1794416045"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x16f2e2c3bef1f40b5fc2908ec5ec6640ce55e0d0ba30d4ff4721ecf5ace8aca6"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -8249,6 +9343,7 @@
   {
    "kind": "misfit",
    "hash": "0x639d60b0246a09607e299a50c0024916e72d6c656b42b5dbef2744d9c2c29c7e",
+   "block": "26396688",
    "sender": {
     "kind": "safe",
     "address": "0x48c981734b0f8bfb8f3aec4d7ef2d4de04c8f494"
@@ -8265,7 +9360,8 @@
       "selector": "0xc6fe8747"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8284,6 +9380,7 @@
   {
    "kind": "misfit",
    "hash": "0x2b9ff305c05ca98cab33795492862abac72a2b623c82b398e0aff25043ba2545",
+   "block": "26401449",
    "sender": {
     "kind": "safe",
     "address": "0x6fd426142aff576fd48b2643786249a93c8c2d88"
@@ -8292,7 +9389,19 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1794519059"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xaec3c5ae24b261b8a46568c53606d886b47dae624ec5cbb78c05d4e18a820a66"
+    }
+   ]
   },
   {
    "kind": "fit",
@@ -8375,6 +9484,7 @@
   {
    "kind": "misfit",
    "hash": "0x9057c04eb617fea94e61335e039a199b4efd01af94378f61f00f34dab5f15f73",
+   "block": "26405029",
    "sender": {
     "kind": "eoa",
     "address": "0x671f75c63a93d4f1f4f2c17da09cd90ce394584a",
@@ -8385,11 +9495,24 @@
     "at": "call.setPreSignature.orderUid.digest.kind",
     "expected": "0x73656c6c",
     "actual": "0x627579"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1794562442"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x7f0054b97458b70ea53889c34abb3137284265ee91f656c7db053f571e89c7a4"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x8347c67d5e980964d280c09972a20f894b7bf6287baa2cb82ecf3c1a687286dd",
+   "block": "26406172",
    "sender": {
     "kind": "safe",
     "address": "0x92baf178ca4e1f60251bc5b66b66e42c82d14b50"
@@ -8406,7 +9529,19 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1794576250"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x724b557a27f0500c90b1f5d2fdfb1999a97c112f2427ddda1103baf84e0bccbf"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -8432,6 +9567,7 @@
   {
    "kind": "misfit",
    "hash": "0xe7f7e4746a1c15cfaf4aa20f629624aa77c20d32f30b6f75bb238ed803b76f7f",
+   "block": "26414021",
    "sender": {
     "kind": "safe",
     "address": "0xe1ecfa51a74744e7c80c349fbc82efbb4d4eb682"
@@ -8444,11 +9580,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x656b0a54caeef6c29ba7b03c3f9b79173e55789ea14c98b7d2bc9d5a5b4a95a5",
+   "block": "26415410",
    "sender": {
     "kind": "safe",
     "address": "0xc40b42e0b02191b4ca09d6ed846abe578159fe5f"
@@ -8461,11 +9599,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x164d4a26a156431a614e5996b36fee7397ecc2ecde70293f30c2620c947c4b3b",
+   "block": "26416348",
    "sender": {
     "kind": "safe",
     "address": "0xa8752762470a6a73ac874258677043c226d080ec"
@@ -8474,7 +9614,19 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1794698634"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x08f32c37f72e424bb915215a4e7076a13c0cfadf114ec4c4a4a0b15e3d32d466"
+    }
+   ]
   },
   {
    "kind": "fit",
@@ -8548,6 +9700,7 @@
   {
    "kind": "misfit",
    "hash": "0xc7cee54cd7f39450fb148da6d33148e0388f631eba5a29eea229d835b48c4281",
+   "block": "26420719",
    "sender": {
     "kind": "safe",
     "address": "0xf41f9b1d390ed975bffc3ebb9c903d026f219df7"
@@ -8556,11 +9709,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1794751153"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xc2176e26f02614f4b0a5eb27233887355f42a6e0487fd13d47e1a3e3715c3fbe"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0xdc6f4966581c4715cb27f212478131f1dfb45f96ca0b6511cb519f65cc7ab54c",
+   "block": "26422980",
    "sender": {
     "kind": "safe",
     "address": "0x4bd5db10b4188b484696833868b91713a8c5bcb9"
@@ -8573,7 +9739,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8585,6 +9752,7 @@
   {
    "kind": "misfit",
    "hash": "0xf009dd6bd623ceaf462bae3b62c232b0750340b055f3b5c5d6091b8e72ddc9f9",
+   "block": "26426241",
    "sender": {
     "kind": "safe",
     "address": "0x2407ceafb95ae40cae32372ba29c44e4f87dea68"
@@ -8597,11 +9765,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x4f4588fb0c369e736598b619fcdab297d79132543c25ce17d90f05ce0fe5f438",
+   "block": "26427729",
    "sender": {
     "kind": "safe",
     "address": "0xb43f63767e49c839d46adbf6c6a5662a7f36be18"
@@ -8614,7 +9784,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8695,6 +9866,7 @@
   {
    "kind": "misfit",
    "hash": "0x834dbcba3815b8eb2594bff3917a7ec644e0290670471bc3498120b8313aacb5",
+   "block": "26434040",
    "sender": {
     "kind": "safe",
     "address": "0x4ef3ac73c0c5121aed1f6a750c87110db16d9188"
@@ -8703,7 +9875,19 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1826466471"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x297a23ed7a8f76cb3a698c6e12199212038a0c5fcb3b0c9ca42f7efe65ea1a36"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -8722,6 +9906,7 @@
   {
    "kind": "misfit",
    "hash": "0xbe282041256f82bec0954de5b12f67d4d8f488c4e82913bfd169ea85c3d4983f",
+   "block": "26438402",
    "sender": {
     "kind": "safe",
     "address": "0xaa065f89a174111fe8ad6ef22309326a4292191f"
@@ -8734,7 +9919,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8746,6 +9932,7 @@
   {
    "kind": "misfit",
    "hash": "0x34b25b989fe3cb2bd7f0e398f285cdc5c63f4b95691776ce404f338a504e851f",
+   "block": "26442714",
    "sender": {
     "kind": "safe",
     "address": "0xdea40f4f022ab2f5b66a3db08701d6123dbea20d"
@@ -8758,11 +9945,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xf60a8cc0ae3d92113306bde5dea2e9b401d9a2bcc2a871156a0b39409c26072d",
+   "block": "26443759",
    "sender": {
     "kind": "safe",
     "address": "0x15f013ae46d7868af87fbc1741f706dbe45eeec6"
@@ -8775,7 +9964,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8787,6 +9977,7 @@
   {
    "kind": "misfit",
    "hash": "0xf32af8c02c06871e7fa06faef5ab9bfcda5f41d9cad903ac30edca58115e3dd0",
+   "block": "26448186",
    "sender": {
     "kind": "safe",
     "address": "0xb95c3358392523b954dd91fd84cacf206be424e3"
@@ -8799,11 +9990,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x0d089b4086e2df286bc346914c14a3fc524b46f7988bf9550b89185c02af60f6",
+   "block": "26449773",
    "sender": {
     "kind": "safe",
     "address": "0xaecf31a3dc990eb76125f9abc0c4b66cbf1baa04"
@@ -8816,7 +10009,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -8917,6 +10111,7 @@
   {
    "kind": "misfit",
    "hash": "0xc6ede007c9b5e198742c192574063a155ea50718587e7e88746da73591b26db7",
+   "block": "26453892",
    "sender": {
     "kind": "safe",
     "address": "0xd09f16830172e6073e8e5ee5053f35010f1c7d7a"
@@ -8937,7 +10132,19 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1795311236"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -9073,6 +10280,7 @@
   {
    "kind": "misfit",
    "hash": "0x24cf6a3e11ecae61bef678a058da8da6759297493fd60835bf5b45910d4540dc",
+   "block": "26461252",
    "sender": {
     "kind": "safe",
     "address": "0xb00db9a0f07edc4dcd1be8a6d001b8fdd4f18b1c"
@@ -9085,11 +10293,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x0222837f43c31570288468a512fb9c050ee4bad4d03b53067f532ff2ff8a5591",
+   "block": "26462519",
    "sender": {
     "kind": "safe",
     "address": "0x32787cd59244581a358a068d52e460eb00df6543"
@@ -9106,11 +10316,24 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1795253760"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0xb3193597392eced992c1f73179ec064277f160598f0464257ef7fc5bac608fef"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x52ce2023892525e76e23eb04ff82dfa1c5fe9c37e146b89f4e789cb91c9fec62",
+   "block": "26463987",
    "sender": {
     "kind": "safe",
     "address": "0x8c1b27f1363aae6dbedd2685aa3dd052a22dfb55"
@@ -9123,11 +10346,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xb18440a7717ffe17e237ace0a840cd62b6111686a9c73c4feab74c87a1109345",
+   "block": "26466096",
    "sender": {
     "kind": "safe",
     "address": "0xaf9e4e01525c4856e00cb0f363afc34e7decd6a7"
@@ -9140,11 +10365,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x43eb955cadd1f022bb9e61de64ff94fd044e8a000606855a5358ee7534f36daa",
+   "block": "26468815",
    "sender": {
     "kind": "safe",
     "address": "0x8bcda4d2ebaf2d3477bb9aaed0f3c78b9fda6012"
@@ -9157,11 +10384,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x24770c6d1ea415e430ff78c2f5fdea9078182b9b32d928284f661ebc191bf394",
+   "block": "26470692",
    "sender": {
     "kind": "safe",
     "address": "0x1859540b1d20763fa1e12b13ed1374ebbc0c42f2"
@@ -9174,11 +10403,13 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xe2dadd1919cac949c4c48f49292fcd144bb54d9012d8a6e4b109ac993e96bf5a",
+   "block": "26471864",
    "sender": {
     "kind": "safe",
     "address": "0x467e2adbb1319a1f46fe312964b0dd4c8f9b4fb0"
@@ -9191,7 +10422,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -9288,6 +10520,7 @@
   {
    "kind": "misfit",
    "hash": "0x1cf078986562a32d652939dd847794b3c30905ca33e50b636ff561ccee1ef48d",
+   "block": "26478421",
    "sender": {
     "kind": "safe",
     "address": "0xa824035f118a136215a5f45b54c2a45b118f9f94"
@@ -9296,11 +10529,24 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1795458333"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x8bdce130ab4fa828c9a30bbfa564fb86debc7fe0d7fd6889a1fd4cc4d5b0b4eb"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x8fd114cf9f41cc905a303c24e19ff191f3dd2614c405f72980b0f16c098fec61",
+   "block": "26479455",
    "sender": {
     "kind": "safe",
     "address": "0x4504db1ca6659fa04b5bc9c96deee4691c58f034"
@@ -9313,7 +10559,8 @@
       "selector": "0xec6cb13f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -9414,6 +10661,7 @@
   {
    "kind": "misfit",
    "hash": "0x56b2fc54d08a65dc8b2d9259424a09d784714c5e6fd59d2d32c81020284e2f35",
+   "block": "26485226",
    "sender": {
     "kind": "safe",
     "address": "0xbefcf164b8e25a29eb2bcd7e2e41742bddb7c22a"
@@ -9422,7 +10670,19 @@
     "kind": "differs",
     "at": "multiSend[0].approve.value",
     "other": "multiSend[1].setPreSignature.orderUid.digest.sellAmount"
-   }
+   },
+   "free": [
+    {
+     "field": 11,
+     "type": "uint32",
+     "value": "1796130464"
+    },
+    {
+     "field": 12,
+     "type": "bytes32",
+     "value": "0x297a23ed7a8f76cb3a698c6e12199212038a0c5fcb3b0c9ca42f7efe65ea1a36"
+    }
+   ]
   }
  ],
  "measurements": [],

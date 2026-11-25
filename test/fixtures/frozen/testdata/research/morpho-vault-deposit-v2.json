@@ -10,7 +10,7 @@
  "studiedWith": {
   "template": "0x27f99162abe731906617e13c59322b8f563e7a1c3c821f836086ef3c5c5358ba",
   "registry": "0x89f6c3718c4d334513c67aa2dedf540155118f6fe5e5c782441414189fc7bbe8",
-  "study": "0x94bfaaffbfc8c7dbc5b3874bc31cfe270d787964a427798536f92503545477bb"
+  "study": "0x666083030893f4947cba22a732c03d67881bc2dabdffd8ad91d58fe8978d8fa1"
  },
  "search": {
   "windows": [
@@ -173,6 +173,7 @@
   {
    "kind": "misfit",
    "hash": "0x270081b58860e246da307b0e360b0c2cf0a76ec7a136dc94c8e14433649c6414",
+   "block": "24417928",
    "sender": {
     "kind": "eoa",
     "address": "0x68e7e72938db36a5cbbca7b52c71dbbaadfb8264",
@@ -197,7 +198,8 @@
       "selector": "0x6ef5eeae"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "fit",
@@ -265,11 +267,13 @@
     "false",
     "0x0000000000000000000000000000000000000000000000000000000000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1770644411"
   },
   {
    "kind": "misfit",
    "hash": "0x7a32d82d81722262b7fba5a060f16a878a8a9657061bd3e6b38d69e884fe034b",
+   "block": "24424018",
    "sender": {
     "kind": "eoa",
     "address": "0x933adedd85824da75ec8a334a7907e69e7c02833",
@@ -294,7 +298,8 @@
       "selector": "0x6ef5eeae"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -313,6 +318,7 @@
   {
    "kind": "misfit",
    "hash": "0x7f308e0ed05c57cb848146699b9fd28410372d9bc0643b86799eb72e5a6b1cf9",
+   "block": "24640311",
    "sender": {
     "kind": "eoa",
     "address": "0x68e7e72938db36a5cbbca7b52c71dbbaadfb8264",
@@ -337,7 +343,8 @@
       "selector": "0x6ef5eeae"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -349,6 +356,7 @@
   {
    "kind": "misfit",
    "hash": "0xac5bd70924fa01bd51ac1912dd77beda872a8173a75ce3d2cdde50b315cb0060",
+   "block": "24642249",
    "sender": {
     "kind": "eoa",
     "address": "0x68e7e72938db36a5cbbca7b52c71dbbaadfb8264",
@@ -373,11 +381,13 @@
       "selector": "0x6ef5eeae"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x22ac9aacc53861634f9f8a7085e57d3d12cdc8689fe30fdc32d56e19c210fefb",
+   "block": "24858426",
    "sender": {
     "kind": "eoa",
     "address": "0xcbf2e3088c4a6f2c0f6f598d83df557ad5941110",
@@ -402,7 +412,8 @@
       "selector": "0x6ef5eeae"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -414,6 +425,7 @@
   {
    "kind": "misfit",
    "hash": "0x6eb9e8fef8672c3eaf7bd3c416666d4b5c1991ef0c61cd9bd083ee23357ec4c3",
+   "block": "25075415",
    "sender": {
     "kind": "eoa",
     "address": "0xbfb1a23058180254e8a6159fc2e7802e577d29a7",
@@ -438,11 +450,13 @@
       "selector": "0x6ef5eeae"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xad905719049478559cd45918dfc0fa1f444b169093ff5d1e0a85c1c2a6a8e1db",
+   "block": "25075462",
    "sender": {
     "kind": "eoa",
     "address": "0xe976f01895063218feb2439cb985c40f5e141d5e",
@@ -467,7 +481,8 @@
       "selector": "0x6ef5eeae"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -486,6 +501,7 @@
   {
    "kind": "misfit",
    "hash": "0xba939d349655bc3ca4038a711d909406e2f678a12837e3c1e7f8faf80fefc660",
+   "block": "25075924",
    "sender": {
     "kind": "eoa",
     "address": "0x89951bda1ac29770e0bc3935a65ba88b1d622c1a",
@@ -510,11 +526,13 @@
       "selector": "0x6ef5eeae"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x58b3e5b30bfd9ccd30ae993c69bcf0c29423d0b6af54014201d770ef8bf7d753",
+   "block": "25076142",
    "sender": {
     "kind": "eoa",
     "address": "0x68e7e72938db36a5cbbca7b52c71dbbaadfb8264",
@@ -539,7 +557,8 @@
       "selector": "0x6ef5eeae"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -572,6 +591,7 @@
   {
    "kind": "misfit",
    "hash": "0xac9058632b750b6804d85b5c8c0a7e14d15e0b25df30c2572808e09383d0dbf2",
+   "block": "25078228",
    "sender": {
     "kind": "safe",
     "address": "0x3642cbea69ade6b4ab1dbc5e7d179393b94efef3"
@@ -584,7 +604,8 @@
       "selector": "0x374f435d"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -827,7 +848,8 @@
     "false",
     "0x0000000000000000000000000000000000000000000000000000000000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1781240195"
   },
   {
    "kind": "not-studied",

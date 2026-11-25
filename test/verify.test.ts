@@ -6,7 +6,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { recordingText } from '../src/chain/bytecode.ts';
+import { evaluate, parseVerdictFile } from '../src/verify/verify.ts';
 import type { VerdictFile } from '../src/verify/verify.ts';
+import { replayReader } from '../src/chain/recording.ts';
 import { ROOT, VAULT, chain, fixture, git, receiverChanged, run, service, setUp, template, verifyTx, write } from './canaries/verify-harness.ts';
 
 const rowValue = (page: string, id: string): string | undefined => new RegExp(`<span class="id">${id.replace(/\./g, '\\.')}</span><span class="k">[^<]*</span><span class="v">([^<]*)</span>`).exec(page)?.[1];
@@ -168,6 +170,15 @@ test('replay of a CoW order says the assets the order moves change later, and pr
   assert.match(stdout.replace(/\n│ */g, ' '), /This transaction signs only the digest of a message \(Order\)\. The assets that message moves change later, when someone acts on it, not in this transaction\./);
   assert.doesNotMatch(stdout, /move no asset|moves an asset/);
 });
+
+for (const name of ['cow-swap-approve', 'morpho-migrate-all', 'morpho-vault-deposit']) {
+  test(`the verdict recorded in ${name}.json recomputes byte for byte`, async () => {
+    const text = readFileSync(join(ROOT, 'testdata', 'verify', `${name}.json`), 'utf8');
+    const { result: recorded, ...file } = parseVerdictFile(JSON.parse(text));
+    const result = await evaluate(file.inputs, replayReader(file.exchanges));
+    assert.equal(JSON.stringify(result), JSON.stringify(recorded));
+  });
+}
 
 test('replay names an older verdict format and says to run verify again', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-replay-'));

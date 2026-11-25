@@ -12,7 +12,7 @@
  "studiedWith": {
   "template": "0x269bd2712c49d1e8b9ae5df349506157e2f5e6c69fafa9e590295e54cd74ee9d",
   "registry": "0x6600ff7b3175cf7e30c749cbc33832bff7ce18e54edf14b9a9239d3cc7b38be4",
-  "study": "0x94bfaaffbfc8c7dbc5b3874bc31cfe270d787964a427798536f92503545477bb"
+  "study": "0x666083030893f4947cba22a732c03d67881bc2dabdffd8ad91d58fe8978d8fa1"
  },
  "search": {
   "year": {
@@ -60,6 +60,7 @@
   {
    "kind": "misfit",
    "hash": "0xfa6d8ad30c5153dd18b45a4fd4f44c285048897ce9a665f42efffcdc15002d88",
+   "block": "24197844",
    "sender": {
     "kind": "safe",
     "address": "0x9e33faae38ff641094fa68c65c2ce600b3410585"
@@ -72,7 +73,8 @@
       "selector": "0xef7fa71b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -84,6 +86,7 @@
   {
    "kind": "misfit",
    "hash": "0xf23004bd4fc41281815d08b8f0a241a88ea3ed7fece6e3c1c66c5f4664d91c13",
+   "block": "24881186",
    "sender": {
     "kind": "safe",
     "address": "0x9e33faae38ff641094fa68c65c2ce600b3410585"
@@ -96,11 +99,13 @@
       "selector": "0xef7fa71b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x0f3b17ad22319896bce5f839298fcc3e09e9d8759e4bea567ddc9e7bfcac1e71",
+   "block": "24943654",
    "sender": {
     "kind": "safe",
     "address": "0x9e33faae38ff641094fa68c65c2ce600b3410585"
@@ -145,7 +150,8 @@
       "selector": "0xef7fa71b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -157,6 +163,7 @@
   {
    "kind": "misfit",
    "hash": "0x8fdf3e927279cdeee47cfc624095fa54fa3c8750356a5547606ea3523d598dc6",
+   "block": "25130494",
    "sender": {
     "kind": "safe",
     "address": "0x9e33faae38ff641094fa68c65c2ce600b3410585"
@@ -201,11 +208,13 @@
       "selector": "0xef7fa71b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x6f53f3a91be74881e8903ecc386540b99daeb794f3afd0673c369eda7119ebdc",
+   "block": "25133129",
    "sender": {
     "kind": "safe",
     "address": "0x9e33faae38ff641094fa68c65c2ce600b3410585"
@@ -242,11 +251,13 @@
       "selector": "0xef7fa71b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x16bab517e1cb4ba153b183a3dbfa5bd5879b4d65deef743d25ed423f6130cb1a",
+   "block": "25144618",
    "sender": {
     "kind": "safe",
     "address": "0x9e33faae38ff641094fa68c65c2ce600b3410585"
@@ -259,7 +270,8 @@
       "selector": "0xef7fa71b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -271,6 +283,7 @@
   {
    "kind": "misfit",
    "hash": "0x4b0ef8caaa2c3032b807a656bf73f96d660c4c2f82dc124d0157cc33434009a8",
+   "block": "25445882",
    "sender": {
     "kind": "safe",
     "address": "0x9e33faae38ff641094fa68c65c2ce600b3410585"
@@ -307,11 +320,13 @@
       "selector": "0xef7fa71b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x12b42716426b5f53a1fe7656e6ca603a67b0a37a6f69b16d001dd6c6bcd576aa",
+   "block": "25547865",
    "sender": {
     "kind": "safe",
     "address": "0x9e33faae38ff641094fa68c65c2ce600b3410585"
@@ -344,11 +359,13 @@
       "selector": "0xef7fa71b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x49dc0512c2e4dce1ecc6a32ec9c8611177b28be1bb23a03db0aaa670b731e81c",
+   "block": "25746909",
    "sender": {
     "kind": "safe",
     "address": "0x9e33faae38ff641094fa68c65c2ce600b3410585"
@@ -385,11 +402,13 @@
       "selector": "0xef7fa71b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xb4e26fa24921bbaadf013937115f773a399568ff0be9c0d2e4465aa8a265eae5",
+   "block": "26035342",
    "sender": {
     "kind": "safe",
     "address": "0x9e33faae38ff641094fa68c65c2ce600b3410585"
@@ -402,11 +421,13 @@
       "selector": "0xef7fa71b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x69b6bd9e927b5386cf05a29db6b7540adc3152e12b2cec1fba8deee2b808b2c3",
+   "block": "26035355",
    "sender": {
     "kind": "safe",
     "address": "0x9e33faae38ff641094fa68c65c2ce600b3410585"
@@ -419,11 +440,13 @@
       "selector": "0xef7fa71b"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xc997a064a143907d7d0d03c9e0ba9224d595e9226d780ecad0421e7d3aeb8472",
+   "block": "26229224",
    "sender": {
     "kind": "safe",
     "address": "0x9e33faae38ff641094fa68c65c2ce600b3410585"
@@ -456,7 +479,8 @@
       "selector": "0xef7fa71b"
      }
     ]
-   }
+   },
+   "free": []
   }
  ],
  "measurements": [],

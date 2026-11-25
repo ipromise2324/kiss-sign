@@ -242,10 +242,15 @@ test('English text that holds Chinese characters or full-width punctuation is re
   for (const en of ['供應 USDC', 'Supply USDC，then deposit', 'Supply（USDC）']) refused(edited(['summary'], { en, 'zh-TW': '供應 USDC' }), 'notes.json.summary.en: holds Chinese characters or full-width punctuation');
 });
 
-test('text over its limit is refused: 2,000, 300 for a review, 200 for a judgment, role, recommendation, intro or AI source, 100 for a title, flow line or verdict; English may be three times as long', () => {
+test('text over its limit is refused: 250 for a summary, 150 for a field, 2,000 for an audit text, 300 for a review, 200 for a judgment, role, recommendation, intro or AI source, 100 for a title, flow line or verdict; English may be three times as long', () => {
   const over = (n: number) => t('x'.repeat(n + 1));
-  refused(edited(['summary'], over(2000)), 'notes.json.summary.zh-TW: longer than 2000 characters');
-  refused(edited(['fields', '1.approve.spender'], over(2000)), 'notes.json.fields.1.approve.spender.zh-TW: longer than 2000 characters');
+  refused(edited(['summary'], over(250)), 'notes.json.summary.zh-TW: longer than 250 characters');
+  refused(edited(['fields', '1.approve.spender'], over(150)), 'notes.json.fields.1.approve.spender.zh-TW: longer than 150 characters');
+  assert.doesNotThrow(() => parseNotes(edited(['summary'], { en: 'x'.repeat(750), 'zh-TW': 'x'.repeat(250) }), SCOPE));
+  assert.doesNotThrow(() => parseNotes(edited(['fields', '1.approve.spender'], { en: 'x'.repeat(450), 'zh-TW': 'x'.repeat(150) }), SCOPE));
+  refused(edited(['summary'], { en: 'x'.repeat(751), 'zh-TW': 'x' }), 'notes.json.summary.en: longer than 750 characters');
+  refused(edited(['fields', '1.approve.spender'], { en: 'x'.repeat(451), 'zh-TW': 'x' }), 'notes.json.fields.1.approve.spender.en: longer than 450 characters');
+  refused(edited(['protocols', 'morpho-blue', 'audits', 'text'], over(2000)), 'notes.json.protocols.morpho-blue.audits.text.zh-TW: longer than 2000 characters');
   refused(edited(['reviews', 'morpho-oracle/source.page', 'text'], over(300)), 'notes.json.reviews.morpho-oracle/source.page.text.zh-TW: longer than 300 characters');
   refused(edited(['judgments', 0, 'text'], over(200)), 'notes.json.judgments[0].text.zh-TW: longer than 200 characters');
   refused(edited(['entries', 'usdc', 'role'], over(200)), 'notes.json.entries.usdc.role.zh-TW: longer than 200 characters');

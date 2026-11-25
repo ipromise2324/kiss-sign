@@ -11,7 +11,7 @@
  "studiedWith": {
   "template": "0x73d152f3283d07ac245108b5462c02cedf55bbaf0f5c03fcddcf5cbe8574afc2",
   "registry": "0x9c09817810c2272e2b9d3ab4fc0863575e030fe4d64c1aa54ea7fe8b4126ad1a",
-  "study": "0x94bfaaffbfc8c7dbc5b3874bc31cfe270d787964a427798536f92503545477bb"
+  "study": "0x666083030893f4947cba22a732c03d67881bc2dabdffd8ad91d58fe8978d8fa1"
  },
  "search": {
   "year": {
@@ -97,6 +97,7 @@
   {
    "kind": "misfit",
    "hash": "0x82c008c61796e8c62eca2459b26e56d1e9302af0a1bd45eecae19be354438585",
+   "block": "24069297",
    "sender": {
     "kind": "safe",
     "address": "0xe08b04aa20f16fd0d5c38a98731d2d812bf8a36f"
@@ -109,7 +110,8 @@
       "selector": "0xac9650d8"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -152,7 +154,8 @@
     "0x1885aef3bdbce473da29d71fa2ff964c84db760a",
     "2000000000000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1767110735"
   },
   {
    "kind": "not-studied",
@@ -251,7 +254,8 @@
     "0xf4bd5fde616e6bd304c42c9ff32e4baae74f12a7",
     "93360420000000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1769683643"
   },
   {
    "kind": "not-studied",
@@ -284,6 +288,7 @@
   {
    "kind": "misfit",
    "hash": "0xba5b8dc5a9c21fb34d74924c0c252bfeef2b94558c2a484bc3b6639f5ca9c0ea",
+   "block": "24383296",
    "sender": {
     "kind": "safe",
     "address": "0xe08b04aa20f16fd0d5c38a98731d2d812bf8a36f"
@@ -296,7 +301,8 @@
       "selector": "0xac9650d8"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -357,6 +363,7 @@
   {
    "kind": "misfit",
    "hash": "0x6472ae3cb8ae727132b85613f0071180b2b128859b3a5d158baa6fabd960e19c",
+   "block": "24460902",
    "sender": {
     "kind": "safe",
     "address": "0xe08b04aa20f16fd0d5c38a98731d2d812bf8a36f"
@@ -369,7 +376,8 @@
       "selector": "0xdd46508f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -440,7 +448,8 @@
     "0x3f465c83e22592d73e86fba46e16fef41c22c139",
     "800990000000000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1772138567"
   },
   {
    "kind": "fit",
@@ -469,7 +478,8 @@
     "0x89859a90325c34e37546f4bf5db8bbbd24214728",
     "100000000000000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1772175383"
   },
   {
    "kind": "not-studied",
@@ -505,7 +515,8 @@
     "0x0347a82446b95ef159882bc438a6b4eee17780e7",
     "2924604353000000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1772264435"
   },
   {
    "kind": "not-studied",
@@ -583,7 +594,8 @@
     "0x8325fa11014d6890099736cec267547bc86e829a",
     "834996057016379855231"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1773291671"
   },
   {
    "kind": "fit",
@@ -612,7 +624,8 @@
     "0x7b0c6ed0d6ca0b0c38aaaaedee8820740f3562f8",
     "834996057016379855231"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1773299747"
   },
   {
    "kind": "fit",
@@ -641,7 +654,8 @@
     "0x792afa954ab9db6e6013809516e2a4b44fee9883",
     "834996057016379855231"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1773308399"
   },
   {
    "kind": "fit",
@@ -670,7 +684,8 @@
     "0x6ff12fdf6ffdcd9c1cf2ac47e331850a8e831f1e",
     "834996057016379855231"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1773313979"
   },
   {
    "kind": "not-studied",
@@ -727,7 +742,8 @@
     "0xdd0764eb65d9d1bc698001f90ccc9e1a9b84a1b5",
     "133971260349031042344"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1773836147"
   },
   {
    "kind": "fit",
@@ -756,7 +772,8 @@
     "0xcd6bedc32749234d9c6dd8bc992a935ddbbf8502",
     "102400664000000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1773864635"
   },
   {
    "kind": "not-studied",
@@ -792,7 +809,8 @@
     "0x010d2c92ca8999317aad48372c416e6341fcb9a9",
     "8769456052200589444"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1773916103"
   },
   {
    "kind": "fit",
@@ -821,7 +839,8 @@
     "0xa0bc65636dece72f66a592c80a1c91e7cfc05559",
     "5000000000000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1773922607"
   },
   {
    "kind": "fit",
@@ -850,7 +869,8 @@
     "0x3b833444a70d5c7d929c2ba0d7d610775763c9c4",
     "801380646033256622212"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1774000727"
   },
   {
    "kind": "not-studied",
@@ -942,7 +962,8 @@
     "0x77f72dd0ff45b3dd19a61efc2d45f366c47a1432",
     "549816003680314881703"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1775249687"
   },
   {
    "kind": "not-studied",
@@ -1055,7 +1076,8 @@
     "0x358c3e7eaebde09692fb25751fd42831e9f1ec0b",
     "492000000000000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1776501695"
   },
   {
    "kind": "not-studied",
@@ -1067,6 +1089,7 @@
   {
    "kind": "misfit",
    "hash": "0x3e8d86f66c016a443d0c5ab59929c2fc24d05e73ed4156ed88f70de32bfa4917",
+   "block": "24919539",
    "sender": {
     "kind": "safe",
     "address": "0xe08b04aa20f16fd0d5c38a98731d2d812bf8a36f"
@@ -1087,7 +1110,8 @@
       "selector": "0xdd46508f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1141,6 +1165,7 @@
   {
    "kind": "misfit",
    "hash": "0xbc0feb037de87c94637043422daa485742dfcda3b551a6b894889d2b8aa11bdb",
+   "block": "25020687",
    "sender": {
     "kind": "safe",
     "address": "0xe08b04aa20f16fd0d5c38a98731d2d812bf8a36f"
@@ -1153,7 +1178,8 @@
       "selector": "0xb72df5de"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1280,7 +1306,8 @@
     "0x16205bfd4317d156aa9f4850fb8fefbdfd927897",
     "17000000000000000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1780306343"
   },
   {
    "kind": "not-studied",
@@ -1320,6 +1347,7 @@
   {
    "kind": "misfit",
    "hash": "0xa051338c7ab45065b5ee6f97e6ff3c40b9a87706a9bee52295e9819f449f3a1e",
+   "block": "25293173",
    "sender": {
     "kind": "safe",
     "address": "0xe08b04aa20f16fd0d5c38a98731d2d812bf8a36f"
@@ -1340,7 +1368,8 @@
       "selector": "0xdd46508f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1366,6 +1395,7 @@
   {
    "kind": "misfit",
    "hash": "0x41b4a776e9871f7fd59fcad36dacf3860693bc1e0500d8d5cd431641136ed150",
+   "block": "25336896",
    "sender": {
     "kind": "safe",
     "address": "0xe08b04aa20f16fd0d5c38a98731d2d812bf8a36f"
@@ -1378,7 +1408,8 @@
       "selector": "0xdd46508f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1439,6 +1470,7 @@
   {
    "kind": "misfit",
    "hash": "0x5121f158603f0f146a18cb5afd20e963de2ab7f804e79e85226a5d488e5915af",
+   "block": "25401367",
    "sender": {
     "kind": "safe",
     "address": "0xb4dca8c97228befd0ce6bffd6cb8ad15a78439db"
@@ -1451,7 +1483,8 @@
       "selector": "0xd79875eb"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1589,6 +1622,7 @@
   {
    "kind": "misfit",
    "hash": "0x48b38f1ee743cfce83ca0112e702859dfca9213c1d1fb470dbb969f1e9814228",
+   "block": "25630835",
    "sender": {
     "kind": "safe",
     "address": "0xe08b04aa20f16fd0d5c38a98731d2d812bf8a36f"
@@ -1609,7 +1643,8 @@
       "selector": "0xdd46508f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -1715,7 +1750,8 @@
     "0xc370433d8e60db910ae09705e912e0743b49a41c",
     "6879364300896798453"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1786590023"
   },
   {
    "kind": "not-studied",
@@ -1825,6 +1861,7 @@
   {
    "kind": "misfit",
    "hash": "0x7b2335960fca833ac1a3c084489d5d2f659c5d181e84f0a0a38259786f593687",
+   "block": "25798275",
    "sender": {
     "kind": "safe",
     "address": "0x65ac5c8fc904ebc00140fdd59f9f63183cccc107"
@@ -1876,11 +1913,13 @@
       "selector": "0xa9059cbb"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0xf01c362858307ab90de5de8055433f6299344538aae9ed4832e58689be9606b8",
+   "block": "25798314",
    "sender": {
     "kind": "safe",
     "address": "0xcb39b35cac71086e38abc9dc1c787102a6d6f156"
@@ -2885,7 +2924,8 @@
       "selector": "0xa9059cbb"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2920,7 +2960,8 @@
     "0x04b9ca8e87d743c834c40068d8564116ec2d40dc",
     "435127428348000000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1787562431"
   },
   {
    "kind": "not-studied",
@@ -2932,6 +2973,7 @@
   {
    "kind": "misfit",
    "hash": "0xb562ceae45dbbcef0b1cfa1da4a65b649229a34ce6129f614a9f59703e6f0688",
+   "block": "25837568",
    "sender": {
     "kind": "safe",
     "address": "0xe08b04aa20f16fd0d5c38a98731d2d812bf8a36f"
@@ -2944,7 +2986,8 @@
       "selector": "0xdd46508f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -2991,6 +3034,7 @@
   {
    "kind": "misfit",
    "hash": "0xdff3e1562dc109e9719d894e65601c16001d727b0bca897019a3378d8609e492",
+   "block": "25876547",
    "sender": {
     "kind": "eoa",
     "address": "0x012437b23bb065a70655bd1d4012a1e1a3cf6641",
@@ -3008,7 +3052,8 @@
      "weeth"
     ],
     "actual": "0x01699d949c0c8f04f349642fd465c7ff16db6923"
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3097,6 +3142,7 @@
   {
    "kind": "misfit",
    "hash": "0x7e87dbf654e0d5c320a912b74244e48a1f38df169abe7b5807f0a86020cc88f1",
+   "block": "25976539",
    "sender": {
     "kind": "safe",
     "address": "0xe08b04aa20f16fd0d5c38a98731d2d812bf8a36f"
@@ -3117,7 +3163,8 @@
       "selector": "0xdd46508f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3171,6 +3218,7 @@
   {
    "kind": "misfit",
    "hash": "0x82719d4a9cd7a748843840fe87459c8d2b693d6e46448e96325fea65ee6dbf97",
+   "block": "26027416",
    "sender": {
     "kind": "safe",
     "address": "0x65ac5c8fc904ebc00140fdd59f9f63183cccc107"
@@ -3210,7 +3258,8 @@
       "selector": "0xa9059cbb"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -3341,6 +3390,7 @@
   {
    "kind": "misfit",
    "hash": "0xf3f1f6654a09eccba628b16f9b881e417bb10bccfd78ce3790e8e477bd8607c6",
+   "block": "26290315",
    "sender": {
     "kind": "safe",
     "address": "0xe08b04aa20f16fd0d5c38a98731d2d812bf8a36f"
@@ -3361,11 +3411,13 @@
       "selector": "0xdd46508f"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
    "hash": "0x9ba43e302b9bba734aa5dea48be97a84efa9e5fcbdd691ff6dc6088809c8eb6d",
+   "block": "26306834",
    "sender": {
     "kind": "safe",
     "address": "0x37333a9626e99ec2012f3cc47a062649cf741303"
@@ -3378,7 +3430,8 @@
       "selector": "0xccb60e25"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",

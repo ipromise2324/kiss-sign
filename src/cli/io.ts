@@ -21,6 +21,8 @@ export type Io = {
   readonly transport: Transport;
   /** GET a JSON document, for the Safe Transaction Service. */
   readonly fetchJson: (url: string) => Promise<unknown>;
+  /** This computer's clock, in milliseconds since 1970; absent reads the machine's own. */
+  readonly now?: () => number;
   /** A signed message's text read from a template's `lookup`, or why it could not be read. */
   readonly readMessage: MessageReader;
 };

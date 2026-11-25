@@ -89,6 +89,14 @@ export type RegistryEntry = {
   readonly code?: CodePins;
   /** An allowance from the Safe that this contract may keep after the transaction, and why its code makes that safe. */
   readonly standingAllowance?: StandingAllowance;
+  /** A price feed's: what it prices and how far its answer may be off. */
+  readonly feed?: Feed;
+  /** A token's or vault's: the feed that prices one whole token of it, and the unit it is meant to be worth one of. */
+  readonly price?: TokenPrice;
+  /** Numbers a factory's `instanceCheck` passes about this instance, such as a pool's fee. */
+  readonly numbers?: { readonly [name: string]: bigint };
+  /** A pool's: it answers `observe` as a Uniswap v3 pool does, so its mean price over a window may be a second source. */
+  readonly twap?: { readonly minLiquidity: bigint };
   /** Why this contract's code never reads calldata past a call's arguments, so a template may allow a trailer of more than 19 bytes. */
   readonly ignoresTrailer?: string;
 };
@@ -101,6 +109,35 @@ export const ALLOWANCE_ROUTES = ['erc20', 'permit2'] as const;
 export type AllowanceRoute = (typeof ALLOWANCE_ROUTES)[number];
 export type StandingAllowance = { readonly via: AllowanceRoute; readonly why: string };
 
+/** What the publisher's own list says a feed's data are: exchange prices, or the state of decentralized exchanges. */
+export const SOURCE_CLASSES = ['cex_price', 'dex_state_price'] as const;
+export type SourceClass = (typeof SOURCE_CLASSES)[number];
+
+export const DOLLAR = 'usd';
+
+/**
+ * A feed that answers `latestRoundData()`, `decimals()` and `description()`: its `description` and `decimals` as it
+ * answers them, the seconds between answers and the basis points of change its publisher lets pass without a new one,
+ * and the unit its price is in: `usd`, or the feed that prices that unit.
+ */
+export type Feed = {
+  readonly description: string;
+  readonly decimals: number;
+  readonly heartbeat: number;
+  readonly deviationBps: number;
+  readonly sourceClass: SourceClass;
+  readonly quote: string;
+};
+
+/**
+ * `feed` names a registry feed, and `unit` what it prices when that is not the token's own name, as a wrapped token is
+ * worth one of what it wraps; `peg` is `usd` or the feed on the token's own chain of feeds that prices what it is pegged to.
+ */
+export type TokenPrice = { readonly feed: string; readonly unit: string | undefined; readonly peg: string | undefined };
+
+/** A pool whose mean price may be read, its tokens in the pool's order, and the least harmonic mean liquidity to read it at. */
+export type TwapPool = { readonly entry: RegistryEntry; readonly token0: RegistryEntry; readonly token1: RegistryEntry; readonly minLiquidity: bigint };
+
 /**
  * A contract an instance view asks, or an address it binds or expects, seen from the instance: its factory, the instance
  * itself, the entry an attribute of the instance names, or each registry entry whose attribute names the instance.
@@ -111,9 +148,10 @@ export type Party =
   | { readonly kind: 'attribute'; readonly attribute: string }
   | { readonly kind: 'named-by'; readonly attribute: string };
 
-/** One argument of an instance view: a party's address, or a constant of the parameter's type. */
+/** One argument of an instance view: a party's address, a number the instance's entry declares, or a constant of the parameter's type. */
 export type InstanceArg =
   | { readonly kind: 'party'; readonly party: Party }
+  | { readonly kind: 'number'; readonly name: string; readonly bits: number }
   | { readonly kind: 'uint' | 'int'; readonly value: bigint }
   | { readonly kind: 'address'; readonly value: Address }
   | { readonly kind: 'bytes32'; readonly value: Hex }
@@ -354,10 +392,17 @@ function constantOf(path: string, key: (typeof CONSTANT_KEYS)[number], bound: un
 
 function instanceArg(path: string, raw: unknown, type: string, table: AttributeTable): InstanceArg {
   const keys = typeof raw === 'object' && raw !== null && !Array.isArray(raw) ? Object.keys(raw) : [];
+  if (keys.length === 1 && keys[0] === 'number') {
+    const name = (raw as Record<string, unknown>).number;
+    if (typeof name !== 'string' || !ATTRIBUTE_NAME.test(name)) throw new RegistryError(`${path}.number`, 'not the name of a number');
+    const bits = /^uint(\d+)$/.exec(type)?.[1];
+    if (bits === undefined) throw new RegistryError(path, `a number binds only uint<bits> parameters, and this one is ${type}`);
+    return { kind: 'number', name, bits: Number(bits) };
+  }
   const constant = keys.length === 1 ? CONSTANT_KEYS.find((k) => k === keys[0]) : undefined;
   if (constant !== undefined) return constantOf(path, constant, (raw as Record<string, unknown>)[constant], type);
   const party = raw === 'factory' || raw === 'instance' || (keys.length === 1 && (keys[0] === 'attribute' || keys[0] === 'namedBy'));
-  if (!party) throw new RegistryError(path, `not one of ${PARTY_FORMS} or a constant, ${CONSTANT_KEYS.map((k) => `{"${k}": ...}`).join(', ')}`);
+  if (!party) throw new RegistryError(path, `not one of ${PARTY_FORMS}, a number, {"number": ...}, or a constant, ${CONSTANT_KEYS.map((k) => `{"${k}": ...}`).join(', ')}`);
   if (type !== 'address') throw new RegistryError(path, `a party binds only an address parameter, and this one is ${type}`);
   return { kind: 'party', party: partyOf(path, raw, table) };
 }
@@ -667,10 +712,143 @@ function standingAllowanceOf(path: string, raw: unknown): StandingAllowance {
   return { via, why: nonEmpty(`${path}.why`, value.why) };
 }
 
+function wholeNumber(path: string, raw: unknown, least: number, most: number): number {
+  if (typeof raw !== 'number' || !Number.isInteger(raw) || raw < least || raw > most) throw new RegistryError(path, `not a whole number from ${least} to ${most}`);
+  return raw;
+}
+
+function decimalString(path: string, raw: unknown): bigint {
+  const value = typeof raw === 'string' && /^(0|[1-9][0-9]{0,77})$/.test(raw) ? BigInt(raw) : undefined;
+  if (value === undefined || value >> 256n !== 0n) throw new RegistryError(path, 'not a decimal integer string below 2^256');
+  return value;
+}
+
+const FEED_DESCRIPTION = /^[A-Za-z0-9.]{1,16} \/ [A-Za-z0-9.]{1,16}$/;
+const MAX_FEED_DECIMALS = 36;
+/** The longest heartbeat publishers of dollar feeds state; a longer one calls a dead feed fresh. */
+const MAX_HEARTBEAT = 86_400;
+const MAX_FEED_DEVIATION = 1000;
+/** A feed's chain of quotes ends in the dollar within this many feeds. */
+const MAX_FEEDS = 3;
+
+/** The unit a feed's description says it prices, and the one it prices it in. */
+const feedUnits = (description: string): readonly [string, string] => description.split(' / ') as [string, string];
+
+function feedOf(path: string, raw: unknown): Feed {
+  const value = record(path, raw);
+  const keys = ['description', 'decimals', 'heartbeat', 'deviationBps', 'sourceClass', 'quote'];
+  onlyKeys(path, value, keys);
+  if (typeof value.description !== 'string' || !FEED_DESCRIPTION.test(value.description)) throw new RegistryError(`${path}.description`, 'not a description such as ETH / USD');
+  const sourceClass = SOURCE_CLASSES.find((c) => c === value.sourceClass);
+  if (sourceClass === undefined) throw new RegistryError(`${path}.sourceClass`, `not one of ${SOURCE_CLASSES.join(', ')}`);
+  if (typeof value.quote !== 'string') throw new RegistryError(`${path}.quote`, `not ${DOLLAR} or the name of a feed`);
+  if (value.quote === DOLLAR && feedUnits(value.description)[1] !== 'USD') throw new RegistryError(`${path}.quote`, `the description prices in ${feedUnits(value.description)[1]}, not USD`);
+  return {
+    description: value.description,
+    decimals: wholeNumber(`${path}.decimals`, value.decimals, 0, MAX_FEED_DECIMALS),
+    heartbeat: wholeNumber(`${path}.heartbeat`, value.heartbeat, 1, MAX_HEARTBEAT),
+    deviationBps: wholeNumber(`${path}.deviationBps`, value.deviationBps, 1, MAX_FEED_DEVIATION),
+    sourceClass,
+    quote: value.quote,
+  };
+}
+
+function priceOf(path: string, raw: unknown): TokenPrice {
+  const value = record(path, raw);
+  onlyKeys(path, value, ['feed', 'unit', 'peg']);
+  if (typeof value.feed !== 'string') throw new RegistryError(`${path}.feed`, 'not the name of a feed');
+  if (value.peg !== undefined && typeof value.peg !== 'string') throw new RegistryError(`${path}.peg`, `not ${DOLLAR} or the name of a feed`);
+  if (value.unit !== undefined && typeof value.unit !== 'string') throw new RegistryError(`${path}.unit`, 'not the unit a feed prices');
+  return { feed: value.feed, unit: value.unit, peg: value.peg };
+}
+
+function numbersOf(path: string, raw: unknown): { [name: string]: bigint } {
+  return Object.fromEntries(
+    Object.entries(record(path, raw)).map(([name, value]) => {
+      if (!ATTRIBUTE_NAME.test(name) || name in Object.prototype) throw new RegistryError(`${path}.${name}`, 'not a number\'s name: a lowercase letter, then up to 31 letters and digits');
+      return [name, decimalString(`${path}.${name}`, value)];
+    }),
+  );
+}
+
+function twapOf(path: string, raw: unknown): { readonly minLiquidity: bigint } {
+  const value = record(path, raw);
+  onlyKeys(path, value, ['minLiquidity']);
+  const minLiquidity = decimalString(`${path}.minLiquidity`, value.minLiquidity);
+  if (minLiquidity === 0n) throw new RegistryError(`${path}.minLiquidity`, 'is 0, which any pool meets');
+  return { minLiquidity };
+}
+
+/** The kinds an entry may have to carry each of these, such as `price` on a token or a vault. */
+const PRICE_KINDS: Readonly<Record<'feed' | 'price' | 'twap', readonly ContractKind[]>> = { feed: ['oracle'], price: ['token', 'vault'], twap: ['pool'] };
+
+/** The feeds that price `feed`'s unit in dollars, itself first, as `parseRegistry` proved they do. */
+export function feedChain(feed: string, registry: Pick<Registry, 'entries'>): readonly RegistryEntry[] {
+  const chain: RegistryEntry[] = [];
+  for (let name = feed; name !== DOLLAR; ) {
+    const entry = registry.entries.get(name) as RegistryEntry;
+    chain.push(entry);
+    name = (entry.feed as Feed).quote;
+  }
+  return chain;
+}
+
+/** Every pool of the registry whose mean price may be read. */
+export function twapPools(registry: Pick<Registry, 'entries'>): readonly TwapPool[] {
+  const named = (entry: RegistryEntry, attribute: string): RegistryEntry => registry.entries.get(entry.attributes[attribute] as string) as RegistryEntry;
+  return [...registry.entries.values()].flatMap((entry) =>
+    entry.twap === undefined ? [] : [{ entry, token0: named(entry, 'token0'), token1: named(entry, 'token1'), minLiquidity: entry.twap.minLiquidity }],
+  );
+}
+
+function checkPrices(entries: ReadonlyMap<string, RegistryEntry>): void {
+  for (const { name, feed, twap, code } of entries.values()) {
+    if ((feed !== undefined || twap !== undefined) && code === undefined) throw new RegistryError(`${name}.code`, `missing, and a price is read from it; run pnpm pin-code ${name}`);
+  }
+  for (const { name, feed } of entries.values()) {
+    if (feed === undefined) continue;
+    let at: Feed = feed;
+    for (let steps = 1; at.quote !== DOLLAR; steps++) {
+      const next: Feed | undefined = entries.get(at.quote)?.feed;
+      if (next === undefined) throw new RegistryError(`${name}.feed.quote`, `${JSON.stringify(at.quote)} is not ${DOLLAR} or a feed in the registry`);
+      const [priced] = feedUnits(next.description);
+      if (feedUnits(at.description)[1] !== priced) throw new RegistryError(`${name}.feed.quote`, `${JSON.stringify(at.description)} is not in the unit ${at.quote} prices, ${priced}`);
+      if (steps === MAX_FEEDS) throw new RegistryError(`${name}.feed.quote`, `does not reach ${DOLLAR} within ${MAX_FEEDS} feeds`);
+      at = next;
+    }
+  }
+  for (const { name, price } of entries.values()) {
+    if (price === undefined) continue;
+    const feed = entries.get(price.feed)?.feed;
+    if (feed === undefined) throw new RegistryError(`${name}.price.feed`, `${JSON.stringify(price.feed)} is not a feed in the registry`);
+    const [priced] = feedUnits(feed.description);
+    if (price.unit !== undefined && price.unit !== priced) throw new RegistryError(`${name}.price.unit`, `${price.feed} prices ${priced}`);
+    if (priced.toLowerCase() !== name) {
+      if (price.unit === undefined) throw new RegistryError(`${name}.price.feed`, `${price.feed} prices ${priced}, which is not ${name}'s name; a token worth one ${priced} says so in unit`);
+      if (entries.has(priced.toLowerCase())) throw new RegistryError(`${name}.price.unit`, `${priced} is another entry's name`);
+    }
+    const peg = price.peg;
+    if (peg !== undefined && peg !== DOLLAR && !feedChain(price.feed, { entries }).some((feed) => feed.name === peg)) {
+      throw new RegistryError(`${name}.price.peg`, `${JSON.stringify(peg)} is not ${DOLLAR} or a feed on the way from ${price.feed} to it`);
+    }
+  }
+  const pairs = new Map<string, string>();
+  for (const { name, twap, attributes } of entries.values()) {
+    if (twap === undefined) continue;
+    for (const attribute of ['factory', 'token0', 'token1']) if (attributes[attribute] === undefined) throw new RegistryError(`${name}.attributes.${attribute}`, 'missing, and a twap needs it');
+    const [token0, token1] = [entries.get(attributes.token0 as string) as RegistryEntry, entries.get(attributes.token1 as string) as RegistryEntry];
+    if (token0.address >= token1.address) throw new RegistryError(`${name}.attributes.token1`, 'is not above token0 by address, the order a pool holds its tokens in');
+    const pair = `${token0.name} ${token1.name}`;
+    const twin = pairs.get(pair);
+    if (twin !== undefined) throw new RegistryError(`${name}.twap`, `${twin} is already the twap pool of ${pair}`);
+    pairs.set(pair, name);
+  }
+}
+
 function entryOf(name: string, raw: unknown, table: AttributeTable): RegistryEntry {
   const path = name;
   const value = record(path, raw);
-  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'immunefi', 'sdk', 'attributes', 'routes', 'implementationRead', 'dependsOn', 'code', 'instanceCheck', 'size', 'standingAllowance', 'ignoresTrailer']);
+  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'immunefi', 'sdk', 'attributes', 'routes', 'implementationRead', 'dependsOn', 'code', 'instanceCheck', 'size', 'standingAllowance', 'ignoresTrailer', 'feed', 'price', 'numbers', 'twap']);
   const address = parsed(() => parseAddress(`${path}.address`, value.address));
   const routes = value.routes === undefined ? undefined : routingOf(`${path}.routes`, value.routes);
   const implementationRead = value.implementationRead === undefined ? undefined : parseImplementationRead(`${path}.implementationRead`, value.implementationRead);
@@ -725,7 +903,12 @@ function entryOf(name: string, raw: unknown, table: AttributeTable): RegistryEnt
     ...(value.standingAllowance === undefined ? {} : { standingAllowance: standingAllowanceOf(`${path}.standingAllowance`, value.standingAllowance) }),
     ...(value.ignoresTrailer === undefined ? {} : { ignoresTrailer: nonEmpty(`${path}.ignoresTrailer`, value.ignoresTrailer) }),
     ...(value.size === undefined ? {} : { size: sizeViewOf(`${path}.size`, value.size, table) }),
+    ...(value.feed === undefined ? {} : { feed: feedOf(`${path}.feed`, value.feed) }),
+    ...(value.price === undefined ? {} : { price: priceOf(`${path}.price`, value.price) }),
+    ...(value.numbers === undefined ? {} : { numbers: numbersOf(`${path}.numbers`, value.numbers) }),
+    ...(value.twap === undefined ? {} : { twap: twapOf(`${path}.twap`, value.twap) }),
   };
+  for (const key of ['feed', 'price', 'twap'] as const) if (value[key] !== undefined && !PRICE_KINDS[key].includes(kind)) throw new RegistryError(`${path}.${key}`, `a ${kind} has no ${key}`);
   if (kind !== 'factory') {
     if (value.instanceCheck !== undefined) throw new RegistryError(`${path}.instanceCheck`, `a ${kind} has no instanceCheck`);
     return entry;
@@ -810,6 +993,7 @@ export function parseRegistry(raw: unknown, rawMarkets: unknown = {}, rawAttribu
       if (named.dependsOn !== undefined) throw new RegistryError(`${entry.name}.dependsOn[${i}]`, `${target} depends on other entries itself; a dependency is one step deep`);
     });
   }
+  checkPrices(entries);
   return { attributes, entries, byAddress, markets: marketsOf(rawMarkets, entries) };
 }
 

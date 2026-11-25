@@ -7,6 +7,7 @@ import type { AbiParam } from '../decode/abi.ts';
 import { namedSignatureOfAbiEntry, paramName, parseFunctionSignature } from '../decode/abi.ts';
 import { say } from '../language.ts';
 import type { Language } from '../language.ts';
+import { FLOOR_RULE } from '../price/reference.ts';
 import { MARKET_PARAMS, parseHttpsUrl, sizeOf } from '../registry.ts';
 import type { HttpsUrl, Market, Registry, RegistryEntry } from '../registry.ts';
 import { SAFE_TX_TYPEHASH_HEX } from '../safe/hash.ts';
@@ -14,7 +15,7 @@ import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
 import { TEMPLATES_DIR, addressWord, callSites, isNamedToken, refNames, slippageBps, viewTargetNames } from '../template/template.ts';
-import type { CardField, CardRef, ConstValue, EffectToken, KeptApproval, FreeClaim, Rule, Template, TemplateCall, Tolerance, TokenRef, ViewEffect, ViewExpectation } from '../template/template.ts';
+import type { CardField, CardRef, Computed, ConstValue, EffectToken, Floor, KeptApproval, FreeClaim, Rule, Template, TemplateCall, Tolerance, TokenRef, ViewEffect, ViewExpectation } from '../template/template.ts';
 import { distributionOf, effectText } from './amounts.ts';
 import type { Difference } from './amounts.ts';
 import type { FieldFact } from './erc7730.ts';
@@ -27,22 +28,24 @@ import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, flowR
 import type { Confidence, FindingKind, Ledger, Phrase, Place, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
 import { NOTES_FILE, argumentTree, notesLanguages, notesScope, parseFlowLines, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
-import { PERCENTILES, amountsOf, freeNumbers } from './past-txs-render.ts';
+import { amountsOf } from './past-txs-render.ts';
 import { foundBy } from './past-txs.ts';
 import type { PastTxs } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { factsScope } from './protocol-facts.ts';
-import { functionNames, isOtherOperation, misfitText } from './study.ts';
-import type { CallName, MisfitReason, Sender, TxStudy } from './study.ts';
+import { isExact, newestFirst, pastDifferences, pastFields, studiedOnce } from './report-past.ts';
+import type { PastCall, PastDifference, PastField, SpreadRow, Studied } from './report-past.ts';
+import { functionNames, isOtherOperation } from './study.ts';
+import type { MisfitReason } from './study.ts';
 import { readStoredEvidence } from './instance-evidence.ts';
 import type { StoredPoint } from './instance-evidence.ts';
 import type { ProtocolFacts, ProtocolSheet } from './protocol-facts.ts';
 import { signedEntryNames } from './report.ts';
 import type { ReportInputs, ReportTitle } from './report.ts';
-import { WORDS } from './report-words.ts';
+import { WORDS, dateOf } from './report-words.ts';
 import { compareFlow } from './trace.ts';
-import type { FlowComparison, TracedTx } from './trace.ts';
-import type { SafeParties, SearchSpan, Words } from './report-words.ts';
+import type { FlowComparison, Payment, TracedTx, Uncovered } from './trace.ts';
+import type { By, FreeTest, SafeParties, SearchSpan, Words } from './report-words.ts';
 import { formatMillions, modelName, totalTokens, usagePath } from './usage.ts';
 import type { Usage } from './usage.ts';
 
@@ -80,12 +83,14 @@ export type Page = {
   readonly id: string;
   readonly header: Header;
   readonly sections: readonly Section[];
-  readonly usage: UsageBlock;
   readonly footer: Inline;
 };
 
-/** What the AI used to make the report, under the last section and no result of its own. */
-export type UsageBlock = { readonly title: string; readonly lead: string; readonly table: { readonly head: readonly [string, string]; readonly rows: readonly (readonly [string, string])[]; readonly total: readonly [string, string] } | undefined; readonly notes: readonly string[] };
+/** What the AI used to make the report, which is no result of its own. */
+export type UsageBlock = { readonly lead: string; readonly table: { readonly head: readonly [string, string]; readonly rows: readonly (readonly [string, string])[]; readonly total: readonly [string, string] } | undefined; readonly notes: readonly string[] };
+
+/** A table of past transactions; a `num` column's cells align right, a `wide` one's wrap, and a `value` one's are what the table is for. */
+export type PastTable = { readonly head: readonly { readonly label: string; readonly as: 'num' | 'wide' | 'plain' | 'value' | 'links' }[]; readonly rows: readonly (readonly Inline[])[] };
 
 export type Section = { readonly anchor: Anchor; readonly label: string; readonly count: RailCount | undefined; readonly body: Body };
 
@@ -96,7 +101,8 @@ export type Body =
   | { readonly kind: 'review'; readonly rows: readonly ReviewRow[]; readonly judgments: readonly Judgment[] }
   | { readonly kind: 'wallet'; readonly view: WalletView }
   | { readonly kind: 'addresses'; readonly open: readonly AddressRow[]; readonly folded: readonly AddressRow[] }
-  | { readonly kind: 'past'; readonly same: Inline; readonly others: Inline | undefined; readonly conclusion: AiText | undefined; readonly amounts: readonly PastAmounts[]; readonly spreads: readonly PastSpread[]; readonly recordings: readonly PastRecording[] }
+  | { readonly kind: 'past'; readonly past: PastBlock | undefined }
+  | { readonly kind: 'usage'; readonly usage: UsageBlock }
   | { readonly kind: 'next'; readonly steps: readonly NextStep[]; readonly automatic: readonly Inline[] };
 
 export type NextStep = { readonly say: Inline; readonly command: string | undefined; readonly then: readonly Inline[]; readonly hashes: boolean };
@@ -114,17 +120,25 @@ export type Header = {
 export type StripItem = { readonly line: StripLine | 'providers'; readonly name: string; readonly state: State; readonly count: string | undefined; readonly explain: string };
 
 export type Who = 'you-type' | 'you-pick' | 'computed' | 'fixed' | 'free' | 'bounded';
+/** The who-decides legend, by who: the signer, the program and template, or the protocol's app. */
+export type KeyGroup = { readonly title: string; readonly items: readonly KeyItem[] };
 export type KeyItem = { readonly who: Who; readonly label: string; readonly means: string };
 export type Chip = { readonly who: Who; readonly label: string };
+/** Which of an argument's parts one decides, when its parts differ. */
+export type Mix = Chip & { readonly parts: readonly string[] };
 
 export type ArgRow = {
   readonly key: string;
   readonly name: string;
+  /** One chip, or none when `mix` says who decides each of its parts. */
   readonly chips: readonly Chip[];
+  readonly mix: readonly Mix[];
   /** As `cast decode-calldata` prints it, for a value the template fixes; none for a value decided at each signing. */
   readonly value: string | undefined;
   readonly words: Inline;
   readonly qualifier: Inline | undefined;
+  /** More about the rule, folded under its label. */
+  readonly more: { readonly label: string; readonly text: string } | undefined;
   readonly id: Inline | undefined;
   /** What the argument does, from notes.json; none on a row the program adds, such as a call's `to`. */
   readonly ai: AiText | undefined;
@@ -156,8 +170,8 @@ export type Sequence = { readonly lifelines: readonly Lifeline[]; readonly arrow
 
 export type Flow = {
   readonly diagram: Sequence;
-  /** The who-decides key: each word some row uses, in key order, with what it means; a free field once per claim it makes. */
-  readonly key: readonly KeyItem[];
+  /** Each word some row uses, with what it means, in groups; a free field once per claim it makes. */
+  readonly key: readonly KeyGroup[];
   /** The Safe transaction's own rules, such as a cancellation's nonce. */
   readonly safeTx: readonly ArgRow[];
   readonly calls: readonly CallBlock[];
@@ -256,33 +270,28 @@ export type AddressRow = {
   readonly aiSources: readonly AiSource[];
 };
 
-/**
- * Transactions with the template's shape outside the registry at the same places, or that did not have the template's
- * shape for one reason; `calls` names their calls when the reason is about calls.
- */
-export type PastGroup = { readonly count: number; readonly senders: number; readonly calls: Inline | undefined; readonly reason: Inline; readonly examples: readonly Span[] };
-/** The transactions of one kind of sender that used the operation's calls: how many, how many had the template's shape, and why the rest did not. */
-export type PastBlock = { readonly title: string; readonly lead: Inline; readonly groups: readonly PastGroup[] };
-/** One party's differences from a stated amount: each number of base units with how many transactions ended there. */
-export type PastAmountRow = { readonly party: string; readonly cells: readonly { readonly by: string; readonly n: string }[] };
+/** One token's measured balances against the stated amount. */
+export type PastTokenAmounts = { readonly lead: string; readonly table: PastTable };
 /** One measured effect of one recording, shown beside its tolerance, with the finding when the evidence and the tolerance disagree. */
 export type PastAmounts = {
   readonly effect: string;
   readonly tolerance: string;
-  readonly tokens: readonly { readonly count: number; readonly lead: string; readonly rows: readonly PastAmountRow[] }[];
+  readonly tokens: readonly PastTokenAmounts[];
+  /** The tokens no card can name, folded. */
+  readonly outside: { readonly label: string; readonly tokens: readonly PastTokenAmounts[] } | undefined;
   readonly finding: string | undefined;
   readonly unmeasured: string | undefined;
 };
-/** One free number of one recording and sender type: the smallest value, the percentiles and the largest, each with its label. */
-export type PastSpread = {
-  readonly field: string;
-  readonly who: string;
-  readonly lead: string;
-  readonly count: number;
-  readonly cells: readonly { readonly label: string; readonly value: string }[];
-  readonly unrecorded: string | undefined;
+/** The past values at one place the app fills. */
+export type PastNumbers = { readonly name: string; readonly lead: string; readonly table: PastTable | undefined; readonly says: Inline | undefined; readonly limit: readonly [string, string, string] | undefined; readonly notes: readonly string[]; readonly exact: Inline | undefined };
+export type PastBlock = {
+  readonly worked: { readonly answer: string; readonly rest: Inline };
+  readonly numbers: readonly PastNumbers[];
+  readonly differ: { readonly lead: string; readonly open: PastTable | undefined; readonly more: { readonly label: string; readonly table: PastTable } | undefined };
+  readonly conclusion: AiText | undefined;
+  readonly amounts: readonly PastAmounts[];
+  readonly search: readonly { readonly count: string; readonly lines: readonly Inline[] }[];
 };
-export type PastRecording = { readonly file: string; readonly count: string; readonly search: Inline; readonly blocks: readonly PastBlock[]; readonly others: readonly Inline[] };
 
 /** Everything the HTML report reads beyond the Markdown report's inputs. */
 export type HtmlInputs = ReportInputs & {
@@ -295,6 +304,7 @@ function kindWord(field: CardField, template: Template, w: Words): string {
     case 'contract':
       return w.kind[field.scope.registryKind];
     case 'amount': {
+      if (field.floor !== undefined) return w.field.floor;
       if (field.computed !== undefined) return field.computed.bound === 'floor' ? w.field.floor : w.field.ceiling;
       const of = field.of === 'eth' || field.of.attribute !== undefined ? undefined : template.card.get(field.of.field);
       return of?.kind === 'contract' && of.scope.registryKind === 'vault' ? w.field.shares : w.field.amount;
@@ -317,6 +327,9 @@ function fieldWord(template: Template, name: string, w: Words): string {
   const word = kindWord(field, template, w);
   return [...template.card.values()].filter((f) => kindWord(f, template, w) === word).length > 1 ? w.named(word, name) : word;
 }
+
+/** A card field's word with who decides its value. */
+const byWord = (template: Template, name: string, w: Words): By => ({ field: fieldWord(template, name, w), computed: isComputed(template, name) });
 
 /** A card reference in the signer's words: the field, and the attribute or market part it names. */
 const refWord = (template: Template, ref: CardRef, w: Words): string =>
@@ -390,14 +403,13 @@ function rowWord(entry: RegistryEntry, source: ProgramSource, shared: DeployerSh
 /** What a confirmation is called in the line that counts them: the `source` page is the official page, any other as `sourceWord` names it. */
 const confirmationWord = (entry: RegistryEntry, source: ProgramSource, w: Words, registry: Registry): string => (source === 'page' ? w.officialPage : sourceWord(entry, source, w, registry));
 
+const placeWords = (entry: RegistryEntry, owner: string, sources: readonly ProgramSource[], w: Words, registry: Registry): string => {
+  const words = sources.map((source) => confirmationWord(entry, source, w, registry));
+  return words.length === 1 ? (words[0] as string) : `${words.join(' + ')} (${owner})`;
+};
+
 const confirmedWords = (entry: RegistryEntry, by: readonly Place[], w: Words, registry: Registry): string =>
-  w.confirmed(
-    by.map(({ owner, sources }) => {
-      const words = sources.map((source) => confirmationWord(entry, source, w, registry));
-      return words.length === 1 ? (words[0] as string) : `${words.join(' + ')} (${owner})`;
-    }),
-    by.length >= MIN_CONFIRMATIONS,
-  );
+  w.confirmed(by.map(({ owner, sources }) => placeWords(entry, owner, sources, w, registry)), by.length >= MIN_CONFIRMATIONS);
 
 const ZERO_ADDRESS = `0x${'0'.repeat(40)}`;
 
@@ -507,9 +519,19 @@ function targetOf(rule: Rule, context: Context): { readonly label: string; reado
   return { label: refWord(context.template, rule.ref, w), names, role: w.role.picked };
 }
 
+/**
+ * Where a card amount comes from: the chip, the words of its rules, `card new`'s step and the trial line all ask here.
+ * A new source is one more member, which `promptStep` must then word.
+ */
+type AmountSource = { readonly kind: 'typed' } | { readonly kind: 'computed'; readonly computed: Computed } | { readonly kind: 'floor'; readonly floor: Floor };
+const sourceOfAmount = (field: Extract<CardField, { kind: 'amount' }>): AmountSource => {
+  if (field.floor !== undefined) return { kind: 'floor', floor: field.floor };
+  return field.computed === undefined ? { kind: 'typed' } : { kind: 'computed', computed: field.computed };
+};
+
 const isComputed = (template: Template, name: string): boolean => {
   const field = template.card.get(name);
-  return field?.kind === 'amount' && field.computed !== undefined;
+  return field?.kind === 'amount' && sourceOfAmount(field).kind !== 'typed';
 };
 
 function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly field: string | undefined } | undefined {
@@ -551,7 +573,7 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
 }
 
 const chipLabel = (template: Template, who: Who, field: string | undefined, w: Words): string =>
-  who === 'free' ? w.appFills : who === 'bounded' ? w.appBounded : field === undefined || who === 'fixed' ? w.who[who] : w.chip(w.who[who], fieldWord(template, field, w));
+  field === undefined || who === 'fixed' ? w.who[who] : w.chip(w.who[who], fieldWord(template, field, w));
 
 function leaves(node: ArgNode, template: Template): { readonly node: ArgNode; readonly who: Who; readonly field: string | undefined }[] {
   if (node.rule.kind === 'call') return [];
@@ -560,17 +582,18 @@ function leaves(node: ArgNode, template: Template): { readonly node: ArgNode; re
   return who === undefined ? [] : [{ node, ...who }];
 }
 
-/** One chip when every part agrees; else one per who, naming its parts (`kind fixed`, `data any`). A nested call carries none. */
-function chipsOf(node: ArgNode, template: Template, w: Words): Chip[] {
+const WHO_ORDER: readonly Who[] = ['you-pick', 'you-type', 'computed', 'fixed', 'bounded', 'free'];
+
+/** One chip when every part agrees; else who decides each part, by name. A nested call carries neither. */
+function decided(node: ArgNode, template: Template, w: Words): { readonly chips: readonly Chip[]; readonly mix: readonly Mix[] } {
   const found = leaves(node, template);
   const distinct = [...new Map(found.map((leaf) => [`${leaf.who}/${leaf.field ?? ''}`, leaf])).values()];
-  if (distinct.length <= 1) return distinct.map((leaf) => ({ who: leaf.who, label: chipLabel(template, leaf.who, leaf.field, w) }));
-  const byWho = new Map<Who, string[]>();
-  for (const leaf of found) {
-    const names = byWho.get(leaf.who) ?? [];
-    if (!names.includes(leaf.node.name)) byWho.set(leaf.who, [...names, leaf.node.name]);
-  }
-  return [...byWho].map(([who, names]) => ({ who, label: w.chipParts(names, w.who[who]) }));
+  if (distinct.length <= 1) return { chips: distinct.map((leaf) => ({ who: leaf.who, label: chipLabel(template, leaf.who, leaf.field, w) })), mix: [] };
+  const mix = WHO_ORDER.flatMap((who): Mix[] => {
+    const parts = [...new Set(found.flatMap((leaf) => (leaf.who === who ? [leaf.node.name] : [])))];
+    return parts.length === 0 ? [] : [{ who, label: w.who[who], parts }];
+  });
+  return { chips: [], mix };
 }
 
 /** The card market field a `fields` rule binds whole, part by part. */
@@ -589,7 +612,7 @@ const readsSafe = (rule: Rule): boolean =>
 /** What a view effect requires, in the signer's words. */
 function changeWords(change: ViewExpectation, context: Context): Inline {
   const { w } = context;
-  return typeof change === 'string' ? [w.change[change]] : [w.equalsTyped(fieldWord(context.template, change.equals, w))];
+  return typeof change === 'string' ? [w.change[change]] : [w.equalsTyped(byWord(context.template, change.equals, w))];
 }
 
 /** The contract a view effect reads, by name: its registry name, or the one entry its card field names in this report. */
@@ -616,8 +639,24 @@ function cardWords(ref: CardRef, context: Context): { readonly words: Inline; re
   const only = onlyEntry(ref, context);
   const picks = w.picked(refWord(context.template, ref, w));
   if (only !== undefined) return { words: [link(only)], qualifier: [picks] };
-  if (field?.kind === 'amount' || field?.kind === 'percent' || field?.kind === 'nonce' || field?.kind === 'threshold') return { words: [w.typed(fieldWord(context.template, ref.field, w))], qualifier: undefined };
+  if (field?.kind === 'amount' || field?.kind === 'percent' || field?.kind === 'nonce' || field?.kind === 'threshold') return { words: [w.typed(byWord(context.template, ref.field, w))], qualifier: undefined };
   return { words: [picks], qualifier: undefined };
+}
+
+function freeTest(rule: Rule, context: Context): FreeTest {
+  const outcomes = context.inputs.fixtures.flatMap(({ outcome }) =>
+    outcome.kind === 'card-refused' || outcome.perturbation.kind === 'not-run' ? [] : outcome.perturbation.runs.filter((run) => run.leaf.rule === rule && run.outcome !== 'unverifiable').map((run) => run.outcome),
+  );
+  return outcomes.length === 0 ? 'not-tested' : outcomes.every((outcome) => outcome === 'reverted' || outcome === 'refused') ? 'all-failed' : 'tested';
+}
+
+/** The claims whose words say a test tried other values, which only a test that did can say. */
+const TESTED_CLAIMS: ReadonlySet<FreeClaim> = new Set(['scalar', 'route']);
+
+function freeWords(rule: Extract<Rule, { kind: 'free' }>, context: Context): string {
+  const { w } = context;
+  const test = TESTED_CLAIMS.has(rule.claim) ? freeTest(rule, context) : 'tested';
+  return test === 'not-tested' ? w.freeNotTested : test === 'all-failed' ? w.freeAllFailed : w.free[rule.claim];
 }
 
 function leafWords(node: ArgNode, context: Context): { readonly words: Inline; readonly qualifier: Inline | undefined } {
@@ -643,9 +682,9 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
       return { words: [...inner.words, w.asWord], qualifier: inner.qualifier };
     }
     case 'free':
-      return { words: [w.differs], qualifier: [w.free[rule.claim]] };
+      return { words: [w.differs], qualifier: [freeWords(rule, context)] };
     case 'within-seconds':
-      return { words: [w.within(rule.seconds)], qualifier: [w.withinHow] };
+      return { words: [w.within(rule.seconds)], qualifier: undefined };
     case 'equals':
       return { words: w.sameAs({ code: rule.path }), qualifier: undefined };
     case 'owner-before':
@@ -653,9 +692,9 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
     case 'share-price':
       return { words: [rule.bound === 'max' ? w.priceMax : w.priceMin], qualifier: [w.priceHow] };
     case 'at-least':
-      return { words: [w.atLeastTyped(fieldWord(context.template, rule.field, w))], qualifier: [w.atLeastHow] };
+      return { words: [w.atLeastTyped(byWord(context.template, rule.field, w))], qualifier: [w.atLeastHow] };
     case 'at-most':
-      return { words: [w.atMostTyped(fieldWord(context.template, rule.field, w))], qualifier: [w.atMostHow] };
+      return { words: [w.atMostTyped(byWord(context.template, rule.field, w))], qualifier: [w.atMostHow] };
     case 'call':
       return rule.call.encoding === 'params'
         ? { words: w.argsOf({ code: rule.call.fn.name }), qualifier: undefined }
@@ -672,6 +711,9 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
       return { words: [w.parts(rule.fields.length)], qualifier: undefined };
   }
 }
+
+/** How a time rule counts, which its row folds. */
+const moreOf = (rule: Rule, w: Words): ArgRow['more'] => (rule.kind === 'within-seconds' ? { label: w.withinLabel, text: w.withinHow(rule.seconds) } : undefined);
 
 function valueOf(node: ArgNode, context: Context): ArgRow['value'] {
   if (node.rule.kind === 'const') return constCast(node.rule.value);
@@ -691,9 +733,11 @@ function marketPartRows(node: ArgNode, market: Market, context: Context): ArgRow
       key: child.key,
       name: child.name,
       chips: [],
+      mix: [],
       value: entry === undefined ? market.lltv.toString() : checksumAddress(entry.address),
       words: entry === undefined ? [lltvWords(market.lltv, context.w)] : [link(entry)],
       qualifier: undefined,
+      more: undefined,
       id: undefined,
       ai: fieldsNote(context, child.key),
       parts: [],
@@ -705,7 +749,7 @@ function marketPartRows(node: ArgNode, market: Market, context: Context): ArgRow
 
 function argRow(node: ArgNode, context: Context, withChips: boolean, inMessage = false): ArgRow {
   const { w } = context;
-  const chips = withChips ? chipsOf(node, context.template, w) : [];
+  const { chips, mix } = withChips ? decided(node, context.template, w) : { chips: [], mix: [] };
   const market = wholeMarket(node.rule, context.template);
   if (market !== undefined) {
     const markets = [...context.registry.markets.values()];
@@ -714,9 +758,11 @@ function argRow(node: ArgNode, context: Context, withChips: boolean, inMessage =
       key: node.key,
       name: node.name,
       chips,
+      mix,
       value: undefined,
       words: shown === undefined ? [w.picked(fieldWord(context.template, market, w))] : [marketWords(shown, w)],
       qualifier: [w.marketHow(MARKET_PARAMS.length)],
+      more: undefined,
       id: shown === undefined ? undefined : ['market id ', { mono: shown.id }],
       ai: fieldsNote(context, node.key),
       parts: markets.map((m) => ({ label: markets.length === 1 ? undefined : [marketWords(m, w), w.marketId, { mono: m.id }], rows: marketPartRows(node, m, context) })),
@@ -735,9 +781,11 @@ function argRow(node: ArgNode, context: Context, withChips: boolean, inMessage =
     key: node.key,
     name: node.name,
     chips,
+    mix,
     value: valueOf(node, context),
     words,
     qualifier,
+    more: moreOf(node.rule, w),
     id: undefined,
     ai: fieldsNote(context, node.key),
     parts: rows.length === 0 ? [] : [{ label: undefined, rows }],
@@ -836,7 +884,7 @@ function sends(call: TemplateCall, context: Context, n: number): Inline | undefi
 
 function afterRows(context: Context): AfterRow[] {
   const { template, w } = context;
-  const field = (name: string): string => fieldWord(template, name, w);
+  const field = (name: string): By => byWord(template, name, w);
   const amountOf = (effect: Template['effects']['gives'][number], gives: boolean): Inline => {
     if (effect.amount.kind === 'all') return [w.all];
     if (effect.amount.kind === 'positive') return [gives ? w.givesMore : w.getsMore];
@@ -925,9 +973,11 @@ function ruleRow(key: string, name: string, rule: Rule, context: Context): ArgRo
     key,
     name,
     chips: who === undefined ? [] : [{ who: who.who, label: chipLabel(context.template, who.who, who.field, context.w) }],
+    mix: [],
     value: valueOf(node, context),
     words,
     qualifier,
+    more: moreOf(rule, context.w),
     id: undefined,
     ai: undefined,
     parts: [],
@@ -940,9 +990,11 @@ const noDataRow = (key: string, w: Words): ArgRow => ({
   key,
   name: 'data',
   chips: [{ who: 'fixed', label: w.who.fixed }],
+  mix: [],
   value: '0x',
   words: [w.noData],
   qualifier: undefined,
+  more: undefined,
   id: undefined,
   ai: undefined,
   parts: [],
@@ -966,17 +1018,22 @@ function callBlocks(context: Context): CallBlock[] {
   });
 }
 
-/** The who-decides key for the words the rows use: a free field's line by each claim the template makes. */
-function keyItems(used: ReadonlySet<Who>, template: Template, w: Words): KeyItem[] {
+/** The who-decides legend for the words the rows use: a free field's line by each claim the template makes. */
+function keyGroups(used: ReadonlySet<Who>, context: Context): KeyGroup[] {
+  const { template, w } = context;
+  const item = (who: Who, means: string): KeyItem[] => (used.has(who) ? [{ who, label: w.who[who], means }] : []);
+  const { rules, member } = freeRules(template);
+  const claims = (['scalar', 'route', 'proof', 'unread'] as const).filter((claim) => rules.some((rule) => rule.claim === claim));
+  const free = claims.map((claim) => {
+    const tests = TESTED_CLAIMS.has(claim) ? rules.filter((rule) => rule.claim === claim).map((rule) => freeTest(rule, context)) : [];
+    if (tests.includes('not-tested')) return tests.every((test) => test === 'not-tested') ? w.freeKeyNotTested : w.freeKeySomeNotTested;
+    return tests.length > 0 && tests.every((test) => test === 'all-failed') ? w.freeKeyAllFailed : w.freeKey[claim];
+  });
   return [
-    ...(used.has('you-type') ? [{ who: 'you-type' as const, label: w.who['you-type'], means: w.whoMeans['you-type'] }] : []),
-    ...(used.has('you-pick') ? [{ who: 'you-pick' as const, label: w.who['you-pick'], means: w.whoMeans['you-pick'] }] : []),
-    ...(used.has('computed') ? [{ who: 'computed' as const, label: w.who.computed, means: w.whoMeans.computed }] : []),
-    ...(used.has('fixed') ? [{ who: 'fixed' as const, label: w.who.fixed, means: w.whoMeans.fixed }] : []),
-    ...(used.has('free') ? [...freeRules(template).claims].map((claim) => ({ who: 'free' as const, label: w.appFills, means: w.freeKey[claim] })) : []),
-    ...(used.has('free') && freeRules(template).member ? [{ who: 'free' as const, label: w.appFills, means: w.whoMeans.member }] : []),
-    ...(used.has('bounded') ? [{ who: 'bounded' as const, label: w.appBounded, means: w.whoMeans.bounded }] : []),
-  ];
+    { title: w.whoGroup.you, items: [...item('you-type', w.whoMeans['you-type']), ...item('you-pick', w.whoMeans['you-pick'])] },
+    { title: w.whoGroup.program, items: [...item('computed', w.whoMeans.computed), ...item('fixed', w.whoMeans.fixed)] },
+    { title: w.whoGroup.app, items: [...[...new Set(free)].flatMap((means) => item('free', means)), ...(member ? item('free', w.whoMeans.member) : []), ...item('bounded', w.whoMeans.bounded)] },
+  ].filter((group) => group.items.length > 0);
 }
 
 function flowSection(context: Context): Section {
@@ -988,14 +1045,14 @@ function flowSection(context: Context): Section {
     const who = call.data === 'empty' || zeroValue(call) ? undefined : whoOf(call.value, template)?.who;
     return who === undefined ? [] : [who];
   });
-  const used = new Set([...rows([...safeTx, ...calls.flatMap((call) => call.args)]).flatMap((row) => row.chips.map((c) => c.who)), ...sent]);
+  const used = new Set([...rows([...safeTx, ...calls.flatMap((call) => call.args)]).flatMap((row) => [...row.chips, ...row.mix].map((c) => c.who)), ...sent]);
   return {
     anchor: anchor('flow'),
     label: w.flow,
     count: { kind: 'text', text: w.calls(template.calls.length) },
     body: {
       kind: 'flow',
-      flow: { diagram: sequence(context), key: keyItems(used, template, w), safeTx, calls, after: afterRows(context) },
+      flow: { diagram: sequence(context), key: keyGroups(used, context), safeTx, calls, after: afterRows(context) },
     },
   };
 }
@@ -1186,6 +1243,30 @@ function firstSentence(text: string): string {
   return text;
 }
 
+/** One side of a past payment: whoever sent that transaction, or the full address with its registry name. */
+function partyWords(party: Payment['from'], context: Context): string {
+  if (party === 'safe') return context.w.money.sender;
+  const name = context.registry.byAddress.get(party)?.name;
+  return name === undefined ? checksumAddress(party) : `${name} ${checksumAddress(party)}`;
+}
+
+/**
+ * A trace result's title: who paid whom in how many past transactions, and that the template does not describe it. It
+ * never says what the signer's own Safe pays, since a past sender may have moved the tokens the other way.
+ */
+function moneyTitle({ kind, to, pays, call, transactions }: Uncovered, context: Context): string {
+  const { w } = context;
+  const side = (parties: readonly Payment['from'][]): string => {
+    const distinct = [...new Set(parties)];
+    return distinct.length === 1 ? partyWords(distinct[0] as Payment['from'], context) : w.money.several(distinct.length, w.money.addresses);
+  };
+  const past = (said: string): string => `${w.money.inPast(transactions)}${said}${w.money.notDescribed}`;
+  if (pays.length === 0) return past(w.money.unread(call, to === 'other' ? w.kind.token : to));
+  const [from, payee] = [side(pays.map((p) => p.from)), side(pays.map((p) => p.to))];
+  const said = kind === 'eth' ? w.money.eth(from, payee) : w.money[kind === 'approve' ? 'approve' : 'transfer'](from, payee, to === 'other' ? w.kind.token : to);
+  return past(said);
+}
+
 /** What a result is about beyond its row's title, which already names its kind and its entry or test transaction, and why it is shown. */
 function reviewSubject(result: Result, context: Context): { readonly subject: Inline | undefined; readonly why: Inline } {
   const { w } = context;
@@ -1199,10 +1280,10 @@ function reviewSubject(result: Result, context: Context): { readonly subject: In
     return { subject: [w.flowLine(result.about.line)], why: [`${words.why}${counted}`] };
   }
   if (result.about.kind === 'money') {
-    const { call, from, to, kind, others } = result.about.uncovered;
-    const counted = result.finding.kind === 'money-uncovered' ? ` ${w.inTransactions(result.finding.transactions)}` : '';
+    const { call, pays, others } = result.about.uncovered;
+    const pairs = pays.length < 2 ? '' : ` ${w.money.parties(pays.slice(0, 5).map((p) => `${partyWords(p.from, context)} → ${partyWords(p.to, context)}`), pays.length)}`;
     const outside = others.length === 0 ? '' : ` ${w.outsideRegistry(others.slice(0, 5).map(checksumAddress), others.length)}`;
-    return { subject: w.moneySubject(call, from, to, { code: kind }), why: [`${words.why}${counted}${outside}`] };
+    return { subject: undefined, why: [`${w.money.under(call)} ${words.why}${pairs}${outside}`] };
   }
   const doc = /\/doc\.(0x[0-9a-f]{8})\.(\w+)$/.exec(result.id);
   if (doc !== null) {
@@ -1212,7 +1293,9 @@ function reviewSubject(result: Result, context: Context): { readonly subject: In
     return { subject: w.docSubject(page, { code: found?.fn.name ?? (doc[1] as string) }), why: [why] };
   }
   if (result.finding.kind === 'few-confirmations') {
-    return { subject: [confirmedWords(result.about.entry, result.finding.by, w, context.registry)], why: [w.fewConfirmationsWhy(MIN_CONFIRMATIONS)] };
+    const { entry } = result.about;
+    const places = result.finding.by.map(({ owner, sources }) => placeWords(entry, owner, sources, w, context.registry));
+    return { subject: undefined, why: w.fewConfirmations({ mono: checksumAddress(entry.address) }, places, MIN_CONFIRMATIONS) };
   }
   const span = /\/code\.(\d+)$/.exec(result.id);
   const where = span !== null ? w.span(span[1] as string) : result.id.endsWith('/code.today') ? w.latestBlock : undefined;
@@ -1236,7 +1319,7 @@ function reviewSection(context: Context): Section {
   const rows = grades.flatMap((grade) => graded(grade).map((result): ReviewRow => {
     const review = notes.reviews.get(result.id) as Notes['reviews'] extends ReadonlyMap<string, infer R> ? R : never;
     const { subject, why } = reviewSubject(result, context);
-    const plain = findingWords(result, context.w).title;
+    const plain = result.about.kind === 'money' ? moneyTitle(result.about.uncovered, context) : findingWords(result, context.w).title;
     const { conclusion, rest } = splitFirst(review.text);
     return {
       id: result.id,
@@ -1274,7 +1357,7 @@ function ruleWords(rule: Rule, context: Context): Inline {
       if (only !== undefined) return [link(only)];
       const kind = context.template.card.get(rule.ref.field)?.kind;
       const ref = refWord(context.template, rule.ref, w);
-      return [kind === 'amount' || kind === 'nonce' || kind === 'threshold' || kind === 'percent' ? w.typed(ref) : w.picked(ref)];
+      return [kind === 'amount' || kind === 'nonce' || kind === 'threshold' || kind === 'percent' ? w.typed({ field: ref, computed: isComputed(context.template, rule.ref.field) }) : w.picked(ref)];
     }
     case 'owner-before':
       return [w.ownerBeforeShort(refWord(context.template, rule.ref, w))];
@@ -1289,9 +1372,9 @@ function ruleWords(rule: Rule, context: Context): Inline {
     case 'share-price':
       return [rule.bound === 'max' ? w.priceMax : w.priceMin];
     case 'at-least':
-      return [w.atLeastTyped(fieldWord(context.template, rule.field, w))];
+      return [w.atLeastTyped(byWord(context.template, rule.field, w))];
     case 'at-most':
-      return [w.atMostTyped(fieldWord(context.template, rule.field, w))];
+      return [w.atMostTyped(byWord(context.template, rule.field, w))];
     case 'call':
       return w.callsThen({ code: rule.call.fn.name });
     case 'keccak':
@@ -1520,21 +1603,6 @@ function anchorWords(query: PastTxsRecording['query'], token: RegistryEntry | un
   return w.anchor.transfer;
 }
 
-type Misfit = Extract<TxStudy, { kind: 'misfit' }>;
-type Fit = Extract<TxStudy, { kind: 'fit' }>;
-type Studied = Fit | Misfit;
-
-/** What fits outside the registry used, such as `use a market or address outside the registry`. */
-const outsideWords = (fits: readonly Fit[], w: Words): string => w.outside([...new Set(fits.flatMap((fit) => fit.outside.map((o) => w.outsideKind[o.kind])))]);
-
-/**
- * The group a transaction found by several recordings keeps, lowest first: exactly the template, which no anchor
- * changes; another contract where the template binds one, which one anchor proves; its shape outside the registry;
- * another shape.
- */
-const rank = (s: Studied): number => (s.kind === 'fit' ? (s.outside.length === 0 ? 0 : 2) : s.reason.kind === 'entry' ? 1 : 3);
-const shapeGroup = (s: Studied): 'exact' | 'outside' | 'other' => (s.kind === 'misfit' ? 'other' : s.outside.length === 0 ? 'exact' : 'outside');
-
 /** Each function name the report's ABI proofs and the template know, by selector. */
 function knownFunctions(context: Context): Map<string, string> {
   const names = new Map<string, string>();
@@ -1550,40 +1618,11 @@ function knownFunctions(context: Context): Map<string, string> {
   return names;
 }
 
-const txLink = (hash: Hex): Span => ({ href: parseHttpsUrl(`https://etherscan.io/tx/${hash}`) as HttpsUrl, label: `${hash.slice(0, 10)}…` });
+/** The most past transactions linked for one group. */
+const MOST_LINKS = 3;
+const txLinks = (of: readonly Studied[]): Span[] => of.slice(0, MOST_LINKS).flatMap((s, i) => [...(i === 0 ? [] : [' ']), txLink(s.hash)]);
 
-/** Why a group did not have the template's shape, in the signer's words; `template` names the template's calls in order. */
-function misfitWords(reason: MisfitReason, template: string, registry: Registry, w: Words): Inline {
-  const last = (at: string): string => at.split('.').at(-1) ?? at;
-  switch (reason.kind) {
-    case 'entry': {
-      const named = registry.byAddress.get(reason.actual)?.name;
-      const actual: Span = named === undefined ? { mono: checksumAddress(reason.actual) } : named;
-      const allowed = w.misfit.allowed(reason.expected);
-      return last(reason.at) === 'to' ? w.misfit.to(actual, allowed) : w.misfit.entry({ code: last(reason.at) }, actual, allowed);
-    }
-    case 'calls':
-      return w.misfit.calls({ code: template });
-    case 'items':
-      return w.misfit.items({ code: last(reason.at) }, reason.got, reason.expected);
-    case 'field':
-      return w.misfit.field({ code: reason.at }, { mono: reason.expected }, { mono: reason.actual });
-    case 'not-sender':
-      return w.misfit.notSender({ code: reason.at });
-    case 'differs':
-      return w.misfit.differs({ code: reason.at }, { code: reason.other });
-    case 'late':
-      return w.misfit.late({ code: reason.at }, reason.seconds);
-    case 'trailer':
-      return w.misfit.trailer({ code: reason.at });
-    case 'foreign-delegatecall':
-      return [w.misfit.foreignDelegatecall];
-    case 'multisend-noncanonical':
-      return [w.misfit.noncanonical];
-    case 'other':
-      return [w.misfit.other];
-  }
-}
+const txLink = (hash: Hex): Span => ({ href: parseHttpsUrl(`https://etherscan.io/tx/${hash}`) as HttpsUrl, label: `${hash.slice(0, 10)}…` });
 
 function safeParties(search: PastTxs['search']): SafeParties | undefined {
   const chosen = search.kind === 'newest-first' ? search.safesFirst : search.year?.kind === 'covered' ? search.year.safesFirst : undefined;
@@ -1598,195 +1637,313 @@ function searchSpan(search: PastTxs['search']): SearchSpan | undefined {
   return { kind, from: range.fromBlock, to: range.toBlock, time, cap: pages };
 }
 
+/** When a transaction ran: its block's date, or its block's number when the recording does not hold the date. */
+const ranAt = (s: Studied, w: Words): string =>
+  s.time !== undefined ? dateOf(s.time) : s.block !== undefined ? w.atBlockNumber(s.block) : w.dateUnknown;
+
+const isNumber = (value: string): boolean => /^-?\d+$/.test(value);
+
+/** A number with its thousands grouped, or by name when it is the largest a wide unsigned type holds. */
+function numberText(n: bigint): string {
+  const bits = n > 0n ? n.toString(2) : '';
+  return bits.length >= 96 && bits.length % 8 === 0 && !bits.includes('0') ? `uint${bits.length} max (2^${bits.length} - 1)` : grouped(n);
+}
+
+/** A past value in a table: a number in full, anything else as it is. */
+const shownValue = (value: string): Span => (isNumber(value) ? { num: numberText(BigInt(value)) } : { mono: value });
+const grouped = (n: bigint): string => groupedTokens(n, 0);
+
+/** The fewest values whose 99th percentile says more than their largest. */
+const PERCENTILE_VALUES = 100;
+
+function spreadTable(rows: readonly SpreadRow[], time: boolean, w: Words): PastTable {
+  const { pastHead } = w;
+  const most = rows.some((row) => (row.spread?.count ?? 0) >= PERCENTILE_VALUES);
+  const shown = (n: bigint | undefined, row: SpreadRow, at: 'up' | 'down' = 'up'): Inline => [n !== undefined ? { num: time ? w.duration(n, at) : numberText(n) } : row.unrecorded > 0 ? w.pastNotRecorded : w.pastNone];
+  return {
+    head: [
+      { label: pastHead.transactions, as: 'wide' },
+      { label: pastHead.count, as: 'num' },
+      { label: time ? pastHead.shortest : pastHead.smallest, as: 'value' },
+      { label: pastHead.half, as: 'value' },
+      ...(most ? [{ label: pastHead.most, as: 'value' as const }] : []),
+      { label: time ? pastHead.longest : pastHead.largest, as: 'value' },
+    ],
+    rows: rows.map((row) => {
+      const { group, spread, unrecorded } = row;
+      return [
+        [w.pastGroup[group]],
+        [{ num: `${spread?.count ?? unrecorded}` }],
+        shown(spread?.min, row, 'down'),
+        shown(spread?.percentiles[0], row),
+        ...(most ? [(spread?.count ?? 0) >= PERCENTILE_VALUES ? shown(spread?.percentiles[2], row) : []] : []),
+        shown(spread?.max, row),
+      ];
+    }),
+  };
+}
+
+function pastNumbers({ name, key, past }: PastField, w: Words): PastNumbers {
+  const base = { name, limit: undefined, notes: [], exact: undefined, says: undefined };
+  switch (past.kind) {
+    case 'time': {
+      const path: Span = { code: key.slice(key.indexOf('.') + 1) };
+      const exact = past.rows.flatMap(({ group, spread }) => (spread === undefined ? [] : [`${w.pastGroup[group]}: ${[spread.min, spread.percentiles[0] as bigint, spread.max].join(' / ')}`]));
+      return {
+        ...base,
+        lead: w.pastTimeLead,
+        table: spreadTable(past.rows, true, w),
+        limit: past.limit === undefined ? undefined : w.pastLimit(past.limit),
+        notes: past.rows.flatMap(({ group, spread, unrecorded }) => (spread === undefined || unrecorded === 0 ? [] : [w.pastUnrecorded(w.pastGroup[group], unrecorded)])),
+        exact: exact.length === 0 ? undefined : [...w.pastExactTime(path), exact.join('; ')],
+      };
+    }
+    case 'numbers':
+      return { ...base, lead: w.pastNumberLead, table: spreadTable(past.rows, false, w) };
+    case 'values':
+      if (past.values.length === 0) return { ...base, lead: w.pastValueLead, table: undefined, says: [w.pastNoNumberValues] };
+      return {
+        ...base,
+        lead: w.pastValueLead,
+        table: {
+          head: [{ label: w.pastHead.value, as: 'wide' }, ...past.groups.map((group) => ({ label: w.pastGroup[group], as: 'num' as const }))],
+          rows: past.values.map((v) => [[shownValue(v.value)], ...past.groups.map((group): Inline => [{ num: `${v.counts[group]}` }])]),
+        },
+      };
+    case 'distinct':
+      return {
+        ...base,
+        lead: w.pastValueLead,
+        table: {
+          head: [
+            { label: w.pastHead.transactions, as: 'wide' },
+            { label: w.pastHead.count, as: 'num' },
+            { label: w.pastHead.distinct, as: 'num' },
+            { label: w.pastHead.commonest, as: 'wide' },
+          ],
+          rows: past.rows.map(({ group, count, distinct, most }) => [[w.pastGroup[group]], [{ num: `${count}` }], [{ num: `${distinct}` }], w.pastMost(cutValue(most.value), most.times)]),
+        },
+      };
+  }
+}
+
+/** A misfit's place as the signer reads it, without the call it sits in. */
+const placeOf = (at: string): string => at.replace(/^(call|multiSend\[\d+\])\./, '');
+
+/** Hex that reads as a short word, such as a string argument's. */
+const WORD = /^0x((?:2d|5f|3[0-9]|[46][1-9a-f]|[57][0-9a])+)$/;
+
+/** A value in a difference: a number in full, hex or text too long for a table's cell cut with its length, and a short word as text beside its hex. */
+const cutValue = (value: string): Span => {
+  if (isNumber(value)) return { mono: numberText(BigInt(value)) };
+  const text = value.length <= 34 ? WORD.exec(value)?.[1] : undefined;
+  if (text !== undefined && text.length >= 6) return { mono: `"${Buffer.from(text, 'hex').toString('latin1')}" (${value})` };
+  if (value.length <= 66) return { mono: value };
+  return { mono: /^0x(?:[0-9a-f]{2})*$/i.test(value) ? `${value.slice(0, 18)}…(${(value.length - 2) / 2} bytes)` : `${value.slice(0, 60)}…` };
+};
+
+/** What the past transactions of one group did differently, in the signer's words. */
+function differenceWords({ reason }: PastDifference, context: Context, sequence: (calls: readonly PastCall[]) => Span): Inline {
+  const { w, registry } = context;
+  switch (reason.kind) {
+    case 'outside':
+      return w.sameShapeBut(reason.outside.map((o) => [{ code: placeOf(o.at) }, w.outsideKind[o.kind]] as const));
+    case 'batch':
+      return [w.pastBatch(reason.over)];
+    case 'missing':
+      return w.pastCallsMissing({ code: w.list(reason.missing) }, sequence(reason.calls));
+    case 'calls':
+      return reason.how === 'extra' ? w.pastCallsExtra(sequence(reason.calls)) : w.pastCallsOther(sequence(reason.calls));
+    case 'values': {
+      const { reason: misfit, different } = reason;
+      const at: Span = { code: placeOf(misfit.at) };
+      if (misfit.kind === 'field' && misfit.at.endsWith('.encoding')) return w.pastEncoding({ code: misfit.expected.replace(/^canonical /, '') });
+      if (misfit.kind === 'field') return different === 1 ? w.misfit.field(at, cutValue(misfit.expected), cutValue(misfit.actual)) : w.pastFieldMany(at, different, cutValue(misfit.expected));
+      const allowed = w.misfit.allowed(misfit.expected);
+      if (different > 1) return w.pastEntryMany(at, different, allowed);
+      const name = registry.byAddress.get(misfit.actual)?.name;
+      const actual: Span = name === undefined ? { mono: checksumAddress(misfit.actual) } : name;
+      return misfit.at.endsWith('.to') ? w.misfit.to(actual, allowed) : w.misfit.entry(at, actual, allowed);
+    }
+    case 'items':
+      return [...w.misfit.items({ code: placeOf(reason.at) }, reason.got, reason.expected), ...(reason.calls === undefined ? [] : [w.inCalls, sequence(reason.calls)])];
+    case 'misfit':
+      return misfitWords(reason.reason, w);
+  }
+}
+
+function misfitWords(reason: Exclude<MisfitReason, { kind: 'calls' | 'items' | 'field' | 'entry' }>, w: Words): Inline {
+  switch (reason.kind) {
+    case 'not-sender':
+      return w.misfit.notSender({ code: placeOf(reason.at) });
+    case 'differs':
+      return w.misfit.differs({ code: placeOf(reason.at) }, { code: placeOf(reason.other) });
+    case 'late':
+      return w.misfit.late({ code: placeOf(reason.at) }, reason.seconds);
+    case 'trailer':
+      return w.misfit.trailer({ code: placeOf(reason.at) });
+    case 'foreign-delegatecall':
+      return [w.misfit.foreignDelegatecall];
+    case 'multisend-noncanonical':
+      return [w.misfit.noncanonical];
+    case 'other':
+      return [w.misfit.other];
+  }
+}
+
+/** The differences the page lists open, the commonest; the rest fold. */
+const OPEN_DIFFERENCES = 8;
+
+function differ(differences: readonly PastDifference[], context: Context, sequence: (calls: readonly PastCall[]) => Span): PastBlock['differ'] {
+  const { w } = context;
+  const { pastHead } = w;
+  const by = (of: readonly Studied[], kind: 'safe' | 'eoa'): Inline => [{ num: `${of.filter((s) => s.sender.kind === kind).length}` }];
+  const table = (list: readonly PastDifference[]): PastTable => ({
+    head: [
+      { label: pastHead.what, as: 'wide' },
+      { label: pastHead.safe, as: 'num' },
+      { label: pastHead.eoa, as: 'num' },
+      { label: pastHead.newest, as: 'plain' },
+      { label: pastHead.example, as: 'links' },
+    ],
+    rows: list.map((difference) => {
+      const sorted = newestFirst(difference.studies);
+      const [newest] = sorted ?? [];
+      return [
+        differenceWords(difference, context, sequence),
+        by(difference.studies, 'safe'),
+        by(difference.studies, 'eoa'),
+        [newest === undefined ? w.pastNotRecorded : ranAt(newest, w)],
+        txLinks(sorted ?? difference.studies),
+      ];
+    }),
+  });
+  const [open, rest] = [differences.slice(0, OPEN_DIFFERENCES), differences.slice(OPEN_DIFFERENCES)];
+  const count = (list: readonly PastDifference[]): number => list.reduce((n, d) => n + d.studies.length, 0);
+  return {
+    lead: differences.length === 0 ? w.pastNoDiffer : w.pastDifferLead(count(differences)),
+    open: open.length === 0 ? undefined : table(open),
+    more: rest.length === 0 ? undefined : { label: w.pastMore(rest.length, count(rest)), table: table(rest) },
+  };
+}
+
+function worked(exact: readonly Studied[], template: Template, w: Words): PastBlock['worked'] {
+  const senders = (kind: 'safe' | 'eoa') => {
+    const mine = exact.filter((s) => s.sender.kind === kind);
+    return { times: mine.length, senders: new Set(mine.map((s) => s.sender.address)).size };
+  };
+  const [safe, eoa] = [senders('safe'), senders('eoa')];
+  const sorted = newestFirst(exact);
+  const [newest] = sorted ?? [];
+  return {
+    answer: safe.times === 0 ? w.pastNo : w.pastYes(safe.times, safe.senders),
+    rest: [
+      w.sentences([w.pastEoa(eoa.times, eoa.senders, template.calls.length === 1), ...(newest === undefined ? [] : [w.pastNewest(ranAt(newest, w))]), ...(exact.length === 0 ? [] : [w.pastSucceeded])]),
+      ...(exact.length === 0 ? [] : [w.pastLinks(Math.min(exact.length, MOST_LINKS), sorted !== undefined), ...txLinks(sorted ?? exact)]),
+    ],
+  };
+}
+
 function pastSection(context: Context): Section {
-  const { registry, template, w } = context;
-  const nameOf = (address: string): string => registry.byAddress.get(address.toLowerCase() as Address)?.name ?? checksumAddress(address as Address);
+  const { template, w } = context;
+  const runs = context.inputs.pastTxs.map(({ run }) => run);
+  const section = (past: PastBlock | undefined): Section => ({ anchor: anchor('past'), label: w.past, count: undefined, body: { kind: 'past', past } });
+  if (runs.length === 0) return section(undefined);
+  const studies = studiedOnce(runs, template);
+  const exact = studies.filter(isExact);
+  return section({
+    worked: worked(exact, template, w),
+    numbers: pastFields(studies, template, context.notes.times).map((field) => pastNumbers(field, w)),
+    differ: differ(pastDifferences(studies, template), context, callNamer(context).sequence),
+    conclusion: context.notes.pastTxsConclusion === undefined ? undefined : research(context.notes.pastTxsConclusion),
+    amounts: pastAmounts(context),
+    search: pastSearch(context, exact.length > 0),
+  });
+}
+
+/** Past calls in words, by registry name and by the functions the report knows. */
+function callNamer(context: Context) {
+  const { registry, w } = context;
   const known = knownFunctions(context);
   const fnOf = (selector: string): string => known.get(selector) ?? selector;
-  const noSelector: Readonly<Record<string, string>> = { 'no data': w.noDataParens, 'contract creation': w.creation };
-  /** Another operation's call: its contract by registry name or full address, then its function. */
-  const otherWords = (to: Address | undefined, selector: string | undefined): string => {
-    const named = selector !== undefined && /^0x[0-9a-f]{8}$/.test(selector);
-    const fn = selector === undefined ? w.noDataParens : named ? fnOf(selector) : (noSelector[selector] ?? selector);
-    if (to === undefined) return fn;
-    const contract = registry.byAddress.get(to.toLowerCase() as Address)?.name ?? checksumAddress(to);
-    return named || (selector !== undefined && noSelector[selector] === undefined) ? `${contract}.${fn}` : w.bareCall(contract, fn);
-  };
-  const callWords = ({ to, selector }: CallName): string => {
-    const contract = to === undefined ? w.otherContract : (registry.byAddress.get(to)?.name ?? checksumAddress(to));
+  const contractOf = (to: Address): string => registry.byAddress.get(to.toLowerCase() as Address)?.name ?? checksumAddress(to);
+  const callWords = ({ to, selector }: PastCall): string => {
+    const contract = to === undefined ? w.otherContract : to === 'sender' ? w.senderItself : contractOf(to);
     return selector === undefined ? w.bareCall(contract, w.noDataParens) : `${contract}.${fnOf(selector)}`;
   };
-  const sequence = (calls: readonly CallName[]): Inline => [{ code: calls.map(callWords).join(' → ') }];
-  const templateCalls = template.calls.map((call) => (call.data === 'empty' ? w.noDataParens : call.data.fn.name)).join(' → ');
-  const otherOperation = (s: Studied): boolean => isOtherOperation(s, template);
-  const groupsOf = (misfits: readonly Misfit[]): PastGroup[] => {
-    const names = functionNames(template);
-    const groups = new Map<string, Misfit[]>();
-    for (const m of misfits) {
-      const key = misfitText(m.reason, registry, names);
-      groups.set(key, [...(groups.get(key) ?? []), m]);
-    }
-    return [...groups.values()]
-      .sort((a, b) => b.length - a.length)
-      .map((members): PastGroup => {
-        const { reason } = members[0] as Misfit;
-        const calls = reason.kind === 'calls' ? reason.calls : reason.kind === 'items' ? reason.calls : undefined;
-        return {
-          count: members.length,
-          senders: new Set(members.map((m) => m.sender.address)).size,
-          calls: calls === undefined ? undefined : sequence(calls),
-          reason: misfitWords(reason, templateCalls, registry, w),
-          examples: members.slice(0, 3).map((m) => txLink(m.hash)),
-        };
-      });
+  const noSelector: Readonly<Record<string, string>> = { 'no data': w.noDataParens, 'contract creation': w.creation };
+  return {
+    contractOf,
+    sequence: (calls: readonly PastCall[]): Span => ({ code: calls.map(callWords).join(' → ') }),
+    /** Another operation's call: its contract by registry name or full address, then its function. */
+    other: (to: Address | undefined, selector: string | undefined): string => {
+      const named = selector !== undefined && /^0x[0-9a-f]{8}$/.test(selector);
+      const fn = selector === undefined ? w.noDataParens : named ? fnOf(selector) : (noSelector[selector] ?? selector);
+      if (to === undefined) return fn;
+      return named || (selector !== undefined && noSelector[selector] === undefined) ? `${contractOf(to)}.${fn}` : w.bareCall(contractOf(to), fn);
+    },
   };
-  const outsideGroups = (fits: readonly Fit[]): PastGroup[] => {
-    const groups = new Map<string, Fit[]>();
-    for (const fit of fits) {
-      const key = fit.outside.map((o) => `${o.at}:${o.kind}`).join(' ');
-      groups.set(key, [...(groups.get(key) ?? []), fit]);
-    }
-    return [...groups.values()]
-      .sort((a, b) => b.length - a.length)
-      .map((members): PastGroup => {
-        const { outside } = members[0] as Fit;
-        return {
-          count: members.length,
-          senders: new Set(members.map((m) => m.sender.address)).size,
-          calls: undefined,
-          reason: w.sameShapeBut(outside.map((o) => [{ code: o.at.endsWith('.to') ? o.at : (o.at.split('.').at(-1) ?? o.at) }, w.outsideKind[o.kind]] as const)),
-          examples: members.slice(0, 3).map((m) => txLink(m.hash)),
-        };
-      });
-  };
-  const recordings = context.inputs.pastTxs.map(({ file, query, run }): PastRecording => {
+}
+
+/** Where each recording searched, and what it found but did not count. */
+function pastSearch(context: Context, succeeded: boolean): PastBlock['search'] {
+  const { registry, template, w } = context;
+  const { contractOf, other } = callNamer(context);
+  return context.inputs.pastTxs.map(({ query, run }, i) => {
     const studied = run.studies.filter((s): s is Studied => s.kind === 'fit' || s.kind === 'misfit');
-    const counted = studied.filter((s) => !otherOperation(s));
-    const block = (title: string, of: readonly Studied[], who: 'safe' | 'address'): PastBlock => {
-      const fits = of.filter((s): s is Fit => s.kind === 'fit');
-      const outside = fits.filter((s) => s.outside.length > 0);
-      const senders = new Set(of.map((s) => s.sender.address)).size;
-      return {
-        title,
-        lead: w.blockLead(of.length, senders, who, fits.length - outside.length, outside.length, outside.length === 0 ? '' : outsideWords(outside, w)),
-        groups: [...outsideGroups(outside), ...groupsOf(of.filter((s): s is Misfit => s.kind === 'misfit'))],
-      };
-    };
-    const bySender = (match: (sender: Sender) => boolean) => counted.filter((s) => match(s.sender));
-    const blocks = [
-      block('Safe', bySender((sender) => sender.kind === 'safe'), 'safe'),
-      ...run.shapes.calls.flatMap((shape, call) => {
-        const of = bySender((sender) => sender.kind === 'eoa' && sender.call === call);
-        const data = shape.template.calls[0]?.data;
-        return of.length === 0 ? [] : [block(w.eoaCalls(data === undefined || data === 'empty' ? w.noDataParens : data.fn.name), of, 'address')];
-      }),
-    ];
-    const elsewhere = [
-      ...run.studies.flatMap((s) => (s.kind === 'not-studied' && s.why === 'calls no function the template calls' ? [otherWords(s.to, s.selector)] : [])),
-      ...studied.filter(otherOperation).flatMap((s) => (s.kind === 'misfit' && s.reason.kind === 'calls' ? [otherWords(s.reason.calls[0]?.to, s.reason.calls[0]?.selector)] : [])),
-    ];
+    const notCalled = run.studies.flatMap((s) => (s.kind === 'not-studied' && s.why === 'calls no function the template calls' ? [other(s.to, s.selector)] : []));
+    const otherOperations = studied.flatMap((s) => (s.kind === 'misfit' && s.reason.kind === 'calls' && isOtherOperation(s, template) ? [other(s.reason.calls[0]?.to, s.reason.calls[0]?.selector)] : []));
+    const elsewhere = [...notCalled, ...otherOperations];
     const tally = new Map<string, number>();
     for (const name of elsewhere) tally.set(name, (tally.get(name) ?? 0) + 1);
     const top = [...tally].sort((a, b) => b[1] - a[1]).slice(0, 4);
-    const skipped = run.studies.length - studied.length - run.studies.filter((s) => s.kind === 'not-studied' && s.why === 'calls no function the template calls').length;
-    const others: Inline[] = [
-      ...(elsewhere.length === 0 ? [] : [w.otherOperations(elsewhere.length, top.map(([name, n]) => [{ code: name }, n] as const), tally.size > top.length)]),
-      ...(skipped === 0 ? [] : [[w.skipped(skipped)]]),
-    ];
+    const skipped = run.studies.length - studied.length - notCalled.length;
     const [alchemy, etherscan] = [foundBy(run.found, 'alchemy'), foundBy(run.found, 'etherscan')];
     const same = run.found.only.alchemy.length + run.found.only.etherscan.length === 0;
     const span = searchSpan(run.search);
+    const token = query.token === undefined ? undefined : registry.byAddress.get(query.token.toLowerCase() as Address);
+    const name = query.token === undefined ? SELF_LOGGED : contractOf(query.token as Address);
     return {
-      file,
-      count: w.searchCount(query.token === undefined ? SELF_LOGGED : nameOf(query.token), anchorWords(query, query.token === undefined ? undefined : registry.byAddress.get(query.token.toLowerCase() as Address), w), run.found.total, run.studies.length, safeParties(run.search)),
-      search: [
-        ...(span === undefined ? [] : [w.searchSpan(span)]),
-        ...(query.anchor === 'event' ? w.searchEtherscanOnly({ num: `${etherscan}` }) : w.searchSame(same, { num: `${alchemy} ${same ? '=' : '≠'} ${etherscan}` })),
+      count: w.searchCount(name, anchorWords(query, token, w), run.found.total, run.studies.length, safeParties(run.search)),
+      lines: [
+        [...(span === undefined ? [] : [w.searchSpan(span)]), ...(query.anchor === 'event' ? w.searchEtherscanOnly({ num: `${etherscan}` }) : w.searchSame(same, { num: `${alchemy} ${same ? '=' : '≠'} ${etherscan}` }))],
+        ...(i === 0 && succeeded ? [[w.pastSucceededWhy]] : []),
+        ...(elsewhere.length === 0 ? [] : [w.otherOperations(elsewhere.length, top.map(([called, n]) => [{ code: called }, n] as const), tally.size > top.length)]),
+        ...(skipped === 0 ? [] : [[w.skipped(skipped)]]),
       ],
-      blocks,
-      others,
     };
   });
-  const amounts = context.inputs.pastTxs.flatMap(({ run }): PastAmounts[] => {
-    const { effects, unmeasured } = amountsOf(run, registry);
-    const missed = [...unmeasured.values()].reduce((n, hashes) => n + hashes.length, 0);
-    const row = (party: 'sender' | 'receiver', differences: readonly Difference[]): PastAmountRow => ({
-      party: w.amountsParty(party),
-      cells: [...distributionOf(differences).counts].sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0)).map(([by, n]) => ({ by: w.amountsBy(by), n: w.amountsCount(n) })),
-    });
-    return effects.map(({ effect, tokens, finding }) => ({
-      effect: effectText(effect),
-      tolerance: w.amountsTolerance(effect.tolerance?.less ?? 0n, effect.tolerance?.more ?? 0n),
-      tokens: tokens.map((t) => ({
-        count: t.sender.length,
-        lead: w.amountsToken(nameOf(t.token), t.safes, t.eoas, t.inRegistry),
-        rows: [row('sender', t.sender), ...(t.receiver.length === 0 ? [] : [row('receiver', t.receiver)])],
-      })),
-      finding: finding === undefined ? undefined : finding.kind === 'beyond' ? w.amountsBeyond(finding.lower, finding.higher) : w.amountsUnfounded,
-      unmeasured: missed === 0 ? undefined : w.amountsUnmeasured(missed),
-    }));
-  });
-  const spreads = context.inputs.pastTxs.flatMap(({ run }): PastSpread[] => {
-    const fits = run.studies.filter((s): s is Fit => s.kind === 'fit');
-    const groups = [
-      { safe: true, fits: fits.filter((f) => f.sender.kind === 'safe'), rules: run.shapes.whole.loosened.rules },
-      ...run.shapes.calls.map((shape, call) => ({ safe: false, fits: fits.filter((f) => f.sender.kind === 'eoa' && f.sender.call === call), rules: shape.loosened.rules })),
-    ];
-    return groups.flatMap(({ safe, fits: of, rules }) =>
-      freeNumbers(of, rules).map(({ path, time, spread, unrecorded }): PastSpread => {
-        const value = (n: bigint) => (time ? w.spreadSeconds(n) : `${n}`);
-        const cells = spread === undefined ? [] : [['min', spread.min] as const, ...PERCENTILES.map((p, i) => [`p${p}`, spread.percentiles[i] as bigint] as const), ['max', spread.max] as const];
-        return { field: path, who: w.spreadWho(safe), lead: w.spreadTime(time), count: spread?.count ?? 0, cells: cells.map(([label, n]) => ({ label, value: value(n) })), unrecorded: unrecorded === 0 ? undefined : w.spreadUnrecorded(unrecorded) };
-      }),
-    );
-  });
-  const conclusion = context.notes.pastTxsConclusion === undefined ? undefined : research(context.notes.pastTxsConclusion);
-  return { anchor: anchor('past'), label: w.past, count: undefined, body: { kind: 'past', ...sameShape(context), conclusion, amounts, spreads, recordings } };
 }
 
-/**
- * The past transactions exactly the template, by kind of sender, and the one line counting those of the operation that
- * are not, undefined when there is none, each transaction counted once across the recordings.
- */
-function sameShape(context: Context): { readonly same: Inline; readonly others: Inline | undefined } {
-  const { registry, template, w } = context;
-  const best = new Map<Hex, Studied>();
-  for (const { run } of context.inputs.pastTxs) {
-    for (const s of run.studies) {
-      if ((s.kind !== 'fit' && s.kind !== 'misfit') || isOtherOperation(s, template)) continue;
-      const seen = best.get(s.hash);
-      if (seen === undefined || rank(s) < rank(seen)) best.set(s.hash, s);
-    }
-  }
-  const all = [...best.values()];
-  const exact = all.filter((s): s is Fit => shapeGroup(s) === 'exact');
-  const outside = all.filter((s): s is Fit => shapeGroup(s) === 'outside');
-  const misfits = all.length - exact.length - outside.length;
-  const by = (of: readonly Fit[]): Span[] => {
-    const parts = (['safe', 'eoa'] as const).map((kind): Span[] => {
-      const mine = of.filter((s) => s.sender.kind === kind);
-      return w.bySender(kind, { num: `${mine.length}` }, mine.length, new Set(mine.map((s) => s.sender.address)).size);
+function pastAmounts(context: Context): PastAmounts[] {
+  const { registry, w } = context;
+  const { contractOf } = callNamer(context);
+  return context.inputs.pastTxs.flatMap(({ run }): PastAmounts[] => {
+    const { effects, unmeasured } = amountsOf(run, registry);
+    const missed = [...unmeasured.values()].reduce((n, hashes) => n + hashes.length, 0);
+    const table = (sender: readonly Difference[], receiver: readonly Difference[]): PastTable => {
+      const [sent, got] = [distributionOf(sender).counts, distributionOf(receiver).counts];
+      const both = receiver.length > 0;
+      const amounts = [...new Set([...sent.keys(), ...got.keys()])].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+      return {
+        head: [{ label: w.amountsHead.by, as: 'wide' }, { label: w.amountsHead.sender, as: 'num' }, ...(both ? [{ label: w.amountsHead.receiver, as: 'num' as const }] : [])],
+        rows: amounts.map((by) => [[w.amountsBy(by)], [{ num: `${sent.get(by) ?? 0}` }], ...(both ? [[{ num: `${got.get(by) ?? 0}` }]] : [])]),
+      };
+    };
+    return effects.map(({ effect, tokens, finding }): PastAmounts => {
+      const shown = (inRegistry: boolean): PastTokenAmounts[] =>
+        tokens.filter((t) => t.inRegistry === inRegistry).map((t) => ({ lead: w.amountsToken(contractOf(t.token), t.sender.length, t.safes, t.eoas), table: table(t.sender, t.receiver) }));
+      const outside = shown(false);
+      return {
+        effect: effectText(effect),
+        tolerance: w.amountsTolerance(effect.tolerance?.less ?? 0n, effect.tolerance?.more ?? 0n),
+        tokens: shown(true),
+        outside: outside.length === 0 ? undefined : { label: w.amountsOutside(outside.length), tokens: outside },
+        finding: finding === undefined ? undefined : finding.kind === 'beyond' ? w.amountsBeyond(finding.lower, finding.higher) : w.amountsUnfounded,
+        unmeasured: missed === 0 ? undefined : w.amountsUnmeasured(missed),
+      };
     });
-    return of.length === 0 ? [] : w.bySenders(parts);
-  };
-  const latest = (of: readonly Fit[]): Span[] =>
-    [...of]
-      .sort((a, b) => (a.block === b.block ? 0 : a.block > b.block ? -1 : 1))
-      .slice(0, 3)
-      .flatMap((s, i): Span[] => [...(i === 0 ? [] : [w.sep]), txLink(s.hash)]);
-  const searched = [
-    ...new Set(
-      context.inputs.pastTxs.map(({ query }) => {
-        if (query.token === undefined) return w.searched(SELF_LOGGED, anchorWords(query, undefined, w));
-        const token = registry.byAddress.get(query.token.toLowerCase() as Address);
-        return w.searched(token?.name ?? checksumAddress(query.token as Address), anchorWords(query, token, w));
-      }),
-    ),
-  ];
-  const others = outside.length + misfits === 0 ? undefined : w.othersLine(outside.length === 0 ? w.anyOutside : outsideWords(outside, w), outside.length, misfits);
-  const line = w.sameLine(exact.length, by(exact));
-  if (exact.length === 0) return { same: line, others };
-  return { same: [...line, w.succeeded(exact.length === 1, searched), w.latestExact(Math.min(exact.length, 3)), ...latest(exact), w.end], others };
+  });
 }
 
 function onlyName(ref: CardRef, context: Context): RegistryEntry | undefined {
@@ -1820,37 +1977,84 @@ function promptStep(name: string, field: CardField, context: Context): NextStep 
       return step([...cardNewPrompt, w.pickOwner]);
     case 'amount': {
       const token = field.of === 'eth' ? 'ETH' : (onlyName(field.of, context)?.name ?? w.picked(refWord(context.template, field.of, w)));
-      if (field.computed === undefined) {
-        return step(
-          [...cardNewPrompt, ...w.typeAmount(token, { code: '1250.5' }, { code: '1,000,611.448606' })],
-          [[w.amountPrints], ...(field.max === undefined ? [] : [w.orMax({ code: 'max' }, `${field.max.value}`)])],
-        );
+      const source = sourceOfAmount(field);
+      switch (source.kind) {
+        case 'typed':
+          return step(
+            [...cardNewPrompt, ...w.typeAmount(token, { code: '1250.5' }, { code: '1,000,611.448606' })],
+            [[w.amountPrints], ...(field.max === undefined ? [] : [w.orMax({ code: 'max' }, `${field.max.value}`)])],
+          );
+        case 'floor': {
+          const bps = (n: number): string => percent(BigInt(n), 10_000n, w);
+          return step(
+            [...cardNewPrompt, ...w.floorPrompt({ code: source.floor.sells })],
+            [[w.floorHow(token, bps(FLOOR_RULE.slippageBps), bps(FLOOR_RULE.maxSlippageBps), bps(FLOOR_RULE.marginBps))], [w.floorElse(bps(FLOOR_RULE.retypeBps))]],
+          );
+        }
+        case 'computed': {
+          const { computed } = source;
+          const bps = (n: number | bigint): string => percent(BigInt(n), 10_000n, w);
+          const margin = computed.margin === undefined ? '' : w.margin(bps(computed.margin.bps));
+          return step(
+            [...cardNewPrompt, w.computedPrompt(carries(context.template, name))],
+            [
+              w.computedHow({ code: computed.read.fn.name }, token, computed.bound === 'floor', bps(slippageBps(computed)), bps(computed.default.bps), margin),
+              w.presetSource({ href: computed.default.source, label: shortUrl(computed.default.source) }),
+            ],
+          );
+        }
       }
-      const { computed } = field;
-      const bps = (n: number | bigint): string => percent(BigInt(n), 10_000n, w);
-      const margin = computed.margin === undefined ? '' : w.margin(bps(computed.margin.bps));
-      return step(
-        [...cardNewPrompt, w.computedPrompt],
-        [
-          w.computedHow({ code: computed.read.fn.name }, token, computed.bound === 'floor', bps(slippageBps(computed)), bps(computed.default.bps), margin),
-          w.presetSource({ href: computed.default.source, label: shortUrl(computed.default.source) }),
-        ],
-      );
     }
   }
+}
+
+/** Whether the transaction carries the card field's value, so a rule on one of its arguments binds it. */
+function carries(template: Template, name: string): boolean {
+  const names = (rule: Rule): boolean => {
+    switch (rule.kind) {
+      case 'card':
+      case 'owner-before':
+        return rule.ref.field === name;
+      case 'at-least':
+      case 'at-most':
+        return rule.field === name;
+      case 'share-price':
+        return [rule.assets, rule.shares].some((q) => q.kind === 'card' && q.field === name);
+      case 'address-word':
+      case 'equals':
+        return names(rule.rule);
+      case 'call':
+      case 'keccak':
+        return rule.call.args.some(names);
+      case 'items':
+        return rule.items.some(names);
+      case 'fields':
+        return rule.fields.some(names);
+      case 'packed':
+        return rule.parts.some((part) => names(part.rule));
+      case 'eip712':
+        return rule.message.fields.some(names);
+      case 'safe':
+      case 'contract':
+      case 'const':
+      case 'free':
+      case 'within-seconds':
+        return false;
+    }
+  };
+  return template.calls.some((call) => [call.to, call.value, ...(call.data === 'empty' ? [] : call.data.args)].some(names));
 }
 
 function nextSection(context: Context): Section {
   const { template, w } = context;
   const fields = [...template.card];
   const typed = (field: CardField): boolean => field.kind === 'amount' || field.kind === 'nonce' || field.kind === 'threshold' || field.kind === 'percent';
-  const computed = (field: CardField): boolean => field.kind === 'amount' && field.computed !== undefined;
+  const source = (field: CardField): AmountSource['kind'] => (field.kind === 'amount' ? sourceOfAmount(field).kind : 'typed');
   const vault = context.inputs.subject.vault !== undefined;
-  const trial = fields.some(([, f]) => f.kind === 'amount' && f.computed === undefined) ? w.trial(vault) : '';
+  const trial = fields.some(([, f]) => f.kind === 'amount' && sourceOfAmount(f).kind === 'typed') ? w.trial(vault) : '';
   const prompts = [
     ...fields.filter(([, f]) => !typed(f)),
-    ...fields.filter(([, f]) => typed(f) && !computed(f)),
-    ...fields.filter(([, f]) => computed(f)),
+    ...(['typed', 'floor', 'computed'] as const).flatMap((kind) => fields.filter(([, f]) => typed(f) && source(f) === kind)),
   ].map(([name, field]) => promptStep(name, field, context));
   const y: Span = { code: 'y' };
   const book = (say: string, recipient: boolean): NextStep => ({
@@ -1877,12 +2081,12 @@ function nextSection(context: Context): Section {
     { say: w.compareHashes({ code: 'verify' }), command: undefined, then: [[w.ledgerHash]], hashes: true },
   ];
   const tokenName = (token: EffectToken) => effectTokenName(token, context);
-  const field = (name: string): string => fieldWord(template, name, w);
+  const field = (name: string): By => byWord(template, name, w);
   const automatic: Inline[] = [
     [w.onlyCalls(template.calls.length)],
     [w.everyArgument],
     ...template.effects.gives.map((e): Inline => [
-      w.gives(tokenName(e.token), e.amount.kind === 'card' || e.amount.kind === 'at-most' ? { kind: e.amount.kind, field: field(e.amount.field) } : { kind: e.amount.kind === 'all' ? 'all' : 'positive' }),
+      w.gives(tokenName(e.token), e.amount.kind === 'card' || e.amount.kind === 'at-most' ? { kind: e.amount.kind, by: field(e.amount.field) } : { kind: e.amount.kind === 'all' ? 'all' : 'positive' }),
     ]),
     ...template.effects.gets.map((e): Inline => (e.amount.kind === 'any' ? [w.getsAnyAmount(tokenName(e.token))] : w.gets(tokenName(e.token), e.amount.kind === 'at-least' ? field(e.amount.field) : undefined))),
     ...[...template.effects.gives, ...template.effects.gets, ...template.effects.touches.map((t) => ({ ...t, token: { contract: t.token } }))].flatMap((e): Inline[] =>
@@ -1906,8 +2110,8 @@ function nextSection(context: Context): Section {
 }
 
 /** The free rules of the transaction's own fields, and whether a signed message has a free member, which no perturbation tries. */
-function freeRules(template: Template): { readonly claims: Set<FreeClaim>; readonly member: boolean } {
-  const found = new Set<FreeClaim>();
+function freeRules(template: Template): { readonly rules: readonly Extract<Rule, { kind: 'free' }>[]; readonly member: boolean } {
+  const found: Extract<Rule, { kind: 'free' }>[] = [];
   const members = new Set<Rule>();
   const collect = (rule: Rule): void => {
     if (rule.kind === 'eip712') rule.message.fields.forEach((field) => members.add(field));
@@ -1917,7 +2121,7 @@ function freeRules(template: Template): { readonly claims: Set<FreeClaim>; reado
     if (rule.kind === 'fields') rule.fields.forEach(collect);
   };
   const visit = (rule: Rule): void => {
-    if (rule.kind === 'free' && !members.has(rule)) found.add(rule.claim);
+    if (rule.kind === 'free' && !members.has(rule)) found.push(rule);
     if (rule.kind === 'equals') visit(rule.rule);
     if (rule.kind === 'packed') rule.parts.forEach((part) => visit(part.rule));
     if (rule.kind === 'call') rule.call.args.forEach(visit);
@@ -1927,11 +2131,11 @@ function freeRules(template: Template): { readonly claims: Set<FreeClaim>; reado
   const calls = template.calls.flatMap((call) => [call.to, call.value, ...(call.data === 'empty' ? [] : call.data.args)]);
   calls.forEach(collect);
   calls.forEach(visit);
-  return { claims: new Set((['scalar', 'route', 'proof', 'unread'] as const).filter((claim) => found.has(claim))), member: [...members].some((rule) => rule.kind === 'free') };
+  return { rules: found, member: [...members].some((rule) => rule.kind === 'free') };
 }
 
 /** The parameter checks line when no test transaction is recorded, from the template. */
-const unrecordedParams = (template: Template, w: Words): string => (freeRules(template).claims.size > 0 ? w.unrecorded : w.allBound(freeRules(template).member));
+const unrecordedParams = (template: Template, w: Words): string => (freeRules(template).rules.length > 0 ? w.unrecorded : w.allBound(freeRules(template).member));
 
 function stripItems(ledger: Ledger, template: Template, signed: ReadonlySet<string>, w: Words): StripItem[] {
   const names = [...new Set(ledger.entries.map((e) => e.name))];
@@ -1965,9 +2169,8 @@ const tracedOnce = (traces: readonly TracedTx[]): Extract<TracedTx, { kind: 'tra
 
 const usageBlock = (usage: Usage | undefined, w: Words): UsageBlock =>
   usage === undefined
-    ? { title: w.usageTitle, lead: w.usageUnmeasured, table: undefined, notes: [] }
+    ? { lead: w.usageUnmeasured, table: undefined, notes: [] }
     : {
-        title: w.usageTitle,
         lead: w.usageCalls(usage.models.map(modelName).join(' + '), usage.calls, usage.minutes),
         table: {
           head: [w.usageItem, w.usageTokens],
@@ -1980,6 +2183,8 @@ const usageBlock = (usage: Usage | undefined, w: Words): UsageBlock =>
         },
         notes: [...(usage.kind === 'past-txs-rerun' ? [w.usagePartial] : []), w.usageSource],
       };
+
+const usageSection = (usage: Usage | undefined, w: Words): Section => ({ anchor: anchor('usage'), label: w.usage, count: undefined, body: { kind: 'usage', usage: usageBlock(usage, w) } });
 
 /**
  * The signer's page in `language`, from the report's inputs and the raw notes.json. The ledger judges every result;
@@ -2011,7 +2216,7 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
     ledger,
     comparison,
   };
-  const sections = [reviewSection(context), flowSection(context), ...protocolSections(context), ...vaultSection(context), walletSection(context), ...addressSection(context), pastSection(context), nextSection(context)];
+  const sections = [reviewSection(context), flowSection(context), ...protocolSections(context), ...vaultSection(context), walletSection(context), ...addressSection(context), pastSection(context), nextSection(context), usageSection(inputs.usage, w)];
   const sources = [...title.sources, 'testdata/perturb', 'testdata/safe-tx', join(TEMPLATES_DIR, template.id, NOTES_FILE), ...(subject.vault === undefined ? [] : [join(subject.dir, NOTES_FILE)]), ...(inputs.usage === undefined ? [] : [usagePath({ template: template.id, instance: subject.vault?.name })])];
   return {
     language,
@@ -2024,7 +2229,6 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
       verdict: { state: worst(ledger.results), text: research(notes.verdict.text, [], notes.verdict.status === 'safe' ? 'safe' : 'caution') },
     },
     sections,
-    usage: usageBlock(inputs.usage, w),
     footer: w.footer({ code: title.command }, sources.map((s): Span => ({ code: s })), inputs.fetched, { code: 'pnpm test' }, NOTES_FILE, inputs.usage !== undefined),
   };
 }
