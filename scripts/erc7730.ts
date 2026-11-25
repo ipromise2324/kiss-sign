@@ -24,8 +24,8 @@ prints only structured facts: path, file sha256, ERC-8176 descriptorHash, includ
 the selector, per EIP-712 message its primary type and type hash, each field's path, format and
 visibility, and each ERC-8176 attestation as VALID, REVOKED, EXPIRED, INVALID or
 UNVERIFIABLE, with its signer recovered and its revocation read through both providers. It never
-prints descriptor text. Without ALCHEMY_API_KEY the attestations print as UNVERIFIABLE. It
-downloads a missing or changed archive first, as pnpm fetch-erc7730 does.
+prints descriptor text. Without ALCHEMY_API_KEY and DRPC_API_KEY the attestations print as
+UNVERIFIABLE. It downloads a missing or changed archive first, as pnpm fetch-erc7730 does.
 
 Options:
   --record <name>   Write testdata/erc7730/<name>.json; refused when a chain read got no answer.

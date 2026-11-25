@@ -145,7 +145,8 @@ TLS certificate checks stay on, so a wrong address can only fail the connection.
 Keys enter through `kiss-sign key add alchemy|drpc|etherscan|github` in a hidden prompt, or the signer fills in the `$KISS_SIGN_HOME/.env` that `kiss-sign init` creates, with an empty line per key and mode 0600; never through the chat.
 `init` never overwrites an existing `.env`.
 
-A command that reads the chain needs `ALCHEMY_API_KEY` and `DRPC_API_KEY`, and refuses before any read, naming the key that is not set and where to get it; `replay`, the tests and every `--offline` and `--render` command read no chain and need neither.
+A command that reads the chain needs `ALCHEMY_API_KEY` and `DRPC_API_KEY`, and refuses before any chain read, naming the key that is not set and where to get it, or the one that is not shaped like a key, whose value it does not print; `replay`, the tests and every `--offline` and `--render` command read no chain and need neither.
+`pnpm check-sources` and `pnpm erc7730` still run when one of the two is not set, and say so: the first skips the deployer check with a `NOTE`, the second prints each attestation as `UNVERIFIABLE` with the key's name.
 Both are free: an Alchemy app's key from [dashboard.alchemy.com](https://dashboard.alchemy.com/), and a drpc key from a free account at [drpc.org](https://drpc.org/login), made in its dashboard.
 drpc's public endpoint, which needs no key, refuses most of a burst of reads, so a search of past transactions there spends most of its time waiting; kiss-sign reads drpc only with a key.
 Each provider's URL holds its key, so an error names the provider and a closed cause, never the provider's text or a URL, and a recording that keeps a provider's answer takes the key out of it.

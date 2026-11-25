@@ -1,4 +1,4 @@
-import { findKey, keySpec } from '../keys.ts';
+import { findKey, keySpec, requireKeyShape } from '../keys.ts';
 import type { Env, KeyName, KeySpec } from '../keys.ts';
 
 /** The requests a reader may have open at a provider at once: `start` at first, up to `max` while none is refused. */
@@ -39,6 +39,7 @@ function endpointOf(entry: (typeof PROVIDERS)[number], env: Env): Endpoint {
   const spec = keySpec(entry.key) as KeySpec;
   const key = findKey(spec, env)?.value;
   if (key === undefined) throw new MissingKeyError(spec);
+  requireKeyShape(spec, key);
   return { provider: entry.name, company: entry.company, url: entry.url(key), key, load: entry.load };
 }
 
