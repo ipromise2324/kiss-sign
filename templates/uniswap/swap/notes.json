@@ -359,11 +359,11 @@
       "sources": [
         {
           "text": {
-            "en": "First seen in the transactions: in the AI's own decoder count (not the program's search), 2,019 of 2,024 swaps of this shape name this hook, 5 another one",
-            "zh-TW": "第一次看到是在交易裡：AI 用自己的解碼程式數（不是程式的搜尋），2,024 筆這種形狀的兌換有 2,019 筆寫這個 hook，5 筆是另一個"
+            "en": "First seen in the transactions. AI evidence, not a program result: by the AI's own decoder, 2,019 of 2,024 swaps of this shape name this hook, 5 another one",
+            "zh-TW": "第一次看到是在交易裡。AI 的證據，不是程式的結果：AI 用自己的解碼程式數，2,024 筆這種形狀的兌換有 2,019 筆寫這個 hook，5 筆是另一個"
           },
           "url": "https://etherscan.io/tx/0xefe5f035a51e233612ab0ea86f5a82f06dbf66e535dec5f46c2fb449b6761bef",
-          "result": "pass"
+          "result": "attention"
         },
         {
           "text": {
@@ -482,8 +482,8 @@
       "zh-TW": "池子的價格刻度；Uniswap 的頁面寫這個池子是 1。"
     },
     "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.poolKey.hooks": {
-      "en": "The hook contract: Uniswap's StablePairHook. The version on chain today only sets the fee and moves no token.",
-      "zh-TW": "hook 合約：Uniswap 的 StablePairHook。鏈上現在這一版只決定手續費，不移動任何代幣。"
+      "en": "The hook contract: Uniswap's StablePairHook. The AI read its source (no program proof): the version on chain today only sets the fee and moves no token.",
+      "zh-TW": "hook 合約：Uniswap 的 StablePairHook。AI 讀原始碼的結論（不是程式的證明）：鏈上現在這一版只決定手續費，不移動任何代幣。"
     },
     "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.zeroForOne": {
       "en": "The direction: true sells USDC, false sells USDT. Both were seen in Safe transactions.",

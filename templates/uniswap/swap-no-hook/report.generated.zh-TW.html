@@ -357,15 +357,15 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>卡片的「最少收到的數量」由你填，價格只靠它保護。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="aiw" data-ai><span>池子的手續費不限，所以交易用的池子可能和報價不同，甚至是別人開的、價格很差的池子，但不會低於你填的最少數量。例子：另一個 Safe 賣 8.029841 USDC，最少寫 7.995463 USDT，比實際拿到的少 0.5%。如果填 7，就等於允許少拿約 1。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>池子的手續費不限，所以交易用的池子可能和報價不同，甚至是別人開的、價格很差的池子，但不會低於你填的最少數量。程式在錄下的那筆上試過 34、36、0，都 revert，所以圖例寫的「走另一個池子」程式沒看到過。例子：另一個 Safe 賣 8.029841 USDC，最少寫 7.995463 USDT，比實際少 0.5%。填 7 就等於允許少拿約 1。</span><span class="byai">AI 研究</span></span></div>
           <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>照 app 確認畫面上的最少收到數量填，不要更低。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>只找到一筆這種形狀的 Safe 交易（USDC 換 USDT，手續費 35），流程要求的是兩筆；程式的擾動測試只測了這一筆。</span><span class="byai">AI 研究</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>只找到一筆這種形狀的 Safe 交易（USDC 換 USDT，手續費 35），只有一筆算少：要有第二個 Safe、不同的數量、手續費或方向，才看得出規則不是只剛好符合這一筆。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="aiw" data-ai><span>賣 USDT 和其他手續費靠 AI 的證據，不是程式的結果：AI 模擬了 10 筆 EOA 交易（兩個方向，手續費 7、8、10、35、100），成交時都剛好付出賣出數量、至少拿到最少數量。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>程式的擾動測試只測了這一筆。賣 USDT 和其他手續費靠 AI 的證據，不是程式的結果：AI 模擬了 10 筆 EOA 交易（兩個方向，手續費 7、8、10、35、100），成交時都剛好付出賣出數量、至少拿到最少數量。</span><span class="byai">AI 研究</span></span></div>
           <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>如果你要賣 USDT，自己決定 AI 的證據夠不夠；可以先用小額。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
     </div>
@@ -494,7 +494,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="arg" data-field="1.execute.deadline">
       <div class="nm"><span class="pn">deadline</span><span class="who app">app 填，不限</span></div>
       <div class="val"><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>過了這個時間 router 就拒絕這筆兌換，由 app 設定：Safe 交易是區塊時間後約 29 分鐘，413 筆 EOA 呼叫是 14 到 30 分鐘（AI 的證據）。</span></span></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>過了這個時間 router 就拒絕這筆兌換，由 app 設定：Safe 交易是區塊時間後約 29 分鐘，413 筆 EOA 呼叫是 14 到 30 分鐘（AI 的證據）。不需要限制：晚一點執行，付出的還是剛好那個賣出數量，拿到的還是至少最少數量。</span></span></div></div>
     </div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 個固定的值；改了任何一個都是 MISMATCH</summary>
     <div class="arg" data-field="1.execute.commands">

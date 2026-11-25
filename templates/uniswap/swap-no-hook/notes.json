@@ -37,8 +37,8 @@
   "judgments": [
     {
       "text": {
-        "en": "You type the card's minimum to receive yourself; it is your only price protection. The pool's fee is left free, so the transaction may use another pool than the quote showed, even one anyone made with a bad price, but never below your minimum. Example: the other Safe sold 8.029841 USDC with a minimum of 7.995463 USDT, 0.5% under what it got. A minimum of 7 would let it lose about 1.",
-        "zh-TW": "卡片的「最少收到的數量」由你填，價格只靠它保護。池子的手續費不限，所以交易用的池子可能和報價不同，甚至是別人開的、價格很差的池子，但不會低於你填的最少數量。例子：另一個 Safe 賣 8.029841 USDC，最少寫 7.995463 USDT，比實際拿到的少 0.5%。如果填 7，就等於允許少拿約 1。"
+        "en": "You type the card's minimum to receive yourself; it is your only price protection. The pool's fee is left free, so the transaction may use another pool than the quote showed, even one anyone made with a bad price, but never below your minimum. On its one recorded transaction the program tried fees 34, 36 and 0 and all three reverted, so the program never saw a swap through another pool, whatever the row's legend says. Example: the other Safe sold 8.029841 USDC with a minimum of 7.995463 USDT, 0.5% under what it got. A minimum of 7 would let it lose about 1.",
+        "zh-TW": "卡片的「最少收到的數量」由你填，價格只靠它保護。池子的手續費不限，所以交易用的池子可能和報價不同，甚至是別人開的、價格很差的池子，但不會低於你填的最少數量。程式在錄下的那筆上試過手續費 34、36、0，都 revert，所以圖例寫的「走另一個池子」程式沒看到過。例子：另一個 Safe 賣 8.029841 USDC，最少寫 7.995463 USDT，比實際拿到的少 0.5%。填 7 就等於允許少拿約 1。"
       },
       "recommendation": {
         "en": "Type the minimum shown on the app's confirm screen, no lower.",
@@ -47,8 +47,8 @@
     },
     {
       "text": {
-        "en": "Only one Safe transaction of this shape was found, USDC to USDT at fee 35, where the skill asks for two. The program's perturbation test ran on it alone. Selling USDT and the other fees rest on AI evidence, not a program result: the AI simulated 10 EOA transactions (both directions, fees 7, 8, 10, 35, 100) and every swap gave exactly the sell amount and got at least its minimum.",
-        "zh-TW": "只找到一筆這種形狀的 Safe 交易（USDC 換 USDT，手續費 35），流程要求的是兩筆；程式的擾動測試只測了這一筆。賣 USDT 和其他手續費靠 AI 的證據，不是程式的結果：AI 模擬了 10 筆 EOA 交易（兩個方向，手續費 7、8、10、35、100），成交時都剛好付出賣出數量、至少拿到最少數量。"
+        "en": "Only one Safe transaction of this shape was found, USDC to USDT at fee 35. One is thin: a second Safe, with another amount, fee or direction, would show the rules are not fitted to one transaction. The program's perturbation test ran on it alone. Selling USDT and the other fees rest on AI evidence, not a program result: the AI simulated 10 EOA transactions (both directions, fees 7, 8, 10, 35, 100) and every swap gave exactly the sell amount and got at least its minimum.",
+        "zh-TW": "只找到一筆這種形狀的 Safe 交易（USDC 換 USDT，手續費 35），只有一筆算少：要有第二個 Safe、不同的數量、手續費或方向，才看得出規則不是只剛好符合這一筆。程式的擾動測試只測了這一筆。賣 USDT 和其他手續費靠 AI 的證據，不是程式的結果：AI 模擬了 10 筆 EOA 交易（兩個方向，手續費 7、8、10、35、100），成交時都剛好付出賣出數量、至少拿到最少數量。"
       },
       "recommendation": {
         "en": "If you sell USDT, decide whether this AI evidence is enough, and start with a small amount.",
@@ -196,8 +196,8 @@
       "zh-TW": "0 代表領走兌換得到的全部數量。"
     },
     "1.execute.deadline": {
-      "en": "After this time the router refuses the swap. The app sets it: about 29 minutes after the block in the Safe transaction, 14 to 30 minutes in the 413 EOA calls (AI evidence).",
-      "zh-TW": "過了這個時間 router 就拒絕這筆兌換，由 app 設定：Safe 交易是區塊時間後約 29 分鐘，413 筆 EOA 呼叫是 14 到 30 分鐘（AI 的證據）。"
+      "en": "After this time the router refuses the swap. The app sets it: about 29 minutes after the block in the Safe transaction, 14 to 30 minutes in the 413 EOA calls (AI evidence). It needs no bound: a later run still pays exactly the sell amount and gets at least the minimum.",
+      "zh-TW": "過了這個時間 router 就拒絕這筆兌換，由 app 設定：Safe 交易是區塊時間後約 29 分鐘，413 筆 EOA 呼叫是 14 到 30 分鐘（AI 的證據）。不需要限制：晚一點執行，付出的還是剛好那個賣出數量，拿到的還是至少最少數量。"
     }
   },
   "pastTxsConclusion": {
