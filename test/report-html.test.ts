@@ -750,6 +750,14 @@ test('notes-needed asks, of a report with no notes, for exactly the texts the pa
     const shared = notesPath('', template.id);
     const both: Record<string, Record<string, unknown>> = { [shared]: {}, ...(vault === undefined ? {} : { [notesPath('', template.id, vault.name)]: {} }) };
     const needed = notesNeeded(repoWithNotes(both), inputs, ['zh-TW']);
+    const { root } = reportOf(dir);
+    for (const file of Object.keys(both)) {
+      const committed = JSON.parse(readFileSync(join(root, file), 'utf8')).reviews ?? {};
+      const asked = (needed.skeleton[file] as { reviews?: object } | undefined)?.reviews ?? {};
+      const untraced = (reviews: object) => Object.keys(reviews).filter((id) => !/^(flow|trace)\./.test(id)).sort();
+      assert.deepEqual(untraced(asked), untraced(committed), `${dir}: reviews asked for in ${file}`);
+      if (vault !== undefined && file === shared) assert.deepEqual(Object.keys(asked).filter((id) => /^trace\./.test(id)), [], `${dir}: a trace's review asked for in the template's notes`);
+    }
     const files: Record<string, Record<string, unknown>> = { ...both, ...(Object.fromEntries(Object.entries(needed.skeleton).map(([file, tree]) => [file, written(tree)])) as Record<string, Record<string, unknown>>) };
     const pageOf = (notes: Readonly<Record<string, unknown>>) => generatedHtml(repoWithNotes(notes), inputs, title);
     assert.deepEqual([...(pageOf(files) ?? assert.fail(dir)).keys()], ['zh-TW'], dir);
