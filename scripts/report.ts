@@ -50,6 +50,7 @@ import type { Language } from '../src/language.ts';
 import { generatedHtml, generatedHtmlFile, writeHtmlPages } from '../src/research/report-html.ts';
 import { gatherSourcePages, httpsGet, retryingGet } from '../src/research/source-page.ts';
 import { readGithubToken } from '../src/research/github-token.ts';
+import { settledBlock } from '../src/research/settled.ts';
 import { alchemyCall, vaultEvidenceText } from '../src/research/instance-evidence.ts';
 import type { Address } from '../src/safe/types.ts';
 import { UsageError } from '../src/research/usage.ts';
@@ -65,14 +66,15 @@ const HELP = `${USAGE}
 Prints the generated report of a template, read live: the card's choices and each field's rule,
 the effects, each function's official page, pnpm check-sources and the code pin's spans for every
 registry entry the operation can touch, pnpm prove-abi for each whose ABI it uses (the code it runs
-at the latest block for the others), pnpm instance-evidence for the instance, the protocol facts,
+at that block for the others), pnpm instance-evidence for the instance, the protocol facts,
 the past-txs recordings of the template studied again, and pnpm erc7730 for every such entry.
 A template whose card has an instance field, a vault today, is reported per instance: --instance-of
 names it, and the report reads the registry as if it were the only one the card can name and
 studies only the past-txs recordings whose --token is that instance. Without
 --instance-of such a template is refused, naming the instances that have a report.
+It reads the chain at the block 8 behind the head, which no reorganization replaces while it reads.
 A read with no answer is asked again after each pause; one still without an answer prints as
-UNVERIFIABLE, never as FINDING, and --record then writes nothing.
+UNVERIFIABLE, never as FINDING, and --record then stops and writes nothing.
 --record refuses before any read, naming every one, while an address the recorded call traces show
 moving the sender's money is neither checked at signing nor judged in the trace-addresses.json
 beside the report, while that file judges an address no trace names, or while no trace counts for
@@ -190,8 +192,16 @@ const githubToken = readGithubToken(process.env);
 const unread: string[] = [];
 const note = (read: string) => void unread.push(read);
 const reader = createReader(endpoints, httpsTransport(), { note });
-const latest = await reader.block('latest');
+const latest = await settledBlock(reader);
 if (latest.kind === 'unverifiable') throw new Error(latest.reason);
+
+/** Stops a recording as soon as a read got no answer, since it would be refused after the rest is read. */
+function requireRead(): void {
+  const refusal = flags.record === true ? unreadRefusal(unread) : undefined;
+  if (refusal === undefined) return;
+  console.error(refusal);
+  process.exit(1);
+}
 
 /** Each DefiLlama or CoinGecko answer, read once and kept by path: the listings and the protocol facts share the protocol list. */
 const answers = new Map<string, Promise<unknown>>();
@@ -212,6 +222,8 @@ const pages = {
   creations,
 };
 
+requireRead();
+
 const recorded = loadAbiCases(root);
 const abi = new Map<Address, AbiProof | AbiRefusal>();
 const abiCases = new Map<string, unknown>();
@@ -223,6 +235,8 @@ for (const entry of provedEntries(subject, registry)) {
     abi.set(entry.address, proof);
   } else abi.set(entry.address, await proveAbi(reader, entry.address, latest.value, deps, entry));
 }
+
+requireRead();
 
 const alchemy = alchemyCall(httpsTransport(), endpoints[0].url, note);
 const vaults = new Map<string, string>();
@@ -237,6 +251,7 @@ if ('unavailable' in snapshot) {
   console.error(snapshot.unavailable);
   process.exit(1);
 }
+requireRead();
 const codeChain = recordingTransport(httpsTransport(), endpoints);
 const codeReader = createReader(endpoints, codeChain.transport, { note });
 const spans = await checkSpans(codeReader, entries);
@@ -258,11 +273,7 @@ const text = renderReport(live, { command, sources: ['live reads at the time it 
 console.log(text);
 
 if (flags.record) {
-  const refusal = unreadRefusal(unread);
-  if (refusal !== undefined) {
-    console.error(refusal);
-    process.exit(1);
-  }
+  requireRead();
   const erc7730Section = { commit: snapshot.commit, files: Object.fromEntries(trimErc7730(snapshot, erc7730.reports)), chain: erc7730Chain.exchanges() };
   const raw = new Map(await Promise.all([...answers].map(async ([path, answer]) => [path, await answer] as const)));
   const factsSection = scope === undefined ? {} : { facts: factsRecording(scope, latest.value, raw, factsChain.exchanges()) };
