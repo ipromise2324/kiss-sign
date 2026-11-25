@@ -16,7 +16,7 @@ import type { Compilers } from '../contracts/solc.ts';
 import { AbiSignatureError, canonicalType, namedSignatureOfAbiEntry, paramName, parseFunctionSignature } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam } from '../decode/abi.ts';
 import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, pageUrlsOf, parseHttpsUrl, sizeOf } from '../registry.ts';
-import type { CodePin, HttpsUrl, PinnedCode, Registry, RegistryEntry, Route, SelectorRouting } from '../registry.ts';
+import type { CodePin, HttpsUrl, Market, PinnedCode, Registry, RegistryEntry, Route, SelectorRouting } from '../registry.ts';
 import { wholeTokens } from '../chain/decimals.ts';
 import { FEED_VIEWS, FLOOR_RULE, POOL_VIEWS, pairFacts } from '../price/reference.ts';
 import { checksumAddress } from '../safe/types.ts';
@@ -24,7 +24,7 @@ import type { Address, Hex } from '../safe/types.ts';
 import { TEMPLATES_DIR, WAD, callRules, callTargetEntries, callTargets, cardRefs, computedOutput, effectTokenNames, inScope, isNamedToken, loadTemplate, namedEffectTokens, refNames, ruleLeaves, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
 import type { MemberSource } from '../template/eip712.ts';
 import { GENERATED_FILE, INSTANCE_FOLDER, reportUnit, reportedInstancesIn, severalInstances } from '../template/vault-reports.ts';
-import type { CallNode, CardField, CardRef, Computed, ComputedRead, Effect, EffectToken, Floor, Quantity, Rule, Template, Tolerance, TokenRef, ViewEffect } from '../template/template.ts';
+import type { CallNode, CardField, CardRef, Computed, ComputedRead, Effect, EffectToken, Floor, Quantity, Rule, Template, TokenRef, Tolerance, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording, SiteOwner } from './listings.ts';
 import { checkSources, githubLine, listingsFor, recordedListingReads, sourcePagesOf, sourceSiteLine, trimForRecording, trimSourcePage } from './listings.ts';
 import { renderPastTxs } from './past-txs-render.ts';
@@ -423,17 +423,28 @@ export function entriesOf(subject: Subject, registry: Registry): RegistryEntry[]
 /**
  * The entries `verify` compares with their code pin at each signing, as `codeClaims` names them: each contract a rule
  * or a view names, each entry a card field can name, each a card reference's attribute names, and each these depend on.
- * An attribute no card reference reads, such as a vault's factory, is checked only by the report.
+ * An attribute no card reference reads, such as a vault's factory, is checked only by the report. With `called`, the
+ * addresses one transaction's calls hold, a card field names only those of its entries, or of its markets every part of
+ * which is among them, and any it could when none is: a field no call carries shows no choice.
  */
-export function signedEntryNames(template: Template, registry: Registry): Set<string> {
+export function signedEntryNames(template: Template, registry: Registry, called?: ReadonlySet<string>): Set<string> {
+  const nameable = (field: CardField): readonly RegistryEntry[] => {
+    if (field.kind === 'contract') return narrowed(scopeEntries(field.scope, registry), (entry) => called?.has(entry.address) === true);
+    if (field.kind !== 'market') return [];
+    const parts = (market: Market): RegistryEntry[] => MARKET_ENTRY_PARTS.map((part) => market[part]);
+    return narrowed([...registry.markets.values()], (market) => parts(market).every((part) => called?.has(part.address) === true)).flatMap(parts);
+  };
+  const fields = new Map([...template.card].map(([name, field]) => [name, nameable(field)] as const));
   const names = new Set([
     ...namedInRules(template),
-    ...cardCandidates(template, registry).map((entry) => entry.name),
-    ...cardRefs(template).flatMap((ref) => (ref.attribute === undefined ? [] : refNames(ref, template, registry))),
+    ...[...fields.values()].flat().map((entry) => entry.name),
+    ...cardRefs(template).flatMap(({ field, attribute }) => (attribute === undefined ? [] : (fields.get(field) ?? []).flatMap((entry) => entry.attributes[attribute] ?? []))),
   ]);
   for (const name of [...names]) for (const target of registry.entries.get(name)?.dependsOn ?? []) names.add(target);
   return names;
 }
+
+const narrowed = <T>(items: readonly T[], passes: (item: T) => boolean): readonly T[] => (items.some(passes) ? items.filter(passes) : items);
 
 /**
  * The entries whose ABI the program uses: each contract a call targets, a nested call's included, each a function's
