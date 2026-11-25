@@ -467,7 +467,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">tickSpacing</div><div><div class="raw">1</div><div class="is">固定為 1</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>池子的價格刻度；Uniswap 的頁面寫這個池子是 1。</span></span></div></div></div>
         <div class="part"><div class="pn">hooks</div><div><div class="raw">0x0000113dCf4ADd69999Fad8F20F2b63F979bfcC0</div><div class="is"><a href="#a-uniswap-stable-pair-hook">uniswap-stable-pair-hook</a></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>hook 合約：Uniswap 的 StablePairHook。鏈上現在這一版只決定手續費，不移動任何代幣。</span></span></div></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>hook 合約：Uniswap 的 StablePairHook。AI 讀原始碼的結論（不是程式的證明）：鏈上現在這一版只決定手續費，不移動任何代幣。</span></span></div></div></div>
       </div></div>
         <div class="part"><div class="pn">minHopPriceX36</div><div><div class="raw">0</div><div class="is">固定為 0</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>另一個價格下限；0 代表不用。上面的最少數量仍然有效。</span></span></div></div></div>
@@ -587,7 +587,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="confirmed">在 2 個地方確認：官方頁、github.com/Uniswap/v4-hooks-public</div>
         <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。</div>
         <details class="aisrcs" open><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 7 處 · AI 判斷：要注意</summary>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>第一次看到是在交易裡：AI 用自己的解碼程式數（不是程式的搜尋），2,024 筆這種形狀的兌換有 2,019 筆寫這個 hook，5 筆是另一個 <a class="aisrc" href="https://etherscan.io/tx/0xefe5f035a51e233612ab0ea86f5a82f06dbf66e535dec5f46c2fb449b6761bef">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>第一次看到是在交易裡。AI 的證據，不是程式的結果：AI 用自己的解碼程式數，2,024 筆這種形狀的兌換有 2,019 筆寫這個 hook，5 筆是另一個 <a class="aisrc" href="https://etherscan.io/tx/0xefe5f035a51e233612ab0ea86f5a82f06dbf66e535dec5f46c2fb449b6761bef">來源</a></span></span><span class="aires">AI 判斷：要注意</span></div>
           <div><span class="aiw" data-ai><span class="byai">AI</span><span>Uniswap 的 StablePair 部署頁在 Ethereum: 1 下的 StablePairHook (hook) 旁列出這個地址、implementation 0x5f216d21b1C81346938EDDc1Df7e0111A0F64000，以及 USDC / USDT 池子的 id、動態手續費 0x800000 和 tick spacing 1 <a class="aisrc" href="https://developers.uniswap.org/llms.mdx/docs/protocols/uniswap-labs-hooks/stable-pair/deployments">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
           <div><span class="aiw" data-ai><span class="byai">AI</span><span>Uniswap 的 v4-hooks-public README 在 StablePairHook 下列出 Ethereum 的這個地址 <a class="aisrc" href="https://github.com/Uniswap/v4-hooks-public/blob/e354058156f8f4f1aff1594a932513e7064956c7/README.md">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
           <div><span class="aiw" data-ai><span class="byai">AI</span><span>同一個 repo 的部署腳本把這個地址寫為挖出的 proxy 地址，owner 和 configManager 是 Governance Timelock <a class="aisrc" href="https://github.com/Uniswap/v4-hooks-public/blob/e354058156f8f4f1aff1594a932513e7064956c7/script/deploy/stable-pair-hook/Parameters.sol">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
