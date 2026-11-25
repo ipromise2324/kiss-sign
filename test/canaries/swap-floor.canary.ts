@@ -14,7 +14,7 @@ import type { AbiValue } from '../../src/decode/codec.ts';
 import { parseRegistry } from '../../src/registry.ts';
 import type { Address, Hex, SafeTx } from '../../src/safe/types.ts';
 import { checkTemplateFields } from '../../src/template/check.ts';
-import { parseTemplate } from '../../src/template/template.ts';
+import { TemplateError, parseTemplate } from '../../src/template/template.ts';
 
 const git = (cwd: string, ...args: string[]) =>
   execFileSync('git', ['-c', 'user.name=test', '-c', 'user.email=test@example.com', ...args], { cwd, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -28,24 +28,27 @@ function write(path: string, text: string): string {
 const SAFE = `0x${'5a'.repeat(20)}` as Address;
 const CODE = '0x00' as Hex;
 const PIN = { hash: keccakCode(CODE), from: 0 };
-const NOW = 1_800_000_000n;
 const SWAP = 'swap(address sell, address buy, uint256 amountIn, uint256 minOut, address to)';
 const SOLD = 1_000_000_000n;
 
 const at = (byte: string): string => `0x${byte.repeat(20)}`;
 const of = (byte: string, kind: string, rest: object = {}) => ({ address: at(byte), kind, source: 'https://example.com/', ...rest });
-const feed = (byte: string, unit: string) => of(byte, 'oracle', { code: PIN, feed: { description: `${unit} / USD`, decimals: 8, heartbeat: 86_400, deviationBps: 25, sourceClass: 'cex_price', quote: 'usd' } });
+const feed = (byte: string, unit: string, rest: object = {}) =>
+  of(byte, 'oracle', { code: PIN, feed: { description: `${unit} / USD`, decimals: 8, heartbeat: 86_400, deviationBps: 25, sourceClass: 'cex_price', quote: 'usd', ...rest } });
 
 const plainRegistry = { one: of('a1', 'token'), two: of('a2', 'token'), dex: of('a3', 'router') };
-const pricedRegistry = {
+const priced = {
+  ...plainRegistry,
   one: of('a1', 'token', { price: { feed: 'one-usd', peg: 'usd' } }),
   two: of('a2', 'token', { price: { feed: 'two-usd', peg: 'usd' } }),
-  dex: of('a3', 'router'),
   'one-usd': feed('b1', 'ONE'),
   'two-usd': feed('b2', 'TWO'),
   pools: of('b3', 'factory', { instanceCheck: { function: 'getPool(address,address)', args: [{ attribute: 'token0' }, { attribute: 'token1' }] } }),
   pool: of('b4', 'pool', { code: PIN, attributes: { factory: 'pools', token0: 'one', token1: 'two' }, twap: { minLiquidity: '1000000' } }),
 };
+/** Feeds that may be off by 51 bps together, one more than a floor may be computed from. */
+const loose = { ...priced, 'one-usd': feed('b1', 'ONE', { deviationBps: 26 }) };
+const twoUnpriced = { ...priced, two: of('a2', 'token') };
 const ATTRIBUTES = { asset: 'token', factory: 'factory', adapter: 'adapter', token0: 'token', token1: 'token' };
 
 const swapTemplate = (floor: object) => ({
@@ -66,6 +69,8 @@ const swapTemplate = (floor: object) => ({
   ],
   effects: { gives: [{ token: 'card.sell-token', amount: 'card.sell-amount' }], gets: [{ token: 'card.buy-token', amount: { atLeast: 'card.min-buy' } }] },
 });
+
+const FLOOR = { floor: { sells: 'sell-amount' } };
 
 const span: AbiValue['span'] = [0, 0];
 const uint = (value: bigint): AbiValue => ({ kind: 'uint', value, span });
@@ -94,16 +99,28 @@ test('a swap whose minimum is one base unit under the card\'s is a mismatch, and
   assert.equal(judged(0n), 'mismatch');
 });
 
-type World = { readonly one: bigint; readonly two: bigint; readonly age: bigint; readonly tick: bigint; readonly liquidity: bigint; readonly code: Hex };
+type World = {
+  readonly one: bigint;
+  readonly two: bigint;
+  readonly age: bigint;
+  readonly updatedAtZero: boolean;
+  readonly tick: bigint;
+  readonly liquidity: bigint;
+  readonly buyDecimals: bigint;
+  readonly feedDecimals: bigint;
+  readonly unit: string;
+  readonly otherCodeAt: string;
+  readonly revertingAt: string;
+};
 /** Both tokens at one dollar in the feeds and in the pool. */
-const CALM: World = { one: 100_000_000n, two: 100_000_000n, age: 60n, tick: 0n, liquidity: 10n ** 18n, code: CODE };
+const CALM: World = { one: 100_000_000n, two: 100_000_000n, age: 60n, updatedAtZero: false, tick: 0n, liquidity: 10n ** 18n, buyDecimals: 6n, feedDecimals: 8n, unit: 'ONE', otherCodeAt: '', revertingAt: '' };
 
-function answerOf(world: World, to: string, data: string): Hex {
-  const [called, unit] = [data.slice(0, 10), to === at('b1') ? 'ONE' : 'TWO'];
-  if (to === at('a1') || to === at('a2')) return encoded('uint8', [uint(6n)]);
-  if (called === selector('description()')) return encoded('string', [{ kind: 'string', value: Buffer.from(`${unit} / USD`), span }]);
-  if (called === selector('decimals()')) return encoded('uint8', [uint(8n)]);
-  if (called === selector('latestRoundData()')) return encoded('uint80,int256,uint256,uint256,uint80', [uint(1n), int(unit === 'ONE' ? world.one : world.two), uint(1n), uint(NOW - world.age), uint(1n)]);
+function answerOf(world: World, now: bigint, to: string, data: string): Hex {
+  const [called, isOne] = [data.slice(0, 10), to === at('b1')];
+  if (to === at('a1') || to === at('a2')) return encoded('uint8', [uint(to === at('a1') ? 6n : world.buyDecimals)]);
+  if (called === selector('description()')) return encoded('string', [{ kind: 'string', value: Buffer.from(`${isOne ? world.unit : 'TWO'} / USD`), span }]);
+  if (called === selector('decimals()')) return encoded('uint8', [uint(isOne ? world.feedDecimals : 8n)]);
+  if (called === selector('latestRoundData()')) return encoded('uint80,int256,uint256,uint256,uint80', [uint(1n), int(isOne ? world.one : world.two), uint(1n), uint(world.updatedAtZero ? 0n : now - world.age), uint(1n)]);
   if (called === selector('observe(uint32[])')) {
     const window = BigInt(`0x${data.slice(138, 202)}`);
     return encoded('int56[],uint160[]', [
@@ -114,7 +131,7 @@ function answerOf(world: World, to: string, data: string): Hex {
   return assert.fail(`${called} on ${to}`);
 }
 
-const transportOf = (alchemy: World, drpc: World): Transport => async (url, body) => {
+const transportOf = (alchemy: World, drpc: World, now: bigint): Transport => async (url, body) => {
   const world = url.includes('drpc') ? drpc : alchemy;
   const { method, params } = JSON.parse(body) as { method: string; params: [string & { to: string; data: string }] };
   const reply = (result: unknown) => ({ status: 200, text: JSON.stringify({ jsonrpc: '2.0', id: 1, result }) });
@@ -124,24 +141,32 @@ const transportOf = (alchemy: World, drpc: World): Transport => async (url, body
       return reply('0x10');
     case 'eth_getBlockByNumber':
     case 'eth_getBlockByHash':
-      return reply({ number: '0x10', hash, timestamp: `0x${NOW.toString(16)}`, gasLimit: '0x1', mixHash: hash });
+      return reply({ number: '0x10', hash, timestamp: `0x${now.toString(16)}`, gasLimit: '0x1', mixHash: hash });
     case 'eth_getCode':
-      return reply(world.code);
+      return reply(params[0] as string === world.otherCodeAt ? '0x01' : CODE);
     case 'eth_getStorageAt':
       return reply(`0x${'0'.repeat(64)}`);
-    default:
-      return reply(answerOf(world, params[0].to.toLowerCase(), params[0].data));
+    default: {
+      const to = params[0].to.toLowerCase();
+      if (to === world.revertingAt) return { status: 200, text: JSON.stringify({ jsonrpc: '2.0', id: 1, error: { code: 3, message: 'execution reverted' } }) };
+      return reply(answerOf(world, now, to, params[0].data));
+    }
   }
 };
 
-/** The minimum `card new` seals for a swap of 1000 `one` to `two`, with the signer's lines, or undefined when it seals no card. */
-async function sealed(world: World, lines: readonly string[], drpc = world): Promise<bigint | undefined> {
+const repos = new Map<string, string>();
+
+/** A clone whose main holds the template and `registry`. */
+function cloneOf(registry: object): string {
+  const key = JSON.stringify(registry);
+  const made = repos.get(key);
+  if (made !== undefined) return made;
   const base = mkdtempSync(join(tmpdir(), 'kiss-sign-floor-canary-'));
-  const [origin, repo, home] = [join(base, 'origin.git'), join(base, 'repo'), join(base, 'home')];
+  const [origin, repo] = [join(base, 'origin.git'), join(base, 'repo')];
   git(base, 'init', '--quiet', '--bare', '--initial-branch=main', origin);
   git(base, 'clone', '--quiet', origin, repo);
-  write(join(repo, 'templates', 'test', 'swap', 'template.json'), JSON.stringify(swapTemplate({ floor: { sells: 'sell-amount' } })));
-  write(join(repo, 'registry', 'contracts.json'), JSON.stringify(pricedRegistry));
+  write(join(repo, 'templates', 'test', 'swap', 'template.json'), JSON.stringify(swapTemplate(FLOOR)));
+  write(join(repo, 'registry', 'contracts.json'), key);
   write(join(repo, 'registry', 'attributes.json'), JSON.stringify(ATTRIBUTES));
   git(repo, 'add', '-A');
   git(repo, 'commit', '--quiet', '-m', 'data');
@@ -150,62 +175,129 @@ async function sealed(world: World, lines: readonly string[], drpc = world): Pro
   chmodSync(ssh, 0o755);
   git(repo, 'remote', 'set-url', 'origin', 'git@github.com:signer/kiss-sign.git');
   git(repo, 'config', 'core.sshCommand', ssh);
+  repos.set(key, repo);
+  return repo;
+}
+
+type Run = { readonly world?: Partial<World>; readonly drpc?: Partial<World>; readonly registry?: object; readonly pair?: readonly [string, string]; readonly lines: readonly string[] };
+
+/** The minimum `card new` seals for a swap of 1000 of the first token to the second, or why it seals none: its own refusal, never a crash. */
+async function cardNew({ world = {}, drpc = world, registry = priced, pair = ['one', 'two'], lines }: Run): Promise<bigint | string> {
+  const home = mkdtempSync(join(tmpdir(), 'kiss-sign-floor-home-'));
   write(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: SAFE, repo: 'github.com/signer/kiss-sign' }));
-  const queue = ['one', 'two', '1000', ...lines];
-  await main(['card', 'new', 'test/swap'], {
+  const queue = [...pair, '1000', ...lines];
+  let said = '';
+  const code = await main(['card', 'new', 'test/swap'], {
     env: { KISS_SIGN_HOME: home, ALCHEMY_API_KEY: 'test-key' },
     stdout: () => {},
-    stderr: () => {},
+    stderr: (text) => void (said += text),
     platform: 'linux',
     readSecret: undefined,
     ask: async () => queue.shift(),
-    repoRoot: repo,
-    transport: transportOf(world, drpc),
+    repoRoot: cloneOf(registry),
+    transport: transportOf({ ...CALM, ...world }, { ...CALM, ...drpc }, BigInt(Math.floor(Date.now() / 1000))),
     fetchJson: async () => assert.fail('card new fetches nothing'),
     readMessage: async () => ({ why: 'none' }),
-  }).catch((error: Error) => assert.match(`${error.name}`, /Error/));
+  });
   const cards = join(home, 'cards');
   const [file] = existsSync(cards) ? readdirSync(cards) : [];
-  if (file === undefined) return undefined;
-  return BigInt(JSON.parse(readFileSync(join(cards, file), 'utf8')).operations[0].values['min-buy']);
+  if (file !== undefined) {
+    assert.equal(code, 0, said);
+    return BigInt(JSON.parse(readFileSync(join(cards, file), 'utf8')).operations[0].values['min-buy']);
+  }
+  assert.equal(code, 1, said);
+  assert.notEqual(said, '');
+  return said;
 }
 
-/** 1000 at a dollar each less 0.75%, and less 1.25%, the least a computed floor may be. */
-const [LEAST, LEAST_OF_ALL] = [992_500_000n, 987_500_000n];
-const DOUBTED: readonly (readonly [string, World])[] = [
-  ['a pool pushed down', { ...CALM, tick: -500n }],
-  ['a pool pushed up', { ...CALM, tick: 500n }],
-  ['a thin pool', { ...CALM, liquidity: 10n }],
-  ['a token off its peg', { ...CALM, two: 110_000_000n, tick: -953n }],
-  ['a late feed', { ...CALM, age: 200_000n }],
-];
-const REFUSED: readonly (readonly [string, World, World?])[] = [
-  ['a feed at 0', { ...CALM, one: 0n }],
-  ['a feed below 0', { ...CALM, one: -100_000_000n }],
-  ['a feed from the future', { ...CALM, age: -1n }],
-  ['other code', { ...CALM, code: '0x01' as Hex }],
-  ['one provider that lies about a feed', CALM, { ...CALM, one: 50_000_000n }],
-  ['one provider that lies about a pool', CALM, { ...CALM, tick: -5000n }],
-];
-
-test('a swap floor the signer does not type is never below the price less 1.25%, and one source that says less never lowers it', async () => {
-  for (const world of [CALM, { ...CALM, tick: -10n }, { ...CALM, one: 99_900_000n }]) {
-    const floor = await sealed(world, ['', 'y']);
-    assert.ok(floor === undefined || floor >= LEAST, `${floor}`);
+/** Before a program knows `floor`, loading the template refuses it with exactly this, and there is nothing to guard. */
+function knowsFloor(): boolean {
+  try {
+    parseTemplate(swapTemplate(FLOOR), parseRegistry(plainRegistry));
+    return true;
+  } catch (error) {
+    if (error instanceof TemplateError && error.message === 'card.min-buy.floor: unexpected field') return false;
+    throw error;
   }
-  const most = await sealed(CALM, ['1', 'y']);
-  assert.ok(most === undefined || most >= LEAST_OF_ALL, `${most}`);
-  assert.equal(await sealed(CALM, ['1.01', 'y']), undefined);
-});
+}
+const floorTest = (name: string, body: () => Promise<void>) => test(name, { skip: knowsFloor() ? false : 'this program refuses a floor field' }, body);
 
-for (const [what, world] of DOUBTED) {
-  test(`${what} never gives a computed floor: Enter, a percent, one key or one typing seals nothing`, async () => {
-    for (const lines of [['', 'y'], ['1', 'y'], ['y', 'y'], ['900', 'y'], ['900', '', 'y'], ['900', '901', '', 'y']]) assert.equal(await sealed(world, lines), undefined, `${lines}`);
+/** Each expected floor is worked out by hand from the price, the slippage and the 0.25% margin, never by the program. */
+const COMPUTED: readonly (readonly [string, Run, bigint])[] = [
+  ['both at a dollar, 0.50% on Enter', { lines: ['', 'y'] }, 992_500_000n],
+  ['the most slippage, 1.00%', { lines: ['1', 'y'] }, 987_500_000n],
+  ['no slippage but the margin', { lines: ['0', 'y'] }, 997_500_000n],
+  ['a pool that says less', { world: { tick: -10n }, lines: ['', 'y'] }, 992_500_000n],
+  ['a feed that says less', { world: { one: 99_900_000n }, lines: ['', 'y'] }, 992_500_000n],
+  ['a pool that says more', { world: { tick: 10n }, lines: ['', 'y'] }, 993_492_946n],
+  ['the feeds\' price, above the pool\'s', { world: { one: 99_500_000n, two: 100_200_000n, tick: -75n }, lines: ['', 'y'] }, 985_566_367n],
+  ['the pool\'s price, above the feeds\'', { world: { one: 99_500_000n, two: 100_200_000n, tick: -65n }, lines: ['', 'y'] }, 986_069_991n],
+  ['the reverse pair by the pool', { world: { one: 99_500_000n, two: 100_200_000n, tick: -75n }, pair: ['two', 'one'], lines: ['', 'y'] }, 999_971_359n],
+  ['the reverse pair by the feeds', { world: { one: 99_500_000n, two: 100_200_000n, tick: -65n }, pair: ['two', 'one'], lines: ['', 'y'] }, 999_482_412n],
+  ['6 to 18 decimals by the feeds', { world: { one: 99_500_000n, two: 100_200_000n, tick: 276_249n, buyDecimals: 18n }, lines: ['', 'y'] }, 985_566_367_265_469_061_876n],
+  ['18 to 6 decimals by the feeds', { world: { tick: 276_330n, buyDecimals: 18n }, pair: ['two', 'one'], lines: ['', 'y'] }, 992_500_000n],
+];
+
+for (const [what, run, expected] of COMPUTED) {
+  floorTest(`a computed floor: ${what}`, async () => {
+    assert.equal(await cardNew(run), expected);
   });
 }
 
-for (const [what, world, drpc] of REFUSED) {
-  test(`${what} gives no card, whatever is typed`, async () => {
-    for (const lines of [['', 'y'], ['900', 'y'], ['900', '900', 'y']]) assert.equal(await sealed(world, lines, drpc), undefined, `${lines}`);
+floorTest('a slippage over 1.00% is refused', async () => {
+  assert.equal(typeof (await cardNew({ lines: ['1.01', 'y'] })), 'string');
+});
+
+const JUST_PAST_A_LIMIT: readonly (readonly [string, Partial<World>])[] = [
+  ['a pool 15.99 bps below the feeds', { tick: -16n }],
+  ['a pool 16.01 bps above the feeds', { tick: 16n }],
+  ['a pool one under its least liquidity', { liquidity: 999_999n }],
+  ['a sold token 1.01% under its peg', { one: 98_990_000n, tick: -102n }],
+  ['a sold token 1.01% over its peg', { one: 101_010_000n, tick: 100n }],
+  ['a bought token 1.01% over its peg', { two: 101_010_000n, tick: -100n }],
+  ['a bought token 1.01% under its peg', { two: 98_990_000n, tick: 102n }],
+  ['a feed a second past its heartbeat and an hour', { age: 90_001n }],
+  ['a pool that reverts', { revertingAt: at('b4') }],
+];
+
+for (const [what, world] of JUST_PAST_A_LIMIT) {
+  floorTest(`${what} computes nothing: Enter, a percent, one key or one typing seals nothing, and the same minimum typed twice does`, async () => {
+    for (const lines of [['', 'y'], ['1', 'y'], ['y', 'y'], ['990', 'y'], ['990', '', 'y'], ['990', '991', 'y', 'y']]) assert.equal(typeof (await cardNew({ world, lines })), 'string', `${lines}`);
+    assert.equal(await cardNew({ world, lines: ['990', '990', 'y'] }), 990_000_000n);
+  });
+}
+
+floorTest('feeds that may be off by 51 bps together compute nothing, and a minimum over 2.50% below the price, or 150 bps of doubt, is typed twice', async () => {
+  const typed = (lines: readonly string[], world: Partial<World> = {}) => cardNew({ registry: loose, world, lines });
+  assert.equal(typeof (await typed(['', 'y'])), 'string');
+  assert.equal(await typed(['975', 'y']), 975_000_000n);
+  assert.equal(typeof (await typed(['974.999', 'y'])), 'string');
+  assert.equal(await typed(['974.999', '974.999', 'y']), 974_999_000n);
+  assert.equal(await typed(['990', 'y'], { tick: -151n }), 990_000_000n);
+  assert.equal(typeof (await typed(['990', 'y'], { tick: -152n })), 'string');
+});
+
+floorTest('a token without a feed takes the typed minimum', async () => {
+  assert.equal(await cardNew({ registry: twoUnpriced, lines: ['900', 'y'] }), 900_000_000n);
+});
+
+const REFUSED: readonly (readonly [string, Partial<World>, string, Partial<World>?])[] = [
+  ['a sold token\'s feed at 0', { one: 0n }, 'one-usd'],
+  ['a bought token\'s feed at 0', { two: 0n }, 'two-usd'],
+  ['a feed below 0', { one: -100_000_000n }, 'one-usd'],
+  ['a feed from the future', { age: -1n }, 'one-usd'],
+  ['a feed never updated', { updatedAtZero: true }, 'one-usd'],
+  ['a feed that says it prices another unit', { unit: 'TWO' }, 'one-usd'],
+  ['a feed of other decimals', { feedDecimals: 18n }, 'one-usd'],
+  ['a feed that reverts', { revertingAt: at('b2') }, 'two-usd'],
+  ['a feed that runs other code', { otherCodeAt: at('b1') }, 'one-usd'],
+  ['a pool that runs other code', { otherCodeAt: at('b4') }, 'pool'],
+  ['one provider that lies about a feed', {}, 'one-usd', { one: 99_000_000n }],
+  ['one provider that lies about a pool', {}, 'pool', { tick: -5n }],
+];
+
+for (const [what, world, named, drpc] of REFUSED) {
+  floorTest(`${what} gives no card, whatever is typed, and the refusal names ${named}`, async () => {
+    for (const lines of [['', 'y'], ['900', 'y'], ['900', '900', 'y']]) assert.match(String(await cardNew({ world, drpc: drpc ?? world, lines })), new RegExp(`\\b${named}\\b`), `${lines}`);
   });
 }
