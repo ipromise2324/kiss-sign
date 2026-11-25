@@ -18,7 +18,7 @@ import { findOnPage, githubRef, isGitHubPage, pageBlocks, pageUrlOf, sourceHolds
 import type { HttpGet, PageBlock } from './source-page.ts';
 
 /** How much one run reads beyond the lists and the pages it is given; what a bound cuts off is said. */
-export const BOUNDS = { protocols: 5, sites: 4, linksPerSite: 12, orgs: 2, reposPerOrg: 4, filesPerRepo: 30, blocksPerPage: 2, pagesPerAddress: 8, readMs: 15_000 } as const;
+export const BOUNDS = { protocols: 5, sites: 4, linksPerSite: 12, orgs: 2, reposPerOrg: 4, filesPerRepo: 60, blocksPerPage: 2, pagesPerAddress: 8, readMs: 15_000 } as const;
 
 export type Reads = {
   readonly list: (target: ListingTarget) => Promise<unknown>;
@@ -93,7 +93,9 @@ const otherChain = (text: string): boolean => OTHER_CHAIN.test(text) && !MAINNET
 
 const plain = (text: string): string => text.toLowerCase().replace(/[^a-z0-9]/g, '');
 /** Whether two names share one whole, such as `LendingFactory` and `FluidLendingFactory`. */
-const sameName = (a: string, b: string): boolean => a.length > 3 && b.length > 3 && (plain(a).includes(plain(b)) || plain(b).includes(plain(a)));
+const sameName = (a: string, b: string): boolean => a.length > 4 && b.length > 4 && (plain(a).includes(plain(b)) || plain(b).includes(plain(a)));
+
+const inOrder = (a: readonly number[], b: readonly number[]): number => a.reduce((order, n, k) => order || n - (b[k] ?? n), 0);
 
 /**
  * The blocks of the page that show the address: first those not about another chain, then those under or beside the
@@ -101,7 +103,7 @@ const sameName = (a: string, b: string): boolean => a.length > 3 && b.length > 3
  * the contract than the one that names it. `shown` of them carry a label and heading `check-sources` would accept
  * beside the address, judged by its own rule.
  */
-export function spotsOf(blocks: readonly PageBlock[], address: Address, shown: number, name?: string): { readonly spots: readonly Spot[]; readonly more: number } {
+export function spotsOf(blocks: readonly PageBlock[], address: Address, shown: number, name?: string): { readonly spots: readonly Spot[]; readonly more: number; readonly best: readonly number[] } {
   const found = blocks.flatMap((block, i) => {
     const start = block.text.toLowerCase().indexOf(address);
     if (start === -1) return [];
@@ -110,14 +112,14 @@ export function spotsOf(blocks: readonly PageBlock[], address: Address, shown: n
     const named = name !== undefined && [block.heading ?? '', ...block.text.slice(Math.max(0, start - 60), start).split(/[^A-Za-z0-9_]+/)].some((word) => sameName(word, name));
     return [{ i, start, rank: [otherChain(about) ? 2 : MAINNET.test(about) ? 0 : 1, named ? 0 : 1, block.text.match(ADDRESS)?.length ?? 0, block.text.length] }];
   });
-  found.sort((a, b) => a.rank.reduce((order, n, k) => order || n - (b.rank[k] as number), 0));
+  found.sort((a, b) => inOrder(a.rank, b.rank));
   const spots = found.slice(0, shown).map(({ i, start }): Spot => {
     const { text, heading } = blocks[i] as PageBlock;
     const near = blocks.slice(Math.max(0, i - 1), i + 1);
     const label = labelsAround(blocks, i, start, name).find((l) => findOnPage(near, address, l, heading).kind === 'next-to');
     return { text: text.slice(Math.max(0, start - 80), start + 42 + 40), label, heading };
   });
-  return { spots, more: found.length - spots.length };
+  return { spots, more: found.length - spots.length, best: found[0]?.rank ?? [] };
 }
 
 /** Absolute https links of a page that stay on its registrable domain and whose path reads like a list of contracts. */
@@ -143,7 +145,15 @@ export function linkedOrgs(raw: string): string[] {
 }
 
 /** Paths of a repository that read like a list of deployed contracts. */
-export const isDeploymentPath = (path: string): boolean => /address|deploy|mainnet|constants|registry|contracts\.(?:json|ts|md)/i.test(path) && /\.(?:json|ts|js|sol|md|mdx|ya?ml|toml|txt)$/i.test(path) && !/(?:^|\/)(?:node_modules|test|tests|lib)\//i.test(path) && !otherChain(path);
+export const isDeploymentPath = (path: string): boolean => /address|deploy|mainnet|constants|registry|networks?\.|(?:^|\/)readme\.md$|contracts\.(?:json|ts|md)/i.test(path) && /\.(?:json|ts|js|py|sol|md|mdx|ya?ml|toml|txt)$/i.test(path) && !/(?:^|\/)(?:node_modules|test|tests|lib)\//i.test(path) && !otherChain(path);
+
+/** A file that lists many contracts first, then one named as a contract asked for, then mainnet's. */
+function fileRank(path: string, names: readonly string[]): number {
+  const base = (path.split('/').at(-1) as string).replace(/\.[a-z]+$/i, '');
+  if (/^(?:deployments?|addresses|networks?|constants|contracts?)$/i.test(base)) return 0;
+  if (names.some((name) => sameName(base, name))) return /mainnet|ethereum/i.test(path) ? 1 : 2;
+  return /mainnet|ethereum/i.test(path) ? 3 : 4;
+}
 
 async function githubJson(path: string, get: HttpGet): Promise<unknown> {
   const answer = await get(`https://api.github.com/${path}`);
@@ -170,9 +180,9 @@ async function eachOf<T, R>(items: readonly T[], run: (item: T) => Promise<R>): 
 }
 
 /** Files of an organization's most recently pushed repositories that hold an address, each as its page at the commit read. */
-async function githubFiles(org: string, addresses: readonly Address[], get: HttpGet, say: (line: string) => void): Promise<string[]> {
+async function githubFiles(org: string, addresses: readonly Address[], names: readonly string[], get: HttpGet, say: (line: string) => void): Promise<string[]> {
   const repos = records(await githubJson(`orgs/${encodeURIComponent(org)}/repos?per_page=100&sort=pushed`, get)).filter((r) => r.fork !== true && typeof r.name === 'string');
-  const rank = (name: string): number => (/deploy|address|contract|sdk|registry/i.test(name) ? 0 : 1);
+  const rank = (repo: string): number => (names.some((name) => sameName(repo, name)) ? 0 : /deploy|address|contract|sdk|registry/i.test(repo) ? 1 : 2);
   const chosen = [...repos].sort((a, b) => rank(String(a.name)) - rank(String(b.name))).slice(0, BOUNDS.reposPerOrg);
   const found: string[] = [];
   const read: string[] = [];
@@ -180,7 +190,7 @@ async function githubFiles(org: string, addresses: readonly Address[], get: Http
     const name = String(repo.name);
     const at = /^[A-Za-z0-9-]+\/[A-Za-z0-9._-]+$/.test(String(repo.full_name)) ? String(repo.full_name) : `${org}/${encodeURIComponent(name)}`;
     const tree = await githubJson(`repos/${at}/git/trees/HEAD?recursive=1`, get);
-    const paths = records(isRecord(tree) ? tree.tree : undefined).map((item) => String(item.path)).filter(isDeploymentPath).sort((a, b) => Number(/mainnet|ethereum/i.test(b)) - Number(/mainnet|ethereum/i.test(a)) || a.length - b.length);
+    const paths = records(isRecord(tree) ? tree.tree : undefined).map((item) => String(item.path)).filter((path) => isDeploymentPath(`${name}/${path}`)).sort((a, b) => fileRank(a, names) - fileRank(b, names) || a.length - b.length);
     const files = paths.slice(0, BOUNDS.filesPerRepo);
     read.push(`${name} ${files.length} of ${paths.length} files`);
     const raw = (path: string, ref: string) => `https://raw.githubusercontent.com/${at}/${ref}/${path.split('/').map(encodeURIComponent).join('/')}`;
@@ -338,8 +348,9 @@ export async function findSources(request: Request, registry: Registry, suffixes
     }
     linked.push(...links.slice(0, BOUNDS.linksPerSite));
   }
+  const names = [...sources.values()].flatMap((source) => source.name ?? []);
   const files = (
-    await Promise.all([...orgs].slice(0, BOUNDS.orgs).map((org) => tried(`GitHub organization ${org}`, () => githubFiles(org, request.addresses, get, (line) => void searched.push(line)), [] as string[])))
+    await Promise.all([...orgs].slice(0, BOUNDS.orgs).map((org) => tried(`GitHub organization ${org}`, () => githubFiles(org, request.addresses, names, get, (line) => void searched.push(line)), [] as string[])))
   ).flat();
 
   const urls = [...new Set([...request.pages, ...known, ...files, ...linked])];
@@ -353,33 +364,25 @@ export async function findSources(request: Request, registry: Registry, suffixes
     if (!('missing' in creations)) lines.push(...creationText(address, creations, registry).map((line) => `  ${line}`));
     for (const coin of coins.get(address) ?? []) lines.push(`  field coingecko ${JSON.stringify(coin.id)}  ${quoted(coin.name)} ${quoted(coin.symbol)}${entry === undefined || COINGECKO_KINDS.includes(entry.kind) ? '' : ' (for a token or vault entry only)'}`);
     for (const program of programs.values()) if (program.addresses.has(address)) lines.push(`  field immunefi ${JSON.stringify(program.slug)}  its scope lists the address; site ${program.website?.href ?? 'none'}`);
-    let shown = 0;
-    let left = 0;
-    for (const [asked, page] of pages) {
-      if (page.kind === 'failed') continue;
+    const found = pages.flatMap(([asked, page]) => {
+      if (page.kind === 'failed') return [];
       const url = isGitHubPage(new URL(page.url)) && githubRef(new URL(page.url)).kind === 'unpinned' ? `${page.url} (not pinned to a commit)` : page.url;
-      const { spots, more } = spotsOf(page.blocks, address, BOUNDS.blocksPerPage, sources.get(address)?.name);
-      if (spots.length === 0) {
-        if (page.raw.toLowerCase().includes(address)) lines.push(`  lead ${url}: in the page's code, not in its text as served, so no source`);
-        else if (request.pages.includes(asked)) lines.push(`  ${url}: does not show the address`);
-        continue;
-      }
-      if (sourceHoldsAddress(page.url, address)) {
-        lines.push(`  lead ${url}: its URL holds the address, so no source`);
-        continue;
-      }
-      if (shown >= BOUNDS.pagesPerAddress) {
-        left++;
-        continue;
-      }
-      shown++;
+      const at = spotsOf(page.blocks, address, BOUNDS.blocksPerPage, sources.get(address)?.name);
+      if (at.spots.length > 0 && !sourceHoldsAddress(page.url, address)) return [{ url, ...at }];
+      if (at.spots.length > 0) lines.push(`  lead ${url}: its URL holds the address, so no source`);
+      else if (page.raw.toLowerCase().includes(address)) lines.push(`  lead ${url}: in the page's code, not in its text as served, so no source`);
+      else if (request.pages.includes(asked)) lines.push(`  ${url}: does not show the address`);
+      return [];
+    });
+    found.sort((a, b) => inOrder(a.best, b.best));
+    for (const { url, spots, more } of found.slice(0, BOUNDS.pagesPerAddress)) {
       for (const spot of spots) {
         const field = spot.label === undefined ? 'no label found beside it; choose one' : `label ${quoted(spot.label, 60)}${spot.heading === undefined ? '' : ` heading ${quoted(spot.heading, 80)}`}`;
         lines.push(`  page ${url}`, `    ${field}`, `    text ${quoted(spot.text, 200)}`);
       }
       if (more > 0) lines.push(`    and ${more} more on this page`);
     }
-    if (left > 0) lines.push(`  and ${left} more pages show it`);
+    if (found.length > BOUNDS.pagesPerAddress) lines.push(`  and ${found.length - BOUNDS.pagesPerAddress} more pages show it`);
   }
   lines.push('', 'READ', ...searched.map((line) => `  ${line}`), `  pages read: ${pages.filter(([, p]) => p.kind === 'read').length} of ${urls.length}`);
   for (const org of [...orgs].slice(BOUNDS.orgs)) lines.push(`  not read: github.com/${org}`);
