@@ -258,7 +258,7 @@ kiss-sign checks a transaction against the card you sealed and the reports you m
 
 ## Token cost
 
-What it cost Claude Opus 5.5 to make reports, measured between 2026-11-22 and 2026-11-25. These are re-records: the template already existed, and the AI researched the operation again, recorded the evidence, rewrote the notes, ran the tests and opened the pull request. Building a template from zero was not measured.
+What it cost Claude Opus 5.5 to make reports, measured between 2026-11-22 and 2026-11-25. The first table is re-records: the template already existed, and the AI researched the operation again, recorded the evidence, rewrote the notes, ran the tests and opened the pull request. Building a template from zero, with no earlier template or research to start from, was not measured.
 
 | Report | Calls | Tokens | Cache reads | Output | Minutes | USD |
 |---|---:|---:|---:|---:|---:|---:|
@@ -269,7 +269,14 @@ What it cost Claude Opus 5.5 to make reports, measured between 2026-11-22 and 20
 | safe/swap-owner | 37 | 2.85M | 92% | 26k | 55 | $2.07 |
 | uniswap/allow-router | 31 | 2.83M | 89% | 42k | 15 | $2.62 |
 | uniswap/approve-permit2 | 30 | 2.51M | 90% | 37k | 15 | $2.29 |
-| uniswap/swap-permit | 47 | 5.35M | 93% | 64k | 32 | $3.94 |
+
+Templates rebuilt, or first built, for a transaction shape the protocol's app sends now. The rows leave out earlier research that found the shape:
+
+| Report | Calls | Tokens | Cache reads | Output | Minutes | USD |
+|---|---:|---:|---:|---:|---:|---:|
+| morpho/vault-deposit (two vaults) | 78 | 12.31M | 94% | 104k | 49 | $7.34 |
+| uniswap/swap | 64 | 8.79M | 94% | 83k | 41 | $5.68 |
+| uniswap/swap-no-hook | 59 | 7.05M | 95% | 57k | 53 | $4.12 |
 
 Updates that only ran the search of past transactions again:
 
