@@ -261,8 +261,9 @@ The AI designs the card: its values are what the protocol's own app asks for the
 This holds for every protocol.
 A value the protocol's own app fills in by itself, never asking its user, such as a slippage floor, a share-price cap, a minimum amount out or a deadline, is never asked at `card new`.
 When it is a limit the transaction's own bound must carry, the template declares its card field as computed (below): `card new` reads it on chain through both providers and applies the protocol's own default, which the template cites, and prints it with its source for the signer to check.
-It may instead be a limit no bound of the transaction carries, such as the fewest shares a plain `deposit(assets, receiver)` gives: the template then compares it with what the Safe gets (`atLeast` in the effects), so `verify` checks it on the simulated result before signing and on the receipt after, and nothing holds it when the transaction runs.
+Only when the function the transaction calls has no bound, and the protocol offers no route that has one, may the limit be an effect's alone, such as the fewest shares a plain `deposit(assets, receiver)` gives: the template then compares it with what the Safe gets (`atLeast` in the effects), so `verify` checks it on the simulated result before signing and on the receipt after, and nothing holds it when the transaction runs.
 The report says so, since a price that moves between the two is not caught.
+The owner chose this form for Fluid's deposit; a template never chooses it over a bound it could bind.
 A value the program cannot compute that way is bound by the template or left free with a reason, as a deadline is, and is not asked either.
 The sealed card still holds the computed number in base units, like a typed one, so `card seal`, `verify` and `replay` treat it exactly as before: what `verify` checks does not change.
 
@@ -330,7 +331,7 @@ Card values per operation, covering the operations in the Safe's history:
   So a CoW card's minimum is typed, from what the app shows.
   The Uniswap app is the same: its slippage is set per quote by Uniswap's trading API (auto slippage, from 0.5% to 5.5%), and its price is that API's route over many pools, which no single view on chain gives, so a Uniswap card's minimum is typed, from the minimum the app shows; the transaction's own minimum must be at least it (`atLeast`).
 - A vault's slippage limit is stated the same way, as an amount: the fewest shares a deposit gets (`min-shares`), the most shares a withdrawal of an amount burns (`max-shares`), or the fewest assets a withdrawal of all gets (`min-assets`).
-  Slippage protection acts when the transaction runs, which no simulation before it can see, so the transaction's own bound must carry the card's limit.
+  Slippage protection acts when the transaction runs, which no simulation before it can see, so the transaction's own bound must carry the card's limit, except in the effects-only form above, where there is no bound to carry it.
   A Morpho adapter takes the bound as a price in assets per share scaled by 1e27; the template binds it with `maxSharePrice` or `minSharePrice`, `{ "assets", "shares", "scale"? }`, and the field check requires it to be at least as strict as the price the card's amounts give.
   `scale` is the power of ten the protocol scales the price by, a whole number from 1 to 36, and 27, as Morpho's adapters take it, when absent; a protocol that takes the price scaled by 1e18 declares `"scale": 18`.
   Template load refuses any other scale, so a typo such as `"scale": 270` cannot make every bound pass or fail.
