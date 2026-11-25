@@ -221,6 +221,12 @@
     "kind": "router",
     "source": "https://docs.morpho.org/developers/contracts/addresses/",
     "sourceLabel": "VaultBundlesV1",
+    "moreSources": [
+      {
+        "url": "https://github.com/morpho-org/sdks/blob/166277bc26a12235256bdf9162da012b80781a1e/packages/morpho-ts/src/addresses.ts",
+        "label": "vaultBundlesV1"
+      }
+    ],
     "defillama": "morpho-blue",
     "code": {
       "hash": "0xa8ec5960bb20a33ed52e8248aed85ee3148135b185bba8bb74eb572a987fd4a5",

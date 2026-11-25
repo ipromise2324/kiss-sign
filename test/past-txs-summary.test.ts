@@ -15,42 +15,46 @@ import { replayPastTxs } from '../src/research/recording.ts';
 import { pastTxsRegistry, summarizePastTxs } from '../src/research/report.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { loadTemplate } from '../src/template/template.ts';
+import { repoWithBundler3Deposit } from './bundler3-deposit.ts';
 import { FROZEN_DIR, repoWithFrozenReports } from './frozen-reports.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
 const ROOT = join(import.meta.dirname, '..');
+const BUNDLER3 = repoWithBundler3Deposit();
 const registry = loadRegistry(ROOT);
 const deposit = readRecording<PastTxsRecording>(join(ROOT, 'testdata', 'past-txs', 'morpho-vault-deposit.json'));
 const FIT = '0x88a65493c62cfc17be33cbc587fca29edf71d0984b6ba2295873dfb1a9a38c4c';
 
-/** A copy of the repository's templates and registry, for a test that changes one. */
+/** A copy of the repository's templates and registry, the deposit template the Bundler3 one, for a test that changes one. */
 function scratchRepo(): string {
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-summary-'));
   after(() => rmSync(root, { recursive: true, force: true }));
   for (const dir of ['templates', 'registry']) cpSync(join(ROOT, dir), join(root, dir), { recursive: true });
+  const deposit = join('templates', 'morpho', 'vault-deposit', 'template.json');
+  cpSync(join(BUNDLER3, deposit), join(root, deposit));
   return root;
 }
 
 test('a summary written and read back is the same summary, and prints the report the recording it came from prints', async () => {
-  const summary = await studyRecording(ROOT, deposit, registry);
+  const summary = await studyRecording(BUNDLER3, deposit, registry);
   const text = summaryText(summary);
   const parsed = parseSummary('testdata/research/morpho-vault-deposit.json', text);
   assert.deepEqual(parsed, summary);
   assert.equal(summaryText(parsed), text);
-  const template = loadTemplate(ROOT, deposit.query.template, registry);
+  const template = loadTemplate(BUNDLER3, deposit.query.template, registry);
   assert.equal(renderPastTxs(runOf(parsed, template), registry), renderPastTxs(await replayPastTxs(deposit, template, registry), registry));
 });
 
 test('a summary counts what each source found and keeps only the hashes one source alone found, not every transaction found', async () => {
   const windows = readRecording<PastTxsRecording>(join(ROOT, 'testdata', 'past-txs', 'morpho-vault-deposit-windows.json'));
-  const whole = await studyRecording(ROOT, windows, registry);
+  const whole = await studyRecording(BUNDLER3, windows, registry);
   const alone = whole.studies[0]?.hash as Hex;
   const sources = windows.sources.map(({ request, answer }) =>
     request.source === 'etherscan' && Array.isArray((answer as { result?: unknown }).result)
       ? { request, answer: { ...(answer as object), result: (answer as { result: { transactionHash: string }[] }).result.filter((log) => log.transactionHash !== alone) } }
       : { request, answer },
   );
-  const summary = await studyRecording(ROOT, { ...windows, sources }, registry);
+  const summary = await studyRecording(BUNDLER3, { ...windows, sources }, registry);
   const { found } = summary.search;
   assert.deepEqual([found.total, foundBy(found, 'alchemy'), foundBy(found, 'etherscan')], [whole.search.found.total, whole.search.found.total, whole.search.found.total - 1]);
   assert.deepEqual(found.only, { alchemy: [alone], etherscan: [] });
@@ -63,7 +67,7 @@ test('a summary counts what each source found and keeps only the hashes one sour
 });
 
 test('a hand-edited summary holding Markdown or HTML in a text it prints is refused when read', async () => {
-  const summary = JSON.parse(summaryText(await studyRecording(ROOT, deposit, registry))) as { studies: { kind: string; reason?: { kind: string; at?: string } }[] };
+  const summary = JSON.parse(summaryText(await studyRecording(BUNDLER3, deposit, registry))) as { studies: { kind: string; reason?: { kind: string; at?: string } }[] };
   const misfit = summary.studies.find((s) => s.kind === 'misfit' && s.reason?.kind === 'calls');
   assert.ok(misfit !== undefined);
   for (const markup of ['<img src=x onerror=alert(1)>', '`code`', '[link](https://example.com)', 'https://example.com', '| cell |', '**bold**']) {
@@ -126,7 +130,7 @@ test('a summary is refused when an entry joins the scope of a card field its tem
 });
 
 test('a summary holds a string decoded from the chain whatever its characters, and reads back as the same summary', async () => {
-  const summary = await studyRecording(ROOT, deposit, registry);
+  const summary = await studyRecording(BUNDLER3, deposit, registry);
   const misfit = summary.studies.find((s) => s.kind === 'misfit');
   assert.ok(misfit !== undefined && misfit.kind === 'misfit');
   for (const actual of ['<b>2</b>', '`x` | [a](https://example.com)', 'line\nbreak', '名稱 ✓']) {
@@ -140,7 +144,7 @@ test('a summary holds a string decoded from the chain whatever its characters, a
 });
 
 test('a summary is refused before it is written when it would not read back, or holds the configured Safe', async () => {
-  const summary = await studyRecording(ROOT, deposit, registry);
+  const summary = await studyRecording(BUNDLER3, deposit, registry);
   const odd: PastTxsSummary = { ...summary, studies: [{ kind: 'unreadable', hash: FIT as Hex, reason: 'eth_call: <b>no</b>' }, ...summary.studies] };
   assert.throws(() => summaryFile('morpho-vault-deposit', odd, undefined), /^SummaryError: testdata\/research\/morpho-vault-deposit\.json: studies\[0\]\.reason: not text of the characters the program writes; nothing written$/);
   const sender = summary.studies.find((s) => s.kind === 'fit')?.sender.address as Address;

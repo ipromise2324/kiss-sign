@@ -15,8 +15,8 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "Misfits replace, add or remove several owners in one MultiSend, one with enableModule; kiss-sign refuses such a batch, so each change is its own transaction.",
-    "zh-TW": "不合的是在一個 MultiSend 裡換、加或移除好幾個 owner，其中一筆還加了 enableModule；kiss-sign 不接受這種批次，每個變更要各自一筆交易。"
+    "en": "Every misfit batches `swapOwner` with more calls in one MultiSend: more `swapOwner`, `addOwnerWithThreshold` or `removeOwner` calls; five also call `enableModule`, four of them on another contract as well and with `changeThreshold`. A card holds one change, so verify refuses such a batch; make each change its own transaction.",
+    "zh-TW": "不合的都在一個 MultiSend 裡把 `swapOwner` 和別的呼叫綁在一起：更多 `swapOwner`、`addOwnerWithThreshold` 或 `removeOwner`；五筆還呼叫 `enableModule`，其中四筆也對另一個合約呼叫，並改 `changeThreshold`。一張卡片只放一項變更，verify 會拒絕這種批次，每項變更要各自一筆交易。"
   },
   "flow": [],
   "protocols": {},
@@ -30,16 +30,6 @@
         "en": "Confirm the new address with the person first. If a key has leaked, run the transaction as soon as possible.",
         "zh-TW": "新地址先跟本人確認；鑰匙外洩時盡快執行。"
       }
-    },
-    {
-      "text": {
-        "en": "When the Safe web app's \"Manage signers\" changes several things at once, it wraps several calls in a MultiSend. A kiss-sign card accepts only one signer or threshold change, so such a batch transaction gives MISMATCH.",
-        "zh-TW": "Safe web app 的「Manage signers」一次改好幾項時，會把幾個呼叫包進 MultiSend 送出；kiss-sign 一張卡片只接受一項簽署人或門檻的變更，這種批次交易會 MISMATCH。"
-      },
-      "recommendation": {
-        "en": "Change one thing at a time, one transaction per change.",
-        "zh-TW": "每次只改一項，一項一筆交易。"
-      }
     }
   ],
   "reviews": {},
@@ -52,8 +42,32 @@
       "sources": [
         {
           "text": {
-            "en": "Etherscan: contract name GnosisSafe, deployed by Arachnid's deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C, transaction sent by 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
-            "zh-TW": "Etherscan：合約名 GnosisSafe，由 Arachnid 的 deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26"
+            "en": "safe-deployments (safe-global GitHub), v1.3.0 gnosis_safe.json at commit ca9cb0d: the canonical deployment address is 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552; chain 1 lists canonical and eip155 (another address)",
+            "zh-TW": "safe-deployments（safe-global GitHub）v1.3.0 的 gnosis_safe.json，commit ca9cb0d：canonical 部署地址為 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552；chain 1 列出 canonical 和 eip155（另一個地址）"
+          },
+          "url": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/gnosis_safe.json",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "safe-cli (same safe-global organization, so the same place): 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552 listed with the comment v1.3.0",
+            "zh-TW": "safe-cli（同一個 safe-global 組織，算同一個地方）：0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552，旁註 v1.3.0"
+          },
+          "url": "https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Safe docs, supported networks v1.3.0: the page lists addresses only with JavaScript; fetched as served it shows no address, so it counts for nothing",
+            "zh-TW": "Safe 文件的 supported networks v1.3.0：頁面靠 JavaScript 才顯示地址；直接讀取看不到地址，不算一個地方"
+          },
+          "url": "https://docs.safe.global/advanced/smart-account-supported-networks/v1.3.0",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name GnosisSafe, creator 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26 (labelled Gnosis Safe: Deployer), through 0x4e59b44847b379578588920cA78FbF26c0B4956C (labelled Create2: Factory)",
+            "zh-TW": "Etherscan：合約名 GnosisSafe，建立者 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26（標籤 Gnosis Safe: Deployer），透過 0x4e59b44847b379578588920cA78FbF26c0B4956C（標籤 Create2: Factory）建立"
           },
           "url": "https://etherscan.io/address/0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552#code",
           "result": "pass"
@@ -68,8 +82,32 @@
       "sources": [
         {
           "text": {
-            "en": "Etherscan: contract name Safe, deployed by the Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7, transaction sent by 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
-            "zh-TW": "Etherscan：合約名 Safe，由 Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26"
+            "en": "safe-deployments (safe-global GitHub), v1.4.1 safe.json at commit ca9cb0d: the canonical deployment address 0x41675C099F32341bf84BFc5382aF534df5C7461a",
+            "zh-TW": "safe-deployments（safe-global GitHub）v1.4.1 的 safe.json，commit ca9cb0d：canonical 部署地址為 0x41675C099F32341bf84BFc5382aF534df5C7461a"
+          },
+          "url": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.4.1/safe.json",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "safe-cli (same safe-global organization, so the same place): 0x41675C099F32341bf84BFc5382aF534df5C7461a listed with the comment v1.4.1",
+            "zh-TW": "safe-cli（同一個 safe-global 組織，算同一個地方）：0x41675C099F32341bf84BFc5382aF534df5C7461a，旁註 v1.4.1"
+          },
+          "url": "https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Safe docs, ERC-4337 permissionless guide: the page as served shows const SAFE_SINGLETON_ADDRESS = 0x41675C099F32341bf84BFc5382aF534df5C7461a",
+            "zh-TW": "Safe 文件的 ERC-4337 permissionless 指南：直接讀取的頁面寫著 const SAFE_SINGLETON_ADDRESS = 0x41675C099F32341bf84BFc5382aF534df5C7461a"
+          },
+          "url": "https://docs.safe.global/advanced/erc-4337/guides/permissionless-detailed",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name Safe, creator 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26 (labelled Gnosis Safe: Deployer), through the contract 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7 (no name label)",
+            "zh-TW": "Etherscan：合約名 Safe，建立者 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26（標籤 Gnosis Safe: Deployer），透過合約 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7（沒有名稱標籤）建立"
           },
           "url": "https://etherscan.io/address/0x41675C099F32341bf84BFc5382aF534df5C7461a#code",
           "result": "pass"

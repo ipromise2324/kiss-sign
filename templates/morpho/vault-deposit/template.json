@@ -51,109 +51,64 @@
       "function": "approve(address spender, uint256 value)",
       "args": {
         "spender": {
-          "contract": "general-adapter-1"
+          "contract": "vault-bundles-v1"
         },
         "value": {
           "card": "amount"
-        }
-      },
-      "trailer": {
-        "maxBytes": 12,
-        "why": {
-          "en": "the Morpho app appends a 4-byte timestamp and one or two 4-byte origin tags (morpho-org/sdks, addTransactionMetadata); approve reads only its two arguments",
-          "zh-TW": "Morpho app 會在後面附上 4 bytes 的時間戳記和一到兩個 4 bytes 的來源標記（morpho-org/sdks，addTransactionMetadata）；approve 只讀它的兩個引數"
         }
       }
     },
     {
       "to": {
-        "contract": "bundler3"
+        "contract": "vault-bundles-v1"
       },
       "value": {
         "const": "0"
       },
-      "function": "multicall((address to, bytes data, uint256 value, bool skipRevert, bytes32 callbackHash)[] bundle)",
+      "function": "vaultBundlesV1Deposit(address vault, uint256 assets, uint256 maxSharePriceE27, (uint8 kind, bytes data) assetPermit, uint256 referralFeePct, address referralFeeRecipient, uint256 deadline)",
       "args": {
-        "bundle": {
-          "items": [
-            {
-              "fields": {
-                "to": {
-                  "contract": "general-adapter-1"
-                },
-                "data": {
-                  "call": {
-                    "function": "erc20TransferFrom(address token, address receiver, uint256 amount)",
-                    "args": {
-                      "token": {
-                        "card": "vault.asset"
-                      },
-                      "receiver": {
-                        "contract": "general-adapter-1"
-                      },
-                      "amount": {
-                        "card": "amount"
-                      }
-                    }
-                  }
-                },
-                "value": {
-                  "const": "0"
-                },
-                "skipRevert": {
-                  "const": "false"
-                },
-                "callbackHash": {
-                  "const": "0x0000000000000000000000000000000000000000000000000000000000000000"
-                }
-              }
+        "vault": {
+          "card": "vault"
+        },
+        "assets": {
+          "card": "amount"
+        },
+        "maxSharePriceE27": {
+          "maxSharePrice": {
+            "assets": "card.amount",
+            "shares": "card.min-shares"
+          }
+        },
+        "assetPermit": {
+          "fields": {
+            "kind": {
+              "const": "0"
             },
-            {
-              "fields": {
-                "to": {
-                  "contract": "general-adapter-1"
-                },
-                "data": {
-                  "call": {
-                    "function": "erc4626Deposit(address vault, uint256 assets, uint256 maxSharePriceE27, address receiver)",
-                    "args": {
-                      "vault": {
-                        "card": "vault"
-                      },
-                      "assets": {
-                        "card": "amount"
-                      },
-                      "maxSharePriceE27": {
-                        "maxSharePrice": {
-                          "assets": "card.amount",
-                          "shares": "card.min-shares"
-                        }
-                      },
-                      "receiver": {
-                        "safe": true
-                      }
-                    }
-                  }
-                },
-                "value": {
-                  "const": "0"
-                },
-                "skipRevert": {
-                  "const": "false"
-                },
-                "callbackHash": {
-                  "const": "0x0000000000000000000000000000000000000000000000000000000000000000"
+            "data": {
+              "free": {
+                "unread": {
+                  "en": "VaultBundlesV1 reads the permit data only for kind 1 (ERC-2612) or 2 (Permit2); kind is bound to 0, which pulls the amount with transferFrom",
+                  "zh-TW": "VaultBundlesV1 只在 kind 為 1（ERC-2612）或 2（Permit2）時才讀 permit 的 data；這裡 kind 綁定為 0，用 transferFrom 拉款"
                 }
               }
             }
-          ]
+          }
+        },
+        "referralFeePct": {
+          "const": "0"
+        },
+        "referralFeeRecipient": {
+          "const": "0x0000000000000000000000000000000000000000"
+        },
+        "deadline": {
+          "withinSeconds": 604800
         }
       },
       "trailer": {
         "maxBytes": 12,
         "why": {
-          "en": "the Morpho app appends a 4-byte timestamp and one or two 4-byte origin tags (morpho-org/sdks, addTransactionMetadata); Bundler3.multicall reads only its bundle argument",
-          "zh-TW": "Morpho app 會在後面附上 4 bytes 的時間戳記和一到兩個 4 bytes 的來源標記（morpho-org/sdks，addTransactionMetadata）；Bundler3.multicall 只讀它的 bundle 引數"
+          "en": "the Morpho app appends a 4-byte timestamp and one or two 4-byte origin tags (morpho-org/sdks, addTransactionMetadata); vaultBundlesV1Deposit reads only its arguments",
+          "zh-TW": "Morpho app 會在後面附上 4 bytes 的時間戳記和一到兩個 4 bytes 的來源標記（morpho-org/sdks，addTransactionMetadata）；vaultBundlesV1Deposit 只讀它的引數"
         }
       }
     }

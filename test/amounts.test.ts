@@ -26,7 +26,7 @@ function study(name: string, seen: Registry, template: Template): string {
   return renderPastTxs(runOf(parseSummary(file, readFileSync(join(ROOT, file), 'utf8')), template), seen);
 }
 
-const STETH = /^ {4}(?:steth )?0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84.*: 28 transactions, 0 from Safes, 28 from EOAs\n {6}the sender: exact in 7, 1 base unit higher in 21; at most 1 base unit higher\n {6}the receiver: 2 base units lower in 1, 1 base unit lower in 19, exact in 8; at most 2 base units lower$/m;
+const STETH = /^ {4}(?:steth )?0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84.*: 51 transactions, 34 from Safes, 17 from EOAs\n {6}the sender: exact in 15, 1 base unit higher in 36; at most 1 base unit higher\n {6}the receiver: 2 base units lower in 5, 1 base unit lower in 38, exact in 8; at most 2 base units lower$/m;
 
 test('past stETH transfers, each run alone on its parent block, left the sender up to 1 wei more and the receiver up to 2 wei less than the amount they state', async () => {
   const text = study('erc20-transfer-steth', registry, transfer(registry));
