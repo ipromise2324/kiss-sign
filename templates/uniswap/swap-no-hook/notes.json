@@ -1,0 +1,457 @@
+{
+  "title": {
+    "en": "Swap USDC and USDT on Uniswap through a v4 pool with no hook",
+    "zh-TW": "用 Uniswap 沒有 hook 的 v4 池子兌換 USDC 和 USDT"
+  },
+  "summary": {
+    "en": "The Safe calls `execute` on Uniswap's Universal Router to swap USDC for USDT, or USDT for USDC, in one Uniswap v4 pool that has no hook. Example, another Safe's swap on 2026-11-14: it sold 8.029841 USDC, its transaction allowed no less than 7.995463 USDT, and it got 8.035641 USDT. Which template does your quote need? Look at `commands` of `execute`: 0x10 with `hooks` all zeros is this one; 0x1004 with the StablePair hook pool is uniswap/swap. Picking the wrong one gives MISMATCH at verify, not a loss. Any other shape (a split, a route through another token, a permit signature, an extra fee command) is MISMATCH here too; get a new quote or do not sign. The router pulls tokens through Permit2, so the Safe must first approve Permit2 and allow the router there (templates uniswap/approve-permit2 and uniswap/allow-router, which can go in the same MultiSend). How often it fits (AI evidence, counted with the AI's own decoder, not the program's search): 413 of 11,000 direct EOA calls read that swapped USDC and USDT on this router; in the last 7 days up to 2026-11-24, 232 of 1,581, about 1 in 7.",
+    "zh-TW": "Safe 呼叫 Uniswap Universal Router 的 `execute`，在一個沒有 hook 的 Uniswap v4 池子裡把 USDC 換成 USDT，或反過來。例子：2026-11-14 另一個 Safe 賣 8.029841 USDC，交易寫明最少要拿 7.995463 USDT，實際拿到 8.035641 USDT。你的報價要用哪個模板？看 `execute` 的 `commands`：0x10 而且 `hooks` 全是零，用這個；0x1004 而且是 StablePair hook 池子，用 uniswap/swap。選錯了 verify 會給 MISMATCH，不會損失錢。其他形狀（拆單、繞經別的代幣、附 permit 簽名、多一個收費指令）在這裡也都是 MISMATCH；請重新取得報價，或不要簽。router 透過 Permit2 拉代幣，所以 Safe 要先授權 Permit2、再在 Permit2 裡允許 router（模板 uniswap/approve-permit2 和 uniswap/allow-router，可以和這筆放在同一個 MultiSend）。多常符合（AI 的證據，用 AI 自己的解碼程式數的，不是程式的搜尋）：讀過的 11,000 筆在這個 router 兌換 USDC 和 USDT 的 EOA 直接呼叫裡有 413 筆；到 2026-11-24 為止的 7 天是 1,581 筆裡有 232 筆，約七分之一。"
+  },
+  "verdict": {
+    "status": "caution",
+    "text": {
+      "en": "The Safe gives exactly the amount you type and gets at least your minimum; few Safe examples exist.",
+      "zh-TW": "Safe 剛好付出你填的數量、至少收到你填的最少數量；Safe 的實例很少。"
+    }
+  },
+  "flow": [],
+  "protocols": {
+    "uniswap-v4": {
+      "intro": {
+        "en": "Uniswap: the largest decentralized exchange on Ethereum. All v4 pools live in one PoolManager contract.",
+        "zh-TW": "Uniswap：以太坊上最大的去中心化交易所；v4 的池子都在同一個 PoolManager 合約裡。"
+      },
+      "audits": {
+        "text": {
+          "en": "The v4 core contracts and the Universal Router have public audit reports (OpenZeppelin, Trail of Bits, Spearbit, Certora, ABDK; some are marked draft). The pool here has no hook, so no hook audit applies.",
+          "zh-TW": "v4 核心合約和 Universal Router 有公開的審計報告（OpenZeppelin、Trail of Bits、Spearbit、Certora、ABDK，有些標為草稿）。這裡的池子沒有 hook，所以不需要看 hook 的審計。"
+        },
+        "sources": [
+          "https://github.com/Uniswap/v4-core/tree/main/docs/security/audits",
+          "https://github.com/Uniswap/universal-router/tree/main/audit"
+        ]
+      },
+      "incidents": []
+    }
+  },
+  "judgments": [
+    {
+      "text": {
+        "en": "You type the card's minimum to receive yourself; it is your only price protection. The pool's fee is left free, so the transaction may use another pool than the quote showed, even one anyone made with a bad price, but never below your minimum. On its one recorded transaction the program tried fees 34, 36 and 0 and all three reverted, so the program never saw a swap through another pool, whatever the row's legend says. Example: the other Safe sold 8.029841 USDC with a minimum of 7.995463 USDT, 0.5% under what it got. A minimum of 7 would let it lose about 1.",
+        "zh-TW": "卡片的「最少收到的數量」由你填，價格只靠它保護。手續費不限，所以池子可能和報價不同，甚至是別人開的、價格很差的池子，但不會低於你填的數量。程式在錄下的那筆上試過手續費 34、36、0，都 revert，所以程式沒看過圖例寫的「走另一個池子」。例子：另一個 Safe 賣 8.029841 USDC，最少寫 7.995463 USDT，比實際拿到的少 0.5%。填 7 就等於允許少拿約 1。"
+      },
+      "recommendation": {
+        "en": "Type the minimum shown on the app's confirm screen, no lower.",
+        "zh-TW": "照 app 確認畫面上的最少收到數量填，不要更低。"
+      }
+    },
+    {
+      "text": {
+        "en": "Only one Safe transaction of this shape was found, USDC to USDT at fee 35. One is thin: a second Safe, with another amount, fee or direction, would show the rules are not fitted to one transaction. The program's perturbation test ran on it alone. Selling USDT and the other fees rest on AI evidence, not a program result: the AI simulated 10 EOA transactions (both directions, fees 7, 8, 10, 35, 100) and every swap gave exactly the sell amount and got at least its minimum.",
+        "zh-TW": "只找到一筆這種形狀的 Safe 交易（USDC 換 USDT，手續費 35），只有一筆算少：要有第二個 Safe、不同的數量、手續費或方向，才看得出規則不是只剛好符合這一筆。程式的擾動測試只測了這一筆。賣 USDT 和其他手續費靠 AI 的證據，不是程式的結果：AI 模擬了 10 筆 EOA 交易（兩個方向，手續費 7、8、10、35、100），成交時都剛好付出賣出數量、至少拿到最少數量。"
+      },
+      "recommendation": {
+        "en": "If you sell USDT, decide whether this AI evidence is enough, and start with a small amount.",
+        "zh-TW": "如果你要賣 USDT，自己決定 AI 的證據夠不夠；可以先用小額。"
+      }
+    },
+    {
+      "text": {
+        "en": "The card lists every token in the registry (such as MORPHO and weETH), but the pool is fixed to USDC and USDT, so a card with any other token can never match.",
+        "zh-TW": "卡片會列出登記表裡的所有代幣（像 MORPHO、weETH），但池子固定是 USDC 和 USDT，選了別的代幣，卡片永遠不會 MATCH。"
+      },
+      "recommendation": {
+        "en": "Pick USDC and USDT, one to sell and one to buy.",
+        "zh-TW": "一個選 USDC，另一個選 USDT。"
+      }
+    }
+  ],
+  "reviews": {
+    "trace.1.permit2.usdt.transferFrom": {
+      "status": "confirmed",
+      "text": {
+        "en": "Read the recorded trace of 0x4a1f4167cdda7158711148b054b9e0d818014dd520516b4b1da3ba83cb30c1ab (an EOA selling USDT): Permit2 moves USDT from the caller to 0x000000000004444c5dc75cB358380D2e3dE08A90, Uniswap's v4 PoolManager, listed on its deployments page. This is the payment SETTLE makes.",
+        "zh-TW": "讀了 0x4a1f4167cdda7158711148b054b9e0d818014dd520516b4b1da3ba83cb30c1ab 的 trace（一個 EOA 賣 USDT）：Permit2 把 USDT 從呼叫者轉到 0x000000000004444c5dc75cB358380D2e3dE08A90，也就是 Uniswap 部署頁列出的 v4 PoolManager。這是 SETTLE 付的錢。"
+      },
+      "recommendation": {
+        "en": "Check that the receiver is the v4 PoolManager. Only this one USDT sale was traced; no USDC sale.",
+        "zh-TW": "看收款方是不是 v4 PoolManager；只有這一筆賣 USDT 的 trace，沒有賣 USDC 的。"
+      }
+    },
+    "trace.1.other.usdc.transfer": {
+      "status": "confirmed",
+      "text": {
+        "en": "Read the same trace: the address outside the registry is 0x000000000004444c5dc75cB358380D2e3dE08A90, Uniswap's v4 PoolManager, listed on its deployments page. It pays the bought USDC straight to the caller; this is the TAKE step.",
+        "zh-TW": "讀了同一個 trace：登記表以外的地址是 0x000000000004444c5dc75cB358380D2e3dE08A90，Uniswap 部署頁列出的 v4 PoolManager。它把買到的 USDC 直接付給呼叫者，這是 TAKE 這一步。"
+      },
+      "recommendation": {
+        "en": "Check that the payer is the v4 PoolManager and the receiver is the caller.",
+        "zh-TW": "看付款方是不是 v4 PoolManager、收款方是不是呼叫者。"
+      }
+    }
+  },
+  "fields": {
+    "1.execute.commands": {
+      "en": "The list of commands, one byte each: 0x10 is `V4_SWAP`, and it is the only one here.",
+      "zh-TW": "指令清單，每個 byte 一個指令：0x10 是 `V4_SWAP`，這裡只有這一個。"
+    },
+    "1.execute.inputs": {
+      "en": "One set of parameters per command; one command, so one set.",
+      "zh-TW": "每個指令一份參數；這裡只有一個指令，所以只有一份。"
+    },
+    "1.execute.inputs[0]": {
+      "en": "The parameters of `V4_SWAP`: the list of v4 actions and each action's parameters.",
+      "zh-TW": "`V4_SWAP` 的參數：v4 動作清單和每個動作的參數。"
+    },
+    "1.execute.inputs[0].V4_SWAP.actions": {
+      "en": "The list of v4 actions: 0x0b `SETTLE` (pay the token sold), 0x06 `SWAP_EXACT_IN_SINGLE` (swap in one pool), 0x0e `TAKE` (take the token bought).",
+      "zh-TW": "v4 動作清單：0x0b `SETTLE`（先付賣的代幣）、0x06 `SWAP_EXACT_IN_SINGLE`（在一個池子裡兌換）、0x0e `TAKE`（領走買到的代幣）。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params": {
+      "en": "One set of parameters for each of the three actions.",
+      "zh-TW": "三個動作各一份參數。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[0]": {
+      "en": "The parameters of `SETTLE`.",
+      "zh-TW": "`SETTLE` 的參數。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[0].SETTLE.currency": {
+      "en": "The token to pay to the pool, that is, the token sold.",
+      "zh-TW": "要付給池子的代幣，也就是賣出的代幣。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[0].SETTLE.amount": {
+      "en": "How much is paid, before the swap runs.",
+      "zh-TW": "付多少；在兌換執行之前就先付。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[0].SETTLE.payerIsUser": {
+      "en": "true means the Safe that calls the router pays; the router pulls the token from the Safe through Permit2.",
+      "zh-TW": "true 代表由呼叫 router 的 Safe 付款，router 透過 Permit2 從 Safe 拉代幣。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1]": {
+      "en": "The parameters of `SWAP_EXACT_IN_SINGLE`.",
+      "zh-TW": "`SWAP_EXACT_IN_SINGLE` 的參數。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params": {
+      "en": "What the swap does: which pool, which direction, how much to sell, and the least to get.",
+      "zh-TW": "兌換的內容：哪個池子、哪個方向、賣多少、最少要拿到多少。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.poolKey": {
+      "en": "The five values that identify the pool. Another value means another pool, or one that does not exist.",
+      "zh-TW": "決定是哪個池子的五個值；換掉任何一個就是別的池子，或不存在的池子。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.poolKey.currency0": {
+      "en": "The pool's first token by address: USDC.",
+      "zh-TW": "按地址排在前面的代幣：USDC。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.poolKey.currency1": {
+      "en": "The pool's second token by address: USDT.",
+      "zh-TW": "按地址排在後面的代幣：USDT。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.poolKey.fee": {
+      "en": "The pool's fee in millionths: 35 is 0.0035%. Seen: 35 in the Safe transaction; 7, 8, 10, 35 and 100 in the 413 direct EOA calls (AI evidence).",
+      "zh-TW": "池子的手續費，單位是百萬分之一：35 就是 0.0035%。看過的值：Safe 交易是 35；413 筆 EOA 直接呼叫有 7、8、10、35、100（AI 的證據）。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.poolKey.tickSpacing": {
+      "en": "The pool's price step; 1 in the Safe transaction and in the 413 EOA calls (AI evidence).",
+      "zh-TW": "池子的價格刻度；Safe 交易和 413 筆 EOA 呼叫都是 1（AI 的證據）。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.poolKey.hooks": {
+      "en": "The hook contract; the zero address means the pool has no hook.",
+      "zh-TW": "hook 合約；零地址代表這個池子沒有 hook。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.zeroForOne": {
+      "en": "The direction: true sells USDC, false sells USDT. The one Safe transaction sold USDC; of the 413 EOA calls, 189 sold USDC and 224 sold USDT (AI evidence).",
+      "zh-TW": "方向：true 是賣 USDC，false 是賣 USDT。唯一一筆 Safe 交易是賣 USDC；413 筆 EOA 呼叫裡 189 筆賣 USDC、224 筆賣 USDT（AI 的證據）。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.amountIn": {
+      "en": "The amount to sell, in the token's base units.",
+      "zh-TW": "賣出的數量，以代幣的最小單位計。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.amountOutMinimum": {
+      "en": "The least amount of the bought token to get. Below this, the router makes the whole transaction fail.",
+      "zh-TW": "最少要拿到的買進代幣數量；少於這個數，router 讓整筆交易失敗。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.minHopPriceX36": {
+      "en": "A second price limit; 0 means it is off. The minimum amount above still holds.",
+      "zh-TW": "另一個價格下限；0 代表不用。上面的最少數量仍然有效。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.hookData": {
+      "en": "Extra data for a hook; empty, and the pool has no hook.",
+      "zh-TW": "給 hook 的額外資料；是空的，池子也沒有 hook。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[2]": {
+      "en": "The parameters of `TAKE`.",
+      "zh-TW": "`TAKE` 的參數。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[2].TAKE.currency": {
+      "en": "The token to take, that is, the token bought.",
+      "zh-TW": "要領走的代幣，也就是買進的代幣。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[2].TAKE.recipient": {
+      "en": "Who receives the bought token. It must be the Safe itself.",
+      "zh-TW": "誰收到買進的代幣；必須是 Safe 自己。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[2].TAKE.amount": {
+      "en": "0 means take the full amount the swap gives.",
+      "zh-TW": "0 代表領走兌換得到的全部數量。"
+    },
+    "1.execute.deadline": {
+      "en": "After this time the router refuses the swap. The app sets it: about 29 minutes after the block in the Safe transaction, 14 to 30 minutes in the 413 EOA calls (AI evidence). It needs no bound: a later run still pays exactly the sell amount and gets at least the minimum.",
+      "zh-TW": "過了這個時間 router 就拒絕這筆兌換，由 app 設定：Safe 交易是區塊時間後約 29 分鐘，413 筆 EOA 呼叫是 14 到 30 分鐘（AI 的證據）。不需要限制：晚一點執行，付出的還是剛好那個賣出數量，拿到的還是至少最少數量。"
+    }
+  },
+  "pastTxsConclusion": {
+    "en": "The swaps that did not fit carry other commands, several swaps or another token. The search covers only 1 to 2 days and no Safe fits in it; the one Safe test transaction came from the AI's own search of older blocks.",
+    "zh-TW": "不符合的兌換帶了別的指令、多次兌換或別的代幣。這次只搜到 1 到 2 天的交易，裡面沒有符合的 Safe；那一筆 Safe 測試交易是 AI 自己在更早的區塊裡找到的。"
+  },
+  "entries": {
+    "usdc": {
+      "role": {
+        "en": "A token you can pick: USDC, issued by Circle",
+        "zh-TW": "可選的代幣：Circle 發行的 USDC"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Circle's USDC contract addresses page lists this address next to Ethereum under Mainnet",
+            "zh-TW": "Circle 的 USDC 合約地址頁在 Mainnet 的 Ethereum 旁列出這個地址"
+          },
+          "url": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's coin usd-coin lists this address on Ethereum",
+            "zh-TW": "CoinGecko 的 usd-coin 在 Ethereum 列出這個地址"
+          },
+          "url": "https://www.coingecko.com/en/coins/usd-coin",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: verified contract FiatTokenProxy, creator 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911, creation transaction 0xe7e0fe390354509cd08c9a0168536938600ddc552b3f7cb96030ebef62e75895",
+            "zh-TW": "Etherscan：已驗證合約 FiatTokenProxy，建立者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911，建立交易 0xe7e0fe390354509cd08c9a0168536938600ddc552b3f7cb96030ebef62e75895"
+          },
+          "url": "https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "usdt": {
+      "role": {
+        "en": "A token you can pick: USDT, issued by Tether",
+        "zh-TW": "可選的代幣：Tether 發行的 USDT"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Tether's supported protocols page lists this address as the USD₮ contract address",
+            "zh-TW": "Tether 的支援協定頁把這個地址列為 USD₮ 合約地址"
+          },
+          "url": "https://tether.to/en/supported-protocols/",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's coin tether lists this address on Ethereum",
+            "zh-TW": "CoinGecko 的 tether 在 Ethereum 列出這個地址"
+          },
+          "url": "https://www.coingecko.com/en/coins/tether",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: verified contract TetherToken, creator 0x36928500Bc1dCd7af6a2B4008875CC336b927D57, creation transaction 0x2f1c5c2b44f771e942a8506148e256f94f1a464babc938ae0690c6e34cd79190",
+            "zh-TW": "Etherscan：已驗證合約 TetherToken，建立者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57，建立交易 0x2f1c5c2b44f771e942a8506148e256f94f1a464babc938ae0690c6e34cd79190"
+          },
+          "url": "https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "morpho": {
+      "role": {
+        "en": "In the card's list, but the swap cannot use it: Morpho's governance token",
+        "zh-TW": "卡片會列出，但這筆兌換用不到：Morpho 的治理代幣"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Morpho's contract addresses page lists this address next to MORPHO under MORPHO Token",
+            "zh-TW": "Morpho 的合約地址頁在 MORPHO Token 下的 MORPHO 旁列出這個地址"
+          },
+          "url": "https://docs.morpho.org/developers/contracts/addresses/",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's coin morpho lists this address on Ethereum",
+            "zh-TW": "CoinGecko 的 morpho 在 Ethereum 列出這個地址"
+          },
+          "url": "https://www.coingecko.com/en/coins/morpho",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: verified contract ERC1967Proxy, creator Morpho: Deployer 2 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5, creation transaction 0x1a8de6a5ba99b4dcd91ff35424e2e3adf76b1de440f97e4a48b22bfe9a8f96e9",
+            "zh-TW": "Etherscan：已驗證合約 ERC1967Proxy，建立者 Morpho: Deployer 2 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5，建立交易 0x1a8de6a5ba99b4dcd91ff35424e2e3adf76b1de440f97e4a48b22bfe9a8f96e9"
+          },
+          "url": "https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "cbbtc": {
+      "role": {
+        "en": "In the card's list, but the swap cannot use it: cbBTC, issued by Coinbase",
+        "zh-TW": "卡片會列出，但這筆兌換用不到：Coinbase 發行的 cbBTC"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "A file of Coinbase's agentkit repository lists this address next to CBBTC. Coinbase's GitHub organization is not tied to Coinbase by a listing, so its site is not compared",
+            "zh-TW": "Coinbase 的 agentkit repo 有個檔案在 CBBTC 旁列出這個地址。沒有任何列表把這個 GitHub 組織連到 Coinbase，所以網站沒有比對"
+          },
+          "url": "https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's coin coinbase-wrapped-btc lists this address on Ethereum",
+            "zh-TW": "CoinGecko 的 coinbase-wrapped-btc 在 Ethereum 列出這個地址"
+          },
+          "url": "https://www.coingecko.com/en/coins/coinbase-wrapped-btc",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: verified contract FiatTokenProxy, creator Coinbase: Deployer 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05, creation transaction 0x09001d384305288073faa8f5cf3051c6cc13d55b66114064be17e12f71469753",
+            "zh-TW": "Etherscan：已驗證合約 FiatTokenProxy，建立者 Coinbase: Deployer 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05，建立交易 0x09001d384305288073faa8f5cf3051c6cc13d55b66114064be17e12f71469753"
+          },
+          "url": "https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "universal-router-2.1.2": {
+      "role": {
+        "en": "Uniswap's Universal Router 2.1.2: it runs swaps from a list of commands, and pulls tokens through Permit2 only from the address that calls it",
+        "zh-TW": "Uniswap 的 Universal Router 2.1.2：照指令清單執行兌換，只從呼叫它的地址透過 Permit2 拉代幣"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Uniswap's v4 deployments page lists this address next to Universal Router 2.1.2 under Ethereum",
+            "zh-TW": "Uniswap 的 v4 部署頁在 Ethereum 下的 Universal Router 2.1.2 旁列出這個地址"
+          },
+          "url": "https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Uniswap's universal-router repository lists this address as UniversalRouterV2_1_2 in deploy-addresses/mainnet.json",
+            "zh-TW": "Uniswap 的 universal-router repo 在 deploy-addresses/mainnet.json 把這個地址列為 UniversalRouterV2_1_2"
+          },
+          "url": "https://github.com/Uniswap/universal-router/blob/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: verified contract UniversalRouter, creator Uniswap V4: Deployer 0x2179a60856E37dfeAacA0ab043B931fE224b27B6, creation transaction 0x350510f7398242ffc778c086ae6bbe9cc744c33a04468f1a7978e54164638257",
+            "zh-TW": "Etherscan：已驗證合約 UniversalRouter，建立者 Uniswap V4: Deployer 0x2179a60856E37dfeAacA0ab043B931fE224b27B6，建立交易 0x350510f7398242ffc778c086ae6bbe9cc744c33a04468f1a7978e54164638257"
+          },
+          "url": "https://etherscan.io/address/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85#code",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "The Uniswap trading API's spec states that it uses 2.1.2 by default when no version is given, which is the router the app sends transactions to today",
+            "zh-TW": "Uniswap 交易 API 的規格寫明：沒指定版本時預設用 2.1.2，也就是 app 今天送交易的 router"
+          },
+          "url": "https://trade-api.gateway.uniswap.org/v1/api.json",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Verified source code: every Permit2 transfer uses msgSender() (the address that calls execute) as the payer; no owner and no proxy",
+            "zh-TW": "已驗證原始碼：所有 Permit2 轉帳都用 msgSender()（呼叫 execute 的地址）當付款人，沒有 owner 和 proxy"
+          },
+          "url": "https://sourcify.dev/server/v2/contract/1/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85",
+          "result": "pass"
+        }
+      ]
+    },
+    "usp": {
+      "role": {
+        "en": "In the card's list, but the swap cannot use it: USP, Piku's yield-optimized stablecoin",
+        "zh-TW": "卡片會列出，但這筆兌換用不到：Piku 的收益型穩定幣 USP"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Piku's token and workflow contracts page lists this address next to USP",
+            "zh-TW": "Piku 的代幣與流程合約頁在 USP 旁列出這個地址"
+          },
+          "url": "https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's coin usp-yield-optimized-stablecoin lists this address on Ethereum",
+            "zh-TW": "CoinGecko 的 usp-yield-optimized-stablecoin 在 Ethereum 列出這個地址"
+          },
+          "url": "https://www.coingecko.com/en/coins/usp-yield-optimized-stablecoin",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: verified contract TransparentUpgradeableProxy, creator Piku: Deployer 0xB8eaa4f956C6324435f4088cAe9cDa974C358508, creation transaction 0xe38f329a0426954fc83ec5bc5314f24dca2cfbcebefeb679cf43aebbbba70dda",
+            "zh-TW": "Etherscan：已驗證合約 TransparentUpgradeableProxy，建立者 Piku: Deployer 0xB8eaa4f956C6324435f4088cAe9cDa974C358508，建立交易 0xe38f329a0426954fc83ec5bc5314f24dca2cfbcebefeb679cf43aebbbba70dda"
+          },
+          "url": "https://etherscan.io/address/0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "weeth": {
+      "role": {
+        "en": "In the card's list, but the swap cannot use it: weETH, ether.fi's wrapped staked ETH",
+        "zh-TW": "卡片會列出，但這筆兌換用不到：ether.fi 的包裝質押 ETH weETH"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "ether.fi's deployments file (Deployed.s.sol) lists this address next to WEETH",
+            "zh-TW": "ether.fi 的部署檔（Deployed.s.sol）在 WEETH 旁列出這個地址"
+          },
+          "url": "https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's coin wrapped-eeth lists this address on Ethereum",
+            "zh-TW": "CoinGecko 的 wrapped-eeth 在 Ethereum 列出這個地址"
+          },
+          "url": "https://www.coingecko.com/en/coins/wrapped-eeth",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "ether.fi's Immunefi program has this address in scope",
+            "zh-TW": "ether.fi 的 Immunefi 計畫把這個地址列在範圍內"
+          },
+          "url": "https://immunefi.com/bug-bounty/etherfi/",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: verified contract UUPSProxy, creator ether.fi: Deployer 0xf8a86ea1Ac39EC529814c377Bd484387D395421e, creation transaction 0xa034bdf7ec3b407125fcfbb786d908b0bcfd9976f2fbaf489776ba58b9db61ac",
+            "zh-TW": "Etherscan：已驗證合約 UUPSProxy，建立者 ether.fi: Deployer 0xf8a86ea1Ac39EC529814c377Bd484387D395421e，建立交易 0xa034bdf7ec3b407125fcfbb786d908b0bcfd9976f2fbaf489776ba58b9db61ac"
+          },
+          "url": "https://etherscan.io/address/0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee#code",
+          "result": "pass"
+        }
+      ]
+    }
+  }
+}
