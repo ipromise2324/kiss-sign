@@ -234,6 +234,26 @@ test('交易後 says which way a token the Safe gives or gets more than nothing 
   assert.ok(values.includes('給出多於 0') && values.includes('收到多於 0'), values.join(' / '));
 });
 
+test('a token the Safe may get any amount of reads so in the diagram, after the transaction, in the automatic checks and in the Markdown report, in both languages', () => {
+  const subject = depositInputs.subject.kind === 'template' ? depositInputs.subject : assert.fail('a template report');
+  const { effects } = subject.template;
+  const gets = effects.gives.map((e) => ({ ...e, to: undefined, amount: { kind: 'any' as const } }));
+  const inputs = { ...depositInputs, subject: { ...subject, template: { ...subject.template, effects: { ...effects, gets } } } };
+  const words = {
+    en: ['you may get usdc', 'receives 0 or more', 'may rise or stay the same, never fall', "After simulation, the Safe's usdc may rise or stay the same, never fall"],
+    'zh-TW': ['你可能得到 usdc', '收到 0 或更多', '可以增加或不變，不能減少', '模擬後 Safe 的 usdc 可以增加或不變，不能減少'],
+  };
+  for (const language of ['en', 'zh-TW'] as const) {
+    const page = buildPage(inputs, { ...(depositNotes as object), flow: [] }, depositTitle, language);
+    const { after, diagram } = body(page, 'flow').flow;
+    const [arrow, value, note, automatic] = words[language];
+    assert.ok(diagram.arrows.some((a) => a.kind === 'gets' && a.text === arrow), JSON.stringify(diagram.arrows));
+    assert.ok(after.some((row) => plain(row.value) === value && plain(row.note) === note), JSON.stringify(after));
+    assert.ok(body(page, 'next').automatic.some((line) => plain(line) === automatic), JSON.stringify(body(page, 'next').automatic));
+  }
+  assert.match(renderReport(inputs, depositTitle), /\| the Safe gets \| [^|]+ \| any amount, none included \|/);
+});
+
 test('交易後 and the Markdown report show an atMost, a tolerance and a touched token, each tolerance with the template\'s reason as AI text', () => {
   const subject = depositInputs.subject.kind === 'template' ? depositInputs.subject : assert.fail('a template report');
   const { effects } = subject.template;
