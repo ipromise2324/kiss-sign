@@ -72,6 +72,7 @@ reads testdata/safe-tx/uniswap-swap-approve-usdt-usdc.json
 reads testdata/safe-tx/uniswap-swap-hook-approve-usdt-usdc.json
 reads testdata/safe-tx/uniswap-swap-hook-usdc-usdt-2.json
 reads testdata/safe-tx/uniswap-swap-hook-usdc-usdt.json
+reads testdata/safe-tx/uniswap-swap-no-hook-usdc-usdt.json
 reads testdata/safe-tx/uniswap-swap-permit-usdc-usdt.json
 reads testdata/safe-tx/uniswap-swap-usdc-usdt.json
 reads test/fixtures/registry/

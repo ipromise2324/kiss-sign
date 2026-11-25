@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
-<title>uniswap/swap-permit report</title>
+<title>uniswap/swap-no-hook report</title>
 <style>
 :root{
   --bg:#0b0c0e; --sunk:#08090a; --hover:#121317; --pop:#1a1c20; --line:#212328; --line2:#30333a;
@@ -298,15 +298,15 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="Contents">
   <h2>Contents</h2>
-  <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">7</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  <ol><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">7</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
 </nav>
 
 <div class="main">
 
 <header>
-  <h1><span class="aiw" data-ai><span>Swap tokens on Uniswap, with a signed Permit2 allowance</span><span class="byai">AI research</span></span></h1>
-  <span class="opid">uniswap/swap-permit</span>
-  <p class="sub"><span class="aiw" data-ai><span>The Safe calls <code>execute</code> on Uniswap&#39;s Universal Router. It first uses <code>PERMIT2_PERMIT</code> to hand over a Permit2 allowance the Safe&#39;s signers signed beforehand (to the router, 2^160-1, 30 days), then runs <code>V4_SWAP</code>: in one v4 pool with no hook, it sells the amount you type, and all of the bought token goes to the Safe. The router&#39;s allowance in Permit2 stays after the transaction.</span><span class="byai">AI research</span></span></p>
+  <h1><span class="aiw" data-ai><span>Swap USDC and USDT on Uniswap through a v4 pool with no hook</span><span class="byai">AI research</span></span></h1>
+  <span class="opid">uniswap/swap-no-hook</span>
+  <p class="sub"><span class="aiw" data-ai><span>The Safe calls <code>execute</code> on Uniswap&#39;s Universal Router to swap USDC for USDT, or USDT for USDC, in one Uniswap v4 pool that has no hook. Example, another Safe&#39;s swap on 2026-11-14: it sold 8.029841 USDC, its transaction allowed no less than 7.995463 USDT, and it got 8.035641 USDT. Which template does your quote need? Look at <code>commands</code> of <code>execute</code>: 0x10 with <code>hooks</code> all zeros is this one; 0x1004 with the StablePair hook pool is uniswap/swap. Picking the wrong one gives MISMATCH at verify, not a loss. Any other shape (a split, a route through another token, a permit signature, an extra fee command) is MISMATCH here too; get a new quote or do not sign. The router pulls tokens through Permit2, so the Safe must first approve Permit2 and allow the router there (templates uniswap/approve-permit2 and uniswap/allow-router, which can go in the same MultiSend). How often it fits (AI evidence, counted with the AI&#39;s own decoder, not the program&#39;s search): 413 of 11,000 direct EOA calls read that swapped USDC and USDT on this router; in the last 7 days up to 2026-11-24, 232 of 1,581, about 1 in 7.</span><span class="byai">AI research</span></span></p>
   <ul class="checks">
     <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Address sources <span class="n num">7 / 7</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">All 7 addresses are confirmed in at least 2 places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address.</span></span></li>
@@ -316,49 +316,64 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">At each signing, the program checks that every contract the card uses still runs the code it was researched with. An upgrade or a replacement is stopped.</span></span></li>
     <li data-state="ok" data-line="params"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Parameter checks <span class="n num">1 / 1</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">The program changed every bound argument of 1 test transaction one by one, and each must become a MISMATCH; an argument that takes any value must give the same result with another value.</span></span></li>
+    <li data-state="warn" data-line="trace"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>Call traces <span class="n num">0 / 2</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">The program looks for each of the AI&#39;s flow lines in the call traces of past transactions, and checks that the template or a flow line explains every call inside that moves money; 0 of 2 passed. The traces come from drpc alone; their token transfers and approvals are checked against the receipt both providers agree on.</span></span></li>
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Two providers
-      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">Every chain read asks two providers; when they disagree, there is no result. Three research reads have one source, and none of them reaches a verdict: past transactions&#39; call traces (drpc), the search for past transactions (a transaction either Alchemy or Etherscan finds counts; only Etherscan searches for an event), and the addresses that ever received a vault&#39;s shares (Alchemy; each one&#39;s balance is still read through both).</span></span></li>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Every chain read asks two providers; when they disagree, there is no result. Three research reads have one source, and none of them reaches a verdict: past transactions&#39; call traces (drpc), the search for past transactions (a transaction either Alchemy or Etherscan finds counts; only Etherscan searches for an event), and the addresses that ever received a vault&#39;s shares (Alchemy; each one&#39;s balance is still read through both).</span></span></li>
   </ul>
-  <div class="verdict" data-state="ok"><span class="lbl">Advice</span><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span class="aiw" data-ai><span>The template binds the swap itself. But the Permit2 allowance is a message signed separately beforehand, and kiss-sign does not check that step.</span><span class="byai">AI research: be careful</span></span></div>
+  <div class="verdict" data-state="warn"><span class="lbl">Advice</span><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg><span class="aiw" data-ai><span>The Safe gives exactly the amount you type and gets at least your minimum; few Safe examples exist.</span><span class="byai">AI research: be careful</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
-    <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">7</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+    <ol><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">7</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
   </details>
 </header>
 
 <section id="review">
-  <h2>To review <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></span></h2>
+  <h2>To review <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></span></h2>
   <p class="lead">The AI checked each item first and gives its advice.</p>
   <div class="rows">
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>The Permit2 allowance this transaction uses is a Safe message (EIP-1271) that the Safe&#39;s signers signed beforehand, and kiss-sign does not check that step.</span><span class="byai">AI research</span></span></div>
+    <div class="row" data-state="warn" data-grade="key" data-result="trace.1.permit2.usdt.transferFrom">
+      <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
+      <div><div class="t"><span class="grade"><span class="vh">Grade: </span>key</span>A call inside moves money and nothing explains it</div>
+        <div class="rec"><span class="lbl">AI confirmed</span><span class="aiw" data-ai><span>Read the recorded trace of 0x4a1f4167cdda7158711148b054b9e0d818014dd520516b4b1da3ba83cb30c1ab (an EOA selling USDT): Permit2 moves USDT from the caller to 0x000000000004444c5dc75cB358380D2e3dE08A90, Uniswap&#39;s v4 PoolManager, listed on its deployments page.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>The template binds the allowance&#39;s contents in the transaction, so a wrongly signed one makes the transaction fail. But an allowance you were tricked into signing for someone else can be used without this transaction.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>When you sign the Permit2 message, check that the spender is Universal Router 0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85.</span><span class="byai">AI research</span></span></div>
+          <div class="meta">Under call 1, permit2 → usdt <code>transferFrom</code></div>
+          <div class="meta">A call trace holds a token transfer, approval or ETH transfer that touches the sender&#39;s money, and no call the template binds and no flow line explains it. In 1 past transaction. Addresses outside the registry: 0x000000000004444c5dc75cB358380D2e3dE08A90.</div>
+          <div class="rec"><span class="aiw" data-ai><span>This is the payment SETTLE makes.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Check that the receiver is the v4 PoolManager. Only this one USDT sale was traced; no USDC sale.</span><span class="byai">AI research</span></span></div>
+        </details></div>
+    </div>
+    <div class="row" data-state="warn" data-grade="key" data-result="trace.1.other.usdc.transfer">
+      <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
+      <div><div class="t"><span class="grade"><span class="vh">Grade: </span>key</span>A call inside moves money and nothing explains it</div>
+        <div class="rec"><span class="lbl">AI confirmed</span><span class="aiw" data-ai><span>Read the same trace: the address outside the registry is 0x000000000004444c5dc75cB358380D2e3dE08A90, Uniswap&#39;s v4 PoolManager, listed on its deployments page.</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="meta">Under call 1, other → usdc <code>transfer</code></div>
+          <div class="meta">A call trace holds a token transfer, approval or ETH transfer that touches the sender&#39;s money, and no call the template binds and no flow line explains it. In 1 past transaction. Addresses outside the registry: 0x000000000004444c5dc75cB358380D2e3dE08A90.</div>
+          <div class="rec"><span class="aiw" data-ai><span>It pays the bought USDC straight to the caller; this is the TAKE step.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Check that the payer is the v4 PoolManager and the receiver is the caller.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>You type the card&#39;s &#34;minimum to receive&#34; yourself.</span><span class="byai">AI research</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>You type the card&#39;s minimum to receive yourself; it is your only price protection.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>The Uniswap app&#39;s trading API works out the slippage at each quote (auto slippage 0.5% to 5.5%), and the price comes from a route the API finds across many pools, which no view on chain can read.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Type the minimum to receive shown on the app&#39;s confirm screen. Do not type a lower one.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>The pool&#39;s fee is left free, so the transaction may use another pool than the quote showed, even one anyone made with a bad price, but never below your minimum. On its one recorded transaction the program tried fees 34, 36 and 0 and all three reverted, so the program never saw a swap through another pool, whatever the row&#39;s legend says. Example: the other Safe sold 8.029841 USDC with a minimum of 7.995463 USDT, 0.5% under what it got. A minimum of 7 would let it lose about 1.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Type the minimum shown on the app&#39;s confirm screen, no lower.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>The app picks the pool (fee and tick spacing).</span><span class="byai">AI research</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>Only one Safe transaction of this shape was found, USDC to USDT at fee 35.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>The template allows any pool and only requires that it has no hook. Anyone can open a v4 pool, so the only price protection is the minimum you type: below it, the router makes the transaction fail, and verify also gives MISMATCH.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. Always type the minimum to receive that the app shows.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>One is thin: a second Safe, with another amount, fee or direction, would show the rules are not fitted to one transaction. The program&#39;s perturbation test ran on it alone. Selling USDT and the other fees rest on AI evidence, not a program result: the AI simulated 10 EOA transactions (both directions, fees 7, 8, 10, 35, 100) and every swap gave exactly the sell amount and got at least its minimum.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>If you sell USDT, decide whether this AI evidence is enough, and start with a small amount.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>Allowances that stay after the transaction: the Safe&#39;s unlimited allowance to Permit2, and the 2^160-1, 30-day allowance to the Universal Router inside Permit2.</span><span class="byai">AI research</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>The card lists every token in the registry (such as MORPHO and weETH), but the pool is fixed to USDC and USDT, so a card with any other token can never match.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>The router pulls tokens only from the address that calls it, so only the Safe&#39;s own later transactions can use it.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To revoke, call approve(Permit2, 0) on the token, or call lockdown on Permit2.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Pick USDC and USDT, one to sell and one to buy.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
   </div>
@@ -392,7 +407,6 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <span><span class="who">fixed</span>any change is a MISMATCH</span>
     <span><span class="who app">app fills, any value</span>another value gives the same result or the transaction fails</span>
     <span><span class="who app">app fills, any value</span>another value takes other pools, but what the Safe gives and receives must still match the card, or the transaction fails or is a MISMATCH</span>
-    <span><span class="who app">app fills, any value</span>another value makes the transaction fail</span>
   </div>
   <p class="lead keylead">The transaction&#39;s calls, one by one. Each argument shows who decides it, its value or the rule it must follow, and what it does.</p>
   
@@ -400,92 +414,62 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">universal-router-2.1.2.</span>execute</span><span class="sel">0x3593564c</span></div><div class="cdoc"><div class="doc" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><span class="f3">Docs: </span><a href="https://developers.uniswap.org/llms.mdx/docs/protocols/universal-router/concepts/commands">developers.uniswap.org/llms.mdx/docs/protocols</a></span></div></div>
     <div class="arg" data-field="1.execute.inputs">
       <div class="nm"><span class="pn">inputs</span></div>
-      <div class="val"><div class="is">2 items</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>One set of parameters per command, in the same order as the command list.</span></span></div></div>
+      <div class="val"><div class="is">1 item</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>One set of parameters per command; one command, so one set.</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">[0]</div><div><div class="is">the arguments of <code>PERMIT2_PERMIT</code></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The parameters of <code>PERMIT2_PERMIT</code>: the Permit2 allowance the Safe&#39;s signers signed beforehand, and that signature.</span></span></div></div>
-      <div class="parts">
-        <div class="part"><div class="pn">permitSingle<div class="pchips"><span class="who you">token you pick</span><span class="who">amount, spender fixed</span><span class="who app">expiration, nonce, sigDeadline any</span></div></div><div><div class="is">3 parts</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The contents of the signed allowance.</span></span></div></div>
-      <div class="parts">
-        <div class="part"><div class="pn">details</div><div><div class="is">4 parts</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The allowance&#39;s token, amount, expiry and nonce.</span></span></div></div>
-      <div class="parts">
-        <div class="part"><div class="pn">token</div><div><div class="is">the token (sell-token) you pick</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The token the allowance is for, that is, the token sold.</span></span></div></div></div>
-        <div class="part"><div class="pn">expiration</div><div><div class="is">differs each time <span class="f3">tested with other values: the same result or the transaction fails</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>When the allowance expires. The app sets it 30 days ahead; the verify page shows it.</span></span></div></div></div>
-        <div class="part"><div class="pn">nonce</div><div><div class="is">differs each time <span class="f3">tested with other values: the same result or the transaction fails</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Permit2&#39;s nonce for this token and router. It goes up by one each time it is used.</span></span></div></div></div>
-      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 fixed value; any change is a MISMATCH</summary>
-        <div class="part"><div class="pn">amount</div><div><div class="raw">1461501637330902918203684832716283019655932542975</div><div class="is">a fixed value</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The allowance amount, 2^160-1, Permit2&#39;s unlimited; the Uniswap app&#39;s default.</span></span></div></div></div>
-      </details>
-      </div></div>
-        <div class="part"><div class="pn">sigDeadline</div><div><div class="is">differs each time <span class="f3">tested with other values: the same result or the transaction fails</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>When this signature stops being valid. The app sets it 30 minutes ahead.</span></span></div></div></div>
-      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 fixed value; any change is a MISMATCH</summary>
-        <div class="part"><div class="pn">spender</div><div><div class="raw">0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85</div><div class="is"><a href="#a-universal-router-2.1.2">universal-router-2.1.2</a></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The spender contract: Universal Router 2.1.2.</span></span></div></div></div>
-      </details>
-      </div></div>
-        <div class="part"><div class="pn">signature<div class="pchips"><span class="who app">app fills, any value</span></div></div><div><div class="is">differs each time <span class="f3">the contract verifies it; another value makes the transaction fail</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The Safe signers&#39; signature over this allowance. Permit2 checks it through the Safe&#39;s <code>isValidSignature</code>; if it does not match, the transaction fails.</span></span></div></div></div>
-      </div></div>
-        <div class="part"><div class="pn">[1]</div><div><div class="is">the arguments of <code>V4_SWAP</code></div>
+        <div class="part"><div class="pn">[0]</div><div><div class="is">the arguments of <code>V4_SWAP</code></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The parameters of <code>V4_SWAP</code>: the list of v4 actions and each action&#39;s parameters.</span></span></div></div>
       <div class="parts">
         <div class="part"><div class="pn">params</div><div><div class="is">3 items</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>One set of parameters for each of the three actions.</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">[0]</div><div><div class="is">the arguments of <code>SWAP_EXACT_IN</code></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The parameters of <code>SWAP_EXACT_IN</code>.</span></span></div></div>
-      <div class="parts">
-        <div class="part"><div class="pn">params<div class="pchips"><span class="who you">currencyIn, intermediateCurrency you pick</span><span class="who app">fee, tickSpacing, minHopPriceX36 any</span><span class="who">hooks, hookData fixed</span><span class="who you">amountIn, amountOutMinimum you type</span></div></div><div><div class="is">5 parts</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>What the swap does: what to sell, which pool it goes through, how much to sell, and the least to get.</span></span></div></div>
-      <div class="parts">
-        <div class="part"><div class="pn">currencyIn</div><div><div class="is">the token (sell-token) you pick</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The token sold.</span></span></div></div></div>
-        <div class="part"><div class="pn">path</div><div><div class="is">1 item</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The pools it goes through, one item per pool. The template accepts only one pool.</span></span></div></div>
-      <div class="parts">
-        <div class="part"><div class="pn">[0]</div><div><div class="is">5 parts</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>That pool: the token on the other side, the fee, the tick spacing, the hook.</span></span></div></div>
-      <div class="parts">
-        <div class="part"><div class="pn">intermediateCurrency</div><div><div class="is">the token (buy-token) you pick</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The token this hop swaps into, that is, the token bought.</span></span></div></div></div>
-        <div class="part"><div class="pn">fee</div><div><div class="is">differs each time <span class="f3">tested with other values: it takes other pools and still receives no less than the card</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The pool&#39;s fee tier, set when the app picks the route. Between USDC and USDT, 7 and 8 have been seen (7 and 8 per million). Another value means another pool, or a pool that does not exist.</span></span></div></div></div>
-        <div class="part"><div class="pn">tickSpacing</div><div><div class="is">differs each time <span class="f3">tested with other values: it takes other pools and still receives no less than the card</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The pool&#39;s tick spacing. Together with the fee, it decides which pool this is. Every one seen was 1.</span></span></div></div></div>
-      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>2 fixed values; any change is a MISMATCH</summary>
-        <div class="part"><div class="pn">hooks</div><div><div class="raw">0x0000000000000000000000000000000000000000</div><div class="is">none (zero address)</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The pool&#39;s hook contract. The zero address means no hook, so no extra contract runs during the swap.</span></span></div></div></div>
-        <div class="part"><div class="pn">hookData</div><div><div class="raw">0x</div><div class="is">fixed to 0x</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Data for the hook. There is no hook, so it is empty.</span></span></div></div></div>
-      </details>
-      </div></div>
-      </div></div>
-        <div class="part"><div class="pn">minHopPriceX36</div><div><div class="is">differs each time <span class="f3">tested with other values: the same result or the transaction fails</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The lowest price for each hop, optional. It can only make the transaction fail when the price is too poor. It was empty in every transaction seen.</span></span></div></div></div>
-        <div class="part"><div class="pn">amountIn</div><div><div class="is">the amount (sell-amount) you type</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The amount to sell, in the token&#39;s base units.</span></span></div></div></div>
-        <div class="part"><div class="pn">amountOutMinimum</div><div><div class="is">at least the amount (min-buy) you type <span class="f3">less than this is a MISMATCH</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The least amount of the bought token to get. Below this, the router makes the whole transaction fail.</span></span></div></div></div>
-      </div></div>
-      </div></div>
-        <div class="part"><div class="pn">[1]</div><div><div class="is">the arguments of <code>SETTLE</code></div>
+        <div class="part"><div class="pn">[0]</div><div><div class="is">the arguments of <code>SETTLE</code></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The parameters of <code>SETTLE</code>.</span></span></div></div>
       <div class="parts">
         <div class="part"><div class="pn">currency<div class="pchips"><span class="who you">you pick: token (sell-token)</span></div></div><div><div class="is">the token (sell-token) you pick</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The token to pay to the pool, that is, the token sold.</span></span></div></div></div>
-      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>2 fixed values; any change is a MISMATCH</summary>
-        <div class="part"><div class="pn">amount<div class="pchips"><span class="who">fixed</span></div></div><div><div class="raw">0</div><div class="is">fixed to 0</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>0 means pay the full amount the swap owes, that is, <code>amountIn</code>.</span></span></div></div></div>
+        <div class="part"><div class="pn">amount<div class="pchips"><span class="who you">you type: amount (sell-amount)</span></div></div><div><div class="is">the amount (sell-amount) you type</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>How much is paid, before the swap runs.</span></span></div></div></div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 fixed value; any change is a MISMATCH</summary>
         <div class="part"><div class="pn">payerIsUser<div class="pchips"><span class="who">fixed</span></div></div><div><div class="raw">true</div><div class="is">fixed to true</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>true means the Safe that calls the router pays; the router pulls the token from the Safe through Permit2.</span></span></div></div></div>
       </details>
+      </div></div>
+        <div class="part"><div class="pn">[1]</div><div><div class="is">the arguments of <code>SWAP_EXACT_IN_SINGLE</code></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The parameters of <code>SWAP_EXACT_IN_SINGLE</code>.</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">params<div class="pchips"><span class="who">currency0, currency1, tickSpacing, hooks, minHopPriceX36, hookData fixed</span><span class="who app">fee, zeroForOne any</span><span class="who you">amountIn, amountOutMinimum you type</span></div></div><div><div class="is">6 parts</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>What the swap does: which pool, which direction, how much to sell, and the least to get.</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">poolKey</div><div><div class="is">5 parts</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The five values that identify the pool. Another value means another pool, or one that does not exist.</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">fee</div><div><div class="is">differs each time <span class="f3">tested with other values: it takes other pools and still receives no less than the card</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The pool&#39;s fee in millionths: 35 is 0.0035%. Seen: 35 in the Safe transaction; 7, 8, 10, 35 and 100 in the 413 direct EOA calls (AI evidence).</span></span></div></div></div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>4 fixed values; any change is a MISMATCH</summary>
+        <div class="part"><div class="pn">currency0</div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</div><div class="is"><a href="#a-usdc">usdc</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The pool&#39;s first token by address: USDC.</span></span></div></div></div>
+        <div class="part"><div class="pn">currency1</div><div><div class="raw">0xdAC17F958D2ee523a2206206994597C13D831ec7</div><div class="is"><a href="#a-usdt">usdt</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The pool&#39;s second token by address: USDT.</span></span></div></div></div>
+        <div class="part"><div class="pn">tickSpacing</div><div><div class="raw">1</div><div class="is">fixed to 1</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The pool&#39;s price step; 1 in the Safe transaction and in the 413 EOA calls (AI evidence).</span></span></div></div></div>
+        <div class="part"><div class="pn">hooks</div><div><div class="raw">0x0000000000000000000000000000000000000000</div><div class="is">none (zero address)</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The hook contract; the zero address means the pool has no hook.</span></span></div></div></div>
+      </details>
+      </div></div>
+        <div class="part"><div class="pn">zeroForOne</div><div><div class="is">differs each time <span class="f3">tested with other values: the same result or the transaction fails</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The direction: true sells USDC, false sells USDT. The one Safe transaction sold USDC; of the 413 EOA calls, 189 sold USDC and 224 sold USDT (AI evidence).</span></span></div></div></div>
+        <div class="part"><div class="pn">amountIn</div><div><div class="is">the amount (sell-amount) you type</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The amount to sell, in the token&#39;s base units.</span></span></div></div></div>
+        <div class="part"><div class="pn">amountOutMinimum</div><div><div class="is">at least the amount (min-buy) you type <span class="f3">less than this is a MISMATCH</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The least amount of the bought token to get. Below this, the router makes the whole transaction fail.</span></span></div></div></div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>2 fixed values; any change is a MISMATCH</summary>
+        <div class="part"><div class="pn">minHopPriceX36</div><div><div class="raw">0</div><div class="is">fixed to 0</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>A second price limit; 0 means it is off. The minimum amount above still holds.</span></span></div></div></div>
+        <div class="part"><div class="pn">hookData</div><div><div class="raw">0x</div><div class="is">fixed to 0x</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Extra data for a hook; empty, and the pool has no hook.</span></span></div></div></div>
+      </details>
+      </div></div>
       </div></div>
         <div class="part"><div class="pn">[2]</div><div><div class="is">the arguments of <code>TAKE</code></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The parameters of <code>TAKE</code>.</span></span></div></div>
@@ -501,8 +485,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       </div></div>
       </div></div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 fixed value; any change is a MISMATCH</summary>
-        <div class="part"><div class="pn">actions<div class="pchips"><span class="who">fixed</span></div></div><div><div class="raw">0x070b0e</div><div class="is">fixed to 0x070b0e</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The list of v4 actions: 0x07 <code>SWAP_EXACT_IN</code> (swap by the input amount), 0x0b <code>SETTLE</code> (pay the token sold), 0x0e <code>TAKE</code> (take the token bought).</span></span></div></div></div>
+        <div class="part"><div class="pn">actions<div class="pchips"><span class="who">fixed</span></div></div><div><div class="raw">0x0b060e</div><div class="is">fixed to 0x0b060e</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The list of v4 actions: 0x0b <code>SETTLE</code> (pay the token sold), 0x06 <code>SWAP_EXACT_IN_SINGLE</code> (swap in one pool), 0x0e <code>TAKE</code> (take the token bought).</span></span></div></div></div>
       </details>
       </div></div>
       </div>
@@ -510,13 +494,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="arg" data-field="1.execute.deadline">
       <div class="nm"><span class="pn">deadline</span><span class="who app">app fills, any value</span></div>
       <div class="val"><div class="is">differs each time <span class="f3">tested with other values: the same result or the transaction fails</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>After this time the router refuses the swap. The app sets it when it builds the transaction; in the transactions seen it was about 30 minutes ahead.</span></span></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>After this time the router refuses the swap. The app sets it: about 29 minutes after the block in the Safe transaction, 14 to 30 minutes in the 413 EOA calls (AI evidence). It needs no bound: a later run still pays exactly the sell amount and gets at least the minimum.</span></span></div></div>
     </div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 fixed value; any change is a MISMATCH</summary>
     <div class="arg" data-field="1.execute.commands">
       <div class="nm"><span class="pn">commands</span><span class="who">fixed</span></div>
-      <div class="val"><div class="raw">0x0a10</div><div class="is">fixed to 0x0a10</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The list of commands, one command per byte. 0x0a is <code>PERMIT2_PERMIT</code> (use a signed Permit2 allowance), 0x10 is <code>V4_SWAP</code> (one v4 swap).</span></span></div></div>
+      <div class="val"><div class="raw">0x10</div><div class="is">fixed to 0x10</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The list of commands, one byte each: 0x10 is <code>V4_SWAP</code>, and it is the only one here.</span></span></div></div>
     </div>
       </details>
   </div>
@@ -524,7 +508,6 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <dl class="props">
     <div><dt>Safe&#39;s the token (sell-token) you pick</dt><dd class="">the amount (sell-amount) you type</dd><dd class="src">exactly the amount (sell-amount) you type</dd></div>
     <div><dt>Safe&#39;s the token (buy-token) you pick</dt><dd class="pos">at least the amount (min-buy) you type</dd><dd class="src">receives no less than the amount (min-buy) you type</dd></div>
-    <div><dt>the token (sell-token) you pick allowance through Permit2 for <a href="#a-universal-router-2.1.2">universal-router-2.1.2</a></dt><dd class="">may remain, any amount</dd><dd class="src">its expiry is kept in Permit2; the verify page shows it</dd></div>
   </dl>
 </section>
 
@@ -532,13 +515,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>uniswap-v4</h2>
   <p class="intro"><span class="aiw" data-ai><span>Uniswap: the largest decentralized exchange on Ethereum. All v4 pools live in one PoolManager contract.</span><span class="byai">AI research</span></span></p>
   <dl class="props two">
-    <div><dt>TVL</dt><dd><span><span class="num">$1.02 B</span></span><span class="sub2">on Ethereum <span class="num">$650.17 M</span></span></dd></div>
+    <div><dt>TVL</dt><dd><span><span class="num">$1.34 B</span></span><span class="sub2">on Ethereum <span class="num">$642.99 M</span></span></dd></div>
     <div><dt>Listed</dt><dd><span><span class="num">2025-01-29</span></span><span class="sub2">the date DefiLlama first listed it</span></dd></div>
     <div><dt>proxy</dt><dd><span>not a proxy</span><span class="sub2"><a href="#a-universal-router-2.1.2">universal-router-2.1.2</a>, read from the code pin</span></dd></div>
-    <div><dt>Audits</dt><dd><span class="aiw" data-ai><span>The v4 core and periphery contracts and the Universal Router all have public audit reports (OpenZeppelin, Spearbit, Certora and others), in each repo&#39;s audits folder. <a class="aisrc" href="https://github.com/Uniswap/v4-core/tree/main/docs/security/audits">source 1</a> <a class="aisrc" href="https://github.com/Uniswap/universal-router/tree/main/audits">source 2</a></span><span class="byai">AI research</span></span></dd></div>
+    <div><dt>Audits</dt><dd><span class="aiw" data-ai><span>The v4 core contracts and the Universal Router have public audit reports (OpenZeppelin, Trail of Bits, Spearbit, Certora, ABDK; some are marked draft). The pool here has no hook, so no hook audit applies. <a class="aisrc" href="https://github.com/Uniswap/v4-core/tree/main/docs/security/audits">source 1</a> <a class="aisrc" href="https://github.com/Uniswap/universal-router/tree/main/audit">source 2</a></span><span class="byai">AI research</span></span></dd></div>
     <div><dt>Incidents</dt><dd><span>0</span><span class="sub2">DefiLlama hacks listed under this protocol or its parent</span></dd></div>
   </dl>
-  <p class="srcline">On 2026-11-17 the program read <a href="https://defillama.com/protocol/uniswap-v4">DefiLlama</a>, <a href="https://defillama.com/hacks">DefiLlama hacks</a> and the chain. What is tagged AI research, the AI looked up.</p>
+  <p class="srcline">On 2026-11-25 the program read <a href="https://defillama.com/protocol/uniswap-v4">DefiLlama</a>, <a href="https://defillama.com/hacks">DefiLlama hacks</a> and the chain. What is tagged AI research, the AI looked up.</p>
 </section>
 
 <section id="wallet">
@@ -565,18 +548,32 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="addresses">
-  <h2>Addresses <span class="c">7</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Each address must be confirmed in at least two places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
+  <h2>Addresses <span class="c">7</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t7"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t7" role="tooltip">Each address must be confirmed in at least two places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
   <div class="rows">
+    <div class="ad" id="a-cbbtc" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">cbbtc</span><span class="role"><span class="aiw" data-ai><span>In the card&#39;s list, but the swap cannot use it: cbBTC, issued by Coinbase</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf</span>
+        <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">github.com/coinbase/agentkit</a></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>site: nothing to compare (compared with <a href="https://defillama.com/protocol/coinbase">DefiLlama</a>)</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>newest version (main) lists it too</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/coinbase-wrapped-btc">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>Immunefi bug bounty scope<span class="res">address not listed</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>deployer<span class="res">not proven</span></span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div>
+        <details class="aisrcs" open><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 3 places · AI judgment: needs attention</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>A file of Coinbase&#39;s agentkit repository lists this address next to CBBTC. Coinbase&#39;s GitHub organization is not tied to Coinbase by a listing, so its site is not compared <a class="aisrc" href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">source</a></span></span><span class="aires">AI judgment: needs attention</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko&#39;s coin coinbase-wrapped-btc lists this address on Ethereum <a class="aisrc" href="https://www.coingecko.com/en/coins/coinbase-wrapped-btc">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: verified contract FiatTokenProxy, creator Coinbase: Deployer 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05, creation transaction 0x09001d384305288073faa8f5cf3051c6cc13d55b66114064be17e12f71469753 <a class="aisrc" href="https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+        </details></div>
+    </div>
     <details class="fold">
-      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>7 more addresses have no result for you to review</summary>
+      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>6 more addresses have no result for you to review</summary>
     <div class="ad" id="a-usdc" data-state="ok">
       <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
       <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>A token you can pick: USDC, issued by Circle</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
       <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to circle-usdc (compared with <a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a>)</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>Immunefi bug bounty scope<span class="res">address not listed</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x95ba4cf87d6723ad9c0db21737d862be80e93911">deployer 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911</a><span class="res">no confirmed contract shares it</span></span></span></div></div>
         <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div>
-        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 1 place · AI judgment: no problem</summary>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: contract name FiatTokenProxy, creator 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911 <a class="aisrc" href="https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 3 places · AI judgment: no problem</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Circle&#39;s USDC contract addresses page lists this address next to Ethereum under Mainnet <a class="aisrc" href="https://developers.circle.com/stablecoins/usdc-contract-addresses">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko&#39;s coin usd-coin lists this address on Ethereum <a class="aisrc" href="https://www.coingecko.com/en/coins/usd-coin">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: verified contract FiatTokenProxy, creator 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911, creation transaction 0xe7e0fe390354509cd08c9a0168536938600ddc552b3f7cb96030ebef62e75895 <a class="aisrc" href="https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
         </details></div>
     </div>
     <div class="ad" id="a-usdt" data-state="ok">
@@ -585,28 +582,22 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0xdAC17F958D2ee523a2206206994597C13D831ec7</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://tether.to/en/supported-protocols/">tether.to/en/supported-protocols</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to tether (compared with <a href="https://defillama.com/protocol/tether">DefiLlama</a>)</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/tether">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>Immunefi bug bounty scope<span class="res">address not listed</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x36928500bc1dcd7af6a2b4008875cc336b927d57">deployer 0x36928500Bc1dCd7af6a2B4008875CC336b927D57</a><span class="res">no confirmed contract shares it</span></span></span></div></div>
         <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div>
-        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 1 place · AI judgment: no problem</summary>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: contract name TetherToken, creator 0x36928500Bc1dCd7af6a2B4008875CC336b927D57 <a class="aisrc" href="https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 3 places · AI judgment: no problem</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Tether&#39;s supported protocols page lists this address as the USD₮ contract address <a class="aisrc" href="https://tether.to/en/supported-protocols/">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko&#39;s coin tether lists this address on Ethereum <a class="aisrc" href="https://www.coingecko.com/en/coins/tether">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: verified contract TetherToken, creator 0x36928500Bc1dCd7af6a2B4008875CC336b927D57, creation transaction 0x2f1c5c2b44f771e942a8506148e256f94f1a464babc938ae0690c6e34cd79190 <a class="aisrc" href="https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
         </details></div>
     </div>
     <div class="ad" id="a-morpho" data-state="ok">
       <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
-      <div><span class="nm">morpho</span><span class="role"><span class="aiw" data-ai><span>A token you can pick: Morpho&#39;s governance token</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div><span class="nm">morpho</span><span class="role"><span class="aiw" data-ai><span>In the card&#39;s list, but the swap cannot use it: Morpho&#39;s governance token</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
       <div class="body"><span class="addr">0x58D97B57BB95320F9a05dC918Aef65434969c2B2</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>)</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>Immunefi bug bounty scope<span class="res">address not listed</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x937ce2d6c488b361825d2db5e8a70e26d48afed5">deployer 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5</a><span class="res">no confirmed contract shares it</span></span></span></div></div>
         <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div>
-        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 1 place · AI judgment: no problem</summary>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: contract name ERC1967Proxy, creator 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5 <a class="aisrc" href="https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
-        </details></div>
-    </div>
-    <div class="ad" id="a-cbbtc" data-state="ok">
-      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
-      <div><span class="nm">cbbtc</span><span class="role"><span class="aiw" data-ai><span>A token you can pick: cbBTC, issued by Coinbase</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
-      <div class="body"><span class="addr">0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf</span>
-        <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">github.com/coinbase/agentkit</a></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>site: nothing to compare (compared with <a href="https://defillama.com/protocol/coinbase">DefiLlama</a>)</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>newest version (main) lists it too</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/coinbase-wrapped-btc">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>Immunefi bug bounty scope<span class="res">address not listed</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>deployer<span class="res">not proven</span></span></span></div></div>
-        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div>
-        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 1 place · AI judgment: no problem</summary>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: contract name FiatTokenProxy, creator 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05 <a class="aisrc" href="https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 3 places · AI judgment: no problem</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Morpho&#39;s contract addresses page lists this address next to MORPHO under MORPHO Token <a class="aisrc" href="https://docs.morpho.org/developers/contracts/addresses/">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko&#39;s coin morpho lists this address on Ethereum <a class="aisrc" href="https://www.coingecko.com/en/coins/morpho">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: verified contract ERC1967Proxy, creator Morpho: Deployer 2 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5, creation transaction 0x1a8de6a5ba99b4dcd91ff35424e2e3adf76b1de440f97e4a48b22bfe9a8f96e9 <a class="aisrc" href="https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
         </details></div>
     </div>
     <div class="ad" id="a-universal-router-2.1.2" data-state="ok">
@@ -615,25 +606,38 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments">developers.uniswap.org/llms.mdx/docs/protocols/v4</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to uniswap-v4 (compared with <a href="https://defillama.com/protocol/uniswap-v4">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/uniswap">CoinGecko</a>)</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://github.com/Uniswap/universal-router/blob/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json">github.com/Uniswap/universal-router</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to uniswap-v4 (compared with <a href="https://defillama.com/protocol/uniswap-v4">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/uniswap">CoinGecko</a>, <a href="https://github.com/uniswap">GitHub verified domains</a>)</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>newest version (main) lists it too</span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>Immunefi bug bounty scope<span class="res">address not listed</span></span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://www.npmjs.com/package/@uniswap/universal-router-sdk/v/5.17.0">npm @uniswap/universal-router-sdk@5.17.0</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to uniswap-v4 (compared with <a href="https://defillama.com/protocol/uniswap-v4">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/uniswap">CoinGecko</a>, <a href="https://github.com/uniswap">GitHub verified domains</a>)</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>newest version (npm 5.17.0) lists it too</span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x2179a60856e37dfeaaca0ab043b931fe224b27b6">deployer 0x2179a60856E37dfeAacA0ab043B931fE224b27B6</a><span class="res">no confirmed contract shares it</span></span></span></div></div>
         <div class="confirmed">Confirmed in 2 places: official page, github.com/Uniswap/universal-router + npm @uniswap/universal-router-sdk@5.17.0 (github.com/uniswap)</div>
-        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 3 places · AI judgment: no problem</summary>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: contract name UniversalRouter (verified, solc 0.8.26), creator 0x2179a60856e37dfeaaca0ab043b931fe224b27b6 <a class="aisrc" href="https://etherscan.io/address/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85#code">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 5 places · AI judgment: no problem</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Uniswap&#39;s v4 deployments page lists this address next to Universal Router 2.1.2 under Ethereum <a class="aisrc" href="https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Uniswap&#39;s universal-router repository lists this address as UniversalRouterV2_1_2 in deploy-addresses/mainnet.json <a class="aisrc" href="https://github.com/Uniswap/universal-router/blob/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: verified contract UniversalRouter, creator Uniswap V4: Deployer 0x2179a60856E37dfeAacA0ab043B931fE224b27B6, creation transaction 0x350510f7398242ffc778c086ae6bbe9cc744c33a04468f1a7978e54164638257 <a class="aisrc" href="https://etherscan.io/address/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85#code">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
           <div><span class="aiw" data-ai><span class="byai">AI</span><span>The Uniswap trading API&#39;s spec states that it uses 2.1.2 by default when no version is given, which is the router the app sends transactions to today <a class="aisrc" href="https://trade-api.gateway.uniswap.org/v1/api.json">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
           <div><span class="aiw" data-ai><span class="byai">AI</span><span>Verified source code: every Permit2 transfer uses msgSender() (the address that calls execute) as the payer; no owner and no proxy <a class="aisrc" href="https://sourcify.dev/server/v2/contract/1/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
         </details></div>
     </div>
     <div class="ad" id="a-usp" data-state="ok">
       <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
-      <div><span class="nm">usp</span><span class="role"><span class="conf">high confidence</span></span></div>
+      <div><span class="nm">usp</span><span class="role"><span class="aiw" data-ai><span>In the card&#39;s list, but the swap cannot use it: USP, Piku&#39;s yield-optimized stablecoin</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
       <div class="body"><span class="addr">0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts">docs.piku.co/piku/piku-platform</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to piku-finance (compared with <a href="https://defillama.com/protocol/piku-finance">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/piku-utility-token">CoinGecko</a>)</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/usp-yield-optimized-stablecoin">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>Immunefi bug bounty scope<span class="res">address not listed</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0xb8eaa4f956c6324435f4088cae9cda974c358508">deployer 0xB8eaa4f956C6324435f4088cAe9cDa974C358508</a><span class="res">no confirmed contract shares it</span></span></span></div></div>
-        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 3 places · AI judgment: no problem</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Piku&#39;s token and workflow contracts page lists this address next to USP <a class="aisrc" href="https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko&#39;s coin usp-yield-optimized-stablecoin lists this address on Ethereum <a class="aisrc" href="https://www.coingecko.com/en/coins/usp-yield-optimized-stablecoin">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: verified contract TransparentUpgradeableProxy, creator Piku: Deployer 0xB8eaa4f956C6324435f4088cAe9cDa974C358508, creation transaction 0xe38f329a0426954fc83ec5bc5314f24dca2cfbcebefeb679cf43aebbbba70dda <a class="aisrc" href="https://etherscan.io/address/0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6#code">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+        </details></div>
     </div>
     <div class="ad" id="a-weeth" data-state="ok">
       <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
-      <div><span class="nm">weeth</span><span class="role"><span class="conf">high confidence</span></span></div>
+      <div><span class="nm">weeth</span><span class="role"><span class="aiw" data-ai><span>In the card&#39;s list, but the swap cannot use it: weETH, ether.fi&#39;s wrapped staked ETH</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
       <div class="body"><span class="addr">0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol">github.com/etherfi-protocol/smart-contracts</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to ether.fi-stake (compared with <a href="https://defillama.com/protocol/ether.fi-stake">DefiLlama</a>)</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>newest version (master) lists it too</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/wrapped-eeth">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://immunefi.com/bug-bounty/etherfi/">Immunefi bug bounty scope</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0xf8a86ea1ac39ec529814c377bd484387d395421e">deployer 0xf8a86ea1Ac39EC529814c377Bd484387D395421e</a><span class="res">no confirmed contract shares it</span></span></span></div></div>
-        <div class="confirmed">Confirmed in 3 places: official page, CoinGecko, Immunefi bug bounty scope</div></div>
+        <div class="confirmed">Confirmed in 3 places: official page, CoinGecko, Immunefi bug bounty scope</div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 4 places · AI judgment: no problem</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>ether.fi&#39;s deployments file (Deployed.s.sol) lists this address next to WEETH <a class="aisrc" href="https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko&#39;s coin wrapped-eeth lists this address on Ethereum <a class="aisrc" href="https://www.coingecko.com/en/coins/wrapped-eeth">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>ether.fi&#39;s Immunefi program has this address in scope <a class="aisrc" href="https://immunefi.com/bug-bounty/etherfi/">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: verified contract UUPSProxy, creator ether.fi: Deployer 0xf8a86ea1Ac39EC529814c377Bd484387D395421e, creation transaction 0xa034bdf7ec3b407125fcfbb786d908b0bcfd9976f2fbaf489776ba58b9db61ac <a class="aisrc" href="https://etherscan.io/address/0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee#code">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+        </details></div>
     </div>
     </details>
   </div>
@@ -641,26 +645,80 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>Past transactions</h2>
-  <p class="lead">In past records, <span class="num">0</span> transactions match the template exactly, made the way yours is.</p>
+  <p class="lead">In past records, <span class="num">1</span> transaction matches the template exactly, made the way yours is: Safe <span class="num">0</span>, EOA <span class="num">1</span> (1 address, each sending one call of the template). It succeeded: it was found through the event logs of usdc transfer, usdt transfer, and a failed transaction leaves no such log. The latest 1 exact match: <a href="https://etherscan.io/tx/0x4a1f4167cdda7158711148b054b9e0d818014dd520516b4b1da3ba83cb30c1ab">0x4a1f4167…</a>.</p>
+  <p class="lead">The values the fitting transactions set in each number the template leaves free: the smallest, the 50th, 90th and 99th percentile, and the largest. For a field the template declares a time, each is the value less the time of the block the transaction ran in, in seconds. This is evidence, not a rule.</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt"><code>call.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.poolKey.fee</code></span><span>EOA: value set</span></div>
+    <div class="pg"><span class="pc num">1</span><div><div class="pex">min <span class="num">7</span>, p50 <span class="num">7</span>, p90 <span class="num">7</span>, p99 <span class="num">7</span>, max <span class="num">7</span></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt"><code>call.execute.deadline</code></span><span>EOA: value set</span></div>
+    <div class="pg"><span class="pc num">1</span><div><div class="pex">min <span class="num">1795451108</span>, p50 <span class="num">1795451108</span>, p90 <span class="num">1795451108</span>, p99 <span class="num">1795451108</span>, max <span class="num">1795451108</span></div></div></div>
+  </div>
   <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span><span class="num">6</span> more differ from yours: <span class="num">0</span> have the same shape but with an address outside the registry, <span class="num">6</span> have another shape</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>No Safe swap was found. 141 of the 240 transactions studied called router 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af, not this one; the 6 to this router add commands or encode the swap otherwise.</span><span class="byai">AI research</span></span></p>
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span><span class="num">60</span> more differ from yours: <span class="num">0</span> have the same shape but with an address outside the registry, <span class="num">60</span> have another shape</span></summary>
+  <p class="intro"><span class="aiw" data-ai><span>The swaps that did not fit carry other commands, several swaps or another token. The search covers only 1 to 2 days and no Safe fits in it; the one Safe test transaction came from the AI&#39;s own search of older blocks.</span><span class="byai">AI research</span></span></p>
   <p class="lead">Only transactions that used this operation&#39;s calls count. An exact match has the template&#39;s calls and argument positions, meets every rule the transaction itself can show (such as where the sender goes, or a fixed value), and uses a contract the template allows wherever the template binds a registry contract. Same shape but a market, token, vault or address outside the registry means the calls, argument positions and those rules are the same, but an address or market is not in the registry; the kind is named when the record shows it, otherwise only address. The rest are grouped by reason, each with up to 3 examples.</p>
-  <h3>Search of permit2 Permit: 7248 found, 240 studied</h3>
-  <p class="lead">Recorded in <code>testdata/research/uniswap-swap-permit-permit2.json</code>. Only Etherscan searches an event, and found <span class="num">7248</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
+  <h3>Search of usdc transfer: 25728 found, 240 studied, 180 of 227 with a proven Safe party</h3>
+  <p class="lead">Recorded in <code>testdata/research/uniswap-swap-no-hook-usdc-v4.json</code>. Every transaction from block 26477111 (2026-11-23) to block 26486685 (2026-11-24) was searched, newest first, 9575 blocks, about 1.3 days, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched. Alchemy and Etherscan found different transactions (<span class="num">25728 ≠ 25727</span>).</p>
   <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">0</span> transactions used this operation&#39;s calls (0 Safes); <span class="num">0</span> match the template exactly.</span></div>
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">2</span> transactions used this operation&#39;s calls (1 Safe); <span class="num">0</span> match the template exactly.</span></div>
+    <div class="pg"><span class="pc num">1</span><div><div><code>inputs</code> has 3 items; the template has 1<span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x376065625d981b9b6aba9a64f67e53db6451538c12595275d382727a26d3b772">0x37606562…</a></div></div></div>
+    <div class="pg"><span class="pc num">1</span><div><div><code>inputs</code> has 2 items; the template has 1<span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xcf503bc24daf1eb0b6629bd169057ef288db1e2b4ba91ebd37d5ac9f05acdd76">0xcf503bc2…</a></div></div></div>
   </div>
   <div class="pblock">
-    <div class="ph"><span class="pt">EOA calls execute directly</span><span><span class="num">6</span> transactions used this operation&#39;s calls (6 addresses); <span class="num">0</span> match the template exactly.</span></div>
-    <div class="pg"><span class="pc num">3</span><div><div><code>inputs</code> has 4 items; the template has 2<span class="f3">, from 3 addresses</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xacae3484b45e6a3848272be4a28f0c45526699bba5f29242273ce3360b388416">0xacae3484…</a>, <a href="https://etherscan.io/tx/0x2a1452000430b1e71f4cbb31fd27d58ba856c5078a29cf917835a00312283aea">0x2a145200…</a>, <a href="https://etherscan.io/tx/0x35af412dc39dd2bbade9474db9602723e44ebb6ed11fea9a2089b59c0a3aa276">0x35af412d…</a></div></div></div>
-    <div class="pg"><span class="pc num">2</span><div><div><code>inputs</code> has 3 items; the template has 2<span class="f3">, from 2 addresses</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x203f70c9b70efcfcea1ca7a3b7940186b0cb3f074cab87da80a38a11b8d81234">0x203f70c9…</a>, <a href="https://etherscan.io/tx/0x05b1141f184fc681099bf1e62f5a9b7742f16ec4adbf1f8c018ce21acd7527b1">0x05b1141f…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div><code>call.execute.inputs[1].V4_SWAP.params[0].encoding</code> differs from the template: the template wants <span class="addr">canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))</span>, the transaction has <span class="addr">differs at byte 976</span><span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xabe946537da53f933ae1f1663dd7170001f754cfda894d697b01fa5a7b880160">0xabe94653…</a></div></div></div>
+    <div class="ph"><span class="pt">EOA calls execute directly</span><span><span class="num">4</span> transactions used this operation&#39;s calls (4 addresses); <span class="num">0</span> match the template exactly.</span></div>
+    <div class="pg"><span class="pc num">2</span><div><div><code>inputs</code> has 3 items; the template has 1<span class="f3">, from 2 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x145b1567fdbc5f68d3d9e65c401bdae9c3a667e2dd67d972356d59b1795bd566">0x145b1567…</a>, <a href="https://etherscan.io/tx/0x289d147783fc90e5118eca207224fe888e612488c047fc29d523d4a90870703a">0x289d1477…</a></div></div></div>
+    <div class="pg"><span class="pc num">1</span><div><div><code>inputs</code> has 2 items; the template has 1<span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x239164b999ad5de8e53297e98da018288891830a7793e6552b29fa473cadcdac">0x239164b9…</a></div></div></div>
+    <div class="pg"><span class="pc num">1</span><div><div><code>inputs</code> has 5 items; the template has 1<span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x869efde3f807ecc82a33dfb436a3c038dc39547272791e460791a99cc1d36cda">0x869efde3…</a></div></div></div>
   </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>234 more are other operations, not counted: <code>0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af.execute</code> 141, <code>0x4C82D1fBFe28C977cBB58D8C7FF8FCF9F70a2cCA.execute</code> 28, <code>bundler3.0x374f435d</code> 20, <code>0xbD216513d74C8cf14cf4747E6AaA6420FF64ee9e.0xac9650d8</code> 12, and others.</span></div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>234 more are other operations, not counted: <code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0x2260fac5</code> 34, <code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0xa0b86991</code> 31, <code>0x000000000004444c5dc75cB358380D2e3dE08A90.0x48c89491</code> 22, <code>0x4A4F81b42D35D7dea88e5b7a5e8B1FE257A94Df2.0x00000000</code> 21, and others.</span></div>
+  <h3>Search of usdt transfer: 22815 found, 1200 studied, all 92 with a proven Safe party</h3>
+  <p class="lead">Recorded in <code>testdata/research/uniswap-swap-no-hook-usdt-v4.json</code>. Every transaction from block 26471954 (2026-11-22) to block 26486711 (2026-11-24) was searched, newest first, 14758 blocks, about 2.1 days, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched. Alchemy and Etherscan found different transactions (<span class="num">22815 ≠ 22811</span>).</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">1</span> transaction used this operation&#39;s calls (1 Safe); <span class="num">0</span> match the template exactly.</span></div>
+    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>usdt.approve → permit2.0x87517c45 → universal-router-2.1.2.execute</code></div><div>The calls differ from the template, which is <code>execute</code><span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x9e6929eac015fe90f960198d762e6eb4aca4a712a774c278dafb1657cd897eab">0x9e6929ea…</a></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt">EOA calls execute directly</span><span><span class="num">54</span> transactions used this operation&#39;s calls (51 addresses); <span class="num">1</span> matches the template exactly.</span></div>
+    <div class="pg"><span class="pc num">13</span><div><div><code>inputs</code> has 2 items; the template has 1<span class="f3">, from 13 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x010a93111db6455b604bfef947c29cd5b303353ddd1a3ce23efce8007c142800">0x010a9311…</a>, <a href="https://etherscan.io/tx/0x62c7b08ef863e2e8dedf495fa9dbd75202fec8d48d78a4db73a4fee933cc5e16">0x62c7b08e…</a>, <a href="https://etherscan.io/tx/0x07c2b06de7885ee824ad4f65bfc857b2529ab1068a32f13afdd85fa3e3344ae8">0x07c2b06d…</a></div></div></div>
+    <div class="pg"><span class="pc num">8</span><div><div><code>inputs</code> has 3 items; the template has 1<span class="f3">, from 8 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x6baa348805e7332cd142131a7de0c8443d4b8468e7b34406f65476fd73fceb34">0x6baa3488…</a>, <a href="https://etherscan.io/tx/0x3bec5afff781293390b233ec3845bd7631d6b6d19380910749e7691f5ef97808">0x3bec5aff…</a>, <a href="https://etherscan.io/tx/0xa75b8081807fb6a52624d9673d068ee54330978fe54d2611019736adbabb586b">0xa75b8081…</a></div></div></div>
+    <div class="pg"><span class="pc num">6</span><div><div><code>inputs</code> has 4 items; the template has 1<span class="f3">, from 6 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x3f649f38108ade78736c7fdabac94151c0f551fcfa2b2a0aa4d6a1b64d839359">0x3f649f38…</a>, <a href="https://etherscan.io/tx/0xfed246c7d569c7f04054e59409c84a5af261c9e478e3b3667988bc6800574f69">0xfed246c7…</a>, <a href="https://etherscan.io/tx/0xf43ee92de86e216518b5442ed3741b26642b92e72f644ce75849945cf48429fe">0xf43ee92d…</a></div></div></div>
+    <div class="pg"><span class="pc num">4</span><div><div><code>inputs</code> has 8 items; the template has 1<span class="f3">, from 4 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x71001791e24f95120d1c0700a8067e137b157ed64857dea996d1b351ce55116d">0x71001791…</a>, <a href="https://etherscan.io/tx/0xf592a39f7c582032005221d50b93f04948cbd0a272007d838659555cc001979e">0xf592a39f…</a>, <a href="https://etherscan.io/tx/0x56ab81c2768907fb8a8ae00481de2ebb42947f50399e86821404d766e6dde85b">0x56ab81c2…</a></div></div></div>
+    <div class="pg"><span class="pc num">4</span><div><div><code>inputs</code> has 5 items; the template has 1<span class="f3">, from 4 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x9fc9af74f1f89188e4d21fbcf7937a205c8cdbd99c8930b5e48d43be0d0ba210">0x9fc9af74…</a>, <a href="https://etherscan.io/tx/0x1e23a6835c5370007b2583aafb2ecb066795555f51be8b979029acddf3982fb9">0x1e23a683…</a>, <a href="https://etherscan.io/tx/0x382f1457ebc1bf7795c4c92a118a070ce3b640bc6e5fcf8bce270b3d45b1cf27">0x382f1457…</a></div></div></div>
+    <div class="pg"><span class="pc num">4</span><div><div><code>inputs</code> has 9 items; the template has 1<span class="f3">, from 4 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x7858e4869ed81794c0887fb0abbdfc47111839a893d3e311b9a5c923181d3e07">0x7858e486…</a>, <a href="https://etherscan.io/tx/0xba02b1c8b9cc5508fcfae970bd3a303f9e7ee3e369131d81e7210bb65a7703f2">0xba02b1c8…</a>, <a href="https://etherscan.io/tx/0xf3d899dc82b4bdddcae4719bd24d0ffe102ec12f676e59582ea3b6731fd037bf">0xf3d899dc…</a></div></div></div>
+    <div class="pg"><span class="pc num">3</span><div><div><code>call.execute.inputs[0].V4_SWAP.params[0].encoding</code> differs from the template: the template wants <span class="addr">canonical SETTLE(address,uint256,bool)</span>, the transaction has <span class="addr">differs at byte 643</span><span class="f3">, from 3 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xbb21e58d734973c027900360d58da477bd0aba1fb6434c9d4f77d0991e624709">0xbb21e58d…</a>, <a href="https://etherscan.io/tx/0xcb7aba85842365109a6e4b8969fe410b7713f15cd6cc31dfbf7642fab0f06935">0xcb7aba85…</a>, <a href="https://etherscan.io/tx/0x47d8ca8a02aa2b8ed0ab9da05b3d6305d9848bfbb58adebb2f51078cb1404fdb">0x47d8ca8a…</a></div></div></div>
+    <div class="pg"><span class="pc num">2</span><div><div><code>inputs</code> has 6 items; the template has 1<span class="f3">, from 2 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x8194a84c4f25b8a8869c08db214d632d1ac29e35e4fecc451b7e0f174080c336">0x8194a84c…</a>, <a href="https://etherscan.io/tx/0x6f1ae33ec7a84d1d67a596b8944742a5cdb0862c75f32068aea03116dbb5fc4d">0x6f1ae33e…</a></div></div></div>
+    <div class="pg"><span class="pc num">2</span><div><div><code>inputs</code> has 7 items; the template has 1<span class="f3">, from 2 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xce9034b3a093dc8a0c1abf9cbf5af52dd427b238fee4ac7f525a567b37e27ddb">0xce9034b3…</a>, <a href="https://etherscan.io/tx/0x781b15f3ce37478be093a4f1b22fc0bd343a9e9ab29abc291e97920bfa063e94">0x781b15f3…</a></div></div></div>
+    <div class="pg"><span class="pc num">2</span><div><div><code>params</code> has 4 items; the template has 3<span class="f3">, from 2 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x94e7ba7d5d7b7b98be5b68e488ba9bb7fcd7203854921e4cffda0f8abd195b4e">0x94e7ba7d…</a>, <a href="https://etherscan.io/tx/0x82209a2af1941b1afde203fa505e800ee0011426fee2c6e13a0aefb91cce543c">0x82209a2a…</a></div></div></div>
+    <div class="pg"><span class="pc num">1</span><div><div><code>inputs</code> has 10 items; the template has 1<span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x7d86dc6cb40442073acdaa713ac65d32311c1326a51cb863d500dee7f092e50e">0x7d86dc6c…</a></div></div></div>
+    <div class="pg"><span class="pc num">1</span><div><div><code>inputs</code> has 13 items; the template has 1<span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x7b8f44e21129ba21e12d12f29e694e9bc1d3dbfbd2f57cc851406452f0950e33">0x7b8f44e2…</a></div></div></div>
+    <div class="pg"><span class="pc num">1</span><div><div><code>inputs</code> has 12 items; the template has 1<span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xf3cfcb742f9292e527d312af1b76a1c8e8bd70ef41f49c16e9bc3a719e5ab7fa">0xf3cfcb74…</a></div></div></div>
+    <div class="pg"><span class="pc num">1</span><div><div><code>call.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.poolKey.tickSpacing</code> differs from the template: the template wants <span class="addr">1</span>, the transaction has <span class="addr">10</span><span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xe417700d629781f4cc92b7f83697c7647757d02ee730e49f48d577476e0be9e4">0xe417700d…</a></div></div></div>
+    <div class="pg"><span class="pc num">1</span><div><div><code>call.execute.inputs[0].V4_SWAP.params[0].encoding</code> differs from the template: the template wants <span class="addr">canonical SETTLE(address,uint256,bool)</span>, the transaction has <span class="addr">differs at byte 642</span><span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x5b2f1ce963383f48bc1b5957997f35231ca342c34cd989f21734f64376f67196">0x5b2f1ce9…</a></div></div></div>
+  </div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>1145 more are other operations, not counted: <code>0x0000000aa232009084Bd71A5797d089AA4Edfad4.0x09c5eabe</code> 86, <code>0x881D40237659C251811CEC9c364ef91dC08D300C.0x5f575529</code> 43, <code>0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af.execute</code> 39, <code>0x278d858f05b94576C1E6f73285886876ff6eF8D2.0x70521ae9</code> 34, and others.</span></div>
   </details>
 </section>
 
@@ -668,9 +726,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>Next steps</h2>
   <ol class="steps">
     <li><div>Before you approve, open each address&#39;s sources in <a href="#addresses">Addresses</a> and check that each domain is the protocol&#39;s own and that the page lists the address.</div></li>
-    <li><div>The first time you use this template, or after it changes, approve it<pre class="cmd"><code>pnpm kiss-sign template approve uniswap/swap-permit</code></pre>
+    <li><div>The first time you use this template, or after it changes, approve it<pre class="cmd"><code>pnpm kiss-sign template approve uniswap/swap-no-hook</code></pre>
       <p class="then">It prints the template, the commit of main on GitHub and the template&#39;s keccak256. Answer <code>y</code> only if it is the one you reviewed.</p></div></li>
-    <li><div>Make the card<pre class="cmd"><code>pnpm kiss-sign card new uniswap/swap-permit</code></pre>
+    <li><div>Make the card<pre class="cmd"><code>pnpm kiss-sign card new uniswap/swap-no-hook</code></pre>
       <p class="then">When <code>templates/</code> or <code>registry/</code> in your clone differs from main on GitHub, it stops before asking anything and tells you to run <code>git pull</code> first.</p></div></li>
     <li><div>token (<code>sell-token</code>): it lists each token you can pick, with its full address. Pick the one you want; both its name and its full address must be right.</div></li>
     <li><div>token (<code>buy-token</code>): it lists each token you can pick, with its full address. Pick the one you want; both its name and its full address must be right.</div></li>
@@ -695,14 +753,14 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>Every argument follows the rules above, and encoding them again gives exactly the same bytes</span></li>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>After simulation, the the token (sell-token) you pick the Safe gives is exactly the amount (sell-amount) you type</span></li>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>After simulation, the Safe receives the token (buy-token) you pick, no less than the amount (min-buy) you type</span></li>
-      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>No allowance is higher after the transaction, except those &#34;After the transaction&#34; above lists as allowed to remain</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>No allowance is higher after the transaction</span></li>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>Every registry contract the card uses still runs the code its code pin records</span></li>
     </ul>
   </div>
 </section>
 
-<aside class="usage"><h3>AI usage to make this report</h3><p>Not measured</p></aside>
-<footer class="foot">Written by <code>pnpm report uniswap/swap-permit --record</code> from <code>templates/uniswap/swap-permit/template.json</code>, <code>templates/uniswap/swap-permit/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/uniswap-swap-permit.json</code>, <code>testdata/abi</code>, <code>testdata/research/uniswap-swap-permit-permit2.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/uniswap/swap-permit/notes.json</code>; the data was read on 2026-11-17. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
+<aside class="usage"><h3>AI usage to make this report</h3><p>Opus 5.5 · 59 calls · 53 minutes</p><table><thead><tr><th scope="col">Item</th><th scope="col">Tokens</th></tr></thead><tbody><tr><th scope="row">Re-read (cache reads)</th><td class="num">6.7M</td></tr><tr><th scope="row">Newly read (input and cache writes)</th><td class="num">0.33M</td></tr><tr><th scope="row">Output</th><td class="num">0.06M</td></tr></tbody><tfoot><tr><th scope="row">Total</th><td class="num">7.0M</td></tr></tfoot></table><p>Source: the usage the API reported, in Claude Code&#39;s transcripts, without the coordinator</p></aside>
+<footer class="foot">Written by <code>pnpm report uniswap/swap-no-hook --record</code> from <code>templates/uniswap/swap-no-hook/template.json</code>, <code>templates/uniswap/swap-no-hook/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/uniswap-swap-no-hook.json</code>, <code>testdata/abi</code>, <code>testdata/research/uniswap-swap-no-hook-usdc-v4.json</code>, <code>testdata/research/uniswap-swap-no-hook-usdt-v4.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/uniswap/swap-no-hook/notes.json</code>, <code>testdata/usage/uniswap-swap-no-hook.json</code>; the data was read on 2026-11-25. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI or the usage numbers.</footer>
 
 </div>
 </div>
