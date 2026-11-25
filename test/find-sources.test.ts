@@ -119,6 +119,11 @@ test('a redirect within the domain prints the page it led to, which is the one t
   assert.doesNotMatch(text, /page https:\/\/acme\.org\/old/);
 });
 
+test('a redirect of api.github.com, which gets the token, is never followed', async () => {
+  const { asked } = await run({ pages: ['https://api.github.com/x'] }, {}, { ...PAGES, 'https://api.github.com/x': { location: '/repos/secret' } });
+  assert.deepEqual(asked.filter((url) => /secret/.test(url)), []);
+});
+
 test('a list or a site with no answer is named, and the rest still prints', async () => {
   const { text } = await run({}, { list: async ({ path }) => (path === '/hacks' ? assert.fail('down') : LISTS[path]), creations: async () => ({ missing: 'DRPC_API_KEY' }), source: undefined });
   assert.match(text, /no answer: DefiLlama hacks: down/);

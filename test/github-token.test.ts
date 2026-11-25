@@ -146,6 +146,7 @@ test('only the research scripts read the GitHub token, so no signing command can
     'scripts/check-sources.ts',
     'scripts/erc7730.ts',
     'scripts/fetch-vendored.ts',
+    'scripts/find-sources.ts',
     'scripts/pin-solc.ts',
     'scripts/report.ts',
     'src/research/github-token.ts',

@@ -47,7 +47,7 @@ export const quoted = (value: unknown, max = 160): string =>
 
 const header = (answer: HttpAnswer, name: string): string => String(answer.headers?.[name] ?? '');
 
-/** The page at `url`, following at most two redirects that stay on its registrable domain; the URL read is the one to record. */
+/** The page at `url`, following at most two redirects that stay on its registrable domain, none from or to the one host that gets a token; the URL read is the one to record. */
 async function readPage(url: string, get: HttpGet, domainOf: (host: string) => string | undefined): Promise<ReadPage> {
   let at = pageUrlOf(url);
   for (let hops = 0; ; hops++) {
@@ -61,7 +61,7 @@ async function readPage(url: string, get: HttpGet, domainOf: (host: string) => s
     if (answer.status >= 300 && answer.status < 400 && hops < 2 && URL.canParse(location, at)) {
       const next = new URL(location, at);
       const [from, to] = [domainOf(new URL(at).hostname), domainOf(next.hostname)];
-      if (next.protocol === 'https:' && to !== undefined && to === from) {
+      if (next.protocol === 'https:' && to !== undefined && to === from && ![new URL(at).hostname, next.hostname].includes('api.github.com')) {
         at = next.href;
         continue;
       }

@@ -146,7 +146,7 @@ Keys enter through `kiss-sign key add alchemy|etherscan|github` in a hidden prom
 `init` never overwrites an existing `.env`.
 
 `GITHUB_TOKEN` is optional and for building templates only.
-It is read like the other keys, from the command's environment or `$KISS_SIGN_HOME/.env`, and only by the research commands that ask GitHub's API: `pnpm check-sources`, `pnpm report`, `pnpm pin-solc` and `pnpm fetch-erc7730`, with `pnpm erc7730`, which fetches the ERC-7730 archive on demand.
+It is read like the other keys, from the command's environment or `$KISS_SIGN_HOME/.env`, and only by the research commands that ask GitHub's API: `pnpm check-sources`, `pnpm find-sources`, `pnpm report`, `pnpm pin-solc` and `pnpm fetch-erc7730`, with `pnpm erc7730`, which fetches the ERC-7730 archive on demand.
 When it is set, a request to `https://api.github.com` carries `Authorization: Bearer <token>`, which raises GitHub's limit from 60 requests an hour to 5,000; no other host gets it, github.com pages, `raw.githubusercontent.com` and `codeload.github.com` included, and no request to `api.github.com` follows a redirect, so the header cannot reach another host.
 Without it every command reads exactly as before.
 A token `api.github.com` refuses with HTTP 401, as it does once the token expires, is dropped for that read, which is asked again without it, and the command says once on stderr to replace or remove it.
