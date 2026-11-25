@@ -258,38 +258,22 @@ kiss-sign checks a transaction against the card you sealed and the reports you m
 
 ## Token cost
 
-What it cost Claude Opus 5.5 to make reports, measured between 2026-11-22 and 2026-11-25. The first table is re-records: the template already existed, and the AI researched the operation again, recorded the evidence, rewrote the notes, ran the tests and opened the pull request. Building a template from zero, with no earlier template or research to start from, was not measured.
+What it cost Claude Opus 5.5 to make one report, measured one report at a time between 2026-11-22 and 2026-11-25.
 
-| Report | Calls | Tokens | Cache reads | Output | Minutes | USD |
-|---|---:|---:|---:|---:|---:|---:|
-| compound/supply (compound-v3-cusdcv3) | 79 | 6.68M | 96% | 39k | 26 | $3.22 |
-| safe/add-owner | 71 | 5.61M | 96% | 32k | 74 | $2.59 |
-| safe/change-threshold | 40 | 3.55M | 93% | 30k | 62 | $2.40 |
-| safe/remove-owner | 73 | 5.14M | 96% | 33k | 57 | $2.54 |
-| safe/swap-owner | 37 | 2.85M | 92% | 26k | 55 | $2.07 |
-| uniswap/allow-router | 31 | 2.83M | 89% | 42k | 15 | $2.62 |
-| uniswap/approve-permit2 | 30 | 2.51M | 90% | 37k | 15 | $2.29 |
+| Report | Tokens | Minutes | USD |
+|---|---:|---:|---:|
+| compound/supply | 6.68M | 26 | $3.22 |
+| morpho/vault-deposit (two vaults) | 12.31M | 49 | $7.34 |
+| safe/add-owner | 5.61M | 74 | $2.59 |
+| safe/change-threshold | 3.55M | 62 | $2.40 |
+| safe/remove-owner | 5.14M | 57 | $2.54 |
+| safe/swap-owner | 2.85M | 55 | $2.07 |
+| uniswap/allow-router | 2.83M | 15 | $2.62 |
+| uniswap/approve-permit2 | 2.51M | 15 | $2.29 |
+| uniswap/swap | 8.79M | 41 | $5.68 |
+| uniswap/swap-no-hook | 7.05M | 53 | $4.12 |
 
-Templates rebuilt, or first built, for a transaction shape the protocol's app sends now. The rows leave out earlier research that found the shape:
-
-| Report | Calls | Tokens | Cache reads | Output | Minutes | USD |
-|---|---:|---:|---:|---:|---:|---:|
-| morpho/vault-deposit (two vaults) | 78 | 12.31M | 94% | 104k | 49 | $7.34 |
-| uniswap/swap | 64 | 8.79M | 94% | 83k | 41 | $5.68 |
-| uniswap/swap-no-hook | 59 | 7.05M | 95% | 57k | 53 | $4.12 |
-
-Updates that only ran the search of past transactions again:
-
-| Report | Calls | Tokens | Cache reads | Output | Minutes | USD |
-|---|---:|---:|---:|---:|---:|---:|
-| cow/swap | 35 | 2.40M | 91% | 30k | 20 | $2.00 |
-| cow/swap-approve | 28 | 1.82M | 89% | 24k | 12 | $1.64 |
-| erc20/transfer (six tokens) | 69 | 5.59M | 96% | 29k | 175 | $2.69 |
-| fluid/vault-deposit (fluid-fusdc) | 35 | 2.61M | 91% | 29k | 30 | $2.04 |
-
-How they were measured: one report at a time, three fresh agents per report, usage as the API reported it in the Claude Code transcripts. Minutes include waiting for public nodes. Dollars are [Anthropic's list prices](https://platform.claude.com/docs/en/about-claude/pricing) as read on 2026-11-25: per million tokens, $4 input, $5 five-minute cache write, $0.20 cache read, $20 output. A subscription bills differently.
-
-The tables leave out the coordinator, the session that starts the agents, reads each report and talks with the signer. Over the same days its two sessions used 81.0M tokens, $47.18 at list prices ($8 per million for their one-hour cache writes). That total also covers changes to the program, work on reports not listed here and discussion, so it is not a cost per report.
+Each run researched the operation, recorded the evidence, wrote the notes, ran the tests and opened the pull request. Most started from an existing template, and the Morpho and Uniswap swap rows leave out earlier research, so a first build from nothing can cost more. 89% to 96% of the tokens are cache reads. Dollars are [Anthropic's list prices](https://platform.claude.com/docs/en/about-claude/pricing) on 2026-11-25; a subscription bills differently. The session that starts the agents and reads the reports is not counted.
 
 ## Scope
 
