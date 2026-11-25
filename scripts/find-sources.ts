@@ -68,10 +68,14 @@ if (safe !== undefined && addresses.includes(safe)) usage('the configured Safe i
 
 if (!(await ensureVendored(['psl']))) process.exit(1);
 const suffixes = loadPublicSuffixList();
+if ('unavailable' in suffixes) {
+  console.error(suffixes.unavailable);
+  process.exit(1);
+}
 const ignore = () => {};
 const githubToken = readGithubToken(process.env);
 const key = findKey(keySpec('etherscan') as KeySpec, process.env)?.value;
-const lines = await findSources({ addresses, slug: flags.protocol, pages }, registry, 'unavailable' in suffixes ? undefined : suffixes, {
+const lines = await findSources({ addresses, slug: flags.protocol, pages }, registry, suffixes, {
   list: (target) => fetchListing(target, ignore),
   get: retryingGet(httpsGet(githubToken), ignore, [2000]),
   source: key === undefined ? undefined : retryingEtherscan(etherscanHttps(key), ignore),

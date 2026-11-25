@@ -47,7 +47,7 @@ export const quoted = (value: unknown, max = 160): string =>
 
 const header = (answer: HttpAnswer, name: string): string => String(answer.headers?.[name] ?? '');
 
-/** The page at `url`, following at most two redirects that stay on its registrable domain, none from or to the one host that gets a token; the URL read is the one to record. */
+/** The page at `url`, following at most two redirects that stay on its registrable domain, which no github.com host has, so no request that carries the token is redirected; the URL read is the one to record. */
 async function readPage(url: string, get: HttpGet, domainOf: (host: string) => string | undefined): Promise<ReadPage> {
   let at = pageUrlOf(url);
   for (let hops = 0; ; hops++) {
@@ -61,7 +61,7 @@ async function readPage(url: string, get: HttpGet, domainOf: (host: string) => s
     if (answer.status >= 300 && answer.status < 400 && hops < 2 && URL.canParse(location, at)) {
       const next = new URL(location, at);
       const [from, to] = [domainOf(new URL(at).hostname), domainOf(next.hostname)];
-      if (next.protocol === 'https:' && to !== undefined && to === from && ![new URL(at).hostname, next.hostname].includes('api.github.com')) {
+      if (next.protocol === 'https:' && to !== undefined && to === from) {
         at = next.href;
         continue;
       }
@@ -253,11 +253,11 @@ const creationText = (address: Address, creations: Creations, registry: Registry
  * Candidate places each address is published, as lines: a proposal for the AI to check, each with the registry field it
  * would fill. Nothing here counts as a place; `check-sources` reads each recorded place itself.
  */
-export async function findSources(request: Request, registry: Registry, suffixes: PublicSuffixList | undefined, reads: Reads): Promise<string[]> {
+export async function findSources(request: Request, registry: Registry, suffixes: PublicSuffixList, reads: Reads): Promise<string[]> {
   const get: HttpGet = (url) => timed(reads.get(url));
   const lines: string[] = [];
   const unread: string[] = [];
-  const domainOf = (host: string): string | undefined => (suffixes === undefined ? host : registrableDomain(host, suffixes));
+  const domainOf = (host: string): string | undefined => registrableDomain(host, suffixes);
   const tried = async <T>(what: string, read: () => Promise<T>, empty: T): Promise<T> => {
     try {
       return await read();
