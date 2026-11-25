@@ -597,7 +597,7 @@ async function tracedPage(language: Language): Promise<string> {
   const sections = page.sections.map((section) => {
     if (section.body.kind !== 'flow') return section;
     const { flow } = section.body;
-    const arrows = flow.diagram.arrows.map((arrow) => (arrow.kind === 'inside' ? { ...arrow, seen: n++ === 0 ? { seen: 8, of: 8, confirmed: true } : { seen: 3, of: 8, confirmed: false } } : arrow));
+    const arrows = flow.diagram.arrows.map((arrow) => (arrow.kind === 'inside' ? { ...arrow, seen: n++ === 0 ? { seen: 8, of: 8, state: 'confirmed' as const, tokens: [], fields: [] } : { seen: 3, of: 8, state: 'partial' as const, tokens: [], fields: [] } } : arrow));
     return { ...section, body: { kind: 'flow', flow: { ...flow, diagram: { ...flow.diagram, arrows, traced: true } } } satisfies Body };
   });
   assert.equal(n, 2, 'the Hyperithm diagram draws two flow lines');

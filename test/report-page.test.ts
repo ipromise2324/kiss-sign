@@ -18,8 +18,9 @@ import { SUMMARIES_DIR, parseSummary, runOf } from '../src/research/past-txs-sum
 import { factsScope } from '../src/research/protocol-facts.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { renderPage } from '../src/research/report-html.ts';
+import { WORDS } from '../src/research/report-words.ts';
 import { pastFields } from '../src/research/report-past.ts';
-import { shapesOf } from '../src/research/study.ts';
+import { cardAddresses, shapesOf } from '../src/research/study.ts';
 import { buildPage, constCast } from '../src/research/report-page.ts';
 import type { ArgRow, Body, DocLine, HtmlInputs, Inline, Page, PastBlock, WalletCall } from '../src/research/report-page.ts';
 import { pageUrlOf } from '../src/research/source-page.ts';
@@ -700,7 +701,7 @@ test('the values of a free number show 99% only over 100 values, and never a len
   assert.ok(!heads(99).includes('99% at or under'));
   assert.ok(heads(100).includes('99% at or under'));
   const row = page(1, () => 5_436n).rows.find((r) => plain(r[0]) === 'Safe, differs elsewhere') ?? assert.fail('a row');
-  assert.deepEqual(row.slice(1).map(plain), ['1', '1.5 hours', '1.6 hours', '1.6 hours'], '5,436 seconds are 1.51 hours: at least 1.5 and at or under 1.6');
+  assert.deepEqual(row.slice(1).map(plain), ['1', '1.5 hours', '1 hour 31 minutes', '1 hour 31 minutes'], '5,436 seconds are 1 hour 30 minutes 36 seconds');
 });
 
 test('a difference in a number shows it as a number, the largest uint256 by name, and bytes by their length', () => {
@@ -992,6 +993,105 @@ test('a money call no line covers is titled by who pays whom, with full addresse
   const untoldId = 'trace.2.safe.usdc.transfer';
   const untoldRow = body(buildPage(untold, { ...notesFor(untold), flow: [], reviews: { ...(notesFor(untold).reviews as object), [untoldId]: { status: 'confirmed', text: both('checked'), recommendation: both('none') } } }, title, 'en'), 'review').rows.find((r) => r.id === untoldId);
   assert.equal(untoldRow?.title, "In 1 past transaction, a step under call 2 moved the sender's usdc, to whom was not read; the template does not describe this step");
+});
+
+test('a group of money calls that go both ways says what the sender paid, what it was paid, and what was not read', () => {
+  const at = (name: string): Address => (registry.entries.get(name) ?? assert.fail(name)).address;
+  const [safe, usdc, bundles, morpho, other] = ['0x1111111111111111111111111111111111111111' as Address, at('usdc'), at('blue-bundles-v1'), at('morpho-blue'), '0x2222222222222222222222222222222222222222' as Address];
+  const supply = inputs.subject.template.calls[1]?.data;
+  const call = (depth: number, from: Address, to: Address, selector: string, callArgs?: Address[]): TraceCall => ({ depth, type: 'CALL', from, to, selector: selector as Hex, ...(callArgs === undefined ? {} : { args: callArgs }) });
+  const base = [call(0, usdc, safe, '0x6a761202'), call(1, safe, usdc, '0x095ea7b3', [bundles]), call(1, safe, bundles, supply === undefined || supply === 'empty' ? assert.fail('a supply call') : supply.fn.selector)];
+  const titles = (id: string, language: 'en' | 'zh-TW', ...traces: readonly (readonly TraceCall[])[]) => {
+    const run = traces.map((inner, i) => ({ kind: 'traced' as const, hash: `0x${String(i + 1).repeat(64)}` as Hex, sender: { kind: 'safe' as const, address: safe }, calls: [...base, call(2, bundles, morpho, '0xa99aad89'), ...inner] }));
+    const of = { ...inputs, pastTxs: inputs.pastTxs.slice(0, 1).map((r) => ({ ...r, run: { ...r.run, traces: run } })) };
+    const raw = notesFor(of);
+    const page = buildPage(of, { ...raw, flow: [], reviews: { ...(raw.reviews as object), [id]: { status: 'confirmed', text: both('checked'), recommendation: both('none') } } }, title, language);
+    return body(page, 'review').rows.find((r) => r.id === id)?.title;
+  };
+  const pulls = 'trace.2.morpho-blue.usdc.transferFrom';
+  const out = call(3, morpho, usdc, '0x23b872dd', [safe, morpho]);
+  const back = call(3, morpho, usdc, '0x23b872dd', [other, safe]);
+  const [M, O] = [`morpho-blue ${checksumAddress(morpho)}`, checksumAddress(other)];
+  assert.equal(titles(pulls, 'en', [out, back]), `In 1 past transaction, the sender paid usdc to ${M}; ${O} paid usdc to the sender; the template does not describe this step`);
+  assert.equal(titles(pulls, 'zh-TW', [back], [out]), `2 筆過去交易裡，其中 1 筆裡，送出方付了 usdc 給 ${M}；其中 1 筆裡，${O} 付了 usdc 給送出方，模板沒有說明這一步`);
+  const sends = 'trace.2.safe.usdc.transfer';
+  const [told, untold] = [call(3, safe, usdc, '0xa9059cbb', [other]), call(3, safe, usdc, '0xa9059cbb')];
+  assert.equal(titles(sends, 'en', [told], [untold]), `In 2 past transactions, in 1 of them the sender paid usdc to ${O}; in 1 of them a step under call 2 moved the sender's usdc, to whom was not read; the template does not describe this step`);
+  assert.equal(titles('trace.2.safe.usdc.approve', 'en', [call(3, safe, usdc, '0x095ea7b3')]), "In 1 past transaction, a step under call 2 let a spender that was not read spend the sender's usdc; the template does not describe this step");
+  assert.equal(titles('trace.2.safe.usdc.approve', 'zh-TW', [call(3, safe, usdc, '0x095ea7b3')]), '1 筆過去交易裡，呼叫 2 底下有一步授權別人動用送出方的 usdc，授權給誰沒有讀到，模板沒有說明這一步');
+  assert.equal(titles('trace.2.safe.usdc.transferFrom', 'en', [call(3, safe, usdc, '0x23b872dd')]), 'In 1 past transaction, a transferFrom the sender made under call 2 moved usdc, from whom to whom was not read; the template does not describe this step');
+});
+
+test("a swap's page draws a line on the token the card names, says with which tokens it was seen, and leaves a token with no trace unconfirmed", async () => {
+  const repo = join(import.meta.dirname, '..');
+  const shipped = loadRegistry(repo);
+  const target = { template: 'uniswap/swap' };
+  const replayed = await replayInputs(repo, shipped, target, await warmCompilers(reportCases(repo, shipped, [target])), loadPublicSuffixList());
+  const swap = { ...replayed.inputs, fixtures: [] };
+  const line = { after: 1, from: 'permit2', to: 'card.sell-token', function: 'transferFrom(address,address,uint256)', text: both('pull'), sources: ['https://example.org/Permit2.sol'] };
+  const dependsOn = new Map([...shipped.entries].map(([name, entry]) => [name, name === 'universal-router-2.1.2' ? { ...entry, dependsOn: [...new Set([...(entry.dependsOn ?? []), 'permit2'])] } : entry] as const));
+  const of = () => ({ ...swap, registry: { ...swap.registry, entries: dependsOn }, pastTxs: swap.pastTxs.map((r) => ({ ...r, run: { ...r.run, traces: r.run.traces.filter((t) => sells(t.hash) === sold) } })) });
+  const shapes = shapesOf(swap.subject.template);
+  const sells = (hash: Hex): string | undefined => {
+    const fit = swap.pastTxs.flatMap(({ run }) => run.studies).find((s) => s.kind === 'fit' && s.hash === hash);
+    const token = fit?.kind === 'fit' ? cardAddresses(fit, shapes).get('sell-token') : undefined;
+    return token === undefined ? undefined : shipped.byAddress.get(token)?.name;
+  };
+  const [first] = swap.pastTxs.flatMap(({ run }) => run.traces).filter((t) => t.kind === 'traced');
+  const sold = sells(first?.hash ?? assert.fail('the recordings hold a trace')) ?? assert.fail('a sold token');
+  for (const [language, seenWith, none] of [['en', new RegExp(`seen only with ${sold}\\)`), /no transaction with /], ['zh-TW', new RegExp(`只看過 ${sold}`), /沒有交易用過/]] as const) {
+    const raw = notesFor(of());
+    const reviews = { ...(raw.reviews as Record<string, unknown>) };
+    const build = (): Page => {
+      try {
+        return buildPage(of(), { ...raw, flow: [line], reviews }, title, language);
+      } catch (error) {
+        const id = /reviews: (trace\S+) is missing/.exec((error as Error).message)?.[1] ?? assert.fail((error as Error).message);
+        reviews[id] = { status: 'confirmed', text: both('checked'), recommendation: both('none') };
+        return build();
+      }
+    };
+    const page = build();
+    assert.ok(!Object.keys(reviews).some((id) => id.startsWith('trace.1.permit2.')), 'the line explains the pull');
+    const { diagram } = body(page, 'flow').flow;
+    const arrow = diagram.arrows.find((a) => a.kind === 'inside') ?? assert.fail('the line');
+    assert.ok(arrow.kind === 'inside' && arrow.seen?.state === 'some-tokens' && arrow.seen.seen === arrow.seen.of);
+    assert.deepEqual(arrow.seen.tokens, [sold]);
+    assert.match(diagram.lifelines[arrow.to]?.name ?? '', /sell-token/);
+    const html = renderPage(page);
+    assert.match(html, seenWith);
+    assert.match(html, none);
+  }
+});
+
+test('the who-decides key says a computed value is read from the chain, and a floor computed from prices or typed', () => {
+  const { template } = depositInputs.subject;
+  const [name, field] = [...template.card].find(([, f]) => f.kind === 'amount' && f.computed !== undefined) ?? assert.fail('a computed field');
+  const [sells] = [...template.card].find(([, f]) => f.kind === 'amount' && f.computed === undefined) ?? assert.fail('a typed field');
+  const means = (card: Template['card'], language: 'en' | 'zh-TW') => {
+    const of = { ...depositInputs, subject: { ...depositInputs.subject, template: { ...template, card } }, fixtures: [] };
+    return body(buildPage(of, { ...notesFor(of), flow: [] }, depositTitle, language), 'flow').flow.key.flatMap((g) => g.items).filter((k) => k.who === 'computed').map((k) => k.means);
+  };
+  const floored = new Map([...template.card, [name, { ...field, computed: undefined, floor: { sells } } as typeof field] as const]);
+  assert.deepEqual(means(template.card, 'en'), ['card new reads it from the chain at each signing. You check it.']);
+  assert.deepEqual(means(floored, 'en'), ['card new computes it from price feeds and pools at each signing, and you check it; with no independent price to use, you type it.']);
+  assert.deepEqual(means(floored, 'zh-TW'), ['card new 每次簽名用價格來源和池子算，你核對；沒有獨立價格可用時，你自己填。']);
+});
+
+test('a displayed limit is never above the real one, and a longest value never below it', () => {
+  const years = 2n * 365n * 86400n;
+  for (const [seconds, en, zh] of [[5436n, '1 hour 30 minutes 36 seconds', '1 小時 30 分鐘 36 秒'], [years + 1n, '2 years 1 second', '2 年 1 秒'], [5400n, '1.5 hours', '1.5 小時'], [604800n, '7 days', '7 天']] as const) {
+    assert.equal(WORDS.en.within(seconds), `at most ${en} after the block's time`);
+    assert.equal(WORDS['zh-TW'].within(seconds), `最多比區塊時間晚 ${zh}`);
+    assert.equal(WORDS.en.pastLimit(seconds)[1], en);
+  }
+  assert.equal(WORDS.en.duration(5436n, 'up'), '1 hour 31 minutes');
+  assert.equal(WORDS.en.duration(5436n, 'down'), '1.5 hours');
+  assert.equal(WORDS.en.duration(years + 1n, 'up'), '2 years 1 day');
+  assert.equal(WORDS.en.duration(years + 1n, 'down'), '2 years');
+  assert.equal(WORDS.en.duration(86399n, 'up'), '1 day');
+  assert.equal(WORDS.en.duration(0n, 'up'), '0 seconds');
+  assert.equal(WORDS.en.duration(-95n, 'up'), '1 minute 35 seconds before');
 });
 
 test('a floor is said to be computed from a price, after the amount it is for and before any other computed field, and typed otherwise', () => {

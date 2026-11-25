@@ -14,6 +14,7 @@ import { githubOrg } from './site-listings.ts';
 import { isGitHubPage, pageUrlOf } from './source-page.ts';
 import { factoryAnswer } from './instance-evidence.ts';
 import type { Address } from '../safe/types.ts';
+import { tokenUntested } from './trace.ts';
 import type { FlowComparison, Uncovered } from './trace.ts';
 
 /** ok passed; warn evidence missing (amber); bad a real disagreement (red); na nothing to compare (grey). */
@@ -144,6 +145,8 @@ export type Finding =
   | { readonly kind: 'routed-proxy' }
   /** A `flow` line the call traces saw in fewer than all the past transactions that make its call, which a line must hold on. */
   | { readonly kind: 'line-not-every'; readonly seen: number; readonly of: number }
+  /** A `flow` line seen in every past transaction that tests it, though none of them held some token its card field can name. */
+  | { readonly kind: 'line-token-untested' }
   /** A call in the traces that moves money, which no call the template binds and no seen `flow` line covers. */
   | { readonly kind: 'money-uncovered'; readonly transactions: number };
 export type FindingKind = Finding['kind'];
@@ -195,6 +198,7 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'not-called': 'na',
   'routed-proxy': 'na',
   'line-not-every': 'bad',
+  'line-token-untested': 'na',
   'money-uncovered': 'warn',
 };
 
@@ -245,6 +249,7 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'not-called': undefined,
   'routed-proxy': undefined,
   'line-not-every': undefined,
+  'line-token-untested': undefined,
   'money-uncovered': undefined,
 };
 
@@ -666,9 +671,10 @@ export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[
  */
 export function flowResults(comparison: FlowComparison): Result[] {
   const result = (id: string, about: Result['about'], finding: Finding): Result => ({ id, line: 'trace', about, source: undefined, link: undefined, finding });
-  const lines = comparison.lines.flatMap(({ seen, of }, i): Result[] => {
+  const lines = comparison.lines.flatMap((line, i): Result[] => {
+    const { seen, of } = line;
     if (of === 0) return [];
-    const finding: Finding = seen === of ? { kind: 'agrees' } : { kind: 'line-not-every', seen, of };
+    const finding: Finding = seen < of ? { kind: 'line-not-every', seen, of } : tokenUntested(line) ? { kind: 'line-token-untested' } : { kind: 'agrees' };
     return [result(`flow.${i + 1}`, { kind: 'flow', line: i + 1 }, finding)];
   });
   const money = comparison.uncovered.map((u) => result(`trace.${u.call}.${u.from}.${u.to}.${u.kind}`, { kind: 'money', uncovered: u }, { kind: 'money-uncovered', transactions: u.transactions }));

@@ -13,6 +13,7 @@ import { factsScope } from './protocol-facts.ts';
 import type { Ledger, ResultId } from './ledger.ts';
 import { instanceReportDir } from './report.ts';
 import type { ReportInputs } from './report.ts';
+import type { FlowEnd } from './trace.ts';
 
 export const NOTES_FILE = 'notes.json';
 
@@ -130,8 +131,10 @@ export function readNotes(repoRoot: string, template: string, vault?: RegistryEn
 export type NotesScope = {
   /** How many calls the template makes: a `flow` line's `after` is one of 1..calls. */
   readonly calls: number;
-  /** The registry names a call or an effects' view targets, the entries those depend on, and the tokens the effects move: a `flow` line's `from` and `to`. */
+  /** The registry names a call or an effects' view targets, the entries those depend on, and the tokens the effects move: what a `flow` line's `from` and `to` may name. */
   readonly contracts: ReadonlySet<string>;
+  /** The card fields that hold a token, each with the registry names it can hold, which a `flow` line's `from` and `to` may name as `card.<field>`. */
+  readonly tokenFields: ReadonlyMap<string, readonly string[]>;
   /**
    * Each call nested in a template call, such as a Bundler3 bundle item: the call number, the names the top-level call's
    * target and the nested call's target can be, and its selector. The template binds it, so no `flow` line may name it.
@@ -229,6 +232,7 @@ export function notesScope(inputs: ReportInputs, ledger: Ledger, template: Templ
       ...[...template.effects.gives, ...template.effects.gets].flatMap((effect) => effectTokenNames(effect.token, template, registry)),
       ...template.effects.touches.map((touch) => touch.token),
     ]),
+    tokenFields: new Map([...template.card].flatMap(([name, field]) => (field.kind === 'contract' && field.scope.registryKind === 'token' ? [[name, refNames({ field: name, attribute: undefined }, template, registry)] as const] : []))),
     nested: nestedCalls(template, registry),
     entries: new Set(ledger.entries.map((entry) => entry.name)),
     routed: new Set(ledger.entries.filter((entry) => entry.routes !== undefined).map((entry) => entry.name)),
@@ -338,9 +342,15 @@ const signature: P<{ readonly signature: string; readonly selector: string }> = 
   return canonical === written ? { signature: written, selector } : refuse(path, 'not a canonical function signature, such as `approve(address,uint256)`');
 };
 
-const contract: P<string> = (path, raw, scope) => {
+const CARD = 'card.';
+
+const flowEnd: P<FlowEnd> = (path, raw, scope) => {
   const name = str(80)(path, raw, scope);
-  return scope.contracts.has(name) ? name : refuse(path, `${shown(name)} is not a contract the calls or the effects' views target, an entry one of those depends on, nor a token the effects move`);
+  if (name.startsWith(CARD)) {
+    const field = name.slice(CARD.length);
+    return scope.tokenFields.has(field) ? { kind: 'card', field } : refuse(path, `${shown(name)} is not a card field that holds a token`);
+  }
+  return scope.contracts.has(name) ? { kind: 'entry', name } : refuse(path, `${shown(name)} is not a contract the calls or the effects' views target, an entry one of those depends on, nor a token the effects move`);
 };
 
 const list =
@@ -399,9 +409,11 @@ const protocolNotes = (slug: string) =>
     return hacks === 'unread' || protocol.incidents.length === hacks ? undefined : `incidents lists ${protocol.incidents.length}; DefiLlama lists ${hacks} hacks`;
   });
 
+const endNames = (end: FlowEnd, scope: Scope): readonly string[] => (end.kind === 'entry' ? [end.name] : (scope.tokenFields.get(end.field) ?? []));
+
 const FLOW = optList(
-  where(obj({ after: callNumber, from: contract, to: contract, function: signature, text: text(100), sources: where(list(url), (sources) => (sources.length === 0 ? 'names no source: the contract source read and a past transaction checked' : undefined)) }), (line, scope) =>
-    scope.nested.some((n) => n.after === line.after && n.selector === line.function.selector && n.from.includes(line.from) && (n.to === undefined || n.to.includes(line.to)))
+  where(obj({ after: callNumber, from: flowEnd, to: flowEnd, function: signature, text: text(100), sources: where(list(url), (sources) => (sources.length === 0 ? 'names no source: the contract source read and a past transaction checked' : undefined)) }), (line, scope) =>
+    scope.nested.some((n) => n.after === line.after && n.selector === line.function.selector && endNames(line.from, scope).some((name) => n.from.includes(name)) && (n.to === undefined || endNames(line.to, scope).some((name) => n.to?.includes(name))))
       ? 'names a call the template binds itself, which the diagram draws from the template'
       : undefined,
   ),
