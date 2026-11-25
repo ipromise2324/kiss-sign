@@ -1,17 +1,17 @@
 {
   "title": {
-    "en": "Swap tokens on Uniswap (Permit2 allowance already in place)",
-    "zh-TW": "用 Uniswap 兌換代幣（Permit2 授權已經有了）"
+    "en": "Swap USDC and USDT on Uniswap through the StablePair hook pool",
+    "zh-TW": "用 Uniswap 的 StablePair hook 池子兌換 USDC 和 USDT"
   },
   "summary": {
-    "en": "The Safe calls `execute` on Uniswap's Universal Router with a single `V4_SWAP`: in one v4 pool with no hook, it sells the amount you type, and all of the bought token goes to the Safe. The router pulls tokens from the Safe through Permit2, so the Safe must already have given allowances to Permit2 and to the router (two other templates, uniswap/approve-permit2 and uniswap/allow-router, set these two allowances and can go in the same MultiSend as this one).",
-    "zh-TW": "Safe 呼叫 Uniswap Universal Router 的 `execute`，裡面只有一個 `V4_SWAP`：在一個沒有 hook 的 v4 池子，把你填的數量賣掉，買進的代幣全部給 Safe。router 透過 Permit2 從 Safe 拉代幣，所以 Safe 之前要已經授權過 Permit2 和 router（另外兩個模板 uniswap/approve-permit2、uniswap/allow-router 做這兩個授權，可以和這個放在同一筆 MultiSend）。"
+    "en": "The Safe calls `execute` on Uniswap's Universal Router to swap USDC for USDT, or USDT for USDC, in one fixed Uniswap v4 pool whose fee is set by Uniswap's own hook contract, StablePairHook. Example, another Safe's swap on 2026-11-18: it sold 20,000 USDC, its transaction allowed no less than 19,923.50 USDT, and it got 20,023.72 USDT. The router pulls tokens through Permit2, so the Safe must already have approved Permit2 and allowed the router there (the templates uniswap/approve-permit2 and uniswap/allow-router do this and can go in the same MultiSend). The app often quotes another route: a pool without a hook, a split, a route through USDS, a quote with a permit signature. This template refuses each of those with MISMATCH; get a new quote or do not sign. How often it fits (AI evidence, counted with the AI's own decoder, not the program's search): over the last 7 days up to 2026-11-24, 217 of 1,581 calls that swapped USDC and USDT on this router, about 1 in 7; among the few Safes found there since 2026-11-12, 4 of 6 calls, from 2 Safes.",
+    "zh-TW": "Safe 呼叫 Uniswap Universal Router 的 `execute`，在一個固定的 Uniswap v4 池子裡把 USDC 換成 USDT，或反過來；這個池子的手續費由 Uniswap 自己的 hook 合約 StablePairHook 決定。例子：2026-11-18 另一個 Safe 賣 20,000 USDC，交易寫明最少要拿 19,923.50 USDT，實際拿到 20,023.72 USDT。router 透過 Permit2 拉代幣，所以 Safe 要先授權 Permit2、再在 Permit2 裡允許 router（模板 uniswap/approve-permit2 和 uniswap/allow-router 做這兩件事，可以和這筆放在同一個 MultiSend）。app 常常報別種路線：沒有 hook 的池子、拆單、繞經 USDS、附 permit 簽名的報價。這些都不是這個模板的形狀，verify 會給 MISMATCH；請重新取得報價，或不要簽。多常符合（AI 的證據，用 AI 自己的解碼程式數的，不是程式的搜尋）：到 2026-11-24 為止的 7 天，在這個 router 兌換 USDC 和 USDT 的 1,581 次呼叫裡有 217 次，約七分之一；2026-11-12 之後找到的少數 Safe 裡，6 次呼叫有 4 次（來自 2 個 Safe）。"
   },
   "verdict": {
     "status": "caution",
     "text": {
-      "en": "The Safe gives exactly the amount you type and receives no less than the minimum you type. You type the minimum from what the app shows.",
-      "zh-TW": "Safe 剛好給出你填的數量、收到不少於你填的最少數量；最少數量要你照 app 填。"
+      "en": "The Safe gives exactly the amount you type and gets at least your minimum; the pool uses a hook that Uniswap governance can upgrade.",
+      "zh-TW": "Safe 剛好付出你填的數量、至少收到你填的最少數量；池子的 hook 可以被 Uniswap 治理升級。"
     }
   },
   "flow": [],
@@ -23,12 +23,14 @@
       },
       "audits": {
         "text": {
-          "en": "The v4 core and periphery contracts and the Universal Router all have public audit reports (OpenZeppelin, Spearbit, Certora and others), in each repo's audits folder.",
-          "zh-TW": "v4 核心與周邊合約、Universal Router 都有公開的審計報告（OpenZeppelin、Spearbit、Certora 等），放在各 repo 的 audits 資料夾。"
+          "en": "The v4 core contracts and the Universal Router have public audit reports (OpenZeppelin, Trail of Bits, Spearbit, Certora, ABDK; some are marked draft). The hook: OpenZeppelin reviewed its fee mechanism on 9-13 February 2026, with one high finding, resolved; Uniswap's security page says that review covered the earlier, non-upgradeable version, and the upgrade and role code came after it. The AI read that page, not the audit PDF.",
+          "zh-TW": "v4 核心合約和 Universal Router 有公開的審計報告（OpenZeppelin、Trail of Bits、Spearbit、Certora、ABDK，有些標為草稿）。hook 的部分：OpenZeppelin 在 2026 年 2 月 9 到 13 日審過它的手續費機制，一個高風險問題已解決；Uniswap 的安全頁寫明，當時審的是還不能升級的舊版，升級和角色的程式碼是之後才加的。AI 讀的是安全頁，沒有讀審計 PDF。"
         },
         "sources": [
           "https://github.com/Uniswap/v4-core/tree/main/docs/security/audits",
-          "https://github.com/Uniswap/universal-router/tree/main/audits"
+          "https://github.com/Uniswap/universal-router/tree/main/audit",
+          "https://developers.uniswap.org/llms.mdx/docs/protocols/uniswap-labs-hooks/stable-pair/security",
+          "https://github.com/Uniswap/v4-hooks-public/blob/main/docs/audits/openzeppelin-stablepair.pdf"
         ]
       },
       "incidents": []
@@ -37,36 +39,69 @@
   "judgments": [
     {
       "text": {
-        "en": "You type the card's \"minimum to receive\" yourself. The Uniswap app's trading API works out the slippage at each quote (auto slippage 0.5% to 5.5%), and the price comes from a route the API finds across many pools, which no view on chain can read.",
-        "zh-TW": "卡片的「最少收到的數量」要你自己填：Uniswap app 的滑價由它的交易 API 每次報價時算（自動滑價 0.5% 到 5.5%），價格來自 API 在很多池子間找的路由，鏈上沒有一個 view 讀得到。"
+        "en": "You type the card's minimum to receive yourself; it is your only price protection. Example: for 20,000 USDC another Safe's transaction had a minimum of 19,923.50 USDT, 0.5% under what it got. Typing 19,000 would let you lose 1,000.",
+        "zh-TW": "卡片的「最少收到的數量」由你填，價格只靠它保護。例子：另一個 Safe 賣 20,000 USDC，最少寫 19,923.50 USDT，比實際拿到的少 0.5%。如果你填 19,000，就等於允許少拿一千左右。"
       },
       "recommendation": {
-        "en": "Type the minimum to receive shown on the app's confirm screen. Do not type a lower one.",
-        "zh-TW": "照 app 確認畫面上的最少收到數量填，不要填得更低。"
+        "en": "Type the minimum shown on the app's confirm screen, no lower.",
+        "zh-TW": "照 app 確認畫面上的最少收到數量填，不要更低。"
       }
     },
     {
       "text": {
-        "en": "The app picks the pool (fee and tick spacing). The template allows any pool and only requires that it has no hook. Anyone can open a v4 pool, so the only price protection is the minimum you type: below it, the router makes the transaction fail, and verify also gives MISMATCH.",
-        "zh-TW": "池子（手續費和 tick 間距）由 app 選，模板不限，只要求沒有 hook。任何人都能開 v4 池子，所以價格只靠你填的最少數量保護：少於它，router 讓交易失敗，verify 也會 MISMATCH。"
+        "en": "The hook can be replaced: only Uniswap governance can upgrade it, through a timelock with a 2-day delay (read on chain). Argued from source, not simulated: a malicious upgrade could make the swap fail or cut what you get down to your minimum. It could not take more than the sell amount, pay another address, or use the Safe's Permit2 allowance.",
+        "zh-TW": "hook 可以被換掉：只有 Uniswap 治理能升級，要先過 2 天的 timelock（鏈上讀的）。依原始碼推論、沒有模擬：惡意升級能讓兌換失敗，或把你拿到的壓到你填的最少數量；不能多拿賣出的代幣、不能付給別人，也不能動用 Safe 的 Permit2 授權。"
       },
       "recommendation": {
-        "en": "Acceptable. Always type the minimum to receive that the app shows.",
-        "zh-TW": "可以接受；最少收到的數量一定照 app 顯示的填。"
+        "en": "Acceptable with a tight minimum. Execute soon after verify: an upgrade before verify is MISMATCH, one after it is not seen.",
+        "zh-TW": "最少數量填得緊就可以接受；verify 後盡快執行：verify 前升級會 MISMATCH，verify 後才升級則看不到。"
       }
     },
     {
       "text": {
-        "en": "The template accepts one shape only: one v4 pool, the swap first, then SETTLE and TAKE. When the app routes through v3, several hops, a split order, or a pool with a hook, verify gives MISMATCH; that does not mean the transaction is wrong.",
-        "zh-TW": "模板只接受一種形狀：一個 v4 池子、先 swap 再 SETTLE 和 TAKE。app 走 v3、多跳、拆單或有 hook 的池子時，verify 會 MISMATCH，不是交易有問題。"
+        "en": "The hook's audit came before it became upgradeable, so no audit we found covers its upgrade and role code. It was created on 2026-07-27 and has not been upgraded since.",
+        "zh-TW": "hook 的審計早於它變成可升級的版本，所以找到的審計都沒有涵蓋升級和角色的程式碼。它在 2026-07-27 建立，之後沒升級過。"
       },
       "recommendation": {
-        "en": "On MISMATCH, read the cause. If the shape differs, do not sign; ask the AI to make another template for that shape.",
-        "zh-TW": "MISMATCH 時看原因；是形狀不同就不要簽，請 AI 為那種形狀另做模板。"
+        "en": "Decide whether you accept a young contract whose worst effect is the price, down to your minimum.",
+        "zh-TW": "決定你能不能接受一個新合約：它最壞只能影響價格，下限是你填的最少數量。"
+      }
+    },
+    {
+      "text": {
+        "en": "The card lists every token in the registry (such as MORPHO and weETH), but the pool is fixed to USDC and USDT, so a card with any other token can never match.",
+        "zh-TW": "卡片會列出登記表裡的所有代幣（像 MORPHO、weETH），但池子固定是 USDC 和 USDT，選了別的代幣，卡片永遠不會 MATCH。"
+      },
+      "recommendation": {
+        "en": "Pick USDC and USDT, one to sell and one to buy.",
+        "zh-TW": "一個選 USDC，另一個選 USDT。"
       }
     }
   ],
-  "reviews": {},
+  "reviews": {
+    "trace.1.permit2.usdt.transferFrom": {
+      "status": "confirmed",
+      "text": {
+        "en": "Read the recorded trace of 0xf05d03904269e82861e30869445ce5a5f88acaf1048bf314837177561d5f4d52 (an EOA selling USDT): Permit2 moves USDT from the caller to 0x000000000004444c5dc75cB358380D2e3dE08A90, Uniswap's v4 PoolManager, listed on its deployments page. This is the payment SETTLE makes.",
+        "zh-TW": "讀了 0xf05d03904269e82861e30869445ce5a5f88acaf1048bf314837177561d5f4d52 的 trace（一個 EOA 賣 USDT）：Permit2 把 USDT 從呼叫者轉到 0x000000000004444c5dc75cB358380D2e3dE08A90，也就是 Uniswap 部署頁列出的 v4 PoolManager。這是 SETTLE 付的錢。"
+      },
+      "recommendation": {
+        "en": "Check that the receiver is the v4 PoolManager. Only USDT has a trace here; no USDC sale was traced.",
+        "zh-TW": "看收款方是不是 v4 PoolManager；只有賣 USDT 的 trace，沒有賣 USDC 的。"
+      }
+    },
+    "trace.1.other.usdc.transfer": {
+      "status": "confirmed",
+      "text": {
+        "en": "Read the same trace: the address outside the registry is 0x000000000004444c5dc75cB358380D2e3dE08A90, Uniswap's v4 PoolManager, listed on its deployments page. It pays the bought USDC straight to the caller; this is the TAKE step.",
+        "zh-TW": "讀了同一個 trace：登記表以外的地址是 0x000000000004444c5dc75cB358380D2e3dE08A90，Uniswap 部署頁列出的 v4 PoolManager。它把買到的 USDC 直接付給呼叫者，這是 TAKE 這一步。"
+      },
+      "recommendation": {
+        "en": "Check that the payer is the v4 PoolManager and the receiver is the caller.",
+        "zh-TW": "看付款方是不是 v4 PoolManager、收款方是不是呼叫者。"
+      }
+    }
+  },
   "entries": {
     "usdc": {
       "role": {
@@ -134,8 +169,8 @@
     },
     "morpho": {
       "role": {
-        "en": "A token you can pick: Morpho's governance token",
-        "zh-TW": "可選的代幣：Morpho 的治理代幣"
+        "en": "In the card's list, but the swap cannot use it: Morpho's governance token",
+        "zh-TW": "卡片會列出，但這筆兌換用不到：Morpho 的治理代幣"
       },
       "sources": [
         {
@@ -166,8 +201,8 @@
     },
     "cbbtc": {
       "role": {
-        "en": "A token you can pick: cbBTC, issued by Coinbase",
-        "zh-TW": "可選的代幣：Coinbase 發行的 cbBTC"
+        "en": "In the card's list, but the swap cannot use it: cbBTC, issued by Coinbase",
+        "zh-TW": "卡片會列出，但這筆兌換用不到：Coinbase 發行的 cbBTC"
       },
       "sources": [
         {
@@ -246,8 +281,8 @@
     },
     "usp": {
       "role": {
-        "en": "A token you can pick: USP, Piku's yield-optimized stablecoin",
-        "zh-TW": "可選的代幣：Piku 的收益型穩定幣 USP"
+        "en": "In the card's list, but the swap cannot use it: USP, Piku's yield-optimized stablecoin",
+        "zh-TW": "卡片會列出，但這筆兌換用不到：Piku 的收益型穩定幣 USP"
       },
       "sources": [
         {
@@ -278,8 +313,8 @@
     },
     "weeth": {
       "role": {
-        "en": "A token you can pick: weETH, ether.fi's wrapped staked ETH",
-        "zh-TW": "可選的代幣：ether.fi 的包裝質押 ETH weETH"
+        "en": "In the card's list, but the swap cannot use it: weETH, ether.fi's wrapped staked ETH",
+        "zh-TW": "卡片會列出，但這筆兌換用不到：ether.fi 的包裝質押 ETH weETH"
       },
       "sources": [
         {
@@ -324,8 +359,8 @@
       "sources": [
         {
           "text": {
-            "en": "First seen in the transactions: every swap of this shape read names this hook or, in 5 of 2,024, another one",
-            "zh-TW": "第一次看到是在交易裡：讀過的這種形狀的 swap 都寫這個 hook，2,024 筆裡只有 5 筆是另一個"
+            "en": "First seen in the transactions: in the AI's own decoder count (not the program's search), 2,019 of 2,024 swaps of this shape name this hook, 5 another one",
+            "zh-TW": "第一次看到是在交易裡：AI 用自己的解碼程式數（不是程式的搜尋），2,024 筆這種形狀的兌換有 2,019 筆寫這個 hook，5 筆是另一個"
           },
           "url": "https://etherscan.io/tx/0xefe5f035a51e233612ab0ea86f5a82f06dbf66e535dec5f46c2fb449b6761bef",
           "result": "pass"
@@ -383,8 +418,8 @@
   },
   "fields": {
     "1.execute.commands": {
-      "en": "The list of commands, one command per byte. 0x10 is `V4_SWAP`, one v4 swap.",
-      "zh-TW": "指令清單，每個 byte 一個指令。0x10 是 `V4_SWAP`，一次 v4 兌換。"
+      "en": "The list of commands, one byte each: 0x10 is `V4_SWAP`, 0x04 is `SWEEP`.",
+      "zh-TW": "指令清單，每個 byte 一個指令：0x10 是 `V4_SWAP`，0x04 是 `SWEEP`。"
     },
     "1.execute.inputs": {
       "en": "One set of parameters per command, in the same order as the command list.",
@@ -395,80 +430,80 @@
       "zh-TW": "`V4_SWAP` 的參數：v4 動作清單和每個動作的參數。"
     },
     "1.execute.inputs[0].V4_SWAP.actions": {
-      "en": "The list of v4 actions: 0x07 `SWAP_EXACT_IN` (swap by the input amount), 0x0b `SETTLE` (pay the token sold), 0x0e `TAKE` (take the token bought).",
-      "zh-TW": "v4 動作清單：0x07 `SWAP_EXACT_IN`（照輸入數量兌換）、0x0b `SETTLE`（付出賣的代幣）、0x0e `TAKE`（領走買到的代幣）。"
+      "en": "The list of v4 actions: 0x0b `SETTLE` (pay the token sold), 0x06 `SWAP_EXACT_IN_SINGLE` (swap in one pool), 0x0e `TAKE` (take the token bought).",
+      "zh-TW": "v4 動作清單：0x0b `SETTLE`（先付賣的代幣）、0x06 `SWAP_EXACT_IN_SINGLE`（在一個池子裡兌換）、0x0e `TAKE`（領走買到的代幣）。"
     },
     "1.execute.inputs[0].V4_SWAP.params": {
       "en": "One set of parameters for each of the three actions.",
       "zh-TW": "三個動作各一份參數。"
     },
     "1.execute.inputs[0].V4_SWAP.params[0]": {
-      "en": "The parameters of `SWAP_EXACT_IN`.",
-      "zh-TW": "`SWAP_EXACT_IN` 的參數。"
-    },
-    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params": {
-      "en": "What the swap does: what to sell, which pool it goes through, how much to sell, and the least to get.",
-      "zh-TW": "兌換的內容：賣什麼、經過哪個池子、賣多少、最少要拿到多少。"
-    },
-    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.currencyIn": {
-      "en": "The token sold.",
-      "zh-TW": "賣出的代幣。"
-    },
-    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.path": {
-      "en": "The pools it goes through, one item per pool. The template accepts only one pool.",
-      "zh-TW": "經過的池子，一個池子一項；模板只接受一個池子。"
-    },
-    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0]": {
-      "en": "That pool: the token on the other side, the fee, the tick spacing, the hook.",
-      "zh-TW": "那個池子：另一邊的代幣、手續費、tick 間距、hook。"
-    },
-    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].intermediateCurrency": {
-      "en": "The token this hop swaps into, that is, the token bought.",
-      "zh-TW": "這一跳換到的代幣，也就是買進的代幣。"
-    },
-    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].fee": {
-      "en": "The pool's fee tier, set when the app picks the route. Between USDC and USDT, 7 and 8 have been seen (7 and 8 per million). Another value means another pool, or a pool that does not exist.",
-      "zh-TW": "池子的手續費等級，app 選路由時決定；USDC 和 USDT 之間看過 7 和 8（百萬分之 7、8）。換成別的值就是別的池子或不存在的池子。"
-    },
-    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].tickSpacing": {
-      "en": "The pool's tick spacing. Together with the fee, it decides which pool this is. Every one seen was 1.",
-      "zh-TW": "池子的 tick 間距，和手續費一起決定是哪個池子；看過的都是 1。"
-    },
-    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].hooks": {
-      "en": "The pool's hook contract. The zero address means no hook, so no extra contract runs during the swap.",
-      "zh-TW": "池子的 hook 合約；零地址代表沒有 hook，兌換時不會跑任何額外的合約。"
-    },
-    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].hookData": {
-      "en": "Data for the hook. There is no hook, so it is empty.",
-      "zh-TW": "給 hook 的資料；沒有 hook，所以是空的。"
-    },
-    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.minHopPriceX36": {
-      "en": "The lowest price for each hop, optional. It can only make the transaction fail when the price is too poor. It was empty in every transaction seen.",
-      "zh-TW": "每一跳的最低價格，可有可無；只會讓價格太差時交易失敗。看過的交易都是空的。"
-    },
-    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.amountIn": {
-      "en": "The amount to sell, in the token's base units.",
-      "zh-TW": "賣出的數量，以代幣的最小單位計。"
-    },
-    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.amountOutMinimum": {
-      "en": "The least amount of the bought token to get. Below this, the router makes the whole transaction fail.",
-      "zh-TW": "最少要拿到的買進代幣數量；少於這個數，router 讓整筆交易失敗。"
-    },
-    "1.execute.inputs[0].V4_SWAP.params[1]": {
       "en": "The parameters of `SETTLE`.",
       "zh-TW": "`SETTLE` 的參數。"
     },
-    "1.execute.inputs[0].V4_SWAP.params[1].SETTLE.currency": {
+    "1.execute.inputs[0].V4_SWAP.params[0].SETTLE.currency": {
       "en": "The token to pay to the pool, that is, the token sold.",
       "zh-TW": "要付給池子的代幣，也就是賣出的代幣。"
     },
-    "1.execute.inputs[0].V4_SWAP.params[1].SETTLE.amount": {
-      "en": "0 means pay the full amount the swap owes, that is, `amountIn`.",
-      "zh-TW": "0 代表付清兌換欠下的全部數量，也就是 `amountIn`。"
+    "1.execute.inputs[0].V4_SWAP.params[0].SETTLE.amount": {
+      "en": "How much is paid, before the swap and before the hook runs.",
+      "zh-TW": "付多少；在兌換和 hook 執行之前就先付。"
     },
-    "1.execute.inputs[0].V4_SWAP.params[1].SETTLE.payerIsUser": {
+    "1.execute.inputs[0].V4_SWAP.params[0].SETTLE.payerIsUser": {
       "en": "true means the Safe that calls the router pays; the router pulls the token from the Safe through Permit2.",
       "zh-TW": "true 代表由呼叫 router 的 Safe 付款，router 透過 Permit2 從 Safe 拉代幣。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1]": {
+      "en": "The parameters of `SWAP_EXACT_IN_SINGLE`.",
+      "zh-TW": "`SWAP_EXACT_IN_SINGLE` 的參數。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params": {
+      "en": "What the swap does: which pool, which direction, how much to sell, and the least to get.",
+      "zh-TW": "兌換的內容：哪個池子、哪個方向、賣多少、最少要拿到多少。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.poolKey": {
+      "en": "The five values that identify the pool. Another value means another pool, or one that does not exist.",
+      "zh-TW": "決定是哪個池子的五個值；換掉任何一個就是別的池子，或不存在的池子。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.poolKey.currency0": {
+      "en": "The pool's first token by address: USDC.",
+      "zh-TW": "按地址排在前面的代幣：USDC。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.poolKey.currency1": {
+      "en": "The pool's second token by address: USDT.",
+      "zh-TW": "按地址排在後面的代幣：USDT。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.poolKey.fee": {
+      "en": "8388608 (0x800000) means the fee is not fixed: the hook sets it on each swap.",
+      "zh-TW": "8388608（0x800000）代表手續費不固定，由 hook 在每次兌換時決定。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.poolKey.tickSpacing": {
+      "en": "The pool's price step. Uniswap's page lists 1 for this pool.",
+      "zh-TW": "池子的價格刻度；Uniswap 的頁面寫這個池子是 1。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.poolKey.hooks": {
+      "en": "The hook contract: Uniswap's StablePairHook. The version on chain today only sets the fee and moves no token.",
+      "zh-TW": "hook 合約：Uniswap 的 StablePairHook。鏈上現在這一版只決定手續費，不移動任何代幣。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.zeroForOne": {
+      "en": "The direction: true sells USDC, false sells USDT. Both were seen in Safe transactions.",
+      "zh-TW": "方向：true 是賣 USDC，false 是賣 USDT；兩種都在 Safe 交易裡看過。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.amountIn": {
+      "en": "The amount to sell, in the token's base units.",
+      "zh-TW": "賣出的數量，以代幣的最小單位計。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.amountOutMinimum": {
+      "en": "The least amount of the bought token to get. Below this, the router makes the whole transaction fail.",
+      "zh-TW": "最少要拿到的買進代幣數量；少於這個數，router 讓整筆交易失敗。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.minHopPriceX36": {
+      "en": "A second price limit; 0 means it is off. The minimum amount above still holds.",
+      "zh-TW": "另一個價格下限；0 代表不用。上面的最少數量仍然有效。"
+    },
+    "1.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.hookData": {
+      "en": "Extra data for the hook; empty.",
+      "zh-TW": "給 hook 的額外資料；是空的。"
     },
     "1.execute.inputs[0].V4_SWAP.params[2]": {
       "en": "The parameters of `TAKE`.",
@@ -486,13 +521,29 @@
       "en": "0 means take the full amount the swap gives.",
       "zh-TW": "0 代表領走兌換得到的全部數量。"
     },
+    "1.execute.inputs[1]": {
+      "en": "The parameters of `SWEEP`, which sends what is left of one token in the router.",
+      "zh-TW": "`SWEEP` 的參數：把 router 裡剩下的某個代幣送走。"
+    },
+    "1.execute.inputs[1].SWEEP.token": {
+      "en": "The token to send: the one bought.",
+      "zh-TW": "要送出的代幣：買進的代幣。"
+    },
+    "1.execute.inputs[1].SWEEP.recipient": {
+      "en": "Who receives it. It must be the Safe itself.",
+      "zh-TW": "誰收到；必須是 Safe 自己。"
+    },
+    "1.execute.inputs[1].SWEEP.amountMin": {
+      "en": "0 means no minimum here. `TAKE` already paid the Safe directly, so nothing is usually left; the minimum is in `amountOutMinimum`.",
+      "zh-TW": "0 代表這一步不設下限。`TAKE` 已經直接付給 Safe，通常沒有剩；真正的下限是 `amountOutMinimum`。"
+    },
     "1.execute.deadline": {
-      "en": "After this time the router refuses the swap. The app sets it when it builds the transaction; in the transactions seen it was about 30 minutes ahead.",
-      "zh-TW": "過了這個時間 router 就拒絕這筆兌換；app 建交易時設定，看過的交易大約是 30 分鐘後。"
+      "en": "After this time the router refuses the swap. The app sets it; in the three test transactions it was 25 to 28 minutes after they ran.",
+      "zh-TW": "過了這個時間 router 就拒絕這筆兌換，由 app 設定；三筆測試交易的期限是執行後 25 到 28 分鐘。"
     }
   },
   "pastTxsConclusion": {
-    "en": "No searched swap had this one-pool shape: the Safes and EOAs found mostly sent several commands or actions in one `execute`. The shape is known from the test transactions of other Safes.",
-    "zh-TW": "搜到的兌換沒有一筆是這種單一池子的形狀：找到的 Safe 和 EOA 多半在一次 `execute` 裡放了好幾個指令或動作。這個形狀的依據是其他 Safe 的測試交易。"
+    "en": "The swaps that did not fit put other commands or more swaps into one `execute`. No Safe in these 1 to 2 days fits; the shape rests on the test transactions of two other Safes.",
+    "zh-TW": "不符合的兌換在一次 `execute` 裡放了別的指令或更多次兌換。這 1 到 2 天搜到的交易裡沒有符合的 Safe；形狀的依據是另外兩個 Safe 的測試交易。"
   }
 }
