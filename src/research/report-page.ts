@@ -7,6 +7,7 @@ import type { AbiParam } from '../decode/abi.ts';
 import { namedSignatureOfAbiEntry, paramName, parseFunctionSignature } from '../decode/abi.ts';
 import { say } from '../language.ts';
 import type { Language } from '../language.ts';
+import { FLOOR_RULE } from '../price/reference.ts';
 import { MARKET_PARAMS, parseHttpsUrl, sizeOf } from '../registry.ts';
 import type { HttpsUrl, Market, Registry, RegistryEntry } from '../registry.ts';
 import { SAFE_TX_TYPEHASH_HEX } from '../safe/hash.ts';
@@ -14,7 +15,7 @@ import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
 import { TEMPLATES_DIR, addressWord, callSites, isNamedToken, refNames, slippageBps, viewTargetNames } from '../template/template.ts';
-import type { CardField, CardRef, Computed, ConstValue, EffectToken, KeptApproval, FreeClaim, Rule, Template, TemplateCall, Tolerance, TokenRef, ViewEffect, ViewExpectation } from '../template/template.ts';
+import type { CardField, CardRef, Computed, ConstValue, EffectToken, Floor, KeptApproval, FreeClaim, Rule, Template, TemplateCall, Tolerance, TokenRef, ViewEffect, ViewExpectation } from '../template/template.ts';
 import { distributionOf, effectText } from './amounts.ts';
 import type { Difference } from './amounts.ts';
 import type { FieldFact } from './erc7730.ts';
@@ -303,6 +304,7 @@ function kindWord(field: CardField, template: Template, w: Words): string {
     case 'contract':
       return w.kind[field.scope.registryKind];
     case 'amount': {
+      if (field.floor !== undefined) return w.field.floor;
       if (field.computed !== undefined) return field.computed.bound === 'floor' ? w.field.floor : w.field.ceiling;
       const of = field.of === 'eth' || field.of.attribute !== undefined ? undefined : template.card.get(field.of.field);
       return of?.kind === 'contract' && of.scope.registryKind === 'vault' ? w.field.shares : w.field.amount;
@@ -519,14 +521,17 @@ function targetOf(rule: Rule, context: Context): { readonly label: string; reado
 
 /**
  * Where a card amount comes from: the chip, the words of its rules, `card new`'s step and the trial line all ask here.
- * A new source, such as a minimum the program computes from a price, is one more member, which `promptStep` must then word.
+ * A new source is one more member, which `promptStep` must then word.
  */
-type AmountSource = { readonly kind: 'typed' } | { readonly kind: 'computed'; readonly computed: Computed };
-const sourceOfAmount = (field: Extract<CardField, { kind: 'amount' }>): AmountSource => (field.computed === undefined ? { kind: 'typed' } : { kind: 'computed', computed: field.computed });
+type AmountSource = { readonly kind: 'typed' } | { readonly kind: 'computed'; readonly computed: Computed } | { readonly kind: 'floor'; readonly floor: Floor };
+const sourceOfAmount = (field: Extract<CardField, { kind: 'amount' }>): AmountSource => {
+  if (field.floor !== undefined) return { kind: 'floor', floor: field.floor };
+  return field.computed === undefined ? { kind: 'typed' } : { kind: 'computed', computed: field.computed };
+};
 
 const isComputed = (template: Template, name: string): boolean => {
   const field = template.card.get(name);
-  return field?.kind === 'amount' && sourceOfAmount(field).kind === 'computed';
+  return field?.kind === 'amount' && sourceOfAmount(field).kind !== 'typed';
 };
 
 function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly field: string | undefined } | undefined {
@@ -1979,6 +1984,13 @@ function promptStep(name: string, field: CardField, context: Context): NextStep 
             [...cardNewPrompt, ...w.typeAmount(token, { code: '1250.5' }, { code: '1,000,611.448606' })],
             [[w.amountPrints], ...(field.max === undefined ? [] : [w.orMax({ code: 'max' }, `${field.max.value}`)])],
           );
+        case 'floor': {
+          const bps = (n: number): string => percent(BigInt(n), 10_000n, w);
+          return step(
+            [...cardNewPrompt, ...w.floorPrompt({ code: source.floor.sells })],
+            [[w.floorHow(token, bps(FLOOR_RULE.slippageBps), bps(FLOOR_RULE.maxSlippageBps), bps(FLOOR_RULE.marginBps))], [w.floorElse(bps(FLOOR_RULE.retypeBps))]],
+          );
+        }
         case 'computed': {
           const { computed } = source;
           const bps = (n: number | bigint): string => percent(BigInt(n), 10_000n, w);
@@ -2037,13 +2049,12 @@ function nextSection(context: Context): Section {
   const { template, w } = context;
   const fields = [...template.card];
   const typed = (field: CardField): boolean => field.kind === 'amount' || field.kind === 'nonce' || field.kind === 'threshold' || field.kind === 'percent';
-  const computed = (field: CardField): boolean => field.kind === 'amount' && sourceOfAmount(field).kind === 'computed';
+  const source = (field: CardField): AmountSource['kind'] => (field.kind === 'amount' ? sourceOfAmount(field).kind : 'typed');
   const vault = context.inputs.subject.vault !== undefined;
   const trial = fields.some(([, f]) => f.kind === 'amount' && sourceOfAmount(f).kind === 'typed') ? w.trial(vault) : '';
   const prompts = [
     ...fields.filter(([, f]) => !typed(f)),
-    ...fields.filter(([, f]) => typed(f) && !computed(f)),
-    ...fields.filter(([, f]) => computed(f)),
+    ...(['typed', 'floor', 'computed'] as const).flatMap((kind) => fields.filter(([, f]) => typed(f) && source(f) === kind)),
   ].map(([name, field]) => promptStep(name, field, context));
   const y: Span = { code: 'y' };
   const book = (say: string, recipient: boolean): NextStep => ({

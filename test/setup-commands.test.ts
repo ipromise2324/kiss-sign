@@ -19,7 +19,9 @@ const RECIPIENT = '0x1111111111111111111111111111111111111111';
 type Answer = string | ((stdout: string) => string);
 
 /** `repoRoot` is published as main before the command runs, unless it is a clone of its own or `unpublished` is set. */
-type Chain = { readonly transport: Transport; readonly env?: Record<string, string>; readonly repoRoot?: string; readonly unpublished?: boolean };
+const NOW = 1_800_000_000;
+
+type Chain = { readonly transport: Transport; readonly env?: Record<string, string>; readonly repoRoot?: string; readonly unpublished?: boolean; readonly clock?: number };
 
 const noChain: Chain = { transport: async () => assert.fail('setup commands read no chain'), env: {} };
 
@@ -103,6 +105,7 @@ async function run(argv: string[], home: string, answers?: readonly Answer[], ch
     repoRoot: chain.repoRoot === undefined ? signerClone() : chain.unpublished === true ? chain.repoRoot : published(chain.repoRoot),
     transport: chain.transport,
     fetchJson: async () => assert.fail('setup commands fetch nothing'),
+    now: () => (chain.clock ?? NOW) * 1000,
     readMessage: async () => ({ why: 'this test reads no signed message' }),
   });
   return { code, stdout, stderr, asked };
@@ -352,7 +355,7 @@ function decimalsChain(alchemy: Record<string, number | 'revert'>, drpc: Record<
     const reply = (result: unknown) => ({ status: 200, text: JSON.stringify({ jsonrpc: '2.0', id: 1, result }) });
     const reverted = { status: 200, text: JSON.stringify({ jsonrpc: '2.0', id: 1, error: { code: 3, message: 'execution reverted' } }) };
     if (method === 'eth_blockNumber') return reply(`0x${HEAD.toString(16)}`);
-    if (method === 'eth_getBlockByNumber') return reply({ number: `0x${HEAD.toString(16)}`, hash: HEAD_HASH });
+    if (method === 'eth_getBlockByNumber' || method === 'eth_getBlockByHash') return reply({ number: `0x${HEAD.toString(16)}`, hash: HEAD_HASH, timestamp: `0x${NOW.toString(16)}`, gasLimit: '0x1', mixHash: HEAD_HASH });
     const provider = url.includes('drpc') ? 'drpc' : 'alchemy';
     if (method === 'eth_getCode') return reply(code(provider));
     if (method === 'eth_getStorageAt') return reply(`0x${'0'.repeat(64)}`);
@@ -392,6 +395,17 @@ async function sealedFile(values: Record<string, string>) {
   return /Sealed card (0x[0-9a-f]{64})/.exec(sealed.stdout)?.[1];
 }
 
+test('card new computes nothing from a block more than five minutes from the clock', async () => {
+  for (const [clock, said] of [[NOW + 301, /301 s behind/], [NOW - 301, /301 s after/]] as const) {
+    const home = freshHome();
+    configure(home);
+    const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'y'], { ...mainnet(), clock });
+    assert.equal(made.code, 1, made.stdout);
+    assert.match(made.stderr, said);
+    assert.ok(!existsSync(join(home, 'cards')));
+  }
+});
+
 test('card new lists a vault with the factory that created it, takes amounts in whole tokens, computes min-shares, and seals base units as card seal would', async () => {
   const home = freshHome();
   configure(home);
@@ -406,7 +420,7 @@ test('card new lists a vault with the factory that created it, takes amounts in 
   assert.match(made.stdout, /\n    expected +4\.9 steakhouse-prime-usdc-v2-0f51\n    slippage +0\.10% less than expected: the protocol's default 0\.03% plus a margin of 0\.07%\n    value +4\.8951 steakhouse-prime-usdc-v2-0f51\n    default from +https:\/\/github\.com\/morpho-org\/sdks\/blob\/[0-9a-f]{40}\/packages\/blue-sdk\/src\/constants\.ts#L24\n/);
   assert.match(
     made.stdout,
-    new RegExp(`│   vault +steakhouse-prime-usdc-v2-0f51  ${STEAKHOUSE}\\n│   amount +5 usdc\\n│ +5000000 base units\\n│   min-shares +4\\.8951 steakhouse-prime-usdc-v2-0f51\\n│ +4895100000000000000 base units\\n│\\n│ chain reads at block ${HEAD}, where alchemy and drpc agree\\n`),
+    new RegExp(`│   vault +steakhouse-prime-usdc-v2-0f51  ${STEAKHOUSE}\\n│   amount +5 usdc\\n│ +5000000 base units\\n│   min-shares +4\\.8951 steakhouse-prime-usdc-v2-0f51\\n│ +4895100000000000000 base units\\n│\\n│ chain reads at block ${HEAD} of 2027-01-15 08:00:00 UTC, where alchemy and drpc agree\\n`),
   );
   assert.match(made.stdout, /\n    margin +The Morpho app prices the deposit again when it builds the transaction/);
   assert.equal(made.stdout.match(/5000000 base units/g)?.length, 1, 'the amount is shown in base units once, in the card');
@@ -537,7 +551,7 @@ for (const [what, views, message] of [
 }
 
 for (const [what, code, pin, message] of [
-  ['runs code its pin does not name', () => '0x01' as Hex, undefined, /steakhouse-prime-usdc-v2-0f51 0xbeef\S+, which a computed value is read from, is not shown to run the code the registry pins: steakhouse-prime-usdc-v2-0f51 0xbeef\S+ has code hash 0x[0-9a-f]{64} at block 21000000, the registry pins 0x[0-9a-f]{64}/],
+  ['runs code its pin does not name', () => '0x01' as Hex, undefined, /steakhouse-prime-usdc-v2-0f51 0xbeef\S+, which a value is read from, is not shown to run the code the registry pins: steakhouse-prime-usdc-v2-0f51 0xbeef\S+ has code hash 0x[0-9a-f]{64} at block 21000000, the registry pins 0x[0-9a-f]{64}/],
   ['runs code the providers disagree on', (provider: string) => (provider === 'drpc' ? '0x01' : VAULT_CODE) as Hex, undefined, /not shown to run the code the registry pins: eth_getCode: alchemy and drpc disagree/],
   ['has no code pin', () => VAULT_CODE, 'none', /not shown to run the code the registry pins: .* has no code pin in the registry/],
   ['delegates, though its pin names no implementation', () => `0x363d3d373d3d3d363d73${'11'.repeat(20)}5af43d82803e903d91602b57fd5bf3` as Hex, 'clone', /not shown to run the code the registry pins: .* delegates to 0x1{40} at block 21000000, the registry pins no implementation/],

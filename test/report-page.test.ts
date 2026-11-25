@@ -994,6 +994,27 @@ test('a money call no line covers is titled by who pays whom, with full addresse
   assert.equal(untoldRow?.title, "In 1 past transaction, a step under call 2 moved the sender's usdc, to whom was not read; the template does not describe this step");
 });
 
+test('a floor is said to be computed from a price, after the amount it is for and before any other computed field, and typed otherwise', () => {
+  const { template } = depositInputs.subject;
+  const [name, field] = [...template.card].find(([, f]) => f.kind === 'amount' && f.computed !== undefined) ?? assert.fail('a computed field');
+  const [sells] = [...template.card].find(([, f]) => f.kind === 'amount' && f.computed === undefined) ?? assert.fail('a typed field');
+  const floored = { ...field, computed: undefined, floor: { sells } } as typeof field;
+  const of = { ...depositInputs, subject: { ...depositInputs.subject, template: { ...template, card: new Map([[name, floored], ['late', field], ...[...template.card].filter(([n]) => n !== name)]) } }, fixtures: [] };
+  for (const [language, said, how, otherwise] of [
+    ['zh-TW', new RegExp(`獨立價格，替 ${sells} 算最少要收到多少`), /按 Enter 是 0\.50%，最多 1\.00%.*0\.25% 餘裕/, /低超過 2\.50% .*再填一次.*沒有東西可以比/],
+    ['en', new RegExp(`computes the least to receive for ${sells} from an independent price`), /Enter is 0\.50%, at most 1\.00%.*a 0\.25% margin/, /more than 2\.50% below it.*typed twice.*nothing to compare with/],
+  ] as const) {
+    const { steps } = body(buildPage(of, { ...notesFor(of), flow: [] }, depositTitle, language), 'next');
+    const says = steps.map((s) => plain(s.say));
+    const at = says.findIndex((say) => said.test(say));
+    assert.ok(at > says.findIndex((say) => /1250\.5/.test(say)), 'after the amount typed');
+    assert.ok(at < says.findIndex((say) => /所以程式自己算|so the program computes it/.test(say)), 'before the computed field');
+    const then = (steps[at]?.then ?? []).map(plain).join(' ');
+    assert.match(then, how);
+    assert.match(then, otherwise);
+  }
+});
+
 test('a computed field the transaction does not carry is never said to be typed or filled by the app', () => {
   const { template } = depositInputs.subject;
   const field = [...template.card].find(([, f]) => f.kind === 'amount' && f.computed !== undefined)?.[0] ?? assert.fail('a computed field');

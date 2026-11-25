@@ -1,0 +1,183 @@
+{
+  "id": "uniswap/swap",
+  "card": {
+    "sell-token": {
+      "kind": "contract",
+      "registryKind": "token"
+    },
+    "buy-token": {
+      "kind": "contract",
+      "registryKind": "token"
+    },
+    "sell-amount": {
+      "kind": "amount",
+      "of": "sell-token"
+    },
+    "min-buy": {
+      "kind": "amount",
+      "of": "buy-token",
+      "floor": {
+        "sells": "sell-amount"
+      }
+    }
+  },
+  "calls": [
+    {
+      "to": {
+        "contract": "universal-router-2.1.2"
+      },
+      "value": {
+        "const": "0"
+      },
+      "function": "execute(bytes commands, bytes[] inputs, uint256 deadline)",
+      "args": {
+        "commands": {
+          "const": "0x1004"
+        },
+        "inputs": {
+          "items": [
+            {
+              "encoded": {
+                "as": "V4_SWAP(bytes actions, bytes[] params)",
+                "args": {
+                  "actions": {
+                    "const": "0x0b060e"
+                  },
+                  "params": {
+                    "items": [
+                      {
+                        "encoded": {
+                          "as": "SETTLE(address currency, uint256 amount, bool payerIsUser)",
+                          "args": {
+                            "currency": {
+                              "card": "sell-token"
+                            },
+                            "amount": {
+                              "card": "sell-amount"
+                            },
+                            "payerIsUser": {
+                              "const": "true"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "encoded": {
+                          "as": "SWAP_EXACT_IN_SINGLE(((address currency0, address currency1, uint24 fee, int24 tickSpacing, address hooks) poolKey, bool zeroForOne, uint128 amountIn, uint128 amountOutMinimum, uint256 minHopPriceX36, bytes hookData) params)",
+                          "args": {
+                            "params": {
+                              "fields": {
+                                "poolKey": {
+                                  "fields": {
+                                    "currency0": {
+                                      "contract": "usdc"
+                                    },
+                                    "currency1": {
+                                      "contract": "usdt"
+                                    },
+                                    "fee": {
+                                      "const": "8388608"
+                                    },
+                                    "tickSpacing": {
+                                      "const": "1"
+                                    },
+                                    "hooks": {
+                                      "contract": "uniswap-stable-pair-hook"
+                                    }
+                                  }
+                                },
+                                "zeroForOne": {
+                                  "free": {
+                                    "en": "The direction inside the pool: true sells USDC, false sells USDT. The pool lists the two tokens by address, so the app sets it from the token being sold. SETTLE pays in the card's sell token and TAKE takes out the card's buy token whatever this says, so the other direction leaves the payment unspent and a debt in the buy token, and the swap reverts; the perturbation test shows it.",
+                                    "zh-TW": "在池子裡的方向：true 是賣 USDC，false 是賣 USDT。池子按地址排列這兩個代幣，所以 app 依賣出的代幣設定它。不管它寫什麼，SETTLE 付進去的都是卡片上的賣出代幣，TAKE 取出的都是卡片上的買入代幣；方向相反時，付進去的錢沒被用掉、又欠了買入代幣，swap 會 revert；擾動測試有證明。"
+                                  }
+                                },
+                                "amountIn": {
+                                  "card": "sell-amount"
+                                },
+                                "amountOutMinimum": {
+                                  "atLeast": "card.min-buy"
+                                },
+                                "minHopPriceX36": {
+                                  "const": "0"
+                                },
+                                "hookData": {
+                                  "const": "0x"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "encoded": {
+                          "as": "TAKE(address currency, address recipient, uint256 amount)",
+                          "args": {
+                            "currency": {
+                              "card": "buy-token"
+                            },
+                            "recipient": {
+                              "safe": true
+                            },
+                            "amount": {
+                              "const": "0"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "encoded": {
+                "as": "SWEEP(address token, address recipient, uint256 amountMin)",
+                "args": {
+                  "token": {
+                    "card": "buy-token"
+                  },
+                  "recipient": {
+                    "safe": true
+                  },
+                  "amountMin": {
+                    "const": "0"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "deadline": {
+          "free": {
+            "en": "The time after which the router refuses the swap, which the app sets when it builds the transaction. A later deadline only lets the transaction run later; the Safe still gives exactly the card's amount and gets at least the card's minimum.",
+            "zh-TW": "超過這個時間 router 就拒絕這筆 swap，app 在組交易時設定。較晚的期限只會讓交易可以晚一點執行；Safe 給出的仍然剛好是卡片上的數量，拿到的也至少是卡片上的最低值。"
+          }
+        }
+      },
+      "trailer": {
+        "maxBytes": 22,
+        "why": {
+          "en": "The Uniswap app appends a 22-byte tag that starts with the ASCII bytes unix and holds a timestamp, on a call of its own and inside a MultiSend alike, in each of the five Safe transactions of this shape read. execute reads only its three arguments, as the router's registry entry says (ignoresTrailer).",
+          "zh-TW": "Uniswap app 會在後面附上一個 22 bytes、以 ASCII bytes unix 開頭、帶有時間戳記的標記：讀過的五筆這種形狀的 Safe 交易，不管是單獨呼叫還是在 MultiSend 裡都是這樣。execute 只讀它的三個引數，和 router 的登記項目寫的一樣（ignoresTrailer）。"
+        }
+      }
+    }
+  ],
+  "effects": {
+    "gives": [
+      {
+        "token": "card.sell-token",
+        "amount": "card.sell-amount"
+      }
+    ],
+    "gets": [
+      {
+        "token": "card.buy-token",
+        "amount": {
+          "atLeast": "card.min-buy"
+        }
+      }
+    ]
+  }
+}
