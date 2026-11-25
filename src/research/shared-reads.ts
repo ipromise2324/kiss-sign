@@ -1,9 +1,9 @@
 import type { Read, Reader } from '../chain/reader.ts';
 
 /**
- * `reader`, asking for a transaction, a receipt, or anything at a block named by its number or hash once: every later
- * or concurrent request for it shares the answer both providers agreed on. A read they did not agree on is asked again
- * the next time, and the latest block always is.
+ * `reader`, reading a transaction, a receipt, a block by number, a header, or an account's code or storage once: every
+ * later or concurrent request for it shares the answer both providers agreed on, and one they did not agree on is asked
+ * again.
  */
 export function sharedReads(reader: Reader): Reader {
   const kept = new Map<string, Promise<Read<unknown>>>();
