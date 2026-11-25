@@ -210,7 +210,8 @@
       "selector": "0x6ef5eeae"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
@@ -251,7 +252,8 @@
       "selector": "0x3790767d"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -308,7 +310,8 @@
       "selector": "0x6ef5eeae"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "misfit",
@@ -337,7 +340,8 @@
       "selector": "0x6ef5eeae"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -381,7 +385,8 @@
       "selector": "0x3790767d"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -417,7 +422,8 @@
       "selector": "0x6ef5eeae"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
