@@ -8,6 +8,8 @@ Part of [the kiss-sign design](../design.md).
   A trace only confirms a `flow` line in the report or asks the AI for a review; it never changes a verdict.
   A trace also shows one path: a contract may branch on state, so a line seen in every past transaction may not hold for the transaction to sign, and the effects check at signing is what protects the signer.
   The addresses `pnpm past-txs` names from the traces are those the traced transactions met: an address only an untraced case reaches, such as the other direction of a swap, is not named, nor is one that acts in another transaction, such as the solver that settles an order a Safe signs on chain, nor one that is only a party of a money call a bound call makes directly, such as a pool the template's router pays itself.
+  Only a `CALL` of `transfer`, `transferFrom` or `approve`, or one that sends ETH, is a money call: a mint or burn by an unregistered minter, which makes no such call, the code a `DELEGATECALL` runs, ETH a `CREATE` or `CREATE2` sends with the new contract, and ETH a `SELFDESTRUCT` sends name no address.
+  Which entries a traced transaction's card would name is read from the addresses its decoded calls hold, not from a card: a field no call carries counts as any entry it could name, so an entry the card did not choose can pass as checked, and a field sharing its entries with another can be read as that one's, which only names an address more.
 - Etherscan name tags (labels such as "Morpho: Bundler3") are not used.
   Etherscan offers no free API for them.
   The verified contract name and the creator, read from the contract's Etherscan page, are used instead.

@@ -74,7 +74,8 @@ A read with no answer is asked again after each pause; one still without an answ
 UNVERIFIABLE, never as FINDING, and --record then writes nothing.
 --record refuses before any read, naming every one, while an address the recorded call traces show
 moving the sender's money is neither checked at signing nor judged in the trace-addresses.json
-beside the report.
+beside the report, while that file judges an address no trace names, or while no trace counts for
+a template that moves money and the file gives no "untraced" reason.
 The report prints no text from a page, a token, a descriptor or an API answer, and prints the
 template's reasons escaped and labelled as written by the AI. pnpm test fails when a committed
 report, or an HTML page, differs from what its recordings and notes.json give.
