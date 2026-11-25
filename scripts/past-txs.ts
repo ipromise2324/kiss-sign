@@ -19,6 +19,7 @@ import { DEFAULT_SAMPLING, MAX_PAGES, samplingFields, samplingOf, scrubRecording
 import { RECORDINGS_DIR, SUMMARIES_DIR, parseSummary, studyRecording, summaryFile } from '../src/research/past-txs-summary.ts';
 import type { PastTxsSummary } from '../src/research/past-txs-summary.ts';
 import { ReportError, pastTxsRegistry } from '../src/research/report.ts';
+import { progress } from '../src/research/progress.ts';
 import { drpcTraces } from '../src/research/trace.ts';
 import { traceAddressesText } from '../src/research/trace-addresses.ts';
 import type { PastTxsRecording, Sampling } from '../src/research/recording.ts';
@@ -66,6 +67,7 @@ an event with no --token. It studies every transaction with a Safe party, leavin
 Math.ceil(--max-txs / 4) places, and fills the remaining places from the rest, each taken evenly
 in block order. When an adapter or bundler moves the token, the party checked is that contract,
 so no Safe is found and the choice is the even sample.
+It writes a line on stderr every 10 seconds: how many pages, answers and traces it has read.
 --same-windows-as places the search by the head block the summary testdata/research/<name>.json
 keeps instead of today's, and searches as that run did, so a run again reads the same blocks; a
 summary recorded before this search replays its year and 12 windows. --from-block and --to-block
@@ -266,10 +268,11 @@ function studyRegistry(): Registry {
 }
 
 const endpoints = mainnetEndpoints(process.env);
-const chain = recordingTransport(httpsTransport(), endpoints);
+const shown = progress((line) => void process.stderr.write(line));
+const chain = recordingTransport(shown.transport(httpsTransport()), endpoints);
 const unread: string[] = [];
 const note = (read: string) => void unread.push(read);
-const sources = recordingAsk(liveAsk(process.env, note));
+const sources = recordingAsk(shown.ask(liveAsk(process.env, note)));
 const messages = recordingMessages(liveMessages(httpsMessage, note));
 const reader = createReader(endpoints, chain.transport, { note });
 const traces = drpcTraces(endpoints[1], httpsTransport(), note);
@@ -285,8 +288,9 @@ const run = await pastTxs(query, {
   readMessage: messages.read,
   exclude,
   maxTxs,
-  traces: traces.source,
+  traces: shown.traces(traces.source),
 });
+shown.stop();
 process.stdout.write(renderPastTxs(run, registry));
 process.stdout.write(traceAddressesText(template, registry, run));
 
