@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -696,6 +696,36 @@ test('pnpm report refuses --vault-of and --vault, naming --instance-of', () => {
     const run = spawnSync(process.execPath, [join(ROOT, 'scripts', 'report.ts'), ...(flag === '--vault' ? [] : [ID]), flag, value, '--offline'], { encoding: 'utf8' });
     assert.equal(run.status, 2, run.stderr);
     assert.equal(run.stderr.trim(), `REFUSED  ${flag} was removed; name an instance's report with <protocol>/<operation> --instance-of <instance>`);
+  }
+});
+
+test('pnpm report --render and --offline print why a report is refused, not a stack trace', () => {
+  const sandbox = mkdtempSync(join(tmpdir(), 'kiss-sign-refused-'));
+  try {
+    const copied = ['src', 'scripts', 'registry', 'templates'];
+    for (const name of readdirSync(ROOT)) if (!['.git', '.cache', 'testdata', ...copied].includes(name)) symlinkSync(join(ROOT, name), join(sandbox, name));
+    for (const name of copied) cpSync(join(ROOT, name), join(sandbox, name), { recursive: true });
+    cpSync(join(ROOT, 'testdata', 'report', 'eth-transfer.json'), join(sandbox, 'testdata', 'report', 'eth-transfer.json'));
+    for (const name of readdirSync(join(ROOT, 'testdata'))) if (name !== 'report') symlinkSync(join(ROOT, 'testdata', name), join(sandbox, 'testdata', name));
+    const folder = join(sandbox, TEMPLATES_DIR, 'eth', 'transfer');
+    rmSync(join(folder, 'trace-addresses.json'), { force: true });
+    const rewrite = (path: string, change: object) => writeFileSync(path, JSON.stringify({ ...JSON.parse(readFileSync(path, 'utf8')), ...change }));
+    const report = (mode: string) => spawnSync(process.execPath, [join(sandbox, 'scripts', 'report.ts'), 'eth/transfer', mode], { cwd: sandbox, encoding: 'utf8' });
+
+    const recording = join(sandbox, 'testdata', 'report', 'eth-transfer.json');
+    rewrite(recording, { fetched: '2026-11-25' });
+    rewrite(join(folder, 'notes.json'), { summary: undefined });
+    const notes = report('--render');
+    assert.deepEqual([notes.status, notes.stderr.trim()], [2, 'REFUSED  notes.json: summary is missing']);
+
+    rewrite(recording, { fetched: '2026-11-26' });
+    for (const mode of ['--render', '--offline']) {
+      const traces = report(mode);
+      assert.equal(traces.status, 2, traces.stderr);
+      assert.match(traces.stderr, /^REFUSED  no call trace counts \(0 traced[^\n]*\n$/);
+    }
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
   }
 });
 
