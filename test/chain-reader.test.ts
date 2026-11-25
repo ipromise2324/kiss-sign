@@ -8,6 +8,7 @@ import { recordingTransport } from '../src/chain/recording.ts';
 import { drpcTraces } from '../src/research/trace.ts';
 import type { Transport } from '../src/chain/rpc.ts';
 import type { BlockRef } from '../src/chain/types.ts';
+import { KeyError } from '../src/keys.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 
 const KEY = 'planted-key-123';
@@ -165,6 +166,18 @@ test('a missing drpc key is refused the same way, and both keys make each provid
     ['alchemy', ALCHEMY_URL],
     ['drpc', `https://lb.drpc.live/ethereum/${DRPC_KEY}`],
   ]);
+});
+
+test('a malformed key is refused where its URL is built, by a message that does not print it', () => {
+  const good = { KISS_SIGN_HOME: '/nonexistent/kiss-sign-home', ALCHEMY_API_KEY: KEY, DRPC_API_KEY: DRPC_KEY };
+  for (const name of ['ALCHEMY_API_KEY', 'DRPC_API_KEY'])
+    for (const bad of ['short', `${KEY}/..`, `"${KEY}"`, ` ${KEY}`, `${KEY}\n`, 'x'.repeat(257)]) {
+      assert.throws(() => mainnetEndpoints({ ...good, [name]: bad }), (error: unknown) => {
+        assert.ok(error instanceof KeyError);
+        assert.ok(error.message.startsWith(`${name} is set, but`) && !error.message.includes(bad.trim()), error.message);
+        return true;
+      });
+    }
 });
 
 test('a recording names the provider and holds no key, even when an answer quotes the URL', async () => {
