@@ -27,7 +27,7 @@ import { parseRegistryAt } from './registry-at.ts';
 const ROOT = join(import.meta.dirname, '..');
 const load = (dir: string, name: string) => JSON.parse(readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8'));
 const registry = loadRegistry(ROOT);
-const IDS = ['uniswap/swap', 'uniswap/swap-permit', 'uniswap/approve-permit2', 'uniswap/allow-router'];
+const IDS = ['uniswap/swap', 'uniswap/swap-no-hook', 'uniswap/swap-permit', 'uniswap/approve-permit2', 'uniswap/allow-router'];
 const templates = new Map<string, Template>(IDS.map((id) => [id, loadTemplate(ROOT, id, registry)]));
 const addressOf = (name: string): Address => registry.entries.get(name)!.address;
 const OTHER = '0x1111111111111111111111111111111111111111' as Address;
@@ -87,8 +87,17 @@ const HOOK_CASES: readonly Case[] = [
   { name: 'uniswap-swap-hook-usdc-usdt-2', sell: 20000000000n, minBuy: 19917340573n, bound: 21, card: { operations: [swapOp('usdc', 'usdt', 20000000000n, 19917340573n)] } },
 ];
 
+const NO_HOOK: Case = {
+  name: 'uniswap-swap-no-hook-usdc-usdt',
+  sell: 8029841n,
+  minBuy: 7995463n,
+  bound: 17,
+  card: { operations: [swapOp('usdc', 'usdt', 8029841n, 7995463n, 'uniswap/swap-no-hook')] },
+};
+
 const CASES: readonly Case[] = [
   ...HOOK_CASES,
+  NO_HOOK,
   {
     name: 'uniswap-swap-permit-usdc-usdt',
     sell: 24000000000n,
@@ -98,7 +107,7 @@ const CASES: readonly Case[] = [
   },
 ];
 
-/** Executed swaps of the app's unhooked shape (V4_SWAP alone, SWAP_EXACT_IN then SETTLE and TAKE), which uniswap/swap refuses. */
+/** Executed swaps of the app's unhooked shape (V4_SWAP alone, SWAP_EXACT_IN then SETTLE and TAKE), which uniswap/swap and uniswap/swap-no-hook refuse. */
 const UNHOOKED: readonly { readonly name: string; readonly card: Card }[] = [
   { name: 'uniswap-swap-approve-usdt-usdc', card: batchedCard(4342485506n, 4334865289n) },
   { name: 'uniswap-swap-usdc-usdt', card: { operations: [swapOp('usdc', 'usdt', 130000000n, 129893802n)] } },
@@ -128,7 +137,7 @@ for (const c of CASES) {
   const v4 = `${swapAt}.execute.inputs[${permits ? 1 : 0}].V4_SWAP`;
   const swap = permits ? `${v4}.params[0].SWAP_EXACT_IN.params` : `${v4}.params[1].SWAP_EXACT_IN_SINGLE.params`;
   const sells = permits ? [`${swap}.amountIn`] : [`${v4}.params[0].SETTLE.amount`, `${swap}.amountIn`];
-  const recipients = [`${v4}.params[2].TAKE.recipient`, ...(permits ? [] : [`${swapAt}.execute.inputs[1].SWEEP.recipient`])];
+  const recipients = [`${v4}.params[2].TAKE.recipient`, ...(permits || c === NO_HOOK ? [] : [`${swapAt}.execute.inputs[1].SWEEP.recipient`])];
 
   test(`${c.name} matches its card`, () => {
     assert.deepEqual(check(tx, c.card), { kind: 'match' });
@@ -183,6 +192,69 @@ for (const { name, card } of UNHOOKED) {
     assert.equal(at.every((path) => path.startsWith(`${swapAt}.execute`)), true, at.join(', '));
   });
 }
+
+const under = (card: Card, from: string, to: string): Card => ({
+  operations: card.operations.map((op) => (op.template === from ? { ...op, template: to } : op)),
+});
+
+const wordHex = (value: bigint | Address) => (typeof value === 'bigint' ? value.toString(16) : value.slice(2)).padStart(64, '0');
+
+/** `tx` with the pool key's `word`th word (fee 2, tickSpacing 3, hooks 4) set to `to`. */
+function withPoolKeyWord(tx: SafeTx, word: 2 | 3 | 4, to: bigint | Address): SafeTx {
+  const pair = wordHex(addressOf('usdc')) + wordHex(addressOf('usdt'));
+  const key = tx.data.slice(2).indexOf(pair);
+  assert.ok(key > 0 && key % 2 === 0, 'the pool key is in the data');
+  const bytes = hexToBytes(tx.data.slice(2));
+  bytes.set(hexToBytes(wordHex(to)), key / 2 + word * 32);
+  return withData(tx, bytes);
+}
+
+test('each swap template refuses the other one\'s transaction, whatever card values it was signed for', () => {
+  for (const c of HOOK_CASES) {
+    const swapAt = c === BATCHED ? 'multiSend[2]' : 'call';
+    const at = mismatchAt(check(safeTx(c.name), under(c.card, 'uniswap/swap', 'uniswap/swap-no-hook')));
+    assert.ok(at.includes(`${swapAt}.execute.commands`), at.join(', '));
+    assert.ok(at.every((path) => path.startsWith(`${swapAt}.execute`)), at.join(', '));
+  }
+  const at = mismatchAt(check(safeTx(NO_HOOK.name), under(NO_HOOK.card, 'uniswap/swap-no-hook', 'uniswap/swap')));
+  assert.ok(at.includes('call.execute.commands'), at.join(', '));
+  assert.ok(at.every((path) => path.startsWith('call.execute')), at.join(', '));
+});
+
+test('uniswap/swap-no-hook refuses its own swap with a SWEEP added', () => {
+  const c = HOOK_CASES[1]!;
+  const unhooked = withPoolKeyWord(withPoolKeyWord(safeTx(c.name), 2, 35n), 4, 0n);
+  const at = mismatchAt(check(unhooked, under(c.card, 'uniswap/swap', 'uniswap/swap-no-hook')));
+  assert.deepEqual(at.toSorted(), ['call.execute.commands', 'call.execute.inputs']);
+});
+
+test('uniswap/swap-no-hook refuses a pool with a hook or another tick spacing, and leaves the fee free', () => {
+  const tx = safeTx(NO_HOOK.name);
+  const key = 'call.execute.inputs[0].V4_SWAP.params[1].SWAP_EXACT_IN_SINGLE.params.poolKey';
+  for (const hook of [addressOf('uniswap-stable-pair-hook'), OTHER]) assert.deepEqual(mismatchAt(check(withPoolKeyWord(tx, 4, hook), NO_HOOK.card)), [`${key}.hooks`]);
+  for (const spacing of [0n, 2n, 10n, 60n]) assert.deepEqual(mismatchAt(check(withPoolKeyWord(tx, 3, spacing), NO_HOOK.card)), [`${key}.tickSpacing`]);
+  for (const fee of [7n, 100n, 3000n]) assert.deepEqual(check(withPoolKeyWord(tx, 2, fee), NO_HOOK.card), { kind: 'match' });
+});
+
+test('uniswap/swap-no-hook refuses another token at each place the transaction names one', () => {
+  const tx = safeTx(NO_HOOK.name);
+  const v4 = 'call.execute.inputs[0].V4_SWAP';
+  const key = `${v4}.params[1].SWAP_EXACT_IN_SINGLE.params.poolKey`;
+  const places = [
+    ['usdc', [`${v4}.params[0].SETTLE.currency`, `${key}.currency0`]],
+    ['usdt', [`${key}.currency1`, `${v4}.params[2].TAKE.currency`]],
+  ] as const;
+  for (const [token, paths] of places) paths.forEach((at, nth) => assert.deepEqual(mismatchAt(check(changed(tx, addressOf(token), addressOf('morpho'), nth), NO_HOOK.card)), [at]));
+  for (const [sell, buy] of [['morpho', 'usdt'], ['usdc', 'morpho'], ['usdt', 'usdc']] as const) {
+    const card: Card = { operations: [swapOp(sell, buy, NO_HOOK.sell, NO_HOOK.minBuy, 'uniswap/swap-no-hook')] };
+    assert.notDeepEqual(mismatchAt(check(tx, card)), []);
+  }
+});
+
+test('uniswap/swap-no-hook refuses the multi-hop SWAP_EXACT_IN shape at its action list', () => {
+  const at = mismatchAt(check(safeTx('uniswap-swap-usdc-usdt'), { operations: [swapOp('usdc', 'usdt', 130000000n, 129893802n, 'uniswap/swap-no-hook')] }));
+  assert.ok(at.includes('call.execute.inputs[0].V4_SWAP.actions'), at.join(', '));
+});
 
 type SimFixture = { safeTx: string; transactionHash: Hex; executed: { number: string; hash: Hex }; parent: { number: string; hash: Hex }; exchanges: Exchange[] };
 
@@ -255,6 +327,19 @@ test('the Safe must get at least the card minimum of the token it buys', async (
   assert.equal(asking(got + 1n), 'mismatch');
 });
 
+test('the no-hook swap gives exactly the sell amount and gets at least the minimum, simulated and in its receipt, and leaves no new allowance', async () => {
+  const { tx, simulated, receipt } = await observations(NO_HOOK.name, [addressOf('usdc'), addressOf('usdt')]);
+  for (const observed of [simulated, receipt]) {
+    const { tokens } = executedOf(observed);
+    assert.equal(tokens.get(addressOf('usdc')), -NO_HOOK.sell);
+    const got = tokens.get(addressOf('usdt')) ?? 0n;
+    assert.ok(got >= NO_HOOK.minBuy);
+    assert.deepEqual(judgeEffects(observed, resolved(tx, NO_HOOK.card), templates, registry), { kind: 'match' });
+    assert.equal(judgeEffects(observed, resolved(tx, withMinBuy(NO_HOOK.card, got + 1n)), templates, registry).kind, 'mismatch');
+    assert.deepEqual(checkSimulatedFloor(observed, tx.safe), { kind: 'pass' });
+  }
+});
+
 test('an unlimited kept allowance needs a registry spender that declares a standing allowance through the same route', () => {
   const allow = JSON.parse(readFileSync(join(ROOT, 'templates', 'uniswap', 'allow-router', 'template.json'), 'utf8'));
   const refused = (edit: (t: any) => void, problem: RegExp) => {
@@ -282,11 +367,16 @@ test('a route claim needs every token the Safe gets bounded, since another pool 
   const swap = JSON.parse(readFileSync(join(ROOT, 'templates', 'uniswap', 'swap-permit', 'template.json'), 'utf8'));
   swap.effects.gets[0].amount = 'positive';
   assert.throws(() => parseTemplate(swap, registry), /a template with a route claim must bound each token the Safe gives or gets/);
+  const noHook = JSON.parse(readFileSync(join(ROOT, 'templates', 'uniswap', 'swap-no-hook', 'template.json'), 'utf8'));
+  assert.doesNotThrow(() => parseTemplate(noHook, registry));
+  noHook.effects.gets[0].amount = 'positive';
+  assert.throws(() => parseTemplate(noHook, registry), /a template with a route claim must bound each token the Safe gives or gets/);
 });
 
 test('a router input whose bytes do not re-encode exactly is a mismatch at its encoding', () => {
   const cases = [
     { name: 'uniswap-swap-hook-usdc-usdt', actions: '0b060e00', at: 'call.execute.inputs[0].encoding' },
+    { name: NO_HOOK.name, actions: '0b060e00', at: 'call.execute.inputs[0].encoding' },
     { name: 'uniswap-swap-permit-usdc-usdt', actions: '070b0e00', at: 'call.execute.inputs[1].encoding' },
   ];
   for (const { name, actions, at } of cases) {
