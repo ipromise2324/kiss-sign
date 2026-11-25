@@ -17,7 +17,7 @@ export const fixture: VerdictFile = readRecording(FIXTURE_PATH);
 export const chain = readJson(join(ROOT, 'testdata', 'safe-tx', 'morpho-vault-deposit.json')).chain;
 export const service = fixture.inputs.tx.json as Record<string, unknown>;
 export const template = fixture.inputs.templates[0]!;
-const ENV = { ALCHEMY_API_KEY: 'test-key' };
+const ENV = { ALCHEMY_API_KEY: 'test-key', DRPC_API_KEY: 'test-key-drpc' };
 
 export const git = (cwd: string, ...args: string[]) =>
   execFileSync('git', ['-c', 'user.name=test', '-c', 'user.email=test@example.com', ...args], { cwd, stdio: ['ignore', 'pipe', 'pipe'] });
