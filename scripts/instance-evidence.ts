@@ -32,7 +32,7 @@ Options:
                     lowercase letters, digits and -.
 
 Writes: testdata/instance-evidence/<name>.json with --record, otherwise nothing.
-Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Keys: ALCHEMY_API_KEY and DRPC_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
 Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 2, Vault
 history); docs/design/data-shapes.md, "Registry attributes and instance checks".`;
 

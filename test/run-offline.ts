@@ -39,7 +39,7 @@ export function runOffline(script: string, args: readonly string[], output: stri
     const answers = join(sandbox, 'answers.json');
     writeFileSync(answers, JSON.stringify({ exchanges: network.exchanges, http: network.http ?? {}, otherwise: network.otherwise }));
     const run = spawnSync(process.execPath, ['--import', HOOK, join(sandbox, 'scripts', script), ...args], {
-      env: { PATH: process.env.PATH, KISS_SIGN_HOME: join(sandbox, 'home'), ALCHEMY_API_KEY: 'offline', ETHERSCAN_API_KEY: 'offline', OFFLINE_ANSWERS: answers },
+      env: { PATH: process.env.PATH, KISS_SIGN_HOME: join(sandbox, 'home'), ALCHEMY_API_KEY: 'offline-alchemy', DRPC_API_KEY: 'offline-drpc', ETHERSCAN_API_KEY: 'offline', OFFLINE_ANSWERS: answers },
       cwd: sandbox,
       encoding: 'utf8',
       timeout: 300_000,

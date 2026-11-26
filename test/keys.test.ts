@@ -113,5 +113,5 @@ test('key remove takes out only that key', async () => {
 test('an unknown command prints usage', async () => {
   const result = await run(['frobnicate'], {});
   assert.equal(result.code, 64);
-  assert.match(result.stderr, /\n  pnpm kiss-sign key add <alchemy\|etherscan\|github>\n/);
+  assert.match(result.stderr, /\n  pnpm kiss-sign key add <alchemy\|drpc\|etherscan\|github>\n/);
 });

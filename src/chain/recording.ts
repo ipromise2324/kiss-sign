@@ -54,21 +54,21 @@ function keep(exchange: Recorded, provider: ProviderName, status: number, text: 
   exchange.statuses[provider] = status;
 }
 
-/** Passes every request through and keeps each provider's last answer. `exchanges()` leaves out empty maps. */
+/** Passes every request through and keeps each provider's last answer, less any key of the provider's that it quotes. `exchanges()` leaves out empty maps. */
 export function recordingTransport(inner: Transport, endpoints: readonly Endpoint[]): { transport: Transport; exchanges: () => Exchange[] } {
   const recorded: (Recorded & { method: string; params: unknown })[] = [];
-  const providerAt = new Map(endpoints.map((e) => [e.url, e.provider]));
+  const endpointAt = new Map(endpoints.map((e) => [e.url, e]));
   const transport: Transport = async (url, body, signal) => {
     const answer = await inner(url, body, signal);
-    const provider = providerAt.get(url);
-    if (provider === undefined) return answer;
+    const endpoint = endpointAt.get(url);
+    if (endpoint === undefined) return answer;
     const { method, params } = JSON.parse(body) as { method: string; params: unknown };
     let exchange = recorded.find((e) => sameRequest(e, method, params));
     if (exchange === undefined) {
       exchange = { method, params, answers: {}, errors: {}, statuses: {} };
       recorded.push(exchange);
     }
-    keep(exchange, provider, answer.status, answer.text);
+    keep(exchange, endpoint.provider, answer.status, endpoint.key === undefined ? answer.text : answer.text.replaceAll(endpoint.key, '<key>'));
     return answer;
   };
   const exchanges = (): Exchange[] =>

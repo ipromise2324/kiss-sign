@@ -25,7 +25,7 @@ const records = (name: string) =>
     .trim()
     .split('\n')
     .map((line) => JSON.parse(line) as Record<string, unknown>);
-const ENV = { ALCHEMY_API_KEY: 'test-key' };
+const ENV = { ALCHEMY_API_KEY: 'test-key', DRPC_API_KEY: 'test-key-drpc' };
 const DEPOSIT_CARD = { operations: [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount: '1800000000180', 'min-shares': '1741863305677219101283940' } }] };
 const MARKS = [
   { at: 'operations[0].values.amount', note: 'taken from the transaction' },

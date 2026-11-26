@@ -46,7 +46,7 @@ function pinCode(entries: Record<string, object>, ...names: string[]) {
   writeFileSync(path, JSON.stringify(entries));
   const run = spawnSync(process.execPath, ['--import', `data:text/javascript,${encodeURIComponent(STUB)}`, join(ROOT, 'scripts', 'pin-code.ts'), '--history', ...names], {
     cwd: ROOT,
-    env: { PATH: process.env.PATH, HOME: home, KISS_SIGN_HOME: home, ALCHEMY_API_KEY: 'test-key' },
+    env: { PATH: process.env.PATH, HOME: home, KISS_SIGN_HOME: home, ALCHEMY_API_KEY: 'test-key', DRPC_API_KEY: 'test-key-drpc' },
     encoding: 'utf8',
   });
   return { ...run, written: readFileSync(path, 'utf8') };
