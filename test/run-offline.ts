@@ -12,7 +12,7 @@ const HOOK = pathToFileURL(join(import.meta.dirname, 'offline-network.ts')).href
 export const SUMMARY_FIXTURES = join(import.meta.dirname, 'fixtures', 'past-txs-summaries');
 
 export type Http = Record<string, { status: number; text: string }>;
-export type Network = { readonly exchanges: readonly Exchange[]; readonly http?: Http };
+export type Network = { readonly exchanges: readonly Exchange[]; readonly http?: Http; readonly otherwise?: { status: number; text: string } };
 export type Run = { status: number | null; stdout: string; stderr: string; written: string[] };
 
 /**
@@ -37,7 +37,7 @@ export function runOffline(script: string, args: readonly string[], output: stri
     mkdirSync(out);
     for (const file of seed) cpSync(join(seedFrom, file), join(out, file));
     const answers = join(sandbox, 'answers.json');
-    writeFileSync(answers, JSON.stringify({ exchanges: network.exchanges, http: network.http ?? {} }));
+    writeFileSync(answers, JSON.stringify({ exchanges: network.exchanges, http: network.http ?? {}, otherwise: network.otherwise }));
     const run = spawnSync(process.execPath, ['--import', HOOK, join(sandbox, 'scripts', script), ...args], {
       env: { PATH: process.env.PATH, KISS_SIGN_HOME: join(sandbox, 'home'), ALCHEMY_API_KEY: 'offline', ETHERSCAN_API_KEY: 'offline', OFFLINE_ANSWERS: answers },
       cwd: sandbox,
