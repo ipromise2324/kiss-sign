@@ -29,8 +29,7 @@ export function trimBlockAnswers(exchange: Exchange): Exchange {
 
 type Recorded = { answers: ByProvider<unknown>; errors: ByProvider<unknown>; statuses: ByProvider<number> };
 
-const sameRequest = (exchange: { method: string; params: unknown }, method: string, params: unknown): boolean =>
-  exchange.method === method && JSON.stringify(exchange.params) === JSON.stringify(params);
+const requestKey = ({ method, params }: { readonly method: string; readonly params: unknown }): string => `${method} ${JSON.stringify(params)}`;
 
 function keep(exchange: Recorded, provider: ProviderName, status: number, text: string): void {
   delete exchange.answers[provider];
@@ -56,23 +55,21 @@ function keep(exchange: Recorded, provider: ProviderName, status: number, text: 
 
 /** Passes every request through and keeps each provider's last answer, less any key of the provider's that it quotes. `exchanges()` leaves out empty maps. */
 export function recordingTransport(inner: Transport, endpoints: readonly Endpoint[]): { transport: Transport; exchanges: () => Exchange[] } {
-  const recorded: (Recorded & { method: string; params: unknown })[] = [];
+  const recorded = new Map<string, Recorded & { readonly method: string; readonly params: unknown }>();
   const endpointAt = new Map(endpoints.map((e) => [e.url, e]));
   const transport: Transport = async (url, body, signal) => {
     const answer = await inner(url, body, signal);
     const endpoint = endpointAt.get(url);
     if (endpoint === undefined) return answer;
     const { method, params } = JSON.parse(body) as { method: string; params: unknown };
-    let exchange = recorded.find((e) => sameRequest(e, method, params));
-    if (exchange === undefined) {
-      exchange = { method, params, answers: {}, errors: {}, statuses: {} };
-      recorded.push(exchange);
-    }
+    const key = requestKey({ method, params });
+    const exchange = recorded.get(key) ?? { method, params, answers: {}, errors: {}, statuses: {} };
+    recorded.set(key, exchange);
     keep(exchange, endpoint.provider, answer.status, endpoint.key === undefined ? answer.text : answer.text.replaceAll(endpoint.key, '<key>'));
     return answer;
   };
   const exchanges = (): Exchange[] =>
-    recorded.map(({ method, params, answers, errors, statuses }) => ({
+    [...recorded.values()].map(({ method, params, answers, errors, statuses }) => ({
       method,
       params,
       answers,
@@ -89,10 +86,11 @@ export const REPLAY_ENDPOINTS: readonly [Endpoint, Endpoint] = [
 
 /** Serves each endpoint its provider's recorded answer. A request that was never recorded fails as unreachable. */
 export function replayTransport(exchanges: readonly Exchange[], endpoints: readonly Endpoint[]): Transport {
+  const recorded = new Map(exchanges.toReversed().map((exchange) => [requestKey(exchange), exchange]));
   return async (url, body) => {
     const provider = endpoints.find((e) => e.url === url)?.provider;
     const { method, params } = JSON.parse(body) as { method: string; params: unknown };
-    const exchange = provider === undefined ? undefined : exchanges.find((e) => sameRequest(e, method, params));
+    const exchange = provider === undefined ? undefined : recorded.get(requestKey({ method, params }));
     if (provider === undefined || exchange === undefined) throw new Error('not recorded');
     const reply = (fields: object) => ({ status: 200, text: JSON.stringify({ jsonrpc: '2.0', id: 1, ...fields }) });
     if (Object.hasOwn(exchange.answers, provider)) return reply({ result: exchange.answers[provider] });
