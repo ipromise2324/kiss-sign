@@ -1,8 +1,8 @@
 /**
  * Loaded with `--import` into a command run by a test: every HTTPS request and every `fetch` is answered from the file
  * `OFFLINE_ANSWERS` names, and nothing reaches the network. A JSON-RPC request to either chain provider gets its
- * provider's answer in `exchanges`; any other URL, its `apikey` left out, gets its answer in `http`. A request with no
- * answer there fails as a refused connection, which the program reads as no answer.
+ * provider's answer in `exchanges`; any other URL, its `apikey` left out, gets its answer in `http`, or `otherwise` when given. A request with no
+ * answer fails as a refused connection, which the program reads as no answer.
  */
 
 import { EventEmitter } from 'node:events';
@@ -15,7 +15,8 @@ import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { replayTransport } from '../src/chain/recording.ts';
 import type { Exchange } from '../src/chain/recording.ts';
 
-type Answers = { readonly exchanges: readonly Exchange[]; readonly http: Readonly<Record<string, { readonly status: number; readonly text: string }>> };
+type Answer = { readonly status: number; readonly text: string };
+type Answers = { readonly exchanges: readonly Exchange[]; readonly http: Readonly<Record<string, Answer>>; readonly otherwise?: Answer };
 
 const answers = JSON.parse(readFileSync(process.env.OFFLINE_ANSWERS ?? '', 'utf8')) as Answers;
 const endpoints = mainnetEndpoints(process.env);
@@ -29,10 +30,10 @@ function withoutKey(url: string): string {
 
 const refused = (url: string) => Object.assign(new Error(`offline: ${new URL(url).host}`), { code: 'ECONNREFUSED' });
 
-async function answer(url: string, body: string): Promise<{ status: number; text: string }> {
+async function answer(url: string, body: string): Promise<Answer> {
   const endpoint = endpoints.find((e) => new URL(e.url).href === new URL(url).href);
   if (endpoint !== undefined) return chain(endpoint.url, body, new AbortController().signal).catch(() => Promise.reject(refused(url)));
-  const served = answers.http[withoutKey(url)];
+  const served = answers.http[withoutKey(url)] ?? answers.otherwise;
   if (served !== undefined) return served;
   throw refused(url);
 }
