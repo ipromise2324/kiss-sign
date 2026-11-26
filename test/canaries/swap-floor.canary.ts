@@ -188,7 +188,7 @@ async function cardNew({ world = {}, drpc = world, registry = priced, pair = ['o
   const queue = [...pair, '1000', ...lines];
   let said = '';
   const code = await main(['card', 'new', 'test/swap'], {
-    env: { KISS_SIGN_HOME: home, ALCHEMY_API_KEY: 'test-key' },
+    env: { KISS_SIGN_HOME: home, ALCHEMY_API_KEY: 'test-key', DRPC_API_KEY: 'test-key-drpc' },
     stdout: () => {},
     stderr: (text) => void (said += text),
     platform: 'linux',
