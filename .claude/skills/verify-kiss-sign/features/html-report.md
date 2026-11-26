@@ -33,4 +33,4 @@ Preconditions:
 - `--render` overwrites the committed files in the checkout it runs in. In the run's clone, a non-empty `git status` afterwards makes `verify`'s self-check fail; restore with `git checkout -- templates/` before verifying.
 - The page is dark-only by design; a dark screenshot is correct.
 - The report is long: a 4000 px screenshot cuts it. Raise the height or take several, and check the bottom sections (下一步) separately.
-- `--record` reads live, needs `ALCHEMY_API_KEY` and rewrites recordings under `testdata/`. It does not belong in a verification run unless the change under test is the research itself.
+- `--record` reads live, needs `ALCHEMY_API_KEY`, `DRPC_API_KEY` and `ETHERSCAN_API_KEY`, and rewrites recordings under `testdata/`. It does not belong in a verification run unless the change under test is the research itself.

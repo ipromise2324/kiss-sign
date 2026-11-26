@@ -5,7 +5,7 @@ This directory is the maintained source for verifying what a signer sees and doe
 ## Baseline preconditions
 
 - A run made with `eval "$("$V/new-run.sh" <run> <safe> --clone)"`, where `<safe>` is the `safe` of the fixture the journey uses. `KISS_SIGN_HOME` points at the run's `home/`, never `~/.kiss-sign`.
-- `bin/kiss-sign key list` in `$KSV_CHECKOUT` prints `alchemy ALCHEMY_API_KEY: set (file)`.
+- `bin/kiss-sign key list` in `$KSV_CHECKOUT` prints `alchemy ALCHEMY_API_KEY: set (file)` and `drpc DRPC_API_KEY: set (file)`.
 - `$KSV_CHECKOUT` is at origin/main with `git status --short` empty.
 - Network to GitHub (origin fetch), Alchemy and drpc (chain reads), and on first `pnpm report` the solc and Public Suffix List downloads.
 - Never drive a home or tmux server that this run did not create.
