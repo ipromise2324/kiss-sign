@@ -76,7 +76,8 @@
         "maxSharePriceE27": {
           "maxSharePrice": {
             "assets": "card.amount",
-            "shares": "card.min-shares"
+            "shares": "card.min-shares",
+            "scale": 27
           }
         },
         "assetPermit": {
