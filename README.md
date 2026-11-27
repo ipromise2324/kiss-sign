@@ -83,13 +83,17 @@ pnpm install
 pnpm kiss-sign init --safe 0x… --language en   # or zh-TW for Traditional Chinese; see Language
 pnpm kiss-sign key add alchemy
 pnpm kiss-sign key add etherscan   # to build or review templates
-pnpm kiss-sign key add github      # optional: raises GitHub's hourly limit to build or review templates
+pnpm kiss-sign key add github      # optional: lets your AI search GitHub and raises its hourly limit
 ```
 
 You need:
 
 - Node 22.21 or later and pnpm.
-- Free [Alchemy](https://dashboard.alchemy.com/) and [Etherscan](https://etherscan.io/myapikey) keys. A GitHub token is optional: a fine-grained, read-only one for public repositories raises GitHub's hourly limit when you build or review templates.
+- Free [Alchemy](https://dashboard.alchemy.com/) and [Etherscan](https://etherscan.io/myapikey) keys.
+- Optionally, a [GitHub token](https://github.com/settings/personal-access-tokens/new), for building or reviewing templates. It changes no verdict.
+  - With it, your AI can search a protocol's GitHub organization for every file that lists an address, which can add a source to a report.
+  - GitHub then allows 5,000 requests an hour instead of 60. Without it, every command on your computer shares the 60, and a build can wait for the limit to reset.
+  - Make it a fine-grained token with repository access "Public repositories" and no permissions added. kiss-sign sends it only to `api.github.com`.
 - A hardware wallet that shows a Safe transaction's domain hash and message hash, or its safeTxHash.
 
 **Language.** English (`en`, the default) or Traditional Chinese (`zh-TW`); change it with `pnpm kiss-sign init --language zh-TW`. It changes only the text you read, never a verdict. Give `./check.sh init` on the second computer the same language, so the comparison rows match.
@@ -258,30 +262,39 @@ kiss-sign checks a transaction against the card you sealed and the reports you m
 
 ## Token cost
 
-What it cost Claude Opus 5.5 to build each template and its report from zero, one build at a time, on 2026-11-27. Each build got one short request, such as "I want to send USDC from my Safe. build me the template and its report", and a clone without that template, its report, its research or its test transactions.
+What it cost Claude Opus 5.5 to build each template and its report from zero, on 2026-11-27. Each report quotes, at its top, the request its build was given.
 
 | Report | Tokens | Minutes | Model calls | Cache reads |
 |---|---:|---:|---:|---:|
-| erc20/transfer | 7.80M | 10 | 72 | 98% |
-| eth/transfer | 9.43M | 12 | 74 | 98% |
-| safe/add-owner | 10.44M | 14 | 82 | 98% |
-| safe/remove-owner | 10.50M | 15 | 84 | 98% |
-| safe/swap-owner | 13.63M | 16 | 91 | 98% |
-| safe/change-threshold | 10.49M | 10 | 84 | 98% |
-| fluid/vault-deposit (fUSDC, new template) | 18.53M | 32 | 114 | 99% |
-| fluid/vault-deposit (fUSDT, added vault) | 8.82M | 14 | 76 | 98% |
-| compound/supply (cUSDCv3) | 20.79M | 46 | 129 | 99% |
-| morpho/vault-deposit (Steakhouse, new template) | 25.90M | 26 | 133 | 99% |
-| morpho/vault-deposit (Hyperithm, added vault) | 13.67M | 30 | 98 | 98% |
-| cow/swap | 28.55M | 51 | 148 | 98% |
-| morpho/vault-v2-cap-submit (KPK) | 16.89M | 30 | 113 | 98% |
-| morpho/vault-v2-cap-accept (Acuto) | 10.79M | 17 | 78 | 98% |
-| morpho/vault-v2-cap-decrease (Acuto) | 11.71M | 20 | 88 | 98% |
-| morpho/vault-v2-collateral-cap-revoke (Acuto) | 17.27M | 35 | 115 | 98% |
-| morpho/vault-v2-adapter-cap-submit (KPK) | 14.71M | 26 | 103 | 98% |
-| morpho/vault-v2-collateral-cap-submit (KPK) | 19.10M | 36 | 117 | 99% |
+| [erc20/transfer](https://claude.ai/artifact/BS37S6HgPtWWfA8Shr4bXF) | 7.80M | 10 | 72 | 98% |
+| [eth/transfer](https://claude.ai/artifact/F3sTYhhcrorgfcrX9JVhr3) | 9.43M | 12 | 74 | 98% |
+| [safe/add-owner](https://claude.ai/artifact/4KtdZ2AgNtGqZb9pWf7rj1) | 10.44M | 14 | 82 | 98% |
+| [safe/remove-owner](https://claude.ai/artifact/WvgLR34g9ZFziSRv81Jryk) | 10.50M | 15 | 84 | 98% |
+| [safe/swap-owner](https://claude.ai/artifact/Fnz7QXP1FhQMzq1XTXpPgc) | 13.63M | 16 | 91 | 98% |
+| [safe/change-threshold](https://claude.ai/artifact/45J6jVfCkVN62LVdz7JbSQ) | 10.49M | 10 | 84 | 98% |
+| [fluid/vault-deposit (fUSDC, new template)](https://claude.ai/artifact/Nj8pmT3cxujg7nAZkpucVY) | 18.53M | 32 | 114 | 99% |
+| [fluid/vault-deposit (fUSDT, added vault)](https://claude.ai/artifact/HCXqnLBHMJP9WQ726KfXhe) | 8.82M | 14 | 76 | 98% |
+| [compound/supply (cUSDCv3)](https://claude.ai/artifact/B42hzCNW84QVhvhACSQmU3) | 20.79M | 46 | 129 | 99% |
+| [morpho/vault-deposit (Steakhouse, new template)](https://claude.ai/artifact/9mi42v4ZwDKe97XLPhNvPX) | 25.90M | 26 | 133 | 99% |
+| [morpho/vault-deposit (Hyperithm, added vault)](https://claude.ai/artifact/WZxEhWeoaAyjuqFmgWowGb) | 13.67M | 30 | 98 | 98% |
+| [cow/swap](https://claude.ai/artifact/YRiJ2jTKSpD4nZGiNRN55h) | 28.55M | 51 | 148 | 98% |
+| [morpho/vault-v2-cap-submit (KPK)](https://claude.ai/artifact/UgvqrTXN5KfuruJ4FAfY1c) | 16.89M | 30 | 113 | 98% |
+| [morpho/vault-v2-cap-accept (Acuto)](https://claude.ai/artifact/XzHyngUk8GJmDQuvHB4nTr) | 10.79M | 17 | 78 | 98% |
+| [morpho/vault-v2-cap-decrease (Acuto)](https://claude.ai/artifact/C7QnVqx2ZTsBYktvoUbfDQ) | 11.71M | 20 | 88 | 98% |
+| [morpho/vault-v2-collateral-cap-revoke (Acuto)](https://claude.ai/artifact/RxhgdjkCCgRZQ2JYWBxnLP) | 17.27M | 35 | 115 | 98% |
+| [morpho/vault-v2-adapter-cap-submit (KPK)](https://claude.ai/artifact/8VDB1f7b9PSYJD74GJVCka) | 14.71M | 26 | 103 | 98% |
+| [morpho/vault-v2-collateral-cap-submit (KPK)](https://claude.ai/artifact/KrzERRAqbZA721E6rG2prJ) | 19.10M | 36 | 117 | 99% |
 
-18 builds, 269.0M tokens and 440 minutes in all. Each build researched every address, studied other Safes' past transactions, wrote the template and its notes, recorded test transactions and rendered the report; where the operation might need a step first, such as an approval, it read the configured Safe's state to see whether the step was done. A row marked "added vault" started from the template the row above it built, so it covers only the new vault's report. The compound/supply, cow/swap and collateral-cap-revoke rows include one review round, after the report was read and a rule was sent back to tighten. 98% to 99% of the tokens are cache reads, because the model reads its whole conversation again on every call. Minutes count active time. The session that starts the builds, reads the reports and fixes the program is not counted. uniswap/swap is not in the table yet.
+In all: 18 builds, 269.0M tokens, 440 minutes.
+
+- **One build.** One AI agent, one build at a time, in a clone without that template, its report, its research or its test transactions.
+- **What a build does.** It researches every address, studies other Safes' past transactions, writes the template and its notes, records test transactions and renders the report. When the operation may need a step first, such as an approval, it reads the configured Safe's state to see whether the step is done.
+- **Added vault.** Such a row starts from the template the row above it built, so it covers only the new vault's report.
+- **Review rounds.** The compound/supply and cow/swap rows include one: the report was read and a rule was sent back to tighten.
+- **Minutes** count active time.
+- **Cache reads** are 98% to 99% of the tokens, because the model reads its whole conversation again on every call.
+- **Not counted:** the session that starts the builds, reads the reports and fixes the program.
+- uniswap/swap is not in the table yet.
 
 ## Scope
 
