@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { loadAddressBook } from '../address-book.ts';
 import type { AddressBook } from '../address-book.ts';
 import { CardError, isZeroFloor, parseUint256, resolveRef, resolveValue } from '../card.ts';
+import { sameSoFar, sameText } from '../same.ts';
 import type { CardOperation, ResolvedValue } from '../card.ts';
 import { groupedTokens, readDecimals } from '../chain/decimals.ts';
 import { canonicalType } from '../decode/abi.ts';
@@ -19,9 +20,9 @@ import { MARKET_ENTRY_PARTS, isMarketEntryPart, loadRegistry } from '../registry
 import type { Market, Registry, RegistryEntry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { FLOOR_RULE, FeedError, floorOf, moreThan, pairFacts, readReference, valueOf } from '../price/reference.ts';
+import { FLOOR_RULE, FeedError, floorOf, moreThan, pairFacts, readReference, tradedThrough, valueOf } from '../price/reference.ts';
 import type { Doubt, PairFacts, PriceReads, Reference, ViewFunction } from '../price/reference.ts';
-import { TEMPLATES_DIR, callRules, cardRefs, loadTemplate, rulesUnder, scopeEntries, slippageBps, WAD } from '../template/template.ts';
+import { TEMPLATES_DIR, loadTemplate, rulesUnder, scopeEntries, slippageBps, WAD } from '../template/template.ts';
 import type { CardField, CardRef, Computed, ComputedRead, Floor, Rule, Template, TokenRef } from '../template/template.ts';
 import { gatesInstances, isInstanceOf, reportUnit, reportedInstancesIn, severalInstances } from '../template/vault-reports.ts';
 import type { ReportedInstances } from '../template/vault-reports.ts';
@@ -473,11 +474,11 @@ function typedSlippage(name: string, typed: string, L: CardWords): number {
 }
 
 /** A pool the swap may trade through is no independent price; one a router finds from two tokens and a fee is not seen. */
-function tradedNames(template: Template, values: Readonly<Record<string, string>>, registry: Registry): ReadonlySet<string> {
-  const ruled = callRules(template).flatMap((rule) => (rule.kind === 'contract' ? [rule.name] : []));
-  const picks = cardRefs(template).map(({ field, attribute }) => entryOf(values[field] ?? '', attribute, registry)?.name);
-  return new Set([...ruled, ...picks].filter((name) => name !== undefined));
-}
+const tradedNames = (template: Template, values: Readonly<Record<string, string>>, registry: Registry): ReadonlySet<string> =>
+  tradedThrough(template, ({ field, attribute }) => {
+    const entry = entryOf(values[field] ?? '', attribute, registry);
+    return entry === undefined ? [] : [entry.name];
+  });
 
 type Filled = { readonly value: string; readonly by: 'computed' | 'typed' };
 
@@ -586,18 +587,32 @@ async function fill(template: Template, shared: Omit<Context, 'template'>): Prom
   const ctx: Context = { ...shared, template };
   const { L } = ctx;
   const values: Record<string, string> = {};
+  const picks = new Map<string, ResolvedValue>();
+  const { registry, book, safe } = ctx.sources;
+  const resolved = (field: CardField, name: string): ResolvedValue | undefined => {
+    const value = resolveValue(field, name, { registry, addressBook: book, safe });
+    return 'reason' in value ? undefined : value;
+  };
   const fields = [...template.card];
   const unit = reportUnit(template);
   if (unit.kind === 'several-instances') throw new CardError(severalInstances(template.id));
   for (const [name, field] of fields.filter(isChosen)) {
     const listed = optionsFor(field, ctx.sources);
     const gated = gatesInstances(template) && field.kind !== 'market';
-    const instances = gated ? listed.filter((choice) => isInstanceOf(template, choice.name, ctx.sources.registry)) : [];
+    const instances = gated ? listed.filter((choice) => isInstanceOf(template, choice.name, registry)) : [];
     const reported = instances.length === 0 ? new Set<string>() : ctx.reported(template.id);
-    const choices = listed.filter((choice) => !instances.includes(choice) || reported.has(choice.name));
-    if (unit.kind === 'instance' && unit.field === name && choices.length === 0) throw new CardError(L.noReportedInstance(name, unit.of, template.id));
-    if (choices.length === 0) {
+    const accepted = listed.filter((choice) => !instances.includes(choice) || reported.has(choice.name));
+    if (unit.kind === 'instance' && unit.field === name && accepted.length === 0) throw new CardError(L.noReportedInstance(name, unit.of, template.id));
+    if (accepted.length === 0) {
       throw new CardError(field.kind === 'market' ? L.noMarket(name) : L.nothingAccepted(name, template.id));
+    }
+    const choices = accepted.filter((choice) => {
+      const value = resolved(field, choice.name);
+      return value === undefined || sameSoFar(template, new Map([...picks, [name, value]]), registry);
+    });
+    if (choices.length === 0) {
+      const fixed = template.same.flatMap((ref) => (picks.has(ref.field) ? [`${ref.field} ${values[ref.field]}`] : []));
+      throw new CardError(L.noneTheSame(name, sameText(template), [...new Set(fixed)].join(', ')));
     }
     ctx.io.stdout(text([...section(ctx.p, name, L.pick), ...listLines(choices, ctx.p, L)]));
     const range = `1-${choices.length}`;
@@ -607,6 +622,8 @@ async function fill(template: Template, shared: Omit<Context, 'template'>): Prom
     if (choice === undefined) throw new CardError(L.notListed(name, shown, range));
     if (others.length > 0) throw new CardError(L.severalListed(name, shown, range));
     values[name] = choice.name;
+    const value = resolved(field, choice.name);
+    if (value !== undefined) picks.set(name, value);
   }
   const computed: string[] = [];
   const typed = fields.filter(isTyped);

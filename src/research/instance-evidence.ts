@@ -13,6 +13,7 @@ import type { AbiFunction } from '../decode/abi.ts';
 import { encodeCall } from '../decode/codec.ts';
 import { sizeOf } from '../registry.ts';
 import type { Registry, RegistryEntry, SizeView } from '../registry.ts';
+import { inPool } from './pool.ts';
 import { SafeTxParseError, checksumAddress, parseAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 
@@ -46,12 +47,17 @@ export function alchemyCall(transport: Transport, url: string, note: NoteUnread,
   };
 }
 
+/** Keeps each recipient once, and on the last one the last transfer's block, which the holder count reads on from. */
 export function trimVaultRecording(exchanges: readonly Exchange[]): Exchange[] {
   return exchanges.map(trimBlockAnswers).map((exchange) => {
     const answer = exchange.answers.alchemy;
     if (exchange.method !== 'alchemy_getAssetTransfers' || !isRecord(answer) || !Array.isArray(answer.transfers)) return exchange;
-    const to = [...new Set((answer.transfers as unknown[]).map((t) => (isRecord(t) ? t.to : undefined)))];
-    return { ...exchange, answers: { alchemy: { ...answer, transfers: to.map((recipient) => ({ to: recipient })) } } };
+    const transfers = answer.transfers as unknown[];
+    const to = [...new Set(transfers.map((t) => (isRecord(t) ? t.to : undefined)))];
+    const last = transfers.at(-1);
+    const blockNum = isRecord(last) ? last.blockNum : undefined;
+    const kept = to.map((recipient, i) => (i === to.length - 1 && blockNum !== undefined ? { to: recipient, blockNum } : { to: recipient }));
+    return { ...exchange, answers: { alchemy: { ...answer, transfers: kept } } };
   });
 }
 
@@ -86,6 +92,9 @@ export const BLOCKS_PER_MONTH = (30n * 24n * 3600n) / SECONDS_PER_SLOT;
 export const MONTHS = 12;
 const MAX_TRANSFER_PAGES = 300;
 const BALANCES_PER_CALL = 500;
+const READ_WIDTH = 8;
+const TRANSFER_RANGES = 16;
+const TRANSFER_WIDTH = 4;
 
 const TOTAL_SUPPLY = '0x18160ddd' as Hex;
 const DECIMALS = '0x313ce567' as Hex;
@@ -128,50 +137,96 @@ async function pointAt(reader: Reader, vault: Address, size: AbiFunction, number
   return { block: number, time, totalAssets: { kind: 'read', value: { kind: 'assets', amount: BigInt(read.value.data) } } };
 }
 
-async function recipients(alchemy: AlchemyCall, vault: Address, toBlock: bigint): Promise<Reading<Address[]>> {
-  const found = new Set<Address>();
-  let pageKey: string | undefined;
-  for (let page = 0; page < MAX_TRANSFER_PAGES; page++) {
-    const params = {
-      fromBlock: '0x0',
-      toBlock: hex(toBlock),
-      contractAddresses: [vault],
-      category: ['erc20'],
-      excludeZeroValue: false,
-      withMetadata: false,
-      order: 'asc',
-      maxCount: '0x3e8',
-      ...(pageKey === undefined ? {} : { pageKey }),
-    };
-    let answer: unknown;
-    try {
-      answer = await alchemy('alchemy_getAssetTransfers', [params]);
-    } catch (error) {
-      return unverifiable(`the Alchemy Transfers API failed (${(error as Error).message})`);
-    }
-    if (!isRecord(answer) || !Array.isArray(answer.transfers)) return unverifiable('the Alchemy Transfers API sent no transfer list');
-    for (const transfer of answer.transfers as unknown[]) {
-      try {
-        found.add(parseAddress('to', isRecord(transfer) ? transfer.to : undefined));
-      } catch (error) {
-        if (error instanceof SafeTxParseError) return unverifiable('the Alchemy Transfers API sent a transfer with no recipient');
-        throw error;
-      }
-    }
-    if (typeof answer.pageKey !== 'string') {
-      found.delete(ZERO);
-      return { kind: 'read', value: [...found] };
-    }
-    pageKey = answer.pageKey;
+type TransferPage = { readonly to: readonly Address[]; readonly lastBlock: bigint | undefined; readonly pageKey: string | undefined };
+
+/** One page of the vault's share transfers in a range of blocks, oldest first. */
+async function transferPage(alchemy: AlchemyCall, vault: Address, from: bigint, to: bigint, pageKey: string | undefined): Promise<Reading<TransferPage>> {
+  const params = {
+    fromBlock: hex(from),
+    toBlock: hex(to),
+    contractAddresses: [vault],
+    category: ['erc20'],
+    excludeZeroValue: false,
+    withMetadata: false,
+    order: 'asc',
+    maxCount: '0x3e8',
+    ...(pageKey === undefined ? {} : { pageKey }),
+  };
+  let answer: unknown;
+  try {
+    answer = await alchemy('alchemy_getAssetTransfers', [params]);
+  } catch (error) {
+    return unverifiable(`the Alchemy Transfers API failed (${(error as Error).message})`);
   }
-  return unverifiable(`the vault has more than ${MAX_TRANSFER_PAGES * 1000} share transfers; holders not counted`);
+  if (!isRecord(answer) || !Array.isArray(answer.transfers)) return unverifiable('the Alchemy Transfers API sent no transfer list');
+  const transfers = answer.transfers as unknown[];
+  const recipients: Address[] = [];
+  for (const transfer of transfers) {
+    try {
+      recipients.push(parseAddress('to', isRecord(transfer) ? transfer.to : undefined));
+    } catch (error) {
+      if (error instanceof SafeTxParseError) return unverifiable('the Alchemy Transfers API sent a transfer with no recipient');
+      throw error;
+    }
+  }
+  const last = transfers.at(-1);
+  const block = isRecord(last) && typeof last.blockNum === 'string' && /^0x[0-9a-f]{1,16}$/.test(last.blockNum) ? BigInt(last.blockNum) : undefined;
+  return { kind: 'read', value: { to: recipients, lastBlock: block, pageKey: typeof answer.pageKey === 'string' ? answer.pageKey : undefined } };
+}
+
+/**
+ * Every address that ever received the vault's shares. A list longer than a page is read on from the first page's last
+ * block as ranges, several at a time, the ranges overlapping in that block; `holderCount` checks the balances add up to
+ * the supply, so a transfer missed in any range leaves the holders uncounted.
+ */
+async function recipients(alchemy: AlchemyCall, vault: Address, toBlock: bigint): Promise<Reading<Address[]>> {
+  const tooMany = unverifiable(`the vault's share transfers take more than ${MAX_TRANSFER_PAGES} pages of the Transfers API; holders not counted`);
+  const read = async (from: bigint, to: bigint, limit: () => boolean, key?: string): Promise<Reading<Address[]>> => {
+    const found: Address[] = [];
+    let pageKey = key;
+    do {
+      if (!limit()) return tooMany;
+      const page = await transferPage(alchemy, vault, from, to, pageKey);
+      if (page.kind === 'unverifiable') return page;
+      found.push(...page.value.to);
+      pageKey = page.value.pageKey;
+    } while (pageKey !== undefined);
+    return { kind: 'read', value: found };
+  };
+  const first = await transferPage(alchemy, vault, 0n, toBlock, undefined);
+  if (first.kind === 'unverifiable') return first;
+  const { lastBlock, pageKey } = first.value;
+  let rest: readonly Reading<Address[]>[] = [];
+  if (pageKey !== undefined) {
+    const ranges = lastBlock === undefined || lastBlock > toBlock ? undefined : splitRange(lastBlock, toBlock);
+    let left = MAX_TRANSFER_PAGES - 1;
+    const limit = () => left-- > 0;
+    rest = ranges === undefined ? [await read(0n, toBlock, limit, pageKey)] : await inPool(ranges, TRANSFER_WIDTH, ([from, to]) => read(from, to, limit));
+  }
+  const found = new Set<Address>(first.value.to);
+  for (const part of rest) {
+    if (part.kind === 'unverifiable') return part;
+    for (const address of part.value) found.add(address);
+  }
+  found.delete(ZERO);
+  return { kind: 'read', value: [...found] };
+}
+
+/** `from` to `to` as up to `TRANSFER_RANGES` ranges that touch no block twice. */
+function splitRange(from: bigint, to: bigint): (readonly [bigint, bigint])[] {
+  const size = (to - from) / BigInt(TRANSFER_RANGES) + 1n;
+  const ranges: (readonly [bigint, bigint])[] = [];
+  for (let start = from; start <= to; start += size) ranges.push([start, start + size - 1n < to ? start + size - 1n : to]);
+  return ranges;
 }
 
 async function balancesOf(reader: Reader, vault: Address, holders: readonly Address[], at: BlockRef): Promise<Reading<bigint[]>> {
+  const chunks = Array.from({ length: Math.ceil(holders.length / BALANCES_PER_CALL) }, (_, i) => holders.slice(i * BALANCES_PER_CALL, (i + 1) * BALANCES_PER_CALL));
+  const batches = await inPool(chunks, READ_WIDTH, (chunk) =>
+    aggregate(reader, chunk.map((holder) => ({ to: vault, data: encodeCall({ fn: BALANCE_OF, args: [{ kind: 'address', value: holder, span: [0, 0] }], trailer: undefined }) })), at),
+  );
   const balances: bigint[] = [];
-  for (let i = 0; i < holders.length; i += BALANCES_PER_CALL) {
-    const chunk = holders.slice(i, i + BALANCES_PER_CALL);
-    const batch = await aggregate(reader, chunk.map((holder) => ({ to: vault, data: encodeCall({ fn: BALANCE_OF, args: [{ kind: 'address', value: holder, span: [0, 0] }], trailer: undefined }) })), at);
+  for (const batch of batches) {
     if (batch.kind === 'unverifiable') return unverifiable(batch.reason);
     if (batch.kind === 'no-code') return unverifiable(`Multicall3 has no code at block ${at.number}`);
     if (batch.kind === 'reverted') return unverifiable('a Multicall3 balanceOf batch reverted');
@@ -209,12 +264,8 @@ export async function gatherVaultEvidence(
 ): Promise<VaultEvidence | { readonly kind: 'unverifiable'; readonly reason: string }> {
   const latest = await reader.block(at);
   if (latest.kind === 'unverifiable') return unverifiable(latest.reason);
-  const points: AssetsPoint[] = [];
-  for (let month = 0; month <= MONTHS; month++) {
-    const number = latest.value.number - BigInt(month) * BLOCKS_PER_MONTH;
-    if (number < 0n) break;
-    points.push(await pointAt(reader, vault.address, size.fn, number));
-  }
+  const numbers = Array.from({ length: MONTHS + 1 }, (_, month) => latest.value.number - BigInt(month) * BLOCKS_PER_MONTH).filter((number) => number >= 0n);
+  const points = await inPool(numbers, READ_WIDTH, (number) => pointAt(reader, vault.address, size.fn, number));
   return {
     vault,
     size,
@@ -312,7 +363,7 @@ export function factoryAnswer(text: string | undefined, vault: RegistryEntry, re
 
 /**
  * What `pnpm instance-evidence` prints: a vault that names a factory is read only after that factory answers that it
- * created the vault, since the numbers come from the vault's own code. Everything is read as of one block, the latest.
+ * created the vault, since the numbers come from the vault's own code. Everything is read as of one block, `at`.
  * `read` is false when nothing was read.
  */
 export async function vaultEvidenceText(
@@ -320,10 +371,11 @@ export async function vaultEvidenceText(
   alchemy: AlchemyCall,
   registry: Registry,
   vault: RegistryEntry,
+  at: BlockTag = 'latest',
 ): Promise<{ readonly read: boolean; readonly text: string }> {
   const size = sizeOf(vault, registry);
   if (size === undefined) return { read: false, text: `REFUSED ${vault.name} declares no size, nor does a factory it names; nothing to read` };
-  const block = await reader.block('latest');
+  const block = await reader.block(at);
   if (block.kind === 'unverifiable') return { read: false, text: `UNVERIFIABLE ${block.reason}` };
   const lines: string[] = [];
   if (vault.attributes.factory === undefined) {

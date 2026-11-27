@@ -33,7 +33,7 @@ function cowWith(rule: unknown, id = 'cow/swap'): Raw {
 
 const refusal = (raw: unknown): string => {
   try {
-    parseTemplate(raw, registry);
+    parseTemplate(raw, registry, 'committed');
     return 'parsed';
   } catch (error) {
     assert.ok(error instanceof TemplateError);
@@ -70,6 +70,7 @@ const DEADLINE = parseTemplate(
     effects: { gives: [], gets: [] },
   },
   registry,
+  'committed',
 );
 
 function deadlineTx(deadline: bigint): SafeTx {
@@ -122,7 +123,7 @@ test('an order member bound by withinSeconds is MISMATCH past the bound, and the
   const fixture = JSON.parse(load('safe-tx', 'cow-swap-usdt'));
   const tx = parseServiceTx(fixture.service, { chainId: 1n, version: fixture.chain.version });
   const order = JSON.parse(load('messages', 'cow-swap-usdt')) as Order;
-  const template = parseTemplate(cowWith({ withinSeconds: 600 }), registry);
+  const template = parseTemplate(cowWith({ withinSeconds: 600 }), registry, 'committed');
   const templates = new Map([[template.id, template]]);
   const name = (address: string) => registry.byAddress.get(address.toLowerCase() as Address)!.name;
   const values = { 'sell-token': name(order.sellToken), 'buy-token': name(order.buyToken), 'sell-amount': order.sellAmount, 'min-buy': order.buyAmount };
@@ -168,9 +169,9 @@ test('verify counts from the time of the block an executed order ran in, read fr
   const { number, time, validTo } = await executedBlock();
   const exact = Number(validTo - time);
   assert.ok(exact > 1, 'the order expires after its block');
-  const fits = await evaluate(bounded(exact), replayReader(VERDICT.exchanges));
+  const fits = await evaluate(bounded(exact), replayReader(VERDICT.exchanges), true);
   assert.equal(fits.verdict.kind, 'MATCH');
-  const late = await evaluate(bounded(exact - 1), replayReader(VERDICT.exchanges));
+  const late = await evaluate(bounded(exact - 1), replayReader(VERDICT.exchanges), true);
   assert.equal(late.verdict.kind, 'MISMATCH');
   const fields = late.verdict.kind === 'MISMATCH' ? late.verdict.causes.find((c) => c.check === 'fields') : undefined;
   assert.deepEqual(fields?.details, [`multiSend[1].setPreSignature orderUid.digest.validTo: expected at most ${validTo - 1n}: ${exact - 1} seconds after the time of block ${number}, ${time}, got ${validTo}`]);
@@ -179,7 +180,7 @@ test('verify counts from the time of the block an executed order ran in, read fr
 test('without the block time in the verdict file the field check is UNVERIFIABLE, never MATCH', async () => {
   const { time, validTo } = await executedBlock();
   const headerless = VERDICT.exchanges.filter((e) => e.method !== 'eth_getBlockByHash');
-  const { verdict } = await evaluate(bounded(Number(validTo - time)), replayReader(headerless));
+  const { verdict } = await evaluate(bounded(Number(validTo - time)), replayReader(headerless), true);
   assert.equal(verdict.kind, 'UNVERIFIABLE');
   const fields = verdict.kind === 'UNVERIFIABLE' ? verdict.causes.find((c) => c.check === 'fields') : undefined;
   assert.match(fields?.details[0] ?? '', /^the time of the block the transaction is judged on: /);
@@ -200,11 +201,11 @@ test('a pending order counts from the time of the latest block verify reads', as
     const inputs = bounded(seconds);
     return { ...inputs, tx: { ...inputs.tx, json: { ...(inputs.tx.json as object), isExecuted: false, transactionHash: null } } };
   };
-  const late = await evaluate(pending(3599), reader);
+  const late = await evaluate(pending(3599), reader, true);
   assert.equal(late.verdict.kind, 'MISMATCH');
   const fields = late.verdict.kind === 'MISMATCH' ? late.verdict.causes.find((c) => c.check === 'fields') : undefined;
   assert.deepEqual(fields?.details, [`multiSend[1].setPreSignature orderUid.digest.validTo: expected at most ${validTo - 1n}: 3599 seconds after the time of block ${head.number}, ${time}, got ${validTo}`]);
-  const fits = await evaluate(pending(3600), reader);
+  const fits = await evaluate(pending(3600), reader, true);
   const causes = fits.verdict.kind === 'MATCH' ? [] : fits.verdict.causes.map((c) => c.check);
   assert.ok(!causes.includes('fields'), causes.join(', '));
 });

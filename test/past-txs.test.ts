@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, test } from 'node:test';
@@ -15,11 +15,11 @@ import type { Registry } from '../src/registry.ts';
 import { foundBy, pastTxs } from '../src/research/past-txs.ts';
 import { withBlockTimes } from './block-times.ts';
 import { renderPastTxs, spreadOf } from '../src/research/past-txs-render.ts';
-import { DEFAULT_SAMPLING, MAX_PAGES, YEAR_PAGES, samplingFields, samplingOf, scrubRecording } from '../src/research/recording.ts';
+import { DEFAULT_SAMPLING, MAX_PAGES, YEAR_PAGES, anchorOf, samplingFields, samplingOf, scrubRecording } from '../src/research/recording.ts';
 import { replayMessages } from '../src/research/messages.ts';
-import { pastTxsRecordings, summarizePastTxs } from '../src/research/report.ts';
+import { pastTxsCommand, pastTxsRecordings, summarizePastTxs } from '../src/research/report.ts';
 import { parseSummary, studyRecording, summaryText } from '../src/research/past-txs-summary.ts';
-import type { Subject } from '../src/research/report.ts';
+import type { PastTxsSection, Subject } from '../src/research/report.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { anchorEvent, recordingAsk, replayAsk, search } from '../src/research/sources.ts';
 import type { Anchor, AnchorKind, Ask, Hits, SourceExchange, SourceRequest } from '../src/research/sources.ts';
@@ -276,6 +276,7 @@ test('a year whose every answer fits one page is searched whole in one request, 
 test('the report takes a recording that asked the whole year first, or searched an event with no token, and refuses a transfer anchor with no token', () => {
   const year: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'whole-year.json'));
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-past-txs-'));
+  cpSync(join(ROOT, 'registry'), join(root, 'registry'), { recursive: true });
   after(() => rmSync(root, { recursive: true, force: true }));
   mkdirSync(join(root, 'testdata', 'research'), { recursive: true });
   const write = (name: string, query: PastTxsRecording['query']) => writeFileSync(join(root, 'testdata', 'research', `${name}.json`), summaryOf(query));
@@ -283,7 +284,7 @@ test('the report takes a recording that asked the whole year first, or searched 
   const { event: __, ...anyTransfer } = anyContract;
   write('whole-year', year.query);
   write('any-contract', anyContract);
-  const subject = { template: { id: year.query.template }, vault: undefined } as unknown as Subject;
+  const subject = { template: loadTemplate(ROOT, year.query.template, registry), vault: undefined } as unknown as Subject;
   assert.deepEqual(pastTxsRecordings(root, subject).map((r) => r.file), ['testdata/research/any-contract.json', 'testdata/research/whole-year.json']);
   write('any-transfer', { ...anyTransfer, anchor: 'any' });
   assert.throws(() => pastTxsRecordings(root, subject), /any-transfer\.json: its name or query holds a value `pnpm past-txs --record` never writes/);
@@ -403,7 +404,7 @@ test('a recording that would name the configured Safe loses those entries, or is
 test('a template whose trailer allowance is shorter than real use lists those transactions as misfits, with the reason', async () => {
   const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
   raw.calls[1].trailer.maxBytes = 1;
-  const text = await report({ template: parseTemplate(raw, registry) });
+  const text = await report({ template: parseTemplate(raw, registry, 'committed') });
   assert.match(text, /^fit the template's shape: 0 transactions from 0 Safes; misfits: 3 from 1 Safe$/m);
   assert.match(text, /^ {2}2 from 1 Safe: more bytes after the arguments than the template allows, at multiSend\[1\]$/m);
 });
@@ -411,7 +412,7 @@ test('a template whose trailer allowance is shorter than real use lists those tr
 test('a transaction whose leaf the template binds to the Safe holds another address is a misfit naming that leaf', async () => {
   const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
   raw.calls[0].args.spender = { safe: true };
-  const text = await report({ template: parseTemplate(raw, registry) });
+  const text = await report({ template: parseTemplate(raw, registry, 'committed') });
   assert.match(text, /^fit the template's shape: 0 transactions from 0 Safes; misfits: 3 from 1 Safe$/m);
   assert.match(text, /^ {2}2 from 1 Safe: multiSend\[0\]\.approve\.spender: not the sender$/m);
 });
@@ -431,7 +432,7 @@ test('a call to another contract than the template binds is named by that contra
 test('two leaves bound to one card value that hold different values make the transaction a misfit naming both', async () => {
   const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
   raw.calls[1].args.bundle.items[0].fields.value = { card: 'amount' };
-  const text = await report({ template: parseTemplate(raw, registry) });
+  const text = await report({ template: parseTemplate(raw, registry, 'committed') });
   assert.match(text, /^fit the template's shape: 0 transactions from 0 Safes; misfits: 3 from 1 Safe$/m);
   assert.match(text, /^ {2}2 from 1 Safe: \S+: differs from \S+$/m);
 });
@@ -439,7 +440,7 @@ test('two leaves bound to one card value that hold different values make the tra
 test('an EOA making one call is not judged by an equals rule naming a leaf of a call it did not make', async () => {
   const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
   raw.calls[1].args.bundle.items[1].fields.data.call.args.assets = { equals: 'calls[0].args.value' };
-  const text = await report({ template: parseTemplate(raw, registry) });
+  const text = await report({ template: parseTemplate(raw, registry, 'committed') });
   assert.match(text, /^fit the template's shape: 2 transactions from 1 Safe; misfits: 1 from 1 Safe$/m);
   assert.match(text, /^by EOAs, call 2 of 2 \(multicall\) as its own transaction:\nfit the call's shape: 2 transactions from 2 EOAs; /m);
 });
@@ -534,10 +535,36 @@ test("a Safe's transaction that makes none of the template's calls is another op
   assert.doesNotMatch(text, /^misfits, by reason:\n {2}1 from 1 Safe: calls /m);
 });
 
+test("a Safe's call with fewer than 4 bytes of data calls no function: the summary keeps how many bytes, reads back, and the report says so", async () => {
+  const transfers: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'erc20-transfer.json'));
+  const other = '0x76b2080d079470fd25ea8724b2aaf1f1d951e50ec48501d990f500105d3901bb';
+  const word = (n: bigint): string => n.toString(16).padStart(64, '0');
+  // execTransaction's data argument cut to the 2 bytes 0xabcd; its signatures move up to follow it.
+  const shortData = (input: string): string => {
+    const words = input.slice(10);
+    const at = (offset: number): number => Number(BigInt(`0x${words.slice(offset * 2, offset * 2 + 64)}`));
+    const signatures = words.slice(at(9 * 32) * 2);
+    const head = Array.from({ length: 10 }, (_, i) => words.slice(i * 64, (i + 1) * 64));
+    head[9] = word(BigInt(10 * 32 + 64));
+    return `${input.slice(0, 10)}${head.join('')}${word(2n)}${'abcd'.padEnd(64, '0')}${signatures}`;
+  };
+  const exchanges = transfers.exchanges.map((e) =>
+    e.method === 'eth_getTransactionByHash' && JSON.stringify(e.params) === JSON.stringify([other])
+      ? { ...e, answers: Object.fromEntries(Object.entries(e.answers).map(([p, a]) => [p, { ...(a as object), input: shortData((a as { input: string }).input) }])) }
+      : e,
+  );
+  const recorded = { ...transfers, exchanges };
+  assert.match(await report({ recorded }), new RegExp(`^ {2}e\\.g\\. ${other}: calls 0xe5139Fc0FB8eae81e30d8a85C22E88c6757120f2 \\(no function: 2 bytes of data\\)$`, 'm'));
+  const summary = await studyRecording(ROOT, recorded, registry);
+  const text = summaryText(summary);
+  assert.match(text, /"calls": \[\s*\{\s*"to": "0xe5139fc0fb8eae81e30d8a85c22e88c6757120f2",\s*"bytes": 2\s*\}\s*\]/);
+  assert.deepEqual(parseSummary('testdata/research/erc20-transfer.json', text), summary);
+});
+
 /** The deposit template stating no amount, so the study reads only what this recording, made before amounts were measured, holds. */
 const noAmounts = (): Template => {
   const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
-  return parseTemplate({ ...raw, effects: { ...raw.effects, gives: [] } }, registry);
+  return parseTemplate({ ...raw, effects: { ...raw.effects, gives: [] } }, registry, 'committed');
 };
 
 function replayDroppingDrpc(hash: string, fails: number): Transport {
@@ -647,7 +674,7 @@ async function cowRun(options: { time?: boolean; withinSeconds?: number; message
   if (options.withinSeconds !== undefined) fields.validTo = { withinSeconds: options.withinSeconds };
   const { query } = cow;
   return pastTxs(
-    { template: parseTemplate(raw, registry), anchor: { token: query.token as Address, kind: 'event', event: anchorEvent(query.event as string) }, sampling: samplingOf(query) },
+    { template: parseTemplate(raw, registry, 'committed'), anchor: { token: query.token as Address, kind: 'event', event: anchorEvent(query.event as string) }, sampling: samplingOf(query) },
     { ask: replayAsk(cow.sources), reader: options.reader ?? replayReader(cow.exchanges), registry, readMessage: replayMessages(options.messages ?? cow.messages ?? []), exclude: undefined, maxTxs: query.maxTxs },
   );
 }
@@ -761,7 +788,10 @@ function yearAsk(listed: readonly Mint[], options: { endless?: boolean; ethersca
 /** The time the fake chain gives a block: 12 seconds apart, block 26438400 at 2026-09-21T14:13:20Z. */
 const timeOf = (block: bigint): bigint => 1_790_000_000n + (block - 26438400n) * 12n;
 
-function chain(options: { safes?: readonly Address[]; singletonOnly?: readonly Address[]; unreadable?: readonly Address[] } = {}): { reader: Reader; exchanges: () => Exchange[] } {
+/** A transaction the fake chain serves by its hash: where it was sent and its calldata. */
+type SentTx = { readonly to: Address; readonly input: Hex };
+
+function chain(options: { safes?: readonly Address[]; singletonOnly?: readonly Address[]; unreadable?: readonly Address[]; txs?: ReadonlyMap<string, SentTx> } = {}): { reader: Reader; exchanges: () => Exchange[] } {
   const transport: Transport = async (_url, body) => {
     const { method, params } = JSON.parse(body) as { method: string; params: unknown[] };
     const reply = (result: unknown) => ({ status: 200, text: JSON.stringify({ jsonrpc: '2.0', id: 1, result }) });
@@ -773,15 +803,17 @@ function chain(options: { safes?: readonly Address[]; singletonOnly?: readonly A
     }
     if (method === 'eth_getStorageAt' && !listed(options.unreadable)) return reply(listed(options.safes) || listed(options.singletonOnly) ? SINGLETON : `0x${'00'.repeat(32)}`);
     if (method === 'eth_getCode') return reply(listed(options.safes) ? PROXY : '0x6000');
+    const sent = method === 'eth_getTransactionByHash' ? options.txs?.get(params[0] as string) : undefined;
+    if (sent !== undefined) return reply({ hash: params[0], blockHash: null, blockNumber: null, from: `0x${'e0'.repeat(20)}`, to: sent.to, value: '0x0', input: sent.input, nonce: '0x1' });
     return { status: 500, text: '' };
   };
   const recorder = recordingTransport(transport, REPLAY_ENDPOINTS);
   return { reader: createReader(REPLAY_ENDPOINTS, recorder.transport, { retryPausesMs: [], rateLimitPausesMs: [] }), exchanges: recorder.exchanges };
 }
 
-const yearRun = (ask: Ask, reader: Reader, options: { maxTxs?: number; exclude?: Address; anchor?: Omit<Anchor, 'fromBlock' | 'toBlock'>; sampling?: Parameters<typeof pastTxs>[0]['sampling']; excludedByRecording?: { found: Set<Hex>; sampled: Set<Hex> } } = {}) =>
+const yearRun = (ask: Ask, reader: Reader, options: { maxTxs?: number; exclude?: Address; anchor?: Omit<Anchor, 'fromBlock' | 'toBlock'>; txParty?: true; sampling?: Parameters<typeof pastTxs>[0]['sampling']; excludedByRecording?: { found: Set<Hex>; sampled: Set<Hex> } } = {}) =>
   pastTxs(
-    { template: loadTemplate(ROOT, 'morpho/vault-deposit', registry), anchor: options.anchor ?? { token: VAULT, kind: 'mint' }, sampling: options.sampling ?? { kind: 'year', pages: YEAR_PAGES, head: HEAD } },
+    { template: loadTemplate(ROOT, 'morpho/vault-deposit', registry), anchor: options.anchor ?? { token: VAULT, kind: 'mint' }, sampling: options.sampling ?? { kind: 'year', pages: YEAR_PAGES, head: HEAD }, ...(options.txParty === undefined ? {} : { txParty: options.txParty }) },
     { ask, reader, registry, readMessage: replayMessages([]), exclude: options.exclude, maxTxs: options.maxTxs ?? 240, ...(options.excludedByRecording === undefined ? {} : { excludedByRecording: options.excludedByRecording }) },
   );
 
@@ -871,6 +903,31 @@ test('the party checked is the side the anchor leaves open: minted to, burned fr
   assert.equal(await line({ token: VAULT, kind: 'event', event }), "anchor parties: not checked, a named contract's event has no party of fixed meaning");
 });
 
+test("an event a named contract logs checks, with txParty, the address each transaction sent execTransaction to: those Safes are studied first, EOAs' transactions fill the rest, the same again from the recording", async () => {
+  const listed = mints(40);
+  const ROUTER = `0x${'66'.repeat(20)}` as Address;
+  const safeAt = [3, 17, 33];
+  const safeOfTx = (i: number) => nth(i, 'a');
+  const exec = `0x6a761202${'00'.repeat(32)}` as Hex;
+  const txs = new Map<string, SentTx>(
+    listed.map((m, i): [string, SentTx] => [m.hash, safeAt.includes(i) ? { to: safeOfTx(i), input: exec } : i === 25 ? { to: safeOfTx(i), input: '0x12345678' as Hex } : { to: ROUTER, input: '0x3593564c' as Hex }]),
+  );
+  const onChain = chain({ safes: [...safeAt, 25].map(safeOfTx), txs });
+  const event = anchorEvent(SWAP_MARKED);
+  const options = { anchor: { token: VAULT, kind: 'event', event } as const, txParty: true as const, maxTxs: 12 };
+  const recorder = recordingAsk(yearAsk(listed).ask);
+  const live = await yearRun(recorder.ask, onChain.reader, options);
+  const text = renderPastTxs(live, registry);
+  assert.match(text, /^anchor parties, the address a transaction sent execTransaction to: 3, read at block 26438400: 3 proven Safes\nchosen to study: all 3 transactions with a proven Safe party, and 9 of the other 37, taken evenly in block order$/m);
+  const hashes = new Set(studied(live));
+  assert.ok(safeAt.every((i) => hashes.has((listed[i] as Mint).hash)), 'every Safe transaction is studied');
+  assert.equal(listed.filter((m, i) => !safeAt.includes(i) && hashes.has(m.hash)).length, 9, 'the EOAs sending to the router keep their places');
+  const replayed = await yearRun(replayAsk(recorder.exchanges()), replayReader(onChain.exchanges()), options);
+  assert.equal(renderPastTxs(replayed, registry), text);
+  const unchecked = await yearRun(replayAsk(recorder.exchanges()), replayReader([]), { anchor: options.anchor, maxTxs: options.maxTxs });
+  assert.match(renderPastTxs(unchecked, registry), /^anchor parties: not checked, a named contract's event has no party of fixed meaning$/m, 'a recording made before txParty replays as it was');
+});
+
 test('the configured Safe minted to is never read, and its scrubbed recording replays the same choice', async () => {
   const listed = mints(40);
   const safe = (listed[5] as Mint).to;
@@ -920,9 +977,10 @@ test('a recording of a paged year asks the same pages again, and one of the year
 test('the report refuses a recording whose yearPages goes with wholeYear, exceeds 10, or has no head block', () => {
   const year: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'whole-year.json'));
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-past-txs-'));
+  cpSync(join(ROOT, 'registry'), join(root, 'registry'), { recursive: true });
   after(() => rmSync(root, { recursive: true, force: true }));
   mkdirSync(join(root, 'testdata', 'research'), { recursive: true });
-  const subject = { template: { id: year.query.template }, vault: undefined } as unknown as Subject;
+  const subject = { template: loadTemplate(ROOT, year.query.template, registry), vault: undefined } as unknown as Subject;
   const { wholeYear: _, ...paged } = year.query;
   const { head: __, ...headless } = paged;
   const only = (query: PastTxsRecording['query']) => {
@@ -1100,4 +1158,138 @@ test('a newest-first summary is refused when its range does not end on the block
   refused((c) => void (c.search.coverage.pages = 19), /search\.coverage\.pages: not 20, the cap that stops a search short of the year/);
   for (const maxPages of [19, MAX_PAGES + 1]) refused((c) => void (c.query.maxPages = maxPages), /its name or query holds a value `pnpm past-txs --record` never writes/);
   refused((c) => void (c.query.yearPages = 10), /its name or query holds a value `pnpm past-txs --record` never writes/);
+});
+
+const PERMIT2 = '0x000000000022d473030f116ddee9f6b43ac78ba3' as Address;
+/** A Uniswap v4 pool id, the first indexed argument of the PoolManager's Swap. */
+const POOL_ID = `0x${'8a'.repeat(31)}01`;
+const SWAP = 'Swap(bytes32 indexed id, address indexed sender, int128 amount0, int128 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick, uint24 fee)';
+const SWAP_MARKED = 'Swap(bytes32 indexed,address indexed,int128,int128,uint160,uint128,int24,uint24)';
+const APPROVAL_MARKED = 'Approval(address indexed,address indexed,uint256)';
+const approvalQuery = (eventArg: PastTxsRecording['query']['eventArg'], event = APPROVAL_MARKED): PastTxsRecording['query'] => ({
+  template: 'uniswap/approve-permit2',
+  token: LOAN,
+  anchor: 'event',
+  event,
+  ...(eventArg === undefined ? {} : { eventArg }),
+  head: '24000000',
+  maxTxs: 240,
+});
+
+test("--event-arg asks Etherscan for only the logs whose indexed argument holds the address, under that argument's topic", async () => {
+  const asked: SourceRequest[] = [];
+  const ask: Ask = async (request) => {
+    asked.push(request);
+    return { status: '0', message: 'No records found', result: [] };
+  };
+  const anchor = anchorOf(approvalQuery({ position: 2, address: PERMIT2 }));
+  await searchBoth({ ...anchor, fromBlock: 10n, toBlock: 20n }, ask);
+  assert.deepEqual(asked, [
+    {
+      source: 'etherscan',
+      query: { chainid: '1', module: 'logs', action: 'getLogs', address: LOAN, fromBlock: '10', toBlock: '20', topic0: anchorEvent(APPROVAL_MARKED).topic, topic0_2_opr: 'and', topic2: word(PERMIT2), offset: '1000', page: '1' },
+    },
+  ]);
+  asked.length = 0;
+  await searchBoth({ ...anchorOf(approvalQuery({ position: 3, address: PERMIT2 }, 'Transfer(address,address indexed,address indexed)')), fromBlock: 10n, toBlock: 20n }, ask);
+  assert.ok(asked[0]?.source === 'etherscan' && asked[0].query.topic2 === word(PERMIT2) && asked[0].query.topic0_2_opr === 'and', 'the topic counts the indexed arguments before it, not every argument');
+});
+
+test('--event-arg on an indexed bytes32, such as a v4 pool id, asks Etherscan for only the logs holding it under its topic', async () => {
+  const asked: SourceRequest[] = [];
+  const ask: Ask = async (request) => {
+    asked.push(request);
+    return { status: '0', message: 'No records found', result: [] };
+  };
+  const anchor = anchorOf({ ...approvalQuery({ position: 1, bytes32: POOL_ID }, SWAP_MARKED), template: 'uniswap/swap' });
+  await searchBoth({ ...anchor, fromBlock: 10n, toBlock: 20n }, ask);
+  assert.deepEqual(asked, [
+    {
+      source: 'etherscan',
+      query: { chainid: '1', module: 'logs', action: 'getLogs', address: LOAN, fromBlock: '10', toBlock: '20', topic0: anchorEvent(SWAP_MARKED).topic, topic0_1_opr: 'and', topic1: POOL_ID, offset: '1000', page: '1' },
+    },
+  ]);
+});
+
+test('--event-arg is refused before any read when the event marks no such indexed address argument or the value is not an address', () => {
+  const run = (event: string, arg: string, anchor = 'event') =>
+    spawnSync(process.execPath, [join(SCRIPTS, 'past-txs.ts'), 'uniswap/approve-permit2', '--token', 'usdc', '--anchor', anchor, ...(anchor === 'event' ? ['--event', event] : []), '--event-arg', arg], { encoding: 'utf8' });
+  const named = 'Approval(address indexed owner, address indexed spender, uint256 value)';
+  const cases: [string, string, string, string?][] = [
+    ['Approval(address,address,uint256)', '2=permit2', "--event-arg 2=permit2: argument 2 of Approval(address,address,uint256) is not marked indexed; mark each indexed argument, such as 'Approval(address indexed owner, address indexed spender, uint256 value)'\n"],
+    [named, '3=permit2', `--event-arg 3=permit2: argument 3 of ${named} is not marked indexed; mark each indexed argument, such as 'Approval(address indexed owner, address indexed spender, uint256 value)'\n`],
+    ['Deposit(address indexed owner, uint256 indexed id)', '2=permit2', '--event-arg 2=permit2: argument 2 of Deposit(address indexed owner, uint256 indexed id) is uint256, not an address or a bytes32\n'],
+    [named, '4=permit2', `--event-arg 4=permit2: ${named} has no argument 4\n`],
+    [named, '2=no-such-entry', '--event-arg 2=no-such-entry: no-such-entry is neither a registry name nor an address or a bytes32\n'],
+    [named, 'spender=permit2', '--event-arg spender=permit2: takes <argument number>=<registry name | address | bytes32>, such as 2=permit2\n'],
+    [named, '2=permit2', '--event-arg 2=permit2: goes with --anchor event and --event\n', 'any'],
+    [named, `2=${POOL_ID}`, `--event-arg 2=${POOL_ID}: argument 2 of ${named} is an address, 20 bytes, and ${POOL_ID} is not 0x and 40 hex digits\n`],
+    [SWAP, `1=${PERMIT2}`, `--event-arg 1=${PERMIT2}: argument 1 of ${SWAP} is a bytes32, 32 bytes, and ${PERMIT2} is not 0x and 64 hex digits\n`],
+    [SWAP, '1=permit2', `--event-arg 1=permit2: argument 1 of ${SWAP} is a bytes32, 32 bytes, and ${PERMIT2} is not 0x and 64 hex digits\n`],
+    [SWAP, `1=${POOL_ID.slice(0, -2)}`, `--event-arg 1=${POOL_ID.slice(0, -2)}: argument 1 of ${SWAP} is a bytes32, 32 bytes, and ${POOL_ID.slice(0, -2)} is not 0x and 64 hex digits\n`],
+  ];
+  for (const [event, arg, stderr, anchor] of cases) {
+    const refused = run(event, arg, anchor);
+    assert.equal(refused.status, 64, refused.stderr);
+    assert.equal(refused.stderr, stderr);
+  }
+});
+
+test("a summary keeps --event-arg in its query with the event's indexed arguments marked, and the report prints it back as the command", () => {
+  const query = approvalQuery({ position: 2, address: PERMIT2 });
+  const file = 'testdata/research/uniswap-approve-permit2-usdc.json';
+  const parsed = parseSummary(file, summaryOf(query));
+  assert.deepEqual(parsed.query, query);
+  assert.equal(
+    pastTxsCommand({ file, query: parsed.query } as PastTxsSection),
+    `pnpm past-txs uniswap/approve-permit2 --token ${LOAN} --anchor event --event '${APPROVAL_MARKED}' --event-arg 2=${PERMIT2} --max-txs 240 --same-windows-as uniswap-approve-permit2-usdc --record uniswap-approve-permit2-usdc`,
+  );
+  for (const bad of [
+    approvalQuery({ position: 2, address: PERMIT2 }, 'Approval(address,address,uint256)'),
+    approvalQuery({ position: 3, address: PERMIT2 }),
+    approvalQuery({ position: 2, address: 'permit2' }),
+    { ...approvalQuery(undefined), event: APPROVAL_MARKED },
+    approvalQuery({ position: 1, bytes32: POOL_ID }, SWAP_MARKED.replace('bytes32 indexed', 'bytes32')),
+    approvalQuery({ position: 1, bytes32: POOL_ID.slice(0, -2) }, SWAP_MARKED),
+    approvalQuery({ position: 1, address: PERMIT2 }, SWAP_MARKED),
+    approvalQuery({ position: 2, bytes32: POOL_ID }, SWAP_MARKED),
+  ]) {
+    assert.throws(() => parseSummary(file, summaryOf(bad)), /its name or query holds a value `pnpm past-txs --record` never writes/, JSON.stringify(bad));
+  }
+});
+
+test('a summary keeps a bytes32 --event-arg, and the report prints it back as the command', () => {
+  const query = approvalQuery({ position: 1, bytes32: POOL_ID }, SWAP_MARKED);
+  const file = 'testdata/research/uniswap-swap-pool.json';
+  const parsed = parseSummary(file, summaryOf(query));
+  assert.deepEqual(parsed.query, query);
+  assert.equal(
+    pastTxsCommand({ file, query: parsed.query } as PastTxsSection),
+    `pnpm past-txs uniswap/approve-permit2 --token ${LOAN} --anchor event --event '${SWAP_MARKED}' --event-arg 1=${POOL_ID} --max-txs 240 --same-windows-as uniswap-swap-pool --record uniswap-swap-pool`,
+  );
+});
+
+test('--same-windows-as takes a bytes32 --event-arg back as the summary keeps it, and refuses another', () => {
+  const seed = mkdtempSync(join(tmpdir(), 'kiss-sign-event-arg-'));
+  after(() => rmSync(seed, { recursive: true, force: true }));
+  writeFileSync(join(seed, 'swaps.json'), summaryOf(approvalQuery({ position: 1, bytes32: POOL_ID }, SWAP_MARKED)));
+  const args = ['uniswap/approve-permit2', '--token', 'usdc', '--anchor', 'event', '--event', SWAP, '--same-windows-as', 'swaps'];
+  const other = runOffline('past-txs.ts', [...args, '--event-arg', `1=0x${'77'.repeat(32)}`], 'research', { exchanges: [] }, ['swaps.json'], undefined, seed);
+  assert.equal(other.status, 64);
+  assert.equal(other.stderr, `--same-windows-as swaps: the summary searched with --event-arg 1=${POOL_ID}; give the same\n`);
+  const same = runOffline('past-txs.ts', [...args, '--event-arg', `1=${POOL_ID.toUpperCase().replace('0X', '0x')}`], 'research', { exchanges: [] }, ['swaps.json'], undefined, seed);
+  assert.doesNotMatch(same.stderr, /--same-windows-as|--event-arg/, 'the same pool id in capitals is the same search');
+});
+
+test('--same-windows-as refuses a search whose --event-arg differs from the summary\'s', () => {
+  const seed = mkdtempSync(join(tmpdir(), 'kiss-sign-event-arg-'));
+  after(() => rmSync(seed, { recursive: true, force: true }));
+  writeFileSync(join(seed, 'approvals.json'), summaryOf(approvalQuery({ position: 2, address: PERMIT2 })));
+  const args = ['uniswap/approve-permit2', '--token', 'usdc', '--anchor', 'event', '--event', 'Approval(address indexed owner, address indexed spender, uint256 value)', '--same-windows-as', 'approvals'];
+  const none = runOffline('past-txs.ts', args, 'research', { exchanges: [] }, ['approvals.json'], undefined, seed);
+  assert.equal(none.status, 64);
+  assert.equal(none.stderr, `--same-windows-as approvals: the summary searched with --event-arg 2=${PERMIT2}; give the same\n`);
+  const other = runOffline('past-txs.ts', [...args, '--event-arg', '1=permit2'], 'research', { exchanges: [] }, ['approvals.json'], undefined, seed);
+  assert.equal(other.status, 64);
+  assert.equal(other.stderr, `--same-windows-as approvals: the summary searched with --event-arg 2=${PERMIT2}; give the same\n`);
 });

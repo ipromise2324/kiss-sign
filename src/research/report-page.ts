@@ -6,10 +6,11 @@ import { OFFICIAL_MULTISEND } from '../decode/multisend.ts';
 import type { AbiParam } from '../decode/abi.ts';
 import { namedSignatureOfAbiEntry, paramName, parseFunctionSignature } from '../decode/abi.ts';
 import { say } from '../language.ts';
-import type { Language } from '../language.ts';
-import { FLOOR_RULE } from '../price/reference.ts';
+import type { Language, Prose } from '../language.ts';
+import { FLOOR_RULE, pairFacts, tradedThrough } from '../price/reference.ts';
+import type { PairFacts } from '../price/reference.ts';
 import { MARKET_PARAMS, parseHttpsUrl, sizeOf } from '../registry.ts';
-import type { HttpsUrl, Market, Registry, RegistryEntry } from '../registry.ts';
+import type { HttpsUrl, Market, Registry, RegistryEntry, TwapPool } from '../registry.ts';
 import { SAFE_TX_TYPEHASH_HEX } from '../safe/hash.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
@@ -24,7 +25,7 @@ import { tipUrlOf } from './source-page.ts';
 import type { DeployerShare, SitePlace } from './listings.ts';
 import { weightOf } from './grades.ts';
 import type { Grade } from './grades.ts';
-import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, flowResults, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
+import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, confirmationsNeeded, docOf, flowResults, forSigner, judge, needsSigner, readForOf, readOnlySite, sourceWhy, sourcesOf, stateOf, strip, worst } from './ledger.ts';
 import type { Confidence, FindingKind, Ledger, Phrase, Place, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
 import { NOTES_FILE, argumentTree, notesLanguages, notesScope, parseFlowLines, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
@@ -40,8 +41,8 @@ import type { MisfitReason } from './study.ts';
 import { readStoredEvidence } from './instance-evidence.ts';
 import type { StoredPoint } from './instance-evidence.ts';
 import type { ProtocolFacts, ProtocolSheet } from './protocol-facts.ts';
-import { signedEntryNames } from './report.ts';
-import type { ReportInputs, ReportTitle } from './report.ts';
+import { signedEntryNames, withoutUnlisted } from './report.ts';
+import type { ReadFor, ReportInputs, ReportTitle } from './report.ts';
 import { WORDS, dateOf } from './report-words.ts';
 import { compareFlow, sideOf, tokenUntested } from './trace.ts';
 import type { FlowComparison, FlowEnd, LineTally, Payment, TracedTx, Uncovered } from './trace.ts';
@@ -100,14 +101,20 @@ export type Body =
   | { readonly kind: 'vault'; readonly vault: VaultBlock }
   | { readonly kind: 'review'; readonly rows: readonly ReviewRow[]; readonly judgments: readonly Judgment[] }
   | { readonly kind: 'wallet'; readonly view: WalletView }
-  | { readonly kind: 'addresses'; readonly open: readonly AddressRow[]; readonly folded: readonly AddressRow[] }
+  | { readonly kind: 'addresses'; readonly groups: readonly AddressGroup[] }
   | { readonly kind: 'past'; readonly past: PastBlock | undefined }
   | { readonly kind: 'usage'; readonly usage: UsageBlock }
   | { readonly kind: 'next'; readonly steps: readonly NextStep[]; readonly automatic: readonly Inline[] };
 
-export type NextStep = { readonly say: Inline; readonly command: string | undefined; readonly then: readonly Inline[]; readonly hashes: boolean };
+/** `ai`: what the template's author wrote for a number this step uses, such as the margin the AI chose. */
+export type NextStep = { readonly say: Inline; readonly command: string | undefined; readonly then: readonly Inline[]; readonly hashes: boolean; readonly ai?: readonly AiText[]; readonly id?: Anchor };
+
+/** The signer's own words, shown as given above everything the AI wrote, so they can compare them with what was built. */
+export type SignerRequest = { readonly label: string; readonly text: string };
 
 export type Header = {
+  /** The request that built the template, then the one that added this instance's report; none for a template that never kept one. */
+  readonly requests: readonly SignerRequest[];
   readonly title: AiText;
   readonly summary: AiText;
   /** Said when the notes hold this page's language alone: no page in another language exists. */
@@ -117,22 +124,19 @@ export type Header = {
   readonly verdict: { readonly state: State; readonly text: AiText };
 };
 
-export type StripItem = { readonly line: StripLine | 'providers'; readonly name: string; readonly state: State; readonly count: string | undefined; readonly explain: string };
+export type StripItem = { readonly line: StripLine | 'reference' | 'providers'; readonly name: string; readonly state: State; readonly count: string | undefined; readonly explain: string };
 
-export type Who = 'you-type' | 'you-pick' | 'computed' | 'fixed' | 'free' | 'bounded';
+export type Who = 'you-type' | 'you-pick' | 'computed' | 'reads' | 'fixed' | 'free' | 'bounded';
 /** The who-decides legend, by who: the signer, the program and template, or the protocol's app. */
 export type KeyGroup = { readonly title: string; readonly items: readonly KeyItem[] };
 export type KeyItem = { readonly who: Who; readonly label: string; readonly means: string };
 export type Chip = { readonly who: Who; readonly label: string };
-/** Which of an argument's parts one decides, when its parts differ. */
-export type Mix = Chip & { readonly parts: readonly string[] };
 
 export type ArgRow = {
   readonly key: string;
   readonly name: string;
-  /** One chip, or none when `mix` says who decides each of its parts. */
+  /** One chip, or none when its parts differ, each of which then carries its own. */
   readonly chips: readonly Chip[];
-  readonly mix: readonly Mix[];
   /** As `cast decode-calldata` prints it, for a value the template fixes; none for a value decided at each signing. */
   readonly value: string | undefined;
   readonly words: Inline;
@@ -142,6 +146,8 @@ export type ArgRow = {
   readonly id: Inline | undefined;
   /** What the argument does, from notes.json; none on a row the program adds, such as a call's `to`. */
   readonly ai: AiText | undefined;
+  /** The template's own reason for its rule: why a free value is safe, or why the AI chose a number in it rather than the protocol or its app. */
+  readonly reason?: AiText;
   readonly parts: readonly { readonly label: Inline | undefined; readonly rows: readonly ArgRow[] }[];
   /** The nested call's documentation page, on a `bytes` argument the template binds to a call. */
   readonly doc: DocLine | undefined;
@@ -150,7 +156,8 @@ export type ArgRow = {
 };
 
 export type CallHead = { readonly kind: 'fn'; readonly contract: string; readonly fn: string; readonly selector: Hex; readonly doc: DocLine } | { readonly kind: 'no-data'; readonly text: string };
-export type CallBlock = { readonly n: number; readonly head: CallHead; readonly sends: Inline | undefined; readonly args: readonly ArgRow[] };
+/** `trailer`: the most bytes after the arguments the AI chose to let through, with its reason. */
+export type CallBlock = { readonly n: number; readonly head: CallHead; readonly sends: Inline | undefined; readonly args: readonly ArgRow[]; readonly trailer?: AiText };
 
 export type AfterRow = { readonly label: Inline; readonly value: Inline; readonly note: Inline; readonly gains: boolean; readonly ai?: AiText };
 
@@ -234,15 +241,17 @@ export type WalletView = { readonly safeTx: WalletRows; readonly lines: readonly
 
 /** A result on an address row: its state, and the words a result that did not pass adds to its icon. */
 export type RowResult = { readonly state: State; readonly phrase: Phrase | undefined };
+/** An address row's result with `why`, for one that failed or needs attention: what its check saw, and where the signer reviews it. */
+type SourceResult = RowResult & { readonly why: Inline | undefined };
 /** A place a site is compared with, by its word and its page. */
 export type PlaceLink = { readonly word: string; readonly href: HttpsUrl | undefined };
 
 /** A page's or the API's site, compared with the sites the places that list the entry's protocol `slug` name. */
-export type SiteResult = RowResult & { readonly slug: string | undefined; readonly places: readonly PlaceLink[] };
+export type SiteResult = SourceResult & { readonly slug: string | undefined; readonly places: readonly PlaceLink[] };
 /** What the newest version of a pinned page or SDK binds to the same label; `where` is its branch or npm version. */
-export type NewestResult = RowResult & { readonly where: string; readonly others: readonly string[] };
+export type NewestResult = SourceResult & { readonly where: string; readonly others: readonly string[] };
 /** A program source: whether it showed the address, for a page or the API its site, and for a pinned page or SDK its newest version. */
-export type SourceLine = RowResult & {
+export type SourceLine = SourceResult & {
   readonly label: string;
   readonly href: HttpsUrl | undefined;
   /** The addresses the source binds the label to instead of the entry's. */
@@ -258,6 +267,17 @@ export type AiSource = { readonly text: AiText; readonly result: AiSourceResult 
 /** The AI's reviews of an entry's results: all confirmed, or one with a concern. */
 export type Reviewed = 'confirmed' | 'concern';
 
+/**
+ * 地址's two groups: the entries the transaction touches, and the reference entries `card new` only reads a number
+ * from, which the transaction never touches; a report with no reference entry has the first alone.
+ */
+export type AddressGroup = {
+  readonly title: string;
+  readonly lead: string | undefined;
+  readonly open: readonly AddressRow[];
+  readonly folded: readonly AddressRow[];
+};
+
 export type AddressRow = {
   readonly anchor: Anchor;
   readonly name: string;
@@ -269,6 +289,8 @@ export type AddressRow = {
   readonly sources: readonly SourceLine[];
   /** The places that confirmed the address, in plain words. */
   readonly confirmed: string;
+  /** For a reference entry, which card fields `card new` reads it for and why one place is enough. */
+  readonly readFor: string | undefined;
   readonly codeLines: readonly Inline[];
   readonly aiSources: readonly AiSource[];
 };
@@ -290,7 +312,7 @@ export type PastNumbers = { readonly name: string; readonly lead: string; readon
 export type PastBlock = {
   readonly worked: { readonly answer: string; readonly rest: Inline };
   readonly numbers: readonly PastNumbers[];
-  readonly differ: { readonly lead: string; readonly open: PastTable | undefined; readonly more: { readonly label: string; readonly table: PastTable } | undefined };
+  readonly differ: { readonly lead: string; readonly folded: { readonly label: string; readonly table: PastTable } | undefined };
   readonly conclusion: AiText | undefined;
   readonly amounts: readonly PastAmounts[];
   readonly search: readonly { readonly count: string; readonly lines: readonly Inline[] }[];
@@ -332,7 +354,7 @@ function fieldWord(template: Template, name: string, w: Words): string {
 }
 
 /** A card field's word with who decides its value. */
-const byWord = (template: Template, name: string, w: Words): By => ({ field: fieldWord(template, name, w), computed: isComputed(template, name) });
+const byWord = (scope: Scope, name: string, w: Words): By => ({ field: fieldWord(scope.template, name, w), computed: isComputed(scope, name) });
 
 /** A card reference in the signer's words: the field, and the attribute or market part it names. */
 const refWord = (template: Template, ref: CardRef, w: Words): string =>
@@ -411,8 +433,12 @@ const placeWords = (entry: RegistryEntry, owner: string, sources: readonly Progr
   return words.length === 1 ? (words[0] as string) : `${words.join(' + ')} (${owner})`;
 };
 
-const confirmedWords = (entry: RegistryEntry, by: readonly Place[], w: Words, registry: Registry): string =>
-  w.confirmed(by.map(({ owner, sources }) => placeWords(entry, owner, sources, w, registry)), by.length >= MIN_CONFIRMATIONS);
+const confirmedWords = (entry: RegistryEntry, by: readonly Place[], needs: number, w: Words, registry: Registry): string =>
+  w.confirmed(by.map(({ owner, sources }) => placeWords(entry, owner, sources, w, registry)), by.length >= needs);
+
+/** Why an entry the operation only reads is in the report, with each card field it is read for in the signer's words. */
+const readForWords = (readFor: readonly ReadFor[] | undefined, template: Template, w: Words): string | undefined =>
+  readFor === undefined ? undefined : w.readFor(readFor.map((r) => ({ ...r, field: fieldWord(template, r.field, w) })));
 
 const ZERO_ADDRESS = `0x${'0'.repeat(40)}`;
 
@@ -481,7 +507,29 @@ type Context = {
   readonly comparison: FlowComparison;
 };
 
+/** What the program's results need, before any note is parsed. */
+type Judged = Omit<Context, 'notes'>;
+
 const fieldsNote = (context: Context, key: string): AiText => research(context.notes.fields.get(key) as string, [], 'ai');
+
+const withReason = (ai: AiText | undefined): { readonly reason?: AiText } => (ai === undefined ? {} : { reason: ai });
+
+/** A number the AI chose, said as such, with the reason the template gives. */
+const chosen = (what: string, why: Prose, context: Context): AiText => research(context.w.aiChose(what, say(why, context.language)), [], 'ai');
+
+/**
+ * The template's reason for the rule at `key`: a free value's, or a number the AI chose, a time limit whose reason the
+ * row's note gives, or says it lacks, or the margin of the computed field it binds.
+ */
+function reasonOf(key: string, rule: Rule, context: Context): AiText | undefined {
+  const { w, template } = context;
+  if (rule.kind === 'free') return research(w.freeReason(say(rule.reason, context.language)), [], 'ai');
+  if (rule.kind === 'within-seconds') return research(w.aiChoseNoted(w.limitChosen(rule.seconds), context.notes.fields.has(key)), [], 'ai');
+  const bound = whoOf(rule, context);
+  const field = bound?.who === 'computed' && bound.field !== undefined ? template.card.get(bound.field) : undefined;
+  const margin = field?.kind === 'amount' ? field.computed?.margin : undefined;
+  return margin === undefined ? undefined : chosen(w.marginChosen(percent(BigInt(margin.bps), 10_000n, w)), margin.why, context);
+}
 
 function decimalsOf(context: Context, token: Address): number | undefined {
   const read = context.facts?.decimals.get(token);
@@ -532,22 +580,92 @@ const sourceOfAmount = (field: Extract<CardField, { kind: 'amount' }>): AmountSo
   return field.computed === undefined ? { kind: 'typed' } : { kind: 'computed', computed: field.computed };
 };
 
-const isComputed = (template: Template, name: string): boolean => {
-  const field = template.card.get(name);
+/** What the report reads a card field's source from: the template, and the registry that decides whether a floor is computed. */
+type Scope = Pick<Context, 'template' | 'registry'>;
+
+/**
+ * One pair of registry tokens a floor field's card can name, the one sold and the one bought, with what the registry says
+ * of their price whatever else the card picks, and the pools that are a second source too unless the card picks them.
+ */
+type FloorPair = { readonly sell: RegistryEntry; readonly buy: RegistryEntry; readonly facts: PairFacts; readonly unlessPicked: readonly string[] };
+
+const floorCache = new WeakMap<Registry, WeakMap<Floor, readonly FloorPair[]>>();
+
+/** Every pair of different tokens a floor field's card can name, read as `card new` reads the pair it is given. */
+function floorPairs(scope: Scope, of: TokenRef, floor: Floor): readonly FloorPair[] {
+  const { template, registry } = scope;
+  const byFloor = floorCache.get(registry) ?? new WeakMap<Floor, readonly FloorPair[]>();
+  floorCache.set(registry, byFloor);
+  const cached = byFloor.get(floor);
+  if (cached !== undefined) return cached;
+  const entries = (ref: TokenRef | undefined): RegistryEntry[] =>
+    ref === undefined || ref === 'eth' ? [] : refNames(ref, template, registry).flatMap((name) => registry.entries.get(name) ?? []);
+  const sells = template.card.get(floor.sells);
+  const sold = sells?.kind === 'amount' ? sells.of : undefined;
+  const poolNames = (facts: PairFacts): string[] => (facts.kind === 'feeds' ? [...new Set(facts.routes.flat().map((pool) => pool.entry.name))] : []);
+  const pairs = entries(sold).flatMap((sell) =>
+    entries(of)
+      .filter((buy) => buy.address !== sell.address)
+      .map((buy) => {
+        /** The pair itself settles a reference to either token; any other the signer picks at `card new`. */
+        const settled = (ref: CardRef): string[] | undefined => {
+          const hit = [[sold, sell] as const, [of, buy] as const].find(([token]) => token !== undefined && token !== 'eth' && token.field === ref.field && token.attribute === ref.attribute);
+          return hit === undefined ? undefined : [hit[1].name];
+        };
+        const facts = pairFacts(sell, buy, registry, tradedThrough(template, (ref) => settled(ref) ?? refNames(ref, template, registry)));
+        const loose = pairFacts(sell, buy, registry, tradedThrough(template, (ref) => settled(ref) ?? []));
+        const used = new Set(poolNames(facts));
+        return { sell, buy, facts, unlessPicked: poolNames(loose).filter((name) => !used.has(name)) };
+      }),
+  );
+  byFloor.set(floor, pairs);
+  return pairs;
+}
+
+const computesPair = ({ facts }: FloorPair): boolean => facts.kind === 'feeds' && facts.pegged !== undefined;
+
+/** The pools a floor's `card new` step names as a second price source, each once. */
+const pairPools = (pairs: readonly FloorPair[]): readonly TwapPool[] => [
+  ...new Map(pairs.flatMap(({ facts }) => (facts.kind === 'feeds' ? facts.routes.flat() : [])).map((pool) => [pool.entry.name, pool] as const)).values(),
+];
+
+/** Every pool a floor step of the template names, whose `twap.minLiquidity` the AI chose and its notes say why. */
+export const floorPools = (scope: Scope): readonly TwapPool[] =>
+  pairPools(
+    [...scope.template.card.values()].flatMap((field) => {
+      const source = field.kind === 'amount' ? sourceOfAmount(field) : undefined;
+      return field.kind === 'amount' && source?.kind === 'floor' ? floorPairs(scope, field.of, source.floor) : [];
+    }),
+  );
+
+/** Whether `card new` computes the field for some value the card can take in this report, not asks the signer to type it. */
+const isComputed = (scope: Scope, name: string): boolean => {
+  const field = scope.template.card.get(name);
+  if (field?.kind !== 'amount') return false;
+  const source = sourceOfAmount(field);
+  return source.kind === 'computed' || (source.kind === 'floor' && floorPairs(scope, field.of, source.floor).some(computesPair));
+};
+
+/** The amount field `card new` fills by a rule of its own, computed or a floor, which a row binding it links to. */
+const ruledAmount = (template: Template, name: string | undefined): boolean => {
+  const field = name === undefined ? undefined : template.card.get(name);
   return field?.kind === 'amount' && sourceOfAmount(field).kind !== 'typed';
 };
 
-function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly field: string | undefined } | undefined {
+const stepAnchor = (field: string): Anchor => anchor(`next-${field}`);
+
+function whoOf(rule: Rule, scope: Scope): { readonly who: Who; readonly field: string | undefined } | undefined {
+  const { template } = scope;
   switch (rule.kind) {
     case 'card': {
       const field = template.card.get(rule.ref.field);
-      if (isComputed(template, rule.ref.field)) return { who: 'computed', field: rule.ref.field };
+      if (isComputed(scope, rule.ref.field)) return { who: 'computed', field: rule.ref.field };
       return { who: field?.kind === 'amount' || field?.kind === 'nonce' || field?.kind === 'threshold' || field?.kind === 'percent' ? 'you-type' : 'you-pick', field: rule.ref.field };
     }
     case 'owner-before':
-      return { who: 'fixed', field: undefined };
+      return { who: 'reads', field: undefined };
     case 'address-word':
-      return whoOf(rule.rule, template);
+      return whoOf(rule.rule, scope);
     case 'safe':
     case 'contract':
     case 'const':
@@ -557,16 +675,17 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
     case 'within-seconds':
       return { who: 'bounded', field: undefined };
     case 'equals':
-      return whoOf(rule.rule, template);
+      return whoOf(rule.rule, scope);
     case 'share-price': {
-      const computed = [rule.shares, rule.assets].find((q) => q.kind === 'card' && isComputed(template, q.field));
+      const computed = [rule.shares, rule.assets].find((q) => q.kind === 'card' && isComputed(scope, q.field));
       if (computed?.kind === 'card') return { who: 'computed', field: computed.field };
       return { who: 'you-type', field: rule.assets.kind === 'card' ? rule.assets.field : undefined };
     }
     case 'at-least':
     case 'at-most':
-      return { who: isComputed(template, rule.field) ? 'computed' : 'you-type', field: rule.field };
+      return { who: isComputed(scope, rule.field) ? 'computed' : 'you-type', field: rule.field };
     case 'call':
+      return rule.call.args.length === 0 ? { who: 'fixed', field: undefined } : undefined;
     case 'items':
     case 'fields':
     case 'packed':
@@ -578,25 +697,17 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
 const chipLabel = (template: Template, who: Who, field: string | undefined, w: Words): string =>
   field === undefined || who === 'fixed' ? w.who[who] : w.chip(w.who[who], fieldWord(template, field, w));
 
-function leaves(node: ArgNode, template: Template): { readonly node: ArgNode; readonly who: Who; readonly field: string | undefined }[] {
-  if (node.rule.kind === 'call') return [];
-  if (node.children.length > 0) return node.children.flatMap((child) => leaves(child, template));
-  const who = whoOf(node.rule, template);
+/** Who decides each value under a node, a nested call's arguments included. */
+function leaves(node: ArgNode, scope: Scope): { readonly node: ArgNode; readonly who: Who; readonly field: string | undefined }[] {
+  if (node.children.length > 0) return node.children.flatMap((child) => leaves(child, scope));
+  const who = whoOf(node.rule, scope);
   return who === undefined ? [] : [{ node, ...who }];
 }
 
-const WHO_ORDER: readonly Who[] = ['you-pick', 'you-type', 'computed', 'fixed', 'bounded', 'free'];
-
-/** One chip when every part agrees; else who decides each part, by name. A nested call carries neither. */
-function decided(node: ArgNode, template: Template, w: Words): { readonly chips: readonly Chip[]; readonly mix: readonly Mix[] } {
-  const found = leaves(node, template);
-  const distinct = [...new Map(found.map((leaf) => [`${leaf.who}/${leaf.field ?? ''}`, leaf])).values()];
-  if (distinct.length <= 1) return { chips: distinct.map((leaf) => ({ who: leaf.who, label: chipLabel(template, leaf.who, leaf.field, w) })), mix: [] };
-  const mix = WHO_ORDER.flatMap((who): Mix[] => {
-    const parts = [...new Set(found.flatMap((leaf) => (leaf.who === who ? [leaf.node.name] : [])))];
-    return parts.length === 0 ? [] : [{ who, label: w.who[who], parts }];
-  });
-  return { chips: [], mix };
+/** One chip when every value under it agrees, a nested call's too; none when they differ, since each part's row carries its own. */
+function decided(node: ArgNode, scope: Scope, w: Words): readonly Chip[] {
+  const distinct = [...new Map(leaves(node, scope).map((leaf) => [`${leaf.who}/${leaf.field ?? ''}`, leaf])).values()];
+  return distinct.length === 1 ? distinct.map((leaf) => ({ who: leaf.who, label: chipLabel(scope.template, leaf.who, leaf.field, w) })) : [];
 }
 
 /** The card market field a `fields` rule binds whole, part by part. */
@@ -615,7 +726,7 @@ const readsSafe = (rule: Rule): boolean =>
 /** What a view effect requires, in the signer's words. */
 function changeWords(change: ViewExpectation, context: Context): Inline {
   const { w } = context;
-  return typeof change === 'string' ? [w.change[change]] : [w.equalsTyped(byWord(context.template, change.equals, w))];
+  return typeof change === 'string' ? [w.change[change]] : [w.equalsTyped(byWord(context, change.equals, w))];
 }
 
 /** The contract a view effect reads, by name: its registry name, or the one entry its card field names in this report. */
@@ -642,8 +753,8 @@ function cardWords(ref: CardRef, context: Context): { readonly words: Inline; re
   const only = onlyEntry(ref, context);
   const picks = w.picked(refWord(context.template, ref, w));
   if (only !== undefined) return { words: [link(only)], qualifier: [picks] };
-  if (field?.kind === 'amount' || field?.kind === 'percent' || field?.kind === 'nonce' || field?.kind === 'threshold') return { words: [w.typed(byWord(context.template, ref.field, w))], qualifier: undefined };
-  return { words: [picks], qualifier: undefined };
+  if (field?.kind === 'amount' || field?.kind === 'percent' || field?.kind === 'nonce' || field?.kind === 'threshold') return { words: [w.typed(byWord(context, ref.field, w))], qualifier: [w.cardHolds] };
+  return { words: [picks], qualifier: [field?.kind === 'recipient' || field?.kind === 'owner' || field?.kind === 'address' ? w.bookHolds : w.cardHolds] };
 }
 
 function freeTest(rule: Rule, context: Context): FreeTest {
@@ -659,7 +770,9 @@ const TESTED_CLAIMS: ReadonlySet<FreeClaim> = new Set(['scalar', 'route']);
 function freeWords(rule: Extract<Rule, { kind: 'free' }>, context: Context): string {
   const { w } = context;
   const test = TESTED_CLAIMS.has(rule.claim) ? freeTest(rule, context) : 'tested';
-  return test === 'not-tested' ? w.freeNotTested : test === 'all-failed' ? w.freeAllFailed : w.free[rule.claim];
+  const result = test === 'not-tested' ? w.freeNotTested : test === 'all-failed' ? w.freeAllFailed : w.free[rule.claim];
+  const caught = w.freeCaught[rule.claim];
+  return `${caught ?? ''}${result}`;
 }
 
 function leafWords(node: ArgNode, context: Context): { readonly words: Inline; readonly qualifier: Inline | undefined } {
@@ -695,9 +808,9 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
     case 'share-price':
       return { words: [rule.bound === 'max' ? w.priceMax : w.priceMin], qualifier: [w.priceHow] };
     case 'at-least':
-      return { words: [w.atLeastTyped(byWord(context.template, rule.field, w))], qualifier: [w.atLeastHow] };
+      return { words: [w.atLeastTyped(byWord(context, rule.field, w))], qualifier: [w.atLeastHow] };
     case 'at-most':
-      return { words: [w.atMostTyped(byWord(context.template, rule.field, w))], qualifier: [w.atMostHow] };
+      return { words: [w.atMostTyped(byWord(context, rule.field, w))], qualifier: [w.atMostHow] };
     case 'call':
       return rule.call.encoding === 'params'
         ? { words: w.argsOf({ code: rule.call.fn.name }), qualifier: undefined }
@@ -728,15 +841,15 @@ function valueOf(node: ArgNode, context: Context): ArgRow['value'] {
   return only === undefined ? undefined : cast(only.address);
 }
 
-function marketPartRows(node: ArgNode, market: Market, context: Context): ArgRow[] {
+/** A whole card market's parts, each with the market's chip: the market the signer picks decides every one. */
+function marketPartRows(node: ArgNode, market: Market, chips: readonly Chip[], context: Context): ArgRow[] {
   return node.children.map((child, i) => {
     const part = MARKET_PARAMS[i] as (typeof MARKET_PARAMS)[number];
     const entry = part === 'lltv' ? undefined : market[part];
     return {
       key: child.key,
       name: child.name,
-      chips: [],
-      mix: [],
+      chips,
       value: entry === undefined ? market.lltv.toString() : checksumAddress(entry.address),
       words: entry === undefined ? [lltvWords(market.lltv, context.w)] : [link(entry)],
       qualifier: undefined,
@@ -750,9 +863,9 @@ function marketPartRows(node: ArgNode, market: Market, context: Context): ArgRow
   });
 }
 
-function argRow(node: ArgNode, context: Context, withChips: boolean, inMessage = false): ArgRow {
+function argRow(node: ArgNode, context: Context, inMessage = false): ArgRow {
   const { w } = context;
-  const { chips, mix } = withChips ? decided(node, context.template, w) : { chips: [], mix: [] };
+  const chips = decided(node, context, w);
   const market = wholeMarket(node.rule, context.template);
   if (market !== undefined) {
     const markets = [...context.registry.markets.values()];
@@ -761,46 +874,46 @@ function argRow(node: ArgNode, context: Context, withChips: boolean, inMessage =
       key: node.key,
       name: node.name,
       chips,
-      mix,
       value: undefined,
       words: shown === undefined ? [w.picked(fieldWord(context.template, market, w))] : [marketWords(shown, w)],
       qualifier: [w.marketHow(MARKET_PARAMS.length)],
       more: undefined,
       id: shown === undefined ? undefined : ['market id ', { mono: shown.id }],
       ai: fieldsNote(context, node.key),
-      parts: markets.map((m) => ({ label: markets.length === 1 ? undefined : [marketWords(m, w), w.marketId, { mono: m.id }], rows: marketPartRows(node, m, context) })),
+      parts: markets.map((m) => ({ label: markets.length === 1 ? undefined : [marketWords(m, w), w.marketId, { mono: m.id }], rows: marketPartRows(node, m, chips, context) })),
       doc: undefined,
       fixed: false,
     };
   }
-  const nestedCall = node.rule.kind === 'call';
   const leaf = leafWords(node, context);
   const { words } = leaf;
   /** A free member of a signed message is no value of this transaction: the digest fixes it, and no perturbation tries another. */
-  const qualifier = inMessage && node.rule.kind === 'free' ? [w.freeMember] : leaf.qualifier;
-  const rows = node.children.map((child) => argRow(child, context, nestedCall, inMessage || node.rule.kind === 'eip712'));
+  const bound = node.children.length === 0 ? whoOf(node.rule, context)?.field : undefined;
+  const how: Inline = ruledAmount(context.template, bound) ? [{ href: stepAnchor(bound as string), label: w.howFilled }] : [];
+  const qualifier = inMessage && node.rule.kind === 'free' ? [w.freeMember] : how.length === 0 ? leaf.qualifier : [...(leaf.qualifier ?? []), ...(leaf.qualifier === undefined ? [] : [w.listSep]), ...how];
+  const rows = node.children.map((child) => argRow(child, context, inMessage || node.rule.kind === 'eip712'));
   const doc = node.rule.kind === 'call' && node.rule.call.encoding === 'call' ? docLine(node.rule.call.fn.signature, context) : undefined;
   return {
     key: node.key,
     name: node.name,
     chips,
-    mix,
     value: valueOf(node, context),
     words,
     qualifier,
     more: moreOf(node.rule, w),
     id: undefined,
     ai: fieldsNote(context, node.key),
+    ...withReason(reasonOf(node.key, node.rule, context)),
     parts: rows.length === 0 ? [] : [{ label: undefined, rows }],
     doc,
-    fixed: (rows.length === 0 ? whoOf(node.rule, context.template)?.who === 'fixed' : rows.every((row) => row.fixed)) && (doc === undefined || doc.state === 'ok'),
+    fixed: (rows.length === 0 ? whoOf(node.rule, context)?.who === 'fixed' : rows.every((row) => row.fixed)) && (doc === undefined || doc.state === 'ok'),
   };
 }
 
 const cardTarget = (field: string, context: Context) => targetOf({ kind: 'card', ref: { field, attribute: undefined } }, context);
 
 /** Each card field a line names with its tokens: in how many transactions that held the token the line was seen, and the tokens none held. */
-const fieldWords = ({ fields }: LineTally, context: Context): string[] =>
+const fieldWords = ({ fields }: LineTally, context: Judged): string[] =>
   fields.map(({ field, tokens }) =>
     context.w.seenByToken(
       fieldWord(context.template, field, context.w),
@@ -916,7 +1029,7 @@ function sends(call: TemplateCall, context: Context, n: number): Inline | undefi
 
 function afterRows(context: Context): AfterRow[] {
   const { template, w } = context;
-  const field = (name: string): By => byWord(template, name, w);
+  const field = (name: string): By => byWord(context, name, w);
   const amountOf = (effect: Template['effects']['gives'][number], gives: boolean): Inline => {
     if (effect.amount.kind === 'all') return [w.all];
     if (effect.amount.kind === 'positive') return [gives ? w.givesMore : w.getsMore];
@@ -939,9 +1052,11 @@ function afterRows(context: Context): AfterRow[] {
                 ? w.riseOrStay
                 : w.directionOnly;
     const slack = effect.tolerance === undefined ? [] : [w.listSep, w.tolerance(effect.tolerance.less, effect.tolerance.more)];
-    return [amount, ...(effect.to === undefined ? [] : [w.toWhom(refWord(template, effect.to, w))]), ...slack];
+    const bound = 'field' in effect.amount ? effect.amount.field : undefined;
+    const how: Inline = ruledAmount(template, bound) ? [w.listSep, { href: stepAnchor(bound as string), label: w.howFilled }] : [];
+    return [amount, ...(effect.to === undefined ? [] : [w.toWhom(refWord(template, effect.to, w))]), ...slack, ...how];
   };
-  const reason = (tolerance: Tolerance | undefined): { readonly ai?: AiText } => (tolerance === undefined ? {} : { ai: research(say(tolerance.why, context.language), [], 'ai') });
+  const reason = (tolerance: Tolerance | undefined): { readonly ai?: AiText } => (tolerance === undefined ? {} : { ai: chosen(w.toleranceChosen, tolerance.why, context) });
   const name = (token: EffectToken) => effectTokenName(token, context);
   const rows: AfterRow[] = [
     ...template.effects.gives.map((e) => ({ label: [w.safeOf(name(e.token))], value: amountOf(e, true), note: note(e), gains: false, ...reason(e.tolerance) })),
@@ -996,22 +1111,22 @@ function afterRows(context: Context): AfterRow[] {
   return rows;
 }
 
-/** A row for a rule of the Safe transaction or of a call with no data, which no ABI names and notes.json does not explain. */
+/** A row for a rule of the Safe transaction or of a call with no data, which no ABI names; notes.json explains only a time limit's. */
 function ruleRow(key: string, name: string, rule: Rule, context: Context): ArgRow {
   const node: ArgNode = { key, name, param: undefined, rule, children: [] };
-  const who = whoOf(rule, context.template);
+  const who = whoOf(rule, context);
   const { words, qualifier } = leafWords(node, context);
   return {
     key,
     name,
     chips: who === undefined ? [] : [{ who: who.who, label: chipLabel(context.template, who.who, who.field, context.w) }],
-    mix: [],
     value: valueOf(node, context),
     words,
     qualifier,
     more: moreOf(rule, context.w),
     id: undefined,
-    ai: undefined,
+    ai: context.notes.fields.has(key) ? fieldsNote(context, key) : undefined,
+    ...withReason(reasonOf(key, rule, context)),
     parts: [],
     doc: undefined,
     fixed: who?.who === 'fixed',
@@ -1022,7 +1137,6 @@ const noDataRow = (key: string, w: Words): ArgRow => ({
   key,
   name: 'data',
   chips: [{ who: 'fixed', label: w.who.fixed }],
-  mix: [],
   value: '0x',
   words: [w.noData],
   qualifier: undefined,
@@ -1043,7 +1157,8 @@ function callBlocks(context: Context): CallBlock[] {
     const tree = decoded.get(n);
     if (tree !== undefined) {
       const { fn } = tree.node;
-      return { n, head: { kind: 'fn', contract: target.label, fn: fn.name, selector: fn.selector, doc: docLine(fn.signature, context) }, sends: sends(call, context, n), args: tree.args.map((arg) => argRow(arg, context, true)) };
+      const trailer = call.data === 'empty' || call.data.trailer === undefined ? {} : { trailer: chosen(context.w.trailerChosen(call.data.trailer.maxBytes), call.data.trailer.why, context) };
+      return { n, head: { kind: 'fn', contract: target.label, fn: fn.name, selector: fn.selector, doc: docLine(fn.signature, context) }, sends: sends(call, context, n), args: tree.args.map((arg) => argRow(arg, context)), ...trailer };
     }
     const text = context.w.emptyHead(target.label, !zeroValue(call));
     return { n, head: { kind: 'no-data', text }, sends: undefined, args: [ruleRow(`${n}.to`, 'to', call.to, context), ruleRow(`${n}.value`, 'value', call.value, context), noDataRow(`${n}.data`, context.w)] };
@@ -1056,7 +1171,7 @@ function keyGroups(used: ReadonlySet<Who>, context: Context): KeyGroup[] {
   const item = (who: Who, means: string): KeyItem[] => (used.has(who) ? [{ who, label: w.who[who], means }] : []);
   const { rules, member } = freeRules(template);
   const claims = (['scalar', 'route', 'proof', 'unread'] as const).filter((claim) => rules.some((rule) => rule.claim === claim));
-  const amounts = new Set([...template.card.values()].flatMap((field) => (field.kind === 'amount' ? [sourceOfAmount(field).kind] : [])));
+  const amounts = new Set([...template.card].flatMap(([name, field]) => (field.kind === 'amount' && isComputed(context, name) ? [sourceOfAmount(field).kind] : [])));
   const computed = (['computed', 'floor'] as const).filter((kind) => amounts.has(kind)).map((kind) => w.whoMeans[kind]);
   const free = claims.map((claim) => {
     const tests = TESTED_CLAIMS.has(claim) ? rules.filter((rule) => rule.claim === claim).map((rule) => freeTest(rule, context)) : [];
@@ -1065,7 +1180,7 @@ function keyGroups(used: ReadonlySet<Who>, context: Context): KeyGroup[] {
   });
   return [
     { title: w.whoGroup.you, items: [...item('you-type', w.whoMeans['you-type']), ...item('you-pick', w.whoMeans['you-pick'])] },
-    { title: w.whoGroup.program, items: [...computed.flatMap((means) => item('computed', means)), ...item('fixed', w.whoMeans.fixed)] },
+    { title: w.whoGroup.program, items: [...computed.flatMap((means) => item('computed', means)), ...item('reads', w.whoMeans.reads), ...item('fixed', w.whoMeans.fixed)] },
     { title: w.whoGroup.app, items: [...[...new Set(free)].flatMap((means) => item('free', means)), ...(member ? item('free', w.whoMeans.member) : []), ...item('bounded', w.whoMeans.bounded)] },
   ].filter((group) => group.items.length > 0);
 }
@@ -1076,10 +1191,10 @@ function flowSection(context: Context): Section {
   const safeTx = template.nonce === undefined ? [] : [ruleRow('nonce', 'nonce', template.nonce, context)];
   const rows = (list: readonly ArgRow[]): ArgRow[] => list.flatMap((row) => [row, ...rows(row.parts.flatMap((part) => part.rows))]);
   const sent = template.calls.flatMap((call) => {
-    const who = call.data === 'empty' || zeroValue(call) ? undefined : whoOf(call.value, template)?.who;
+    const who = call.data === 'empty' || zeroValue(call) ? undefined : whoOf(call.value, context)?.who;
     return who === undefined ? [] : [who];
   });
-  const used = new Set([...rows([...safeTx, ...calls.flatMap((call) => call.args)]).flatMap((row) => [...row.chips, ...row.mix].map((c) => c.who)), ...sent]);
+  const used = new Set([...rows([...safeTx, ...calls.flatMap((call) => call.args)]).flatMap((row) => row.chips.map((c) => c.who)), ...sent]);
   return {
     anchor: anchor('flow'),
     label: w.flow,
@@ -1278,7 +1393,7 @@ function firstSentence(text: string): string {
 }
 
 /** One side of a past payment: whoever sent that transaction, or the full address with its registry name. */
-function partyWords(party: Payment['from'], context: Context): string {
+function partyWords(party: Payment['from'], context: Judged): string {
   if (party === 'safe') return context.w.money.sender;
   const name = context.registry.byAddress.get(party)?.name;
   return name === undefined ? checksumAddress(party) : `${name} ${checksumAddress(party)}`;
@@ -1288,7 +1403,7 @@ function partyWords(party: Payment['from'], context: Context): string {
  * A trace result's title: who paid whom in how many past transactions, and that the template does not describe it. It
  * never says what the signer's own Safe pays, since a past sender may have moved the tokens the other way.
  */
-function moneyTitle({ kind, to, pays, sides, call, transactions }: Uncovered, context: Context): string {
+function moneyTitle({ kind, to, pays, sides, call, transactions }: Uncovered, context: Judged): string {
   const { w } = context;
   const token = to === 'other' ? w.kind.token : to;
   const side = (parties: readonly Payment['from'][]): string => {
@@ -1308,8 +1423,15 @@ function moneyTitle({ kind, to, pays, sides, call, transactions }: Uncovered, co
   return past(w.money.and(said));
 }
 
+/** `subjectOf`, its why ending, for an entry the operation only reads, with why the entry is in the report. */
+function reviewSubject(result: Result, context: Judged): { readonly subject: Inline | undefined; readonly why: Inline } {
+  const { subject, why } = subjectOf(result, context);
+  const readFor = readForWords(result.readFor, context.template, context.w);
+  return { subject, why: readFor === undefined ? why : [...why, ` ${readFor}`] };
+}
+
 /** What a result is about beyond its row's title, which already names its kind and its entry or test transaction, and why it is shown. */
-function reviewSubject(result: Result, context: Context): { readonly subject: Inline | undefined; readonly why: Inline } {
+function subjectOf(result: Result, context: Judged): { readonly subject: Inline | undefined; readonly why: Inline } {
   const { w } = context;
   const words = findingWords(result, w);
   if (result.about.kind === 'fixture') {
@@ -1338,7 +1460,7 @@ function reviewSubject(result: Result, context: Context): { readonly subject: In
   if (result.finding.kind === 'few-confirmations') {
     const { entry } = result.about;
     const places = result.finding.by.map(({ owner, sources }) => placeWords(entry, owner, sources, w, context.registry));
-    return { subject: undefined, why: w.fewConfirmations({ mono: checksumAddress(entry.address) }, places, MIN_CONFIRMATIONS) };
+    return { subject: undefined, why: w.fewConfirmations({ mono: checksumAddress(entry.address) }, places, result.finding.needs) };
   }
   const span = /\/code\.(\d+)$/.exec(result.id);
   const where = span !== null ? w.span(span[1] as string) : result.id.endsWith('/code.today') ? w.latestBlock : undefined;
@@ -1355,6 +1477,11 @@ function reviewSubject(result: Result, context: Context): { readonly subject: In
   return { subject: subject === undefined ? undefined : [subject], why: [`${words.why}${refused}`] };
 }
 
+function titleOf(result: Result, context: Judged): string {
+  const plain = result.about.kind === 'money' ? moneyTitle(result.about.uncovered, context) : findingWords(result, context.w).title;
+  return `${plain.charAt(0).toUpperCase()}${plain.slice(1)}${result.about.kind === 'entry' ? ` · ${result.about.entry.name}` : result.about.kind === 'fixture' ? ` · ${result.about.name}${result.about.sender === 'eoa' ? context.w.eoaTx : ''}` : ''}`;
+}
+
 function reviewSection(context: Context): Section {
   const { notes, ledger } = context;
   const graded = (grade: Grade) => forSigner(ledger).filter((r) => weightOf(r) === grade);
@@ -1362,13 +1489,12 @@ function reviewSection(context: Context): Section {
   const rows = grades.flatMap((grade) => graded(grade).map((result): ReviewRow => {
     const review = notes.reviews.get(result.id) as Notes['reviews'] extends ReadonlyMap<string, infer R> ? R : never;
     const { subject, why } = reviewSubject(result, context);
-    const plain = result.about.kind === 'money' ? moneyTitle(result.about.uncovered, context) : findingWords(result, context.w).title;
     const { conclusion, rest } = splitFirst(review.text);
     return {
       id: result.id,
       state: stateOf(result),
       grade,
-      title: `${plain.charAt(0).toUpperCase()}${plain.slice(1)}${result.about.kind === 'entry' ? ` · ${result.about.entry.name}` : result.about.kind === 'fixture' ? ` · ${result.about.name}` : ''}`,
+      title: titleOf(result, context),
       conclusion,
       subject,
       why,
@@ -1400,7 +1526,7 @@ function ruleWords(rule: Rule, context: Context): Inline {
       if (only !== undefined) return [link(only)];
       const kind = context.template.card.get(rule.ref.field)?.kind;
       const ref = refWord(context.template, rule.ref, w);
-      return [kind === 'amount' || kind === 'nonce' || kind === 'threshold' || kind === 'percent' ? w.typed({ field: ref, computed: isComputed(context.template, rule.ref.field) }) : w.picked(ref)];
+      return [kind === 'amount' || kind === 'nonce' || kind === 'threshold' || kind === 'percent' ? w.typed({ field: ref, computed: isComputed(context, rule.ref.field) }) : w.picked(ref)];
     }
     case 'owner-before':
       return [w.ownerBeforeShort(refWord(context.template, rule.ref, w))];
@@ -1415,9 +1541,9 @@ function ruleWords(rule: Rule, context: Context): Inline {
     case 'share-price':
       return [rule.bound === 'max' ? w.priceMax : w.priceMin];
     case 'at-least':
-      return [w.atLeastTyped(byWord(context.template, rule.field, w))];
+      return [w.atLeastTyped(byWord(context, rule.field, w))];
     case 'at-most':
-      return [w.atMostTyped(byWord(context.template, rule.field, w))];
+      return [w.atMostTyped(byWord(context, rule.field, w))];
     case 'call':
       return w.callsThen({ code: rule.call.fn.name });
     case 'keccak':
@@ -1584,6 +1710,16 @@ function codeLines(ledger: Ledger, entry: RegistryEntry, signed: ReadonlySet<str
   return lines;
 }
 
+/** A source result that failed or needs attention, in one line: why, from what its check saw, and where the signer reviews it. */
+function sourceWhyLine({ state, shown }: { readonly state: State; readonly shown: Result }, w: Words): Inline | undefined {
+  if (state !== 'bad' && state !== 'warn') return undefined;
+  const seen = sourceWhy(shown);
+  const reason = seen !== undefined ? w.sourceWhy(seen) : (shown.others ?? []).length > 0 ? '' : findingWords(shown, w).why;
+  if (needsSigner(shown)) return w.seeReview(reason, { href: anchor('review'), label: w.review });
+  if (readOnlySite(shown)) return [w.referenceSite(reason)];
+  return reason === '' ? undefined : [reason];
+}
+
 function addressSection(context: Context): Section[] {
   const { ledger, notes, w } = context;
   if (ledger.entries.length === 0) return [];
@@ -1601,12 +1737,22 @@ function addressSection(context: Context): Section[] {
         href: line.link,
         state: line.state,
         phrase: line.phrase,
+        why: sourceWhyLine(line, w),
         others: line.others.map(checksumAddress),
-        site: line.site === undefined ? undefined : { state: line.site.state, phrase: line.site.phrase, slug: entry.defillama, places: placeLinks(entry, line.site.places, w) },
+        site:
+          line.site === undefined
+            ? undefined
+            : { state: line.site.state, phrase: line.site.phrase, why: sourceWhyLine(line.site, w), slug: entry.defillama, places: placeLinks(entry, line.site.places, w) },
         newest:
           line.newest === undefined
             ? undefined
-            : { state: line.newest.state, phrase: line.newest.phrase, where: newestWhere(entry, line.source, context.inputs), others: line.newest.others.map(checksumAddress) },
+            : {
+                state: line.newest.state,
+                phrase: line.newest.phrase,
+                why: sourceWhyLine(line.newest, w),
+                where: newestWhere(entry, line.source, context.inputs),
+                others: line.newest.others.map(checksumAddress),
+              },
       }),
     );
     return {
@@ -1618,18 +1764,28 @@ function addressSection(context: Context): Section[] {
       reviewed: reviews.length === 0 ? undefined : reviews.some((r) => r.status === 'concern') ? 'concern' : 'confirmed',
       address: checksumAddress(entry.address),
       sources,
-      confirmed: confirmedWords(entry, confirmations(ledger, entry), w, context.registry),
+      confirmed: confirmedWords(entry, confirmations(ledger, entry), confirmationsNeeded(readForOf(ledger, entry)), w, context.registry),
+      readFor: readForWords(readForOf(ledger, entry), context.template, w),
       codeLines: codeLines(ledger, entry, signedEntryNames(context.template, context.registry), w),
       aiSources: (note?.sources ?? []).map((s) => ({ text: research(s.text, [s.url], 'ai'), result: s.result })),
     };
   };
   const { open, folded } = addressRows(ledger, (entry) => (notes.entries?.get(entry.name)?.sources ?? []).some((s) => s.result !== 'pass'));
+  const reads = (entry: RegistryEntry) => readForOf(ledger, entry);
+  const group = (reference: boolean): AddressGroup => {
+    const of = (entries: readonly RegistryEntry[]) => entries.filter((entry) => (reads(entry) !== undefined) === reference).map(row);
+    const n = ledger.entries.filter((entry) => (reads(entry) !== undefined) === reference).length;
+    const price = ledger.entries.every((entry) => (reads(entry) ?? []).every((r) => r.price));
+    return { title: reference ? w.addressGroup.reference(n) : w.addressGroup.touched(n), lead: reference ? w.referenceLead(price) : undefined, open: of(open), folded: of(folded) };
+  };
+  const referenced = ledger.entries.filter((entry) => reads(entry) !== undefined).length;
+  const touched = ledger.entries.length - referenced;
   return [
     {
       anchor: anchor('addresses'),
       label: w.addresses,
-      count: { kind: 'text', text: `${ledger.entries.length}` },
-      body: { kind: 'addresses', open: open.map(row), folded: folded.map(row) },
+      count: { kind: 'text', text: [touched, referenced].filter((n) => n > 0).join(' + ') },
+      body: { kind: 'addresses', groups: [...(touched === 0 ? [] : [group(false)]), ...(referenced === 0 ? [] : [group(true)])] },
     },
   ];
 }
@@ -1834,9 +1990,6 @@ function misfitWords(reason: Exclude<MisfitReason, { kind: 'calls' | 'items' | '
   }
 }
 
-/** The differences the page lists open, the commonest; the rest fold. */
-const OPEN_DIFFERENCES = 8;
-
 function differ(differences: readonly PastDifference[], context: Context, sequence: (calls: readonly PastCall[]) => Span): PastBlock['differ'] {
   const { w } = context;
   const { pastHead } = w;
@@ -1861,12 +2014,10 @@ function differ(differences: readonly PastDifference[], context: Context, sequen
       ];
     }),
   });
-  const [open, rest] = [differences.slice(0, OPEN_DIFFERENCES), differences.slice(OPEN_DIFFERENCES)];
-  const count = (list: readonly PastDifference[]): number => list.reduce((n, d) => n + d.studies.length, 0);
+  const count = differences.reduce((n, d) => n + d.studies.length, 0);
   return {
-    lead: differences.length === 0 ? w.pastNoDiffer : w.pastDifferLead(count(differences)),
-    open: open.length === 0 ? undefined : table(open),
-    more: rest.length === 0 ? undefined : { label: w.pastMore(rest.length, count(rest)), table: table(rest) },
+    lead: differences.length === 0 ? w.pastNoDiffer : w.pastDifferLead(count),
+    folded: differences.length === 0 ? undefined : { label: w.pastDifferShow(differences.length), table: table(differences) },
   };
 }
 
@@ -1910,9 +2061,10 @@ function callNamer(context: Context) {
   const known = knownFunctions(context);
   const fnOf = (selector: string): string => known.get(selector) ?? selector;
   const contractOf = (to: Address): string => registry.byAddress.get(to.toLowerCase() as Address)?.name ?? checksumAddress(to);
-  const callWords = ({ to, selector }: PastCall): string => {
+  const callWords = ({ to, selector, bytes }: PastCall): string => {
     const contract = to === undefined ? w.otherContract : to === 'sender' ? w.senderItself : contractOf(to);
-    return selector === undefined ? w.bareCall(contract, w.noDataParens) : `${contract}.${fnOf(selector)}`;
+    if (selector !== undefined) return `${contract}.${fnOf(selector)}`;
+    return w.bareCall(contract, bytes === undefined ? w.noDataParens : w.shortDataParens(bytes));
   };
   const noSelector: Readonly<Record<string, string>> = { 'no data': w.noDataParens, 'contract creation': w.creation };
   return {
@@ -1962,7 +2114,7 @@ function pastAmounts(context: Context): PastAmounts[] {
   const { registry, w } = context;
   const { contractOf } = callNamer(context);
   return context.inputs.pastTxs.flatMap(({ run }): PastAmounts[] => {
-    const { effects, unmeasured } = amountsOf(run, registry);
+    const { effects, unmeasured } = amountsOf(run, withoutUnlisted(registry, context.inputs.subject.template));
     const missed = [...unmeasured.values()].reduce((n, hashes) => n + hashes.length, 0);
     const table = (sender: readonly Difference[], receiver: readonly Difference[]): PastTable => {
       const [sent, got] = [distributionOf(sender).counts, distributionOf(receiver).counts];
@@ -1996,7 +2148,7 @@ function onlyName(ref: CardRef, context: Context): RegistryEntry | undefined {
 
 function promptStep(name: string, field: CardField, context: Context): NextStep {
   const { w } = context;
-  const step = (say: Inline, then: readonly Inline[] = []): NextStep => ({ say, command: undefined, then, hashes: false });
+  const step = (say: Inline, then: readonly Inline[] = [], ai: readonly AiText[] = []): NextStep => ({ say, command: undefined, then, hashes: false, ai, id: stepAnchor(name) });
   const word = kindWord(field, context.template, w);
   const cardNewPrompt: Inline = word === name ? [{ code: name }] : w.prompt(word, { code: name });
   switch (field.kind) {
@@ -2026,12 +2178,38 @@ function promptStep(name: string, field: CardField, context: Context): NextStep 
           return step(
             [...cardNewPrompt, ...w.typeAmount(token, { code: '1250.5' }, { code: '1,000,611.448606' })],
             [[w.amountPrints], ...(field.max === undefined ? [] : [w.orMax({ code: 'max' }, `${field.max.value}`)])],
+            field.max === undefined ? [] : [research(w.maxWhy(say(field.max.why, context.language)), [], 'ai')],
           );
         case 'floor': {
           const bps = (n: number): string => percent(BigInt(n), 10_000n, w);
+          const pairs = floorPairs(context, field.of, source.floor);
+          const priced = pairs.flatMap((pair) => (pair.facts.kind === 'feeds' ? [{ pair, facts: pair.facts }] : []));
+          if (priced.length === 0) return step([...cardNewPrompt, ...w.floorTypedPrompt({ code: source.floor.sells })], [[w.floorNone]]);
+          const second = ({ unlessPicked }: FloorPair, facts: Extract<PairFacts, { kind: 'feeds' }>): string[] => {
+            const named = [...new Set(facts.routes.flat())].map((pool) => w.poolLiquidity(pool.entry.name, `${pool.minLiquidity}`));
+            return [
+              ...(named.length > 0 ? [w.secondPool(w.list(named))] : facts.alone === undefined ? [] : [w.floorAlone[facts.alone]]),
+              ...(unlessPicked.length === 0 ? [] : [w.unlessPicked(w.list(unlessPicked))]),
+            ];
+          };
+          const lines = priced.map(({ pair, facts }): Inline => [
+            w.floorPair(pair.sell.name, pair.buy.name, computesPair(pair), w.list([...new Set([...facts.sell, ...facts.buy].map((feed) => feed.name))]), second(pair, facts)),
+          ]);
+          const rest = pairs.length - priced.length;
+          const liquidityWhy = pairPools(pairs).map((pool) => {
+            const what = w.liquidityChosen(pool.entry.name, `${pool.minLiquidity}`);
+            const why = context.notes.entries?.get(pool.entry.name)?.minLiquidity;
+            return research(why === undefined ? w.aiChoseNoted(what, false) : w.aiChose(what, why), [], 'ai');
+          });
           return step(
             [...cardNewPrompt, ...w.floorPrompt({ code: source.floor.sells })],
-            [[w.floorHow(token, bps(FLOOR_RULE.slippageBps), bps(FLOOR_RULE.maxSlippageBps), bps(FLOOR_RULE.marginBps))], [w.floorElse(bps(FLOOR_RULE.retypeBps))]],
+            [
+              ...lines,
+              ...(rest === 0 ? [] : [[w.floorRest(rest)]]),
+              ...(pairs.some(computesPair) ? [[w.floorHow(token, bps(FLOOR_RULE.slippageBps), bps(FLOOR_RULE.maxSlippageBps), bps(FLOOR_RULE.marginBps))], [w.floorLive]] : []),
+              ...(pairs.every(computesPair) ? [] : [[w.floorElse(bps(FLOOR_RULE.retypeBps))]]),
+            ],
+            liquidityWhy,
           );
         }
         case 'computed': {
@@ -2044,6 +2222,7 @@ function promptStep(name: string, field: CardField, context: Context): NextStep 
               w.computedHow({ code: computed.read.fn.name }, token, computed.bound === 'floor', bps(slippageBps(computed)), bps(computed.default.bps), margin),
               w.presetSource({ href: computed.default.source, label: shortUrl(computed.default.source) }),
             ],
+            computed.margin === undefined ? [] : [chosen(w.marginChosen(bps(computed.margin.bps)), computed.margin.why, context)],
           );
         }
       }
@@ -2124,7 +2303,7 @@ function nextSection(context: Context): Section {
     { say: w.compareHashes({ code: 'verify' }), command: undefined, then: [[w.ledgerHash]], hashes: true },
   ];
   const tokenName = (token: EffectToken) => effectTokenName(token, context);
-  const field = (name: string): By => byWord(template, name, w);
+  const field = (name: string): By => byWord(context, name, w);
   const automatic: Inline[] = [
     [w.onlyCalls(template.calls.length)],
     [w.everyArgument],
@@ -2188,22 +2367,34 @@ function stripItems(ledger: Ledger, template: Template, signed: ReadonlySet<stri
   const named = (match: (result: Result) => boolean): string[] => [...new Set(ledger.results.flatMap((r) => (match(r) && r.about.kind === 'entry' ? [r.about.entry.name] : [])))];
   const notCalled = named((r) => r.finding.kind === 'not-called');
   const unprovable = named((r) => r.finding.kind === 'routed-proxy');
+  const masked = named((r) => r.finding.kind === 'metadata-differs');
   const today = named((r) => r.id.endsWith('/code.today'));
   const routed = ledger.entries.filter((entry) => entry.routes !== undefined).map((entry) => entry.name);
   const untested = ledger.results.filter((r) => r.finding.kind === 'line-token-untested').length;
+  const review = named((r) => r.line === 'sources' && r.readFor === undefined && needsSigner(r));
   const explain: Readonly<Record<StripLine, (passed: number, counted: number) => string>> = {
-    sources: (p, c) => (p === c ? w.sourcesOk(c, MIN_CONFIRMATIONS) : w.sourcesSome(c - p, p, MIN_CONFIRMATIONS)),
-    abi: () => w.abiExplain(notCalled, unprovable),
+    sources: (p, c) => (p === c ? w.sourcesOk(c, MIN_CONFIRMATIONS) : w.sourcesSome(review.length, p, MIN_CONFIRMATIONS)),
+    abi: () => w.abiExplain(notCalled, unprovable, masked),
     code: () => w.codeExplain(subjects === 1, reportOnly, today, routed),
-    params: (_, c) => (!recorded ? unrecordedParams(template, w) : w.paramsExplain(c)),
+    params: (_, c) => (!recorded ? unrecordedParams(template, w) : w.paramsExplain(c, ledger.results.filter((r) => r.about.kind === 'fixture' && r.about.sender === 'eoa').length)),
     trace: (p, c) => w.traceExplain(p, c, untested),
   };
-  const items = strip(ledger)
-    .filter((s) => s.line === 'params' || ledger.results.some((r) => r.line === s.line))
-    .map(
-    (s): StripItem => ({ line: s.line, name: w.strip[s.line], state: s.state, count: s.line === 'params' && !recorded ? w.noTests : s.counted === 0 ? undefined : `${s.passed} / ${s.counted}`, explain: explain[s.line](s.passed, s.counted) }),
-  );
-  return [...items, { line: 'providers', name: w.strip.providers, state: 'ok', count: undefined, explain: w.providersExplain }];
+  const reference = (r: Result) => r.line === 'sources' && r.readFor !== undefined;
+  const tally = (s: ReturnType<typeof strip>[number]) => (s.counted === 0 ? undefined : `${s.passed} / ${s.counted}`);
+  const items = strip({ ...ledger, results: ledger.results.filter((r) => !reference(r)) })
+    .filter((s) => s.line === 'params' || ledger.results.some((r) => r.line === s.line && !reference(r)))
+    .map((s): StripItem => ({ line: s.line, name: w.strip[s.line], state: s.state, count: s.line === 'params' && !recorded ? w.noTests : tally(s), explain: explain[s.line](s.passed, s.counted) }));
+  const referenced = ledger.entries.filter((entry) => readForOf(ledger, entry) !== undefined);
+  const [reads] = strip({ ...ledger, results: ledger.results.filter(reference) });
+  const referenceItem = (s: NonNullable<typeof reads>): StripItem => {
+    const asks = named((r) => reference(r) && needsSigner(r));
+    const siteOnly = named(readOnlySite).filter((name) => !asks.includes(name));
+    const price = referenced.every((entry) => (readForOf(ledger, entry) ?? []).every((r) => r.price));
+    return { line: 'reference', name: w.strip.reference, state: s.state, count: tally(s), explain: w.referenceExplain(referenced.length, asks.length, siteOnly, price) };
+  };
+  const at = items.findIndex((item) => item.line === 'sources') + 1;
+  const withReference = referenced.length === 0 || reads === undefined ? items : [...items.slice(0, at), referenceItem(reads), ...items.slice(at)];
+  return [...withReference, { line: 'providers', name: w.strip.providers, state: 'ok', count: undefined, explain: w.providersExplain }];
 }
 
 /** Each transaction whose trace counts, once, though two recordings of the template may both hold it. */
@@ -2230,16 +2421,12 @@ const usageBlock = (usage: Usage | undefined, w: Words): UsageBlock =>
 
 const usageSection = (usage: Usage | undefined, w: Words): Section => ({ anchor: anchor('usage'), label: w.usage, count: undefined, body: { kind: 'usage', usage: usageBlock(usage, w) } });
 
-/**
- * The signer's page in `language`, from the report's inputs and the raw notes.json. The ledger judges every result;
- * notes.json is parsed against the scope the template and the ledger derive, so it cannot name what the page does not
- * show nor leave out a review the page needs. Throws NotesError for notes the program refuses.
- */
-export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTitle, language: Language): Page {
-  const { subject, registry } = inputs;
-  const { template } = subject;
+/** The report's results, those of the notes' `flow` lines against the call traces included; with no notes, no line. */
+function withFlow(inputs: HtmlInputs, language: Language, rawNotes: unknown): Pick<Context, 'ledger' | 'comparison'> {
+  const { registry } = inputs;
+  const { template } = inputs.subject;
   const judged = judge(inputs, inputs.fixtures);
-  const flow = parseFlowLines(rawNotes, notesScope(inputs, judged, template, language));
+  const flow = rawNotes === undefined ? [] : parseFlowLines(rawNotes, notesScope(inputs, judged, template, language));
   const shapes = shapesOf(template);
   const comparison = compareFlow(
     template,
@@ -2248,7 +2435,33 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
     tracedOnce(inputs.pastTxs.flatMap(({ run }) => run.traces)),
     new Map(inputs.pastTxs.flatMap(({ run }) => run.studies).flatMap((study) => (study.kind === 'fit' ? [[study.hash, cardAddresses(study, shapes)] as const] : []))),
   );
-  const ledger: Ledger = { ...judged, results: [...judged.results, ...flowResults(comparison)] };
+  return { comparison, ledger: { ...judged, results: [...judged.results, ...flowResults(comparison)] } };
+}
+
+export type ToReview = { readonly id: ResultId; readonly state: State; readonly title: string; readonly why: string };
+
+/** Each result the notes must review and the report's ledger, with or without any notes yet, in the page's own words. */
+export function toReview(inputs: HtmlInputs, language: Language, rawNotes: unknown): { readonly ledger: Ledger; readonly rows: readonly ToReview[] } {
+  const w = WORDS[language];
+  const { ledger, comparison } = withFlow(inputs, language, rawNotes);
+  const context: Judged = { w, language, inputs, template: inputs.subject.template, registry: inputs.registry, facts: inputs.facts, ledger, comparison };
+  const words = (spans: Inline) => spans.map((s) => (typeof s === 'string' ? s : 'code' in s ? s.code : 'mono' in s ? s.mono : 'num' in s ? s.num : s.label)).join('');
+  const rows = forSigner(ledger).map((result): ToReview => {
+    const { subject, why } = reviewSubject(result, context);
+    return { id: result.id, state: stateOf(result), title: titleOf(result, context), why: [...(subject === undefined ? [] : [words(subject)]), words(why)].join(': ') };
+  });
+  return { ledger, rows };
+}
+
+/**
+ * The signer's page in `language`, from the report's inputs and the raw notes.json. The ledger judges every result;
+ * notes.json is parsed against the scope the template and the ledger derive, so it cannot name what the page does not
+ * show nor leave out a review the page needs. Throws NotesError for notes the program refuses.
+ */
+export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTitle, language: Language): Page {
+  const { subject, registry } = inputs;
+  const { template } = subject;
+  const { ledger, comparison } = withFlow(inputs, language, rawNotes);
   const notes = parseNotes(rawNotes, notesScope(inputs, ledger, template, language));
   const w = WORDS[language];
   const context: Context = {
@@ -2268,11 +2481,15 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
     language,
     id: subject.vault === undefined ? template.id : `${template.id} · ${subject.vault.name}`,
     header: {
+      requests: [
+        ...(notes.request === undefined ? [] : [{ label: w.request, text: notes.request }]),
+        ...(notes.instanceRequest === undefined || notes.instanceRequest === notes.request ? [] : [{ label: w.instanceRequest, text: notes.instanceRequest }]),
+      ],
       title: research(notes.title),
       summary: research(notes.summary),
       onlyIn: notesLanguages(rawNotes).length === 1 ? w.onlyIn : undefined,
       strip: stripItems(ledger, template, signedEntryNames(template, registry), w),
-      verdict: { state: worst(ledger.results), text: research(notes.verdict.text, [], notes.verdict.status === 'safe' ? 'safe' : 'caution') },
+      verdict: { state: worst(ledger.results.filter((r) => !readOnlySite(r))), text: research(notes.verdict.text, [], notes.verdict.status === 'safe' ? 'safe' : 'caution') },
     },
     sections,
     footer: w.footer({ code: title.command }, sources.map((s): Span => ({ code: s })), inputs.fetched, { code: 'pnpm test' }, NOTES_FILE, inputs.usage !== undefined),

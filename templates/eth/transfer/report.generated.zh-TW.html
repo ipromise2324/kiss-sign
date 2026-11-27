@@ -91,6 +91,8 @@ section{scroll-margin-top:24px}
 .tip:focus-visible .bub{opacity:1;visibility:visible;transition:none}
 .checks .tip{position:static}
 .checks .tip .bub{left:-8px;max-width:calc(100% + 16px)}
+.checks li>.tip{align-self:center}
+.checks li>.tip>.i{margin-top:0;vertical-align:0}
 @media (max-width:600px){.tip{position:static}.tip .bub{left:0;max-width:calc(100vw - 40px)}}
 
 section{border-top:1px solid var(--line2);padding-top:28px}
@@ -118,6 +120,9 @@ h3{font-size:16px;font-weight:590;margin:36px 0 10px}
 .nest dt,.nest dd{padding:5px 0}
 .nest dt{color:var(--fg2)}
 .srcline{font-size:var(--t-small);color:var(--fg3);margin:12px 0 0}
+.request{margin:0 0 18px;padding:10px 14px;border-left:3px solid var(--fg3)}
+.request figcaption{font-size:var(--t-small);color:var(--fg3)}
+.request blockquote{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
 .srcline a{color:var(--fg2)}
 @media (max-width:600px){.props.two>div{grid-template-columns:minmax(0,1fr)}.nest{grid-template-columns:minmax(0,1fr)}.nest dd{padding-top:0}}
 
@@ -158,10 +163,6 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .deciders .defs>div{display:grid;grid-template-columns:116px minmax(0,1fr);gap:0 14px;align-items:start;font-size:var(--t-small);line-height:24px;color:var(--fg2)}
 .deciders .who{justify-self:start}
 @media (max-width:560px){.deciders .grp{grid-template-columns:minmax(0,1fr)}}
-.mix{margin:10px 0 12px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 16px;align-items:start}
-.mix dt{justify-self:start}
-.mix dd{margin:0;display:flex;flex-wrap:wrap;gap:6px;line-height:24px}
-.mix code{font-size:var(--t-label)}
 .cb{margin-top:40px}
 .callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
 .callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
@@ -241,6 +242,8 @@ details.more[open]>summary .chev{transform:rotate(90deg)}
 .ad .srcrow>.i{width:14px;height:14px;margin-top:5px}
 .site{display:flex;gap:6px;align-items:flex-start;padding-left:22px;font-size:var(--t-small);color:var(--fg2)}
 .ad .site .i{width:14px;height:14px;margin-top:3px;flex:none}
+.src .why{padding-left:22px;font-size:var(--t-small);color:var(--fg2)}
+.src .site+.why{padding-left:42px}
 .aisrcs{font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
 .aisrcs>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;font-size:var(--t-small);color:var(--fg3)}
 .aisrcs>summary::-webkit-details-marker{display:none}
@@ -393,11 +396,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="callh"><span class="no">1</span><span class="what">轉 ETH 給收款人</span></div>
     <div class="arg" data-field="1.to">
       <div class="nm"><span class="pn">to</span><span class="who you">你選：收款人</span></div>
-      <div class="val"><div class="is">你選的收款人</div></div>
+      <div class="val"><div class="is">你選的收款人 <span class="f3">從你的地址簿選，卡片記著完整地址，交易裡不同就 MISMATCH</span></div></div>
     </div>
     <div class="arg" data-field="1.value">
       <div class="nm"><span class="pn">value</span><span class="who you">你填：金額</span></div>
-      <div class="val"><div class="is">你填的金額</div></div>
+      <div class="val"><div class="is">你填的金額 <span class="f3">卡片記著這個值，交易裡不同就 MISMATCH</span></div></div>
     </div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 個固定的值；改了任何一個都是 MISMATCH</summary>
     <div class="arg" data-field="1.data">
@@ -447,8 +450,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <p class="then">它印出名字和完整地址，問 <code>Add this entry? [y/N]</code> 。每個字元都跟聊天以外的來源核對過才打 <code>y</code> 。同一個收款人只要加一次。</p></div></li>
     <li><div>做卡片<pre class="cmd"><code>pnpm kiss-sign card new eth/transfer</code></pre>
       <p class="then">你這份 clone 的 <code>templates/</code> 或 <code>registry/</code> 跟 GitHub 上的 main 不一樣時，它什麼都不問就停下，叫你先跑 <code>git pull</code> 。</p></div></li>
-    <li><div>收款人（<code>recipient</code>）：它列出你的 Safe 和地址簿裡的名字，每個附完整地址。選你要的那個，完整地址要對。</div></li>
-    <li><div>金額（<code>amount</code>）：打 ETH 的數量，用整顆幣，例如 <code>1250.5</code> ；可以有千位逗號，例如 <code>1,000,611.448606</code> 。
+    <li id="next-recipient"><div>收款人（<code>recipient</code>）：它列出你的 Safe 和地址簿裡的名字，每個附完整地址。選你要的那個，完整地址要對。</div></li>
+    <li id="next-amount"><div>金額（<code>amount</code>）：打 ETH 的數量，用整顆幣，例如 <code>1250.5</code> ；可以有千位逗號，例如 <code>1,000,611.448606</code> 。
       <p class="then">它在問 [y/N] 之前顯示的卡片列出整顆和 base units 兩種寫法，核對數字是你要的。</p></div></li>
     <li><div>它印出整張卡片，每個名字都附完整地址，最後問 <code>Is this what you mean to do? [y/N]</code> 。全部是你要的才打 <code>y</code> 。
       <p class="then">它印出 <code>Sealed card 0x…</code> ，這是卡片的 hash，下一步要用。</p></div></li>

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { RegistryError, loadRegistry, pageUrlsOf, parseRegistry } from '../src/registry.ts';
 import type { RegistryEntry } from '../src/registry.ts';
-import { checkSources, formatResults, listingsFor, parseCoinGeckoCoins, parseDefiLlamaProtocols, recordedListingReads, sourcePagesOf, trimForRecording, trimPage } from '../src/research/listings.ts';
+import { askedOnce, checkSources, formatResults, listingsFor, mergedRecording, parseCoinGeckoCoins, parseDefiLlamaProtocols, recordedListingReads, sourcePagesOf, trimForRecording, trimPage } from '../src/research/listings.ts';
 import type { Listings } from '../src/research/listings.ts';
 import { parsePublicSuffixList } from '../src/research/public-suffix.ts';
 import { parseImmunefiPrograms } from '../src/research/site-listings.ts';
@@ -343,7 +343,7 @@ async function tipReport(tip: Served): Promise<string> {
   const pages = await gatherSourcePages(entries.flatMap(pageUrlsOf), get);
   const recorded = sourcePagesOf(JSON.parse(JSON.stringify(trimForRecording(entries, listings, pages, new Date('2026-11-17')))));
   assert.equal(report(entries, listings, recorded), report(entries, listings, pages), 'the recording, read back, gives the same lines');
-  const forReport = trimReportRecording({ kind: 'template', template: {} as Template, docs: [], vault: undefined, dir: '' }, entries, listings, pages, new Date('2026-11-17'), new Map(), {} as never, [], undefined, undefined);
+  const forReport = trimReportRecording({ kind: 'template', template: {} as Template, docs: [], vault: undefined, shared: new Set(), dir: '' }, entries, listings, pages, new Date('2026-11-17'), new Map(), {} as never, [], undefined, undefined);
   assert.equal(report(entries, listings, sourcePagesOf(JSON.parse(JSON.stringify(forReport)))), report(entries, listings, pages), "the report's recording, read back, gives the same lines");
   return report(entries, listings, pages);
 }
@@ -625,4 +625,80 @@ test('an empty listing an entry needs is refused, since it would hide every comp
   const reads = recordedListingReads(recording);
   await assert.rejects(listingsFor([usdc], suffixes, { ...reads, list: async (target) => (target.path === '/protocols' ? [] : reads.list(target)) }), /DefiLlama sent an empty protocol list/);
   await assert.rejects(listingsFor([usdc], suffixes, { ...reads, list: async (target) => (target.hostname === 'api.coingecko.com' ? [] : reads.list(target)) }), /CoinGecko sent no Ethereum coins/);
+});
+
+const merge = async (named: readonly RegistryEntry[], fresh: typeof recording, old: typeof recording = recording, all: readonly RegistryEntry[] = [...loadRegistry(ROOT).entries.values()], pages?: SourcePages) => {
+  const reads = askedOnce(recordedListingReads(fresh));
+  await listingsFor(named, suffixes, reads);
+  return mergedRecording(all, old, reads, pages ?? sourcePagesOf(fresh), suffixes, new Date('2026-12-01'));
+};
+const recorded = (merged: Awaited<ReturnType<typeof merge>>) => {
+  assert.ok(!('refused' in merged), 'refused' in merged ? merged.refused : '');
+  return JSON.parse(JSON.stringify(merged)) as typeof recording;
+};
+const reportOf = async (entries: readonly RegistryEntry[], r: typeof recording) => report(entries, await listingsFor(entries, suffixes, recordedListingReads(r)), sourcePagesOf(r));
+const named = (name: string) => [loadRegistry(ROOT).entries.get(name)!];
+
+test('re-recording named entries into the registry recording keeps every other entry\'s checks, a page they share included', async () => {
+  const all = [...loadRegistry(ROOT).entries.values()];
+  const merged = recorded(await merge(named('bundler3'), recording));
+  assert.equal(merged.fetched, '2026-12-01');
+  assert.equal(await reportOf(all, merged), await reportOf(all, recording));
+});
+
+test('a re-recorded shared list replaces what the old recording held, a coin or a program it no longer lists included', async () => {
+  const usdc = named('usdc');
+  const delisted = { ...recording, coingecko: recording.coingecko.filter((c: { id: string }) => c.id !== 'usd-coin') };
+  assert.match(await reportOf(usdc, recorded(await merge(usdc, delisted))), /coingecko {2}FINDING no CoinGecko listing at this address on ethereum/);
+  const moved = { ...recording, coingecko: recording.coingecko.map((c: { id: string }) => (c.id === 'usd-coin' ? { ...c, id: 'usd-coin-2' } : c)) };
+  assert.match(await reportOf(usdc, recorded(await merge(usdc, moved))), /coingecko {2}FINDING the entry names coin usd-coin; CoinGecko lists usd-coin-2/, 'the new coin replaces the old, not beside it');
+  const closed = { ...recording, immunefi: recording.immunefi.filter((p: { slug: string }) => p.slug !== 'instadapp') };
+  const slugs = recorded(await merge(named('fluid-fusdc'), closed)).immunefi.map((p: { slug: string }) => p.slug);
+  assert.ok(!slugs.includes('instadapp') && slugs.includes('cowprotocol'), slugs.join(', '));
+});
+
+test('a slug DefiLlama lists twice in a re-recorded list stays two protocols, not compared', async () => {
+  const usdc = named('usdc');
+  const circle = recording.defillama.find((p: { slug: string }) => p.slug === 'circle-usdc');
+  const twice = { ...recording, defillama: [...recording.defillama, { ...circle, name: 'Circle Lookalike' }] };
+  assert.match(await reportOf(usdc, recorded(await merge(usdc, twice))), /DefiLlama lists 2 protocols with slug "circle-usdc"/);
+});
+
+test('a merged recording is refused when a shared Immunefi, coin or organization read got no answer, naming the read', async () => {
+  const failed = { ...recording, immunefi: { unread: 'immunefi.com answered HTTP 403' } };
+  const merged = await merge(named('fluid-fusdc'), failed);
+  assert.ok('refused' in merged && merged.refused.startsWith("no answer from Immunefi's program list (immunefi.com answered HTTP 403)"), JSON.stringify(merged).slice(0, 200));
+  const coin = await merge(named('fluid-fusdc'), { ...recording, coinLinks: { ...recording.coinLinks, instadapp: { unread: 'api.coingecko.com answered HTTP 404' } } });
+  assert.ok('refused' in coin && coin.refused.includes('CoinGecko coin instadapp (api.coingecko.com answered HTTP 404)'));
+});
+
+test('a merged recording drops a page, API answer or creation no registry entry reads any more', async () => {
+  const stale = { ...recording, pages: { ...recording.pages, 'https://gone.example/x': { kind: 'served', blocks: [] } }, creations: { ...recording.creations, [FAKE]: { kind: 'unread', why: 'x' } } };
+  const merged = recorded(await merge(named('bundler3'), recording, stale));
+  assert.ok(!('https://gone.example/x' in merged.pages));
+  assert.ok(!(FAKE in merged.creations));
+  assert.deepEqual(Object.keys(merged.pages).sort(), Object.keys(recording.pages).sort());
+});
+
+test('two entries pinning two commits of one file share its tip page, and re-recording one keeps what the other reads there', async () => {
+  const SECOND = 'b'.repeat(40);
+  const second = `https://github.com/safe-global/safe-deployments/blob/${SECOND}/src/assets/v1.3.0/multi_send.json`;
+  const tip = 'https://raw.githubusercontent.com/safe-global/safe-deployments/refs/heads/main/src/assets/v1.3.0/multi_send.json';
+  const both = entriesOf({
+    a: { address: ADDR, kind: 'router', defillama: 'safe', source: PINNED, sourceLabel: 'canonical' },
+    b: { address: OTHER, kind: 'router', defillama: 'safe', source: second, sourceLabel: 'eip155' },
+  });
+  const served = getFrom({
+    [REPO_API]: { status: 200, text: JSON.stringify({ default_branch: 'main' }) },
+    [compareUrl]: { status: 200, text: JSON.stringify({ status: 'behind' }) },
+    [`${REPO_API}/compare/main...${SECOND}?per_page=1`]: { status: 200, text: JSON.stringify({ status: 'identical' }) },
+    [RAW]: deployments,
+    [`https://raw.githubusercontent.com/safe-global/safe-deployments/${SECOND}/src/assets/v1.3.0/multi_send.json`]: deployments,
+    [tip]: { status: 200, text: JSON.stringify({ deployments: { canonical: { address: ADDR }, x: { address: FAKE }, y: { address: USDT }, eip155: { address: OTHER } } }) },
+  });
+  const old = JSON.parse(JSON.stringify(trimForRecording(both, listings, await gatherSourcePages(both.flatMap(pageUrlsOf), served), new Date('2026-11-17'))));
+  const fresh = await gatherSourcePages(pageUrlsOf(both[1]!), served);
+  const merged = recorded(await merge([both[1]!], recording, old, both, fresh));
+  assert.equal(report(both, listings, sourcePagesOf(merged)), report(both, listings, sourcePagesOf(old)));
+  assert.match(report(both, listings, sourcePagesOf(merged)), /tip {8}agrees .* binds "canonical" to the address too/);
 });

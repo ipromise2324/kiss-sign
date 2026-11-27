@@ -1,4 +1,4 @@
-import { stateOf } from './ledger.ts';
+import { readOnlySite, stateOf } from './ledger.ts';
 import type { FindingKind, Ledger, Result } from './ledger.ts';
 
 /**
@@ -10,7 +10,7 @@ export type Grade = 'key' | 'reference';
 /** A result's weight: passed, a finding of a grade, or neutral, a place with nothing to compare that is no finding. */
 export type Weight = 'pass' | Grade | 'neutral';
 
-/** The one table of weights; docs/design/flow.md (Finding grades) gives the reason for each. Unsure is key. */
+/** The one table of weights, which `weightOf` applies; docs/design/flow.md (Finding grades) gives the reason for each. Unsure is key. */
 export const WEIGHT_OF: { readonly [K in FindingKind]: Weight } = {
   agrees: 'pass',
   'site-differs': 'key',
@@ -28,6 +28,7 @@ export const WEIGHT_OF: { readonly [K in FindingKind]: Weight } = {
   'newer-differs': 'key',
   'label-differs': 'key',
   'package-differs': 'key',
+  'provenance-other-tarball': 'key',
   'few-confirmations': 'key',
   'no-answer': 'key',
   'site-not-compared': 'key',
@@ -62,7 +63,7 @@ export const WEIGHT_OF: { readonly [K in FindingKind]: Weight } = {
   'line-token-untested': 'neutral',
 };
 
-export const weightOf = (result: Result): Weight => WEIGHT_OF[result.finding.kind];
+export const weightOf = (result: Result): Weight => (readOnlySite(result) ? 'reference' : WEIGHT_OF[result.finding.kind]);
 
 /** Every finding of the ledger, key before reference, each red before amber before grey, then in ledger order. */
 export function gradedFindings(ledger: Ledger): Result[] {

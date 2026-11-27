@@ -1,0 +1,40 @@
+{
+  "id": "uniswap/approve-permit2",
+  "card": {
+    "token": {
+      "kind": "contract",
+      "registryKind": "token",
+      "names": ["usdc", "usdt", "morpho"]
+    }
+  },
+  "calls": [
+    {
+      "to": {
+        "card": "token"
+      },
+      "value": {
+        "const": "0"
+      },
+      "function": "approve(address spender, uint256 value)",
+      "args": {
+        "spender": {
+          "contract": "permit2"
+        },
+        "value": {
+          "const": "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+        }
+      }
+    }
+  ],
+  "effects": {
+    "gives": [],
+    "gets": [],
+    "approves": [
+      {
+        "token": "card.token",
+        "spender": "permit2",
+        "amount": "unlimited"
+      }
+    ]
+  }
+}

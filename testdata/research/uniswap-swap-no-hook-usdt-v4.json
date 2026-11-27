@@ -11,8 +11,8 @@
  "head": "26486775",
  "studiedWith": {
   "template": "0x58e5449287bc528e1ff4488676ffcae7ebbdf6db7bec0a5aef04566d7f9bb542",
-  "registry": "0x208938729f44b8459fc752c1c4cebe5837da6c62dfe54125be6a012edae3b405",
-  "study": "0x92508a29cee7c49b83a1d4a9f9e4e04eac8df225cb741b31331cc10dacdd84ae"
+  "registry": "0xe44b7c0876182ff4e9920f38d1873d1ec011a4f3ddebaff26e92dc442758f78b",
+  "study": "0x61f1ce5f5cd4adf417d5dffd036bcb1056828b2e57170ba4bcd0ef03b994e01d"
  },
  "search": {
   "coverage": {
@@ -192,7 +192,8 @@
     "expected": 1,
     "got": 3
    },
-   "free": []
+   "free": [],
+   "time": "1795368683"
   },
   {
    "kind": "not-studied",
@@ -307,7 +308,8 @@
     "expected": 1,
     "got": 2
    },
-   "free": []
+   "free": [],
+   "time": "1795370891"
   },
   {
    "kind": "not-studied",
@@ -366,7 +368,8 @@
     "expected": 1,
     "got": 2
    },
-   "free": []
+   "free": [],
+   "time": "1795371359"
   },
   {
    "kind": "not-studied",
@@ -397,7 +400,8 @@
     "expected": 1,
     "got": 6
    },
-   "free": []
+   "free": [],
+   "time": "1795371695"
   },
   {
    "kind": "not-studied",
@@ -470,7 +474,8 @@
     "expected": 1,
     "got": 2
    },
-   "free": []
+   "free": [],
+   "time": "1795372967"
   },
   {
    "kind": "not-studied",
@@ -1138,7 +1143,8 @@
     "expected": 1,
     "got": 2
    },
-   "free": []
+   "free": [],
+   "time": "1795388039"
   },
   {
    "kind": "not-studied",
@@ -1176,7 +1182,8 @@
     "expected": "canonical SETTLE(address,uint256,bool)",
     "actual": "differs at byte 643"
    },
-   "free": []
+   "free": [],
+   "time": "1795388759"
   },
   {
    "kind": "not-studied",
@@ -1249,7 +1256,8 @@
     "expected": 1,
     "got": 8
    },
-   "free": []
+   "free": [],
+   "time": "1795390463"
   },
   {
    "kind": "not-studied",
@@ -1525,7 +1533,8 @@
     "expected": 1,
     "got": 2
    },
-   "free": []
+   "free": [],
+   "time": "1795396655"
   },
   {
    "kind": "not-studied",
@@ -1549,7 +1558,8 @@
     "expected": 1,
     "got": 3
    },
-   "free": []
+   "free": [],
+   "time": "1795396979"
   },
   {
    "kind": "not-studied",
@@ -1685,7 +1695,8 @@
     "expected": 1,
     "got": 3
    },
-   "free": []
+   "free": [],
+   "time": "1795400699"
   },
   {
    "kind": "not-studied",
@@ -2045,7 +2056,8 @@
     "expected": "canonical SETTLE(address,uint256,bool)",
     "actual": "differs at byte 643"
    },
-   "free": []
+   "free": [],
+   "time": "1795406963"
   },
   {
    "kind": "not-studied",
@@ -2286,7 +2298,8 @@
     "expected": 1,
     "got": 4
    },
-   "free": []
+   "free": [],
+   "time": "1795412339"
   },
   {
    "kind": "not-studied",
@@ -2373,7 +2386,8 @@
     "expected": 1,
     "got": 2
    },
-   "free": []
+   "free": [],
+   "time": "1795413827"
   },
   {
    "kind": "not-studied",
@@ -2404,7 +2418,8 @@
     "expected": 1,
     "got": 5
    },
-   "free": []
+   "free": [],
+   "time": "1795414475"
   },
   {
    "kind": "not-studied",
@@ -2554,7 +2569,8 @@
     "expected": 1,
     "got": 10
    },
-   "free": []
+   "free": [],
+   "time": "1795418003"
   },
   {
    "kind": "not-studied",
@@ -3110,7 +3126,8 @@
     "expected": 1,
     "got": 9
    },
-   "free": []
+   "free": [],
+   "time": "1795430471"
   },
   {
    "kind": "not-studied",
@@ -3190,7 +3207,8 @@
     "expected": 1,
     "got": 2
    },
-   "free": []
+   "free": [],
+   "time": "1795431875"
   },
   {
    "kind": "misfit",
@@ -3207,7 +3225,8 @@
     "expected": 1,
     "got": 3
    },
-   "free": []
+   "free": [],
+   "time": "1795432091"
   },
   {
    "kind": "not-studied",
@@ -3392,7 +3411,8 @@
     "expected": 1,
     "got": 5
    },
-   "free": []
+   "free": [],
+   "time": "1795436855"
   },
   {
    "kind": "not-studied",
@@ -3836,7 +3856,8 @@
     "expected": 1,
     "got": 4
    },
-   "free": []
+   "free": [],
+   "time": "1795445375"
   },
   {
    "kind": "not-studied",
@@ -4429,7 +4450,8 @@
     "expected": 1,
     "got": 4
    },
-   "free": []
+   "free": [],
+   "time": "1795453775"
   },
   {
    "kind": "not-studied",
@@ -4642,7 +4664,8 @@
     "expected": 1,
     "got": 8
    },
-   "free": []
+   "free": [],
+   "time": "1795457951"
   },
   {
    "kind": "not-studied",
@@ -4701,7 +4724,8 @@
     "expected": 1,
     "got": 2
    },
-   "free": []
+   "free": [],
+   "time": "1795458983"
   },
   {
    "kind": "not-studied",
@@ -5250,7 +5274,8 @@
     "expected": 1,
     "got": 2
    },
-   "free": []
+   "free": [],
+   "time": "1795469411"
   },
   {
    "kind": "not-studied",
@@ -5540,7 +5565,8 @@
     "expected": 1,
     "got": 8
    },
-   "free": []
+   "free": [],
+   "time": "1795475519"
   },
   {
    "kind": "not-studied",
@@ -5599,7 +5625,8 @@
     "expected": 1,
     "got": 9
    },
-   "free": []
+   "free": [],
+   "time": "1795477151"
   },
   {
    "kind": "not-studied",
@@ -5903,7 +5930,8 @@
     "expected": 1,
     "got": 4
    },
-   "free": []
+   "free": [],
+   "time": "1795483871"
   },
   {
    "kind": "not-studied",
@@ -6144,7 +6172,8 @@
     "expected": 1,
     "got": 9
    },
-   "free": []
+   "free": [],
+   "time": "1795488239"
   },
   {
    "kind": "misfit",
@@ -6161,7 +6190,8 @@
     "expected": 1,
     "got": 9
    },
-   "free": []
+   "free": [],
+   "time": "1795488335"
   },
   {
    "kind": "not-studied",
@@ -6283,7 +6313,8 @@
     "expected": 1,
     "got": 13
    },
-   "free": []
+   "free": [],
+   "time": "1795490063"
   },
   {
    "kind": "not-studied",
@@ -6363,7 +6394,8 @@
     "expected": 1,
     "got": 7
    },
-   "free": []
+   "free": [],
+   "time": "1795491431"
   },
   {
    "kind": "not-studied",
@@ -6401,7 +6433,8 @@
     "expected": 1,
     "got": 2
    },
-   "free": []
+   "free": [],
+   "time": "1795491971"
   },
   {
    "kind": "not-studied",
@@ -6691,7 +6724,8 @@
     "expected": 1,
     "got": 7
    },
-   "free": []
+   "free": [],
+   "time": "1795498487"
   },
   {
    "kind": "not-studied",
@@ -6715,7 +6749,8 @@
     "expected": 1,
     "got": 2
    },
-   "free": []
+   "free": [],
+   "time": "1795498775"
   },
   {
    "kind": "not-studied",
@@ -6907,7 +6942,8 @@
     "expected": 1,
     "got": 3
    },
-   "free": []
+   "free": [],
+   "time": "1795503095"
   },
   {
    "kind": "not-studied",
@@ -6931,7 +6967,8 @@
     "expected": 1,
     "got": 4
    },
-   "free": []
+   "free": [],
+   "time": "1795503599"
   },
   {
    "kind": "not-studied",
@@ -7095,7 +7132,8 @@
     "expected": 1,
     "got": 6
    },
-   "free": []
+   "free": [],
+   "time": "1795507715"
   },
   {
    "kind": "not-studied",
@@ -7215,7 +7253,8 @@
      "type": "uint256",
      "value": "1795511376"
     }
-   ]
+   ],
+   "time": "1795509635"
   },
   {
    "kind": "not-studied",
@@ -7288,7 +7327,8 @@
     "expected": 1,
     "got": 3
    },
-   "free": []
+   "free": [],
+   "time": "1795510655"
   },
   {
    "kind": "not-studied",
@@ -7368,7 +7408,8 @@
     "expected": 1,
     "got": 3
    },
-   "free": []
+   "free": [],
+   "time": "1795511651"
   },
   {
    "kind": "not-studied",
@@ -7406,7 +7447,8 @@
     "expected": 1,
     "got": 12
    },
-   "free": []
+   "free": [],
+   "time": "1795512119"
   },
   {
    "kind": "not-studied",
@@ -7451,7 +7493,8 @@
     "expected": 3,
     "got": 4
    },
-   "free": []
+   "free": [],
+   "time": "1795512647"
   },
   {
    "kind": "not-studied",
@@ -7587,7 +7630,8 @@
     "expected": 1,
     "got": 5
    },
-   "free": []
+   "free": [],
+   "time": "1795514999"
   },
   {
    "kind": "not-studied",
@@ -7788,7 +7832,8 @@
      "type": "uint256",
      "value": "1795520066"
     }
-   ]
+   ],
+   "time": "1795518287"
   },
   {
    "kind": "not-studied",
@@ -7875,7 +7920,8 @@
     "expected": 1,
     "got": 3
    },
-   "free": []
+   "free": [],
+   "time": "1795519715"
   },
   {
    "kind": "not-studied",
@@ -8011,7 +8057,8 @@
     "expected": "canonical SETTLE(address,uint256,bool)",
     "actual": "differs at byte 642"
    },
-   "free": []
+   "free": [],
+   "time": "1795521635"
   },
   {
    "kind": "not-studied",
@@ -8077,7 +8124,8 @@
     "expected": 1,
     "got": 8
    },
-   "free": []
+   "free": [],
+   "time": "1795523087"
   },
   {
    "kind": "not-studied",
@@ -8283,7 +8331,8 @@
     "expected": 1,
     "got": 5
    },
-   "free": []
+   "free": [],
+   "time": "1795526003"
   },
   {
    "kind": "not-studied",
@@ -8405,7 +8454,8 @@
     "expected": 1,
     "got": 2
    },
-   "free": []
+   "free": [],
+   "time": "1795528031"
   },
   {
    "kind": "not-studied",
@@ -8653,7 +8703,8 @@
     "expected": 1,
     "got": 4
    },
-   "free": []
+   "free": [],
+   "time": "1795532555"
   },
   {
    "kind": "not-studied",
@@ -8705,7 +8756,8 @@
     "expected": 3,
     "got": 4
    },
-   "free": []
+   "free": [],
+   "time": "1795533587"
   },
   {
    "kind": "not-studied",
@@ -8953,7 +9005,8 @@
     "expected": "canonical SETTLE(address,uint256,bool)",
     "actual": "differs at byte 643"
    },
-   "free": []
+   "free": [],
+   "time": "1795538039"
   },
   {
    "kind": "not-studied",
@@ -9194,7 +9247,8 @@
     "expected": 1,
     "got": 2
    },
-   "free": []
+   "free": [],
+   "time": "1795542731"
   },
   {
    "kind": "not-studied",

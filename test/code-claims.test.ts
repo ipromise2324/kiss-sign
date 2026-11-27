@@ -23,7 +23,7 @@ function cowSwapElsewhere() {
   const [digest, owner] = call.args.orderUid.packed;
   owner.rule = { contract: 'permit2' };
   digest.rule.eip712.fields.receiver = { contract: 'gpv2-vault-relayer' };
-  return parseTemplate(raw, registry);
+  return parseTemplate(raw, registry, 'committed');
 }
 
 test('a contract a template names only inside packed bytes, a signed message or its domain has its code checked against its pin', async () => {

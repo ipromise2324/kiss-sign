@@ -91,6 +91,8 @@ section{scroll-margin-top:24px}
 .tip:focus-visible .bub{opacity:1;visibility:visible;transition:none}
 .checks .tip{position:static}
 .checks .tip .bub{left:-8px;max-width:calc(100% + 16px)}
+.checks li>.tip{align-self:center}
+.checks li>.tip>.i{margin-top:0;vertical-align:0}
 @media (max-width:600px){.tip{position:static}.tip .bub{left:0;max-width:calc(100vw - 40px)}}
 
 section{border-top:1px solid var(--line2);padding-top:28px}
@@ -118,6 +120,9 @@ h3{font-size:16px;font-weight:590;margin:36px 0 10px}
 .nest dt,.nest dd{padding:5px 0}
 .nest dt{color:var(--fg2)}
 .srcline{font-size:var(--t-small);color:var(--fg3);margin:12px 0 0}
+.request{margin:0 0 18px;padding:10px 14px;border-left:3px solid var(--fg3)}
+.request figcaption{font-size:var(--t-small);color:var(--fg3)}
+.request blockquote{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
 .srcline a{color:var(--fg2)}
 @media (max-width:600px){.props.two>div{grid-template-columns:minmax(0,1fr)}.nest{grid-template-columns:minmax(0,1fr)}.nest dd{padding-top:0}}
 
@@ -158,10 +163,6 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .deciders .defs>div{display:grid;grid-template-columns:116px minmax(0,1fr);gap:0 14px;align-items:start;font-size:var(--t-small);line-height:24px;color:var(--fg2)}
 .deciders .who{justify-self:start}
 @media (max-width:560px){.deciders .grp{grid-template-columns:minmax(0,1fr)}}
-.mix{margin:10px 0 12px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 16px;align-items:start}
-.mix dt{justify-self:start}
-.mix dd{margin:0;display:flex;flex-wrap:wrap;gap:6px;line-height:24px}
-.mix code{font-size:var(--t-label)}
 .cb{margin-top:40px}
 .callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
 .callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
@@ -241,6 +242,8 @@ details.more[open]>summary .chev{transform:rotate(90deg)}
 .ad .srcrow>.i{width:14px;height:14px;margin-top:5px}
 .site{display:flex;gap:6px;align-items:flex-start;padding-left:22px;font-size:var(--t-small);color:var(--fg2)}
 .ad .site .i{width:14px;height:14px;margin-top:3px;flex:none}
+.src .why{padding-left:22px;font-size:var(--t-small);color:var(--fg2)}
+.src .site+.why{padding-left:42px}
 .aisrcs{font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
 .aisrcs>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;font-size:var(--t-small);color:var(--fg3)}
 .aisrcs>summary::-webkit-details-marker{display:none}
@@ -393,11 +396,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="callh"><span class="no">1</span><span class="what">Send ETH to recipient</span></div>
     <div class="arg" data-field="1.to">
       <div class="nm"><span class="pn">to</span><span class="who you">you pick: recipient</span></div>
-      <div class="val"><div class="is">the recipient you pick</div></div>
+      <div class="val"><div class="is">the recipient you pick <span class="f3">picked from your address book; the card holds the full address, and another one in the transaction is a MISMATCH</span></div></div>
     </div>
     <div class="arg" data-field="1.value">
       <div class="nm"><span class="pn">value</span><span class="who you">you type: amount</span></div>
-      <div class="val"><div class="is">the amount you type</div></div>
+      <div class="val"><div class="is">the amount you type <span class="f3">the card holds it; another value in the transaction is a MISMATCH</span></div></div>
     </div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 fixed value; any change is a MISMATCH</summary>
     <div class="arg" data-field="1.data">
@@ -447,8 +450,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <p class="then">It prints the name and the full address and asks <code>Add this entry? [y/N]</code>. Type <code>y</code> only after checking every character against a source outside the chat. Add each recipient once.</p></div></li>
     <li><div>Make the card<pre class="cmd"><code>pnpm kiss-sign card new eth/transfer</code></pre>
       <p class="then">When <code>templates/</code> or <code>registry/</code> in your clone differs from main on GitHub, it stops before asking anything and tells you to run <code>git pull</code> first.</p></div></li>
-    <li><div><code>recipient</code>: it lists your Safe and the names in your address book, each with its full address. Pick the one you want; its full address must be right.</div></li>
-    <li><div><code>amount</code>: type the amount of ETH in whole tokens, such as <code>1250.5</code>; thousands commas are allowed, such as <code>1,000,611.448606</code>.
+    <li id="next-recipient"><div><code>recipient</code>: it lists your Safe and the names in your address book, each with its full address. Pick the one you want; its full address must be right.</div></li>
+    <li id="next-amount"><div><code>amount</code>: type the amount of ETH in whole tokens, such as <code>1250.5</code>; thousands commas are allowed, such as <code>1,000,611.448606</code>.
       <p class="then">The card it shows before asking [y/N] gives it both in whole tokens and in base units; check that the number is what you want.</p></div></li>
     <li><div>It prints the whole card, each name with its full address, and asks <code>Is this what you mean to do? [y/N]</code>. Type <code>y</code> only if all of it is what you want.
       <p class="then">It prints <code>Sealed card 0x…</code>, the card&#39;s hash, which the next step uses.</p></div></li>

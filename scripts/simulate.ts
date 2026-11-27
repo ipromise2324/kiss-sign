@@ -156,7 +156,7 @@ function print(label: string, observation: Observation): void {
         const show = (v: unknown) => (Array.isArray(v) ? `${v.length} entries` : String(v));
         console.log(`  safe ${field}: ${show(value)}${String(after) === String(value) ? ' (unchanged)' : ` -> ${show(after)}`}`);
       }
-    } else console.log(`  safe settings from ${evidence.logs.length} receipt logs`);
+    } else if (evidence.kind === 'receipt') console.log(`  safe settings from ${evidence.logs.length} receipt logs`);
   }
   const floor = checkSimulatedFloor(observed, safe, card?.allowed);
   if (floor.kind === 'pass') console.log('  simulated floor PASS');

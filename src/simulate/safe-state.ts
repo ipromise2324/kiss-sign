@@ -30,9 +30,13 @@ export type SafeStateRead = { readonly kind: 'read'; readonly before: SafeState;
 
 /**
  * For an executed transaction, `alone` is the reading of a simulation of it alone on its parent block, taken when the
- * card declares an owner or threshold change.
+ * card declares an owner or threshold change. `not-a-safe`: an EOA sent the transaction, so there are no Safe settings
+ * to read, and nothing shows they stayed as they were.
  */
-export type SafeStateEvidence = SafeStateRead | { readonly kind: 'receipt'; readonly logs: readonly EventLog[]; readonly alone?: SafeStateRead };
+export type SafeStateEvidence =
+  | SafeStateRead
+  | { readonly kind: 'receipt'; readonly logs: readonly EventLog[]; readonly alone?: SafeStateRead }
+  | { readonly kind: 'not-a-safe' };
 
 /** Slot constants from safe-global/safe-smart-account v1.3.0, v1.4.1 and v1.5.0; `singleton` is the first state variable. */
 export const SLOTS = {

@@ -154,3 +154,75 @@ test('a factory that answers true admits only with true, and a stored line from 
   assert.equal(readStoredEvidence(computed, vault, registry).admitted, undefined);
   assert.equal(factoryAnswer("REFUSED vault-v2-factory answered isVaultV2(address) false for hyperithm-usdc-apex-v2-9e2f: it did not create it; the vault's code is not read", vault, registry), 'not-created');
 });
+
+test('holders of a vault with more than a page of transfers are read on from the first page in ranges, and one range cut short leaves them uncounted', async () => {
+  const vault = registry.entries.get(recorded.vault)!;
+  const holder = (n: number) => `0x${n.toString(16).padStart(40, '0')}`;
+  const transfers = Array.from({ length: 2500 }, (_, i) => ({ to: holder(0x1000 + (i % 1700)), block: 20_000_000 + i * 100 }));
+  const HEAD = 24_000_000n;
+  const word = (n: bigint) => `0x${n.toString(16).padStart(64, '0')}`;
+  const bodies: { from: number; to: number; key: string | undefined }[] = [];
+  const evidenceWith = (lost: (block: number) => boolean) => {
+    const transport: Transport = async (_url, body) => {
+      const { method, params } = JSON.parse(body) as { method: string; params: unknown[] };
+      const reply = (result: unknown) => ({ status: 200, text: JSON.stringify({ result }) });
+      if (method === 'alchemy_getAssetTransfers') {
+        const { fromBlock, toBlock, pageKey } = params[0] as { fromBlock: string; toBlock: string; pageKey?: string };
+        const [from, to, start] = [Number(fromBlock), Number(toBlock), Number(pageKey ?? 0)];
+        bodies.push({ from, to, key: pageKey });
+        const held = transfers.filter((t) => t.block >= from && t.block <= to && !lost(t.block));
+        const page = held.slice(start, start + 1000).map((t) => ({ to: t.to, blockNum: `0x${t.block.toString(16)}` }));
+        return reply({ transfers: page, ...(start + 1000 < held.length ? { pageKey: `${start + 1000}` } : {}) });
+      }
+      if (method === 'eth_blockNumber') return reply(`0x${HEAD.toString(16)}`);
+      if (method.startsWith('eth_getBlock')) {
+        const number = method === 'eth_getBlockByNumber' ? (params[0] as string) : `0x${BigInt(params[0] as string).toString(16)}`;
+        return reply({ number, hash: word(BigInt(number)), timestamp: '0x1', gasLimit: '0x1', mixHash: word(1n) });
+      }
+      const call = (params[0] as { data: string }).data;
+      if (call === TOTAL_SUPPLY) return reply(word(1700n));
+      if (!call.startsWith('0x252dba42')) return reply(call === '0x313ce567' ? word(6n) : word(1n));
+      const count = BigInt(`0x${call.slice(10 + 64, 10 + 128)}`);
+      return reply(`0x${[HEAD, 64n, count, ...Array.from({ length: Number(count) }, (_, i) => count * 32n + BigInt(i) * 64n), ...Array.from({ length: Number(count) }, () => [32n, 1n]).flat()].map((n) => n.toString(16).padStart(64, '0')).join('')}`);
+    };
+    return gatherVaultEvidence(createReader(REPLAY_ENDPOINTS, transport, { retryPausesMs: [] }), alchemyCall(transport, REPLAY_ENDPOINTS[0].url, () => {}, []), vault, sizeOf(vault, registry)!, 'latest');
+  };
+  const whole = await evidenceWith(() => false);
+  assert.ok(!('kind' in whole));
+  assert.deepEqual(whole.holders?.kind === 'read' && [whole.holders.value.candidates, whole.holders.value.holders], [1700, 1700]);
+  const ranges = bodies.filter((b) => b.from !== 0);
+  assert.ok(ranges.length > 1);
+  const spans = [...new Map(ranges.map((r) => [r.from, r.to]))].sort(([x], [y]) => x - y);
+  assert.deepEqual(spans.map(([from]) => from), [transfers[999]!.block, ...spans.slice(0, -1).map(([, to]) => to + 1)], 'the ranges leave no block between them');
+  assert.equal(spans.at(-1)?.[1], Number(HEAD));
+  const short = await evidenceWith((b) => b > 20_160_000 && b < 20_170_000);
+  assert.ok(!('kind' in short));
+  assert.match(short.holders?.kind === 'unverifiable' ? short.holders.reason : '', /so the holder list is incomplete$/);
+});
+
+test('a vault whose transfers never end is read for at most 300 pages of the Transfers API, ranges and all, and its holders are not counted', async () => {
+  const vault = registry.entries.get(recorded.vault)!;
+  const HEAD = 24_000_000n;
+  const word = (n: bigint) => `0x${n.toString(16).padStart(64, '0')}`;
+  let pages = 0;
+  const transport: Transport = async (_url, body) => {
+    const { method, params } = JSON.parse(body) as { method: string; params: unknown[] };
+    const reply = (result: unknown) => ({ status: 200, text: JSON.stringify({ result }) });
+    if (method === 'alchemy_getAssetTransfers') {
+      pages++;
+      const { fromBlock } = params[0] as { fromBlock: string };
+      return reply({ transfers: [{ to: `0x${'77'.repeat(20)}`, blockNum: `0x${(Number(fromBlock) || 20_000_000).toString(16)}` }], pageKey: 'more' });
+    }
+    if (method === 'eth_blockNumber') return reply(`0x${HEAD.toString(16)}`);
+    if (method.startsWith('eth_getBlock')) {
+      const number = method === 'eth_getBlockByNumber' ? (params[0] as string) : `0x${BigInt(params[0] as string).toString(16)}`;
+      return reply({ number, hash: word(BigInt(number)), timestamp: '0x1', gasLimit: '0x1', mixHash: word(1n) });
+    }
+    const call = (params[0] as { data: string }).data;
+    return reply(call === '0x313ce567' ? word(6n) : word(1n));
+  };
+  const evidence = await gatherVaultEvidence(createReader(REPLAY_ENDPOINTS, transport, { retryPausesMs: [] }), alchemyCall(transport, REPLAY_ENDPOINTS[0].url, () => {}, []), vault, sizeOf(vault, registry)!, 'latest');
+  assert.ok(!('kind' in evidence));
+  assert.equal(evidence.holders?.kind === 'unverifiable' && evidence.holders.reason, "the vault's share transfers take more than 300 pages of the Transfers API; holders not counted");
+  assert.equal(pages, 300);
+});

@@ -10,8 +10,8 @@
  "head": "26485505",
  "studiedWith": {
   "template": "0x73d152f3283d07ac245108b5462c02cedf55bbaf0f5c03fcddcf5cbe8574afc2",
-  "registry": "0xc9081074e66902efcf385640188e5ab5ab28a864e5f612fa98a66008f007a90e",
-  "study": "0x92508a29cee7c49b83a1d4a9f9e4e04eac8df225cb741b31331cc10dacdd84ae"
+  "registry": "0xf3a9c437085fe296b5433693c670c15120e4e236f6fe9db409c0e2bddb8163be",
+  "study": "0x61f1ce5f5cd4adf417d5dffd036bcb1056828b2e57170ba4bcd0ef03b994e01d"
  },
  "search": {
   "coverage": {
@@ -103,7 +103,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1795273823"
   },
   {
    "kind": "not-studied",
@@ -863,7 +864,8 @@
     ],
     "actual": "0x8cff21c844bd4f6933686660d1d944dd2d3c0297"
    },
-   "free": []
+   "free": [],
+   "time": "1795374527"
   },
   {
    "kind": "not-studied",
@@ -990,7 +992,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1795395599"
   },
   {
    "kind": "not-studied",
@@ -1242,7 +1245,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1795417559"
   },
   {
    "kind": "not-studied",
@@ -1318,7 +1322,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1795429259"
   },
   {
    "kind": "not-studied",
@@ -1466,7 +1471,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1795446983"
   },
   {
    "kind": "not-studied",
@@ -1925,7 +1931,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1795523243"
   },
   {
    "kind": "not-studied",

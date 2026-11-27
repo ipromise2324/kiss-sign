@@ -82,7 +82,7 @@ const fixture = (name: string): Fixture => readRecording(join(ROOT, 'testdata', 
 async function recordedVerdicts(name: string, card: Card): Promise<{ simulated: EffectVerdict; executed: EffectVerdict }> {
   const recorded = fixture(name);
   const tx = safeTx(CASES[0].name);
-  const used = recorded.template === undefined ? templates : new Map([['morpho/market-supply', parseTemplate(recorded.template, registry)]]);
+  const used = recorded.template === undefined ? templates : new Map([['morpho/market-supply', parseTemplate(recorded.template, registry, 'committed')]]);
   const reader = replayReader(recorded.exchanges);
   const header = async (at: { number: string; hash: Hex }) => {
     const read = await reader.header({ number: BigInt(at.number), hash: at.hash });

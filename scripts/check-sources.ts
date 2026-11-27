@@ -1,11 +1,11 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { colorWanted, markWords, paint } from '../src/cli/format.ts';
 import { join } from 'node:path';
-import { parseArgs } from 'node:util';
 import { unreadRefusal } from '../src/chain/https.ts';
-import { loadRegistry, pageUrlsOf } from '../src/registry.ts';
+import { MARKETS_PATH, REGISTRY_PATH, attributesText, loadRegistry, pageUrlsOf, registryFromTexts } from '../src/registry.ts';
 import { gatherApiAnswers, httpsApi, retryingSend } from '../src/research/api-source.ts';
-import { checkSources, formatResults, listingsFor, liveListingReads, trimForRecording } from '../src/research/listings.ts';
+import { askedOnce, checkSources, formatResults, listingsFor, liveListingReads, mergedRecording, trimForRecording } from '../src/research/listings.ts';
+import type { ListingsRecording } from '../src/research/listings.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { gatherSourcePages, httpsGet, retryingGet } from '../src/research/source-page.ts';
 import { readGithubToken } from '../src/research/github-token.ts';
@@ -14,7 +14,10 @@ import { openMainnetReader } from '../src/chain/reader.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
 import { liveCreations } from '../src/research/deployer.ts';
 import { gatherPackages, provenanceRepositories } from '../src/research/npm-package.ts';
+import { parseFlags } from '../src/cli/flags.ts';
+import { UsageError } from '../src/cli/io.ts';
 import { exitOnHelp } from '../src/script-help.ts';
+import { refuseReadableErrors } from '../src/script-refusal.ts';
 
 const USAGE = 'usage: pnpm check-sources [<registry name>...] [--record <name>]';
 const HELP = `${USAGE}
@@ -39,7 +42,17 @@ It downloads a missing or changed Public Suffix List first, as pnpm fetch-psl do
 
 Options:
   --record <name>   Write testdata/sources/<name>.json; refused, writing nothing, when a read got
-                    no answer. <name> takes lowercase letters, digits and -.
+                    no answer. <name> takes lowercase letters, digits and -. With registry names,
+                    each read those entries make replaces the file's, a list or page other entries
+                    share included, since it is current for them too; the file keeps every read
+                    only other entries make and drops one no entry makes any more, counting the
+                    entries of test/fixtures/registry, which the tests read the file with. It is
+                    refused when an Immunefi, CoinGecko coin or GitHub organization read of this
+                    run got no answer, and says which. With no names, the file is written anew
+                    from every entry.
+
+A new or changed registry entry needs its reads in the recording the tests read:
+  pnpm check-sources <name>... --record registry
 
 Writes: testdata/sources/<name>.json with --record, otherwise nothing.
 Keys: ALCHEMY_API_KEY, DRPC_API_KEY and ETHERSCAN_API_KEY, optional, from the environment or
@@ -51,9 +64,10 @@ the sources against public listings through How the places count);
 docs/design/engine-and-chain.md, "Research services".`;
 
 exitOnHelp(HELP);
+refuseReadableErrors();
 
-const { values: flags, positionals: names } = parseArgs({ options: { record: { type: 'string' } }, allowPositionals: true });
-if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new Error('--record takes a name of lowercase letters, digits and -');
+const { values: flags, positionals: names } = parseFlags({ options: { record: { type: 'string' } }, allowPositionals: true });
+if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new UsageError('--record takes a name of lowercase letters, digits and -');
 
 const root = join(import.meta.dirname, '..');
 const registry = loadRegistry(root);
@@ -70,7 +84,9 @@ const note = (read: string) => void unread.push(read);
 const githubToken = readGithubToken(process.env);
 const get = retryingGet(httpsGet(githubToken), note);
 const packages = await gatherPackages(entries, get);
-const listings = await listingsFor(entries, loadPublicSuffixList(), liveListingReads(note, githubToken), [...entries.flatMap(pageUrlsOf), ...provenanceRepositories(packages)]);
+const suffixes = loadPublicSuffixList();
+const reads = askedOnce(liveListingReads(note, githubToken));
+const listings = await listingsFor(entries, suffixes, reads, [...entries.flatMap(pageUrlsOf), ...provenanceRepositories(packages)]);
 const apis = await gatherApiAnswers(entries, retryingSend(httpsApi, note));
 const creations = await liveCreations(entries, process.env, note, () => openMainnetReader(process.env, httpsTransport(), { note }));
 if ('missing' in creations) console.error(`NOTE  who deployed each entry is not checked: ${creations.missing}`);
@@ -81,15 +97,29 @@ const pages = {
 };
 console.log(markWords(formatResults(checkSources(entries, listings, pages)), paint(colorWanted(process.stdout.isTTY, process.env))));
 
+/** The registry the tests read a recording with: this one and the entries and markets of test/fixtures/registry, as test/repo-with-test-fixtures.ts adds them. */
+function withTestFixtures() {
+  const both = (path: string): string => {
+    const fixture = join(root, 'test', 'fixtures', path);
+    const own = existsSync(join(root, path)) ? JSON.parse(readFileSync(join(root, path), 'utf8')) : {};
+    return JSON.stringify({ ...own, ...(existsSync(fixture) ? JSON.parse(readFileSync(fixture, 'utf8')) : {}) });
+  };
+  return registryFromTexts(both(REGISTRY_PATH), both(MARKETS_PATH), attributesText(root));
+}
+
 if (flags.record !== undefined) {
-  const refusal = unreadRefusal(unread);
+  const dir = join(root, 'testdata', 'sources');
+  const path = join(dir, `${flags.record}.json`);
+  const merging = names.length > 0 && existsSync(path);
+  const written = merging
+    ? await mergedRecording([...withTestFixtures().entries.values()], JSON.parse(readFileSync(path, 'utf8')) as ListingsRecording, reads, pages, suffixes, new Date())
+    : trimForRecording(entries, listings, pages, new Date());
+  const refusal = 'refused' in written ? written.refused : unreadRefusal(unread);
   if (refusal !== undefined) {
     console.error(refusal);
     process.exit(1);
   }
-  const dir = join(root, 'testdata', 'sources');
   mkdirSync(dir, { recursive: true });
-  const path = join(dir, `${flags.record}.json`);
-  writeFileSync(path, `${JSON.stringify(trimForRecording(entries, listings, pages, new Date()), null, 2)}\n`);
-  console.log(`recorded ${path}`);
+  writeFileSync(path, `${JSON.stringify(written, null, 2)}\n`);
+  console.log(`recorded ${path}${merging ? `: the reads of ${names.join(', ')} and each shared read they made replaced, every read only other entries make kept` : ''}`);
 }

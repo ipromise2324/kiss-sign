@@ -18,6 +18,7 @@ src/chain/rpc.ts
 src/chain/types.ts
 src/cli/card-new.ts
 src/cli/card-view.ts
+src/cli/flags.ts
 src/cli/format.ts
 src/cli/io.ts
 src/cli/labels.ts
@@ -51,6 +52,7 @@ src/research/source-page.ts
 src/safe/hash.ts
 src/safe/parse.ts
 src/safe/types.ts
+src/same.ts
 src/simulate/effects.ts
 src/simulate/events.ts
 src/simulate/executed.ts

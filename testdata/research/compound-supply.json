@@ -10,8 +10,8 @@
  "head": "26470985",
  "studiedWith": {
   "template": "0xde104cdb189d7c3691a7eb728f3eee529c8d0cd27b69ffde6b7e39a7e0aff3b5",
-  "registry": "0xcfbc2a150d299d93097a0b5fd8581fcd660d541f09ddbf0c0dad2e448465c2c1",
-  "study": "0x92508a29cee7c49b83a1d4a9f9e4e04eac8df225cb741b31331cc10dacdd84ae"
+  "registry": "0xf3142173f28ede1c120e6caacb30f1b72c1a2944398c1167bb1d869692ffc8d2",
+  "study": "0x61f1ce5f5cd4adf417d5dffd036bcb1056828b2e57170ba4bcd0ef03b994e01d"
  },
  "search": {
   "coverage": {
@@ -83,7 +83,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1763734163"
   },
   {
    "kind": "not-studied",
@@ -139,7 +140,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1763957207"
   },
   {
    "kind": "misfit",
@@ -331,7 +333,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1764403931"
   },
   {
    "kind": "misfit",
@@ -350,7 +353,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1764404435"
   },
   {
    "kind": "not-studied",
@@ -376,7 +380,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1764558287"
   },
   {
    "kind": "not-studied",
@@ -564,7 +569,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1765162751"
   },
   {
    "kind": "misfit",
@@ -727,7 +733,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1765635143"
   },
   {
    "kind": "misfit",
@@ -740,7 +747,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1765635647"
   },
   {
    "kind": "misfit",
@@ -759,7 +767,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1765788491"
   },
   {
    "kind": "fit",
@@ -1073,7 +1082,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1767055211"
   },
   {
    "kind": "not-studied",
@@ -1180,7 +1190,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1767248591"
   },
   {
    "kind": "misfit",
@@ -1193,7 +1204,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1767260015"
   },
   {
    "kind": "not-studied",
@@ -1240,7 +1252,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1767663839"
   },
   {
    "kind": "not-studied",
@@ -1359,7 +1372,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1768208639"
   },
   {
    "kind": "fit",
@@ -1462,7 +1476,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1768570907"
   },
   {
    "kind": "fit",
@@ -1511,7 +1526,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1768799675"
   },
   {
    "kind": "not-studied",
@@ -1674,7 +1690,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1769407523"
   },
   {
    "kind": "fit",
@@ -1857,7 +1874,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1770000491"
   },
   {
    "kind": "not-studied",
@@ -1883,7 +1901,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1770048659"
   },
   {
    "kind": "misfit",
@@ -1902,7 +1921,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1770054623"
   },
   {
    "kind": "misfit",
@@ -1921,7 +1941,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1770117131"
   },
   {
    "kind": "misfit",
@@ -1940,7 +1961,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1770117647"
   },
   {
    "kind": "misfit",
@@ -2123,7 +2145,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1770398159"
   },
   {
    "kind": "not-studied",
@@ -2198,7 +2221,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1770497183"
   },
   {
    "kind": "not-studied",
@@ -2224,7 +2248,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1770620843"
   },
   {
    "kind": "not-studied",
@@ -2352,7 +2377,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1771859351"
   },
   {
    "kind": "not-studied",
@@ -2391,7 +2417,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1772061647"
   },
   {
    "kind": "not-studied",
@@ -2478,7 +2505,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1772399555"
   },
   {
    "kind": "fit",
@@ -2553,7 +2581,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1772657507"
   },
   {
    "kind": "not-studied",
@@ -2635,7 +2664,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1773173591"
   },
   {
    "kind": "fit",
@@ -2765,7 +2795,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1773839231"
   },
   {
    "kind": "misfit",
@@ -2784,7 +2815,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1773839615"
   },
   {
    "kind": "not-studied",
@@ -2817,7 +2849,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1774090391"
   },
   {
    "kind": "not-studied",
@@ -2876,7 +2909,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1774589855"
   },
   {
    "kind": "fit",
@@ -2992,7 +3026,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1775088755"
   },
   {
    "kind": "not-studied",
@@ -3048,7 +3083,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1775457311"
   },
   {
    "kind": "fit",
@@ -3127,7 +3163,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1775722727"
   },
   {
    "kind": "misfit",
@@ -3331,7 +3368,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1776179579"
   },
   {
    "kind": "misfit",
@@ -3389,7 +3427,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1776445115"
   },
   {
    "kind": "misfit",
@@ -3408,7 +3447,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1776446195"
   },
   {
    "kind": "fit",
@@ -3457,7 +3497,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1776628979"
   },
   {
    "kind": "fit",
@@ -3600,7 +3641,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1777486247"
   },
   {
    "kind": "not-studied",
@@ -3666,7 +3708,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1778593895"
   },
   {
    "kind": "not-studied",
@@ -3692,7 +3735,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1778622107"
   },
   {
    "kind": "fit",
@@ -3741,7 +3785,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1778932223"
   },
   {
    "kind": "not-studied",
@@ -3767,7 +3812,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1779028955"
   },
   {
    "kind": "not-studied",
@@ -4091,7 +4137,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1781075315"
   },
   {
    "kind": "fit",
@@ -4154,7 +4201,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1782059903"
   },
   {
    "kind": "not-studied",
@@ -4377,7 +4425,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1784114375"
   },
   {
    "kind": "misfit",
@@ -4396,7 +4445,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1784184767"
   },
   {
    "kind": "not-studied",
@@ -4618,7 +4668,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1786179683"
   },
   {
    "kind": "not-studied",
@@ -5088,7 +5139,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1788229235"
   },
   {
    "kind": "not-studied",
@@ -5121,7 +5173,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1788293903"
   },
   {
    "kind": "not-studied",
@@ -5228,7 +5281,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1788514643"
   },
   {
    "kind": "misfit",
@@ -5241,7 +5295,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1788532343"
   },
   {
    "kind": "not-studied",
@@ -5645,7 +5700,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1789527935"
   },
   {
    "kind": "not-studied",
@@ -5830,7 +5886,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1790077787"
   },
   {
    "kind": "not-studied",
@@ -5977,7 +6034,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1790446535"
   },
   {
    "kind": "not-studied",
@@ -6128,7 +6186,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1790866259"
   },
   {
    "kind": "not-studied",
@@ -6191,7 +6250,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1790950775"
   },
   {
    "kind": "not-studied",
@@ -6254,7 +6314,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1791293099"
   },
   {
    "kind": "misfit",
@@ -6273,7 +6334,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1791324563"
   },
   {
    "kind": "not-studied",
@@ -6299,7 +6361,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1791374459"
   },
   {
    "kind": "misfit",
@@ -6318,7 +6381,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1791375287"
   },
   {
    "kind": "misfit",
@@ -6450,7 +6514,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1791827975"
   },
   {
    "kind": "fit",
@@ -6657,7 +6722,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1792509299"
   },
   {
    "kind": "misfit",
@@ -6676,7 +6742,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1792510883"
   },
   {
    "kind": "misfit",
@@ -6714,7 +6781,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1792530203"
   },
   {
    "kind": "not-studied",
@@ -6747,7 +6815,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1792590191"
   },
   {
    "kind": "misfit",
@@ -6766,7 +6835,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1792591055"
   },
   {
    "kind": "not-studied",
@@ -6822,7 +6892,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1792775819"
   },
   {
    "kind": "not-studied",
@@ -6848,7 +6919,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1792840091"
   },
   {
    "kind": "misfit",
@@ -6875,7 +6947,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1792989539"
   },
   {
    "kind": "not-studied",
@@ -6909,7 +6982,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1793019251"
   },
   {
    "kind": "misfit",
@@ -6936,7 +7010,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1793019287"
   },
   {
    "kind": "not-studied",
@@ -6962,7 +7037,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1793202419"
   },
   {
    "kind": "not-studied",
@@ -7139,7 +7215,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1794225587"
   },
   {
    "kind": "not-studied",

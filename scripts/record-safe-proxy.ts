@@ -9,7 +9,9 @@ import { kissSignHome } from '../src/keys.ts';
 import { safeProxyCreated } from '../src/safe/deployments.ts';
 import { parseHex } from '../src/safe/types.ts';
 import { recordingText } from '../src/chain/bytecode.ts';
+import { UsageError } from '../src/cli/io.ts';
 import { exitOnHelp } from '../src/script-help.ts';
+import { refuseReadableErrors } from '../src/script-refusal.ts';
 
 const USAGE = 'usage: pnpm record-safe-proxy <name> <transaction hash>';
 const HELP = `${USAGE}
@@ -28,9 +30,10 @@ Rules: docs/design/flow.md, "First time an operation is done: build its template
   Who sent it, by type).`;
 
 exitOnHelp(HELP);
+refuseReadableErrors();
 
 const [name, hashArg] = process.argv.slice(2);
-if (name === undefined || hashArg === undefined || !/^[a-z0-9-]+$/.test(name)) throw new Error(USAGE);
+if (name === undefined || hashArg === undefined || !/^[a-z0-9-]+$/.test(name)) throw new UsageError(USAGE);
 const hash = parseHex('transaction hash', hashArg);
 
 const endpoints = mainnetEndpoints(process.env);

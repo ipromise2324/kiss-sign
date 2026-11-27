@@ -32,8 +32,11 @@ Part of [the kiss-sign design](../design.md).
   Within a block, the label and the address only need to be close: a page that writes another contract's name next to the address, or an AI that picks a label from the wrong row of a block holding no other address, still agrees.
   The `sourceLabel` and `sourceHeading` are chosen by the AI and reviewed by the signer with the registry entry.
 - The places that list a protocol's sites are themselves listings: CoinGecko and Immunefi take a protocol's word for its homepage and GitHub organization, and GitHub verifies only that an organization controls a domain, not that the domain is the protocol's.
-  A site passes when any one of them names it, so one wrong listing can make a lookalike site pass; the address still needs two places.
+  A site passes when any one of them names it, so one wrong listing can make a lookalike site pass; the address still needs two places, or one for an entry the operation only reads.
   A bounty program's scope is also its own word: a program that lists another protocol's website in scope is tied to that protocol, and its scope then counts as one place for an address it holds; the address still needs a second.
+- An entry the operation only reads, such as a price feed of a swap's floor, needs one place, and a site that differs is only reference for it and stays out of 待確認, so one lookalike page can name a lookalike feed that passes with nothing for the signer to review but the price `card new` prints.
+  Its code pin and ABI proof still hold, and its number reaches the transaction only through the card.
+  When the pair has a pool the template does not name, the pool's mean price is read against the feeds and a gap over the limit puts the price in doubt (see A floor's feeds trust their publisher, below); otherwise the signer catches a wrong feed only by checking the price `card new` prints against the one they expect, and a feed whose answer is close to the real one, or a pool an attacker moves with it, lowers the floor by that much.
 - Counting places by owner sees only registrable domains and GitHub organizations.
   Two domains of one owner count as two places, as do a domain and the GitHub organization of the same team, and pages on two domains served by one CDN or host.
 - The deployer proof cannot tell apart two transactions in one block that both call the factory that created the address; it takes the one Etherscan names.

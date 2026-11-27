@@ -1,15 +1,17 @@
 import { readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { parseArgs } from 'node:util';
 import { openMainnetReader } from '../src/chain/reader.ts';
 import { pinOf, readCodeHistory, readRunningCode, samePin } from '../src/contracts/code.ts';
+import type { WalkProgress } from '../src/contracts/code.ts';
 import { describeRefusal } from '../src/contracts/prove.ts';
 import { mergeRegistry } from '../src/history/load.ts';
 import { kissSignHome } from '../src/keys.ts';
 import { REGISTRY_PATH, attributesText, registryFromTexts, unreachedSeeds } from '../src/registry.ts';
 import type { CodePin, CodePins, CodeSpan, PinnedCode, ProxyDeclaration, Route } from '../src/registry.ts';
 import { checksumAddress, parseAddress } from '../src/safe/types.ts';
+import { parseFlags } from '../src/cli/flags.ts';
 import { exitOnHelp } from '../src/script-help.ts';
+import { refuseReadableErrors } from '../src/script-refusal.ts';
 
 const USAGE = 'usage: pnpm pin-code [<registry name>...] [--history]';
 const HELP = `${USAGE}
@@ -22,7 +24,8 @@ prints each pin as new, unchanged, or CHANGED with the old pin. It refuses an en
 seeds routes nowhere. For an entry with no pin, a pin with no from, or a changed pin, it then
 searches the blocks back to the deployment for each change of that code, writes the first block of
 today's code as from and each older pin with its from under earlier, prints each span, and prints
-FINDING for a recorded pin it did not find again. With no names it pins every entry. Any REFUSED
+FINDING for a recorded pin it did not find again. While it searches, it prints to stderr every
+10 s the spans it found and the blocks it searches. With no names it pins every entry. Any REFUSED
 entry makes it exit 1 after it writes the rest, and so does a file that, as written, the registry
 refuses, such as a feed or pool that still has no pin. verify requires every registry contract a
 transaction touches, and each entry it names in dependsOn, to run its current pin, and an executed
@@ -38,8 +41,9 @@ the code and Pin the routes); docs/design/engine-and-chain.md, "Engine checks th
 gets".`;
 
 exitOnHelp(HELP);
+refuseReadableErrors();
 
-const { values: flags, positionals: names } = parseArgs({ options: { history: { type: 'boolean', default: false } }, allowPositionals: true });
+const { values: flags, positionals: names } = parseFlags({ options: { history: { type: 'boolean', default: false } }, allowPositionals: true });
 const root = join(import.meta.dirname, '..');
 const repoPath = join(root, REGISTRY_PATH);
 const path = flags.history ? join(kissSignHome(process.env), 'history', 'registry.json') : repoPath;
@@ -108,7 +112,13 @@ for (const name of names.length > 0 ? names : Object.keys(file)) {
     console.log(`${where} ${pinText(was.current.pin)} from block ${was.current.from} (unchanged)`);
     continue;
   }
-  const history = await readCodeHistory(reader, address, block.value.number, headPin, declared);
+  const started = Date.now();
+  let walk: WalkProgress | undefined;
+  const timer = setInterval(() => {
+    const state = walk === undefined ? 'waiting for the first block' : `${walk.spans} spans found, ${walk.blocks} blocks searched, searching blocks ${walk.first} to ${walk.last}`;
+    process.stderr.write(`${Math.round((Date.now() - started) / 1000)} s: ${name}: ${state}\n`);
+  }, 10_000);
+  const history = await readCodeHistory(reader, address, block.value.number, headPin, declared, (at) => (walk = at)).finally(() => clearInterval(timer));
   if (history.kind === 'refused') {
     console.log(`REFUSED ${where}: ${describeRefusal(history.refusal)}`);
     refused = true;

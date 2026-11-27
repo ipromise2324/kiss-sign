@@ -33,7 +33,7 @@ test('a migration between two vaults of one asset resolves, and between vaults o
 
 test('a template whose same list names fewer than two references fails to load', () => {
   const raw = { id: 'x/y', card: { from: { kind: 'contract', registryKind: 'vault' } }, same: ['from.asset'], calls: [{ to: { card: 'from' }, value: { const: '0' }, data: 'empty' }], effects: { gives: [], gets: [] } };
-  assert.throws(() => parseTemplate(raw, registry), (error: unknown) => error instanceof TemplateError && /same: names fewer than two/.test(error.message));
+  assert.throws(() => parseTemplate(raw, registry, 'committed'), (error: unknown) => error instanceof TemplateError && /same: names fewer than two/.test(error.message));
 });
 
 function safeTx(name: string): SafeTx {

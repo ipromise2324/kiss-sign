@@ -10,15 +10,14 @@ import { parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = join(import.meta.dirname, '..');
-const FIXTURES = repoWithTestFixtures('implementation-read');
+const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
-const withSteth = loadRegistry(FIXTURES);
+const withSteth = loadRegistry(repoWithTestFixtures('implementation-read'));
 const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'erc20', 'transfer', 'template.json'), 'utf8'));
 const WHY = { en: 'rounding, as past transactions show', 'zh-TW': '過去交易顯示的捨入' };
 
 const transfer = (seen: Registry, tolerance?: object): Template =>
-  parseTemplate({ ...raw, effects: { ...raw.effects, gives: [{ ...raw.effects.gives[0], ...(tolerance === undefined ? {} : { tolerance: { ...tolerance, why: WHY } }) }] } }, seen);
+  parseTemplate({ ...raw, effects: { ...raw.effects, gives: [{ ...raw.effects.gives[0], ...(tolerance === undefined ? {} : { tolerance: { ...tolerance, why: WHY } }) }] } }, seen, 'committed');
 
 /** The committed summary's amounts printed with `template` and `seen`, which judge them: the differences are what the transactions did. */
 function study(name: string, seen: Registry, template: Template): string {

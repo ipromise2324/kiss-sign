@@ -1,7 +1,9 @@
 import type { Language } from '../language.ts';
 import type { RegistryEntry } from '../registry.ts';
 import type { FreeClaim, ViewChange } from '../template/template.ts';
-import type { Confidence, FindingKind, Phrase, State, StripLine } from './ledger.ts';
+import type { Alone } from '../price/reference.ts';
+import type { Confidence, FindingKind, Phrase, SourceWhy, State, StripLine } from './ledger.ts';
+import type { NotCompared } from './listings.ts';
 import type { AiTag, AiSourceResult, Reviewed, Span, Who } from './report-page.ts';
 import type { PastGroupKind } from './report-past.ts';
 import type { OutsideKind } from './study.ts';
@@ -20,6 +22,25 @@ const enField = ({ field, computed }: By): string => `the ${field} ${computed ? 
 export type FreeTest = 'not-tested' | 'all-failed' | 'tested';
 
 const plural = (n: number, one: string, many: string): string => (n === 1 ? one : many);
+
+const NOT_COMPARED_ZH: Readonly<Record<NotCompared, string>> = {
+  'no-slug': '登記沒有寫 DefiLlama 協議，沒辦法比對網站。',
+  'no-protocol': 'DefiLlama 找不到登記寫的協議，沒辦法比對網站。',
+  'several-protocols': 'DefiLlama 有好幾個協議用登記寫的代號，沒辦法比對網站。',
+  'no-suffixes': '程式沒有 Public Suffix List，判斷不了網域。',
+  'not-repo': '這個 GitHub 網址不是 repo 的頁面，沒辦法比對。',
+  'no-org': '這個 GitHub 網址看不出組織，沒辦法比對。',
+  'no-domain': '這個網址沒有可登記的網域，或是共用的主機，沒辦法比對。',
+};
+const NOT_COMPARED_EN: Readonly<Record<NotCompared, string>> = {
+  'no-slug': 'The entry names no DefiLlama protocol, so the site was not compared.',
+  'no-protocol': 'DefiLlama lists no protocol under the entry\'s slug, so the site was not compared.',
+  'several-protocols': 'DefiLlama lists several protocols under the entry\'s slug, so the site was not compared.',
+  'no-suffixes': 'The program has no Public Suffix List to tell the domain.',
+  'not-repo': 'This GitHub URL is not a repository page, so it was not compared.',
+  'no-org': 'This GitHub URL names no organization, so it was not compared.',
+  'no-domain': 'This URL has no registrable domain, or is a shared host, so it was not compared.',
+};
 
 /** Of a paged year's transactions with a proven Safe party, how many were found and how many studied. */
 export type SafeParties = { readonly found: number; readonly studied: number };
@@ -80,7 +101,7 @@ const ZH = {
   sentences: (items: readonly string[]): string => items.join(''),
 
   tag: { research: 'AI 研究', ai: 'AI', safe: 'AI 研究：可以用', caution: 'AI 研究：要小心' } satisfies Record<AiTag, string>,
-  strip: { sources: '地址來源', abi: '原始碼驗證', code: '合約沒被換掉', params: '參數保護', trace: '呼叫追蹤', providers: '雙節點比對' } satisfies Record<StripLine | 'providers', string>,
+  strip: { sources: '交易地址', reference: '參考地址', abi: '原始碼驗證', code: '合約沒被換掉', params: '參數保護', trace: '呼叫追蹤', providers: '雙節點比對' } satisfies Record<StripLine | 'reference' | 'providers', string>,
   kind: {
     token: '代幣',
     vault: '金庫',
@@ -128,7 +149,14 @@ const ZH = {
     unread: '合約不讀它，換成別的值結果一樣',
     route: '換成別的值測過，會走別的池子，收到的仍不少於卡片',
   } satisfies Record<FreeClaim, string>,
-  freeNotTested: '模板允許任何值，沒有測試換過別的值',
+  freeCaught: {
+    scalar: '只有效果檢查限制它，而且只透過卡片的數量規則：Safe 給出和收到的數量仍符合這些規則的值都會通過，即使 Safe 因此收到得比較少。測試看到的：',
+    route: '只有效果檢查限制它，而且只透過卡片的數量規則：別的路徑只要 Safe 給出和收到的數量仍符合這些規則就會通過，即使價格比較差。測試看到的：',
+  } as Readonly<Partial<Record<FreeClaim, string>>>,
+  freeReason: (why: string): string => `模板為什麼不檢查它：${why}`,
+  cardHolds: '卡片記著這個值，交易裡不同就 MISMATCH',
+  bookHolds: '從你的地址簿選，卡片記著完整地址，交易裡不同就 MISMATCH',
+  freeNotTested: '沒有測試換過別的值',
   freeAllFailed: '換成別的值測過，每次交易都失敗或不符合卡片',
   freeKeyNotTested: '模板允許任何值，沒有測試換過別的值。',
   freeKeySomeNotTested: '模板允許任何值；其中有些沒有測試換過別的值。',
@@ -151,6 +179,34 @@ const ZH = {
   confirmed: (places: readonly string[], enough: boolean): string => (places.length === 0 ? '沒有任何地方確認' : `${enough ? '在' : '只在'} ${places.length} 個地方確認：${places.join('、')}`),
   fewConfirmations: (address: Span, places: readonly string[], min: number): Span[] =>
     places.length === 0 ? ['沒有任何地方列出 ', address, `；至少要 ${min} 個。`] : [`只在 ${places.join('、')} 找到 `, address, `；至少要 ${min} 個地方。`],
+  readFor: (reads: readonly ReadFor[]): string =>
+    `只需 1 個地方確認：它${reads.map((r) => `${r.supports ? '支援' : '是'}${r.field}的${r.price ? '價格來源' : '讀取對象'}`).join('、')}，card new 印出的數字由你確認。`,
+  referenceExplain: (counted: number, review: number, siteOnly: readonly string[], price: boolean): string =>
+    `${counted === 1 ? '這個參考地址' : `${counted} 個參考地址`}只需 1 個地方確認：交易不會碰到${counted === 1 ? '它' : '它們'}，card new 只從${counted === 1 ? '它' : '它們'}讀一個數字，由你確認。${
+      price ? '價格來源錯了會壓低最少收到的數量，只有這組代幣有池子時才會拿池子的平均價格比對。' : '讀錯了，只有你核對 card new 印出的數字才看得出來。'
+    }${review === 0 ? '' : `${review} 個有結果要你看，見「待確認」。`}${siteOnly.length === 0 ? '' : `${siteOnly.join('、')} 的網站結果只供參考，留在「地址」，不列入「待確認」。`}`,
+  addressGroup: { touched: (n: number): string => `交易會碰到的地址 ${n} 個`, reference: (n: number): string => `參考地址 ${n} 個（不在交易裡）` },
+  referenceLead: (price: boolean): string => `填卡片時，程式從這些地址讀${price ? '價格' : '卡片要用的數字'}。交易不會碰到它們。`,
+  sourceWhy: (why: SourceWhy): string => {
+    switch (why.kind) {
+      case 'site-differs': {
+        const { found, listed } = why.seen;
+        if (found.kind === 'site') return `${why.via === 'bounty' ? '頁面連到' : '網站是'} ${found.site}，${listed.length === 0 ? `DefiLlama 沒有列這個協議的${found.site.startsWith('github.com/') ? ' GitHub 組織' : '網站'}` : `DefiLlama 列的是 ${listed.join('、')}`}。`;
+        const given = found.kind === 'none' ? 'Immunefi 沒有給這個計畫網站或 GitHub 組織' : `Immunefi 給的網站 ${found.host} 沒有可登記的網域，或是共用的主機`;
+        return `${given}，${listed.length === 0 ? 'DefiLlama 也沒有列這個協議的網站或 GitHub 組織' : `對不到 DefiLlama 列的 ${listed.join('、')}`}。`;
+      }
+      case 'no-second-source':
+        return `網站是 ${why.site}；DefiLlama 沒有列${why.site.startsWith('github.com/') ? ' GitHub 組織' : '網站'}可比，也沒有別的來源證明它屬於這個協議。`;
+      case 'site-not-compared':
+        return NOT_COMPARED_ZH[why.cause];
+      case 'coin':
+        return why.named === undefined ? `CoinGecko 在這個地址列了 ${why.coins.join('、')}，登記沒有寫 coingecko id。` : `CoinGecko 在這個地址列的是 ${why.coins.join('、')}，登記的是 ${why.named}。`;
+      case 'commit':
+        return why.commit.kind === 'unpinned' ? '網址沒有釘在一個 commit 上。' : why.commit.kind === 'unknown' ? `程式查不出 commit ${why.commit.commit} 在不在預設分支上。` : `commit ${why.commit.commit} 不在預設分支 ${why.commit.branch} 上。`;
+    }
+  },
+  seeReview: (reason: string, review: Span): Span[] => [`${reason}見「`, review, '」。'],
+  referenceSite: (reason: string): string => `${reason}參考地址的網站結果只供參考，不列入「待確認」。`,
 
   finding: {
     'site-differs': { title: '網站跟 DefiLlama 列的不同', why: '這個頁面的網域或 GitHub 組織，不是 DefiLlama 列給這個協議的。' },
@@ -183,8 +239,9 @@ const ZH = {
     'newer-differs': { title: '最新版列的是別的地址', why: '同一個 GitHub 檔案在預設分支最新的版本、或同一個 SDK 在 npm 最新的版本，同一個標籤旁邊列的是另一個地址。協議可能換了合約，或釘選的版本已經過時。' },
     'label-differs': { title: '標籤旁列的是別的地址', why: '登記釘選的官方頁面或 SDK 檔案，在登記寫的標籤旁邊列的是另一個地址，不是這個地址：' },
     'package-differs': { title: 'SDK 套件不是釘選的那一份', why: '下載的 npm 套件 sha256 跟登記釘選的不同，或跟 npm 給的 integrity 不符。' },
+    'provenance-other-tarball': { title: 'SDK 的建置證明指向另一個 tarball', why: 'npm 對這個 SDK 版本的建置證明指向另一個 tarball，不是下載的這一份，所以沒有東西證明這份 tarball 是從那個建置來的。' },
     'unexplained-coin': { title: 'CoinGecko 在這個地址列了幣，登記沒有給 id', why: '登記沒有寫 coingecko id，所以程式沒有比對 CoinGecko 在這個地址列的幣是不是這個合約。' },
-    'commit-unconfirmed': { title: 'GitHub commit 沒確認', why: 'GitHub 頁面沒有釘在預設分支上的 commit。' },
+    'commit-unconfirmed': { title: 'GitHub commit 沒確認', why: '程式沒能確認這個 GitHub 頁面釘在預設分支上的 commit。' },
     'page-not-fetched': { title: '文件頁沒讀到', why: '程式沒有這個文件頁的內容。' },
     'name-not-on-page': { title: '文件頁上找不到這個函式', why: '文件頁的原始網頁裡沒有寫成程式的函式名稱：緊接著括號、放在反引號裡，或自成一行（例如標題、清單項目或表格欄）。只在一般文字裡出現不算。' },
     'no-chain-result': { title: '程式碼區段沒有鏈上結果', why: '這段 code pin 沒有從鏈上讀到判定。' },
@@ -241,9 +298,9 @@ const ZH = {
 
   safe: '你的 Safe',
   role: { sender: '發起', contract: '合約', fixed: '固定的地址', picked: '你選' },
-  who: { 'you-type': '你填', 'you-pick': '你選', computed: '程式算', fixed: '固定', free: '不限', bounded: '有上限' } satisfies Record<Who, string>,
+  who: { 'you-type': '你填', 'you-pick': '你選', computed: '程式算', reads: '程式讀鏈上', fixed: '固定', free: '這裡不檢查', bounded: '有上限' } satisfies Record<Who, string>,
   chip: (who: string, field: string): string => `${who}：${field}`,
-  whoMeans: { 'you-type': '每次簽名你自己填。', 'you-pick': '每次簽名你從清單裡選。', computed: 'card new 每次簽名從鏈上讀，你核對。', floor: 'card new 每次簽名用價格來源和池子算，你核對；沒有獨立價格可用時，你自己填。', fixed: '模板定的。改了就 MISMATCH。', bounded: '超過上限就 MISMATCH。', member: '訂單裡的值，由訂單的雜湊鎖住。' },
+  whoMeans: { 'you-type': '每次簽名你自己填。', 'you-pick': '每次簽名你從清單裡選。', computed: 'card new 每次簽名從鏈上讀，你核對。', floor: 'card new 每次簽名用價格來源和池子算，你核對；沒有獨立價格可用時，你自己填。', reads: 'verify 每次檢查時在鏈上讀 Safe 的 getOwners() 算出。換成別的值就 MISMATCH。', fixed: '模板定的。改了就 MISMATCH。', bounded: '超過上限就 MISMATCH。', member: '訂單裡的值，由訂單的雜湊鎖住。' },
   whoGroup: { you: '你', program: 'kiss-sign', app: 'app' },
   change: { increases: '增加', decreases: '減少', same: '不變' } satisfies Record<ViewChange, string>,
   inParens: (items: readonly string[]): string => `（${items.join('、')}）`,
@@ -434,6 +491,7 @@ const ZH = {
   },
   inCalls: '，呼叫 ',
   noDataParens: '（沒有資料）',
+  shortDataParens: (bytes: number): string => `（不呼叫任何函式：${bytes} 位元組資料）`,
   creation: '（建立合約）',
   /** A contract's call with no function: `usdc（沒有資料）`. */
   bareCall: (contract: string, word: string): string => `${contract}${word}`,
@@ -505,7 +563,7 @@ const ZH = {
   pastDiffer: '3. 其他交易哪裡不同？',
   pastDifferLead: (n: number): string => `${n} 筆交易做了這個模板不允許的事。`,
   pastNoDiffer: '研究過的交易裡，沒有這個操作的其他做法。',
-  pastMore: (reasons: number, n: number): string => `另外 ${reasons} 種，共 ${n} 筆`,
+  pastDifferShow: (n: number): string => `顯示這 ${n} 種不同`,
   pastSearch: '程式怎麼搜尋',
   pastCallsOther: (calls: Span): Span[] => ['呼叫了別的函式：', calls],
   pastCallsMissing: (missing: Span, calls: Span): Span[] => ['沒有 ', missing, '：只有 ', calls],
@@ -530,6 +588,14 @@ const ZH = {
   amountPrints: '它在問 [y/N] 之前顯示的卡片列出整顆和 base units 兩種寫法，核對數字是你要的。',
   orMax: (max: Span, value: string): Span[] => ['也可以打 ', max, `，等於 ${value} base units；card new 會印出模板寫的理由。`],
   margin: (margin: string): string => `，再加 ${margin} 餘裕`,
+  aiChose: (what: string, why: string): string => `${what}：由 AI 選定，不是協議或它的 app 定的。理由：${why}`,
+  aiChoseNoted: (what: string, noted: boolean): string => `${what}：由 AI 選定，不是協議或它的 app 定的；${noted ? '理由寫在上面的說明。' : '說明裡沒有寫理由。'}`,
+  marginChosen: (margin: string): string => `${margin} 的餘裕`,
+  liquidityChosen: (pool: string, least: string): string => `池子 ${pool} 的最低流動性 ${least}`,
+  limitChosen: (seconds: bigint): string => `${zhDuration(seconds, 'exact')}的上限`,
+  trailerChosen: (bytes: number): string => `參數後面最多放行 ${bytes} bytes`,
+  toleranceChosen: '這個容許差',
+  maxWhy: (why: string): string => `為什麼可以打 max：${why}`,
   computedPrompt: (carried: boolean): string =>
     carried ? '：不用填。協議的 app 自己會填這個值，不會問使用者，所以程式自己算。' : '：不用填。交易裡沒有這個值，所以程式自己算，verify 拿模擬的結果跟它比。',
   computedHow: (fn: Span, token: string, floor: boolean, slippage: string, preset: string, margin: string): Span[] => [
@@ -538,7 +604,25 @@ const ZH = {
     `，兩個節點答案一樣才用，印出預期的 ${token} 數量，再${floor ? '少' : '多'} ${slippage}（協議預設的 ${preset}${margin}），${floor ? '無條件捨去' : '無條件進位'}。`,
   ],
   floorPrompt: (sells: Span): Span[] => ['：程式用你選的兩個代幣的獨立價格，替 ', sells, ' 算最少要收到多少。'],
-  floorHow: (token: string, preset: string, most: string, margin: string): string => `兩個代幣都有價格來源、又錨定同一個價格時，它問 app 顯示的滑價（按 Enter 是 ${preset}，最多 ${most}），印出讀到的價格，取比較嚴的那個，扣掉滑價和 ${margin} 餘裕，無條件捨去。核對 app 的最少收到數量不低於它印出的 ${token} 數量。`,
+  floorHow: (token: string, preset: string, most: string, margin: string): string => `兩個代幣都有價格來源、又錨定同一個價格時，它問 app 顯示的滑價（按 Enter 是 ${preset}，最多 ${most}），印出讀到的價格，取比較嚴的那個，扣掉滑價和 ${margin} 餘裕，無條件捨去。這個餘裕是程式定的，每組代幣都一樣，留給價格來源本身的誤差和 app 最少收到數量裡的手續費。核對 app 的最少收到數量不低於它印出的 ${token} 數量。`,
+  floorPair: (sell: string, buy: string, computes: boolean, feeds: string, second: readonly string[]): string =>
+    `${sell} 換 ${buy}：${computes ? '即時檢查都通過時程式算' : '你填，程式拿它比對價格'}，價格來源是 ${feeds}${second.map((clause) => `；${clause}`).join('')}。`,
+  secondPool: (pools: string): string => `第二來源是池子 ${pools}`,
+  floorAlone: {
+    'no-pool': '只有一個價格來源：registry 裡沒有這兩個代幣之間的池子',
+    'shared-upstream': '只有一個價格來源：這裡有價格來源本來就讀去中心化交易所，池子和它不算獨立',
+    'own-pool': '只有一個價格來源：這兩個代幣之間的池子都是這筆交易可能經過的，模板或卡片寫到它，所以不算獨立價格',
+  } satisfies Record<Alone, string>,
+  unlessPicked: (pools: string): string => `池子 ${pools} 只在你的卡片沒選到它時才算第二來源`,
+  floorLive:
+    '「程式算」只在 card new 簽名當下的檢查都通過時成立：每個價格來源夠新、錨定的代幣離錨定價不遠、價格來源和池子的價格相符、池子流動性夠也讀得到。任何一項沒過，它會說是哪一項，改成你填 app 顯示的最少收到數量，而且要填兩次一樣的數量。',
+  poolLiquidity: (pool: string, least: string): string => `${pool}（流動性至少 ${least}）`,
+  floorRest: (n: number): string => `其他 ${n} 組：兩個代幣裡有一個在 registry 沒有價格來源，所以你填，程式沒有東西可以比。`,
+  floorNone: '這份報告裡，卡片能選的代幣沒有任何一組兩邊都有價格來源，所以程式不算：你填 app 顯示的最少收到數量，程式沒有東西可以比。',
+  floorTypedPrompt: (sells: Span): Span[] => ['：填 ', sells, ' 最少要收到多少，用整顆幣。'],
+  howFilled: '這份報告裡 card new 怎麼填',
+  request: '你的要求（建立這個模板時，原文）',
+  instanceRequest: '你的要求（加這份報告時，原文）',
   floorElse: (retype: string): string => `其他情況程式不算，你填 app 顯示的最少收到數量：有價格時程式拿它跟價格比，比價格低超過 ${retype} 或價格有疑問就要再填一次一樣的數量；有代幣沒有價格來源時，程式說沒有東西可以比。`,
   presetSource: (source: Span): Span[] => ['預設值的來源：', source, '。核對印出的預期數量跟最後的數字合理。'],
 
@@ -584,16 +668,21 @@ const ZH = {
   sourcesOk: (counted: number, min: number): string =>
     `${counted === 1 ? '這個地址' : `${counted} 個地址都`}至少在 ${min} 個地方確認：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件或共用的部署者列出同一個地址。`,
   sourcesSome: (failed: number, passed: number, min: number): string =>
-    `${failed} 個地址有結果要你看，見「待確認」。${passed === 0 ? '' : passed === 1 ? `另外那個地址至少在 ${min} 個地方確認。` : `其餘 ${passed} 個都至少在 ${min} 個地方確認。`}`,
-  abiExplain: (notCalled: readonly string[], unprovable: readonly string[]): string =>
+    `${failed === 0 ? '' : `${failed} 個地址有結果要你看，見「待確認」。`}${passed === 0 ? '' : passed === 1 ? `另外那個地址至少在 ${min} 個地方確認。` : `其餘 ${passed} 個都至少在 ${min} 個地方確認。`}`,
+  abiExplain: (notCalled: readonly string[], unprovable: readonly string[], masked: readonly string[]): string =>
     `Etherscan 上驗證的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。${
+      masked.length === 0 ? '' : `${masked.join('、')} 重新編譯後只有 metadata hash 跟鏈上不同，所以函式選擇器和參數型別有證明，算通過；參數名稱沒有證明。`
+    }${
       notCalled.length === 0 ? '' : `${notCalled.join('、')} 沒有呼叫直接打到，也不用它的函式定義解碼，所以沒有證明，不算在內；它跑的程式碼在「合約沒被換掉」比對。`
     }${unprovable.length === 0 ? '' : `${unprovable.join('、')} 依函式選擇器把呼叫分給各自的實作，沒有一份程式碼能證明，不算在內；它的 routes 在「合約沒被換掉」比對。`}`,
   codeExplain: (one: boolean, reportOnly: readonly string[], today: readonly string[], routed: readonly string[]): string =>
     `每次簽名都確認卡片用到的${one ? '這個合約' : '每個合約'}還是研究時那份程式碼。被升級或換掉就擋下。${reportOnly.length === 0 ? '' : `${reportOnly.join('、')} 簽名時不碰，只有報告比對它的程式碼。`}${
       today.length === 0 ? '' : `${today.join('、')} 沒有 ABI 證明比對它今天的程式碼，報告另外在最新區塊讀它跑的程式碼，跟 code pin 現在那一份比對。`
     }${routed.length === 0 ? '' : `${routed.join('、')} 依函式選擇器把呼叫分給各自的實作：seeds 接到的每個實作和它的函式清單也一樣確認，沒有 seed 接到的實作不檢查。`}`,
-  paramsExplain: (counted: number): string => `程式把 ${counted} 筆測試交易的每個綁定參數逐一改掉，都要變成 MISMATCH；不限的參數換成別的值，結果要跟原本一樣。`,
+  paramsExplain: (counted: number, eoas: number): string =>
+    `程式把 ${counted} 筆測試交易的每個綁定參數逐一改掉，都要變成 MISMATCH；不限的參數換成別的值，結果要跟原本一樣。${eoas === 0 ? '' : `其中 ${eoas} 筆是 EOA 送的，不是 Safe：它們測得到模板的呼叫，測不到只有 Safe 才有的設定、nonce、delegatecall，以及 Safe 交易自己的欄位（gas 和退款欄位都填 0）。`}`,
+  /** Follows a test transaction's name in a row title. */
+  eoaTx: '（EOA 的交易）',
   noTests: '沒有測試',
   providersExplain:
     '鏈上資料都同時問兩家節點，答案不一樣就不給結果。研究時有三種資料只有一個來源，都不會影響判定：過去交易的呼叫追蹤（drpc）、搜尋過去交易（Alchemy 或 Etherscan 找到的都算，找事件只用 Etherscan），和金庫曾經收過份額的地址名單（Alchemy，每個地址的餘額仍問兩家）。',
@@ -685,7 +774,7 @@ const ZH = {
   noDataLead: '這筆交易的呼叫沒有資料，沒有函式可以用 ERC-7730 描述檔解讀。',
   walletLead: '支援 ERC-7730 的 Ledger 先用描述檔顯示 Safe 交易（SafeTx），再顯示裡面的呼叫。',
   walletRules: '右邊是模板的規則，不是描述檔的文字。',
-  noDescriptor: '沒有描述檔，只顯示原始資料',
+  noDescriptor: '沒有描述檔列出這個地址，錢包只顯示原始資料',
   siteOk: (slug: string | undefined): string => `網站屬於 ${slug}`,
   siteNot: (phrase: string): string => `網站：${phrase}`,
   newestOk: (where: string): string => `最新版（${where}）也列這個地址`,
@@ -709,13 +798,19 @@ const ZH = {
 
 export type Words = typeof ZH;
 
+/**
+ * A card field `card new` reads an entry for: as the price of a floor, or as a computed field's read; `supports` when
+ * the entry is not read itself but an attribute or dependency of one that is. `field` is the field's name, or its word.
+ */
+export type ReadFor = { readonly field: string; readonly price: boolean; readonly supports: boolean };
+
 const EN: Words = {
   sep: ', ',
   list: (items) => items.join(', '),
   sentences: (items) => items.join(' '),
 
   tag: { research: 'AI research', ai: 'AI', safe: 'AI research: OK to use', caution: 'AI research: be careful' },
-  strip: { sources: 'Address sources', abi: 'Source verified', code: 'Code unchanged', params: 'Parameter checks', trace: 'Call traces', providers: 'Two providers' },
+  strip: { sources: 'Transaction addresses', reference: 'Reference addresses', abi: 'Source verified', code: 'Code unchanged', params: 'Parameter checks', trace: 'Call traces', providers: 'Two providers' },
   kind: {
     token: 'token',
     vault: 'vault',
@@ -761,7 +856,14 @@ const EN: Words = {
     unread: 'the contract does not read it; another value gives the same result',
     route: 'tested with other values: it takes other pools and still receives no less than the card',
   },
-  freeNotTested: 'the template allows any value, and no test tried another',
+  freeCaught: {
+    scalar: "Only the effects check limits it, and only through the card's amount rules: a value that keeps what the Safe gives and gets within them passes, even if the Safe then gets less. What tests saw: ",
+    route: "Only the effects check limits it, and only through the card's amount rules: another route that keeps what the Safe gives and gets within them passes, even at a worse price. What tests saw: ",
+  },
+  freeReason: (why) => `Why the template leaves it open: ${why}`,
+  cardHolds: 'the card holds it; another value in the transaction is a MISMATCH',
+  bookHolds: 'picked from your address book; the card holds the full address, and another one in the transaction is a MISMATCH',
+  freeNotTested: 'no test tried another value',
   freeAllFailed: 'tested with other values: each time the transaction failed or did not match the card',
   freeKeyNotTested: 'The template allows any value; no test tried another.',
   freeKeySomeNotTested: 'The template allows any value; for some of these, no test tried another.',
@@ -784,7 +886,44 @@ const EN: Words = {
   confirmed: (places, enough) =>
     places.length === 0 ? 'Confirmed nowhere' : `Confirmed in ${enough ? '' : 'only '}${places.length} ${plural(places.length, 'place', 'places')}: ${places.join(', ')}`,
   fewConfirmations: (address, places, min) =>
-    places.length === 0 ? ['Found nowhere: ', address, `; at least ${min} places are needed.`] : [`Found only in ${places.join(', ')}: `, address, `; at least ${min} places are needed.`],
+    places.length === 0
+      ? ['Found nowhere: ', address, `; at least ${min} ${plural(min, 'place is', 'places are')} needed.`]
+      : [`Found only in ${places.join(', ')}: `, address, `; at least ${min} ${plural(min, 'place is', 'places are')} needed.`],
+  readFor: (reads) => `Needs 1 place: ${reads.map((r) => `it ${r.supports ? 'supports' : 'is'} the ${r.price ? 'price source' : 'read'} for the ${r.field}`).join(' and ')}, and you confirm the number card new prints.`,
+  referenceExplain: (counted, review, siteOnly, price) =>
+    `${counted === 1 ? 'This reference address needs' : `These ${counted} reference addresses need`} 1 place: the transaction never touches ${counted === 1 ? 'it' : 'them'}, and card new only reads a number from ${counted === 1 ? 'it' : 'them'}, which you confirm. ${
+      price ? "A wrong price source lowers the minimum, and a pool's mean price checks it only when the pair has a pool." : 'A wrong read changes that number, and only your check of what card new prints catches it.'
+    }${review === 0 ? '' : ` ${review} ${plural(review, 'has', 'have')} results for you to review; see "To review".`}${siteOnly.length === 0 ? '' : ` The site results of ${siteOnly.join(', ')} are for reference: they stay under "Addresses", not under "To review".`}`,
+  addressGroup: { touched: (n) => `Addresses the transaction touches ${n}`, reference: (n) => `Reference addresses ${n} (not in the transaction)` },
+  referenceLead: (price) => `When you fill in the card, the program reads ${price ? 'prices' : 'the numbers the card needs'} from these addresses. The transaction never touches them.`,
+  sourceWhy: (why) => {
+    switch (why.kind) {
+      case 'site-differs': {
+        const { found, listed } = why.seen;
+        if (found.kind === 'site') {
+          const lists = listed.length === 0 ? `DefiLlama lists no ${found.site.startsWith('github.com/') ? 'GitHub organization' : 'website'} for the protocol` : `DefiLlama lists ${listed.join(', ')}`;
+          return `${why.via === 'bounty' ? 'The page links to' : 'The site is'} ${found.site}; ${lists}.`;
+        }
+        if (found.kind === 'none') return listed.length === 0 ? 'Immunefi gives this program no website or GitHub organization, and DefiLlama lists none for the protocol.' : `Immunefi gives this program no website or GitHub organization to match ${listed.join(', ')}, which DefiLlama lists.`;
+        const given = `The website Immunefi gives, ${found.host}, has no registrable domain or is a shared host`;
+        return listed.length === 0 ? `${given}, and DefiLlama lists no website or GitHub organization for the protocol.` : `${given}, so it matches none of ${listed.join(', ')}, which DefiLlama lists.`;
+      }
+      case 'no-second-source':
+        return `The site is ${why.site}; DefiLlama lists no ${why.site.startsWith('github.com/') ? 'GitHub organization' : 'website'} to compare, and nothing else shows it is the protocol's.`;
+      case 'site-not-compared':
+        return NOT_COMPARED_EN[why.cause];
+      case 'coin':
+        return why.named === undefined ? `CoinGecko lists ${why.coins.join(', ')} at this address; the entry names no coingecko id.` : `CoinGecko lists ${why.coins.join(', ')} at this address; the entry names ${why.named}.`;
+      case 'commit':
+        return why.commit.kind === 'unpinned'
+          ? 'The URL is not pinned to a commit.'
+          : why.commit.kind === 'unknown'
+            ? `The check could not tell whether commit ${why.commit.commit} is on the default branch.`
+            : `Commit ${why.commit.commit} is not on the default branch ${why.commit.branch}.`;
+    }
+  },
+  seeReview: (reason, review) => [`${reason === '' ? '' : `${reason} `}See "`, review, '".'],
+  referenceSite: (reason) => `${reason === '' ? '' : `${reason} `}A reference address's site results are for reference only, not under To review.`,
 
   finding: {
     'site-differs': { title: 'site differs from the one DefiLlama lists', why: "This page's domain or GitHub organization is not one DefiLlama lists for this protocol." },
@@ -832,11 +971,15 @@ const EN: Words = {
       why: "The same GitHub file at the tip of its default branch, or the same SDK in npm's latest version, lists another address next to the same label. The protocol may have moved the contract, or the pinned version is out of date.",
     },
     'package-differs': { title: 'the SDK package is not the pinned one', why: "The downloaded npm package's sha256 differs from the registered pin, or does not match the integrity npm gives." },
+    'provenance-other-tarball': {
+      title: "the SDK's build provenance names another tarball",
+      why: "npm's provenance for this SDK version names another tarball than the one downloaded, so nothing ties this tarball to its build.",
+    },
     'unexplained-coin': {
       title: 'CoinGecko lists a coin at this address, but the registry gives no id',
       why: 'The registry has no coingecko id, so the program did not check whether the coin CoinGecko lists at this address is this contract.',
     },
-    'commit-unconfirmed': { title: 'GitHub commit not confirmed', why: 'The GitHub page is not pinned to a commit on the default branch.' },
+    'commit-unconfirmed': { title: 'GitHub commit not confirmed', why: 'The program could not confirm that the GitHub page is pinned to a commit on the default branch.' },
     'page-not-fetched': { title: 'docs page not read', why: 'The program does not have the content of this docs page.' },
     'name-not-on-page': {
       title: 'function not found on the docs page',
@@ -898,9 +1041,9 @@ const EN: Words = {
 
   safe: 'your Safe',
   role: { sender: 'sender', contract: 'contract', fixed: 'fixed address', picked: 'you pick' },
-  who: { 'you-type': 'you type', 'you-pick': 'you pick', computed: 'computed', fixed: 'fixed', free: 'any value', bounded: 'up to a limit' },
+  who: { 'you-type': 'you type', 'you-pick': 'you pick', computed: 'computed', reads: 'program reads', fixed: 'fixed', free: 'not checked here', bounded: 'up to a limit' },
   chip: (who, field) => `${who}: ${field}`,
-  whoMeans: { 'you-type': 'You type it at each signing.', 'you-pick': 'You pick it from a list at each signing.', computed: 'card new reads it from the chain at each signing. You check it.', floor: 'card new computes it from price feeds and pools at each signing, and you check it; with no independent price to use, you type it.', fixed: 'The template sets it. Any change is a MISMATCH.', bounded: 'Past the limit is a MISMATCH.', member: 'A value in the order, locked by the order\'s hash.' },
+  whoMeans: { 'you-type': 'You type it at each signing.', 'you-pick': 'You pick it from a list at each signing.', computed: 'card new reads it from the chain at each signing. You check it.', floor: 'card new computes it from price feeds and pools at each signing, and you check it; with no independent price to use, you type it.', reads: "verify reads it on chain from the Safe's getOwners() at each check. Any other value is a MISMATCH.", fixed: 'The template sets it. Any change is a MISMATCH.', bounded: 'Past the limit is a MISMATCH.', member: 'A value in the order, locked by the order\'s hash.' },
   whoGroup: { you: 'You', program: 'kiss-sign', app: 'The app' },
   change: { increases: 'increases', decreases: 'decreases', same: 'unchanged' },
   inParens: (items) => ` (${items.join(', ')})`,
@@ -1087,6 +1230,7 @@ const EN: Words = {
   },
   inCalls: ', calling ',
   noDataParens: '(no data)',
+  shortDataParens: (bytes) => `(no function: ${bytes} bytes of data)`,
   creation: '(contract creation)',
   bareCall: (contract, word) => `${contract} ${word}`,
   otherContract: 'another contract',
@@ -1157,7 +1301,7 @@ const EN: Words = {
   pastDiffer: '3. How did the others differ?',
   pastDifferLead: (n) => `${n} ${plural(n, 'transaction', 'transactions')} did something this template refuses.`,
   pastNoDiffer: 'No studied transaction did this operation another way.',
-  pastMore: (reasons, n) => `${reasons} more ${plural(reasons, 'way', 'ways')}, ${n} ${plural(n, 'transaction', 'transactions')}`,
+  pastDifferShow: (n) => `Show the ${n} ${plural(n, 'kind', 'kinds')} of difference`,
   pastSearch: 'How the program searched',
   pastCallsOther: (calls) => ['Called other functions: ', calls],
   pastCallsMissing: (missing, calls) => ['No ', missing, ' in it: only ', calls],
@@ -1182,6 +1326,14 @@ const EN: Words = {
   amountPrints: 'The card it shows before asking [y/N] gives it both in whole tokens and in base units; check that the number is what you want.',
   orMax: (max, value) => ['You can also type ', max, `, which is ${value} base units; card new prints the template's reason.`],
   margin: (margin) => ` plus a ${margin} margin`,
+  aiChose: (what, why) => `The AI chose ${what}, not the protocol or its app. Why: ${why}`,
+  aiChoseNoted: (what, noted) => `The AI chose ${what}, not the protocol or its app; ${noted ? 'the note above says why.' : 'no note gives its reason.'}`,
+  marginChosen: (margin) => `the ${margin} margin`,
+  liquidityChosen: (pool, least) => `the minimum liquidity ${least} of the pool ${pool}`,
+  limitChosen: (seconds) => `the limit of ${enDuration(seconds, 'exact')}`,
+  trailerChosen: (bytes) => `to let through at most ${bytes} bytes after the arguments`,
+  toleranceChosen: 'this tolerance',
+  maxWhy: (why) => `Why max is offered: ${why}`,
   computedPrompt: (carried) =>
     carried
       ? ": you do not type it. The protocol's app fills this value without asking its user, so the program computes it."
@@ -1192,7 +1344,25 @@ const EN: Words = {
     ` on chain, uses the answer only when both providers agree, prints the expected amount of ${token}, then takes ${slippage} ${floor ? 'less' : 'more'} (the protocol's default ${preset}${margin}), rounded ${floor ? 'down' : 'up'}.`,
   ],
   floorPrompt: (sells) => [': the program computes the least to receive for ', sells, ' from an independent price of the two tokens you picked.'],
-  floorHow: (token, preset, most, margin) => `When both tokens have a price feed and share a peg, it asks the slippage the app shows (Enter is ${preset}, at most ${most}), prints the prices it read, and takes the stricter one less the slippage and a ${margin} margin, rounded down. Check that the app's minimum received is not below the amount of ${token} it prints.`,
+  floorHow: (token, preset, most, margin) => `When both tokens have a price feed and share a peg, it asks the slippage the app shows (Enter is ${preset}, at most ${most}), prints the prices it read, and takes the stricter one less the slippage and a ${margin} margin, rounded down. The margin is the program's, the same for every pair: room for the feeds' own error and a fee inside the app's minimum. Check that the app's minimum received is not below the amount of ${token} it prints.`,
+  floorPair: (sell, buy, computes, feeds, second) =>
+    `${sell} for ${buy}: ${computes ? 'computed when the live checks pass' : 'you type it and the program compares it with the price'}, from the price feeds ${feeds}${second.map((clause) => `; ${clause}`).join('')}.`,
+  secondPool: (pools) => `the pool ${pools} is a second source`,
+  floorAlone: {
+    'no-pool': 'one price source only: the registry has no pool between the two tokens',
+    'shared-upstream': 'one price source only: a feed here already reads decentralized exchanges, so a pool would not be independent of it',
+    'own-pool': 'one price source only: every pool between the two tokens is one the transaction may trade through, named by the template or the card, so none is an independent price',
+  },
+  unlessPicked: (pools) => `the pool ${pools} is a second source only when your card does not pick it`,
+  floorLive:
+    '"Computed" holds only when card new\'s live checks pass at signing: each feed recent enough, each pegged token near its peg, the feeds and pools agreeing, and each pool deep enough and answering. When any fails, it says which, and you type the minimum received the app shows instead, twice.',
+  poolLiquidity: (pool, least) => `${pool} (liquidity at least ${least})`,
+  floorRest: (n) => `${n === 1 ? 'The other pair' : `The other ${n} pairs`}: one of the two tokens has no price feed in the registry, so you type it and the program has nothing to compare it with.`,
+  floorNone: 'In this report no pair of tokens the card can name has a price feed for both, so the program computes nothing: you type the minimum received the app shows, and the program has nothing to compare it with.',
+  floorTypedPrompt: (sells) => [': type the least to receive for ', sells, ', in whole tokens.'],
+  howFilled: 'how card new fills it in this report',
+  request: 'Your request, as you wrote it, when this template was built',
+  instanceRequest: 'Your request, as you wrote it, when this report was added',
   floorElse: (retype) => `Otherwise it computes nothing and you type the minimum received the app shows: where there is a price the program compares the two, and a minimum more than ${retype} below it, or a price in doubt, must be typed twice; where a token has no feed it says there is nothing to compare with.`,
   presetSource: (source) => ['Source of the default: ', source, '. Check that the expected amount and the final number it prints are reasonable.'],
 
@@ -1243,11 +1413,13 @@ const EN: Words = {
   sourcesOk: (counted, min) =>
     `${counted === 1 ? 'This address is' : `All ${counted} addresses are`} confirmed in at least ${min} places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address.`,
   sourcesSome: (failed, passed, min) =>
-    `${failed} ${plural(failed, 'address has', 'addresses have')} results for you to review; see "To review".${
-      passed === 0 ? '' : passed === 1 ? ` The other address is confirmed in at least ${min} places.` : ` The other ${passed} are all confirmed in at least ${min} places.`
+    `${failed === 0 ? '' : `${failed} ${plural(failed, 'address has', 'addresses have')} results for you to review; see "To review". `}${
+      passed === 0 ? '' : passed === 1 ? `The other address is confirmed in at least ${min} places.` : `The other ${passed} are all confirmed in at least ${min} places.`
     }`,
-  abiExplain: (notCalled, unprovable) =>
+  abiExplain: (notCalled, unprovable, masked) =>
     `The source verified on Etherscan, compiled again with a pinned compiler, gives exactly the code on chain, so the function definitions used to decode the transaction belong to these contracts.${
+      masked.length === 0 ? '' : ` ${masked.join(', ')}: compiled again, only the metadata hash differs from the code on chain, so ${plural(masked.length, 'its', 'their')} function selectors and parameter types are proven and ${plural(masked.length, 'it counts', 'they count')} as passed; ${plural(masked.length, 'its', 'their')} parameter names are not proven.`
+    }${
       notCalled.length === 0 ? '' : ` ${notCalled.join(', ')}: no call goes to it directly and no function definition of it decodes anything, so it has no proof and is not counted; the code it runs is compared under "Code unchanged".`
     }${unprovable.length === 0 ? '' : ` ${unprovable.join(', ')}: it routes each call by function selector to its own implementation, so no one code can be proved and it is not counted; its routes are compared under "Code unchanged".`}`,
   codeExplain: (one, reportOnly, today, routed) =>
@@ -1256,8 +1428,9 @@ const EN: Words = {
     }${today.length === 0 ? '' : ` No ABI proof compares the code ${today.join(', ')} runs today, so the report reads it at the latest block and compares it with the current code pin.`}${
       routed.length === 0 ? '' : ` ${routed.join(', ')}: it routes each call by function selector to its own implementation; each implementation the seeds reach, with its function list, is checked the same way, and one no seed reaches is not checked.`
     }`,
-  paramsExplain: (counted) =>
-    `The program changed every bound argument of ${counted} test ${plural(counted, 'transaction', 'transactions')} one by one, and each must become a MISMATCH; an argument that takes any value must give the same result with another value.`,
+  paramsExplain: (counted, eoas) =>
+    `The program changed every bound argument of ${counted} test ${plural(counted, 'transaction', 'transactions')} one by one, and each must become a MISMATCH; an argument that takes any value must give the same result with another value.${eoas === 0 ? '' : ` ${eoas} of them ${eoas === 1 ? 'was' : 'were'} sent by an EOA, not a Safe: ${eoas === 1 ? 'it tests' : 'they test'} the template's calls, not what only a Safe has, its settings, nonce and delegatecalls, and the Safe transaction's own fields (its gas and refund fields are filled with zero).`}`,
+  eoaTx: " (an EOA's transaction)",
   noTests: 'no tests',
   providersExplain:
     "Every chain read asks two providers; when they disagree, there is no result. Three research reads have one source, and none of them reaches a verdict: past transactions' call traces (drpc), the search for past transactions (a transaction either Alchemy or Etherscan finds counts; only Etherscan searches for an event), and the addresses that ever received a vault's shares (Alchemy; each one's balance is still read through both).",
@@ -1348,7 +1521,7 @@ const EN: Words = {
   noDataLead: "This transaction's calls have no data, so there is no function for an ERC-7730 descriptor to show.",
   walletLead: 'A Ledger that supports ERC-7730 shows the Safe transaction (SafeTx) with a descriptor first, then the call inside it.',
   walletRules: " The right column holds the template's rules, not the descriptor's text.",
-  noDescriptor: 'no descriptor; the wallet shows only raw data',
+  noDescriptor: 'no descriptor lists this address; the wallet shows only raw data',
   siteOk: (slug) => `site belongs to ${slug}`,
   siteNot: (phrase) => `site: ${phrase}`,
   newestOk: (where) => `newest version (${where}) lists it too`,

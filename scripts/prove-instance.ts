@@ -1,6 +1,5 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { parseArgs } from 'node:util';
 import { recordingText } from '../src/chain/bytecode.ts';
 import { unreadRefusal } from '../src/chain/https.ts';
 import { mainnetEndpoints } from '../src/chain/providers.ts';
@@ -10,7 +9,10 @@ import { httpsTransport } from '../src/chain/rpc.ts';
 import { admitted, proveInstance } from '../src/contracts/instance.ts';
 import { ATTRIBUTES_PATH, MARKETS_PATH, REGISTRY_PATH, attributesText, marketsText, registryFromTexts } from '../src/registry.ts';
 import { checksumAddress } from '../src/safe/types.ts';
+import { parseFlags } from '../src/cli/flags.ts';
+import { UsageError } from '../src/cli/io.ts';
 import { exitOnHelp } from '../src/script-help.ts';
+import { refuseReadableErrors } from '../src/script-refusal.ts';
 
 const USAGE = 'usage: pnpm prove-instance <registry name> [--registry <dir>] [--record <name>]';
 const HELP = `${USAGE}
@@ -37,14 +39,15 @@ Keys: ALCHEMY_API_KEY and DRPC_API_KEY, from the environment or $KISS_SIGN_HOME/
 Rules: docs/design/data-shapes.md, "Registry attributes and instance checks".`;
 
 exitOnHelp(HELP);
+refuseReadableErrors();
 
-const { values: flags, positionals } = parseArgs({ options: { registry: { type: 'string' }, record: { type: 'string' } }, allowPositionals: true });
+const { values: flags, positionals } = parseFlags({ options: { registry: { type: 'string' }, record: { type: 'string' } }, allowPositionals: true });
 const [name] = positionals;
 if (name === undefined) {
   console.error(USAGE);
   process.exit(2);
 }
-if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new Error('--record takes a name of lowercase letters, digits and -');
+if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new UsageError('--record takes a name of lowercase letters, digits and -');
 
 const root = join(import.meta.dirname, '..');
 const json = (text: string | undefined): Record<string, unknown> => (text === undefined ? {} : (JSON.parse(text) as Record<string, unknown>));

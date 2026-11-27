@@ -1,6 +1,5 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { parseArgs } from 'node:util';
 import { mainnetEndpoints, MissingKeyError } from '../src/chain/providers.ts';
 import { createReader } from '../src/chain/reader.ts';
 import { recordingTransport } from '../src/chain/recording.ts';
@@ -12,7 +11,10 @@ import type { ChainAccess, Erc7730Recording } from '../src/research/erc7730.ts';
 import { ensureVendored, nodeVendorIoWith } from '../src/vendor.ts';
 import { readGithubToken } from '../src/research/github-token.ts';
 import { recordingText } from '../src/chain/bytecode.ts';
+import { parseFlags } from '../src/cli/flags.ts';
+import { UsageError } from '../src/cli/io.ts';
 import { exitOnHelp } from '../src/script-help.ts';
+import { refuseReadableErrors } from '../src/script-refusal.ts';
 
 const USAGE = 'usage: pnpm erc7730 <registry name>... [--record <name>]';
 const HELP = `${USAGE}
@@ -39,9 +41,10 @@ Rules: docs/design/flow.md, "First time an operation is done: build its template
 ERC-7730); docs/design/engine-and-chain.md, "Research services".`;
 
 exitOnHelp(HELP);
+refuseReadableErrors();
 
-const { values: flags, positionals: names } = parseArgs({ options: { record: { type: 'string' } }, allowPositionals: true });
-if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new Error('--record takes a name of lowercase letters, digits and -');
+const { values: flags, positionals: names } = parseFlags({ options: { record: { type: 'string' } }, allowPositionals: true });
+if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new UsageError('--record takes a name of lowercase letters, digits and -');
 
 const root = join(import.meta.dirname, '..');
 const registry = loadRegistry(root);

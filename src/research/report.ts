@@ -15,8 +15,10 @@ import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import type { Compilers } from '../contracts/solc.ts';
 import { AbiSignatureError, canonicalType, namedSignatureOfAbiEntry, paramName, parseFunctionSignature } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam } from '../decode/abi.ts';
-import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, pageUrlsOf, parseHttpsUrl, sizeOf } from '../registry.ts';
+import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, feedChain, loadRegistry, pageUrlsOf, parseHttpsUrl, sizeOf } from '../registry.ts';
 import type { CodePin, HttpsUrl, Market, PinnedCode, Registry, RegistryEntry, Route, SelectorRouting } from '../registry.ts';
+import { sameSoFar, sameText } from '../same.ts';
+import type { ResolvedValue } from '../card.ts';
 import { wholeTokens } from '../chain/decimals.ts';
 import { FEED_VIEWS, FLOOR_RULE, POOL_VIEWS, pairFacts } from '../price/reference.ts';
 import { checksumAddress } from '../safe/types.ts';
@@ -35,9 +37,11 @@ import type { PastTxsRecording } from './recording.ts';
 import { SUMMARIES_DIR, SummaryError, parseSummary, runOf, staleParts } from './past-txs-summary.ts';
 import type { PastTxsSummary } from './past-txs-summary.ts';
 import { pathText } from './api-source.ts';
+import { eventArgText } from './sources.ts';
+import type { EventArg } from './sources.ts';
 import { provenanceRepositories } from './npm-package.ts';
 import { gradedFindings, weightOf } from './grades.ts';
-import { MIN_CONFIRMATIONS, judge } from './ledger.ts';
+import { judge, readForOf } from './ledger.ts';
 import { judgeFixtures } from '../template/perturb.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
 import type { FindingKind, Ledger, Place, Result } from './ledger.ts';
@@ -51,11 +55,22 @@ import { STANDARDS } from './standards.ts';
 import type { Standard } from './standards.ts';
 import { readRecording } from '../chain/bytecode.ts';
 import { WORDS, toleranceSpan } from './report-words.ts';
+import type { ReadFor } from './report-words.ts';
+
+export type { ReadFor };
 import { readUsage } from './usage.ts';
 import type { Usage } from './usage.ts';
 
 /** A template, with the one instance its report covers when it is reported per instance, and the folder its files sit in. */
-export type Subject = { readonly kind: 'template'; readonly template: Template; readonly docs: readonly DocLink[]; readonly vault: RegistryEntry | undefined; readonly dir: string };
+export type Subject = {
+  readonly kind: 'template';
+  readonly template: Template;
+  readonly docs: readonly DocLink[];
+  readonly vault: RegistryEntry | undefined;
+  /** The entries `vault` names that its notes leave to the template's (`sharedEntries`); empty without a vault. */
+  readonly shared: ReadonlySet<string>;
+  readonly dir: string;
+};
 
 /** The official page for one function. The program checks the page; the AI writes no text about it. */
 export type DocLink = { readonly fn: AbiFunction; readonly contract: RegistryEntry; readonly publisher: SiteOwner; readonly url: HttpsUrl; readonly standard: Standard | undefined };
@@ -265,7 +280,43 @@ function onlyVault(registry: Registry, template: Template, field: string, vault:
   const kept = [...registry.entries.values()].filter((entry) => !others.has(entry.name));
   const dangling = kept.flatMap((entry) => [...Object.values(entry.attributes), ...(entry.dependsOn ?? [])]).find((name) => others.has(name));
   if (dangling !== undefined) throw new ReportError(`${dangling} is another vault the field accepts, but a registry entry the report keeps names it`);
-  return { attributes: registry.attributes, entries: new Map(kept.map((entry) => [entry.name, entry])), byAddress: new Map(kept.map((entry) => [entry.address, entry])), markets: registry.markets };
+  const named = [...namedInRules(template), ...namedInReads(template, registry).map(({ entry }) => entry.name), ...factsAndSpenders(template)].find((name) => others.has(name));
+  if (named !== undefined) throw new ReportError(`${named} is another vault the field accepts, but the template names it, so a per-vault report cannot leave it out`);
+  return { attributes: registry.attributes, entries: new Map(kept.map((entry) => [entry.name, entry])), byAddress: new Map(kept.map((entry) => [entry.address, entry])), markets: marketsWith(registry, template, field, vault) };
+}
+
+/** The markets a market field of the card can name beside `vault` in `field`: those `same` lets stand with it. */
+function marketsWith(registry: Registry, template: Template, field: string, vault: RegistryEntry): Registry['markets'] {
+  const fields = [...template.card].flatMap(([name, card]) => (card.kind === 'market' ? [name] : []));
+  if (fields.length === 0) return registry.markets;
+  const fixed: [string, ResolvedValue] = [field, { kind: 'contract', name: vault.name, entry: vault }];
+  const fits = (market: Market): boolean => fields.some((name) => sameSoFar(template, new Map([fixed, [name, { kind: 'market', market }]]), registry));
+  const kept = [...registry.markets].filter(([, market]) => fits(market));
+  if (registry.markets.size > 0 && kept.length === 0) {
+    throw new ReportError(`${fields.join(', ')}: no market in ${MARKETS_PATH} names one address for ${sameText(template)} with ${field} ${vault.name}`);
+  }
+  return new Map(kept);
+}
+
+/**
+ * The registry without the entries a listed card field's kind and scope hold that no field lists, unless an entry the
+ * template can touch names them as an attribute or dependency, such as a vault's asset. Every research step and text of
+ * a template reads it, so none names, reads or studies a token the template does not list.
+ */
+export function withoutUnlisted(registry: Registry, template: Template): Registry {
+  const fields = [...template.card.values()].flatMap((field) => (field.kind === 'contract' && field.scope.names !== undefined ? [field.scope] : []));
+  const unlisted = new Set(fields.flatMap((scope) => scopeEntries({ ...scope, names: undefined }, registry).map((entry) => entry.name)));
+  const covered = new Set<string>();
+  const cover = (name: string): void => {
+    const entry = registry.entries.get(name);
+    if (covered.has(name) || entry === undefined) return;
+    covered.add(name);
+    [...Object.values(entry.attributes), ...(entry.dependsOn ?? [])].forEach(cover);
+  };
+  [...cardCandidates(template, registry).map((entry) => entry.name), ...namedInRules(template), ...namedInReads(template, registry).map(({ entry }) => entry.name)].forEach(cover);
+  const entries = [...registry.entries.values()].filter((entry) => !unlisted.has(entry.name) || covered.has(entry.name));
+  if (entries.length === registry.entries.size) return registry;
+  return { ...registry, entries: new Map(entries.map((entry) => [entry.name, entry])), byAddress: new Map(entries.map((entry) => [entry.address, entry])) };
 }
 
 /**
@@ -290,7 +341,23 @@ export function loadReport(repoRoot: string, registry: Registry, target: Templat
     seen = onlyVault(registry, template, unit.field, vault);
   }
   const dir = reportDir(repoRoot, { template: template.id, instance: vault?.name });
-  return { subject: { kind: 'template', template, docs: parseDocs(readDocs(repoRoot, template.id, vault?.name), template, seen), vault, dir }, registry: seen };
+  const shared = vault === undefined ? new Set<string>() : sharedEntries(repoRoot, registry, template.id, vault);
+  return { subject: { kind: 'template', template, docs: parseDocs(readDocs(repoRoot, template.id, vault?.name), template, seen), vault, shared, dir }, registry: seen };
+}
+
+/** The entries an instance's notes cover: the instance, the entries its attributes name and those it depends on. */
+export const ownedEntries = (vault: RegistryEntry): ReadonlySet<string> => new Set([vault.name, ...Object.values(vault.attributes), ...(vault.dependsOn ?? [])]);
+
+/**
+ * The entries `vault` names as an attribute or in `dependsOn` that every other instance with a report of the template
+ * names too, when it has another, such as Fluid's Liquidity behind both fTokens: their `entries` and `reviews` are
+ * written once, in the template's notes. The instance itself is never shared.
+ */
+export function sharedEntries(repoRoot: string, registry: Registry, template: string, vault: RegistryEntry): ReadonlySet<string> {
+  const others = [...reportedInstancesIn(repoRoot, template)].filter((name) => name !== vault.name).map((name) => registry.entries.get(name));
+  if (others.length === 0) return new Set();
+  const named = others.map((other) => (other === undefined ? new Set<string>() : ownedEntries(other)));
+  return new Set([...ownedEntries(vault)].filter((name) => name !== vault.name && named.every((set) => set.has(name))));
 }
 
 /** The `docs.json` files a report reads: the template's, and its instance's when that instance's report has one, as a file of its own. */
@@ -344,35 +411,44 @@ function namedInRules(template: Template): Set<string> {
   return names;
 }
 
-/** The registry contracts a computed field's reads call or pass, which `card new` reads and only the report checks. */
-function namedInReads(template: Template): string[] {
+/** The registry contracts each computed field's reads call or pass, which `card new` reads and only the report checks. */
+function namedInReads(template: Template, registry: Registry): ReadRoots {
   const read = ({ to, args }: ComputedRead): string[] => [
     ...(to.kind === 'contract' ? [to.name] : []),
     ...args.flatMap((arg) => (arg.kind === 'read' ? read(arg.read) : ruleLeaves(arg.rule).flatMap((rule) => (rule.kind === 'contract' ? [rule.name] : [])))),
   ];
-  return [...template.card.values()].flatMap((field) => (field.kind === 'amount' && field.computed !== undefined ? read(field.computed.read) : []));
+  return [...template.card].flatMap(([field, card]) =>
+    card.kind === 'amount' && card.computed !== undefined ? read(card.computed.read).map((name) => ({ entry: registry.entries.get(name) as RegistryEntry, read: { field, price: false, supports: false } })) : [],
+  );
 }
 
-/** The feeds and pools `card new` can read a floor's price from, for every pair of tokens its card fields can name. */
-function priceEntries(template: Template, registry: Registry): RegistryEntry[] {
-  const found = new Set<RegistryEntry>();
+/** The feeds and pools `card new` can read each floor's price from: each token's own feed chain, whether or not the other side has one, and each pair's pool routes. */
+function priceRoots(template: Template, registry: Registry): ReadRoots {
+  const found: { entry: RegistryEntry; read: ReadFor }[] = [];
   const named = new Set(callRules(template).flatMap((rule) => (rule.kind === 'contract' ? [rule.name] : [])));
-  const candidates = (of: TokenRef): RegistryEntry[] => {
-    const field = of === 'eth' ? undefined : template.card.get(of.field);
-    return field?.kind === 'contract' ? scopeEntries(field.scope, registry) : [];
-  };
-  for (const field of template.card.values()) {
+  const candidates = (of: TokenRef): RegistryEntry[] => (of === 'eth' ? [] : refNames(of, template, registry).flatMap((name) => registry.entries.get(name) ?? []));
+  for (const [name, field] of template.card) {
     if (field.kind !== 'amount' || field.floor === undefined) continue;
     const sold = template.card.get(field.floor.sells) as Extract<CardField, { kind: 'amount' }>;
-    for (const sell of candidates(sold.of)) {
-      for (const buy of candidates(field.of)) {
+    const [sells, buys] = [candidates(sold.of), candidates(field.of)];
+    const add = (entry: RegistryEntry): void => {
+      found.push({ entry, read: { field: name, price: true, supports: false } });
+    };
+    for (const token of [...sells, ...buys]) if (token.price !== undefined) feedChain(token.price.feed, registry).forEach(add);
+    for (const sell of sells) {
+      for (const buy of buys) {
         const facts = sell === buy ? undefined : pairFacts(sell, buy, registry, named);
-        if (facts?.kind === 'feeds') [...facts.sell, ...facts.buy, ...facts.routes.flat().map((pool) => pool.entry)].forEach((entry) => found.add(entry));
+        if (facts?.kind === 'feeds') facts.routes.flat().forEach((pool) => add(pool.entry));
       }
     }
   }
-  return [...found];
+  return found;
 }
+
+const priceEntries = (template: Template, registry: Registry): RegistryEntry[] => [...new Set(priceRoots(template, registry).map(({ entry }) => entry))];
+
+
+type ReadRoots = readonly { readonly entry: RegistryEntry; readonly read: ReadFor }[];
 
 export const hasMarket = (template: Template): boolean => [...template.card.values()].some((field) => field.kind === 'market');
 
@@ -387,9 +463,9 @@ function cardCandidates(template: Template, registry: Registry): RegistryEntry[]
 /** The instance whose `pnpm instance-evidence` a per-instance report holds. */
 export const evidenceEntries = (subject: Subject): RegistryEntry[] => (subject.vault === undefined ? [] : [subject.vault]);
 
-function directlyTouched(subject: Subject, registry: Registry): Set<string> {
+/** The names `roots` reach: each root, the entries it names as attributes and theirs in turn, then `plain`, then each of these depends on. */
+function reached(roots: readonly RegistryEntry[], registry: Registry, plain: readonly string[] = []): Set<string> {
   const names = new Set<string>();
-  const roots = [...[...namedInRules(subject.template), ...namedInReads(subject.template)].map((n) => registry.entries.get(n) as RegistryEntry), ...cardCandidates(subject.template, registry), ...priceEntries(subject.template, registry)];
   const named = (entry: RegistryEntry): void => {
     if (names.has(entry.name)) return;
     names.add(entry.name);
@@ -400,11 +476,66 @@ function directlyTouched(subject: Subject, registry: Registry): Set<string> {
     }
   };
   roots.forEach(named);
-  for (const doc of subject.docs) names.add(doc.contract.name);
-  if (callsSafeWithData(subject.template)) {
-    for (const entry of registry.entries.values()) if (entry.kind === 'singleton') names.add(entry.name);
-  }
+  plain.forEach((name) => names.add(name));
+  for (const name of [...names]) for (const target of registry.entries.get(name)?.dependsOn ?? []) names.add(target);
   return names;
+}
+
+/** What the operation reaches other than through `card new`'s reads: what the template calls, views and moves, what a card field can name, the documented contracts and the Safe's singletons. */
+function reachedOtherwise(subject: Subject, registry: Registry): Set<string> {
+  const { template } = subject;
+  const roots = [...[...namedInRules(template)].map((n) => registry.entries.get(n) as RegistryEntry), ...cardCandidates(template, registry)];
+  const singletons = callsSafeWithData(template) ? [...registry.entries.values()].filter((entry) => entry.kind === 'singleton').map((entry) => entry.name) : [];
+  return reached(roots, registry, [...subject.docs.map((doc) => doc.contract.name), ...singletons]);
+}
+
+const readRoots = (template: Template, registry: Registry): ReadRoots => [...namedInReads(template, registry), ...priceRoots(template, registry)];
+
+/** The registry contracts a `facts` view reads or passes, and each spender the effects let an allowance stay open to. */
+const factsAndSpenders = (template: Template): string[] => [
+  ...template.facts.flatMap((fact) => [fact.to, ...fact.args.flatMap(ruleLeaves).flatMap((rule) => (rule.kind === 'contract' ? [rule.name] : []))]),
+  ...template.effects.approves.map((approval) => approval.spender),
+];
+
+/** The registry addresses an entry's current code pin runs: its implementation, that implementation's extension and each route's implementation. */
+const pinnedAddresses = (entry: RegistryEntry): Address[] => {
+  const pin = entry.code?.current.pin;
+  return [pin?.implementation?.address, pin?.implementation?.extension?.address, ...(pin?.routes ?? []).map((route) => route.address)].flatMap((a) => (a === undefined ? [] : [a.toLowerCase() as Address]));
+};
+
+/** Every registry name `names` lead to through attributes, `dependsOn` and the code their current pins run, to the end. */
+function closure(names: Iterable<string>, registry: Registry): Set<string> {
+  const seen = new Set<string>();
+  const visit = (name: string): void => {
+    if (seen.has(name)) return;
+    seen.add(name);
+    const entry = registry.entries.get(name);
+    if (entry === undefined) return;
+    [...Object.values(entry.attributes), ...(entry.dependsOn ?? []), ...pinnedAddresses(entry).flatMap((a) => registry.byAddress.get(a)?.name ?? [])].forEach(visit);
+  };
+  [...names].forEach(visit);
+  return seen;
+}
+
+/**
+ * The entries the operation only reads, each with the card fields `card new` reads it for: reached only through a
+ * computed field's reads or a floor's prices, so its number reaches the transaction only through the card the signer
+ * confirms. Each needs one confirmed place, not two, and its site results are graded reference and stay out of To
+ * review. Any entry reached otherwise, through every attribute, `dependsOn` and pinned implementation, or at an
+ * address of `traced`, which every call of the recorded call traces holds, keeps two.
+ */
+export function readOnlyEntries(subject: Subject, registry: Registry, traced: ReadonlySet<Address>): Map<string, ReadFor[]> {
+  const otherwise = closure([...reachedOtherwise(subject, registry), ...factsAndSpenders(subject.template), ...[...traced].flatMap((a) => registry.byAddress.get(a)?.name ?? [])], registry);
+  const uses = new Map<string, ReadFor[]>();
+  for (const { entry, read: root } of readRoots(subject.template, registry)) {
+    for (const name of reached([entry], registry)) {
+      if (otherwise.has(name)) continue;
+      const read = { ...root, supports: name !== entry.name };
+      const known = uses.get(name) ?? [];
+      if (!known.some((r) => r.field === read.field && r.price === read.price && r.supports === read.supports)) uses.set(name, [...known, read]);
+    }
+  }
+  return uses;
 }
 
 /** A call to the Safe itself with data runs the Safe's singleton, one of the registry's. */
@@ -416,8 +547,8 @@ const callsSafeWithData = (template: Template): boolean => template.calls.some((
  * the factory of a vault's adapter, and every entry any of these depends on.
  */
 export function entriesOf(subject: Subject, registry: Registry): RegistryEntry[] {
-  const names = directlyTouched(subject, registry);
-  for (const name of [...names]) for (const target of registry.entries.get(name)?.dependsOn ?? []) names.add(target);
+  const names = reachedOtherwise(subject, registry);
+  for (const name of reached(readRoots(subject.template, registry).map(({ entry }) => entry), registry)) names.add(name);
   return [...registry.entries.values()].filter((entry) => names.has(entry.name));
 }
 
@@ -590,10 +721,33 @@ export async function erc7730Text(entries: readonly RegistryEntry[], registry: R
 }
 
 /**
- * Every past-txs summary the subject's report prints: of the template, or anchored on the vault. Each file is parsed
- * once, and refused when anything in it is not what `pnpm past-txs` writes.
+ * Why a past-txs search of `template` anchors on what the template does not list, or undefined: a registry entry its
+ * list leaves out, as the token or a party; or, for a token's Transfer, a token outside the registry, which no card names.
+ * An event's emitter outside the registry, such as Uniswap's PoolManager, is an anchor like any other.
+ */
+export function anchorOutsideList(
+  query: { readonly token?: string; readonly anchor: string; readonly from?: string; readonly to?: string; readonly eventArg?: EventArg },
+  template: Template,
+  registry: Registry,
+): { readonly kind: 'unlisted' | 'unregistered'; readonly why: string } | undefined {
+  const covered = withoutUnlisted(registry, template);
+  const parties = [query.token, query.from, query.to, query.eventArg !== undefined && 'address' in query.eventArg ? query.eventArg.address : undefined];
+  for (const address of parties.flatMap((a) => (a === undefined ? [] : [a.toLowerCase() as Address]))) {
+    const entry = registry.byAddress.get(address);
+    if (entry !== undefined && !covered.byAddress.has(address)) return { kind: 'unlisted', why: `${entry.name} is a ${entry.kind} ${template.id} does not list` };
+  }
+  if (query.anchor !== 'event' && query.token !== undefined && !registry.byAddress.has(query.token.toLowerCase() as Address)) {
+    return { kind: 'unregistered', why: `${query.token} is outside the registry, so no card of ${template.id} names the token the search anchors on` };
+  }
+  return undefined;
+}
+
+/**
+ * Every past-txs summary the subject's report prints: of the template, or anchored on the vault, and anchored on nothing
+ * the template does not list. Each file is parsed once, and refused when anything in it is not what `pnpm past-txs` writes.
  */
 export function pastTxsRecordings(repoRoot: string, subject: Subject): { readonly file: string; readonly recording: PastTxsSummary }[] {
+  const registry = loadRegistry(repoRoot);
   const dir = join(repoRoot, SUMMARIES_DIR);
   return readdirSync(dir)
     .filter((f) => f.endsWith('.json'))
@@ -606,7 +760,8 @@ export function pastTxsRecordings(repoRoot: string, subject: Subject): { readonl
         throw error instanceof SummaryError ? new ReportError(error.message) : error;
       }
     })
-    .filter(({ recording: { query } }) => query.template === subject.template.id && (subject.vault === undefined || query.token?.toLowerCase() === subject.vault.address));
+    .filter(({ recording: { query } }) => query.template === subject.template.id && (subject.vault === undefined || query.token?.toLowerCase() === subject.vault.address))
+    .filter(({ recording: { query } }) => anchorOutsideList(query, subject.template, registry) === undefined);
 }
 
 /**
@@ -627,8 +782,9 @@ export function summarizePastTxs(repoRoot: string, registry: Registry, file: str
     const name = file.replace(/^.*\//, '').replace(/\.json$/, '');
     throw new ReportError(`${file}: the ${stale.join(' and the ')} changed since it was studied; run pnpm past-txs --restudy ${name}`);
   }
-  const run = runOf(summary, loadTemplate(repoRoot, summary.query.template, registry));
-  return { file, query: summary.query, text: renderPastTxs(run, registry), run };
+  const template = loadTemplate(repoRoot, summary.query.template, registry);
+  const run = runOf(summary, template);
+  return { file, query: summary.query, text: renderPastTxs(run, withoutUnlisted(registry, template)), run };
 }
 
 /** Text the AI wrote, as literal Markdown on one line: every character Markdown or a table cell reads is escaped. */
@@ -680,13 +836,34 @@ const MARKDOWN_TITLES: Readonly<Partial<Record<FindingKind, string>>> = {
 /** A place by the sources it joins, with its owner when that is not the one source's own name. */
 const placeName = ({ owner, sources }: Place): string => `${sources.map(code).join(' + ')}${sources.length === 1 && sources[0] === owner ? '' : ` (${owner})`}`;
 
+/** A computed or floor field in the Markdown report's words: what it bounds. */
+function boundWord(template: Template, name: string): string {
+  const field = template.card.get(name);
+  const bound = field?.kind === 'amount' && field.floor === undefined && field.computed?.bound === 'ceiling' ? 'ceiling' : 'floor';
+  return WORDS.en.field[bound];
+}
+
+const readsText = (readFor: readonly ReadFor[], template: Template): string =>
+  readFor.map((r) => `${r.supports ? 'supporting the' : 'as the'} ${r.price ? 'price source' : 'read'} for the ${boundWord(template, r.field)} (${code(r.field)})`).join(' and ');
+
+/** Why an entry the operation only reads is in the report, from the template's fields `card new` reads it for. */
+const readForText = (readFor: readonly ReadFor[], template: Template): string =>
+  `needs 1 place, not 2: it is in the report only because ${code('card new')} reads it, ${readsText(readFor, template)}, and the signer confirms the number ${code('card new')} prints; its site results (a site that differs, cannot be compared, or has no second source) are reference and not under To review. ${
+    readFor.some((r) => r.price)
+      ? 'A wrong price source lowers the minimum: when the pair has a pool, its mean price is checked against the feeds, otherwise only the signer checking the price `card new` prints catches it'
+      : 'A wrong read changes that number, and only the signer checking what `card new` prints catches it'
+  }`;
+
+/** `readForText` for a row of the findings, which the entry's line under Registry entries explains. */
+const readForShort = (readFor: readonly ReadFor[], template: Template): string => `only read by ${code('card new')}, ${readsText(readFor, template)}`;
+
 /** Every finding, key first, each with its result id: the index of what the tables below mark. */
-function findingsSection(ledger: Ledger): string[] {
+function findingsSection(ledger: Ledger, template: Template): string[] {
   const findings = gradedFindings(ledger);
   const count = (grade: 'key' | 'reference') => findings.filter((r) => weightOf(r) === grade).length;
   const title = (r: Result) =>
     r.finding.kind === 'few-confirmations'
-      ? `address confirmed in ${r.finding.by.length} ${r.finding.by.length === 1 ? 'place' : 'places'}${r.finding.by.length === 0 ? '' : `, ${r.finding.by.map(placeName).join(', ')}`}; it needs ${MIN_CONFIRMATIONS}`
+      ? `address confirmed in ${r.finding.by.length} ${r.finding.by.length === 1 ? 'place' : 'places'}${r.finding.by.length === 0 ? '' : `, ${r.finding.by.map(placeName).join(', ')}`}; it needs ${r.finding.needs}`
       : MARKDOWN_TITLES[r.finding.kind] ?? (WORDS.en.finding as Readonly<Partial<Record<FindingKind, { readonly title: string }>>>)[r.finding.kind]?.title ?? r.finding.kind;
   return [
     '## Findings',
@@ -697,7 +874,7 @@ function findingsSection(ledger: Ledger): string[] {
     '',
     ...(findings.length === 0
       ? []
-      : ['| Result | Grade | Finding |', '| --- | --- | --- |', ...findings.map((r) => `| ${code(r.id)} | ${weightOf(r)} | ${title(r)} |`), '']),
+      : ['| Result | Grade | Finding |', '| --- | --- | --- |', ...findings.map((r) => `| ${code(r.id)} | ${weightOf(r)} | ${title(r)}${r.readFor === undefined ? '' : `; ${readForShort(r.readFor, template)}`} |`), '']),
   ];
 }
 
@@ -1140,13 +1317,18 @@ function abiRow(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, 
   return `${name} PROVEN | ${proxy} | ${contract}, solc ${code(proof.compiler)} | ${code(proof.codeHash)} | ${pinVerdict(entry, proof)} | ${called} | ${masked} | ${proof.block.number} |`;
 }
 
-const COMMAND_FLAGS = ['token', 'anchor', 'event', 'from', 'to', 'fromBlock', 'toBlock', 'maxTxs'] as const;
+const COMMAND_FLAGS = ['token', 'anchor', 'event', 'eventArg', 'from', 'to', 'fromBlock', 'toBlock', 'maxTxs'] as const;
 
 /** A recording that keeps its head names itself with `--same-windows-as`, so the command searches its windows again. */
-function pastTxsCommand({ query, file }: PastTxsSection): string {
+export function pastTxsCommand({ query, file }: PastTxsSection): string {
   const name = file.replace(/^.*\//, '').replace(/\.json$/, '');
   const flag = (key: (typeof COMMAND_FLAGS)[number]) => `--${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
-  const args = COMMAND_FLAGS.flatMap((key) => (query[key] === undefined ? [] : [`${flag(key)} ${key === 'event' ? `'${query[key]}'` : String(query[key])}`]));
+  const value = (key: (typeof COMMAND_FLAGS)[number]): string => {
+    if (key === 'event') return `'${query.event}'`;
+    if (key === 'eventArg') return eventArgText(query.eventArg as EventArg);
+    return String(query[key]);
+  };
+  const args = COMMAND_FLAGS.flatMap((key) => (query[key] === undefined ? [] : [`${flag(key)} ${value(key)}`]));
   const windows = query.head === undefined ? [] : [`--same-windows-as ${name}`];
   return `pnpm past-txs ${query.template} ${[...args, ...windows].join(' ')} --record ${name}`;
 }
@@ -1328,6 +1510,11 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs, 
       `| ${code(entry.name)} | ${code(checksumAddress(entry.address))} | ${entry.kind} | <${entry.source}> | ${cell('source.site', of('defillama'))} | ${cell('source.coingecko', of('coingecko'))} | ${cell('source.commit', of('github'))} | ${cell('source.tip', of('tip'), othersVerdict)} | ${cell(`source.${page}`, of(page), othersVerdict)} |`,
     );
   }
+  const readOnly = checked.flatMap(({ entry }) => {
+    const readFor = readForOf(ledger, entry);
+    return readFor === undefined ? [] : [`${code(entry.name)}: ${readForText(readFor, inputs.subject.template)}.`];
+  });
+  if (readOnly.length > 0) out.push('', 'Entries the operation only reads:', '', ...readOnly.map((line) => `- ${line}`));
   const more = checked.flatMap(({ entry, lines }) => (entry.moreSources ?? []).map((page, i) => ({ entry, page, n: i + 1, lines: lines.filter((l) => l.more === i + 1) })));
   if (more.length > 0) {
     out.push(
@@ -1422,7 +1609,7 @@ export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
     '',
   ];
   const ledger = judge(inputs, inputs.fixtures);
-  out.push(...findingsSection(ledger));
+  out.push(...findingsSection(ledger, subject.template));
   out.push(...templateSections(subject.template, subject.docs, inputs));
 
   if (entries.length === 0) {

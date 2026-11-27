@@ -101,6 +101,12 @@ function selectorRoutedElsewhere(owners: readonly (readonly [Hex, Address])[], a
   return elsewhere[0];
 }
 
+/** Starts a read before the step that needs it; when an earlier step refuses first, nothing awaits it, so its rejection must not end the process. */
+function ahead<T>(read: Promise<T>): Promise<T> {
+  read.catch(() => {});
+  return read;
+}
+
 type RoutesRead = { readonly kind: 'read'; readonly routes: readonly Route[] } | { readonly kind: 'refused'; readonly refusal: CodeRefusal };
 
 export async function readRoutes(reader: Reader, proxy: Address, routing: SelectorRouting, at: BlockRef): Promise<RoutesRead> {
@@ -110,6 +116,7 @@ export async function readRoutes(reader: Reader, proxy: Address, routing: Select
   if (!Array.isArray(reached)) return refused(reached);
   const implementations = [...new Set(reached.filter((address) => address !== null))].sort();
   if (implementations.length === 0) return { kind: 'read', routes: [] };
+  const codes = implementations.map((address) => ahead(codeAt(reader, address, at)));
   const lists = await selectorListsOf(reader, proxy, routing.selectorsOf, implementations, at);
   if (!Array.isArray(lists)) return refused(lists);
   const owners = selectorOwners(implementations, lists);
@@ -123,7 +130,7 @@ export async function readRoutes(reader: Reader, proxy: Address, routing: Select
   if (elsewhere !== undefined) return inconsistent(elsewhere);
   const routes: Route[] = [];
   for (const [i, address] of implementations.entries()) {
-    const code = await codeAt(reader, address, at);
+    const code = await codes[i]!;
     if (typeof code !== 'string') return refused(code);
     routes.push({ address, hash: keccakCode(code), selectors: lists[i] ?? [] });
   }
@@ -157,6 +164,7 @@ export async function readExtension(reader: Reader, implementation: Address, run
 /** `declared` is how the entry at `address` says its proxy names the code it runs, when it says so. */
 export async function readRunningCode(reader: Reader, address: Address, at: BlockRef, declared: ProxyDeclaration = {}): Promise<CodeRead> {
   const refused = (refusal: CodeRefusal): CodeRead => ({ kind: 'refused', refusal });
+  const routesRead = declared.routes === undefined ? undefined : ahead(readRoutes(reader, address, declared.routes, at));
   const own = await codeAt(reader, address, at);
   if (typeof own !== 'string') return refused(own);
   const located = await locate(reader, address, own, at, declared);
@@ -170,8 +178,8 @@ export async function readRunningCode(reader: Reader, address: Address, at: Bloc
     if (read.kind === 'refused') return refused(read.refusal);
     running = { own, proxy, runs: code, ...(read.extension === undefined ? {} : { extension: read.extension }) };
   }
-  if (declared.routes === undefined) return { kind: 'read', code: running };
-  const routes = await readRoutes(reader, address, declared.routes, at);
+  if (routesRead === undefined) return { kind: 'read', code: running };
+  const routes = await routesRead;
   return routes.kind === 'refused' ? routes : { kind: 'read', code: { ...running, routes: routes.routes } };
 }
 
@@ -205,34 +213,56 @@ export async function readRunningCodeAt(reader: Reader, address: Address, number
   return block.kind === 'unverifiable' ? { kind: 'refused', refusal: { why: 'unverifiable', read: block.reason } } : readRunningCode(reader, address, block.value, declared);
 }
 
+/** Where a walk is: the spans it found, the blocks it has searched, and the blocks the first block of the current run lies in. */
+export type WalkProgress = { readonly spans: number; readonly blocks: number; readonly first: bigint; readonly last: bigint };
+
+/**
+ * How many levels of the halving the walk reads ahead, along both ways each read could turn out. Each level doubles
+ * the reads, and 3 levels hit Alchemy's rate limit and ran slower than reading one block at a time.
+ */
+const LOOKAHEAD = 2;
+
 /**
  * Walks back from block `head`, where `address` runs `headPin`, through every change of the code a call to it runs, and
  * of its routes when `declared` holds them.
  * For each pin it searches, by halving the blocks from 0 to the latest block known to hold it, for the first block of
  * the run that ends there, then reads the block before that run and repeats until that block holds no pin. Each read
  * goes through both providers at an agreed block hash; one they disagree on refuses the whole history.
+ * The blocks the search may read next are read ahead in parallel, but the search consults them in the same order as
+ * one read at a time, so a block it never reaches neither refuses nor changes the history.
  */
-export async function readCodeHistory(reader: Reader, address: Address, head: bigint, headPin: CodePin, declared: ProxyDeclaration = {}): Promise<CodeHistory> {
-  const reads = new Map<bigint, CodeRead>();
-  const readAt = async (number: bigint): Promise<CodeRead> => {
+export async function readCodeHistory(reader: Reader, address: Address, head: bigint, headPin: CodePin, declared: ProxyDeclaration = {}, onRead: (walk: WalkProgress) => void = () => {}): Promise<CodeHistory> {
+  const reads = new Map<bigint, Promise<CodeRead>>();
+  const readAt = (number: bigint): Promise<CodeRead> => {
     let read = reads.get(number);
     if (read === undefined) {
-      read = await readRunningCodeAt(reader, address, number, declared);
+      read = ahead(readRunningCodeAt(reader, address, number, declared));
       reads.set(number, read);
     }
     return read;
   };
+  const readAhead = (lo: bigint, held: bigint, levels: number): void => {
+    if (levels === 0 || held - lo <= 1n) return;
+    const mid = (lo + held) / 2n;
+    void readAt(mid);
+    readAhead(lo, mid, levels - 1);
+    readAhead(mid, held, levels - 1);
+  };
   const found: CodeSpan[] = [];
+  let blocks = 0;
   let pin = headPin;
   let held = head;
   for (;;) {
     let lo = -1n;
     while (held - lo > 1n) {
       const mid = (lo + held) / 2n;
+      readAhead(lo, held, LOOKAHEAD);
       const read = await readAt(mid);
+      blocks++;
       if (read.kind === 'refused' && read.refusal.why === 'unverifiable') return read;
       if (read.kind === 'read' && samePin(pinOf(read.code), pin)) held = mid;
       else lo = mid;
+      onRead({ spans: found.length, blocks, first: lo + 1n, last: held });
     }
     found.push({ from: held, pin });
     const before = lo < 0n ? 'genesis' : await readAt(lo);

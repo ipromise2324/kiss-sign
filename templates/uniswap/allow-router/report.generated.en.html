@@ -91,6 +91,8 @@ section{scroll-margin-top:24px}
 .tip:focus-visible .bub{opacity:1;visibility:visible;transition:none}
 .checks .tip{position:static}
 .checks .tip .bub{left:-8px;max-width:calc(100% + 16px)}
+.checks li>.tip{align-self:center}
+.checks li>.tip>.i{margin-top:0;vertical-align:0}
 @media (max-width:600px){.tip{position:static}.tip .bub{left:0;max-width:calc(100vw - 40px)}}
 
 section{border-top:1px solid var(--line2);padding-top:28px}
@@ -118,6 +120,9 @@ h3{font-size:16px;font-weight:590;margin:36px 0 10px}
 .nest dt,.nest dd{padding:5px 0}
 .nest dt{color:var(--fg2)}
 .srcline{font-size:var(--t-small);color:var(--fg3);margin:12px 0 0}
+.request{margin:0 0 18px;padding:10px 14px;border-left:3px solid var(--fg3)}
+.request figcaption{font-size:var(--t-small);color:var(--fg3)}
+.request blockquote{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
 .srcline a{color:var(--fg2)}
 @media (max-width:600px){.props.two>div{grid-template-columns:minmax(0,1fr)}.nest{grid-template-columns:minmax(0,1fr)}.nest dd{padding-top:0}}
 
@@ -158,10 +163,6 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .deciders .defs>div{display:grid;grid-template-columns:116px minmax(0,1fr);gap:0 14px;align-items:start;font-size:var(--t-small);line-height:24px;color:var(--fg2)}
 .deciders .who{justify-self:start}
 @media (max-width:560px){.deciders .grp{grid-template-columns:minmax(0,1fr)}}
-.mix{margin:10px 0 12px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 16px;align-items:start}
-.mix dt{justify-self:start}
-.mix dd{margin:0;display:flex;flex-wrap:wrap;gap:6px;line-height:24px}
-.mix code{font-size:var(--t-label)}
 .cb{margin-top:40px}
 .callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
 .callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
@@ -241,6 +242,8 @@ details.more[open]>summary .chev{transform:rotate(90deg)}
 .ad .srcrow>.i{width:14px;height:14px;margin-top:5px}
 .site{display:flex;gap:6px;align-items:flex-start;padding-left:22px;font-size:var(--t-small);color:var(--fg2)}
 .ad .site .i{width:14px;height:14px;margin-top:3px;flex:none}
+.src .why{padding-left:22px;font-size:var(--t-small);color:var(--fg2)}
+.src .site+.why{padding-left:42px}
 .aisrcs{font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
 .aisrcs>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;font-size:var(--t-small);color:var(--fg3)}
 .aisrcs>summary::-webkit-details-marker{display:none}
@@ -334,10 +337,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <span class="opid">uniswap/allow-router</span>
   <p class="sub"><span class="aiw" data-ai><span>The Safe calls <code>approve</code> on Permit2 so that Universal Router 2.1.2 can pull the token you pick from the Safe through Permit2. The amount is 2^160-1 (Permit2&#39;s unlimited); the template leaves the expiration free. The router pulls only from the address that calls it, so only the Safe&#39;s own calls to the router can use this allowance.</span><span class="byai">AI research</span></span></p>
   <ul class="checks">
-    <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Address sources <span class="n num">8 / 8</span>
+    <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Transaction addresses <span class="n num">8 / 8</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">All 8 addresses are confirmed in at least 2 places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address.</span></span></li>
-    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Source verified <span class="n num">5 / 5</span>
-      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">The source verified on Etherscan, compiled again with a pinned compiler, gives exactly the code on chain, so the function definitions used to decode the transaction belong to these contracts. universal-router-2.1.2: no call goes to it directly and no function definition of it decodes anything, so it has no proof and is not counted; the code it runs is compared under &#34;Code unchanged&#34;.</span></span></li>
+    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Source verified <span class="n num">7 / 7</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">The source verified on Etherscan, compiled again with a pinned compiler, gives exactly the code on chain, so the function definitions used to decode the transaction belong to these contracts. usdc, usdt: compiled again, only the metadata hash differs from the code on chain, so their function selectors and parameter types are proven and they count as passed; their parameter names are not proven. universal-router-2.1.2: no call goes to it directly and no function definition of it decodes anything, so it has no proof and is not counted; the code it runs is compared under &#34;Code unchanged&#34;.</span></span></li>
     <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Code unchanged <span class="n num">8 / 8</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">At each signing, the program checks that every contract the card uses still runs the code it was researched with. An upgrade or a replacement is stopped. No ABI proof compares the code universal-router-2.1.2 runs today, so the report reads it at the latest block and compares it with the current code pin.</span></span></li>
     <li data-state="na" data-line="params"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>Parameter checks <span class="n num">no tests</span>
@@ -391,7 +394,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="grp"><dt class="gh">kiss-sign</dt><dd class="defs">
         <div><span class="who">fixed</span><span>The template sets it. Any change is a MISMATCH.</span></div></dd></div>
       <div class="grp"><dt class="gh">The app</dt><dd class="defs">
-        <div><span class="who app">any value</span><span>The template allows any value; no test tried another.</span></div></dd></div>
+        <div><span class="who app">not checked here</span><span>The template allows any value; no test tried another.</span></div></dd></div>
     </dl>
   </div>
   <p class="lead keylead">The transaction&#39;s calls, one by one. Each argument shows who decides it, its value or the rule it must follow, and what it does.</p>
@@ -400,13 +403,14 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">permit2.</span>approve</span><span class="sel">0x87517c45</span></div><div class="cdoc"><div class="doc" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><span class="f3">Docs: </span><a href="https://developers.uniswap.org/llms.mdx/docs/protocols/permit2/concepts/allowance-transfer">developers.uniswap.org/llms.mdx/docs/protocols/permit2</a></span></div></div>
     <div class="arg" data-field="1.approve.token">
       <div class="nm"><span class="pn">token</span><span class="who you">you pick: token</span></div>
-      <div class="val"><div class="is">the token you pick</div>
+      <div class="val"><div class="is">the token you pick <span class="f3">the card holds it; another value in the transaction is a MISMATCH</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The token the allowance is for.</span></span></div></div>
     </div>
     <div class="arg" data-field="1.approve.expiration">
-      <div class="nm"><span class="pn">expiration</span><span class="who app">any value</span></div>
-      <div class="val"><div class="is">differs each time <span class="f3">the template allows any value, and no test tried another</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>When Permit2 stops honouring the allowance; the template leaves it free. The 2 fitting past transactions set it about 30 days ahead; verify&#39;s page shows the one you sign.</span></span></div></div>
+      <div class="nm"><span class="pn">expiration</span><span class="who app">not checked here</span></div>
+      <div class="val"><div class="is">differs each time <span class="f3">Only the effects check limits it, and only through the card&#39;s amount rules: a value that keeps what the Safe gives and gets within them passes, even if the Safe then gets less. What tests saw: no test tried another value</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>When Permit2 stops honouring the allowance; the template leaves it free. The 2 fitting past transactions set it about 30 days ahead; verify&#39;s page shows the one you sign.</span></span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Why the template leaves it open: When Permit2 stops honouring the router&#39;s allowance, which the app sets 30 days ahead. The router pulls only from the address that called it (its registry entry&#39;s standingAllowance), so how long the allowance lasts does not change who can use it; verify&#39;s page shows the expiration the transaction leaves.</span></span></div></div>
     </div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>2 fixed values; any change is a MISMATCH</summary>
     <div class="arg" data-field="1.approve.spender">
@@ -455,7 +459,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div><dt><code>gasToken</code></dt><dd>none (zero address)</dd></div>
         <div><dt><code>refundReceiver</code></dt><dd>none (zero address)</dd></div>
       </dl></dd></div>
-    <div><dt>1 permit2.approve</dt><dd class="f3">no descriptor; the wallet shows only raw data</dd></div>
+    <div><dt>1 permit2.approve</dt><dd class="f3">no descriptor lists this address; the wallet shows only raw data</dd></div>
   </dl>
   <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>your Safe is a proxy: a Ledger resolves it to safe-1.3.0 or safe-1.4.1 through Ledger&#39;s own server to use these descriptors; a wallet that does not resolve proxies shows only raw data.</span></div>
   <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>SafeTx: the wallet does not show <code>safeTxGas</code>, <code>nonce</code>; only the hashes cover them.</span></div>
@@ -465,6 +469,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="addresses">
   <h2>Addresses <span class="c">8</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Each address must be confirmed in at least two places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
+  <h3>Addresses the transaction touches 8</h3>
   <div class="rows">
     <details class="fold">
       <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>8 more addresses have no result for you to review</summary>
@@ -498,7 +503,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
       <div><span class="nm">cbbtc</span><span class="role"><span class="conf">high confidence</span></span></div>
       <div class="body"><span class="addr">0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf</span>
-        <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">github.com/coinbase/agentkit</a></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>site: nothing to compare (compared with <a href="https://defillama.com/protocol/coinbase">DefiLlama</a>)</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>newest version (main) lists it too</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/coinbase-wrapped-btc">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>Immunefi bug bounty scope<span class="res">address not listed</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>deployer<span class="res">not proven</span></span></span></div></div>
+        <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">github.com/coinbase/agentkit</a></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>site: nothing to compare (compared with <a href="https://defillama.com/protocol/coinbase">DefiLlama</a>)</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>newest version (main) lists it too</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/coinbase-wrapped-btc">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>Immunefi bug bounty scope<span class="res">address not listed</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf">deployer</a><span class="res">not proven</span></span></span></div></div>
         <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div></div>
     </div>
     <div class="ad" id="a-permit2" data-state="ok">
@@ -556,18 +561,21 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>Past transactions</h2>
   <h3>1. Has this template&#39;s transaction worked before?</h3>
-  <p class="ans"><b>Not by a Safe, in what was studied.</b> EOA: 1 time, from 1 address. The newest: block 26448993. All of them succeeded. The newest one: <a href="https://etherscan.io/tx/0x0b6cbcd7944599142b8560bf83ec58102c4e4a9b36a36c153a714e67bbebe626">0x0b6cbcd7…</a></p>
+  <p class="ans"><b>Not by a Safe, in what was studied.</b> EOA: 1 time, from 1 address. The newest: 2026-11-19. All of them succeeded. The newest one: <a href="https://etherscan.io/tx/0x0b6cbcd7944599142b8560bf83ec58102c4e4a9b36a36c153a714e67bbebe626">0x0b6cbcd7…</a></p>
   <h3>2. What values are normal in what the app fills?</h3>
   <div class="sh"><code>expiration</code><span>how far ahead it was set, counted from the block the transaction ran in</span></div><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">Transactions</th><th scope="col" class="n">Count</th><th scope="col" class="nw v">Shortest</th><th scope="col" class="nw v">Half at or under</th><th scope="col" class="nw v">Longest</th></tr></thead><tbody>
     <tr><td class="what" data-label="Transactions"><span>Safe, matches the template</span></td><td class="n" data-label="Count"><span><span class="num">0</span></span></td><td class="nw v" data-label="Shortest"><span>none</span></td><td class="nw v" data-label="Half at or under"><span>none</span></td><td class="nw v" data-label="Longest"><span>none</span></td></tr>
-    <tr><td class="what" data-label="Transactions"><span>EOA, its call matches the template</span></td><td class="n" data-label="Count"><span><span class="num">1</span></span></td><td class="nw v" data-label="Shortest"><span>not recorded</span></td><td class="nw v" data-label="Half at or under"><span>not recorded</span></td><td class="nw v" data-label="Longest"><span>not recorded</span></td></tr>
-    <tr><td class="what" data-label="Transactions"><span>EOA, differs elsewhere</span></td><td class="n" data-label="Count"><span><span class="num">46</span></span></td><td class="nw v" data-label="Shortest"><span>not recorded</span></td><td class="nw v" data-label="Half at or under"><span>not recorded</span></td><td class="nw v" data-label="Longest"><span>not recorded</span></td></tr></tbody></table></div>
+    <tr><td class="what" data-label="Transactions"><span>EOA, its call matches the template</span></td><td class="n" data-label="Count"><span><span class="num">1</span></span></td><td class="nw v" data-label="Shortest"><span><span class="num">29 days 23 hours</span></span></td><td class="nw v" data-label="Half at or under"><span><span class="num">30 days</span></span></td><td class="nw v" data-label="Longest"><span><span class="num">30 days</span></span></td></tr>
+    <tr><td class="what" data-label="Transactions"><span>EOA, differs elsewhere</span></td><td class="n" data-label="Count"><span><span class="num">46</span></span></td><td class="nw v" data-label="Shortest"><span><span class="num">1 minute 52 seconds</span></span></td><td class="nw v" data-label="Half at or under"><span><span class="num">8,925,456 years 10 days</span></span></td><td class="nw v" data-label="Longest"><span><span class="num">8,925,456 years 15 days</span></span></td></tr></tbody></table></div>
+  <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Exact numbers</summary><div class="meta"><code>approve.expiration</code>, in seconds: EOA, its call matches the template: 2591949 / 2591949 / 2591949; EOA, differs elsewhere: 112 / 281473181226532 / 281473181677480</div></details>
   <h3>3. How did the others differ?</h3>
   <p class="ans">46 transactions did something this template refuses.</p>
-  <p class="ans"><span class="aiw" data-ai><span>The search stopped at its 50-page cap, 5.7 days back, so it does not cover the year. In it 0 Safe transactions fit. 2 of 47 EOA transactions fit; of the 45 misfits, 26 name another router, 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af, 1 allows USDC, which this template does not list, 6 a third spender, 5 set amount 0 and 7 other amounts.</span><span class="byai">AI research</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="tx">Examples (up to 3)</th></tr></thead><tbody>
-    <tr><td class="what" data-label="What was different"><span><code>approve.spender</code> was 2 other addresses, not the template&#39;s universal-router-2.1.2</span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">33</span></span></td><td class="nw" data-label="Newest"><span>block 26483579</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xa36425d1a33ed645db61c1c6bba6e507486533c237e66680ebec002a41bc8fde">0xa36425d1…</a> <a href="https://etherscan.io/tx/0xbf90f8a2e7691fc81ccd353358e88763a1a39db118440c3a5cd31969876eac42">0xbf90f8a2…</a> <a href="https://etherscan.io/tx/0xfadaba48eb5d377133ee13c2e133168c2ee8f075e0a71f9c7af3df14f581c4c6">0xfadaba48…</a></span></td></tr>
-    <tr><td class="what" data-label="What was different"><span><code>approve.amount</code> was 8 other values, the template wants <span class="addr">uint160 max (2^160 - 1)</span></span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">12</span></span></td><td class="nw" data-label="Newest"><span>block 26478559</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xf1be46ccf09a5da9ea54d933c35610a6fab17c17fe741d114dd6c83211624442">0xf1be46cc…</a> <a href="https://etherscan.io/tx/0x6322ec9ad6c77d597f3ae6d62b2e89f31f39a838465ad5ac2ef05d0c1df79f4b">0x6322ec9a…</a> <a href="https://etherscan.io/tx/0x6caef863e1fcbca340c5726f824281d61f74a9a9989457cd48c2bee17649e3ee">0x6caef863…</a></span></td></tr>
-    <tr><td class="what" data-label="What was different"><span>Same shape, but <code>approve.token</code> is an address outside the registry</span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">1</span></span></td><td class="nw" data-label="Newest"><span>block 26463050</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x5be84810cb59fd3bf184c3e76e5420de12df5d3f1937ad2825c6a3fe42277be9">0x5be84810…</a></span></td></tr></tbody></table></div>
+  <p class="ans"><span class="aiw" data-ai><span>The search stopped at its 50-page cap, 5.7 days back, so it does not cover the year. In it 0 Safe transactions fit. 2 of 47 EOA transactions fit; of the 45 misfits, 26 name another router, 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af, 1 allows USDC, which this template does not list, 6 a third spender, 5 set amount 0 and 7 other amounts.</span><span class="byai">AI research</span></span></p>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>Show the 3 kinds of difference</span></summary><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="tx">Examples (up to 3)</th></tr></thead><tbody>
+    <tr><td class="what" data-label="What was different"><span><code>approve.spender</code> was 2 other addresses, not the template&#39;s universal-router-2.1.2</span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">33</span></span></td><td class="nw" data-label="Newest"><span>2026-11-24</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xa36425d1a33ed645db61c1c6bba6e507486533c237e66680ebec002a41bc8fde">0xa36425d1…</a> <a href="https://etherscan.io/tx/0xbf90f8a2e7691fc81ccd353358e88763a1a39db118440c3a5cd31969876eac42">0xbf90f8a2…</a> <a href="https://etherscan.io/tx/0xfadaba48eb5d377133ee13c2e133168c2ee8f075e0a71f9c7af3df14f581c4c6">0xfadaba48…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span><code>approve.amount</code> was 8 other values, the template wants <span class="addr">uint160 max (2^160 - 1)</span></span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">12</span></span></td><td class="nw" data-label="Newest"><span>2026-11-23</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xf1be46ccf09a5da9ea54d933c35610a6fab17c17fe741d114dd6c83211624442">0xf1be46cc…</a> <a href="https://etherscan.io/tx/0x6322ec9ad6c77d597f3ae6d62b2e89f31f39a838465ad5ac2ef05d0c1df79f4b">0x6322ec9a…</a> <a href="https://etherscan.io/tx/0x6caef863e1fcbca340c5726f824281d61f74a9a9989457cd48c2bee17649e3ee">0x6caef863…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>Same shape, but <code>approve.token</code> is an address outside the registry</span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">1</span></span></td><td class="nw" data-label="Newest"><span>2026-11-21</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x5be84810cb59fd3bf184c3e76e5420de12df5d3f1937ad2825c6a3fe42277be9">0x5be84810…</a></span></td></tr></tbody></table></div>
+  </details>
   <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>How the program searched</span></summary>
   <h3>Search of permit2 Approval: 25655 found, 240 studied</h3>
   <p class="cap">Every transaction from block 26444052 (2026-11-18) to block 26484901 (2026-11-24) was searched, newest first, 40850 blocks, about 5 days 16 hours, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched. Only Etherscan searches an event, and found <span class="num">25655</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
@@ -584,7 +592,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <p class="then">It prints the template, the commit of main on GitHub and the template&#39;s keccak256. Answer <code>y</code> only if it is the one you reviewed.</p></div></li>
     <li><div>Make the card<pre class="cmd"><code>pnpm kiss-sign card new uniswap/allow-router</code></pre>
       <p class="then">When <code>templates/</code> or <code>registry/</code> in your clone differs from main on GitHub, it stops before asking anything and tells you to run <code>git pull</code> first.</p></div></li>
-    <li><div><code>token</code>: it lists each token you can pick, with its full address. Pick the one you want; both its name and its full address must be right.</div></li>
+    <li id="next-token"><div><code>token</code>: it lists each token you can pick, with its full address. Pick the one you want; both its name and its full address must be right.</div></li>
     <li><div>It prints the whole card, each name with its full address, and asks <code>Is this what you mean to do? [y/N]</code>. Type <code>y</code> only if all of it is what you want.
       <p class="then">It prints <code>Sealed card 0x…</code>, the card&#39;s hash, which the next step uses.</p></div></li>
     <li><div>Propose the transaction in the Safe web app, copy its safeTxHash, then run<pre class="cmd"><code>pnpm kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>

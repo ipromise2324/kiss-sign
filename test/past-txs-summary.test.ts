@@ -5,6 +5,7 @@ import { dirname, join, normalize } from 'node:path';
 import { after, test } from 'node:test';
 import { readRecording } from '../src/chain/bytecode.ts';
 import { loadRegistry } from '../src/registry.ts';
+import type { ContractKind, RegistryEntry } from '../src/registry.ts';
 import type { Difference } from '../src/research/amounts.ts';
 import { foundBy } from '../src/research/past-txs.ts';
 import { renderPastTxs } from '../src/research/past-txs-render.ts';
@@ -12,7 +13,10 @@ import { STUDY_FILES, SUMMARIES_DIR, parseSummary, runOf, staleParts, studyRecor
 import type { PastTxsSummary } from '../src/research/past-txs-summary.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { replayPastTxs } from '../src/research/recording.ts';
+import { replayReader } from '../src/chain/recording.ts';
+import type { TraceCall } from '../src/research/trace.ts';
 import { pastTxsRegistry, summarizePastTxs } from '../src/research/report.ts';
+import { studyRegistry } from '../src/research/study-registry.ts';
 import { appFills, shapesOf } from '../src/research/study.ts';
 import type { FreeValue } from '../src/research/study.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
@@ -23,17 +27,19 @@ import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const BUNDLER3 = repoWithBundler3Deposit();
-const registry = loadRegistry(ROOT);
+const FIXTURES = repoWithTestFixtures();
+const registry = loadRegistry(BUNDLER3);
 const deposit = readRecording<PastTxsRecording>(join(ROOT, 'testdata', 'past-txs', 'morpho-vault-deposit.json'));
 const FIT = '0x88a65493c62cfc17be33cbc587fca29edf71d0984b6ba2295873dfb1a9a38c4c';
 
-/** A copy of the repository's templates and registry, the deposit template the Bundler3 one, for a test that changes one. */
+/** A token entry of no other field, so whatever else the registry's own tokens carry, such as a price, it loads beside them. */
+const aToken = (address: string): Record<string, unknown> => ({ address, kind: 'token', source: 'https://example.com/tokens' });
+
+/** A copy of the test fixtures' templates and registry, the deposit template the Bundler3 one, for a test that changes one. */
 function scratchRepo(): string {
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-summary-'));
   after(() => rmSync(root, { recursive: true, force: true }));
-  for (const dir of ['templates', 'registry']) cpSync(join(ROOT, dir), join(root, dir), { recursive: true });
-  const deposit = join('templates', 'morpho', 'vault-deposit', 'template.json');
-  cpSync(join(BUNDLER3, deposit), join(root, deposit));
+  for (const dir of ['templates', 'registry']) cpSync(join(BUNDLER3, dir), join(root, dir), { recursive: true });
   return root;
 }
 
@@ -95,11 +101,10 @@ test('a summary studied with another template, other registry entries it reads, 
 
   const contracts = join(root, 'registry', 'contracts.json');
   const raw = JSON.parse(readFileSync(contracts, 'utf8')) as Record<string, Record<string, unknown>>;
-  const usdc = raw.usdc as Record<string, unknown>;
-  writeFileSync(contracts, JSON.stringify({ ...raw, 'unrelated-token': { ...usdc, address: `0x${'7e'.repeat(20)}` } }, null, 2));
+  writeFileSync(contracts, JSON.stringify({ ...raw, 'unrelated-token': aToken(`0x${'7e'.repeat(20)}`) }, null, 2));
   assert.deepEqual(staleParts(root, loadRegistry(root), summary), [], 'an entry whose address no studied transaction holds keeps the summary');
   const sender = summary.studies.find((s) => s.kind === 'fit')?.sender.address as string;
-  writeFileSync(contracts, JSON.stringify({ ...raw, 'a-studied-sender': { ...usdc, address: sender } }, null, 2));
+  writeFileSync(contracts, JSON.stringify({ ...raw, 'a-studied-sender': aToken(sender) }, null, 2));
   assert.throws(() => summarizePastTxs(root, loadRegistry(root), file, summary), refused('registry entries it reads'));
   writeFileSync(contracts, JSON.stringify(raw, null, 2));
 
@@ -111,12 +116,80 @@ test('a summary keeps when the attribute table gains an attribute no entry it re
   const root = scratchRepo();
   const before = loadRegistry(root);
   const summary = await studyRecording(root, deposit, before);
-  const attributes = join(root, 'registry', 'attributes.json');
-  const table = JSON.parse(readFileSync(attributes, 'utf8')) as Record<string, string>;
-  writeFileSync(attributes, JSON.stringify({ ...table, unusedtoken: 'token' }, null, 2));
+  const row = (name: string, kind: ContractKind) => ({ ...before, attributes: new Map([...before.attributes, [name, kind]]) });
+  assert.deepEqual(staleParts(root, row('unusedtoken', 'token'), summary), []);
+  assert.deepEqual(staleParts(root, row('asset', 'factory'), summary), ['registry entries it reads']);
+});
+
+type RawEntries = Record<string, Record<string, unknown>>;
+
+/** The test fixtures' summaries, of `names`, that an edit of their `registry/contracts.json` makes stale by the entries they read. */
+function changedBy(edit: (contracts: RawEntries) => void, names = readdirSync(join(FIXTURES, SUMMARIES_DIR)).map((f) => f.replace(/\.json$/, ''))): string[] {
+  const root = repoWithTestFixtures();
+  const contracts = join(root, 'registry', 'contracts.json');
+  const raw = JSON.parse(readFileSync(contracts, 'utf8')) as RawEntries;
+  edit(raw);
+  writeFileSync(contracts, JSON.stringify(raw, null, 2));
+  const edited = loadRegistry(root);
+  return names.filter((name) => {
+    const file = join(SUMMARIES_DIR, `${name}.json`);
+    const summary = parseSummary(file, readFileSync(join(FIXTURES, file), 'utf8'));
+    assert.deepEqual(staleParts(FIXTURES, pastTxsRegistry(FIXTURES, loadRegistry(FIXTURES), summary.query), summary), [], `${name} is fresh before the edit`);
+    return staleParts(root, pastTxsRegistry(root, edited, summary.query), summary).includes('registry entries it reads');
+  });
+}
+
+const entryIn = (contracts: RawEntries, name: string): Record<string, unknown> => contracts[name] ?? assert.fail(`no ${name}`);
+
+/** Another address next to `address`, so a pool naming its token keeps its two tokens in address order. */
+const beside = (address: string): string => `${address.slice(0, -1).toLowerCase()}${(parseInt(address.slice(-1), 16) ^ 1).toString(16)}`;
+
+test('a study that reads a field its entries are not given is refused, and one that reads a field they are given sees the registry\'s', () => {
+  const full = registry.entries.get('universal-router-2.1.2') as RegistryEntry;
+  const studied = studyRegistry(registry);
+  const entry = studied.entries.get('universal-router-2.1.2') as unknown as RegistryEntry;
+  const given = ['name', 'address', 'kind', 'attributes', 'defillama'] as const;
+  assert.deepEqual(given.map((field) => entry[field]), given.map((field) => full[field]));
+  assert.equal(entry.standingAllowance?.via, full.standingAllowance?.via);
+  assert.throws(() => entry.standingAllowance?.why, /^StudyFieldError: a study reads no standingAllowance field why: add it to StudyEntry/);
+  const declared = new Set([...registry.entries.values()].flatMap((e) => Object.keys(e)));
+  const unread = [...declared, 'price', 'feed', 'twap', 'numbers', 'dependsOn'].filter((field) => !given.includes(field as 'name') && field !== 'standingAllowance' && field !== 'ignoresTrailer');
+  for (const field of unread) assert.throws(() => entry[field as 'price'], new RegExp(`^StudyFieldError: a study reads no entry field ${field}: add it to StudyEntry`));
+  const usdc = studied.byAddress.get(registry.entries.get('usdc')?.address as Address) as unknown as RegistryEntry;
+  assert.equal(usdc.ignoresTrailer, undefined);
+  assert.throws(() => usdc.code, /StudyFieldError/);
+});
+
+test('a summary is refused when a token its traces logged and no call names joins the registry', async () => {
+  const root = scratchRepo();
+  const past = readRecording<PastTxsRecording>(join(ROOT, 'testdata', 'past-txs', 'morpho-vault-deposit.json'));
+  const plain = await studyRecording(root, past, loadRegistry(root));
+  const fit = plain.studies.find((s) => s.kind === 'fit' && (s.hash as string) === FIT && s.outside.length === 0) ?? assert.fail('a transaction exactly the template');
+  const reader = replayReader(past.exchanges);
+  const [tx, receipt] = [await reader.getTransaction(fit.hash), await reader.getTransactionReceipt(fit.hash)];
+  if (tx.kind !== 'agreed' || tx.value === null || receipt.kind !== 'agreed' || receipt.value === null) return assert.fail('no transaction or receipt');
+  const { from, to, input } = tx.value;
+  const top: TraceCall = { depth: 0, type: 'CALL', from: from.toLowerCase() as Address, to: (to ?? assert.fail('a creation')).toLowerCase() as Address, selector: input.slice(0, 10).toLowerCase() as Hex };
+  const TOKEN = `0x${'7e'.repeat(20)}`;
+  const transferred = { address: TOKEN, topics: [`0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef`, `0x${'00'.repeat(12)}${'11'.repeat(20)}`, `0x${'00'.repeat(12)}${'22'.repeat(20)}`], data: `0x${'01'.padStart(64, '0')}` };
+  const exchanges = past.exchanges.map((e) =>
+    e.method !== 'eth_getTransactionReceipt' || !JSON.stringify(e.params).includes(fit.hash)
+      ? e
+      : (JSON.parse(JSON.stringify(e), (key, value) => (key === 'logs' ? [...value, { ...value[0], ...transferred, logIndex: '0xffff' }] : value)) as typeof e),
+  );
+  const summary = await studyRecording(root, { ...past, exchanges, traces: [{ hash: fit.hash, calls: [top] }] }, loadRegistry(root));
+  assert.equal(summary.traces.length, 1);
+  assert.equal(summaryText(parseSummary('testdata/research/logged.json', summaryText(summary))), summaryText(summary));
   assert.deepEqual(staleParts(root, loadRegistry(root), summary), []);
-  writeFileSync(attributes, JSON.stringify({ ...table, asset: 'factory' }, null, 2));
-  assert.deepEqual(staleParts(root, before, summary), ['registry entries it reads']);
+
+  const contracts = join(root, 'registry', 'contracts.json');
+  const raw = JSON.parse(readFileSync(contracts, 'utf8')) as RawEntries;
+  const added = (address: string) => {
+    writeFileSync(contracts, JSON.stringify({ ...raw, 'a-new-token': aToken(address) }, null, 2));
+    return staleParts(root, loadRegistry(root), summary);
+  };
+  assert.deepEqual(added(TOKEN), ['registry entries it reads']);
+  assert.deepEqual(added(`0x${'7d'.repeat(20)}`), [], 'a token no trace logged keeps the summary');
 });
 
 test('a summary holds a string decoded from the chain whatever its characters, and reads back as the same summary', async () => {
@@ -144,28 +217,28 @@ test('a summary is refused before it is written when it would not read back, or 
 
 test('a summary whose amounts, traces or one-source hashes name transactions it does not hold is refused', () => {
   type Raw = { search: { found: { total: number; only: Record<string, string[]> } }; measurements: { hash: string }[]; traces: { hash: string }[]; studies: { kind: string; hash: string }[] };
-  const committed = (name: string) => readFileSync(join(ROOT, SUMMARIES_DIR, `${name}.json`), 'utf8');
+  const committed = (name: string) => readFileSync(join(FIXTURES, SUMMARIES_DIR, `${name}.json`), 'utf8');
   const refused = (edited: unknown, why: RegExp) => assert.throws(() => parseSummary('testdata/research/edited.json', JSON.stringify(edited)), why);
-  const transfer = JSON.parse(committed('erc20-transfer-usdc')) as Raw;
-  const owner = JSON.parse(committed('safe-add-owner')) as Raw;
+  const transfer = JSON.parse(committed('erc20-transfer-steth')) as Raw;
+  const owner = JSON.parse(committed('uniswap-allow-router-permit2')) as Raw;
   const unfit = (raw: Raw) => raw.studies.find((s) => s.kind !== 'fit')?.hash;
   assert.ok(transfer.measurements.length > 0 && owner.traces.length > 0);
   refused({ ...transfer, measurements: [{ ...transfer.measurements[0], hash: unfit(transfer) }] }, /measurements\[0\]\.hash: not a transaction that fit/);
   refused({ ...owner, traces: [{ ...owner.traces[0], hash: unfit(owner) }] }, /traces\[0\]\.hash: not a transaction that fit/);
   refused({ ...transfer, search: { ...transfer.search, found: { ...transfer.search.found, total: 0, only: { ...transfer.search.found.only, alchemy: [FIT] } } } }, /search\.found\.only: more hashes than the search found/);
 
-  const summary = parseSummary('testdata/research/erc20-transfer-usdc.json', committed('erc20-transfer-usdc'));
+  const summary = parseSummary('testdata/research/erc20-transfer-steth.json', committed('erc20-transfer-steth'));
   const [hash, measured] = [...summary.measurements].find(([, m]) => m.kind === 'measured' && m.differences.length > 0) ?? [];
   assert.ok(hash !== undefined && measured?.kind === 'measured');
   const beyond = { ...summary, measurements: new Map([[hash, { ...measured, differences: [{ ...(measured.differences[0] as Difference), effect: 9 }] }]]) };
-  assert.throws(() => runOf(beyond, loadTemplate(ROOT, summary.query.template, registry)), /names effect 9, and the template states 1$/);
+  assert.throws(() => runOf(beyond, loadTemplate(FIXTURES, summary.query.template, loadRegistry(FIXTURES))), /names effect 9, and the template states 1$/);
 });
 
 test('a summary whose misfit holds a value at a place the template binds or lacks is refused, and one at a place the app fills is kept', () => {
   const name = 'cow-swap-presign';
   const text = readFileSync(join(ROOT, SUMMARIES_DIR, `${name}.json`), 'utf8');
   const summary = parseSummary(`testdata/research/${name}.json`, text);
-  const template = loadTemplate(ROOT, summary.query.template, registry);
+  const template = loadTemplate(ROOT, summary.query.template, loadRegistry(ROOT));
   const held = summary.studies.find((s) => s.kind === 'misfit' && s.free.length > 0);
   assert.ok(held?.kind === 'misfit');
   assert.deepEqual(runOf(summary, template).studies.find((s) => s.kind === 'misfit' && s.hash === held.hash), held);

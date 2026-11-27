@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { selectorOf } from '../src/decode/abi.ts';
 import { loadRegistry } from '../src/registry.ts';
 import type { Ledger, Result } from '../src/research/ledger.ts';
-import { NotesError, fieldKeys, mergeNotes, notesLanguages, notesPath, notesScope, parseNotes, readNotes } from '../src/research/notes.ts';
+import { BEFORE_REQUESTS, NotesError, REQUEST_LIMIT, fieldKeys, mergeNotes, notesLanguages, notesPath, notesScope, parseNotes, readJson, readNotes } from '../src/research/notes.ts';
 import type { Language } from '../src/language.ts';
 import type { NotesScope } from '../src/research/notes.ts';
 import type { ProtocolFacts } from '../src/research/protocol-facts.ts';
@@ -175,6 +175,13 @@ test('a key an object inherits is refused as unknown, at any level', () => {
   refused(edited(['fields', 'hasOwnProperty'], 'x'), 'notes.json.fields: "hasOwnProperty" is not an argument of the template');
 });
 
+test('protocols, reviews and fields may be left out when the report has none to write, and are refused as missing otherwise', () => {
+  const { protocols, reviews, fields, ...bare } = VALID;
+  const notes = parseNotes(bare, { ...SCOPE, protocols: new Map(), reviews: [], fields: [] });
+  assert.deepEqual([notes.protocols.size, notes.reviews.size, notes.fields.size], [0, 0, 0]);
+  for (const key of ['protocols', 'reviews', 'fields']) refused(edited([key], undefined), `notes.json: ${key} is missing`);
+});
+
 test('a missing title, summary or verdict is refused', () => {
   refused(edited(['title'], undefined), 'notes.json: title is missing');
   refused(edited(['verdict', 'text'], undefined), 'notes.json.verdict: text is missing');
@@ -185,7 +192,7 @@ test('a flow line after a call the template does not make is refused', () => {
 });
 
 test('a flow line naming a contract no call or view targets is refused', () => {
-  refused(edited(['flow', 0, 'to'], 'cbbtc'), 'notes.json.flow[0].to: "cbbtc" is not a contract the calls or the effects\' views target, an entry one of those depends on, nor a token the effects move');
+  refused(edited(['flow', 0, 'to'], 'cbbtc'), 'notes.json.flow[0].to: "cbbtc" is not a contract the calls or the effects\' views target or an argument binds, an entry one of those depends on, nor a token the effects move');
 });
 
 test("a flow line's function must be a canonical signature, and a line may not name a call the template binds itself", () => {
@@ -294,6 +301,26 @@ test('a backtick code span around one identifier is accepted, and its backticks 
   assert.equal(parseNotes(edited(['flow', 0, 'text'], t(full)), SCOPE).flow[0]?.text, full);
 });
 
+test('a full address or 32-byte hash outside an identifier counts as one character, up to four per text, so a text can show it whole', () => {
+  const address = '0x000000000004444c5dc75cB358380D2e3dE08A90';
+  const hash = `0x${'ab'.repeat(32)}`;
+  const text = `${'說'.repeat(97)}${address} ${hash}`;
+  assert.equal(parseNotes(edited(['flow', 0, 'text'], t(text)), SCOPE).flow[0]?.text, text);
+  refused(edited(['flow', 0, 'text'], t(`${'說'.repeat(100)}${address}`)), 'notes.json.flow[0].text.zh-TW: longer than 100 characters');
+  for (const inside of [`${address}0`, `id_${address}`, `${address}Suffix`]) refused(edited(['flow', 0, 'text'], t(`${'說'.repeat(60)}${inside}`)), 'notes.json.flow[0].text.zh-TW: longer than 100 characters');
+  const link = `https://etherscan.io/address/${address}`;
+  assert.equal(parseNotes(edited(['flow', 0, 'text'], t(`${'說'.repeat(70)}${link}`)), SCOPE).flow[0]?.text, `${'說'.repeat(70)}${link}`);
+  const four = Array(4).fill(address).join(' ');
+  assert.equal(parseNotes(edited(['flow', 0, 'text'], t(`${'說'.repeat(93)}${four}`)), SCOPE).flow[0]?.text, `${'說'.repeat(93)}${four}`);
+  refused(edited(['flow', 0, 'text'], t(`${'說'.repeat(51)}${four} ${address}`)), 'notes.json.flow[0].text.zh-TW: longer than 100 characters');
+});
+
+test('a flow line may name a contract an argument binds, such as a pool\'s hook', () => {
+  const swap = loadTemplate(ROOT, 'uniswap/swap', registry);
+  const of = { subject: { kind: 'template', template: swap }, registry, facts: undefined } as unknown as ReportInputs;
+  assert.ok(notesScope(of, { entries: [], results: [] }, swap, 'en').contracts.has('uniswap-stable-pair-hook'));
+});
+
 test('a backtick that is not closed or wraps anything but one identifier is refused', () => {
   const message = 'notes.json.summary.zh-TW: holds a backtick that does not open or close a code span around one identifier, such as `erc4626Deposit`';
   for (const text of ['呼叫 `multicall', '`a b`', '`<b>x</b>`', '``', '`1abc`', '`f(x)`', '`a.b`', '`https://x`']) refused(edited(['summary'], { en: 'x', 'zh-TW': text }), message);
@@ -337,25 +364,25 @@ test("a vault's report is in the languages both notes hold: a zh-TW-only vault u
   const sharedEn = Object.fromEntries(Object.entries(only('en')).filter(([key]) => key !== 'verdict'));
 
   write(SHARED, verdict({ 'zh-TW': '要小心' }));
-  const merged = readNotes(root, 'fluid/vault-deposit', fusdt);
+  const merged = readNotes(root, 'fluid/vault-deposit', { vault: fusdt, shared: new Set() });
   assert.deepEqual(notesLanguages(merged), ['zh-TW']);
   assert.equal(parseNotes(merged, SCOPE).verdict.text, '要小心');
   assert.equal(parseNotes(merged, SCOPE).summary, '摘要');
 
   write(SHARED, verdict(t('要小心')));
-  assert.deepEqual(notesLanguages(readNotes(root, 'fluid/vault-deposit', fusdt)), ['en', 'zh-TW']);
+  assert.deepEqual(notesLanguages(readNotes(root, 'fluid/vault-deposit', { vault: fusdt, shared: new Set() })), ['en', 'zh-TW']);
   write(sharedZh, verdict(t('要小心')));
-  assert.deepEqual(notesLanguages(readNotes(root, 'fluid/vault-deposit', fusdt)), ['zh-TW']);
+  assert.deepEqual(notesLanguages(readNotes(root, 'fluid/vault-deposit', { vault: fusdt, shared: new Set() })), ['zh-TW']);
 
   write(sharedEn, verdict({ 'zh-TW': '要小心' }));
   assert.throws(
-    () => readNotes(root, 'fluid/vault-deposit', fusdt),
+    () => readNotes(root, 'fluid/vault-deposit', { vault: fusdt, shared: new Set() }),
     (e: unknown) =>
       e instanceof NotesError &&
       e.message === `${notesPath(root, 'fluid/vault-deposit', 'fluid-fusdt')}: holds zh-TW and ${notesPath(root, 'fluid/vault-deposit')} holds en; a vault's report is written in a language both hold`,
   );
   write(SHARED, { ...verdict({ 'zh-TW': '要小心' }), pastTxsConclusion: t('結論') });
-  assert.throws(() => readNotes(root, 'fluid/vault-deposit', fusdt), /holds texts in zh-TW, in en and zh-TW; every text in one file holds the same languages/);
+  assert.throws(() => readNotes(root, 'fluid/vault-deposit', { vault: fusdt, shared: new Set() }), /holds texts in zh-TW, in en and zh-TW; every text in one file holds the same languages/);
 });
 
 test("a key or name both notes define is refused, and a vault's notes hold only verdict, judgments, reviews and entries", () => {
@@ -408,9 +435,9 @@ test("a vault's notes may also describe the entries its attributes name, such as
   const write = (entries: unknown) => writeFileSync(join(root, notesPath(root, 'fluid/vault-deposit', 'fluid-fusdt')), JSON.stringify({ entries }));
   const fusdt = registry.entries.get('fluid-fusdt') ?? assert.fail('fluid-fusdt');
   write({ 'fluid-fusdt': { role: '金庫' }, usdt: { role: '存進去的代幣' } });
-  assert.deepEqual(Object.keys((readNotes(root, 'fluid/vault-deposit', fusdt) as { entries: Record<string, unknown> }).entries).slice(-2), ['fluid-fusdt', 'usdt']);
+  assert.deepEqual(Object.keys((readNotes(root, 'fluid/vault-deposit', { vault: fusdt, shared: new Set() }) as { entries: Record<string, unknown> }).entries).slice(-2), ['fluid-fusdt', 'usdt']);
   write({ usdc: { role: '別的代幣' } });
-  assert.throws(() => readNotes(root, 'fluid/vault-deposit', fusdt), /entries: "usdc" is not the vault or an entry it names \(fluid-fusdt, usdt, fluid-lending-factory, fluid-liquidity\);/);
+  assert.throws(() => readNotes(root, 'fluid/vault-deposit', { vault: fusdt, shared: new Set() }), /entries: "usdc" is not the vault or an entry it names \(fluid-fusdt, usdt, fluid-lending-factory, fluid-liquidity\);/);
 });
 
 test('the judgments of both notes count toward the limit of four', () => {
@@ -454,4 +481,38 @@ test('the scope of morpho/market-supply: its calls, their targets and views, its
   assert.deepEqual(scope.reviews, ['usdc/source.api']);
   const facts = { protocols: [{ slug: 'morpho-blue', listing: { kind: 'read', value: {} }, hacks: [{ date: '2024-10-01', amount: 230000 }], contracts: [] }] } as unknown as ProtocolFacts;
   assert.deepEqual(notesScope({ registry, facts } as unknown as ReportInputs, ledger, template, 'zh-TW').protocols, new Map([['morpho-blue', 1]]));
+});
+
+test("the signer's request is kept word for word, line breaks and either language included, and only a control character is refused", () => {
+  const said = 'I want to deposit USDC into Fluid\'s fUSDC vault.\n幫我做模板和報告';
+  const notes = parseNotes({ ...VALID, request: said }, SCOPE);
+  assert.equal(notes.request, said);
+  assert.equal(parseNotes({ ...VALID, request: said }, { ...SCOPE, language: 'en' }).request, said, 'shown as given on either page');
+  assert.equal(parseNotes(VALID, SCOPE).request, undefined, 'a template that never kept one shows none');
+  refused({ ...VALID, request: 'deposit‮USDC' }, 'notes.json.request: holds a control or bidirectional character other than a line break');
+  refused({ ...VALID, request: '  ' }, "notes.json.request: not a non-empty string: the signer's request, word for word");
+});
+
+test("an instance's notes hold the request that added its report, and only there; the template's request stays the template's", () => {
+  const merged = mergeNotes({ ...SHARED, request: 'build the template' }, { verdict: VALID.verdict, instanceRequest: 'add this vault' }, VAULT_PATH, OWNED);
+  const notes = parseNotes(merged, SCOPE);
+  assert.deepEqual([notes.request, notes.instanceRequest], ['build the template', 'add this vault']);
+  mergeRefused({ verdict: VALID.verdict, request: 'again' }, `${VAULT_PATH}: "request" belongs in the template's notes.json, which every vault's report shares`);
+  const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-request-'));
+  mkdirSync(join(dir, TEMPLATES_DIR, 'a', 'b'), { recursive: true });
+  writeFileSync(join(dir, TEMPLATES_DIR, 'a', 'b', 'notes.json'), JSON.stringify({ ...VALID, instanceRequest: 'add this vault' }));
+  assert.throws(() => readNotes(dir, 'a/b'), (error: unknown) => error instanceof NotesError && /instanceRequest: is about one instance/.test(error.message));
+});
+
+test("every committed template built since requests were kept holds the signer's request in its notes", () => {
+  const repo = join(import.meta.dirname, '..');
+  const ids = readdirSync(join(repo, TEMPLATES_DIR))
+    .flatMap((protocol) => readdirSync(join(repo, TEMPLATES_DIR, protocol)).map((operation) => `${protocol}/${operation}`))
+    .filter((id) => existsSync(join(repo, TEMPLATES_DIR, id, 'template.json')) && !BEFORE_REQUESTS.has(id));
+  const missing = ids.filter((id) => {
+    const notes = readJson(join(repo, TEMPLATES_DIR, id, 'notes.json'));
+    const request = typeof notes === 'object' && notes !== null ? (notes as { request?: unknown }).request : undefined;
+    return typeof request !== 'string' || request.trim() === '' || request.length > REQUEST_LIMIT;
+  });
+  assert.deepEqual(missing, [], 'write notes.json and record the request word for word in its "request"');
 });

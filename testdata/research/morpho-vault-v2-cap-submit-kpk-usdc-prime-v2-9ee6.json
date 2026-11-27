@@ -11,8 +11,8 @@
  "head": "26447455",
  "studiedWith": {
   "template": "0x269bd2712c49d1e8b9ae5df349506157e2f5e6c69fafa9e590295e54cd74ee9d",
-  "registry": "0x7741c2b40e0287998bb726c45cc0182410f107e208fbb1977a75d0b9f6704c3e",
-  "study": "0x92508a29cee7c49b83a1d4a9f9e4e04eac8df225cb741b31331cc10dacdd84ae"
+  "registry": "0xf9ef36b9846c274f428d33d7108bae237137451c3ab303fe4e60c1edfbbb1e98",
+  "study": "0x61f1ce5f5cd4adf417d5dffd036bcb1056828b2e57170ba4bcd0ef03b994e01d"
  },
  "search": {
   "year": {
@@ -121,7 +121,8 @@
     "expected": "capId(string,address,(address,address,address,address,uint256))",
     "actual": "the heads run past the end"
    },
-   "free": []
+   "free": [],
+   "time": "1776449831"
   },
   {
    "kind": "misfit",
@@ -184,7 +185,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1776521303"
   },
   {
    "kind": "misfit",
@@ -231,7 +233,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1776521411"
   },
   {
    "kind": "misfit",
@@ -296,7 +299,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1778515967"
   },
   {
    "kind": "misfit",
@@ -312,7 +316,8 @@
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0xb192a84a"
    },
-   "free": []
+   "free": [],
+   "time": "1778543747"
   },
   {
    "kind": "misfit",
@@ -410,7 +415,8 @@
      "at": "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams",
      "kind": "market"
     }
-   ]
+   ],
+   "time": "1779980579"
   },
   {
    "kind": "not-studied",
@@ -507,7 +513,8 @@
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0x3e9d2ac7"
    },
-   "free": []
+   "free": [],
+   "time": "1784134715"
   },
   {
    "kind": "misfit",
@@ -546,7 +553,8 @@
     "expected": "capId(string,address,(address,address,address,address,uint256))",
     "actual": "the heads run past the end"
    },
-   "free": []
+   "free": [],
+   "time": "1784304107"
   },
   {
    "kind": "fit",
@@ -621,7 +629,8 @@
      "at": "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams",
      "kind": "market"
     }
-   ]
+   ],
+   "time": "1784304167"
   },
   {
    "kind": "fit",
@@ -691,7 +700,8 @@
     "860000000000000000",
     "1000000000000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1793635367"
   },
   {
    "kind": "misfit",
@@ -707,7 +717,8 @@
     "expected": "capId(string,address,(address,address,address,address,uint256))",
     "actual": "the heads run past the end"
    },
-   "free": []
+   "free": [],
+   "time": "1793635463"
   }
  ],
  "measurements": [],

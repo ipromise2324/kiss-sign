@@ -86,7 +86,7 @@ test('a template that declares another price scale compares the bound against as
   const bound = raw.calls[1].args.bundle.items[1].fields.data.call.args.maxSharePriceE27.maxSharePrice;
   const checkScaled = (scale: number): FieldCheck => {
     bound.scale = scale;
-    const scaled = new Map([['morpho/vault-deposit', parseTemplate(raw, registry)]]);
+    const scaled = new Map([['morpho/vault-deposit', parseTemplate(raw, registry, 'committed')]]);
     const tx = safeTx(c.name);
     const result = resolveCard(deposit(c.vault, c.amount, c.minShares), { templates: scaled, registry, addressBook: new Map(), safe: tx.safe });
     assert.equal(result.kind, 'resolved');

@@ -1,6 +1,6 @@
-import { parseArgs } from 'node:util';
 import { ensureVendored, fetchVendored, isVendoredKind, nodeVendorIoWith, VENDORED } from '../src/vendor.ts';
 import { readGithubToken } from '../src/research/github-token.ts';
+import { parseFlags } from '../src/cli/flags.ts';
 import { exitOnHelp } from '../src/script-help.ts';
 
 const USAGE = `usage: pnpm fetch-solc [--missing]
@@ -32,7 +32,7 @@ services".`;
 
 exitOnHelp(HELP, process.argv.slice(2).filter((arg) => !isVendoredKind(arg)));
 
-const { values, positionals } = parseArgs({ options: { missing: { type: 'boolean' } }, allowPositionals: true });
+const { values, positionals } = parseFlags({ options: { missing: { type: 'boolean' } }, allowPositionals: true });
 const kinds = positionals.filter(isVendoredKind);
 if (positionals.length === 0 || kinds.length !== positionals.length) {
   console.error(USAGE);

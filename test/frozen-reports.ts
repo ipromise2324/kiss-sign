@@ -1,11 +1,11 @@
-import { mkdirSync, mkdtempSync, readdirSync, rmSync, symlinkSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, readdirSync, symlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { REPORT_RECORDINGS_DIR } from '../src/research/report.ts';
 import { RECORDINGS_DIR, SUMMARIES_DIR } from '../src/research/past-txs-summary.ts';
 import { USAGE_DIR } from '../src/research/usage.ts';
 import { PERTURB_DIR } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
+import { tempDir } from './fixture-base.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 
@@ -27,8 +27,7 @@ const FROZEN_PARTS = [TEMPLATES_DIR, 'registry', REPORT_RECORDINGS_DIR, SUMMARIE
 
 /** A repository whose templates, registry, report recordings, past-txs summaries and perturbation recordings are the frozen ones, which holds no usage file, and whose other test data is this checkout's. */
 export function repoWithFrozenReports(): string {
-  const root = mkdtempSync(join(tmpdir(), 'kiss-sign-frozen-'));
-  process.on('exit', () => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir('kiss-sign-frozen-');
   mkdirSync(join(root, 'testdata'));
   for (const part of FROZEN_PARTS) symlinkSync(join(FROZEN_DIR, part), join(root, part));
   for (const name of readdirSync(join(ROOT, 'testdata'))) {

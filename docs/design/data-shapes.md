@@ -13,7 +13,7 @@ A contract is never written as an address: a rule names it from the contract reg
 - `id`.
   `<protocol>/<operation>`, the template's folder under `templates/`.
 - `card`.
-  The card fields, by name, each `{"kind": ...}` of one kind: `contract` (with `registryKind`, and optionally `defillama` or `marketPart`; see [Intent card](#intent-card)), `amount` (with `of`, `eth` or the token field it counts, and optionally `computed` or `max`, never both), `percent`, `address`, `recipient`, `nonce`, `owner`, `threshold` or `market`.
+  The card fields, by name, each `{"kind": ...}` of one kind: `contract` (with `registryKind`, `names` unless it is of the template's instance kind, and optionally `defillama` or `marketPart`; see [Intent card](#intent-card)), `amount` (with `of`, `eth` or the token field it counts, and optionally `computed` or `max`, never both), `percent`, `address`, `recipient`, `nonce`, `owner`, `threshold` or `market`.
 - `calls`.
   The call tree the Safe makes, with MultiSend unwrapped.
   Each call is `{ "to", "value", "function", "args" }`, with an optional `trailer` (see [Engine checks that every template gets](engine-and-chain.md#engine-checks-that-every-template-gets)), or `{ "to", "value", "data": "empty" }`, as a plain ETH transfer or a cancellation sends; `to` and `value` take rules as arguments do.
@@ -80,16 +80,18 @@ A contract is never written as an address: a rule names it from the contract reg
 - Reasons.
   Every text the template's author writes for the signer, a free field's reason (`free`, or its `time`, `proof`, `unread` or `route`), a trailer's, a `max`'s, a computed field's `margin` `why` and an effect's `tolerance` `why`, a merged call's `merge` and a fact's `reason`, is an object keyed by language like the notes: `{ "en": ... }` or `{ "zh-TW": ... }` in the author's configured language, or `{ "en": ..., "zh-TW": ... }`.
   Every reason of one template holds the same languages, and the program refuses a template whose reasons differ.
+  Template load accepts a template whose reasons hold one language, but every template committed in `templates/` holds each reason in both, `{ "en": ..., "zh-TW": ... }`, the same meaning in each, and `pnpm test` refuses a committed template that does not, so a signer of either language reads every reason in their own.
   The reasons stay in `template.json`, since they are part of what the signer approves and what its fingerprint covers.
   `card new` and `verify`'s page show a reason in the configured language, and in the language the template holds when it lacks that one, refusing nothing; `report.generated.md` prints each reason in every language the template holds, so the signer reviews every text the program may show.
   In the rules above, `<why>` is such a reason.
   A plain string, as templates held before, reads as English, so a verdict file from before replays.
-  The shipped templates hold both languages; adding the Traditional Chinese changed each one's fingerprint, so every signer approves each template once again before `verify` passes it.
+  Adding the Traditional Chinese to the shipped templates changed each one's fingerprint, so every signer approved each template once again before `verify` passed it.
 - `nonce`.
   Optional: a rule for the Safe transaction's own nonce, such as a cancellation's card nonce.
 - `same`.
   Optional: card references that must name one address, such as the assets of the two vaults in a migration.
   A card where they differ is refused before any check runs.
+  `card new` offers a field only the choices that name that address with the fields already picked, so a Vault V2 cap's market lends the vault's asset, and a per-instance report names only the markets that can stand with its instance; when none can, each says so and stops (`market: none of the choices names one address for vault.asset and market.loanToken with vault <vault>`).
 - `effects`.
   What the Safe gives and gets, in tokens and amounts written as card values, `positive` (more than nothing, in the direction of the side), or, for what the Safe gives, `all` (the Safe holds none of the token afterwards).
   A token is `eth`, a card value (`card.<field>`), or a registry token by name, such as `steth`, for a token the operation moves whatever the card names, as Lido's `submit` always mints stETH; template load requires a registry entry of kind `token` or `vault`, and the code pin check covers it like a contract a rule names.
@@ -144,6 +146,7 @@ A contract is never written as an address: a rule names it from the contract reg
   Template load refuses a name that is not a contract card field.
   Without it, the card's one contract field of registry kind `vault` is the instance field.
   The program uses only the field's registry kind: a template whose card has two contract fields of that kind has no per-instance report yet, so every card for it is refused, the named field included.
+  A contract field of that kind lists no `names`, since its reports bound it; every other contract field lists them (see [Intent card](#intent-card)).
 
 ### Standing allowances
 
@@ -265,6 +268,13 @@ Load refuses only what it can check alone, so a reviewer compares each with its 
 - **A pool** may carry `"twap": { "minLiquidity" }`, the least harmonic mean liquidity to read its mean price at, as a decimal string.
   It is of kind `pool`, answers `observe` as a Uniswap v3 pool does, and names its `factory`, `token0` and `token1` as attributes, `token0` the lower address; one pool per pair.
   Its factory's `instanceCheck` takes the pool's fee as `{"number": "fee"}`, read from the pool's own `"numbers": { "fee": "100" }`, so one factory entry vouches for pools of every fee: `getPool(address,address,uint24)` with `[{"attribute": "token0"}, {"attribute": "token1"}, {"number": "fee"}]`.
+  The harmonic mean liquidity is what `card new` computes from `observe([window, 0])`: the window times 2^128 over the change in `secondsPerLiquidityCumulativeX128`, in the pool's own unit of liquidity.
+  `pnpm pool-depth <pool>` prints it, through both providers at each block, for 30 and 5 minutes, at a calm block and a stressed one, given or picked from a sample of one block every 7,200 (about a day) over the last year by one window: calm is the sample of median liquidity, stressed the one whose mean price moved most from the readable sample before it, and with `--auto` it also prints the thinnest sample and how many samples are under a `minLiquidity`.
+  A daily sample can land up to a day after a short stress, so a known one, such as a depeg, is read by its block.
+  It reads the pool whether or not it runs pinned code, as research before the entry and its pin exist; a pool with `twap` needs a code pin to load, and `card new` reads only a pinned one.
+  A route reads a pool at the window of the pair being priced, 30 minutes for a pair whose own feeds share a peg and may be off by at most 50 bps together and 5 for any other, so a pool on routes of both kinds is read at both.
+  `minLiquidity` is at or just below the lowest of the calm and stressed measures over every window a route reads the pool at, never far under, so the pool still prices in a stress like the measured one; on a block where the pool is thinner, `card new` holds its price in doubt (below) and the signer types the minimum twice.
+  The template's `notes.json` says how it was chosen, in `entries.<pool>`: the exact command line and the calm, stressed and lowest values as a source, and in `minLiquidity` why the AI chose the value, which the floor's step in 下一步 shows beside it as the AI's choice; the report does not reread or store the command's output.
 
 The description of a token's feed must start with the token's name, in any case, so `usdt` cannot be priced by `"USDC / USD"`; a token worth one of something else, as a wrapped one is, says so in `unit`: `weth` with `"unit": "ETH"`, which load refuses when another entry has that name.
 A feed or pool without a code pin does not load, and `card new` reads each only after checking that it runs that code; `pnpm pin-code` reads the registry without its prices, so it can write the first pin.
@@ -280,9 +290,10 @@ The AI designs the card: its values are what the protocol's own app asks for the
 This holds for every protocol.
 A value the protocol's own app fills in by itself, never asking its user, such as a slippage floor, a share-price cap, a minimum amount out or a deadline, is never asked at `card new`.
 When it is a limit the transaction's own bound must carry, the template declares its card field as computed (below): `card new` reads it on chain through both providers and applies the protocol's own default, which the template cites, and prints it with its source for the signer to check.
-Only when the function the transaction calls has no bound, and the protocol offers no route that has one, may the limit be an effect's alone, such as the fewest shares a plain `deposit(assets, receiver)` gives: the template then compares it with what the Safe gets (`atLeast` in the effects), so `verify` checks it on the simulated result before signing and on the receipt after, and nothing holds it when the transaction runs.
-The report says so, since a price that moves between the two is not caught.
-The owner chose this form for Fluid's deposit; a template never chooses it over a bound it could bind.
+Only when the function the transaction calls has no bound may the limit be an effect's alone, such as the fewest shares a plain `deposit(assets, receiver)` gives: the template then compares it with what the Safe gets (`atLeast` in the effects), so `verify` checks it on the simulated result before signing and on the receipt after, and nothing holds it when the transaction runs.
+The report says so, since a price that moves between the two can breach the limit during execution, and the receipt check only shows that afterwards.
+The template follows the route the protocol's own app sends: when that route's function has a bound, the template binds it; when it has none, as Fluid's app sends a plain `deposit`, the template uses this form even though the protocol also offers a bounded function, since a template for a route the app never sends would give `MISMATCH` on every transaction the signer gets from the app.
+The report names the bounded function the app does not use.
 A value the program cannot compute that way is bound by the template or left free with a reason, as a deadline is, and is not asked either.
 The sealed card still holds the computed number in base units, like a typed one, so `card seal`, `verify` and `replay` treat it exactly as before: what `verify` checks does not change.
 
@@ -312,9 +323,17 @@ An entry with no `factory` belongs to the protocol its own `defillama` names.
 A refusal names the protocol and the factory, such as `steakhouse-prime-usdc-v2-0f51 is a vault of morpho-blue (its factory vault-v2-factory), not of fluid-lending`.
 Template load refuses a slug no registry entry of that kind belongs to, by the same rule.
 `card new` lists only those entries, `pnpm report` checks only those, and `card seal` and `verify` refuse a card naming any other.
-A contract field may also name a part of the markets table, `{"kind": "contract", "registryKind": "token", "marketPart": "collateralToken"}`, so that it accepts only registry entries of its kind that are that part of some market in `registry/markets.json`: a Vault V2 collateral's cap names a token a registered market takes as collateral, never a token such as MORPHO that no market of the table lends against.
+A contract field may also name a part of the markets table, `{"kind": "contract", "registryKind": "token", "names": ["weeth"], "marketPart": "collateralToken"}`, so that it accepts only registry entries of its kind that are that part of some market in `registry/markets.json`: a Vault V2 collateral's cap names a token a registered market takes as collateral, never a token such as MORPHO that no market of the table lends against.
 Template load refuses a part that is not a contract part of a market (`lending`, `loanToken`, `collateralToken`, `oracle`, `irm`), a part whose entries are of another kind than `registryKind`, and a scope no registry entry fills.
-`card new` lists only those entries, `pnpm report` states the rule and lists only those, and `card seal` and `verify` refuse a card naming any other (`morpho is not the collateralToken of any market in registry/markets.json`).
+Template load refuses a listed name that is no such part (`morpho is not the collateralToken of any market in registry/markets.json`); `card new` lists only the listed names, `pnpm report` states the rule and lists only those, and `card seal` and `verify` refuse a card naming any other, by its list first (`morpho is not a token this template lists (weeth)`).
+Every contract field lists the registry names it accepts, `{"kind": "contract", "registryKind": "token", "names": ["usdt", "usdc"]}`, except a field of the template's instance kind (see `instanceField`), whose names are the instances with a report for the template, as below.
+A field accepts nothing beyond its list: no field accepts every registry entry of its kind by default, so a swap template built for USDT and USDC cannot be handed cbBTC, and its report never mentions cbBTC.
+Template load refuses a field outside the instance kind without a list, a list on a field of the instance kind, an empty list, a name listed twice, and a name that is not a registry entry the rest of the field accepts, of its kind, its `defillama` protocol and its `marketPart`.
+The list holds only what the signer's requests need, such as a swap's pair or an approval's token; the registry stays shared, and listing a token in one template changes no other.
+Adding a token to a template changes its `template.json`, so its hash changes and the signer approves it again.
+`card new` lists only those names, `pnpm report` covers only those (see [Report](flow.md#first-time-an-operation-is-done-build-its-template), step 6), and `card seal` and `verify` refuse a card naming any other (`cbbtc is not a token this template lists (usdc, usdt)`).
+A `market` field takes no list: `registry/markets.json` bounds it, and each market names its parts.
+An `address` field takes none either: it names a registry entry, an address-book entry or the Safe, as the signer picks, so a token a call argument takes is a `contract` field, never an `address` field.
 An instance field of a template reported per instance narrows further, to the instances with a report for that template, and so does every other field that can name an entry of the instance field's kind, an `address` field included (see [Report](flow.md#first-time-an-operation-is-done-build-its-template), step 6): `card new` lists only those, and `card seal` and `verify` refuse any other.
 
 Card values per operation, covering the operations in the Safe's history:
@@ -322,8 +341,8 @@ Card values per operation, covering the operations in the Safe's history:
 | Operation | Card values | Bound by the template |
 |---|---|---|
 | Transfer ETH or a token | token, amount, recipient | none |
-| Deposit into a vault (Morpho, Fluid) | vault, amount; for Morpho, the fewest shares to receive, computed | the asset is the vault's asset; receiver is the Safe; the approval is exact and goes to the vault; Morpho's price bound guarantees at least the card's shares |
-| Withdraw or redeem from a vault | vault, amount or `all` (two templates); for Morpho, the most shares to burn, or for `all` the fewest assets to receive, computed | receiver and owner are the Safe; Morpho's price bound guarantees the card's limit |
+| Deposit into a vault (Morpho, Fluid) | vault, amount; the fewest shares to receive, computed | the asset is the vault's asset; receiver is the Safe; the approval is exact and goes to the vault; the call's own bound guarantees at least the card's shares when the app's function has one, such as Morpho's price bound, and otherwise an `atLeast` effect checks them, such as Fluid's plain `deposit` |
+| Withdraw or redeem from a vault | vault, amount or `all` (two templates); the most shares to burn, or for `all` the fewest assets to receive, computed | receiver and owner are the Safe; the call's own bound guarantees the card's limit when the app's function has one, such as Morpho's price bound, and otherwise an effect checks it |
 | Move all of one Morpho vault into another | both vaults; the fewest assets to redeem and the fewest new shares to receive, computed | the two vaults share one asset; each price bound guarantees its card limit |
 | Supply to a Morpho market | market, amount | the market's params are the registry market's; the Safe gives exactly the amount; its supply shares in the market increase and its debt and collateral do not change, read before and after |
 | Claim rewards (Fluid, Merkl) | reward token | recipient is the Safe; amount and proof are free; the Safe gives nothing and receives only the reward token |
@@ -368,6 +387,7 @@ Card values per operation, covering the operations in the Safe's history:
   To bind, an `atLeast` of it must sit beside the sold amount (exactly the card's, or `atMost` it) in one call, struct or message, with the same type, so it cannot be a deadline's.
   Any other value of that type there must be a `const`, a `withinSeconds` time, or one free `time`, so an honest deadline is declared a time; a second free time, a plain `free`, `equals`, or another card amount is refused.
   Beside a free time, an exact amount sold must come before the floor, and an `atMost` one after it, with the time not between them: the order in Uniswap's v2 and v3 routers, where the minimum declared a time and the floor put on the deadline shows.
+  The order stays a load rule, though it refuses a correct router whose arguments come in another order: without it a template could put the floor on the deadline and leave the real minimum free as a time, and nothing `verify` runs would see it, since the deadline, a timestamp near 1.76e9, meets any floor below that many base units, a free time is never checked, the simulation before signing cannot see a sandwich, and the perturbation test accepts a minimum of 0.
   A transaction that moves tokens must also name both amounts in its effects: `sells` in `gives`, an `atLeast` of the floor in `gets`, each in its own token.
   One that moves none signs an order, and each message it signs must hold both tokens and both amounts.
   Load does not know which number the contract reads as its minimum.
@@ -380,13 +400,17 @@ Card values per operation, covering the operations in the Safe's history:
   The transaction's own minimum must be at least the card's (`atLeast`).
 - A vault's slippage limit is stated the same way, as an amount: the fewest shares a deposit gets (`min-shares`), the most shares a withdrawal of an amount burns (`max-shares`), or the fewest assets a withdrawal of all gets (`min-assets`).
   Slippage protection acts when the transaction runs, which no simulation before it can see, so the transaction's own bound must carry the card's limit, except in the effects-only form above, where there is no bound to carry it.
-  A Morpho adapter takes the bound as a price in assets per share scaled by 1e27; the template binds it with `maxSharePrice` or `minSharePrice`, `{ "assets", "shares", "scale"? }`, and the field check requires it to be at least as strict as the price the card's amounts give.
-  `scale` is the power of ten the protocol scales the price by, a whole number from 1 to 36, and 27, as Morpho's adapters take it, when absent; a protocol that takes the price scaled by 1e18 declares `"scale": 18`.
-  Template load refuses any other scale, so a typo such as `"scale": 270` cannot make every bound pass or fail.
+  A Morpho adapter takes the bound as a price in assets per share scaled by 1e27; the template binds it with `maxSharePrice` or `minSharePrice`, `{ "assets", "shares", "scale" }`, and the field check requires it to be at least as strict as the price the card's amounts give.
+  `scale` is the power of ten the protocol scales the price by, a whole number from 1 to 36, such as `"scale": 27` for Morpho's adapters and `"scale": 18` for a protocol that takes the price scaled by 1e18, and the review cites the protocol's source that scales it.
+  Template load and `template approve` refuse a bound without `scale`, or one whose `scale` is not a whole number from 1 to 36 (`null` included), naming the field.
+  A wrong scale breaks the bound either way: one too large, such as 27 for a protocol that scales by 1e18, makes a maximum 10^9 times too loose, so every transaction meets it, and a minimum 10^9 times too strict, so none does; one too small does the opposite.
+  The range keeps a typo such as `"scale": 270` from making every bound pass or fail.
+  `verify` parses the template's text before it checks the approval, and reads a bound without `scale` as scaled by 1e27, as templates were read before `scale` was required: the text it judges with, from origin/main, a verdict file or a recording, so `replay` of a verdict from before gives the same verdict; `template approve` refuses such a text, so only one approved before reads that way.
+  Adding `"scale": 27` to `morpho/vault-deposit` changed its hash, so the signer approves it again.
   For a deposit of 1,800,000.000180 USDC with `min-shares` 1,741,863.305677219101283940, `maxSharePriceE27` must be at most 1800000000180 × 10^27 / 1741863305677219101283940.
   A stricter bound matches too; a looser one is `MISMATCH` at that field.
   Where the share count is the Safe's whole balance, as in a withdrawal of all, the bound is checked against the share count the transaction states, and a transaction that states 2^256-1 (the whole balance, read when it runs) is `MISMATCH`, since its bound then guarantees nothing.
-- The Morpho app asks for none of these limits: it fills the bound itself, from its own preview and the SDK's default slippage tolerance of 0.03% (`DEFAULT_SLIPPAGE_TOLERANCE`, `3_00000000000000n` in WAD, in `morpho-org/sdks` `packages/blue-sdk/src/constants.ts`, applied in `packages/morpho-sdk/src/helpers/slippage.ts` at commit `56f1ed62827a7aab39d979c0143d1fbf970c37ca` on the default branch).
+- When the protocol's app fills such a limit itself, the field is computed. Morpho's app, for example, asks for none of these limits: it fills the bound itself, from its own preview and the SDK's default slippage tolerance of 0.03% (`DEFAULT_SLIPPAGE_TOLERANCE`, `3_00000000000000n` in WAD, in `morpho-org/sdks` `packages/blue-sdk/src/constants.ts`, applied in `packages/morpho-sdk/src/helpers/slippage.ts` at commit `56f1ed62827a7aab39d979c0143d1fbf970c37ca` on the default branch).
   So each is a computed field.
   An amount card field declares it as `"computed": { "read", "bound", "default", "margin"? }`:
   - `read`: one view call, `{ "to", "function": "<name>(<params>) returns (<returns>)", "args": { "<param>": <arg> }, "output"? }`.
@@ -400,6 +424,7 @@ Card values per operation, covering the operations in the Safe's history:
     Morpho's deposit reads `{ "to": { "card": "vault" }, "function": "previewDeposit(uint256 assets) returns (uint256 shares)", "args": { "assets": { "card": "amount" } } }`; a Curve pool's quote reads `get_dy(int128 i, int128 j, uint256 dx) returns (uint256 dy)` with `{ "const": "0" }`, `{ "const": "1" }` and `{ "card": "amount" }`; and wstETH's wrap reads `getWstETHByStETH(uint256 stETHAmount) returns (uint256)` on `{ "contract": "<its registry name>" }`.
   - `bound`: `floor`, for a fewest (`min-shares`, `min-assets`): the read less the slippage, rounded down; or `ceiling`, for a most (`max-shares`): the read plus the slippage, rounded up.
   - `default`: `{ "bps", "source" }`, the protocol's own default slippage in basis points and the https URL that shows it, such as the SDK constant at a pinned commit.
+    When the protocol publishes no default slippage for the function the field bounds, `default` is `{ "bps": 0, "source" }` with `source` the https URL, pinned, of the protocol's own page or code for that function, which shows it sets none, such as its docs page or the contract source at a commit; all the room then goes in `margin`, with its `why`, and the notes say the protocol sets no default.
   - `margin`: optional, `{ "bps", "why" }`, more slippage on top of the default, with the reason.
     The app reads its preview when it builds the transaction, the Morpho SDK accruing interest two hours ahead, while the card is filled earlier, and the share price moves in between.
     With the default alone, the card's floor of a deposit is always a little stricter than the bound the app computes later from a rising price, so the app's own transaction would be `MISMATCH`; the margin is the room for that move, and the template's reason says how long it lasts.
@@ -416,7 +441,7 @@ Card values per operation, covering the operations in the Safe's history:
   `card seal` and `verify` refuse a card that holds 0 in a computed field, or in an amount field a share price bound or an `atLeast` compares with, since 0 there bounds nothing or nothing can meet it: with `min-shares` 0, any `maxSharePriceE27` is at most the price the card's amounts give.
   `card new` refuses a typed 0 in such a field at its prompt by the same rule, says why in the signer's language, and asks again, so the signer does not learn it only at the seal step: a `min-buy` of 0 for `cow/swap` is asked again.
 - A card `market` field takes a market's name.
-  `card new` lists every market by number with its name, its id, its lltv, and each part's registry name and full address.
+  `card new` lists every market `same` lets stand with the fields already picked by number with its name, its id, its lltv, and each part's registry name and full address.
   A template names the whole market or one part: `market.lending`, `market.loanToken`, `market.collateralToken`, `market.oracle` and `market.irm` are registry addresses, `market.lltv` is a number, and `market.id` is a bytes32.
   An amount of `market.loanToken` is typed in that token's decimals, as for any registry token.
 - A card `percent` field takes a percent in plain digits with at most 16 decimals, such as `100` or `35.5`, at most 100, and the card holds it in WAD base units, 100% being 10^18, as Vault V2 counts a relative cap.
@@ -437,3 +462,4 @@ A file without the markets table, such as one from before markets, has no market
 `replay` runs the same checks on these alone and reports whether the verdict, and the list of calls that move no asset, are the ones recorded.
 It exits 0 when they are, whatever the verdict, and 1 when they differ or the file cannot be replayed.
 A verdict file from before that list was recorded has an older format and is refused.
+A template a verdict file holds from before contract fields listed their names (see [Intent card](#intent-card)) replays with each unlisted field accepting every registry entry of its kind, as it did when the verdict was recorded; only `replay` parses it so, and `verify`, `pnpm attacks` and every other command refuse such a template.

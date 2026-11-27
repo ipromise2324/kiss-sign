@@ -16,7 +16,7 @@ The evidence behind each template goes with it.
   Its tests are in `test/` and `testdata/`.
 - This repository ships twenty-two templates: `eth/transfer`, `erc20/transfer`, `morpho/vault-deposit`, `fluid/vault-deposit`, `compound/supply`, `cow/swap` (a CoW order pre-signed alone, its sell token already approved), `cow/swap-approve` (the same with its approval, through MultiSend), `uniswap/swap` (one USDC/USDT swap in Uniswap's StablePair hook pool, its Permit2 allowances already open), `uniswap/swap-no-hook` (the same in a pool with no hook), `uniswap/approve-permit2` and `uniswap/allow-router` (the two allowances a first swap needs, each on its own or before `uniswap/swap` in one MultiSend) and the Vault V2 admin templates `morpho/vault-v2-cap-submit`, `morpho/vault-v2-cap-accept`, `morpho/vault-v2-cap-decrease`, `morpho/vault-v2-revoke`, `morpho/vault-v2-adapter-cap-submit`, `morpho/vault-v2-adapter-cap-accept` and `morpho/vault-v2-collateral-cap-submit`, and the Safe settings templates `safe/add-owner`, `safe/remove-owner`, `safe/swap-owner` and `safe/change-threshold`.
   Other operations of the table in [Intent card](data-shapes.md#intent-card) whose checks no shipped template reaches, such as a Merkle claim's proof field, a market field or a withdrawal of all, keep a `template.json` under `test/fixtures/templates/`, with the registry entries and markets only they name under `test/fixtures/registry/`, or, for entries only one test file names, under a folder of their own that the file adds, such as `test/fixtures/vault-v2/registry/` for the Vault V2 vault whose curator's transactions only test the templates.
-  Only tests read them, through a temporary copy of the repository with them added (`test/repo-with-test-fixtures.ts`); `card new`, `card seal`, `verify` and `pnpm report` never see them.
+  Only tests read them, through a temporary repository with them added to a frozen copy of the templates and registry, `test/fixtures/base/` (`test/repo-with-test-fixtures.ts`), so a template or registry entry a user adds changes no test that checks the program; `card new`, `card seal`, `verify` and `pnpm report` never see them.
 - The tests are real past transactions of the operation, each with the card values it implies.
   Every one must give `MATCH`, and every mutated copy must give `MISMATCH`.
   CI (`.github/workflows/test.yml`, GitHub Actions) runs `pnpm typecheck` and the whole offline test suite on every pull request and every push to `main` (a branch runs once, through its pull request), with every action pinned by commit, after fetching the pinned solc builds and Public Suffix List and checking each file's sha256.
@@ -34,7 +34,7 @@ Published files would otherwise tie the Safe, its balances, and its history to w
 - Templates refer to "the Safe", never to an address.
 - Test transactions come from other senders.
   The signer's own Safe is excluded when searching for past transactions.
-  `record-safe-tx` refuses the configured Safe before it reads anything; `record-safe-tx`, `record-safe-proxy`, `instance-evidence --record` and `report --record` write nothing when the recording would mention it, and `past-txs --record` writes zeros for the Safe's address in its search answers, keeping the Safe's transactions by hash, drops every read that holds the address, and refuses a recording, or the summary it commits, that still holds it (see Study past transactions, step 4 of [the flow](flow.md#first-time-an-operation-is-done-build-its-template)).
+  `record-safe-tx` refuses the configured Safe before it reads anything; `record-eoa-tx` refuses a call to a Safe it recognizes, a proxy whose code is a known Safe proxy's or a call of `execTransaction`, which `record-safe-tx` records; `record-safe-tx`, `record-eoa-tx`, `record-safe-proxy`, `instance-evidence --record` and `report --record` write nothing when the recording would mention it, and `past-txs --record` writes zeros for the Safe's address in its search answers, keeping the Safe's transactions by hash, drops every read that holds the address, and refuses a recording, or the summary it commits, that still holds it (see Study past transactions, step 4 of [the flow](flow.md#first-time-an-operation-is-done-build-its-template)).
 - Reports count senders but list no Safe of the signer's.
 - Before every push, a check greps the outgoing commits for the configured Safe address and for API keys, and must find nothing.
 
@@ -66,6 +66,17 @@ These are protocol-free and change rarely.
   A member of a signed message changes in the message, with its digest written again into the transaction.
   Empty constant `bytes`, such as a Uniswap pool's `hookData`, have no byte to change in place and are not changed; any other value is longer, which the field check compares byte for byte.
 - The perturbation test, at template build time (`pnpm perturb`, replayed by `pnpm test`): every free field of a recorded test transaction is changed to other values of its type, one at a time (a number to one more, one less and zero; a bool flipped; a fixed-size word with its first byte flipped, and zeroed when it is not zero; `bytes` or a `string` with its first and its last byte flipped; an array with the first byte of its first and of its last word flipped), and each copy is simulated through `execTransaction` on both providers.
+  An EOA's test transaction, recorded with `pnpm record-eoa-tx` when no Safe's fits (see Write the template, step 7 of [the flow](flow.md#first-time-an-operation-is-done-build-its-template)), is its one call, which the field check reads with the EOA where the template puts the Safe and the operation a call.
+  `record-eoa-tx` refuses an EIP-7702 transaction, a sender with code, a call to the sender itself, and a transaction, receipt and block header the two providers do not tie together by hash; the fixture keeps the execution block's hash, which every later simulation and replay must find again.
+  Each copy is simulated as the EOA's own call, its effects read on the EOA as they are on a Safe.
+  A call without ETH is sent from the EOA as it is, so the target sees the EOA as sender and origin and the EOA has no code, as on chain.
+  A simulated call carries no ETH, so a call with ETH runs through a forwarder: a state override gives the EOA, for that block alone, code that makes the call when the EOA calls itself and stops on any other call, as an EOA takes it, so the value leaves the EOA's balance and no gas does.
+  A contract can see that code where it would see none: an ERC-1271 signature check (Permit2's, OpenZeppelin's `SignatureChecker`), an ERC-721, ERC-1155 or ERC-777 receiver hook, or a guard on the caller's code size takes another path.
+  So a forwarded copy that reverts is unverifiable, not reverted, and fails the test rather than pass a claim that a revert satisfies.
+  The original must also emit, in address and topics, the logs its receipt holds, which for an EOA are its one call's own; their data may differ, since the transactions before it in its block are not simulated.
+  The block's other transactions and the real gas paid are not simulated, for either sender.
+  An EOA has no Safe settings, nonce, delegatecall or Safe fee fields, so such a test shows nothing of them: the simulated floor reports the settings as not read and never passes, a template that binds the Safe's nonce or declares `effects.safe` is refused, and a template call that delegatecalls or a MultiSend of several calls does not fit an EOA's one call.
+  The original must pass the effects check before any copy runs, since a copy is judged by how it differs from the original; otherwise the test is not run and says why.
   A copy must revert, be refused by the field or effects check, or emit the same logs (the Safe's `ExecutionSuccess`, which names the transaction's hash, aside) with the same balance and allowance changes and the same readings of the views the template reads.
   A field claimed as `proof` must make every copy revert or be refused; a field claimed `unread` must change nothing; a field claimed `route` may also change the logs and the Safe's token amounts, as long as the copy still passes the effects check and leaves the same allowances, ending balances and view readings.
   A copy may also change an allowance the card's template keeps open at any amount (`effects.approves` with `unlimited`), and the log that sets it, such as the expiration of the Universal Router's Permit2 allowance, since the template already allows any value of it.
@@ -77,7 +88,7 @@ These are protocol-free and change rarely.
   Inside `verify` it would cost three or more simulations per free field on two providers at every signing, a dozen extra for a Fluid claim, and every recorded verdict would grow by as much.
 
   The replay (in `pnpm test` and the report's fixture judgement) trusts only block headers it can check offline.
-  Before it simulates anything, every block a `testdata/perturb/` recording holds, as each provider answered it, must hash, as the keccak256 of its RLP-encoded header, to the hash it states, and a block at the height of the executed or parent block must be that block; the block the transaction ran in must name the recorded parent block's hash as its parent; and its number and timestamp must equal the `blockNumber` and `executionDate` the Safe Transaction Service gave for the transaction in its `testdata/safe-tx/` fixture, recorded by another script.
+  Before it simulates anything, every block a `testdata/perturb/` recording holds, as each provider answered it, must hash, as the keccak256 of its RLP-encoded header, to the hash it states, and a block at the height of the executed or parent block must be that block; the block the transaction ran in must name the recorded parent block's hash as its parent; and its number and timestamp must equal those its `testdata/safe-tx/` fixture, recorded by another script, gives for the transaction: the `blockNumber` and `executionDate` the Safe Transaction Service gave, or for an EOA's, the block both providers agreed on.
   Otherwise the replay fails, naming the file and the block.
   This ties the block time a `withinSeconds` bound counts from, and the time, gas limit and randomness each copy is simulated with, to the header hash, so a recording edited by hand to move the time fails even when the edit changes every place the time appears.
   `pnpm perturb --record` checks the same before it writes.
@@ -117,6 +128,7 @@ These are protocol-free and change rarely.
   The program marks every such call, whatever the template says about it.
   `pnpm simulate` prints the marks when the template is reviewed, and `kiss-sign verify` prints them under the verdict at every signing; a scan that could not be read says so.
   The mark is information, not a check, and never changes the verdict: the call and its arguments are bound by the template's field rules like any other, and only the review can tell a permission the operation needs from one it does not.
+  Without `--card`, `pnpm simulate` checks the simulated floor with no card's allowances and prints its findings as that, never as `PASS` or `REFUSED`: an approval or Safe setting change a card declares is allowed only when `verify` checks the floor against that card.
   A call to the Safe itself without data is not marked: the floor refuses one with data, and the Safe's `receive` changes nothing.
 
 ## Chain access
@@ -152,8 +164,8 @@ drpc's public endpoint, which needs no key, refuses most of a burst of reads, so
 Each provider's URL holds its key, so an error names the provider and a closed cause, never the provider's text or a URL, and a recording that keeps a provider's answer takes the key out of it.
 
 `GITHUB_TOKEN` is optional and for building templates only.
-It is read like the other keys, from the command's environment or `$KISS_SIGN_HOME/.env`, and only by the research commands that ask GitHub's API: `pnpm check-sources`, `pnpm report`, `pnpm pin-solc` and `pnpm fetch-erc7730`, with `pnpm erc7730`, which fetches the ERC-7730 archive on demand.
-When it is set, a request to `https://api.github.com` carries `Authorization: Bearer <token>`, which raises GitHub's limit from 60 requests an hour to 5,000; no other host gets it, github.com pages, `raw.githubusercontent.com` and `codeload.github.com` included, and no request to `api.github.com` follows a redirect, so the header cannot reach another host.
+It is read like the other keys, from the command's environment or `$KISS_SIGN_HOME/.env`, and only by the research commands that ask GitHub's API: `pnpm check-sources`, `pnpm find-sources`, `pnpm report`, `pnpm pin-solc` and `pnpm fetch-erc7730`, with `pnpm erc7730`, which fetches the ERC-7730 archive on demand.
+When it is set, a request to `https://api.github.com` carries `Authorization: Bearer <token>`, which raises GitHub's limit from 60 requests an hour to 5,000, and GitHub's code search, which `pnpm find-sources --github-org` asks, answers only a request that carries it; no other host gets it, github.com pages, `raw.githubusercontent.com` and `codeload.github.com` included, and no request to `api.github.com` follows a redirect, so the header cannot reach another host.
 Without it every command reads exactly as before.
 A token `api.github.com` refuses with HTTP 401, as it does once the token expires, is dropped for that read, which is asked again without it, and the command says once on stderr to replace or remove it.
 The token changes how many reads GitHub allows, never what they answer, so a recording, a report and every check come out the same with it or without it, and none of them, nor any log line or error, holds its value.
@@ -165,11 +177,13 @@ The token to make is a fine-grained one with access to public repositories only,
 
 Services used while building a template, besides the providers above.
 None of them is read at signing.
+`pnpm find-sources` reads DefiLlama, CoinGecko, Immunefi, Etherscan, GitHub (its code search too, with `--github-org` and `GITHUB_TOKEN`) and the protocol's own pages to propose where an address is published; it records nothing and no check reads its output.
+`pnpm api-source` asks a protocol's own API once, with no retry, under the rules the registry holds an `apiSource` to, with the configured Safe as the address no request may hold, and prints the answer; it records nothing either.
 
 | Service | What is checked with it | By |
 |---|---|---|
 | The protocol's official site and GitHub organization | Where each contract address is published (step 2) | AI |
-| The protocol's own API, when it has one (such as `api.morpho.org`) | The contract's address and what the protocol says about it, such as a vault's curator and asset (step 2) | AI |
+| The protocol's own API, when it has one (such as `api.morpho.org`) | The contract's address and what the protocol says about it, such as a vault's curator and asset (step 2) | AI, through `pnpm api-source` |
 | DefiLlama protocol list (`api.llama.fi/protocols`) and parent protocols (`api.llama.fi/lite/protocols2`) | Each registry entry's source domain or GitHub organization against the protocol's listed website and organizations (step 2) | Program, `pnpm check-sources`; the signer judges findings |
 | CoinGecko coin page (`api.coingecko.com/api/v3/coins/<id>`) | The protocol coin's homepages and GitHub repositories, as more of the protocol's sites (step 2) | Program, `pnpm check-sources` |
 | Immunefi programs (`immunefi.com/public-api/bounties.json`) | The program's website and GitHub organization, and whether its scope holds the entry's address (step 2) | Program, `pnpm check-sources` |
@@ -183,10 +197,14 @@ None of them is read at signing.
 | GitHub API (`api.github.com`, with `GITHUB_TOKEN` when it is set) | A pinned GitHub source's commit is on the repository's default branch (step 2) | Program, `pnpm check-sources` |
 | CoinGecko coin list (`api.coingecko.com`) | The coin listed at each token's and vault share's Ethereum address against the coin id the entry names (step 2) | Program, `pnpm check-sources`; the signer judges findings |
 | Alchemy Transfers API, and Multicall3 through Alchemy and drpc | An instance's declared size, such as a vault's monthly `totalAssets()`, and, for a size that counts holders, its share holders and the ten largest holders' share (step 2) | Program, `pnpm instance-evidence`; the AI judges the history |
-| Etherscan contract page | Verified contract name, creator, and creation transaction (step 2) | AI |
+| Alchemy and drpc, at past blocks | A pool's harmonic mean liquidity over 30 and 5 minutes, at a calm and a stressed block, given or picked from a daily sample of the last year, for its `twap.minLiquidity` (step 2) | Program, `pnpm pool-depth`; the AI sets `minLiquidity` |
+| Etherscan API and contract page | Verified contract name, and the creation transaction and its sender, proven through Alchemy and drpc (step 2) | AI, from `pnpm find-sources`; the page is optional |
 | ERC-7730 registry (`github.com/ethereum/clear-signing-erc7730-registry`, an archive pinned by commit and sha256 in `vendor/erc7730/`) | Whether a descriptor applies to each registry entry, by address or by factory, its hashes, its functions and field formats, and its ERC-8176 attestations (step 2) | Program, `pnpm erc7730`; the AI compares the field formats with its own |
 | EAS contract on mainnet, through Alchemy and drpc | Each attestation's signer, by the `ecrecover` precompile, and whether the signer revoked it (step 2) | Program, `pnpm erc7730` |
 | Etherscan API (`getsourcecode`) and a pinned `solc` | The verified source compiles to the code on chain, and its ABI holds every function the template uses (step 3) | Program, `pnpm prove-abi` |
+| Etherscan API (`getLogs`), and transactions and receipts through Alchemy and drpc | How Safes use a contract before there is a template; orientation the AI reads, never recorded (step 4) | Program, `pnpm survey` |
+| Etherscan API (`getLogs`), and receipts through Alchemy and drpc | One contract's logs of one event, such as its implementation or admin changes; orientation the AI reads, never recorded (steps 2 and 5) | Program, `pnpm events` |
+| Alchemy and drpc, at one agreed block | One view of one contract, such as a feed's `description()`, confirming the role a site names it for (step 2), or a Safe's state, such as an allowance (step 1); orientation the AI reads, never recorded | Program, `pnpm read` |
 | Alchemy Transfers API and Etherscan API | Past transactions of the operation (step 4) | Program, `pnpm past-txs`; the AI reads the counts |
 | drpc `debug_traceTransaction`, and receipts through Alchemy and drpc | The calls inside each past transaction exactly the template, against the AI's `flow` lines (steps 4 and 6) | Program, `pnpm past-txs` and `pnpm report`; the AI reviews each finding |
-| DefiLlama hacks list and post-mortems | Past hacks and incidents (step 5) | AI |
+| DefiLlama hacks list and post-mortems | Past hacks and incidents (step 5) | AI, the hacks from `pnpm find-sources` |

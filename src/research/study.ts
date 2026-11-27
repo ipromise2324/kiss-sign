@@ -8,7 +8,7 @@ import { decodeCall, wholeRegion } from '../decode/codec.ts';
 import type { AbiValue, Region, Span } from '../decode/codec.ts';
 import { unwrapSafeTx } from '../decode/multisend.ts';
 import type { InnerCall } from '../decode/multisend.ts';
-import type { Market, Registry } from '../registry.ts';
+import type { RegistryView, StudyMarket } from '../registry.ts';
 import { OFFICIAL_SAFE_SINGLETONS } from '../safe/deployments.ts';
 import { EXECUTION_SUCCESS } from '../simulate/events.ts';
 import { checksumAddress } from '../safe/types.ts';
@@ -16,10 +16,11 @@ import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { decodeTemplateCall, inspectTemplateFields } from '../template/check.ts';
 import type { Leaf } from '../template/check.ts';
 import { isMarketEntryPart } from '../registry.ts';
-import { targetNames, wordAddress } from '../template/template.ts';
+import { inScope, targetNames, wordAddress } from '../template/template.ts';
 import type { CallNode, ConstValue, LeafRule, Rule, Template, TemplateCall } from '../template/template.ts';
 import type { ReadMessage } from './messages.ts';
 import type { Anchor } from './sources.ts';
+import type { StudyRegistry } from './study-registry.ts';
 
 
 /**
@@ -75,8 +76,11 @@ export type NotStudiedReason = 'execTransaction calldata does not decode' | 'no 
 
 export type UnprovenReason = 'its code is not a known Safe proxy' | 'its singleton is not an official Safe singleton';
 
-/** A call as a misfit names it: the contract it goes to, when known, and its selector, undefined for a call with no data. */
-export type CallName = { readonly to: Address | undefined; readonly selector: Hex | undefined };
+/**
+ * A call as a misfit names it: the contract it goes to, when known, and its selector. A call with fewer than 4 bytes of
+ * data calls no function: its selector is undefined and `bytes` holds how many it has, absent for a call with none.
+ */
+export type CallName = { readonly to: Address | undefined } & ({ readonly selector: Hex; readonly bytes?: undefined } | { readonly selector: undefined; readonly bytes?: 1 | 2 | 3 });
 
 /** Why a transaction does not fit the template's shape. */
 export type MisfitReason =
@@ -239,7 +243,12 @@ export function functionNames(template: Template): Map<string, string> {
   return names;
 }
 
-const selectorOf = (bytes: Uint8Array): Hex | undefined => (bytes.length === 0 ? undefined : (`0x${bytesToHex(bytes.subarray(0, 4))}` as Hex));
+const selectorOf = (bytes: Uint8Array): Hex | undefined => (bytes.length < 4 ? undefined : (`0x${bytesToHex(bytes.subarray(0, 4))}` as Hex));
+const callName = (to: Address | undefined, data: Uint8Array): CallName => {
+  const selector = selectorOf(data);
+  if (selector !== undefined) return { to, selector };
+  return data.length === 0 ? { to, selector } : { to, selector, bytes: data.length as 1 | 2 | 3 };
+};
 const firstOf = <T>(items: readonly (T | undefined)[]): T | undefined => items.find((item) => item !== undefined);
 
 /** The only address a tuple holds, such as the target beside a bundled call's data. */
@@ -255,10 +264,10 @@ function onlyAddress(value: Extract<AbiValue, { kind: 'tuple' }>): Address | und
  */
 function itemCalls(calls: readonly InnerCall[], template: Template, span: Span): CallName[] | undefined {
   const name = (rule: Rule | undefined, item: AbiValue, target: Address | undefined): CallName | undefined => {
-    if (rule?.kind === 'call') return item.kind === 'bytes' && rule.call.encoding === 'call' ? { to: target, selector: selectorOf(item.value) } : undefined;
+    if (rule?.kind === 'call') return item.kind === 'bytes' && rule.call.encoding === 'call' ? callName(target, item.value) : undefined;
     if (rule?.kind !== 'fields' || item.kind !== 'tuple') return undefined;
     const data = item.fields[rule.fields.findIndex((field) => field.kind === 'call')];
-    return data?.kind === 'bytes' ? { to: onlyAddress(item), selector: selectorOf(data.value) } : undefined;
+    return data?.kind === 'bytes' ? callName(onlyAddress(item), data.value) : undefined;
   };
   const visit = (rule: Rule, value: AbiValue | undefined, root: Uint8Array, target: Address | undefined): CallName[] | undefined => {
     if (value === undefined) return undefined;
@@ -291,7 +300,7 @@ function misfitReason(tx: SafeTx, loosened: Loosened, template: Template, contex
       if (data === 'empty') return call.data.end === call.data.start;
       return data !== undefined && call.data.end - call.data.start >= 4 && bytesToHex(call.data.root.subarray(call.data.start, call.data.start + 4)) === data.fn.selector.slice(2);
     });
-  if (!sameCalls) return { kind: 'calls', calls: unwrapped.calls.map((call) => ({ to: call.to, selector: selectorOf(call.data.root.subarray(call.data.start, call.data.end)) })) };
+  if (!sameCalls) return { kind: 'calls', calls: unwrapped.calls.map((call) => callName(call.to, call.data.root.subarray(call.data.start, call.data.end))) };
   const anchorHeld = unwrapped.calls.some((call) => call.to === context.anchor.token);
   for (const [i, call] of unwrapped.calls.entries()) {
     const bound = boundEntry((template.calls[i] as TemplateCall).to, call.to, `${call.path}.to`, template, context, anchorHeld);
@@ -309,10 +318,11 @@ function misfitReason(tx: SafeTx, loosened: Loosened, template: Template, contex
 }
 
 /** A misfit in words that group alike transactions, each call named by its registry name and the template's function names. */
-export function misfitText(reason: MisfitReason, registry: Registry, names: ReadonlyMap<string, string>): string {
-  const call = ({ to, selector }: CallName): string => {
+export function misfitText(reason: MisfitReason, registry: RegistryView, names: ReadonlyMap<string, string>): string {
+  const call = ({ to, selector, bytes }: CallName): string => {
     const target = to === undefined ? 'another contract' : (registry.byAddress.get(to)?.name ?? checksumAddress(to));
-    return selector === undefined ? `${target} (no data)` : `${target}.${names.get(selector) ?? selector}`;
+    if (selector !== undefined) return `${target}.${names.get(selector) ?? selector}`;
+    return bytes === undefined ? `${target} (no data)` : `${target} (no function: ${bytes} bytes of data)`;
   };
   switch (reason.kind) {
     case 'foreign-delegatecall':
@@ -365,7 +375,7 @@ export function cardAddresses(fit: Extract<TxStudy, { kind: 'fit' }>, shapes: Re
 export type StudyContext = {
   readonly shapes: ReturnType<typeof shapesOf>;
   readonly readMessage: ReadMessage;
-  readonly registry: Registry;
+  readonly registry: StudyRegistry;
   /** The configured Safe, left out of every result. */
   readonly exclude: Address | undefined;
   /** The token whose transfers found the transactions, and which transfers. */
@@ -550,6 +560,13 @@ export function brokenRule(
   }
 }
 
+/** Whether `value` is a registry entry the card field `rule` names would accept but for its list: another contract, never one outside the registry. */
+function excludedByList(rule: Extract<Rule, { kind: 'card' }>, value: Address, template: Template, registry: StudyContext['registry']): boolean {
+  const field = rule.ref.attribute === undefined ? template.card.get(rule.ref.field) : undefined;
+  const entry = registry.byAddress.get(value);
+  return field?.kind === 'contract' && field.scope.names !== undefined && entry !== undefined && inScope({ ...field.scope, names: undefined }, entry, registry);
+}
+
 /**
  * Whether `value`, at a place `rule` binds to registry entries, holds one of them: undefined when it does or the rule
  * binds none, else where it is outside the registry or the misfit of another contract. A contract the template names
@@ -569,7 +586,9 @@ function boundEntry(
   const names = targetNames(rule, template, registry);
   const holds = (address: Address) => names?.some((name) => registry.entries.get(name)?.address === address) ?? false;
   if (names === undefined || holds(value)) return undefined;
-  if (rule.kind !== 'card' || (anchor.token !== undefined && holds(anchor.token) && !anchorHeld)) return { kind: 'entry', at, expected: names, actual: value };
+  if (rule.kind !== 'card' || (anchor.token !== undefined && holds(anchor.token) && !anchorHeld) || excludedByList(rule, value, template, registry)) {
+    return { kind: 'entry', at, expected: names, actual: value };
+  }
   if (value !== anchor.token) return { at, kind: 'address' };
   const kinds = new Set(names.map((name) => registry.entries.get(name)?.kind));
   if (kinds.size === 1 && kinds.has('token')) return { at, kind: 'token' };
@@ -607,7 +626,7 @@ function boundEntries(
     if (bound?.kind === 'entry') return { kind: 'misfit', reason: bound };
     if (bound !== undefined) outside.push(bound);
   }
-  const partOf = (market: Market, part: string): string | undefined => {
+  const partOf = (market: StudyMarket, part: string): string | undefined => {
     if (part === 'lltv') return String(market.lltv);
     if (part === 'id') return market.id;
     return isMarketEntryPart(part) ? market[part].address : undefined;
@@ -636,7 +655,7 @@ async function studySafeTx(reader: Reader, tx: Transaction & { readonly to: Addr
 }
 
 async function studyDirectCall(reader: Reader, tx: Transaction & { readonly to: Address; readonly blockNumber: bigint }, context: StudyContext): Promise<TxStudy> {
-  const selector = tx.input.length >= 10 ? tx.input.slice(0, 10) : 'no data';
+  const selector = tx.input.length >= 10 ? tx.input.slice(0, 10) : tx.input.length > 2 ? tx.input : 'no data';
   const candidates = context.shapes.calls.flatMap((shape, call) => {
     const templateCall = shape.template.calls[0];
     const data = templateCall?.data;

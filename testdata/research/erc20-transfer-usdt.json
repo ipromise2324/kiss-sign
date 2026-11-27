@@ -10,8 +10,8 @@
  "head": "26485678",
  "studiedWith": {
   "template": "0x73d152f3283d07ac245108b5462c02cedf55bbaf0f5c03fcddcf5cbe8574afc2",
-  "registry": "0x9dcf78bb7367b281979a5ad3dbc9d5278f0c534c2932d6f44a2e778d8f9d96bf",
-  "study": "0x92508a29cee7c49b83a1d4a9f9e4e04eac8df225cb741b31331cc10dacdd84ae"
+  "registry": "0xc90ed6cb2b47fbc2d617bca50dd3a599a65d3cd07fa709f125b171f0cc50aa8c",
+  "study": "0x61f1ce5f5cd4adf417d5dffd036bcb1056828b2e57170ba4bcd0ef03b994e01d"
  },
  "search": {
   "coverage": {
@@ -1884,7 +1884,8 @@
     "kind": "trailer",
     "at": "call"
    },
-   "free": []
+   "free": [],
+   "time": "1795528511"
   },
   {
    "kind": "not-studied",
@@ -4548,7 +4549,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1795530083"
   },
   {
    "kind": "misfit",
@@ -4572,7 +4574,8 @@
     ],
     "actual": "0x7ec8a30a34b86927dc77b302603d1d53e640bef7"
    },
-   "free": []
+   "free": [],
+   "time": "1795530083"
   },
   {
    "kind": "fit",

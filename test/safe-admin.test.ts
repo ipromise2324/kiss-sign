@@ -23,14 +23,16 @@ import { checkMutations } from '../src/template/mutation.ts';
 import { detailText } from '../src/verify/detail-text.ts';
 import { TemplateError, loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
+import { baseRepo } from './fixture-base.ts';
 
 /** A card that declares an owner change, which lets the four owner and threshold functions past the static floor. */
 const DECLARES_CHANGE: FloorAllowed = { change: { add: '0x00000000000000000000000000000000000000aa' as Address, remove: undefined, threshold: undefined } };
 
 const ROOT = join(import.meta.dirname, '..');
-const registry = loadRegistry(ROOT);
+const BASE = baseRepo();
+const registry = loadRegistry(BASE);
 const IDS = ['safe/add-owner', 'safe/remove-owner', 'safe/swap-owner', 'safe/change-threshold', 'eth/transfer'] as const;
-const templates = new Map<string, Template>(IDS.map((id) => [id, loadTemplate(ROOT, id, registry)]));
+const templates = new Map<string, Template>(IDS.map((id) => [id, loadTemplate(BASE, id, registry)]));
 const SAFE = '0x1111111111111111111111111111111111111111' as Address;
 const ALICE = '0x2222222222222222222222222222222222222222' as Address;
 const BOB = '0x3333333333333333333333333333333333333333' as Address;
@@ -73,12 +75,12 @@ test('template load refuses a prevOwner bound to anything but an owner field, an
     calls: [{ to: { safe: true }, value: { const: '0' }, function: 'removeOwner(address prevOwner, address owner, uint256 _threshold)', args: { prevOwner: { ownerBefore: 'card.owner' }, owner: { card: 'owner' }, _threshold: { card: 'threshold' } } }],
     effects: { gives: [], gets: [], safe: { owners: { remove: 'card.owner' }, threshold: 'card.threshold' } },
   }));
-  assert.doesNotThrow(() => parseTemplate(base, registry));
+  assert.doesNotThrow(() => parseTemplate(base, registry, 'committed'));
   const broken = (edit: (t: typeof base) => void): string => {
     const copy = JSON.parse(JSON.stringify(base));
     edit(copy);
     try {
-      parseTemplate(copy, registry);
+      parseTemplate(copy, registry, 'committed');
       return 'parsed';
     } catch (error) {
       assert.ok(error instanceof TemplateError);

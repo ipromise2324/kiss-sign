@@ -11,8 +11,8 @@ const SEALED_OFF = pathToFileURL(join(import.meta.dirname, 'sealed-off.ts')).hre
 
 const SIGNING = [[], ['init'], ['key'], ['key', 'add'], ['key', 'list'], ['key', 'remove'], ['book'], ['book', 'add'], ['book', 'list'], ['template', 'approve'], ['card'], ['card', 'new'], ['card', 'seal'], ['verify'], ['replay']];
 const SCRIPTS = [
-  'attacks', 'check-sources', 'erc7730', 'fetch-vendored', 'history', 'instance-evidence', 'past-txs', 'perturb', 'pin-code', 'pin-packages',
-  'pin-solc', 'prove-abi', 'prove-instance', 'record-abi-case', 'record-safe-proxy', 'record-safe-tx', 'simulate', 'verdict-core',
+  'abi', 'api-source', 'attacks', 'check-sources', 'decode-tx', 'erc7730', 'events', 'fetch-vendored', 'find-sources', 'history', 'instance-evidence', 'notes-needed', 'past-txs', 'progress', 'perturb', 'pin-code', 'pin-packages',
+  'pin-solc', 'pool-depth', 'prove-abi', 'prove-instance', 'read', 'record-abi-case', 'record-eoa-tx', 'record-safe-proxy', 'record-safe-tx', 'simulate', 'survey', 'template', 'verdict-core',
 ];
 
 /** Runs a command with no key in the environment, no network, and its home, ~/.kiss-sign and vendor/ sealed: touching any of them throws. */
@@ -71,6 +71,15 @@ test('kiss-sign verify --card <hash> --help is not a request for help', () => {
   assert.doesNotMatch(run.stdout, /^usage: pnpm kiss-sign verify/);
   assert.notEqual(run.status, 0);
 });
+
+for (const command of ['check', 'implied-card']) {
+  test(`pnpm template ${command} --help prints the template help`, () => {
+    const run = runHelp(join(ROOT, 'scripts', 'template.ts'), [command, '--help']);
+    assert.equal(run.stderr, '');
+    assert.equal(run.status, 0);
+    assert.match(run.stdout, /^usage: pnpm template check /);
+  });
+}
 
 test('pnpm history fetch -h prints the history help', () => {
   const run = runHelp(join(ROOT, 'scripts', 'history.ts'), ['fetch', '-h']);

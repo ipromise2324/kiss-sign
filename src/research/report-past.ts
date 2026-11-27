@@ -142,7 +142,7 @@ export function pastFields(studies: readonly Studied[], template: Template, time
 }
 
 /** A call a past transaction made; `sender` for one to the account that made it, so the calls of different Safes to themselves read alike. */
-export type PastCall = { readonly to: Address | 'sender' | undefined; readonly selector: Hex | undefined };
+export type PastCall = { readonly to: Address | 'sender' | undefined; readonly selector: Hex | undefined; readonly bytes?: 1 | 2 | 3 };
 
 /** Why some past transactions are not the template: what differed, and which they are. */
 export type PastReason =
@@ -168,8 +168,8 @@ function inOrder(of: readonly (string | undefined)[], within: readonly (string |
 function reasonOf(s: Studied, template: Template): { readonly key: string; readonly reason: PastReason } {
   if (s.kind === 'fit') return { key: `outside ${s.outside.map((o) => `${o.at}:${o.kind}`).join(' ')}`, reason: { kind: 'outside', outside: s.outside } };
   const { reason } = s;
-  const past = (calls: readonly CallName[]): PastCall[] => calls.map(({ to, selector }) => ({ to: to === s.sender.address ? 'sender' : to, selector }));
-  const named = (calls: readonly PastCall[]): string => calls.map((call) => `${call.to}.${call.selector}`).join(' ');
+  const past = (calls: readonly CallName[]): PastCall[] => calls.map(({ to, selector, bytes }) => ({ to: to === s.sender.address ? 'sender' : to, selector, ...(bytes === undefined ? {} : { bytes }) }));
+  const named = (calls: readonly PastCall[]): string => calls.map((call) => `${call.to}.${call.selector ?? call.bytes}`).join(' ');
   switch (reason.kind) {
     case 'calls': {
       const over = Math.max(MOST_CALLS, template.calls.length);

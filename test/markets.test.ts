@@ -149,7 +149,7 @@ const SUPPLY = {
   },
 };
 
-const template = parseTemplate(SUPPLY, registry);
+const template = parseTemplate(SUPPLY, registry, 'committed');
 const templates = new Map([[template.id, template]]);
 const supplyCard = (market = 'usdc-cbbtc-86', amount = '5000000'): Card => ({ operations: [{ template: template.id, values: { market, amount } }] });
 const resolve = (card: Card): Resolution => resolveCard(card, { templates, registry, addressBook: new Map(), safe: SAFE });
@@ -221,7 +221,7 @@ const refusal = (change: (raw: typeof SUPPLY) => void): string => {
   const raw = structuredClone(SUPPLY);
   change(raw);
   try {
-    parseTemplate(raw, registry);
+    parseTemplate(raw, registry, 'committed');
   } catch (error) {
     return (error as Error).message;
   }
@@ -348,7 +348,7 @@ test('supply shares that do not increase, or debt or collateral that moves, are 
 test('a view whose template says decreases matches a fall and refuses a rise', () => {
   const raw = structuredClone(SUPPLY);
   raw.effects.views[0]!.change = { supplyShares: 'decreases' } as never;
-  const withdraw = parseTemplate(raw, registry);
+  const withdraw = parseTemplate(raw, registry, 'committed');
   assert.deepEqual(judged(supplied({ before: answer(100n, 0n, 0n), after: answer(40n, 0n, 0n) }), withdraw), { kind: 'match' });
   assert.deepEqual(described(judged(supplied({ before: answer(100n, 0n, 0n), after: answer(140n, 0n, 0n) }), withdraw)), [
     `${VIEW} supplyShares: 100 before, 140 after in a simulated block; the template needs it to decrease`,
@@ -429,6 +429,7 @@ test('a bytes32 bound to the market id matches that id and nothing else', () => 
       effects: { gives: [], gets: [] },
     },
     registry,
+    'committed',
   );
   const card = resolveCard({ operations: [{ template: byId.id, values: { market: 'usdc-cbbtc-86' } }] }, { templates: new Map([[byId.id, byId]]), registry, addressBook: new Map(), safe: SAFE });
   assert.equal(card.kind, 'resolved');

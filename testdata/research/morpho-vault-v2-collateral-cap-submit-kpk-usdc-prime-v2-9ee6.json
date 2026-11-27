@@ -11,8 +11,8 @@
  "head": "26447460",
  "studiedWith": {
   "template": "0xa310db81c9ca960c893ca2d6707a88c9e2da489419133c66aa8c2b77115b4e32",
-  "registry": "0xae268632343d18f29b294e5316271dd2dd0e41cdefc376a5a85ee791340d949c",
-  "study": "0x92508a29cee7c49b83a1d4a9f9e4e04eac8df225cb741b31331cc10dacdd84ae"
+  "registry": "0x38690d74d38177d6070a57c5e5716ec1af4644237e76a647a9be3ab15f1c14b9",
+  "study": "0x61f1ce5f5cd4adf417d5dffd036bcb1056828b2e57170ba4bcd0ef03b994e01d"
  },
  "search": {
   "year": {
@@ -121,7 +121,8 @@
     "expected": "0x636f6c6c61746572616c546f6b656e",
     "actual": "0x74686973"
    },
-   "free": []
+   "free": [],
+   "time": "1776449831"
   },
   {
    "kind": "misfit",
@@ -184,7 +185,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1776521303"
   },
   {
    "kind": "misfit",
@@ -231,7 +233,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1776521411"
   },
   {
    "kind": "misfit",
@@ -296,7 +299,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1778515967"
   },
   {
    "kind": "misfit",
@@ -312,7 +316,8 @@
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0xb192a84a"
    },
-   "free": []
+   "free": [],
+   "time": "1778543747"
   },
   {
    "kind": "misfit",
@@ -351,7 +356,8 @@
     "expected": "canonical capId(string,address)",
     "actual": "differs at byte 363"
    },
-   "free": []
+   "free": [],
+   "time": "1779980579"
   },
   {
    "kind": "not-studied",
@@ -448,7 +454,8 @@
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0x3e9d2ac7"
    },
-   "free": []
+   "free": [],
+   "time": "1784134715"
   },
   {
    "kind": "misfit",
@@ -520,7 +527,8 @@
      "at": "call.multicall.data[1].submit.data.increaseRelativeCap.idData.capId.collateralToken",
      "kind": "address"
     }
-   ]
+   ],
+   "time": "1784304107"
   },
   {
    "kind": "misfit",
@@ -536,7 +544,8 @@
     "expected": "canonical capId(string,address)",
     "actual": "differs at byte 363"
    },
-   "free": []
+   "free": [],
+   "time": "1784304167"
   },
   {
    "kind": "misfit",
@@ -552,7 +561,8 @@
     "expected": "canonical capId(string,address)",
     "actual": "differs at byte 363"
    },
-   "free": []
+   "free": [],
+   "time": "1793635367"
   },
   {
    "kind": "fit",
@@ -592,7 +602,8 @@
     "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
     "1000000000000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1793635463"
   }
  ],
  "measurements": [],

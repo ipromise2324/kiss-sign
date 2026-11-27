@@ -9,6 +9,7 @@ import type { Reader } from '../chain/reader.ts';
 import { findKey, keySpec } from '../keys.ts';
 import type { Env, KeySpec } from '../keys.ts';
 import type { RegistryEntry } from '../registry.ts';
+import { inPool } from './pool.ts';
 import { SafeTxParseError, checksumAddress, parseAddress, parseHex } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 
@@ -107,8 +108,10 @@ export async function proveCreation(address: Address, hint: CreationHint, reader
   return { kind: 'unproven', why: `${checksumAddress(factory)} made no contract at the address by CREATE in block ${number}; a CREATE2 from it is not proven` };
 }
 
+const CREATION_WIDTH = 8;
+
 /** Each entry's creation, from Etherscan's hints, proved through both providers. */
-export async function gatherCreations(entries: readonly RegistryEntry[], hints: HintLookup, reader: Reader): Promise<Map<Address, Creation>> {
+export async function gatherCreations(entries: readonly Pick<RegistryEntry, 'address'>[], hints: HintLookup, reader: Reader): Promise<Map<Address, Creation>> {
   const addresses = [...new Set(entries.map((entry) => entry.address))];
   const creations = new Map<Address, Creation>();
   let found: ReadonlyMap<Address, CreationHint>;
@@ -119,10 +122,11 @@ export async function gatherCreations(entries: readonly RegistryEntry[], hints: 
     for (const address of addresses) creations.set(address, { kind: 'unread', why: error.message });
     return creations;
   }
-  for (const address of addresses) {
+  const proved = await inPool(addresses, CREATION_WIDTH, async (address): Promise<Creation> => {
     const hint = found.get(address);
-    creations.set(address, hint === undefined ? { kind: 'unproven', why: 'Etherscan names no creation transaction' } : await proveCreation(address, hint, reader));
-  }
+    return hint === undefined ? { kind: 'unproven', why: 'Etherscan names no creation transaction' } : proveCreation(address, hint, reader);
+  });
+  for (const [i, address] of addresses.entries()) creations.set(address, proved[i] as Creation);
   return creations;
 }
 
@@ -135,7 +139,7 @@ export class CreationLookupError extends Error {
  * `ETHERSCAN_API_KEY`, and the proof reads through Alchemy and drpc, which need
  * `ALCHEMY_API_KEY` and `DRPC_API_KEY`.
  */
-export async function liveCreations(entries: readonly RegistryEntry[], env: Env, note: NoteUnread, reader: () => Reader): Promise<Map<Address, Creation> | { readonly missing: string }> {
+export async function liveCreations(entries: readonly Pick<RegistryEntry, 'address'>[], env: Env, note: NoteUnread, reader: () => Reader, hints: (key: string, note: NoteUnread) => HintLookup = etherscanHints): Promise<Map<Address, Creation> | { readonly missing: string }> {
   const spec = keySpec('etherscan') as KeySpec;
   const key = findKey(spec, env)?.value;
   if (key === undefined) return { missing: spec.env };
@@ -146,7 +150,7 @@ export async function liveCreations(entries: readonly RegistryEntry[], env: Env,
     if (error instanceof MissingKeyError) return { missing: error.message };
     throw error;
   }
-  return gatherCreations(entries, etherscanHints(key, note), live);
+  return gatherCreations(entries, hints(key, note), live);
 }
 
 /** Etherscan's hints, five addresses a request, a few requests a second as its free plan allows; the key never reaches a message. */

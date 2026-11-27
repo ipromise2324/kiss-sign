@@ -8,8 +8,8 @@ import { replayMessages } from './messages.ts';
 import type { MessageExchange } from './messages.ts';
 import { pastTxs } from './past-txs.ts';
 import type { BlockRange, ExcludedHashes, PastTxs, PastTxsQuery } from './past-txs.ts';
-import { RANGE_PAGES, anchorEvent, replayAsk } from './sources.ts';
-import type { AnchorKind, SourceExchange } from './sources.ts';
+import { RANGE_PAGES, anchorEvent, eventArgTopic, replayAsk } from './sources.ts';
+import type { AnchorKind, EventArg, SourceExchange } from './sources.ts';
 import { replayTraces } from './trace.ts';
 import type { RecordedTrace } from './trace.ts';
 
@@ -23,8 +23,12 @@ export type PastTxsRecording = {
     readonly anchor: string;
     readonly from?: string;
     readonly to?: string;
-    /** The canonical signature of an `event` anchor. */
+    /** The canonical signature of an `event` anchor, with each indexed argument marked when `eventArg` is present. */
     readonly event?: string;
+    /** With `event`: the argument, by its position from 1, that is indexed and holds `address` or `bytes32` in every log searched. */
+    readonly eventArg?: EventArg;
+    /** With `event` and `token`: each transaction's party was the address it sent execTransaction to; absent in a recording made before. */
+    readonly txParty?: true;
     readonly fromBlock?: string;
     readonly toBlock?: string;
     readonly head?: string;
@@ -134,13 +138,14 @@ export const anchorOf = (query: PastTxsRecording['query']): PastTxsQuery['anchor
   ...(query.from === undefined ? {} : { from: query.from as Address }),
   ...(query.to === undefined ? {} : { to: query.to as Address }),
   ...(query.event === undefined ? {} : { event: anchorEvent(query.event) }),
+  ...(query.event === undefined || query.eventArg === undefined ? {} : { topic: eventArgTopic(query.event, query.eventArg) }),
 });
 
 /** The run a recording holds, studied again from its answers alone with `template` and `registry`. */
 export function replayPastTxs(recording: PastTxsRecording, template: Template, registry: Registry): Promise<PastTxs> {
   const { query } = recording;
   return pastTxs(
-    { template, anchor: anchorOf(query), sampling: samplingOf(query) },
+    { template, anchor: anchorOf(query), sampling: samplingOf(query), ...(query.txParty === true ? { txParty: true } : {}) },
     {
       ask: replayAsk(recording.sources),
       reader: replayReader(recording.exchanges),

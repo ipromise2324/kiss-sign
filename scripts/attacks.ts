@@ -1,7 +1,7 @@
 import { attacks } from '../src/attacks/attacks.ts';
-import { UsageError } from '../src/cli/io.ts';
 import { nodeIo } from '../src/cli/main.ts';
 import { exitOnHelp } from '../src/script-help.ts';
+import { refusal } from '../src/script-refusal.ts';
 
 const HELP = `usage: pnpm attacks [--record <case>]
 
@@ -26,7 +26,8 @@ exitOnHelp(HELP);
 try {
   process.exitCode = await attacks(process.argv.slice(2), nodeIo());
 } catch (error) {
-  if (!(error instanceof Error) || (error.name === 'Error' && !(error instanceof UsageError))) throw error;
-  process.stderr.write(`attacks: ${error.message}\n`);
-  process.exitCode = 1;
+  const refused = refusal(error, 1);
+  if (refused === undefined && (!(error instanceof Error) || error.name === 'Error')) throw error;
+  process.stderr.write(refused === undefined ? `attacks: ${(error as Error).message}\n` : `${refused.line}\n`);
+  process.exitCode = refused?.code ?? 1;
 }

@@ -10,8 +10,8 @@
  "head": "26490329",
  "studiedWith": {
   "template": "0x171ef0939d8ba89325debd8878166477c18c17fb6a74d02e7804e62f9b1bdb87",
-  "registry": "0xd74ce2c858de695b87fbaa7a46b15cbaff20a10f888446695740049ebd628de9",
-  "study": "0x92508a29cee7c49b83a1d4a9f9e4e04eac8df225cb741b31331cc10dacdd84ae"
+  "registry": "0xb45c443fcb612b1232f86b3101018ed3e3e4338039e8217a81b57b87835444fa",
+  "study": "0x61f1ce5f5cd4adf417d5dffd036bcb1056828b2e57170ba4bcd0ef03b994e01d"
  },
  "search": {
   "coverage": {
@@ -87,7 +87,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1769091203"
   },
   {
    "kind": "misfit",
@@ -110,7 +111,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1769091587"
   },
   {
    "kind": "not-studied",
@@ -227,7 +229,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1773851303"
   },
   {
    "kind": "not-studied",
@@ -257,7 +260,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1774294847"
   },
   {
    "kind": "not-studied",
@@ -287,7 +291,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1775148287"
   },
   {
    "kind": "not-studied",
@@ -331,7 +336,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1776702323"
   },
   {
    "kind": "not-studied",
@@ -1884,7 +1890,8 @@
      "type": "uint256",
      "value": "1793538571"
     }
-   ]
+   ],
+   "time": "1793531423"
   },
   {
    "kind": "not-studied",

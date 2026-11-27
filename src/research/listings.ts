@@ -4,7 +4,7 @@ import { requestText, retried, transientError, transientStatus } from '../chain/
 import type { NoteUnread } from '../chain/https.ts';
 import { COINGECKO_KINDS, pageUrlsOf } from '../registry.ts';
 import type { RegistryEntry, SdkPackage, SourcePage } from '../registry.ts';
-import { latestOf, packageKey } from './npm-package.ts';
+import { latestOf, packageKey, provenanceRepositories } from './npm-package.ts';
 import { sharedDeployer } from './deployer.ts';
 import type { Creation, CreationVia, Creations } from './deployer.ts';
 import type { PackageRead } from './npm-package.ts';
@@ -50,9 +50,23 @@ export type SitePlace = { readonly kind: 'defillama' | 'coingecko' | 'immunefi' 
  * only to other addresses, `unlisted` when the listing holds nothing to compare with,
  * `not-served` when the page as served does not show the address, `not-fetched` when the page's or API's server
  * answered with something other than the page or JSON, such as a 404 or a redirect, `unattested` when npm holds no
- * provenance for an SDK's version.
+ * provenance for an SDK's version, `other-tarball` when npm's provenance for it names another tarball.
  */
-export type FindingCause = 'differs' | 'other-address' | 'unexplained' | 'unlisted' | 'not-served' | 'not-fetched' | 'unattested';
+export type FindingCause = 'differs' | 'other-address' | 'unexplained' | 'unlisted' | 'not-served' | 'not-fetched' | 'unattested' | 'other-tarball';
+/**
+ * The site a site check found, a registrable domain or `github.com/<org>`; for an Immunefi program, `none` when it
+ * lists neither a website nor a GitHub organization, and `no-domain` when its website's host has no registrable domain.
+ */
+export type FoundSite = { readonly kind: 'site'; readonly site: string } | { readonly kind: 'none' } | { readonly kind: 'no-domain'; readonly host: string };
+/**
+ * The site found and the sites DefiLlama lists for the protocol, each a registrable domain or `github.com/<org>`: of
+ * the found site's kind, or of both kinds when none was found; `listed` is empty when DefiLlama lists none.
+ */
+export type SiteSeen = { readonly found: FoundSite; readonly listed: readonly string[] };
+/** What a GitHub commit check established: a URL not pinned to a commit, a commit off the default branch, or one it could not place. */
+export type CommitWhy = { readonly kind: 'unpinned' } | { readonly kind: 'unknown'; readonly commit: string } | { readonly kind: 'off-default'; readonly commit: string; readonly branch: string };
+/** Why a site was not compared: no DefiLlama slug, no protocol or several under it, no Public Suffix List, or a URL with no site to read. */
+export type NotCompared = 'no-slug' | 'no-protocol' | 'several-protocols' | 'no-suffixes' | 'not-repo' | 'no-org' | 'no-domain';
 /**
  * `api` is the address the entry's `apiSource` answers; `api-site` its URL's site against the DefiLlama protocol, as
  * `defillama` compares the source's. `tip` and `sdk-latest` are the addresses the newest version of a pinned GitHub page
@@ -81,6 +95,13 @@ export type Line = (
   readonly program?: string;
   /** The addresses a pinned page, SDK file or newest version binds the label to instead of the entry's. */
   readonly others?: readonly Address[];
+  /** For a site that differs or that DefiLlama lists nothing to compare with, what was compared. */
+  readonly seen?: SiteSeen;
+  readonly notCompared?: NotCompared;
+  /** The coin ids CoinGecko lists at the entry's address, when it lists any. */
+  readonly coins?: readonly string[];
+  /** For a GitHub commit not confirmed, what the check established. */
+  readonly commit?: CommitWhy;
 };
 /** `sites` holds the site of each page that lists the address, the `source` first. */
 export type EntryResult = { readonly entry: RegistryEntry; readonly sites: readonly string[]; readonly lines: readonly Line[] };
@@ -242,27 +263,28 @@ export type SiteOwner = Pick<RegistryEntry, 'defillama' | 'immunefi'>;
  * a site of that kind; when it lists none there is nothing to compare.
  */
 export function sourceSiteLine(source: string, owner: SiteOwner, listings: Listings, what = 'source'): Line {
-  const finding = (text: string, cause: FindingCause = 'unexplained', places?: readonly SitePlace[]): Line => ({ kind: 'finding', check: 'defillama', text, cause, ...(places === undefined ? {} : { places }) });
+  const finding = (text: string, cause: FindingCause, places: readonly SitePlace[], seen: SiteSeen): Line => ({ kind: 'finding', check: 'defillama', text, cause, places, seen });
+  const unsure = (text: string, notCompared: NotCompared): Line => ({ kind: 'finding', check: 'defillama', text, cause: 'unexplained', notCompared });
   const slug = owner.defillama;
-  if (slug === undefined) return finding(`the entry names no DefiLlama protocol; ${what} not compared`);
+  if (slug === undefined) return unsure(`the entry names no DefiLlama protocol; ${what} not compared`, 'no-slug');
   const listed = listings.protocols.get(slug) ?? [];
   const [protocol] = listed;
-  if (protocol === undefined) return finding(`DefiLlama lists no protocol "${slug}"`);
-  if (listed.length > 1) return finding(`DefiLlama lists ${listed.length} protocols with slug "${slug}": ${listed.map((p) => p.name).join(', ')}; not compared`);
+  if (protocol === undefined) return unsure(`DefiLlama lists no protocol "${slug}"`, 'no-protocol');
+  if (listed.length > 1) return unsure(`DefiLlama lists ${listed.length} protocols with slug "${slug}": ${listed.map((p) => p.name).join(', ')}; not compared`, 'several-protocols');
   const { suffixes } = listings;
-  if ('unavailable' in suffixes) return finding(`Public Suffix List unavailable (${suffixes.unavailable}); ${what} site not compared`);
+  if ('unavailable' in suffixes) return unsure(`Public Suffix List unavailable (${suffixes.unavailable}); ${what} site not compared`, 'no-suffixes');
   const url = new URL(source);
   const sites = protocolSites(owner, protocol, listings, suffixes);
   const host = url.hostname.toLowerCase();
   const isGitHub = host === 'github.com' || host.endsWith('.github.com');
-  if (isGitHub && host !== 'github.com' && host !== 'www.github.com') return finding(`${what} host ${host} is not a GitHub repository page; not compared`);
+  if (isGitHub && host !== 'github.com' && host !== 'www.github.com') return unsure(`${what} host ${host} is not a GitHub repository page; not compared`, 'not-repo');
   let ours: string | undefined;
   let compared: ReadonlyMap<string, readonly SitePlace[]>;
   let places: readonly SitePlace[];
   const unread = [...sites.unread];
   if (isGitHub) {
     ours = githubOrg(url);
-    if (ours === undefined) return finding(`${what} ${url.href} names no GitHub org; not compared`);
+    if (ours === undefined) return unsure(`${what} ${url.href} names no GitHub org; not compared`, 'no-org');
     compared = sites.orgs;
     const verified = listings.sites.orgs.get(ours);
     if (verified?.kind === 'unread') unread.push(`GitHub's page for ${ours} (${verified.why})`);
@@ -270,7 +292,7 @@ export function sourceSiteLine(source: string, owner: SiteOwner, listings: Listi
     places = [...(sites.orgs.get(ours) ?? []), ...(tied ? [{ kind: 'github', id: ours } as const] : [])];
   } else {
     ours = registrableDomain(host, suffixes);
-    if (ours === undefined) return finding(`${what} host ${host} has no registrable domain under the Public Suffix List, or is a shared host; not compared`);
+    if (ours === undefined) return unsure(`${what} host ${host} has no registrable domain under the Public Suffix List, or is a shared host; not compared`, 'no-domain');
     compared = sites.domains;
     places = sites.domains.get(ours) ?? [];
   }
@@ -279,11 +301,13 @@ export function sourceSiteLine(source: string, owner: SiteOwner, listings: Listi
   const missing = unread.length === 0 ? '' : `; no answer from ${unread.join(', ')}`;
   if (unread.length > 0) return { kind: 'unverifiable', check: 'defillama', text: `${what} ${kind} ${ours} is not among the protocol's sites read${missing}`, places: allPlaces(compared) };
   const byDefiLlama = [...compared].filter(([, from]) => from.some((p) => p.kind === 'defillama'));
+  const site = (name: string) => (isGitHub ? `github.com/${name}` : name);
+  const seen: SiteSeen = { found: { kind: 'site', site: site(ours) }, listed: byDefiLlama.map(([name]) => site(name)) };
   if (byDefiLlama.length === 0) {
     const others = compared.size === 0 ? '' : `; the other places list only ${listedText(compared)}`;
-    return finding(`${what} is ${kind} ${ours}; DefiLlama lists no ${isGitHub ? 'GitHub org' : 'website'} for ${slug}${others}, so it is not compared`, 'unlisted', allPlaces(compared));
+    return finding(`${what} is ${kind} ${ours}; DefiLlama lists no ${isGitHub ? 'GitHub org' : 'website'} for ${slug}${others}, so it is not compared`, 'unlisted', allPlaces(compared), seen);
   }
-  return finding(`${what} ${kind} ${ours} is not one the protocol's places list: ${listedText(compared)}`, 'differs', allPlaces(compared));
+  return finding(`${what} ${kind} ${ours} is not one the protocol's places list: ${listedText(compared)}`, 'differs', allPlaces(compared), seen);
 }
 
 const coinLabel = (c: CoinGeckoCoin) => `${c.id} (${c.symbol.toUpperCase()}, "${c.name}")`;
@@ -294,22 +318,24 @@ function coingeckoLine(entry: RegistryEntry, coinsByAddress: Listings['coinsByAd
   const [coin] = coins;
   const names = entry.coingecko === undefined ? 'the entry names no CoinGecko coin' : `the entry names coin ${entry.coingecko}`;
   if (coin === undefined) return finding(`no CoinGecko listing at this address on ethereum (${names})`, 'unlisted');
-  if (coins.length > 1) return finding(`CoinGecko lists more than one coin at this address: ${coins.map(coinLabel).join(', ')}`, 'differs');
-  if (coin.id !== entry.coingecko) return finding(`${names}; CoinGecko lists ${coinLabel(coin)} at this address`, entry.coingecko === undefined ? 'unexplained' : 'differs');
-  return { kind: 'agrees', check: 'coingecko', text: `CoinGecko lists ${coinLabel(coin)} at this address, the coin the entry names` };
+  const ids = coins.map((c) => c.id);
+  if (coins.length > 1) return { ...finding(`CoinGecko lists more than one coin at this address: ${coins.map(coinLabel).join(', ')}`, 'differs'), coins: ids };
+  if (coin.id !== entry.coingecko) return { ...finding(`${names}; CoinGecko lists ${coinLabel(coin)} at this address`, entry.coingecko === undefined ? 'unexplained' : 'differs'), coins: ids };
+  return { kind: 'agrees', check: 'coingecko', text: `CoinGecko lists ${coinLabel(coin)} at this address, the coin the entry names`, coins: ids };
 }
 
 const hasCoin = (entry: RegistryEntry) => COINGECKO_KINDS.includes(entry.kind);
 
 export function githubLine(source: URL, commits: SourcePages['commits']): Line {
-  const finding = (text: string): Line => ({ kind: 'finding', check: 'github', text, cause: 'unexplained' });
+  const finding = (text: string, commit: CommitWhy): Line => ({ kind: 'finding', check: 'github', text, cause: 'unexplained', commit });
   const ref = githubRef(source);
-  if (ref.kind === 'unpinned') return finding('not pinned to a commit: name the file as github.com/<org>/<repo>/blob/<40-hex commit>/<path>');
+  if (ref.kind === 'unpinned') return finding('not pinned to a commit: name the file as github.com/<org>/<repo>/blob/<40-hex commit>/<path>', { kind: 'unpinned' });
   const check: CommitCheck = commits.get(commitKey(ref)) ?? { kind: 'unknown', why: 'the commit was not checked' };
-  const at = `commit ${ref.commit.slice(0, 12)} of ${ref.owner}/${ref.repo}`;
+  const commit = ref.commit.slice(0, 12);
+  const at = `commit ${commit} of ${ref.owner}/${ref.repo}`;
   if (check.kind === 'unread') return { kind: 'unverifiable', check: 'github', text: `${at}: ${check.why}` };
-  if (check.kind === 'unknown') return finding(`${at}: ${check.why}`);
-  if (check.kind === 'off-default') return finding(`${at} is not on the default branch ${check.branch} (GitHub compare: ${check.status})`);
+  if (check.kind === 'unknown') return finding(`${at}: ${check.why}`, { kind: 'unknown', commit });
+  if (check.kind === 'off-default') return finding(`${at} is not on the default branch ${check.branch} (GitHub compare: ${check.status})`, { kind: 'off-default', commit, branch: check.branch });
   return { kind: 'agrees', check: 'github', text: `${at} is on the default branch ${check.branch} (GitHub compare: ${check.status})` };
 }
 
@@ -389,6 +415,19 @@ function bountyPrograms(entry: RegistryEntry, listings: Listings, programs: Read
 
 const slugs = (programs: readonly ImmunefiProgram[]) => programs.map((p) => p.slug).join(', ');
 
+/** A program's own site, its website or else its GitHub organization, against the sites of that kind DefiLlama lists, or all of them when it yields neither a domain nor an org. */
+function programSeen(program: ImmunefiProgram, { protocol, suffixes }: NonNullable<ReturnType<typeof protocolOf>>, listings: Listings): SiteSeen {
+  const org = program.github === undefined ? undefined : githubOrg(program.github);
+  const domain = program.website === undefined ? undefined : registrableDomain(program.website.hostname, suffixes);
+  const listedBy = (sites: Iterable<readonly [string, readonly SitePlace[]]>) => [...sites].filter(([, from]) => from.some((p) => p.kind === 'defillama')).map(([name]) => name);
+  const sites = protocolSites({ defillama: protocol.slug }, protocol, listings, suffixes);
+  const domains = listedBy(sites.domains);
+  const orgs = listedBy(sites.orgs).map((name) => `github.com/${name}`);
+  if (domain !== undefined) return { found: { kind: 'site', site: domain }, listed: domains };
+  if (org !== undefined) return { found: { kind: 'site', site: `github.com/${org}` }, listed: orgs };
+  return { found: program.website === undefined ? { kind: 'none' } : { kind: 'no-domain', host: program.website.hostname }, listed: [...domains, ...orgs] };
+}
+
 /**
  * Every Immunefi program tied to the entry's protocol, the one it names among them, must be read for its address in
  * scope; the program finds them, so the entry cannot leave one out. A program not tied to the protocol confirms nothing.
@@ -398,15 +437,17 @@ function bountyLine(entry: RegistryEntry, listings: Listings): Line {
   const { programs } = listings.sites;
   if ('kind' in programs) return { kind: 'unverifiable', check: 'bounty', text: `Immunefi's program list: ${programs.why}` };
   const named = entry.immunefi;
-  if (protocolOf(entry, listings) === undefined) {
-    if (named !== undefined) return { kind: 'finding', check: 'bounty', text: `the protocol's sites are not known, so Immunefi program ${named} is not tied to it`, cause: 'unexplained' };
+  const known = protocolOf(entry, listings);
+  if (known === undefined) {
+    if (named !== undefined) return { kind: 'finding', check: 'bounty', text: `the protocol's sites are not known, so Immunefi program ${named} is not tied to it`, cause: 'unexplained', ...(programs.has(named) ? { program: named } : {}) };
     const { others } = bountyPrograms(entry, listings, programs);
     return notListed(`the protocol's sites are not known, so no Immunefi program is tied to it${others.length === 0 ? '' : `; programs that hold the address: ${slugs(others)}`}`);
   }
   if (named !== undefined && !programs.has(named)) return { kind: 'finding', check: 'bounty', text: `Immunefi lists no program ${named}`, cause: 'not-fetched' };
   const { tied, others } = bountyPrograms(entry, listings, programs);
   if (named !== undefined && !tied.some((p) => p.slug === named)) {
-    return { kind: 'finding', check: 'bounty', text: `Immunefi program ${named} lists neither a website, a website in scope nor a GitHub org DefiLlama or the protocol coin lists for ${entry.defillama}`, cause: 'differs' };
+    const text = `Immunefi program ${named} lists neither a website, a website in scope nor a GitHub org DefiLlama or the protocol coin lists for ${entry.defillama}`;
+    return { kind: 'finding', check: 'bounty', text, cause: 'differs', program: named, seen: programSeen(programs.get(named) as ImmunefiProgram, known, listings) };
   }
   const holding = tied.filter((p) => p.addresses.has(entry.address));
   const untied = others.length === 0 ? '' : `; programs not tied to the protocol that hold it: ${slugs(others)}`;
@@ -478,7 +519,7 @@ function sdkLines(entry: RegistryEntry, sdk: SdkPackage, read: PackageRead | und
     provenance.kind === 'none'
       ? { kind: 'finding', check: 'sdk-site', text: `npm holds no provenance for ${key}, so nothing ties its publisher to the protocol`, cause: 'unattested' }
       : !provenance.sameTarball
-        ? { kind: 'finding', check: 'sdk-site', text: `npm's provenance for ${key} names another tarball`, cause: 'differs' }
+        ? { kind: 'finding', check: 'sdk-site', text: `npm's provenance for ${key} names another tarball`, cause: 'other-tarball' }
         : { ...sourceSiteLine(provenance.repository, entry, listings, `SDK build ${provenance.repository}`), check: 'sdk-site' };
   return [address, site];
 }
@@ -735,6 +776,7 @@ export function trimSourcePage(entries: readonly RegistryEntry[], commits: Sourc
 const readsOn = (entries: readonly RegistryEntry[], url: string): PageRead[] =>
   entries.flatMap((entry) => pageReadsOf(entry).filter(([at]) => at === url).map(([, read]) => read));
 
+/** What a recording of `entries` keeps: the listings they are compared with, and each of `pages` cut to what their checks read on it. */
 export function trimForRecording(entries: readonly RegistryEntry[], listings: Listings, pages: SourcePages, fetched: Date): ListingsRecording {
   const slugs = new Set(entries.flatMap((e) => (e.defillama === undefined ? [] : [e.defillama])));
   const addresses = new Set(entries.filter(hasCoin).map((e) => e.address));
@@ -760,9 +802,7 @@ export function trimForRecording(entries: readonly RegistryEntry[], listings: Li
     coingecko: [...addresses]
       .flatMap((address) => listings.coinsByAddress.get(address) ?? [])
       .map(({ id, symbol, name, ethereum }) => ({ id, symbol, name, platforms: { ethereum } })),
-    pages: Object.fromEntries(
-      [...pages.pages].map(([url, page]) => [url, trimSourcePage(entries, pages.commits, url, page)]),
-    ),
+    pages: Object.fromEntries([...pages.pages].map(([url, page]) => [url, trimSourcePage(entries, pages.commits, url, page)])),
     commits: Object.fromEntries(pages.commits),
     ...(pages.apis === undefined || pages.apis.size === 0 ? {} : { apis: pruneAnswers(entries, pages.apis) }),
     ...(pages.packages === undefined || pages.packages.size === 0 ? {} : { packages: Object.fromEntries([...pages.packages].map(([key, read]) => [key, trimPackage(entries, key, read)])) }),
@@ -770,6 +810,101 @@ export function trimForRecording(entries: readonly RegistryEntry[], listings: Li
       ? {}
       : { creations: Object.fromEntries([...pages.creations].map(([address, c]) => [address, c.kind === 'proven' ? { ...c, block: c.block.toString() } : c])) }),
   };
+}
+
+const listingKey = (target: ListingTarget): string => `https://${target.hostname}${target.path}`;
+
+/** Listing reads that ask each list and organization once however often it is read, and say which they asked. */
+export type AskedReads = ListingReads & { readonly askedList: (target: ListingTarget) => boolean; readonly askedOrg: (org: string) => boolean };
+
+export function askedOnce(reads: ListingReads): AskedReads {
+  const lists = new Map<string, Promise<unknown>>();
+  const orgs = new Map<string, Promise<OrgDomains>>();
+  const once = <T>(map: Map<string, Promise<T>>, key: string, read: () => Promise<T>): Promise<T> => {
+    const asked = map.get(key) ?? read();
+    map.set(key, asked);
+    return asked;
+  };
+  return {
+    list: (target) => once(lists, listingKey(target), () => reads.list(target)),
+    org: (org) => once(orgs, org, () => reads.org(org)),
+    askedList: (target) => lists.has(listingKey(target)),
+    askedOrg: (org) => orgs.has(org),
+  };
+}
+
+/** Whether `old` holds the read of `target`, so a merged recording takes it from there. */
+function recordingHolds(old: ListingsRecording, target: ListingTarget): boolean {
+  if (target.path === IMMUNEFI_PROGRAMS.path) return old.immunefi !== undefined;
+  const id = COIN_PATH.exec(target.path)?.[1];
+  return id === undefined || old.coinLinks?.[id] !== undefined;
+}
+
+/**
+ * The reads of every entry when only some were read again: each list or organization this run asked, as it answered,
+ * since a shared read re-read is current for every entry; the rest as `old` recorded it; and a read `old` lacks, such
+ * as a coin page a re-read DefiLlama list now names for another entry, asked now.
+ */
+function mergedListingReads(old: ListingsRecording, live: AskedReads): ListingReads {
+  const recorded = recordedListingReads(old);
+  return {
+    list: (target) => (live.askedList(target) || !recordingHolds(old, target) ? live.list(target) : recorded.list(target)),
+    org: (org) => (live.askedOrg(org) || old.orgs?.[org] === undefined ? live.org(org) : recorded.org(org)),
+  };
+}
+
+/** Each Immunefi, coin or organization read this run asked that got no answer, which a merged recording would hand every entry that reads it. */
+function unansweredSiteReads(listings: Listings, live: AskedReads): string[] {
+  const { programs, coins, orgs } = listings.sites;
+  return [
+    ...('kind' in programs && live.askedList(IMMUNEFI_PROGRAMS) ? [`Immunefi's program list (${programs.why})`] : []),
+    ...[...coins].flatMap(([id, coin]) => (coin.kind === 'unread' && live.askedList(coinPage(id)) ? [`CoinGecko coin ${id} (${coin.why})`] : [])),
+    ...[...orgs].flatMap(([org, domains]) => (domains.kind !== 'domains' && live.askedOrg(org) ? [`GitHub organization ${org} (${domains.why})`] : [])),
+  ];
+}
+
+/**
+ * The recording of every entry in `all` when only some were read again into `pages` with `live`: what this run read,
+ * shared lists and pages included, replaces what `old` held, the rest of `old` stays, and a read no entry makes any
+ * more is dropped. Refused when an Immunefi, coin or organization read this run asked got no answer, since that would
+ * replace every other entry's answer.
+ */
+export async function mergedRecording(
+  all: readonly RegistryEntry[],
+  old: ListingsRecording,
+  live: AskedReads,
+  pages: SourcePages,
+  suffixes: Listings['suffixes'],
+  fetched: Date,
+): Promise<ListingsRecording | { readonly refused: string }> {
+  const before = sourcePagesOf(old);
+  const over = <K, T>(a: ReadonlyMap<K, T> | undefined, b: ReadonlyMap<K, T> | undefined) => new Map([...(a ?? []), ...(b ?? [])]);
+  const commits = over(before.commits, pages.commits);
+  const sources = all.flatMap(pageUrlsOf);
+  const pinned = sources.flatMap((source) => {
+    const url = new URL(source);
+    const ref = isGitHubPage(url) ? githubRef(url) : undefined;
+    return ref?.kind === 'pinned' ? [commitKey(ref)] : [];
+  });
+  const read = {
+    pages: new Set(sources.flatMap((source) => [pageUrlOf(source), tipUrlOf(source, commits)?.url ?? ''])),
+    commits: new Set(pinned),
+    apis: new Set(all.flatMap((e) => (e.apiSource === undefined ? [] : [apiKey(e.apiSource)]))),
+    packages: new Set(all.flatMap(({ sdk }) => (sdk === undefined ? [] : [packageKey(sdk), packageKey(latestOf(sdk))]))),
+    creations: new Set<string>(all.map((e) => e.address)),
+  };
+  const only = <K extends string, T>(a: ReadonlyMap<K, T> | undefined, b: ReadonlyMap<K, T> | undefined, keys: ReadonlySet<string>) => new Map([...over(a, b)].filter(([key]) => keys.has(key)));
+  const merged: SourcePages = {
+    pages: only(before.pages, pages.pages, read.pages),
+    commits: only(commits, undefined, read.commits),
+    apis: only(before.apis, pages.apis, read.apis),
+    packages: only(before.packages, pages.packages, read.packages),
+    ...(before.creations === undefined && pages.creations === undefined ? {} : { creations: only(before.creations, pages.creations, read.creations) }),
+  };
+  const listings = await listingsFor(all, suffixes, mergedListingReads(old, live), [...all.flatMap(pageUrlsOf), ...provenanceRepositories(merged.packages ?? new Map())]);
+  const unanswered = unansweredSiteReads(listings, live);
+  if (unanswered.length > 0) return { refused: `no answer from ${unanswered.join(', ')}; a merged recording would hand it to every entry that reads it, so nothing is written` };
+  return trimForRecording(all, listings, merged, fetched);
 }
 
 /** The programs `names` names, as Immunefi's list holds them, cut to their sites, their scope's websites and its etherscan.io links. */
@@ -831,10 +966,12 @@ async function siteListingsFor(entries: readonly RegistryEntry[], protocols: Lis
 }
 
 /** The live listings: each list from its service, and an organization's verified domains from GitHub, read with retries. */
-export const liveListingReads = (note: NoteUnread, githubToken: GithubToken | undefined, list: ListingReads['list'] = (target) => fetchListing(target, note)): ListingReads => ({
-  list,
-  org: (org) => orgDomains(org, retryingGet(httpsGet(githubToken), note)),
-});
+export const liveListingReads = (
+  note: NoteUnread,
+  githubToken: GithubToken | undefined,
+  list: ListingReads['list'] = (target) => fetchListing(target, note),
+  get: HttpGet = retryingGet(httpsGet(githubToken), note),
+): ListingReads => ({ list, org: (org) => orgDomains(org, get) });
 
 /**
  * GitHub's page names the domains; its API says whether the organization is verified, asked only when the page shows a

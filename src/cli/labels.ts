@@ -10,6 +10,7 @@ import type { Verdict } from '../verify/verdict.ts';
 const EN = {
   language: 'en' as Language,
   usage: 'Usage:',
+  repeatedFlag: (flag: string) => `--${flag} is given more than once, and it takes one value.`,
   packagesDiffer: 'the installed packages are not the ones pnpm-lock.yaml names, so nothing was run; remove node_modules, run pnpm install --frozen-lockfile, then run this again.',
   confirmAtTerminal: (command: string) => `${command} asks you to confirm at a terminal, so run it in your own terminal with nothing piped into it.`,
   card: {
@@ -65,6 +66,7 @@ const EN = {
     noReportedInstance: (name: string, kind: string, id: string) => `${name}: no ${kind} the card can name has a report for ${id}; build one first`,
     noMarket: (name: string) => `${name}: registry/markets.json holds no market`,
     nothingAccepted: (name: string, id: string) => `${name}: the registry and address book hold nothing ${id} accepts here`,
+    noneTheSame: (name: string, same: string, picked: string) => `${name}: none of the choices names one address for ${same} with ${picked}`,
     notDecimal: (name: string, shown: string) => `${name}: ${shown} is not a plain decimal number such as 5, 1.25 or 1,000,000.5`,
     tooManyDigits: (name: string, shown: string, decimals: number, token: string) =>
       `${name}: ${shown} has more than ${decimals} digits after the point, and ${token} has ${decimals} decimals`,
@@ -247,6 +249,7 @@ export type Labels = typeof EN;
 const ZH: Labels = {
   language: 'zh-TW',
   usage: '用法：',
+  repeatedFlag: (flag: string) => `--${flag} 給了不只一次，但它只接一個值。`,
   packagesDiffer: '安裝的套件和 pnpm-lock.yaml 寫的不一樣，所以什麼都沒有執行；刪掉 node_modules，執行 pnpm install --frozen-lockfile，再跑一次。',
   confirmAtTerminal: (command: string) => `${command} 要你在終端機上確認，所以請在你自己的終端機執行，不要用管線把輸入接給它。`,
   card: {
@@ -302,6 +305,7 @@ const ZH: Labels = {
     noReportedInstance: (name, kind, id) => `${name}：卡片能選的 ${kind} 合約都沒有 ${id} 的報告；要先做一份`,
     noMarket: (name) => `${name}：registry/markets.json 裡沒有市場`,
     nothingAccepted: (name, id) => `${name}：登記表和地址簿裡沒有 ${id} 在這裡接受的項目`,
+    noneTheSame: (name, same, picked) => `${name}：選了 ${picked} 之後，沒有選項能讓 ${same} 是同一個地址`,
     notDecimal: (name, shown) => `${name}：${shown} 不是一般的十進位數字，例如 5、1.25 或 1,000,000.5`,
     tooManyDigits: (name, shown, decimals, token) => `${name}：${shown} 小數點後超過 ${decimals} 位，而 ${token} 只有 ${decimals} 位小數`,
     tooLarge: (name, shown) => `${name}：${shown} 達到 2^256 最小單位以上`,

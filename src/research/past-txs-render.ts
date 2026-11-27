@@ -8,6 +8,7 @@ import type { Difference, StatedEffect } from './amounts.ts';
 import { WINDOWS, YEAR, foundBy, yearBefore } from './past-txs.ts';
 import type { BlockRange, Coverage, Fit, Misfit, PastTxs, SafesFirst, Selection } from './past-txs.ts';
 import { PAGE, SOURCES, searchedBy } from './sources.ts';
+import { plain } from './shown.ts';
 import { brokenRule, constText, functionNames, isOtherOperation, isTime, misfitText } from './study.ts';
 import type { OutsideKind, Sender } from './study.ts';
 
@@ -153,7 +154,7 @@ function renderGroup(lines: string[], group: Group, run: PastTxs, registry: Regi
     const names = functionNames(run.query.template);
     const groups = new Map<string, Misfit[]>();
     for (const m of misfits) {
-      const reason = misfitText(m.reason, registry, names);
+      const reason = plain(misfitText(m.reason, registry, names));
       groups.set(reason, [...(groups.get(reason) ?? []), m]);
     }
     for (const [reason, members] of [...groups].sort((a, b) => b[1].length - a[1].length)) {
@@ -392,7 +393,7 @@ export function renderPastTxs(run: PastTxs, registry: Registry): string {
   if (otherOperation.length > 0) {
     lines.push(`another operation, making none of the template's calls: ${plural(otherOperation.length, 'transaction')} from ${plural(sendersOf(otherOperation), 'Safe')}; not counted below`);
     const names = functionNames(template);
-    for (const m of otherOperation.slice(0, 3)) lines.push(`  e.g. ${mark(m.hash)}: ${misfitText(m.reason, registry, names)}`);
+    for (const m of otherOperation.slice(0, 3)) lines.push(`  e.g. ${mark(m.hash)}: ${plain(misfitText(m.reason, registry, names))}`);
   }
   renderGroup(lines, { fits: fits.filter(bySafe), misfits: misfits.filter((m) => bySafe(m) && !isOtherOperation(m, template)), rules: run.shapes.whole.loosened.rules, senderLabel: 'the Safe', senderNoun: 'Safe' }, run, registry, mark);
   run.shapes.calls.forEach((shape, call) => {

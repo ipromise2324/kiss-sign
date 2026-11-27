@@ -18,7 +18,12 @@ import type { PackageRead, PackageReads } from '../src/research/npm-package.ts';
 import { NO_SITE_LISTINGS, parseImmunefiPrograms } from '../src/research/site-listings.ts';
 import type { SiteListings } from '../src/research/site-listings.ts';
 import { renderReport, replayInputs } from '../src/research/report.ts';
-import { gradedFindings, weightOf } from '../src/research/grades.ts';
+import { notesScope } from '../src/research/notes.ts';
+import { buildPage } from '../src/research/report-page.ts';
+import type { HtmlInputs } from '../src/research/report-page.ts';
+import { renderPage } from '../src/research/report-html.ts';
+import { pageText } from '../src/research/page-text.ts';
+import { WEIGHT_OF, gradedFindings, weightOf } from '../src/research/grades.ts';
 import type { ReportInputs, SpanCheck, TodayCheck } from '../src/research/report.ts';
 import { pageUrlOf } from '../src/research/source-page.ts';
 import { STANDARDS } from '../src/research/standards.ts';
@@ -323,6 +328,7 @@ const ROWS: readonly Row[] = [
   { what: "a view the template reads that the proof's ABI lacks", change: { read: APPROVE, abi: withAbi(['transfer(address to,uint256 value)']) }, id: 'vault/abi', kind: 'fn-not-in-abi', state: 'bad' },
   { what: "a view the template reads that the proof's ABI holds", change: { read: APPROVE, abi: withAbi(['approve(address spender,uint256 value)']) }, id: 'vault/abi', kind: 'agrees', state: 'ok' },
   { what: 'a proof that masked the metadata hash', change: { abi: { ...proven(PIN), metadataHashMasked: true } }, id: 'vault/abi', kind: 'metadata-differs', state: 'na' },
+  { what: 'a proof that masked the metadata hash still proves every other byte', change: { abi: { ...proven(PIN), metadataHashMasked: true } }, id: 'vault/abi.proof', kind: 'agrees', state: 'ok' },
   { what: 'a proof refused for a reason other than its compiler', change: { abi: refused({ why: 'bytecode-mismatch' }) }, id: 'vault/abi', kind: 'refused', state: 'bad' },
   { what: 'a vault its factory created', change: evidence(ADMITTED), id: 'vault/factory.admitted', kind: 'agrees', state: 'ok' },
   { what: 'a vault its factory answered it did not create', change: evidence("REFUSED vault-factory answered isVault(address) false for vault: it did not create it; the vault's code is not read"), id: 'vault/factory.admitted', kind: 'not-created', state: 'bad' },
@@ -410,6 +416,7 @@ const ROWS: readonly Row[] = [
   { what: 'an SDK file without the address, its label next to no address', change: packageRead({ file: { kind: 'served', blocks: [{ text: `OTHER = "${OTHER}"` }] } }), id: 'vault/source.sdk', kind: 'not-listed', state: 'na' },
   { what: 'an SDK file whose label binds only another address', change: packageRead({ file: { kind: 'served', blocks: [{ text: `VAULT = "${OTHER}"` }, { text: `OTHER = "${ADDRESS}"` }] } }), id: 'vault/source.sdk', kind: 'label-differs', state: 'bad' },
   { what: 'an SDK tarball that is not the pinned one', change: packageRead({ sha256: `0x${'22'.repeat(32)}` as Hex }), id: 'vault/source.sdk', kind: 'package-differs', state: 'bad' },
+  { what: "an SDK whose npm provenance names another tarball", change: packageRead({ provenance: { ...BUILT, sameTarball: false } }), id: 'vault/source.sdk.site', kind: 'provenance-other-tarball', state: 'bad' },
   { what: 'an SDK version npm holds no provenance for', change: packageRead({ provenance: { kind: 'none' } }), id: 'vault/source.sdk.site', kind: 'no-provenance', state: 'na' },
   { what: 'an SDK built from another GitHub org', change: packageRead({ provenance: { ...BUILT, repository: 'https://github.com/someone/sdk' } }), id: 'vault/source.sdk.site', kind: 'site-differs', state: 'bad' },
   { what: 'a creation the program cannot prove', change: { creations: new Map([[ADDRESS, { kind: 'unproven', why: 'a CREATE2 from a factory' }]]) }, id: 'vault/source.deployer', kind: 'creation-unproven', state: 'na' },
@@ -518,7 +525,7 @@ test('a page and the API on one registrable domain are one place, and CoinGecko 
   const entry = { ...ENTRY, apiSource: API };
   const alone = ledgerOf({ entry, coins: [] });
   assert.deepEqual(named(confirmations(alone, entry)), ['page+api'], 'docs.example.org and api.example.org');
-  assert.deepEqual(resultOf(alone, 'vault/address').finding, { kind: 'few-confirmations', by: [{ owner: 'example.org', sources: ['page', 'api'] }] });
+  assert.deepEqual(resultOf(alone, 'vault/address').finding, { kind: 'few-confirmations', by: [{ owner: 'example.org', sources: ['page', 'api'] }], needs: 2 });
   const listed = ledgerOf({ entry });
   assert.deepEqual(named(confirmations(listed, entry)), ['page+api', 'coingecko']);
   assert.equal(resultOf(listed, 'vault/address').finding.kind, 'agrees');
@@ -540,7 +547,7 @@ test('pages of one GitHub organization are one place, and it stays apart from a 
   const second = { url: `https://github.com/example/repo/blob/${'a'.repeat(40)}/other.md` as HttpsUrl, label: 'Vault' };
   const entry = { ...ENTRY, source: GITHUB, moreSources: [second] };
   const ledger = ledgerOf({ entry, coins: [] });
-  assert.deepEqual(resultOf(ledger, 'vault/address').finding, { kind: 'few-confirmations', by: [{ owner: 'github.com/example', sources: ['page', 'more.1'] }] });
+  assert.deepEqual(resultOf(ledger, 'vault/address').finding, { kind: 'few-confirmations', by: [{ owner: 'github.com/example', sources: ['page', 'more.1'] }], needs: 2 });
   const verified = { ...NO_SITE_LISTINGS, orgs: new Map([['example', { kind: 'domains', domains: ['example.org'] } as const]]) };
   const both = { ...ENTRY, moreSources: [MORE] };
   const apart = ledgerOf({ entry: both, coins: [], sites: verified });
@@ -554,7 +561,7 @@ test("an SDK is the same place as the GitHub organization npm's provenance names
   assert.deepEqual(named(confirmations(ledger, entry)), ['page', 'more.1+sdk']);
   assert.deepEqual(resultOf(ledger, 'vault/address').finding.kind, 'agrees');
   const page = { ...ENTRY, source: GITHUB, sdk: SDK };
-  assert.deepEqual(resultOf(ledgerOf({ ...packageRead(), entry: page, coins: [] }), 'vault/address').finding, { kind: 'few-confirmations', by: [{ owner: 'github.com/example', sources: ['page', 'sdk'] }] });
+  assert.deepEqual(resultOf(ledgerOf({ ...packageRead(), entry: page, coins: [] }), 'vault/address').finding, { kind: 'few-confirmations', by: [{ owner: 'github.com/example', sources: ['page', 'sdk'] }], needs: 2 });
 });
 
 test('the newest version of a pinned page or SDK never counts as a place, and never keeps the pinned one from counting', () => {
@@ -592,7 +599,7 @@ test('an empty address source is grey; the address result alone puts the entry i
   assert.deepEqual(forSigner(ledger), []);
   assert.equal(confidence(ledger, ENTRY), 'medium', 'no official page among the confirmations');
   assert.deepEqual(
-    sourcesOf(ledger, ENTRY).map((s) => [s.source, s.state, s.phrase, s.link, s.site]),
+    sourcesOf(ledger, ENTRY).map((s) => [s.source, s.state, s.phrase, s.link, s.site === undefined ? undefined : { state: s.site.state, phrase: s.site.phrase, link: s.site.link, places: s.site.places }]),
     [
       ['page', 'na', 'unread', SOURCE, { state: 'ok', phrase: undefined, link: 'https://defillama.com/protocol/proto', places: [{ kind: 'defillama', id: 'proto' }] }],
       ['api', 'ok', undefined, API.url, { state: 'ok', phrase: undefined, link: 'https://defillama.com/protocol/proto', places: [{ kind: 'defillama', id: 'proto' }] }],
@@ -601,7 +608,7 @@ test('an empty address source is grey; the address result alone puts the entry i
     ],
   );
   const alone = ledgerOf({ page: { kind: 'served', blocks: [{ text: 'Vault' }] } });
-  assert.deepEqual(forSigner(alone).map((r) => [r.id, r.finding]), [['vault/address', { kind: 'few-confirmations', by: [{ owner: 'coingecko.com', sources: ['coingecko'] }] }]]);
+  assert.deepEqual(forSigner(alone).map((r) => [r.id, r.finding]), [['vault/address', { kind: 'few-confirmations', by: [{ owner: 'coingecko.com', sources: ['coingecko'] }], needs: 2 }]]);
 });
 
 test('a site DefiLlama lists nothing for is vouched by CoinGecko or by another official page, never by a documentation page or the API site', () => {
@@ -695,7 +702,7 @@ test('morpho/market-supply from its recordings: the three oracles confirmed in o
   const { inputs } = await replayInputs(ROOT, registry, target, compilers, suffixes);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail('a template report');
   const ledger = judge(inputs, await judgeFixtures(ROOT, template, registry));
-  const apiAlone = { kind: 'few-confirmations', by: [{ owner: 'morpho.org', sources: ['api'] }] };
+  const apiAlone = { kind: 'few-confirmations', by: [{ owner: 'morpho.org', sources: ['api'] }], needs: 2 };
   assert.deepEqual(forSigner(ledger).map((r) => [r.id, r.finding]), [
     ['morpho-oracle-cbbtc-usdc-86/address', apiAlone],
     ['morpho-oracle-usp-usdc/address', apiAlone],
@@ -707,7 +714,7 @@ test('morpho/market-supply from its recordings: the three oracles confirmed in o
   assert.equal(resultOf(ledger, 'cbbtc/source.site').finding.kind, 'unlisted');
   assert.deepEqual(strip(ledger).map((s) => [s.line, s.state, `${s.passed}/${s.counted}`]), [
     ['sources', 'warn', '7/10'],
-    ['abi', 'ok', '4/4'],
+    ['abi', 'ok', '6/6'],
     ['code', 'ok', '10/10'],
     ['params', 'ok', '1/1'],
     ['trace', 'na', '0/0'],
@@ -787,4 +794,226 @@ test("the Markdown findings index holds each recorded test transaction the HTML 
   assert.ok(rows.some((row) => row.startsWith('fixture.safe-tx-1 key: ')), rows.join('\n'));
   const graded = gradedFindings(judge(inputs, fixtures)).map((r) => r.id);
   assert.deepEqual(rows.map((row) => row.slice(0, row.indexOf(' '))), graded);
+});
+
+/** `inputsOf`'s report, the entry read by a computed field of the card, and with `called` also documented as called, else not. */
+function readInputs(change: Partial<Setup>, called = false): ReportInputs {
+  const inputs = inputsOf({ abi: undefined, ...change });
+  const read = { to: { kind: 'contract', name: ENTRY.name }, fn: parseFunctionSignature('latestAnswer()'), args: [], returns: [{ name: '', type: { kind: 'int', bits: 256 } }], output: [0] };
+  const computed = { read, bound: 'floor', default: { bps: 0, source: DOC }, margin: undefined };
+  const card = new Map([['min-buy', { kind: 'amount', of: 'eth', computed, max: undefined }]]);
+  const template = { ...inputs.subject.template, card } as unknown as Template;
+  return { ...inputs, subject: { ...inputs.subject, template, docs: called ? inputs.subject.docs : [] } } as ReportInputs;
+}
+
+test('an entry the card only reads needs one place, and its site differing is a reference finding outside 待確認 that says why the entry is there', () => {
+  const read = (change: Partial<Setup>) => judge(readInputs(change), []);
+  assert.equal(resultOf(read({ coins: [] }), 'vault/address').finding.kind, 'agrees', 'its page alone confirms it');
+  assert.deepEqual(resultOf(read({ coins: [], page: { kind: 'served', blocks: [{ text: 'Vault' }] } }), 'vault/address').finding, { kind: 'few-confirmations', by: [], needs: 1 });
+  const otherSite = { protocol: { ...BASE.protocol!, url: new URL('https://other.org') }, coins: [] };
+  const ledger = read(otherSite);
+  const site = resultOf(ledger, 'vault/source.site');
+  assert.deepEqual([site.finding.kind, stateOf(site), weightOf(site)], ['site-differs', 'bad', 'reference'], 'red in its table, graded reference');
+  assert.ok(!forSigner(ledger).some((r) => r.id === site.id), 'not for the signer');
+  const markdown = renderReport(readInputs(otherSite), { command: 'test', sources: [] });
+  const because = 'needs 1 place, not 2: it is in the report only because `card new` reads it, as the read for the minimum to receive (`min-buy`), and the signer confirms the number `card new` prints; its site results (a site that differs, cannot be compared, or has no second source) are reference and not under To review. A wrong read changes that number, and only the signer checking what `card new` prints catches it';
+  assert.ok(findingsOf(markdown).includes('vault/source.site reference: site differs from the one DefiLlama lists; only read by `card new`, as the read for the minimum to receive (`min-buy`)'));
+  assert.ok(markdown.includes(`- \`vault\`: ${because}.`));
+});
+
+test('an entry the card reads that the template also documents as called keeps the two-place rule and key site findings', () => {
+  const ledger = judge(readInputs({ coins: [], protocol: { ...BASE.protocol!, url: new URL('https://other.org') } }, true), []);
+  assert.equal(resultOf(ledger, 'vault/address').finding.kind, 'few-confirmations');
+  assert.equal(weightOf(resultOf(ledger, 'vault/source.site')), 'key');
+  assert.ok(!renderReport(readInputs({ coins: [] }, true), { command: 'test', sources: [] }).includes('only because `card new` reads it'));
+});
+
+test("the HTML page lists an entry the card only reads as a reference address, says beside it and under each of its findings in 待確認 why one place is enough, and words its site finding in its row", () => {
+  const inputs = { ...readInputs({ coins: [], page: { kind: 'served', blocks: [{ text: 'Vault' }] }, protocol: { ...BASE.protocol!, url: new URL('https://other.org') } }), fixtures: [] } as HtmlInputs;
+  const template = inputs.subject.template;
+  const scope = notesScope(inputs, judge(inputs, []), template, 'en');
+  assert.ok(scope.reviews.includes('vault/address') && !scope.reviews.includes('vault/source.site'), 'the address confirmed nowhere needs a review, the site that differs none');
+  const both = (text: string) => ({ en: text, 'zh-TW': text });
+  const notes = {
+    title: both('title'),
+    summary: both('summary'),
+    verdict: { status: 'caution', text: both('verdict') },
+    flow: [],
+    protocols: Object.fromEntries([...scope.protocols].map(([slug]) => [slug, { intro: both('intro'), audits: { text: both('audits') }, incidents: [] }])),
+    judgments: [],
+    reviews: Object.fromEntries(scope.reviews.map((id) => [id, { status: 'confirmed', text: both('review'), recommendation: both('look') }])),
+    fields: Object.fromEntries(scope.fields.map((key) => [key, both(`field ${key}`)])),
+  };
+  const because = 'Needs 1 place: it is the read for the minimum to receive, and you confirm the number card new prints.';
+  const page = (language: 'en' | 'zh-TW') => pageText(renderPage(buildPage(inputs, notes, { command: 'test', sources: [] }, language)));
+  const en = page('en');
+  assert.match(en, /^Reference addresses 1 \(not in the transaction\)\nWhen you fill in the card, the program reads the numbers the card needs from these addresses\. The transaction never touches them\.$/m, 'its group, worded for a read that is not a price');
+  assert.doesNotMatch(en, /^Addresses the transaction touches/m, 'no empty group');
+  assert.match(en, new RegExp(`^${because.replaceAll('.', '\\.')}$`, 'm'), 'in its address row');
+  assert.ok(en.includes(`place is needed. ${because}`), 'under its address finding');
+  assert.ok(!en.includes('not one DefiLlama lists for this protocol.'), 'its site finding is not under To review');
+  assert.match(en, /another site \(compared with DefiLlama \S+\) The site is example\.org; DefiLlama lists other\.org\. A reference address's site results are for reference only, not under To review\.$/m, 'its site finding stays in its row, with what was compared');
+  const zh = page('zh-TW');
+  assert.match(zh, /^參考地址 1 個（不在交易裡）\n填卡片時，程式從這些地址讀卡片要用的數字。交易不會碰到它們。$/m);
+  assert.match(zh, /^只需 1 個地方確認：它是最少收到的數量的讀取對象，card new 印出的數字由你確認。$/m);
+  assert.match(zh, /對照） 網站是 example\.org，DefiLlama 列的是 other\.org。參考地址的網站結果只供參考，不列入「待確認」。$/m);
+});
+
+test("a read-only entry whose only finding is its site: nothing under To review, medium confidence, an open row, and the strip and verdict say so", () => {
+  const inputs = { ...readInputs({ coins: [], abi: withAbi(['latestAnswer()']), protocol: { ...BASE.protocol!, url: new URL('https://other.org') } }), fixtures: [] } as HtmlInputs;
+  const ledger = judge(inputs, []);
+  assert.deepEqual(ledger.results.filter((r) => stateOf(r) === 'bad' || stateOf(r) === 'warn').map((r) => r.id), ['vault/source.site'], 'its site is its only finding');
+  const scope = notesScope(inputs, ledger, inputs.subject.template, 'en');
+  assert.deepEqual(scope.reviews, [], 'no review to write');
+  assert.equal(confidence(judge(readInputs({ coins: [], abi: withAbi(['latestAnswer()']) }), []), ENTRY), 'high', 'high with its own site');
+  assert.equal(confidence(ledger, ENTRY), 'medium');
+  assert.deepEqual(addressRows(ledger, () => false).open.map((entry) => entry.name), ['vault'], 'its row stays open while its site icon is red');
+  const both = (text: string) => ({ en: text, 'zh-TW': text });
+  const notes = {
+    title: both('title'),
+    summary: both('summary'),
+    verdict: { status: 'caution', text: both('verdict') },
+    flow: [],
+    protocols: Object.fromEntries([...scope.protocols].map(([slug]) => [slug, { intro: both('intro'), audits: { text: both('audits') }, incidents: [] }])),
+    judgments: [],
+    reviews: {},
+    fields: Object.fromEntries(scope.fields.map((key) => [key, both(`field ${key}`)])),
+  };
+  const { header } = buildPage(inputs, notes, { command: 'test', sources: [] }, 'en');
+  assert.deepEqual([header.strip[0]?.name, header.strip.some((item) => item.line === 'sources')], ['Reference addresses', false], 'no transaction address line when the transaction touches none');
+  const reference = header.strip.find((item) => item.line === 'reference') ?? assert.fail('no reference line');
+  assert.equal(reference.state, 'bad', 'the source checks keep their red');
+  assert.doesNotMatch(reference.explain, /results for you to review/);
+  assert.match(reference.explain, /^This reference address needs 1 place: the transaction never touches it, and card new only reads a number from it, which you confirm\. .* The site results of vault are for reference: they stay under "Addresses", not under "To review"\.$/);
+  assert.notEqual(header.verdict.state, 'bad', 'the verdict icon is not red for it');
+});
+
+/** The rendered page of `inputs` as plain text, with notes that hold every review and protocol its scope asks for. */
+function pageTextOf(inputs: HtmlInputs, language: 'en' | 'zh-TW'): string {
+  const scope = notesScope(inputs, judge(inputs, inputs.fixtures), inputs.subject.template, 'en');
+  const both = (text: string) => ({ en: text, 'zh-TW': text });
+  const notes = {
+    title: both('title'),
+    summary: both('summary'),
+    verdict: { status: 'caution', text: both('verdict') },
+    flow: [],
+    protocols: Object.fromEntries([...scope.protocols].map(([slug]) => [slug, { intro: both('intro'), audits: { text: both('audits') }, incidents: [] }])),
+    judgments: [],
+    reviews: Object.fromEntries(scope.reviews.map((id) => [id, { status: 'confirmed', text: both('review'), recommendation: both('look') }])),
+    fields: Object.fromEntries(scope.fields.map((key) => [key, both(`field ${key}`)])),
+  };
+  return pageText(renderPage(buildPage(inputs, notes, { command: 'test', sources: [] }, language)));
+}
+
+test('地址 puts the addresses the transaction touches first and the reference addresses card new only reads second, and the strip and contents count each group', () => {
+  const feed: RegistryEntry = { ...SIBLING, name: 'feed' };
+  const base = inputsOf({ others: [feed] });
+  const read = { to: { kind: 'contract', name: feed.name }, fn: parseFunctionSignature('latestAnswer()'), args: [], returns: [{ name: '', type: { kind: 'int', bits: 256 } }], output: [0] };
+  const card = new Map([['min-buy', { kind: 'amount', of: 'eth', computed: { read, bound: 'floor', default: { bps: 0, source: DOC }, margin: undefined }, max: undefined }]]);
+  const inputs = { ...base, subject: { ...base.subject, template: { ...base.subject.template, card } as unknown as Template }, fixtures: [] } as HtmlInputs;
+  const en = pageTextOf(inputs, 'en');
+  const touched = en.indexOf('\nAddresses the transaction touches 1\n');
+  const reference = en.indexOf('\nReference addresses 1 (not in the transaction)\n');
+  assert.ok(touched > 0 && reference > touched, 'the touched group first, then the reference group');
+  assert.ok(en.slice(touched, reference).includes('\nvault'), 'the contract the docs say the transaction calls');
+  assert.ok(en.slice(reference).includes('\nfeed'), 'the entry card new reads');
+  assert.match(en, /^Addresses 1 \+ 1$/m, 'the contents count each group');
+  assert.match(en, /^\[[\w ]+\] Transaction addresses 1 \/ 1\n[^\n]*\n\[[\w ]+\] Reference addresses \d \/ 1$/m, 'one strip line per group, transaction addresses first');
+  const zh = pageTextOf(inputs, 'zh-TW');
+  assert.ok(zh.indexOf('\n交易會碰到的地址 1 個\n') < zh.indexOf('\n參考地址 1 個（不在交易裡）\n'));
+  assert.match(zh, /\] 交易地址 1 \/ 1$/m);
+  assert.match(zh, /\] 參考地址 \d \/ 1$/m);
+  const alone = pageTextOf({ ...inputsOf({}), fixtures: [] } as HtmlInputs, 'zh-TW');
+  assert.match(alone, /^交易會碰到的地址 1 個$/m, 'a report with no reference address keeps the first group');
+  assert.doesNotMatch(alone, /參考地址/, 'and has no empty second group');
+});
+
+test('a source row that fails or needs a look links its page and says in one line which site or coin and why, pointing to 待確認 when the result is there', () => {
+  const row = (change: Partial<Setup>, language: 'en' | 'zh-TW' = 'en') => pageTextOf({ ...inputsOf(change), fixtures: [] } as HtmlInputs, language);
+  const untied = { entry: { ...ENTRY, immunefi: 'proto' }, sites: program([ADDRESS], 'https://github.com/other', 'https://other.org') };
+  assert.match(row(untied), /^\[fail\] Immunefi bug bounty scope \(https:\/\/immunefi\.com\/bug-bounty\/proto\/\) another site The page links to other\.org; DefiLlama lists example\.org\. See "To review"\.$/m);
+  assert.match(row(untied, 'zh-TW'), /^\[不通過\] Immunefi 漏洞賞金範圍 \(https:\/\/immunefi\.com\/bug-bounty\/proto\/\) 是另一個網站 頁面連到 other\.org，DefiLlama 列的是 example\.org。見「待確認」。$/m);
+  const siteless = { entry: { ...ENTRY, immunefi: 'proto' }, sites: program([ADDRESS], undefined, null) };
+  assert.match(row(siteless), /Immunefi gives this program no website or GitHub organization to match example\.org, github\.com\/example, which DefiLlama lists\. See "To review"\.$/m, 'a program with no site of its own');
+  assert.match(row({ protocol: { ...BASE.protocol!, url: new URL('https://other.org') } }), /another site \(compared with DefiLlama \S+\) The site is example\.org; DefiLlama lists other\.org\. See "To review"\.$/m);
+  assert.match(row({ coins: [{ id: 'other-coin', symbol: 'o', name: 'Other', ethereum: ADDRESS }] }), /CoinGecko lists other-coin at this address; the entry names vault-coin\. See "To review"\.$/m);
+  assert.match(row({ coins: [], protocol: { ...BASE.protocol!, url: undefined, github: [] } }), /The site is example\.org; DefiLlama lists no website to compare, and nothing else shows it is the protocol's\. See "To review"\.$/m);
+  const { defillama: _slug, ...unslugged } = ENTRY;
+  assert.match(row({ entry: unslugged }, 'zh-TW'), /登記沒有寫 DefiLlama 協議，沒辦法比對網站。見「待確認」。$/m);
+});
+
+test('a feed the transaction itself reads in a recorded trace, by a STATICCALL with no value, is an address the transaction touches, not a reference address', () => {
+  const feed: RegistryEntry = { ...SIBLING, name: 'feed' };
+  const base = inputsOf({ others: [feed] });
+  const read = { to: { kind: 'contract', name: feed.name }, fn: parseFunctionSignature('latestAnswer()'), args: [], returns: [{ name: '', type: { kind: 'int', bits: 256 } }], output: [0] };
+  const card = new Map([['min-buy', { kind: 'amount', of: 'eth', computed: { read, bound: 'floor', default: { bps: 0, source: DOC }, margin: undefined }, max: undefined }]]);
+  const subject = { ...base.subject, template: { ...base.subject.template, card } as unknown as Template };
+  const calls = [
+    { depth: 0, type: 'CALL', from: DEPLOYER, to: ADDRESS, selector: '0x095ea7b3', args: [DEPLOYER] },
+    { depth: 1, type: 'STATICCALL', from: ADDRESS, to: OTHER, selector: '0x50d25bcd' },
+  ];
+  const run = { studies: [], measurements: [], effects: [], found: { total: 1, both: 1, only: { alchemy: [], etherscan: [] } }, search: { kind: 'windows' }, traces: [{ kind: 'traced', hash: PIN, sender: { address: DEPLOYER }, calls }] };
+  const inputs = { ...base, subject, pastTxs: [{ query: { template: 'test/op' }, run }], fixtures: [] } as unknown as HtmlInputs;
+  const feedNeeds = resultOf(judge(inputs, []), 'feed/address').finding;
+  assert.equal(feedNeeds.kind === 'few-confirmations' ? feedNeeds.needs : 2, 2, 'it needs two places');
+  const en = pageTextOf(inputs, 'en');
+  assert.match(en, /^Addresses the transaction touches 2$/m);
+  assert.doesNotMatch(en, /Reference addresses|never touches/);
+  const zh = pageTextOf(inputs, 'zh-TW');
+  assert.match(zh, /^交易會碰到的地址 2 個$/m);
+  assert.doesNotMatch(zh, /參考地址|交易不會碰到/);
+});
+
+test('a source row says what each check saw: a bounty site against an empty DefiLlama list or a host with no registrable domain, a commit the check could not place, an SDK provenance for another tarball, and the coin CoinGecko lists, linked', () => {
+  const row = (change: Partial<Setup>, language: 'en' | 'zh-TW' = 'en') => pageTextOf({ ...inputsOf(change), fixtures: [] } as HtmlInputs, language);
+  const bare = { ...BASE.protocol!, url: undefined, github: [] };
+  const lonely = { entry: { ...ENTRY, immunefi: 'proto' }, protocol: bare, sites: program([ADDRESS], undefined, 'https://other.org') };
+  assert.match(row(lonely), /The page links to other\.org; DefiLlama lists no website for the protocol\. See "To review"\.$/m);
+  assert.match(row(lonely, 'zh-TW'), /頁面連到 other\.org，DefiLlama 沒有列這個協議的網站。見「待確認」。$/m);
+  assert.doesNotMatch(row(lonely), /DefiLlama lists \./);
+  const nothing = { entry: { ...ENTRY, immunefi: 'proto' }, protocol: bare, sites: program([ADDRESS], undefined, null) };
+  assert.match(row(nothing), /Immunefi gives this program no website or GitHub organization, and DefiLlama lists none for the protocol\. See "To review"\.$/m);
+  assert.match(row(nothing, 'zh-TW'), /Immunefi 沒有給這個計畫網站或 GitHub 組織，DefiLlama 也沒有列這個協議的網站或 GitHub 組織。見「待確認」。$/m);
+  const shared = { entry: { ...ENTRY, immunefi: 'proto' }, sites: program([ADDRESS], undefined, 'https://gitbook.io') };
+  assert.match(row(shared), /The website Immunefi gives, gitbook\.io, has no registrable domain or is a shared host, so it matches none of example\.org, github\.com\/example, which DefiLlama lists\. See "To review"\.$/m);
+  assert.match(row(shared, 'zh-TW'), /Immunefi 給的網站 gitbook\.io 沒有可登記的網域，或是共用的主機，對不到 DefiLlama 列的 example\.org、github\.com\/example。見「待確認」。$/m);
+  assert.doesNotMatch(row(shared), /no website or GitHub organization/);
+  const unknown = { entry: { ...ENTRY, source: GITHUB }, page: { kind: 'served', blocks: [{ text: `Vault ${ADDRESS}` }] } as Page, commit: { kind: 'unknown', why: 'GitHub compare answered 404' } as CommitCheck };
+  assert.match(row(unknown), /The check could not tell whether commit aaaaaaaaaaaa is on the default branch\. See "To review"\./m);
+  assert.match(row(unknown, 'zh-TW'), /程式查不出 commit aaaaaaaaaaaa 在不在預設分支上。見「待確認」。/m);
+  assert.doesNotMatch(row(unknown), /is not pinned to a commit/);
+  const offDefault = { ...unknown, commit: { kind: 'off-default', branch: 'main', status: 'diverged' } as CommitCheck };
+  assert.match(row(offDefault), /Commit aaaaaaaaaaaa is not on the default branch main\. See "To review"\./m);
+  const otherTarball = packageRead({ provenance: { ...BUILT, sameTarball: false } });
+  assert.match(row(otherTarball), /npm's provenance for this SDK version names another tarball than the one downloaded, so nothing ties this tarball to its build\. See "To review"\./m);
+  assert.match(row(otherTarball, 'zh-TW'), /npm 對這個 SDK 版本的建置證明指向另一個 tarball，不是下載的這一份，所以沒有東西證明這份 tarball 是從那個建置來的。見「待確認」。/m);
+  assert.doesNotMatch(row(otherTarball), /DefiLlama lists for this protocol/);
+  const other = row({ coins: [{ id: 'other-coin', symbol: 'o', name: 'Other', ethereum: ADDRESS }] });
+  assert.match(other, /^\[fail\] CoinGecko \(https:\/\/www\.coingecko\.com\/en\/coins\/other-coin\)/m, 'links the coin CoinGecko lists at the address');
+  assert.doesNotMatch(other, /coins\/vault-coin/, 'not the coin the entry names, which the check did not find there');
+  assert.match(row({ coins: [] }), /^\[nothing to compare\] CoinGecko nothing to compare$/m, 'no link when CoinGecko lists no coin there');
+});
+
+test('an entry the card reads keeps two places when anything else reaches it: a spender that depends on it, or a money call in a recorded trace', () => {
+  const needs = (inputs: ReportInputs): unknown => {
+    const finding = resultOf(judge(inputs, []), 'vault/address').finding;
+    return finding.kind === 'few-confirmations' ? finding.needs : finding.kind;
+  };
+  assert.equal(needs(readInputs({ coins: [] })), 'agrees');
+  const { coingecko: _, ...uncoined } = SIBLING;
+  const helper: RegistryEntry = { ...uncoined, name: 'helper', dependsOn: ['vault'] };
+  const approving = readInputs({ coins: [], others: [helper] });
+  const template = { ...approving.subject.template, effects: { ...approving.subject.template.effects, approves: [{ token: { field: 'min-buy', attribute: undefined }, spender: 'helper', via: 'erc20', amount: { kind: 'unlimited' } }] } } as unknown as Template;
+  assert.equal(needs({ ...approving, subject: { ...approving.subject, template } } as ReportInputs), 2, 'an allowance spender that depends on it');
+  const call = { depth: 1, type: 'CALL', from: OTHER, to: ADDRESS, selector: '0xa9059cbb', args: [OTHER] };
+  const traced = { ...readInputs({ coins: [] }), pastTxs: [{ run: { traces: [{ kind: 'traced', hash: PIN, sender: { address: OTHER }, calls: [call] }] } }] } as unknown as ReportInputs;
+  assert.equal(needs(traced), 2, 'a money call to it in a recorded trace');
+});
+
+test('an entry the card only reads and nothing confirms stays a key finding, and its ABI finding keeps its grade', () => {
+  const ledger = judge(readInputs({ coins: [], page: { kind: 'served', blocks: [{ text: 'Vault' }] } }), []);
+  assert.equal(weightOf(resultOf(ledger, 'vault/address')), 'key');
+  const abi = ledger.results.find((r) => r.id === 'vault/abi');
+  assert.ok(abi !== undefined);
+  assert.equal(weightOf(abi), WEIGHT_OF[abi.finding.kind]);
 });

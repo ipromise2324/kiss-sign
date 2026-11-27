@@ -113,6 +113,7 @@ export function checkSimulatedFloor(observed: Observed, safe: Address, { standin
   const evidence = observed.safeState;
   const findings: FloorFinding[] = [];
   if (evidence.kind === 'read') findings.push(...stateFindings(evidence.before, evidence.after, change));
+  else if (evidence.kind === 'not-a-safe') findings.push(finding("an EOA sent the transaction, so no Safe's settings were read"));
   else {
     findings.push(...receiptFindings(evidence.logs, safe, standing, change));
     if (evidence.alone !== undefined) findings.push(...stateFindings(evidence.alone.before, evidence.alone.after, change).map((f) => ({ ...f, callPath: 'simulation' })));

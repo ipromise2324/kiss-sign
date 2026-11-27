@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import type { AddressBook } from './address-book.ts';
 import { canonicalJson } from './canonical.ts';
 import { MARKET_ENTRY_PARTS, isMarketEntryPart } from './registry.ts';
-import type { Market, Registry, RegistryEntry } from './registry.ts';
+import type { Market, Registry, RegistryEntry, RegistryView } from './registry.ts';
 import { checksumAddress } from './safe/types.ts';
 import type { Address, Hex } from './safe/types.ts';
 import { WAD, cardRefs, contractRefusal, floorFields } from './template/template.ts';
@@ -35,6 +35,7 @@ export type CardRefusal =
   | 'unknown-name'
   | 'ambiguous-name'
   | 'wrong-contract-kind'
+  | 'not-listed'
   | 'wrong-protocol'
   | 'not-in-markets'
   | 'not-an-amount'
@@ -214,7 +215,7 @@ export type RefTarget =
   | { readonly kind: 'bytes32'; readonly value: Hex }
   | { readonly kind: 'market'; readonly market: Market };
 
-export function resolveRef(ref: CardRef, values: ReadonlyMap<string, ResolvedValue>, registry: Registry): RefTarget | { readonly problem: string } {
+export function resolveRef(ref: CardRef, values: ReadonlyMap<string, ResolvedValue>, registry: RegistryView): RefTarget | { readonly problem: string } {
   const value = values.get(ref.field);
   const { attribute } = ref;
   if (value === undefined) return { problem: `the card has no ${ref.field}` };

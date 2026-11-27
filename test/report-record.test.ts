@@ -4,10 +4,11 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import type { Exchange } from '../src/chain/recording.ts';
 import { COINGECKO_COINS, DEFILLAMA_PARENTS, DEFILLAMA_PROTOCOLS } from '../src/research/listings.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 import { runOffline } from './run-offline.ts';
 
-const REPORT = 'safe-change-threshold';
-const { creations } = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'testdata', 'report', `${REPORT}.json`), 'utf8')) as { creations: Record<string, { tx: string }> };
+const FIXTURES = repoWithTestFixtures();
+const { creations } = JSON.parse(readFileSync(join(FIXTURES, 'testdata', 'report', 'safe-add-owner.json'), 'utf8')) as { creations: Record<string, { tx: string }> };
 
 const both = (answer: unknown) => ({ alchemy: answer, drpc: answer });
 const blockRead = (number: string): Exchange => ({ method: 'eth_getBlockByNumber', params: [number, false], answers: both({ number, hash: `0x${number.slice(2).padStart(64, '0')}` }) });
@@ -21,7 +22,7 @@ const hints = { status: '1', result: Object.entries(creations).map(([contractAdd
 const text = (body: unknown) => ({ status: 200, text: JSON.stringify(body) });
 const http = { [url(DEFILLAMA_PROTOCOLS)]: text([{ slug: 'other' }]), [url(DEFILLAMA_PARENTS)]: text({ parentProtocols: [] }), [url(COINGECKO_COINS)]: text([]), [hintsUrl]: text(hints) };
 
-const record = (exchanges: readonly Exchange[]) => runOffline('report.ts', ['safe/change-threshold', '--record'], 'report', { exchanges, http, otherwise: { status: 404, text: '' } });
+const record = (exchanges: readonly Exchange[]) => runOffline('report.ts', ['safe/add-owner', '--record'], 'report', { exchanges, http, otherwise: { status: 404, text: '' } }, [], undefined, undefined, FIXTURES);
 const unreadMethods = (stderr: string) => new Set([...stderr.matchAll(/^ {2}(?:alchemy|drpc) (\w+)/gm)].map((m) => m[1]));
 
 test('report --record stops after the section with an unanswered read, before it reads the next one, and writes nothing', () => {

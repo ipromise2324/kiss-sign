@@ -13,6 +13,8 @@ import { proveParties } from './safe-parties.ts';
 import { sharedReads } from './shared-reads.ts';
 import { shapesOf, studyTx } from './study.ts';
 import type { PartyProof, TxStudy } from './study.ts';
+import { studyRegistry } from './study-registry.ts';
+import type { StudyRegistry } from './study-registry.ts';
 import { checkTrace, holdingTemplateCalls } from './trace.ts';
 import type { TraceSource, TracedTx } from './trace.ts';
 
@@ -37,7 +39,11 @@ export function spreadWindows(head: bigint, count: number, blocks: bigint): Bloc
   });
 }
 
-export type PastTxsQuery = { readonly template: Template; readonly anchor: Omit<Anchor, keyof BlockRange>; readonly sampling: Sampling };
+/**
+ * `txParty`, for an event a named contract logs, checks each transaction's own party: the address its execTransaction
+ * was sent to. Absent, such an event has no party checked, as in a recording made before it.
+ */
+export type PastTxsQuery = { readonly template: Template; readonly anchor: Omit<Anchor, keyof BlockRange>; readonly sampling: Sampling; readonly txParty?: true };
 
 /** The block a newest-first search ends on: the head less the blocks a reorganization could still replace. */
 export const searchTop = (head: bigint): bigint => head - FINALITY;
@@ -75,10 +81,25 @@ export type Misfit = Extract<Kept, { kind: 'misfit' }>;
 /** One window as searched, `asked` before any halving: `found` transactions after exclusion, of which `studied` were read. */
 export type WindowRun = { readonly asked: BlockRange; readonly range: BlockRange; readonly found: number; readonly studied: number };
 
-/** Which address of an anchor hit is the party that would be a Safe doing the operation, or why none is. */
-export type PartyRule = { readonly kind: 'side'; readonly side: 'from' | 'to' | 'emitter'; readonly noun: string } | { readonly kind: 'none'; readonly why: string };
+/**
+ * Which address of an anchor hit is the party that would be a Safe doing the operation, or why none is: `transaction`,
+ * the address the hit's transaction sent its execTransaction to, read from the transaction itself.
+ */
+export type PartyRule =
+  | { readonly kind: 'side'; readonly side: 'from' | 'to' | 'emitter'; readonly noun: string }
+  | { readonly kind: 'transaction'; readonly noun: string }
+  | { readonly kind: 'none'; readonly why: string };
 
-function partyRule(anchor: Omit<Anchor, keyof BlockRange>): PartyRule {
+/** The selector of a Safe's `execTransaction`. */
+const EXEC_TRANSACTION = '0x6a761202';
+
+/**
+ * The most transactions a `transaction` party rule reads, evenly spaced in block order; those not read are chosen as
+ * the rest are.
+ */
+export const TX_PARTY_READS = 5000;
+
+function partyRule(anchor: Omit<Anchor, keyof BlockRange>, txParty: boolean): PartyRule {
   switch (anchor.kind) {
     case 'mint':
       return { kind: 'side', side: 'to', noun: 'the address minted to' };
@@ -88,9 +109,8 @@ function partyRule(anchor: Omit<Anchor, keyof BlockRange>): PartyRule {
       if (anchor.from !== undefined && anchor.to !== undefined) return { kind: 'none', why: '--from and --to fix both sides of the transfer' };
       return anchor.from === undefined ? { kind: 'side', side: 'from', noun: 'the address the token moved out of' } : { kind: 'side', side: 'to', noun: 'the address the token moved into' };
     case 'event':
-      return anchor.token === undefined
-        ? { kind: 'side', side: 'emitter', noun: 'the contract that logged the event' }
-        : { kind: 'none', why: 'a named contract\'s event has no party of fixed meaning' };
+      if (anchor.token === undefined) return { kind: 'side', side: 'emitter', noun: 'the contract that logged the event' };
+      return txParty ? { kind: 'transaction', noun: 'the address a transaction sent execTransaction to' } : { kind: 'none', why: 'a named contract\'s event has no party of fixed meaning' };
   }
 }
 
@@ -228,11 +248,17 @@ async function chooseByParty(
 ): Promise<{ sample: Hex[]; check: PartyCheck; safeTxs: ReadonlySet<Hex> }> {
   const kept = new Set(hashes);
   const partiesOf = new Map<Hex, Set<Address>>();
-  const sideOf = (hit: Hit): Address | undefined => (rule.kind === 'none' ? undefined : rule.side === 'emitter' ? hit.emitter : hit[rule.side]);
+  const sideOf = (hit: Hit): Address | undefined => (rule.kind !== 'side' ? undefined : rule.side === 'emitter' ? hit.emitter : hit[rule.side]);
   for (const hit of SOURCES.flatMap((source) => hits[source])) {
     const party = sideOf(hit);
     if (!kept.has(hit.hash) || party === undefined || party === ZERO) continue;
     partiesOf.set(hit.hash, (partiesOf.get(hit.hash) ?? new Set()).add(party));
+  }
+  if (rule.kind === 'transaction') {
+    const read = await inPool(spacedSample(hashes, TX_PARTY_READS), STUDY_WIDTH, async (hash) => ({ hash, tx: await reader.getTransaction(hash) }));
+    for (const { hash, tx } of read) {
+      if (tx.kind === 'agreed' && tx.value?.to != null && tx.value.input.startsWith(EXEC_TRANSACTION)) partiesOf.set(hash, new Set([tx.value.to]));
+    }
   }
   const parties = [...new Set([...partiesOf.values()].flatMap((set) => [...set]))].sort();
   const proofs = new Map<Address, PartyProof>();
@@ -320,7 +346,7 @@ const STUDY_WIDTH = 8;
 const TRACE_WIDTH = 8;
 
 export async function pastTxs(query: PastTxsQuery, given: PastTxsDeps): Promise<PastTxs> {
-  const deps = { ...given, reader: sharedReads(given.reader) };
+  const deps = { ...given, reader: sharedReads(given.reader), registry: studyRegistry(given.registry) };
   const { sampling } = query;
   const head = sampling.kind === 'range' ? undefined : (sampling.head ?? (await chainHead(deps.reader)));
   let year: YearSearch | undefined;
@@ -361,7 +387,7 @@ export async function pastTxs(query: PastTxsQuery, given: PastTxsDeps): Promise<
     for (const hit of hits.etherscan) if (hit.emitter !== undefined) emitters.set(hit.hash, (emitters.get(hit.hash) ?? new Set()).add(hit.emitter));
     const hashes = newest !== undefined || year?.kind === 'covered' ? byBlock([...window.found.keys()], hits) : [...window.found.keys()];
     const chosen =
-      newest !== undefined || (year?.kind === 'covered' && sampling.kind === 'year') ? await chooseByParty(hashes, hits, partyRule(query.anchor), range.toBlock, deps.reader, deps.batches, deps.maxTxs) : undefined;
+      newest !== undefined || (year?.kind === 'covered' && sampling.kind === 'year') ? await chooseByParty(hashes, hits, partyRule(query.anchor, query.txParty === true), range.toBlock, deps.reader, deps.batches, deps.maxTxs) : undefined;
     if (chosen !== undefined) byParty = chosen;
     searched.push({ asked, range, found: hashes, sample: chosen?.sample ?? spacedSample(hashes, perWindow) });
   }
@@ -412,11 +438,11 @@ export async function pastTxs(query: PastTxsQuery, given: PastTxsDeps): Promise<
  * Traces each transaction exactly the template and checks each trace that came back: against the
  * transaction and its receipt, and that it holds the template's calls in order.
  */
-async function traceExact(template: Template, fits: readonly Fit[], source: TraceSource, reader: Reader, registry: Registry): Promise<TracedTx[]> {
+async function traceExact(template: Template, fits: readonly Fit[], source: TraceSource, reader: Reader, registry: StudyRegistry): Promise<TracedTx[]> {
   const tokens = new Set([...registry.entries.values()].filter((entry) => entry.kind === 'token' || entry.kind === 'vault').map((entry) => entry.address.toLowerCase() as Address));
   const traced = await inPool(fits.filter((f) => f.outside.length === 0), TRACE_WIDTH, async (fit) => {
     const calls = await source(fit.hash);
-    return calls === undefined ? undefined : holdingTemplateCalls(template, registry, await checkTrace(fit.hash, fit.sender, calls, reader, tokens));
+    return calls === undefined ? undefined : checkTrace(fit.hash, fit.sender, calls, reader, tokens, (tx) => holdingTemplateCalls(template, registry, tx));
   });
   return traced.filter((tx) => tx !== undefined);
 }
