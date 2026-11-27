@@ -277,8 +277,11 @@ What it cost Claude Opus 5.5 to build each template and its report from zero, on
 | morpho/vault-v2-cap-submit (KPK) | 16.89M | 30 | 113 | 98% |
 | morpho/vault-v2-cap-accept (Acuto) | 10.79M | 17 | 78 | 98% |
 | morpho/vault-v2-cap-decrease (Acuto) | 11.71M | 20 | 88 | 98% |
+| morpho/vault-v2-collateral-cap-revoke (Acuto) | 17.27M | 35 | 115 | 98% |
+| morpho/vault-v2-adapter-cap-submit (KPK) | 14.71M | 26 | 103 | 98% |
+| morpho/vault-v2-collateral-cap-submit (KPK) | 19.10M | 36 | 117 | 99% |
 
-15 builds, 217.9M tokens and 343 minutes in all. Each build researched every address, studied other Safes' past transactions, wrote the template and its notes, recorded test transactions and rendered the report; where the operation might need a step first, such as an approval, it read the configured Safe's state to see whether the step was done. A row marked "added vault" started from the template the row above it built, so it covers only the new vault's report. The compound/supply and cow/swap rows include one review round, after the report was read and a rule was sent back to tighten. 98% to 99% of the tokens are cache reads, because the model reads its whole conversation again on every call. Minutes count active time. The session that starts the builds, reads the reports and fixes the program is not counted. uniswap/swap is not in the table yet.
+18 builds, 269.0M tokens and 440 minutes in all. Each build researched every address, studied other Safes' past transactions, wrote the template and its notes, recorded test transactions and rendered the report; where the operation might need a step first, such as an approval, it read the configured Safe's state to see whether the step was done. A row marked "added vault" started from the template the row above it built, so it covers only the new vault's report. The compound/supply, cow/swap and collateral-cap-revoke rows include one review round, after the report was read and a rule was sent back to tighten. 98% to 99% of the tokens are cache reads, because the model reads its whole conversation again on every call. Minutes count active time. The session that starts the builds, reads the reports and fixes the program is not counted. uniswap/swap is not in the table yet.
 
 ## Scope
 
