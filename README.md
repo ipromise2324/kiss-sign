@@ -14,10 +14,7 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 - **Bybit, February 2025, about $1.5 billion.** The attacker [masked the signing interface](https://announcements.bybit.com/en/article/incident-update---eth-cold-wallet-incident-blt292c0454d26e9140/) of a Safe transaction the signers approved. What was missing: an independent check of the transaction.
 - **Drift, April 2026, about $280 million.** Two signers gave approvals Drift later called ["misrepresented"](https://x.com/DriftProtocol/status/2039564437795836039). What was missing: a check of what the transaction was meant to do.
 
-kiss-sign does both:
-
-- **You say what you want first.** Your AI researches the operation once and writes a report you review, and every Safe transaction is checked against what you said.
-- **The check does not trust one screen.** You compare the hashes on your hardware wallet, and in the hardened tier a second, clean computer decodes the transaction on its own.
+kiss-sign does both: you write down what you want first, and before you sign, it checks the transaction itself, not the app's screen, against what you wrote.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/readme/overview-dark.png">
