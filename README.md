@@ -285,7 +285,7 @@ The builds run from simple to hard: a plain transfer took about 8M tokens and 10
 
 ## Scope
 
-Safe multisig transactions on Ethereum mainnet. Not EOAs, Safe off-chain messages or other chains. It checks only what you sign: not what other owners sign without it, a module's transactions, or a hardware wallet that shows false hashes. For a Vault V2 curator, the templates submit and accept an increase of one market's absolute cap per transaction; adapter and collateral caps, relative caps, decreases and revocations have no template.
+Safe multisig transactions on Ethereum mainnet. Not EOAs, Safe off-chain messages or other chains. It checks only what you sign: not what other owners sign without it, a module's transactions, or a hardware wallet that shows false hashes. It checks an operation only once it has a template; for a new one, your AI builds the template first.
 
 ## Contributing
 
