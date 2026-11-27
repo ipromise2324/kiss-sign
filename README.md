@@ -190,9 +190,9 @@ First the hashes. They must be identical on both pages and on your hardware wall
 
 ![The hash rows of both pages side by side: safeTxHash, domain hash and message hash, the same on kiss-sign verify and on check.sh](docs/readme/compare-hashes.png)
 
-Then every call, row by row, down to the calls inside a batch. This is an older deposit into the same vault, sent through Bundler3 before Morpho's app moved to VaultBundlesV1: both sides split Bundler3's `multicall` into the token transfer and the vault deposit it runs. Every column must be identical except the names on the right, which only kiss-sign writes, from its registry:
+Then every call, row by row, down to the calls inside a batch. This is another Safe's executed deposit through VaultBundlesV1, into the Steakhouse Prime vault: both sides split its MultiSend into the USDC approval and the VaultBundlesV1 deposit, call #3 below. Every column must be identical except the names on the right, which only kiss-sign writes, from its registry:
 
-![Some rows of call #3 on both pages side by side: the Bundler3 multicall, then its two inner calls, erc20TransferFrom of 1000611448606 and erc4626Deposit into the Hyperithm vault for the Safe, the same on both sides; only kiss-sign's side names the vault and the amounts in the last column](docs/readme/compare-multicall.png)
+![Some rows of call #3 on both pages side by side: vaultBundlesV1Deposit on VaultBundlesV1, into vault 0xbeef088055857739C12CD3765F20b7679Def0f51, with assets 31583325527, the share-price ceiling and the deadline, the same on both sides; only kiss-sign's side names the bundle, the vault, the amount and the share-price ceiling in the last column](docs/readme/compare-multicall.png)
 
 `--hints` tell `check.sh` how to read bytes that hold data rather than a call, such as a Vault V2 cap id. They carry positions and types only and never change a row, so a wrong hint cannot make the rows match. See [Hints from kiss-sign](https://github.com/ipromise2324/kiss-sign-check/blob/main/docs/hints.md).
 
