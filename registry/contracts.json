@@ -1312,69 +1312,6 @@
       "minLiquidity": "6660000000000"
     }
   },
-  "permit2": {
-    "address": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
-    "kind": "allowance",
-    "source": "https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments",
-    "sourceLabel": "Permit2",
-    "sourceHeading": "Ethereum",
-    "moreSources": [
-      {
-        "url": "https://github.com/Uniswap/sdks/blob/8ae0425c57e1699b0ae48ebb3077a2f526ae3818/sdks/permit2-sdk/src/constants.ts",
-        "label": "PERMIT2_ADDRESS"
-      }
-    ],
-    "defillama": "uniswap-v4",
-    "sdk": {
-      "package": "@uniswap/permit2-sdk",
-      "version": "1.4.1",
-      "sha256": "0x9580855c93ca0cc3ff4d592d7ac2ec0d84183b790d812f98ece5282276b3efbf",
-      "file": "dist/cjs/src/constants.js",
-      "label": "PERMIT2_ADDRESS"
-    },
-    "standingAllowance": {
-      "via": "erc20",
-      "why": "Permit2 has no owner and no proxy, and moves an owner's tokens only for a spender the owner approved on Permit2 itself, by its own call or signature (AllowanceTransfer.transferFrom), or for a transfer the owner signed (SignatureTransfer). An ERC-20 allowance to Permit2 alone lets no one move the Safe's tokens."
-    },
-    "code": {
-      "hash": "0xc67d1657868aa5146eaf24fb879fb1fdec3d2d493b3683a61c9c2f4fb2851131",
-      "from": 15986406
-    }
-  },
-  "universal-router-2.1.2": {
-    "address": "0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85",
-    "kind": "router",
-    "source": "https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments",
-    "sourceLabel": "Universal Router 2.1.2",
-    "sourceHeading": "Ethereum",
-    "moreSources": [
-      {
-        "url": "https://github.com/Uniswap/universal-router/blob/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json",
-        "label": "UniversalRouterV2_1_2"
-      }
-    ],
-    "defillama": "uniswap-v4",
-    "sdk": {
-      "package": "@uniswap/universal-router-sdk",
-      "version": "5.17.0",
-      "sha256": "0xe7abea16799826573fc5c69dc451a0ccfc5e25bb24f4bc4f166e46a1d6e74dd7",
-      "file": "dist/cjs/src/utils/constants.js",
-      "label": "UniversalRouterVersion.V2_1_2"
-    },
-    "standingAllowance": {
-      "via": "permit2",
-      "why": "The router pulls tokens through Permit2 only from the address that called execute, its locker (msgSender() in Dispatcher.sol, set by Lock.sol): Permit2Payments.permit2TransferFrom takes msgSender() as the owner for V2, V3 and V4 swaps with payerIsUser and for PERMIT2_TRANSFER_FROM, and PERMIT2_TRANSFER_FROM_BATCH reverts when a transfer's from is not the locker. It has no owner and no proxy. So a Permit2 allowance to it can be spent only by a later execute the Safe itself makes."
-    },
-    "ignoresTrailer": "UniversalRouter.execute(bytes,bytes[],uint256) reads only its ABI-decoded arguments: its verified source (contracts/UniversalRouter.sol, Dispatcher.sol and the modules) never reads msg.data or calldatasize, and it takes its caller from msg.sender through Lock.sol, never from calldata as an ERC-2771 contract does.",
-    "code": {
-      "hash": "0x55e6b334152096d60367d7ab24241948b31e8d0e66adc8b81cba049a19f9d2ac",
-      "from": 25999984
-    },
-    "dependsOn": [
-      "permit2",
-      "uniswap-v4-pool-manager"
-    ]
-  },
   "morpho-blue": {
     "address": "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb",
     "kind": "lending",
@@ -2363,40 +2300,6 @@
           }
         }
       ]
-    }
-  },
-  "uniswap-v4-pool-manager": {
-    "address": "0x000000000004444c5dc75cB358380D2e3dE08A90",
-    "kind": "pool",
-    "source": "https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments",
-    "sourceLabel": "PoolManager",
-    "sourceHeading": "Ethereum: 1",
-    "moreSources": [
-      {
-        "url": "https://github.com/Uniswap/sdks/blob/74827a8ad193277ffe42a31635fd77a53f48ae71/sdks/sdk-core/src/addresses.ts",
-        "label": "v4PoolManagerAddress"
-      }
-    ],
-    "defillama": "uniswap-v4",
-    "code": {
-      "hash": "0x785f1014552b7ce7d5fb7d0c970ca60edee94fd00425d7ca21609acac7ce1293",
-      "from": 21688329
-    }
-  },
-  "uniswap-stable-pair-hook": {
-    "address": "0x0000113dCf4ADd69999Fad8F20F2b63F979bfcC0",
-    "kind": "adapter",
-    "source": "https://developers.uniswap.org/llms.mdx/docs/protocols/uniswap-labs-hooks/stable-pair/deployments",
-    "sourceLabel": "hook",
-    "sourceHeading": "Ethereum: 1",
-    "defillama": "uniswap-v4",
-    "code": {
-      "hash": "0xa5659fa6440c9830926d098ec347a558447bfd8e483643e0d02398dc4cff1685",
-      "implementation": {
-        "address": "0x5f216d21b1C81346938EDDc1Df7e0111A0F64000",
-        "hash": "0x3d1bc5ca01e9acbf8b04adec8354b9c3a36df23d58f87050767ceff7bf43ae98"
-      },
-      "from": 25626560
     }
   },
   "rlusd": {

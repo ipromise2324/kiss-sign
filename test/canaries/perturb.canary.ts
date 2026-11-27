@@ -37,7 +37,7 @@ const repoRegistry = loadRegistry(REPO);
 const summary = (report: PerturbationReport) =>
   report.kind === 'not-run' ? report.reason : report.runs.map((r) => `${r.leaf.callPath} ${r.leaf.arg} = ${r.value}: ${r.outcome}`);
 
-const names = (root: string): string[] => readdirSync(join(root, PERTURB_DIR)).map((f) => f.replace(/\.json$/, ''));
+const names = (root: string): string[] => readdirSync(join(root, PERTURB_DIR)).flatMap((f) => (f.endsWith('.json') ? [f.replace(/\.json$/, '')] : []));
 
 for (const name of names(REPO)) {
   test(`${name}: every free field, changed, reverts, is refused, or changes nothing its claim forbids`, async () => {

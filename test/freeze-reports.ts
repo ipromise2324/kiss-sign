@@ -46,7 +46,7 @@ if (!restudy) {
       filter: (path) => !basename(path).startsWith('report.generated') && (dirname(path) !== instances || basename(path) === target.instance),
     });
     copy(join(REPO, reportRecordingPath(target)), join(FROZEN_DIR, reportRecordingPath(target)));
-    for (const name of readdirSync(join(REPO, PERTURB_DIR))) {
+    for (const name of readdirSync(join(REPO, PERTURB_DIR)).filter((f) => f.endsWith('.json'))) {
       const file = join(PERTURB_DIR, name);
       const recorded = readRecording<{ card: { operations: { template: string }[] }; template?: unknown }>(join(REPO, file));
       if (recorded.template === undefined && recorded.card.operations.every((op) => op.template === target.template)) copy(join(REPO, file), join(FROZEN_DIR, file));

@@ -27,7 +27,7 @@ import type { Address, Hex } from '../src/safe/types.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { repoWithBundler3Deposit } from './bundler3-deposit.ts';
-import { SUMMARY_FIXTURES, runOffline } from './run-offline.ts';
+import { SUMMARY_FIXTURES, programWith, runOffline } from './run-offline.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = repoWithBundler3Deposit();
@@ -1212,8 +1212,9 @@ test('--event-arg on an indexed bytes32, such as a v4 pool id, asks Etherscan fo
 });
 
 test('--event-arg is refused before any read when the event marks no such indexed address argument or the value is not an address', () => {
+  const scripts = join(programWith(ROOT), 'scripts');
   const run = (event: string, arg: string, anchor = 'event') =>
-    spawnSync(process.execPath, [join(SCRIPTS, 'past-txs.ts'), 'uniswap/approve-permit2', '--token', 'usdc', '--anchor', anchor, ...(anchor === 'event' ? ['--event', event] : []), '--event-arg', arg], { encoding: 'utf8' });
+    spawnSync(process.execPath, [join(scripts, 'past-txs.ts'), 'uniswap/approve-permit2', '--token', 'usdc', '--anchor', anchor, ...(anchor === 'event' ? ['--event', event] : []), '--event-arg', arg], { encoding: 'utf8' });
   const named = 'Approval(address indexed owner, address indexed spender, uint256 value)';
   const cases: [string, string, string, string?][] = [
     ['Approval(address,address,uint256)', '2=permit2', "--event-arg 2=permit2: argument 2 of Approval(address,address,uint256) is not marked indexed; mark each indexed argument, such as 'Approval(address indexed owner, address indexed spender, uint256 value)'\n"],
@@ -1286,10 +1287,10 @@ test('--same-windows-as refuses a search whose --event-arg differs from the summ
   after(() => rmSync(seed, { recursive: true, force: true }));
   writeFileSync(join(seed, 'approvals.json'), summaryOf(approvalQuery({ position: 2, address: PERMIT2 })));
   const args = ['uniswap/approve-permit2', '--token', 'usdc', '--anchor', 'event', '--event', 'Approval(address indexed owner, address indexed spender, uint256 value)', '--same-windows-as', 'approvals'];
-  const none = runOffline('past-txs.ts', args, 'research', { exchanges: [] }, ['approvals.json'], undefined, seed);
+  const none = runOffline('past-txs.ts', args, 'research', { exchanges: [] }, ['approvals.json'], undefined, seed, ROOT);
   assert.equal(none.status, 64);
   assert.equal(none.stderr, `--same-windows-as approvals: the summary searched with --event-arg 2=${PERMIT2}; give the same\n`);
-  const other = runOffline('past-txs.ts', [...args, '--event-arg', '1=permit2'], 'research', { exchanges: [] }, ['approvals.json'], undefined, seed);
+  const other = runOffline('past-txs.ts', [...args, '--event-arg', '1=permit2'], 'research', { exchanges: [] }, ['approvals.json'], undefined, seed, ROOT);
   assert.equal(other.status, 64);
   assert.equal(other.stderr, `--same-windows-as approvals: the summary searched with --event-arg 2=${PERMIT2}; give the same\n`);
 });
