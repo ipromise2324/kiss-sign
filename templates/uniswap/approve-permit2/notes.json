@@ -138,46 +138,6 @@
         }
       ]
     },
-    "cbbtc": {
-      "role": {
-        "en": "A token you can pick: cbBTC, issued by Coinbase",
-        "zh-TW": "可選的代幣：Coinbase 發行的 cbBTC"
-      },
-      "sources": [
-        {
-          "text": {
-            "en": "Coinbase's agentkit file names it CBBTC, and the file at the tip of main shows the same",
-            "zh-TW": "Coinbase agentkit 的檔案以 CBBTC 列出它，main 最新版也相同"
-          },
-          "url": "https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "CoinGecko's contract lookup answers the coin coinbase-wrapped-btc at this address",
-            "zh-TW": "CoinGecko 用這個地址查到的幣是 coinbase-wrapped-btc"
-          },
-          "url": "https://api.coingecko.com/api/v3/coins/ethereum/contract/0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "Coinbase's cbBTC page did not answer my fetch, so it counts as nothing",
-            "zh-TW": "Coinbase 的 cbBTC 頁面讀不到，不算任何確認"
-          },
-          "url": "https://www.coinbase.com/cbbtc",
-          "result": "attention"
-        },
-        {
-          "text": {
-            "en": "Etherscan: contract name FiatTokenProxy, creator 0xce97003ea2e0a565a9a0b6e36209c6ddaaa14b05, labelled Coinbase: Deployer",
-            "zh-TW": "Etherscan：合約名 FiatTokenProxy，創建者 0xce97003ea2e0a565a9a0b6e36209c6ddaaa14b05，標籤 Coinbase: Deployer"
-          },
-          "url": "https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code",
-          "result": "pass"
-        }
-      ]
-    },
     "permit2": {
       "role": {
         "en": "Uniswap's Permit2: it keeps token allowances for users, and moves tokens by those allowances or by a user's signed Permit2 message",
@@ -230,86 +190,6 @@
             "zh-TW": "SignatureTransfer 原始碼：轉帳要 owner 對訊息的簽名，呼叫者會當成 spender 算進訊息 hash"
           },
           "url": "https://github.com/Uniswap/permit2/blob/cc56ad0f3439c502c246fc5cfcc3db92bb8b7219/src/SignatureTransfer.sol",
-          "result": "pass"
-        }
-      ]
-    },
-    "usp": {
-      "role": {
-        "en": "A token you can pick: USP, Piku's stablecoin",
-        "zh-TW": "可選的代幣：Piku 的穩定幣 USP"
-      },
-      "sources": [
-        {
-          "text": {
-            "en": "Piku's token and workflow contracts page lists USP at this address",
-            "zh-TW": "Piku 的 token and workflow contracts 頁列出 USP 為這個地址"
-          },
-          "url": "https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "CoinGecko's contract lookup answers the coin usp-yield-optimized-stablecoin at this address",
-            "zh-TW": "CoinGecko 用這個地址查到的幣是 usp-yield-optimized-stablecoin"
-          },
-          "url": "https://api.coingecko.com/api/v3/coins/ethereum/contract/0x098697ba3fee4ea76294c5d6a466a4e3b3e95fe6",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "DefiLlama's adapter for Piku's DAO holds the address (not Piku's own, only a lead)",
-            "zh-TW": "DefiLlama 的 Piku DAO adapter 有這個地址（不是 Piku 自己的，只當線索）"
-          },
-          "url": "https://github.com/DefiLlama/DefiLlama-Adapters/blob/main/projects/piku-dao/index.js",
-          "result": "attention"
-        },
-        {
-          "text": {
-            "en": "Etherscan: contract name TransparentUpgradeableProxy, creator 0xb8eaa4f956c6324435f4088cae9cda974c358508, labelled Piku: Deployer",
-            "zh-TW": "Etherscan：合約名 TransparentUpgradeableProxy，創建者 0xb8eaa4f956c6324435f4088cae9cda974c358508，標籤 Piku: Deployer"
-          },
-          "url": "https://etherscan.io/address/0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6#code",
-          "result": "pass"
-        }
-      ]
-    },
-    "weeth": {
-      "role": {
-        "en": "A token you can pick: weETH, ether.fi's wrapped eETH",
-        "zh-TW": "可選的代幣：ether.fi 的 weETH（包裝 eETH）"
-      },
-      "sources": [
-        {
-          "text": {
-            "en": "ether.fi's Deployed.s.sol sets WEETH to this address; the tip of master too",
-            "zh-TW": "ether.fi 的 Deployed.s.sol 把 WEETH 設為這個地址，master 最新版也相同"
-          },
-          "url": "https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "ether.fi's deployed contracts docs page shows the address",
-            "zh-TW": "ether.fi 的 deployed contracts 文件頁有這個地址"
-          },
-          "url": "https://etherfi.gitbook.io/etherfi/contracts-and-integrations/deployed-contracts",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "CoinGecko's contract lookup answers the coin wrapped-eeth at this address",
-            "zh-TW": "CoinGecko 用這個地址查到的幣是 wrapped-eeth"
-          },
-          "url": "https://api.coingecko.com/api/v3/coins/ethereum/contract/0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "Etherscan: contract name UUPSProxy, creator 0xf8a86ea1ac39ec529814c377bd484387d395421e, labelled ether.fi: Deployer",
-            "zh-TW": "Etherscan：合約名 UUPSProxy，創建者 0xf8a86ea1ac39ec529814c377bd484387d395421e，標籤 ether.fi: Deployer"
-          },
-          "url": "https://etherscan.io/address/0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee#code",
           "result": "pass"
         }
       ]

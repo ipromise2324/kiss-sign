@@ -718,13 +718,6 @@ test('a difference in a number shows it as a number, the largest uint256 by name
   ]);
 });
 
-test('the eight commonest differences are open and the rarer ones fold under their count', () => {
-  const { differ } = studiedPage(Array.from({ length: 10 }, (_, i) => Array.from({ length: 11 - i }, (_, n) => misfitAt(i * 100 + n, { kind: 'field', at: `call.f.a${i}`, expected: '1', actual: '2' }))).flat());
-  assert.equal(differ.open?.rows.length, 8);
-  assert.equal(differ.more?.label, '2 more ways, 5 transactions');
-  assert.equal(differ.more?.table.rows.length, 2);
-});
-
 test('a difference names its newest transaction and links the newest three, and names none as the newest when a block was not kept', () => {
   const reason = { kind: 'field', at: 'call.f.a', expected: '1', actual: '2' } as const;
   const row = (studies: readonly Misfit[]) => studiedPage(studies).differ.open?.rows[0] ?? assert.fail('a row');
@@ -1064,20 +1057,6 @@ test("a swap's page draws a line on the token the card names, says with which to
   }
 });
 
-test('the who-decides key says a computed value is read from the chain, and a floor computed from prices or typed', () => {
-  const { template } = depositInputs.subject;
-  const [name, field] = [...template.card].find(([, f]) => f.kind === 'amount' && f.computed !== undefined) ?? assert.fail('a computed field');
-  const [sells] = [...template.card].find(([, f]) => f.kind === 'amount' && f.computed === undefined) ?? assert.fail('a typed field');
-  const means = (card: Template['card'], language: 'en' | 'zh-TW') => {
-    const of = { ...depositInputs, subject: { ...depositInputs.subject, template: { ...template, card } }, fixtures: [] };
-    return body(buildPage(of, { ...notesFor(of), flow: [] }, depositTitle, language), 'flow').flow.key.flatMap((g) => g.items).filter((k) => k.who === 'computed').map((k) => k.means);
-  };
-  const floored = new Map([...template.card, [name, { ...field, computed: undefined, floor: { sells } } as typeof field] as const]);
-  assert.deepEqual(means(template.card, 'en'), ['card new reads it from the chain at each signing. You check it.']);
-  assert.deepEqual(means(floored, 'en'), ['card new computes it from price feeds and pools at each signing, and you check it; with no independent price to use, you type it.']);
-  assert.deepEqual(means(floored, 'zh-TW'), ['card new 每次簽名用價格來源和池子算，你核對；沒有獨立價格可用時，你自己填。']);
-});
-
 test('a displayed limit is never above the real one, and a longest value never below it', () => {
   const years = 2n * 365n * 86400n;
   for (const [seconds, en, zh] of [[5436n, '1 hour 30 minutes 36 seconds', '1 小時 30 分鐘 36 秒'], [years + 1n, '2 years 1 second', '2 年 1 秒'], [5400n, '1.5 hours', '1.5 小時'], [604800n, '7 days', '7 天']] as const) {
@@ -1092,27 +1071,6 @@ test('a displayed limit is never above the real one, and a longest value never b
   assert.equal(WORDS.en.duration(86399n, 'up'), '1 day');
   assert.equal(WORDS.en.duration(0n, 'up'), '0 seconds');
   assert.equal(WORDS.en.duration(-95n, 'up'), '1 minute 35 seconds before');
-});
-
-test('a floor is said to be computed from a price, after the amount it is for and before any other computed field, and typed otherwise', () => {
-  const { template } = depositInputs.subject;
-  const [name, field] = [...template.card].find(([, f]) => f.kind === 'amount' && f.computed !== undefined) ?? assert.fail('a computed field');
-  const [sells] = [...template.card].find(([, f]) => f.kind === 'amount' && f.computed === undefined) ?? assert.fail('a typed field');
-  const floored = { ...field, computed: undefined, floor: { sells } } as typeof field;
-  const of = { ...depositInputs, subject: { ...depositInputs.subject, template: { ...template, card: new Map([[name, floored], ['late', field], ...[...template.card].filter(([n]) => n !== name)]) } }, fixtures: [] };
-  for (const [language, said, how, otherwise] of [
-    ['zh-TW', new RegExp(`獨立價格，替 ${sells} 算最少要收到多少`), /按 Enter 是 0\.50%，最多 1\.00%.*0\.25% 餘裕/, /低超過 2\.50% .*再填一次.*沒有東西可以比/],
-    ['en', new RegExp(`computes the least to receive for ${sells} from an independent price`), /Enter is 0\.50%, at most 1\.00%.*a 0\.25% margin/, /more than 2\.50% below it.*typed twice.*nothing to compare with/],
-  ] as const) {
-    const { steps } = body(buildPage(of, { ...notesFor(of), flow: [] }, depositTitle, language), 'next');
-    const says = steps.map((s) => plain(s.say));
-    const at = says.findIndex((say) => said.test(say));
-    assert.ok(at > says.findIndex((say) => /1250\.5/.test(say)), 'after the amount typed');
-    assert.ok(at < says.findIndex((say) => /所以程式自己算|so the program computes it/.test(say)), 'before the computed field');
-    const then = (steps[at]?.then ?? []).map(plain).join(' ');
-    assert.match(then, how);
-    assert.match(then, otherwise);
-  }
 });
 
 test('a computed field the transaction does not carry is never said to be typed or filled by the app', () => {

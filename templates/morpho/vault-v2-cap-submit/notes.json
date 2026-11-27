@@ -145,6 +145,12 @@
         "en": "The oracle the weETH market uses to price weETH",
         "zh-TW": "weETH 市場用來給 weETH 定價的 oracle"
       }
+    },
+    "vault-v2-factory": {
+      "role": {
+        "en": "The Morpho Vault V2 factory. It answers `isVaultV2` = true: it created this vault",
+        "zh-TW": "Morpho Vault V2 工廠，它回答 `isVaultV2` = true，這個 vault 是它建立的"
+      }
     }
   },
   "fields": {

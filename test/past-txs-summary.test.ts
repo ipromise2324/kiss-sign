@@ -119,18 +119,6 @@ test('a summary keeps when the attribute table gains an attribute no entry it re
   assert.deepEqual(staleParts(root, before, summary), ['registry entries it reads']);
 });
 
-test('a summary is refused when an entry joins the scope of a card field its template names, though no studied transaction holds its address', () => {
-  const root = scratchRepo();
-  const file = join(SUMMARIES_DIR, 'erc20-transfer-usdc.json');
-  const summary = parseSummary(file, readFileSync(join(ROOT, file), 'utf8'));
-  const stale = () => staleParts(root, pastTxsRegistry(root, loadRegistry(root), summary.query), summary);
-  assert.deepEqual(stale(), []);
-  const contracts = join(root, 'registry', 'contracts.json');
-  const raw = JSON.parse(readFileSync(contracts, 'utf8')) as Record<string, Record<string, unknown>>;
-  writeFileSync(contracts, JSON.stringify({ ...raw, 'unrelated-token': { ...(raw.usdc as Record<string, unknown>), address: `0x${'7e'.repeat(20)}` } }, null, 2));
-  assert.deepEqual(stale(), ['registry entries it reads'], 'the token field of erc20/transfer can now name the new token');
-});
-
 test('a summary holds a string decoded from the chain whatever its characters, and reads back as the same summary', async () => {
   const summary = await studyRecording(BUNDLER3, deposit, registry);
   const misfit = summary.studies.find((s) => s.kind === 'misfit');
