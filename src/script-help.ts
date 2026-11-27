@@ -6,3 +6,11 @@ export function exitOnHelp(help: string, args: readonly string[] = process.argv.
   writeSync(1, help.endsWith('\n') ? help : `${help}\n`);
   process.exit(0);
 }
+
+/** A usage refusal: prints `problem` and the first paragraph of `help` on stderr, then exits 64. */
+export const usageExit =
+  (help: string) =>
+  (problem: string): never => {
+    console.error(`${problem}\n${help.split('\n\n')[0]}`);
+    process.exit(64);
+  };

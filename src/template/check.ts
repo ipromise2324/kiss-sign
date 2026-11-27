@@ -7,7 +7,7 @@ import { decodeCall, decodeParams } from '../decode/codec.ts';
 import type { AbiValue, DecodeFailure, DecodedCall, Region, Span } from '../decode/codec.ts';
 import { unwrapSafeTx } from '../decode/multisend.ts';
 import type { InnerCall } from '../decode/multisend.ts';
-import type { Registry } from '../registry.ts';
+import type { RegistryView } from '../registry.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { messageText, parseMessage, typedDataDigest } from './eip712.ts';
 import type { MemberValue } from './eip712.ts';
@@ -80,7 +80,7 @@ const REGISTRY_CHAIN_ID = 1n;
 
 type Context = {
   readonly safe: Address;
-  readonly registry: Registry;
+  readonly registry: RegistryView;
   readonly values: ReadonlyMap<string, ResolvedValue>;
   readonly findings: Finding[];
   readonly unverifiable: string[];
@@ -450,7 +450,7 @@ export function checkTemplateFields(
   tx: SafeTx,
   card: ResolvedCard,
   templates: ReadonlyMap<string, Template>,
-  registry: Registry,
+  registry: RegistryView,
   messages: Messages = [],
   chain: FieldChain = {},
 ): FieldCheck {
@@ -462,7 +462,7 @@ export function inspectTemplateFields(
   tx: SafeTx,
   card: ResolvedCard,
   templates: ReadonlyMap<string, Template>,
-  registry: Registry,
+  registry: RegistryView,
   messages: Messages = [],
   chain: FieldChain = {},
 ): Inspection {

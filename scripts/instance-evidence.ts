@@ -1,6 +1,5 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { parseArgs } from 'node:util';
 import { loadStoredConfig } from '../src/config.ts';
 import { kissSignHome } from '../src/keys.ts';
 import { mainnetEndpoints } from '../src/chain/providers.ts';
@@ -11,7 +10,10 @@ import { httpsTransport } from '../src/chain/rpc.ts';
 import { loadRegistry, sizeOf } from '../src/registry.ts';
 import { alchemyCall, trimVaultRecording, vaultEvidenceText } from '../src/research/instance-evidence.ts';
 import { recordingText } from '../src/chain/bytecode.ts';
+import { parseFlags } from '../src/cli/flags.ts';
+import { UsageError } from '../src/cli/io.ts';
 import { exitOnHelp } from '../src/script-help.ts';
+import { refuseReadableErrors } from '../src/script-refusal.ts';
 
 const USAGE = 'usage: pnpm instance-evidence <registry name> [--record <name>]';
 const HELP = `${USAGE}
@@ -37,9 +39,10 @@ Rules: docs/design/flow.md, "First time an operation is done: build its template
 history); docs/design/data-shapes.md, "Registry attributes and instance checks".`;
 
 exitOnHelp(HELP);
+refuseReadableErrors();
 
-const { values: flags, positionals } = parseArgs({ options: { record: { type: 'string' } }, allowPositionals: true });
-if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new Error('--record takes a name of lowercase letters, digits and -');
+const { values: flags, positionals } = parseFlags({ options: { record: { type: 'string' } }, allowPositionals: true });
+if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new UsageError('--record takes a name of lowercase letters, digits and -');
 const root = join(import.meta.dirname, '..');
 const registry = loadRegistry(root);
 const [name] = positionals;

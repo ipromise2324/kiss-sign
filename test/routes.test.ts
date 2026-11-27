@@ -23,9 +23,10 @@ import { evaluate } from '../src/verify/verify.ts';
 import type { VerdictFile } from '../src/verify/verify.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
 import { parseRegistryAt } from './registry-at.ts';
+import { BASE_DIR } from './fixture-base.ts';
 
 const ROOT = join(import.meta.dirname, '..');
-const REGISTRY = JSON.parse(readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8')) as Record<string, Record<string, unknown>>;
+const REGISTRY = JSON.parse(readFileSync(join(BASE_DIR, 'registry', 'contracts.json'), 'utf8')) as Record<string, Record<string, unknown>>;
 
 const PROXY = `0x${'52'.repeat(20)}` as Address;
 const DUMMY = `0x${'cc'.repeat(20)}` as Address;
@@ -112,7 +113,7 @@ const TODAY_PIN = {
 };
 
 function registryWith(liquidity: Record<string, unknown>, more: Record<string, Record<string, unknown>> = {}) {
-  return parseRegistryAt(ROOT, { ...REGISTRY, ...more, liquidity: { address: PROXY, kind: 'lending', source: 'https://docs.example.org/liquidity', routes: ROUTING, ...liquidity } });
+  return parseRegistryAt(BASE_DIR, { ...REGISTRY, ...more, liquidity: { address: PROXY, kind: 'lending', source: 'https://docs.example.org/liquidity', routes: ROUTING, ...liquidity } });
 }
 
 const LIQUIDITY = registryWith({ code: { ...TODAY_PIN, from: 100 } }).entries.get('liquidity') as RegistryEntry;
@@ -193,6 +194,12 @@ test('routes that do not agree with themselves, an implementation with no code, 
   assert.equal(await refusedRead({ ...TODAY, selectorsOf: { ...TODAY.selectorsOf, [A]: [S2, S1, S3] } }), `the routes are inconsistent: ${A} and ${B} both list ${S3}`);
   assert.equal(await refusedRead({ ...TODAY, selectorsOf: { ...TODAY.selectorsOf, [A]: [S2, S1, S2] } }), `the routes are inconsistent: ${A} lists ${S2} twice`);
   assert.equal(await refusedRead({ ...TODAY, codes: { ...TODAY.codes, [B]: '0x' } }), `${B} has no code`);
+  assert.equal(
+    await refusedRead({ ...TODAY, codes: { ...TODAY.codes, [B]: '0x' }, implementationOf: { ...TODAY.implementationOf, [S4]: ZERO_ADDRESS } }),
+    `the routes are inconsistent: ${B} lists ${S4}, which routes to no implementation`,
+    'the routes are judged before the code of the implementations they reach',
+  );
+  assert.equal(await refusedRead({ ...TODAY, codes: { [DUMMY]: '0x6001', [A]: '0x600a', [B]: '0x600b' } }, { batch: 'disagree' }), `${PROXY} has no code`, 'the proxy is judged before its routes');
   const dirty = (honest: Uint8Array) => Uint8Array.from(honest, (byte, i) => (i === 0 ? 1 : byte));
   assert.equal(await refusedRead(TODAY, { answer: (call, _, honest) => (call === 'implementationOf' ? dirty(honest) : honest) }), `getSigsImplementation(${S3}) answered something other than its canonical encoding`);
   const padded = (honest: Uint8Array) => Uint8Array.from(honest, (byte, i) => (i === honest.length - 1 ? 1 : byte));

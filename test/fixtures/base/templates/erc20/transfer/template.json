@@ -1,0 +1,23 @@
+{
+  "id": "erc20/transfer",
+  "card": {
+    "token": { "kind": "contract", "registryKind": "token", "names": ["usdc", "usdt", "morpho", "cbbtc", "usp", "weeth"] },
+    "amount": { "kind": "amount", "of": "token" },
+    "recipient": { "kind": "recipient" }
+  },
+  "calls": [
+    {
+      "to": { "card": "token" },
+      "value": { "const": "0" },
+      "function": "transfer(address to, uint256 value)",
+      "args": {
+        "to": { "card": "recipient" },
+        "value": { "card": "amount" }
+      }
+    }
+  ],
+  "effects": {
+    "gives": [{ "token": "card.token", "amount": "card.amount", "to": "card.recipient" }],
+    "gets": []
+  }
+}

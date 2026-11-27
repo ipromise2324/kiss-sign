@@ -41,7 +41,7 @@ const git = (cwd: string, ...args: string[]) =>
   execFileSync('git', ['-c', 'user.name=test', '-c', 'user.email=test@example.com', ...args], { cwd, stdio: ['ignore', 'pipe', 'pipe'] });
 
 /** A clone, current with its own origin, of the fixture registry with the read contracts pinned to the stub code, and the fixture templates. */
-function clone(edit: (registry: any) => void = () => {}, editTemplate: (uniswap: any) => void = () => {}): string {
+function clone(edit: (registry: any) => void = () => {}, editTemplate: (uniswap: any) => void = () => {}, editCow: (cow: any) => void = () => {}): string {
   const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-floor-'));
   const origin = mkdtempSync(join(tmpdir(), 'kiss-sign-floor-origin-'));
   cpSync(FIXTURE, dir, { recursive: true });
@@ -52,6 +52,9 @@ function clone(edit: (registry: any) => void = () => {}, editTemplate: (uniswap:
   const uniswap = template('uniswap/swap');
   editTemplate(uniswap);
   writeFileSync(join(dir, 'templates', 'uniswap', 'swap', 'template.json'), JSON.stringify(uniswap));
+  const cow = template('cow/swap');
+  editCow(cow);
+  writeFileSync(join(dir, 'templates', 'cow', 'swap', 'template.json'), JSON.stringify(cow));
   git(origin, 'init', '--quiet', '--bare', '--initial-branch=main');
   git(dir, 'init', '--quiet', '--initial-branch=main');
   const ssh = join(origin, 'ssh');
@@ -417,6 +420,8 @@ test('two tokens priced by the very same feed compute nothing: no feed tells the
   const twins = clone((r) => {
     r.weth.price.peg = 'eth-usd';
     r['weth-two'] = { ...r.weth, address: `0x${'77'.repeat(20)}` };
+  }, undefined, (cow) => {
+    for (const field of ['sell-token', 'buy-token']) cow.card[field].names.push('weth-two');
   });
   const made = await cardNew('cow/swap', { sell: 'weth', buy: 'weth-two', amount: '1', then: ['0.99', 'y'] }, calm, twins);
   assert.equal(made.code, 0, made.stderr);
@@ -443,7 +448,7 @@ test('every route of the fewest pools is read, and the highest counts', async ()
 
 const poolName = (t: any): any => t.calls[0].args.inputs.items[0].encoded.args.params.items[1].encoded.args.params.fields.poolKey.fields;
 const pickedPool = (t: any): void => {
-  t.card.pool = { kind: 'contract', registryKind: 'pool' };
+  t.card.pool = { kind: 'contract', registryKind: 'pool', names: ['v3-usdc-usdt-100'] };
   poolName(t).hooks = { card: 'pool' };
 };
 for (const [what, edit, picks] of [
@@ -564,7 +569,7 @@ for (const [what, edit, path] of [
     const raw = template('cow/swap');
     edit(raw);
     assert.throws(
-      () => parseTemplate(raw, shipped),
+      () => parseTemplate(raw, shipped, 'committed'),
       (error) => error instanceof TemplateError && error.message.startsWith(`${path}:`),
     );
   });
@@ -583,7 +588,7 @@ for (const [what, edit, path] of [
     const raw = template('uniswap/swap');
     edit(raw);
     assert.throws(
-      () => parseTemplate(raw, shipped),
+      () => parseTemplate(raw, shipped, 'committed'),
       (error) => error instanceof TemplateError && error.message.startsWith(`${path}:`),
     );
   });
@@ -626,7 +631,7 @@ for (const [what, params, said] of [
 ] as const) {
   test(`a floor is refused beside ${what}`, () => {
     assert.throws(
-      () => parseTemplate(swapOf(params), shipped),
+      () => parseTemplate(swapOf(params), shipped, 'committed'),
       (error) => error instanceof TemplateError && error.message.startsWith('card.min-buy.floor:') && UNBOUND.test(error.message) && said.test(error.message),
     );
   });
@@ -640,7 +645,7 @@ for (const [what, params] of [
   ['a minimum before the amount sold, with no free time', [least(FLOOR), sold()]],
 ] as const) {
   test(`a floor loads in ${what}`, () => {
-    parseTemplate(swapOf(params), shipped);
+    parseTemplate(swapOf(params), shipped, 'committed');
   });
 }
 
@@ -650,7 +655,7 @@ test('each shipped swap template loads with a floor on it', () => {
   for (const id of tried) {
     const raw = JSON.parse(readFileSync(join(ROOT, 'templates', id, 'template.json'), 'utf8'));
     raw.card['min-buy'].floor = { sells: 'sell-amount' };
-    parseTemplate(raw, registry);
+    parseTemplate(raw, registry, 'committed');
   }
 });
 
@@ -661,7 +666,7 @@ test('a real swap meets a card whose floor is at or below its own minimum, and o
   const plain = template('uniswap/swap');
   delete plain.card['min-buy'].floor;
   for (const json of [template('uniswap/swap'), plain]) {
-    const templates = new Map([['uniswap/swap', parseTemplate(json, shipped)]]);
+    const templates = new Map([['uniswap/swap', parseTemplate(json, shipped, 'committed')]]);
     const check = (minBuy: bigint) => {
       const card = resolveCard(parseCard({ operations: [{ template: 'uniswap/swap', values: { 'sell-token': 'usdc', 'buy-token': 'usdt', 'sell-amount': '20000000000', 'min-buy': `${minBuy}` } }] }), { templates, registry: shipped, addressBook: new Map(), safe: tx.safe });
       assert.equal(card.kind, 'resolved');

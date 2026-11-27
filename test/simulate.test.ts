@@ -19,6 +19,7 @@ import type { Observation } from '../src/simulate/simulate.ts';
 import { loadTemplate } from '../src/template/template.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
 import { repoWithBundler3Deposit } from './bundler3-deposit.ts';
+import { runOffline } from './run-offline.ts';
 
 const ROOT = repoWithBundler3Deposit();
 const load = (dir: string, name: string) => readRecording<any>(join(ROOT, 'testdata', dir, `${name}.json`));

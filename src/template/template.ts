@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { AbiSignatureError, canonicalType, paramName, parseFunctionSignature, parseViewSignature } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam, AbiType } from '../decode/abi.ts';
 import { ATTRIBUTES_PATH, CONTRACT_KINDS, MARKET_ENTRIES, MARKET_ENTRY_PARTS, MARKET_PARAMS, MARKET_PARTS, MARKETS_PATH, MAX_API_PATH_STEPS, isApiPathStep, isEntryName, isMarketEntryPart, parseHttpsUrl } from '../registry.ts';
-import type { AllowanceRoute, ApiPathStep, ContractKind, HttpsUrl, MarketEntryPart, MarketPart, Registry, RegistryEntry } from '../registry.ts';
+import type { AllowanceRoute, ApiPathStep, ContractKind, HttpsUrl, MarketEntryPart, MarketPart, RegistryOf, RegistryView, StudyEntry } from '../registry.ts';
 import { SafeTxParseError, parseAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { domainSeparator, isMemberType, ownNames } from './eip712.ts';
@@ -13,16 +13,22 @@ import type { Prose } from '../language.ts';
 
 /**
  * The registry entries a contract card field accepts: those of `registryKind`, when `protocol` is set only those that
- * belong to the DefiLlama protocol of that slug, and when `marketPart` is set only those that are that part of some
- * market in the markets table, such as a market's `collateralToken`.
+ * belong to the DefiLlama protocol of that slug, when `marketPart` is set only those that are that part of some market
+ * in the markets table, such as a market's `collateralToken`, and when `names` is set only the entries it lists. Every
+ * field but one of the template's instance kind has `names`; an instance field is bounded by its reports instead.
  */
-export type EntryScope = { readonly registryKind: ContractKind; readonly protocol: string | undefined; readonly marketPart: MarketEntryPart | undefined };
+export type EntryScope = {
+  readonly registryKind: ContractKind;
+  readonly protocol: string | undefined;
+  readonly marketPart: MarketEntryPart | undefined;
+  readonly names: readonly string[] | undefined;
+};
 
 /**
  * The DefiLlama protocol an entry belongs to. An entry with a `factory` belongs to its factory's protocol, which the
  * chain proves through the factory's `instanceCheck`; its own `defillama` names the site that lists it, such as a curator's.
  */
-export function protocolOf(entry: RegistryEntry, registry: Registry): { readonly slug: string | undefined; readonly why: string } {
+export function protocolOf(entry: StudyEntry, registry: RegistryView): { readonly slug: string | undefined; readonly why: string } {
   const factory = entry.attributes.factory;
   if (factory === undefined) return { slug: entry.defillama, why: '' };
   return { slug: registry.entries.get(factory)?.defillama, why: ` (its factory ${factory})` };
@@ -31,10 +37,13 @@ export function protocolOf(entry: RegistryEntry, registry: Registry): { readonly
 /** Why `entry` cannot fill a contract card field of `scope`, or undefined when it can. */
 export function contractRefusal(
   scope: EntryScope,
-  entry: RegistryEntry,
-  registry: Registry,
-): { readonly reason: 'wrong-contract-kind' | 'wrong-protocol' | 'not-in-markets'; readonly detail: string } | undefined {
+  entry: StudyEntry,
+  registry: RegistryView,
+): { readonly reason: 'wrong-contract-kind' | 'not-listed' | 'wrong-protocol' | 'not-in-markets'; readonly detail: string } | undefined {
   if (entry.kind !== scope.registryKind) return { reason: 'wrong-contract-kind', detail: `${entry.name} is a ${entry.kind}, not a ${scope.registryKind}` };
+  if (scope.names !== undefined && !scope.names.includes(entry.name)) {
+    return { reason: 'not-listed', detail: `${entry.name} is not a ${scope.registryKind} this template lists (${scope.names.join(', ')})` };
+  }
   const protocol = scope.protocol === undefined ? undefined : protocolOf(entry, registry);
   if (protocol !== undefined && protocol.slug !== scope.protocol) {
     return { reason: 'wrong-protocol', detail: `${entry.name} is a ${entry.kind} of ${protocol.slug ?? 'no DefiLlama protocol'}${protocol.why}, not of ${scope.protocol}` };
@@ -46,10 +55,10 @@ export function contractRefusal(
   return undefined;
 }
 
-export const inScope = (scope: EntryScope, entry: RegistryEntry, registry: Registry): boolean => contractRefusal(scope, entry, registry) === undefined;
+export const inScope = (scope: EntryScope, entry: StudyEntry, registry: RegistryView): boolean => contractRefusal(scope, entry, registry) === undefined;
 
 /** Every registry entry a contract card field of `scope` accepts, in registry order. */
-export const scopeEntries = (scope: EntryScope, registry: Registry): RegistryEntry[] => [...registry.entries.values()].filter((entry) => inScope(scope, entry, registry));
+export const scopeEntries = <E extends StudyEntry>(scope: EntryScope, registry: RegistryOf<E>): E[] => [...registry.entries.values()].filter((entry) => inScope(scope, entry, registry));
 
 /** What the signer fills in at each signing. */
 export type CardField =
@@ -280,7 +289,7 @@ export const namedEffectTokens = ({ gives, gets, touches }: Pick<Template['effec
 ];
 
 /** The registry names an effect's token can be: `eth` none, a named token itself, a card field the entries it can name. */
-export const effectTokenNames = (token: EffectToken, template: Template, registry: Registry): string[] =>
+export const effectTokenNames = (token: EffectToken, template: Template, registry: RegistryView): string[] =>
   token === 'eth' ? [] : isNamedToken(token) ? [token.contract] : refNames(token, template, registry);
 
 /** A registry token the operation touches without moving it on purpose, whose balance may change within `tolerance`. */
@@ -437,11 +446,11 @@ function exactKeys(path: string, value: Json, required: readonly string[], optio
  * `view` while a view's arguments are parsed, the only place a `keccak` rule binds; `inMessage` while parsing the members
  * of a signed message, which is hashed, never called.
  */
-type Scope = { readonly card: CardFields; readonly registry: Registry; readonly uintLeaves: Map<string, LeafRule>; readonly view: boolean; readonly inMessage: boolean };
+type Scope = { readonly card: CardFields; readonly registry: RegistryView; readonly origin: TemplateOrigin; readonly uintLeaves: Map<string, LeafRule>; readonly view: boolean; readonly inMessage: boolean };
 
 type CardFields = ReadonlyMap<string, CardField>;
 
-function cardRef(path: string, raw: string, card: CardFields, registry: Registry): CardRef {
+function cardRef(path: string, raw: string, card: CardFields, registry: RegistryView): CardRef {
   const [field, attribute, extra] = raw.split('.');
   const target = field === undefined ? undefined : card.get(field);
   if (field === undefined || target === undefined || extra !== undefined) throw new TemplateError(path, `${JSON.stringify(raw)} is not a card field`);
@@ -472,7 +481,7 @@ const binds = (ref: Exclude<RefType, 'market'>, type: AbiType): boolean =>
 /** Morpho Blue's `MarketParams`, which a whole card market binds part by part. */
 const isMarketParams = (type: AbiType): boolean => canonicalType(type) === '(address,address,address,address,uint256)';
 
-function cardToken(path: string, raw: string, card: CardFields, registry: Registry): CardRef {
+function cardToken(path: string, raw: string, card: CardFields, registry: RegistryView): CardRef {
   const ref = cardRef(path, raw, card, registry);
   if (refType(ref, card) !== 'address') throw new TemplateError(path, 'must name a token');
   return ref;
@@ -556,13 +565,14 @@ function quantity(path: string, raw: unknown, scope: Scope): Quantity {
 /** The longest `withinSeconds` a template may declare: a time bound beyond a year bounds next to nothing. */
 const MAX_WITHIN_SECONDS = 365 * 24 * 60 * 60;
 
-const SHARE_PRICE_SCALE = { default: 27, min: 1, max: 36 } as const;
+/** A recorded template's share price without `scale` was scaled by 1e27, as Morpho's adapters take it. */
+const SHARE_PRICE_SCALE = { recorded: 27, min: 1, max: 36 } as const;
 
 function sharePrice(path: string, raw: unknown, type: AbiType, scope: Scope, bound: 'max' | 'min'): Rule {
   if (type.kind !== 'uint') throw new TemplateError(path, `a share price bound cannot bind a ${canonicalType(type)}`);
   const value = object(path, raw);
   exactKeys(path, value, ['assets', 'shares'], ['scale']);
-  const scale = value.scale ?? SHARE_PRICE_SCALE.default;
+  const scale = value.scale ?? SHARE_PRICE_SCALE.recorded;
   if (typeof scale !== 'number' || !Number.isInteger(scale) || scale < SHARE_PRICE_SCALE.min || scale > SHARE_PRICE_SCALE.max) {
     throw new TemplateError(`${path}.scale`, `the power of ten the price is scaled by, a whole number from ${SHARE_PRICE_SCALE.min} to ${SHARE_PRICE_SCALE.max}`);
   }
@@ -904,22 +914,53 @@ function templateCall(path: string, raw: unknown, scope: Scope, last: boolean): 
   return { ...parsed, merge: mergeReason(`${path}.merge`, merge, { ...parsed, merge: undefined }, last) };
 }
 
+/** The registry names a contract field lists: at least one, each once, each an entry the rest of its scope accepts. */
+function listedNames(path: string, raw: unknown, scope: EntryScope, registry: RegistryView): readonly string[] {
+  const names = array(path, raw).map((name, i) => text(`${path}[${i}]`, name));
+  if (names.length === 0) throw new TemplateError(path, 'empty; a field lists at least one registry name');
+  names.forEach((name, i) => {
+    const entry = registry.entries.get(name);
+    if (entry === undefined) throw new TemplateError(`${path}[${i}]`, `${JSON.stringify(name.slice(0, 80))} is not in the contract registry`);
+    if (names.indexOf(name) !== i) throw new TemplateError(`${path}[${i}]`, `${name} is listed twice`);
+    const refused = contractRefusal(scope, entry, registry);
+    if (refused !== undefined) throw new TemplateError(`${path}[${i}]`, refused.detail);
+  });
+  return names;
+}
+
+/**
+ * Every contract field lists the registry names it accepts, except a field of the template's instance kind (its
+ * `instanceField`'s, or else `vault`), which names only the instances with a report for the template.
+ */
+function requireListedNames(fields: CardFields, instanceField: unknown): void {
+  const declared = typeof instanceField === 'string' ? fields.get(instanceField) : undefined;
+  const instanceKind = declared?.kind === 'contract' ? declared.scope.registryKind : 'vault';
+  for (const [name, field] of fields) {
+    if (field.kind !== 'contract') continue;
+    const { registryKind, names } = field.scope;
+    if (registryKind === instanceKind && names !== undefined) {
+      throw new TemplateError(`card.${name}.names`, `a field of the template's instance kind ${instanceKind} lists no names; it names the instances with a report for the template`);
+    }
+  }
+}
+
 /** A field's parser waits for the full field list, since `amount.of` may name a field declared after it. */
-function cardField(path: string, raw: unknown, registry: Registry): (fields: CardFields) => CardField {
+function cardField(path: string, raw: unknown, registry: RegistryView): (fields: CardFields) => CardField {
   const value = object(path, raw);
   switch (value.kind) {
     case 'contract': {
-      exactKeys(path, value, ['kind', 'registryKind'], ['defillama', 'marketPart']);
+      exactKeys(path, value, ['kind', 'registryKind'], ['defillama', 'marketPart', 'names']);
       const registryKind = CONTRACT_KINDS.find((k) => k === value.registryKind);
       if (registryKind === undefined) throw new TemplateError(`${path}.registryKind`, `not one of ${CONTRACT_KINDS.join(', ')}`);
       const marketPart = value.marketPart === undefined ? undefined : MARKET_ENTRY_PARTS.find((part) => part === value.marketPart);
       if (value.marketPart !== undefined && marketPart === undefined) throw new TemplateError(`${path}.marketPart`, `not one of ${MARKET_ENTRY_PARTS.join(', ')}`);
       if (marketPart !== undefined && MARKET_ENTRIES[marketPart] !== registryKind) throw new TemplateError(`${path}.marketPart`, `a market's ${marketPart} is of kind ${MARKET_ENTRIES[marketPart]}, not ${registryKind}`);
-      const scope = { registryKind, protocol: value.defillama === undefined ? undefined : text(`${path}.defillama`, value.defillama), marketPart };
-      if (scope.protocol !== undefined && scopeEntries({ ...scope, marketPart: undefined }, registry).length === 0) {
-        throw new TemplateError(`${path}.defillama`, `no registry ${registryKind} belongs to the DefiLlama protocol ${JSON.stringify(scope.protocol.slice(0, 80))}`);
+      const unlisted = { registryKind, protocol: value.defillama === undefined ? undefined : text(`${path}.defillama`, value.defillama), marketPart, names: undefined };
+      if (unlisted.protocol !== undefined && scopeEntries({ ...unlisted, marketPart: undefined }, registry).length === 0) {
+        throw new TemplateError(`${path}.defillama`, `no registry ${registryKind} belongs to the DefiLlama protocol ${JSON.stringify(unlisted.protocol.slice(0, 80))}`);
       }
-      if (marketPart !== undefined && scopeEntries(scope, registry).length === 0) throw new TemplateError(`${path}.marketPart`, `no registry ${registryKind} this field accepts is the ${marketPart} of a market in ${MARKETS_PATH}`);
+      if (marketPart !== undefined && scopeEntries(unlisted, registry).length === 0) throw new TemplateError(`${path}.marketPart`, `no registry ${registryKind} this field accepts is the ${marketPart} of a market in ${MARKETS_PATH}`);
+      const scope = { ...unlisted, names: value.names === undefined ? undefined : listedNames(`${path}.names`, value.names, unlisted, registry) };
       return () => ({ kind: 'contract', scope });
     }
     case 'amount': {
@@ -1121,7 +1162,7 @@ function tolerance(path: string, raw: unknown): Tolerance {
 }
 
 /** A registry token by name: an entry of kind `token` or `vault`, which holds balances. */
-function registryToken(path: string, name: string, registry: Registry): string {
+function registryToken(path: string, name: string, registry: RegistryView): string {
   const entry = registry.entries.get(name);
   if (entry === undefined) throw new TemplateError(path, `${JSON.stringify(name)} is not in the contract registry`);
   if (entry.kind !== 'token' && entry.kind !== 'vault') throw new TemplateError(path, `${name} is a ${entry.kind}, not a token or a vault`);
@@ -1285,7 +1326,7 @@ export function ruleLeaves(rule: Rule): Rule[] {
   return [rule];
 }
 
-function fact(path: string, raw: unknown, scope: Scope, protocols: ReadonlyMap<string, readonly RegistryEntry[]>): Fact {
+function fact(path: string, raw: unknown, scope: Scope, protocols: ReadonlyMap<string, readonly StudyEntry[]>): Fact {
   const value = object(path, raw);
   exactKeys(path, value, ['to', 'function', 'args', 'units'], ['ratio', 'reason']);
   const { to, ...rest } = boundView(path, value, scope);
@@ -1335,7 +1376,7 @@ function fact(path: string, raw: unknown, scope: Scope, protocols: ReadonlyMap<s
 }
 
 /** The registry names a card reference can resolve to, in registry order. */
-export function refNames(ref: CardRef, template: Template, registry: Registry): string[] {
+export function refNames(ref: CardRef, template: Template, registry: RegistryView): string[] {
   const field = template.card.get(ref.field);
   const { attribute } = ref;
   if (field?.kind === 'market') {
@@ -1348,7 +1389,7 @@ export function refNames(ref: CardRef, template: Template, registry: Registry): 
 }
 
 /** The registry names a rule binds an address to: a named contract, or the entries a card field can name; undefined for any other rule. */
-export function targetNames(rule: Rule, template: Template, registry: Registry): string[] | undefined {
+export function targetNames(rule: Rule, template: Template, registry: RegistryView): string[] | undefined {
   if (rule.kind === 'address-word') return targetNames(rule.rule, template, registry);
   if (rule.kind === 'contract') return [rule.name];
   const names = rule.kind === 'card' ? refNames(rule.ref, template, registry) : [];
@@ -1356,7 +1397,7 @@ export function targetNames(rule: Rule, template: Template, registry: Registry):
 }
 
 /** The registry names a view effect's contract can be: its named contract, or the entries its card field can name. */
-export const viewTargetNames = (to: ViewTarget, template: Template, registry: Registry): string[] =>
+export const viewTargetNames = (to: ViewTarget, template: Template, registry: RegistryView): string[] =>
   to.kind === 'contract' ? [to.name] : refNames(to.ref, template, registry);
 
 
@@ -1368,7 +1409,7 @@ export const viewTargetNames = (to: ViewTarget, template: Template, registry: Re
 export type CallSite = { readonly call: number; readonly nested: boolean; readonly fn: AbiFunction; readonly names: readonly string[] | undefined };
 
 /** Every function the template calls, each top-level call first and then the calls nested in its arguments. */
-export function callSites(template: Template, registry: Registry): CallSite[] {
+export function callSites(template: Template, registry: RegistryView): CallSite[] {
   const sites: CallSite[] = [];
   const visitCall = (call: number, node: CallNode, target: Rule | undefined, nested: boolean): void => {
     sites.push({ call, nested, fn: node.fn, names: target === undefined ? undefined : targetNames(target, template, registry) });
@@ -1397,7 +1438,7 @@ export function callSites(template: Template, registry: Registry): CallSite[] {
  * For each function, by signature, the registry names the template calls it on: a call's `to`, or for a call nested in
  * a tuple, such as a Bundler3 bundle item, the tuple's one address field. Absent when no call site binds its target.
  */
-export function callTargets(template: Template, registry: Registry): Map<string, string[]> {
+export function callTargets(template: Template, registry: RegistryView): Map<string, string[]> {
   const targets = new Map<string, string[]>();
   for (const { fn, names } of callSites(template, registry)) {
     if (names !== undefined) targets.set(fn.signature, [...new Set([...(targets.get(fn.signature) ?? []), ...names])]);
@@ -1406,18 +1447,18 @@ export function callTargets(template: Template, registry: Registry): Map<string,
 }
 
 /** The registry entries the template's calls go to, nested calls' targets included, in call order. */
-export function callTargetEntries(template: Template, registry: Registry): RegistryEntry[] {
+export function callTargetEntries<E extends StudyEntry>(template: Template, registry: RegistryOf<E>): E[] {
   const empty = template.calls.flatMap((call) => (call.data === 'empty' ? (targetNames(call.to, template, registry) ?? []) : []));
   const names = new Set([...callTargets(template, registry).values()].flat().concat(empty));
-  return [...names].map((name) => registry.entries.get(name) as RegistryEntry);
+  return [...names].map((name) => registry.entries.get(name) as E);
 }
 
 /**
  * The DefiLlama protocols the template's calls go to, each with its call targets, an entry with a `factory` under its
  * factory's protocol; a token's issuer is not such a protocol.
  */
-export function calledProtocols(template: Template, registry: Registry): ReadonlyMap<string, readonly RegistryEntry[]> {
-  const protocols = new Map<string, RegistryEntry[]>();
+export function calledProtocols<E extends StudyEntry>(template: Template, registry: RegistryOf<E>): ReadonlyMap<string, readonly E[]> {
+  const protocols = new Map<string, E[]>();
   for (const entry of callTargetEntries(template, registry)) {
     const { slug } = protocolOf(entry, registry);
     if (entry.kind !== 'token' && slug !== undefined) protocols.set(slug, [...(protocols.get(slug) ?? []), entry]);
@@ -1425,7 +1466,16 @@ export function calledProtocols(template: Template, registry: Registry): Readonl
   return protocols;
 }
 
-export function parseTemplate(raw: unknown, registry: Registry): Template {
+/**
+ * Where a template's text comes from. `committed`: a file in `templates/`, as load and `template approve` read it.
+ * `recorded`: the text `verify` judges with or a recording keeps, which may hold an older form the signer approved;
+ * since `template approve` refuses that form, only text approved before reads it. `replayed`: the text a verdict file
+ * holds for `replay`, which may also predate listed names: its unlisted fields then accept every registry entry of their kind, as
+ * they did when the verdict was recorded, so `replay` recomputes it.
+ */
+export type TemplateOrigin = 'committed' | 'recorded' | 'replayed';
+
+export function parseTemplate(raw: unknown, registry: RegistryView, origin: TemplateOrigin = 'committed'): Template {
   const value = object('template', raw);
   exactKeys('template', value, ['id', 'card', 'calls', 'effects'], ['nonce', 'same', 'facts', 'instanceField']);
   const id = text('id', value.id);
@@ -1436,7 +1486,8 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
   });
   const fields = new Map<string, CardField>(pending.map(([name]) => [name, { kind: 'address' }]));
   for (const [name, build] of pending) fields.set(name, build(fields));
-  const scope: Scope = { card: fields, registry, uintLeaves: new Map(), view: false, inMessage: false };
+  if (origin !== 'replayed') requireListedNames(fields, value.instanceField);
+  const scope: Scope = { card: fields, registry, origin, uintLeaves: new Map(), view: false, inMessage: false };
   const rawCard = object('card', value.card);
   const order = pending.map(([name]) => [name, object(`card.${name}`, rawCard[name]).computed !== undefined] as const);
   for (const [name, isComputed] of order) {
@@ -1689,9 +1740,9 @@ export function cardRefs(template: Template): CardRef[] {
 }
 
 /** Reads `templates/<id>/template.json` and requires its `id` to be the folder it sits in. */
-export function loadTemplate(repoRoot: string, id: string, registry: Registry): Template {
+export function loadTemplate(repoRoot: string, id: string, registry: RegistryView): Template {
   if (!ID.test(id)) throw new TemplateError('id', `${JSON.stringify(id.slice(0, 80))} is not <protocol>/<operation>`);
-  const template = parseTemplate(JSON.parse(readFileSync(join(repoRoot, TEMPLATES_DIR, id, 'template.json'), 'utf8')), registry);
+  const template = parseTemplate(JSON.parse(readFileSync(join(repoRoot, TEMPLATES_DIR, id, 'template.json'), 'utf8')), registry, 'committed');
   if (template.id !== id) throw new TemplateError('id', `${JSON.stringify(template.id)} sits in templates/${id}`);
   return template;
 }

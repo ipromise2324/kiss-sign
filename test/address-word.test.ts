@@ -103,7 +103,7 @@ function refused(change: (raw: typeof rawTemplate) => void): TemplateError {
   const broken = structuredClone(rawTemplate);
   change(broken);
   try {
-    parseTemplate(broken, registry);
+    parseTemplate(broken, registry, 'committed');
   } catch (error) {
     if (error instanceof TemplateError) return error;
     throw error;
@@ -133,10 +133,10 @@ test('a bytes32 named as a recipient is never free, nor a constant other than ze
 test('a bytes32 named otherwise may be free, and a recipient word may be the zero constant', () => {
   const zero = structuredClone(rawTemplate);
   burnArgs(zero).mintRecipient = { const: `0x${'00'.repeat(32)}` };
-  assert.doesNotThrow(() => parseTemplate(zero, registry));
+  assert.doesNotThrow(() => parseTemplate(zero, registry, 'committed'));
   const caller = structuredClone(rawTemplate);
   burnArgs(caller).destinationCaller = { free: REASON };
-  assert.doesNotThrow(() => parseTemplate(caller, registry));
+  assert.doesNotThrow(() => parseTemplate(caller, registry, 'committed'));
 });
 
 test('addressWord binds only a bytes32, and only through a card, safe or contract rule', () => {
@@ -146,6 +146,6 @@ test('addressWord binds only a bytes32, and only through a card, safe or contrac
   for (const inner of [{ safe: true }, { contract: 'cctp-token-messenger-v2' }]) {
     const other = structuredClone(rawTemplate);
     burnArgs(other).mintRecipient = { addressWord: inner };
-    assert.doesNotThrow(() => parseTemplate(other, registry), JSON.stringify(inner));
+    assert.doesNotThrow(() => parseTemplate(other, registry, 'committed'), JSON.stringify(inner));
   }
 });

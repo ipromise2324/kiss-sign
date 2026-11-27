@@ -6,7 +6,9 @@ import { etherscanFromEnv } from '../src/contracts/etherscan.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { checksumAddress, parseAddress } from '../src/safe/types.ts';
 import { ensureVendored } from '../src/vendor.ts';
+import { UsageError } from '../src/cli/io.ts';
 import { exitOnHelp } from '../src/script-help.ts';
+import { refuseReadableErrors } from '../src/script-refusal.ts';
 
 const USAGE = 'usage: pnpm prove-abi <address>';
 const HELP = `${USAGE}
@@ -31,9 +33,10 @@ Rules: docs/design/flow.md, "First time an operation is done: build its template
 Establish the ABI; step 2, Pin the routes and Declare the implementation read).`;
 
 exitOnHelp(HELP);
+refuseReadableErrors();
 
 const [addressArg] = process.argv.slice(2);
-if (addressArg === undefined) throw new Error(`${USAGE}, with ALCHEMY_API_KEY and ETHERSCAN_API_KEY`);
+if (addressArg === undefined) throw new UsageError(`${USAGE}, with ALCHEMY_API_KEY and ETHERSCAN_API_KEY`);
 const address = parseAddress('address', addressArg);
 
 const entry = loadRegistry(join(import.meta.dirname, '..')).byAddress.get(address);

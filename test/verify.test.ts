@@ -175,7 +175,7 @@ for (const name of ['cow-swap-approve', 'morpho-migrate-all', 'morpho-vault-depo
   test(`the verdict recorded in ${name}.json recomputes byte for byte`, async () => {
     const text = readFileSync(join(ROOT, 'testdata', 'verify', `${name}.json`), 'utf8');
     const { result: recorded, ...file } = parseVerdictFile(JSON.parse(text));
-    const result = await evaluate(file.inputs, replayReader(file.exchanges));
+    const result = await evaluate(file.inputs, replayReader(file.exchanges), true);
     assert.equal(JSON.stringify(result), JSON.stringify(recorded));
   });
 }

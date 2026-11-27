@@ -174,6 +174,19 @@ for (const c of HOOK_CASES) {
     assert.equal(at.length, 1);
     assert.match(at[0]!, /\.V4_SWAP\.params\[1\]\.SWAP_EXACT_IN_SINGLE\.params\.poolKey\.hooks$/);
   });
+
+  test(`${c.name}: a card that swaps another listed token, or the two tokens the other way, is a mismatch at each field that names the token`, () => {
+    const swapping = (sell: string, buy: string): Card => ({
+      operations: c.card.operations.map((op) => (op.template === 'uniswap/swap' ? { ...op, values: { ...op.values, 'sell-token': sell, 'buy-token': buy } } : op)),
+    });
+    const { 'sell-token': sell, 'buy-token': buy } = c.card.operations.at(-1)!.values as Record<string, string>;
+    const swapAt = c === BATCHED ? 'multiSend[2]' : 'call';
+    const sold = [`${swapAt}.execute.inputs[0].V4_SWAP.params[0].SETTLE.currency`];
+    const bought = [`${swapAt}.execute.inputs[0].V4_SWAP.params[2].TAKE.currency`, `${swapAt}.execute.inputs[1].SWEEP.token`];
+    assert.deepEqual(mismatchAt(check(tx, swapping(buy!, buy!))), sold);
+    assert.deepEqual(mismatchAt(check(tx, swapping(sell!, sell!))), bought);
+    assert.deepEqual(mismatchAt(check(tx, swapping(buy!, sell!))), [...sold, ...bought]);
+  });
 }
 
 for (const { name, card } of UNHOOKED) {
@@ -248,7 +261,7 @@ test('uniswap/swap-no-hook refuses another token at each place the transaction n
   for (const [token, paths] of places) paths.forEach((at, nth) => assert.deepEqual(mismatchAt(check(changed(tx, addressOf(token), addressOf('morpho'), nth), NO_HOOK.card)), [at]));
   const sold = `${v4}.params[0].SETTLE.currency`;
   const bought = `${v4}.params[2].TAKE.currency`;
-  for (const [sell, buy, at] of [['morpho', 'usdt', [sold]], ['usdc', 'morpho', [bought]], ['usdt', 'usdc', [sold, bought]]] as const) {
+  for (const [sell, buy, at] of [['usdt', 'usdt', [sold]], ['usdc', 'usdc', [bought]], ['usdt', 'usdc', [sold, bought]]] as const) {
     const card: Card = { operations: [swapOp(sell, buy, NO_HOOK.sell, NO_HOOK.minBuy, 'uniswap/swap-no-hook')] };
     assert.deepEqual(mismatchAt(check(tx, card)), at);
   }
@@ -357,32 +370,32 @@ test('an unlimited kept allowance needs a registry spender that declares a stand
   const refused = (edit: (t: any) => void, problem: RegExp) => {
     const broken = structuredClone(allow);
     edit(broken);
-    assert.throws(() => parseTemplate(broken, registry), (error: unknown) => error instanceof TemplateError && problem.test(error.message));
+    assert.throws(() => parseTemplate(broken, registry, 'committed'), (error: unknown) => error instanceof TemplateError && problem.test(error.message));
   };
   refused((t) => (t.effects.approves[0].spender = 'permit2'), /permit2 declares no standing allowance through permit2/);
   refused((t) => (t.effects.approves[0].spender = 'bundler3'), /bundler3 declares no standing allowance through permit2/);
   refused((t) => (t.effects.approves[0].via = 'erc20'), /universal-router-2\.1\.2 declares no standing allowance through erc20/);
   const raw = JSON.parse(readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8'));
   delete raw['universal-router-2.1.2'].standingAllowance;
-  assert.throws(() => parseTemplate(allow, parseRegistryAt(ROOT, raw)), /declares no standing allowance through permit2/);
+  assert.throws(() => parseTemplate(allow, parseRegistryAt(ROOT, raw), 'committed'), /declares no standing allowance through permit2/);
 });
 
 test('a trailer over 19 bytes is allowed only on a call to a registry contract that declares it ignores trailing calldata', () => {
   const swap = JSON.parse(readFileSync(join(ROOT, 'templates', 'uniswap', 'swap', 'template.json'), 'utf8'));
-  assert.doesNotThrow(() => parseTemplate(swap, registry));
+  assert.doesNotThrow(() => parseTemplate(swap, registry, 'committed'));
   const raw = JSON.parse(readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8'));
   delete raw['universal-router-2.1.2'].ignoresTrailer;
-  assert.throws(() => parseTemplate(swap, parseRegistryAt(ROOT, raw)), /an integer from 1 to 19; more only on a call to a registry contract that declares ignoresTrailer/);
+  assert.throws(() => parseTemplate(swap, parseRegistryAt(ROOT, raw), 'committed'), /an integer from 1 to 19; more only on a call to a registry contract that declares ignoresTrailer/);
 });
 
 test('a route claim needs every token the Safe gets bounded, since another pool gives another price', () => {
   const swap = JSON.parse(readFileSync(join(ROOT, 'templates', 'uniswap', 'swap-permit', 'template.json'), 'utf8'));
   swap.effects.gets[0].amount = 'positive';
-  assert.throws(() => parseTemplate(swap, registry), /a template with a route claim must bound each token the Safe gives or gets/);
+  assert.throws(() => parseTemplate(swap, registry, 'committed'), /a template with a route claim must bound each token the Safe gives or gets/);
   const noHook = JSON.parse(readFileSync(join(ROOT, 'templates', 'uniswap', 'swap-no-hook', 'template.json'), 'utf8'));
-  assert.doesNotThrow(() => parseTemplate(noHook, registry));
+  assert.doesNotThrow(() => parseTemplate(noHook, registry, 'committed'));
   noHook.effects.gets[0].amount = 'positive';
-  assert.throws(() => parseTemplate(noHook, registry), /a template with a route claim must bound each token the Safe gives or gets/);
+  assert.throws(() => parseTemplate(noHook, registry, 'committed'), /a template with a route claim must bound each token the Safe gives or gets/);
 });
 
 test('a router input whose bytes do not re-encode exactly is a mismatch at its encoding', () => {

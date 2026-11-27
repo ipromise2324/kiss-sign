@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { canonicalJson } from '../canonical.ts';
 import { canonicalType, parseFunctionSignature } from '../decode/abi.ts';
 import type { AbiType } from '../decode/abi.ts';
-import { ATTRIBUTES_PATH, MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, isEntryName } from '../registry.ts';
+import { MARKET_ENTRY_PARTS, isEntryName } from '../registry.ts';
 import type { Registry } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { TEMPLATES_DIR, cardRefs, loadTemplate, refNames } from '../template/template.ts';
@@ -15,9 +15,10 @@ import { searchTop, yearBefore } from './past-txs.ts';
 import type { Coverage, Found, Kept, PastTxs, PartyCheck, SafesFirst, SearchRun, Selection, WindowRun, YearSearch } from './past-txs.ts';
 import { MAX_PAGES, MIN_PAGES, YEAR_PAGES, anchorOf, replayPastTxs, samplingOf } from './recording.ts';
 import type { PastTxsRecording } from './recording.ts';
-import { ANCHOR_KINDS, SOURCES, anchorEvent } from './sources.ts';
+import { ANCHOR_KINDS, SOURCES, anchorEvent, eventArgTopic, markedEvent } from './sources.ts';
 import type { SourceName } from './sources.ts';
 import { appFills, shapesOf } from './study.ts';
+import { studyRegistry } from './study-registry.ts';
 import type { CallName, FreeValue, MisfitReason, NotStudiedReason, Outside, OutsideKind, Sender, UnprovenReason } from './study.ts';
 import { parseRecordedTrace } from './trace.ts';
 import type { TracedTx } from './trace.ts';
@@ -88,6 +89,7 @@ export const STUDY_FILES: readonly string[] = [
   'src/research/shared-reads.ts',
   'src/research/source-page.ts',
   'src/research/sources.ts',
+  'src/research/study-registry.ts',
   'src/research/study.ts',
   'src/research/trace.ts',
   'src/safe/deployments.ts',
@@ -105,60 +107,50 @@ export const studyFingerprint = (): Hex => keccakText(STUDY_FILES.map((file) => 
 
 export const templateFingerprint = (repoRoot: string, template: string): Hex => keccakText(readFileSync(join(repoRoot, TEMPLATES_DIR, template, 'template.json'), 'utf8'));
 
-const readJson = (repoRoot: string, path: string, fallback: unknown): unknown => {
-  try {
-    return JSON.parse(readFileSync(join(repoRoot, path), 'utf8')) as unknown;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return fallback;
-    throw error;
-  }
-};
-
 const stringsIn = (value: unknown): string[] =>
   typeof value === 'string' ? [value] : Array.isArray(value) ? value.flatMap(stringsIn) : typeof value === 'object' && value !== null ? Object.values(value).flatMap(stringsIn) : [];
 
 /**
- * keccak256 of the entries of `registry` a summary's study could read, so adding an unrelated entry keeps it: each entry
- * the template names, each a card reference can name (a field's scope, the attribute it reads, a market's parts), each the
- * query's token, --from or --to is, each whose address occurs anywhere in the summary's results, every market when a
- * card field is one, each market all of whose entries are among those, and the rows of the attribute table those
- * entries or the template name, as `registry/` holds them, in canonical JSON. `registry` is the one the study read, which for a template reported per vault holds that
- * vault alone of those its field accepts.
+ * keccak256 of what a summary's study could read of `registry`, in canonical JSON: of each entry it could read, the
+ * fields `studyRegistry` gives the study and no other, so a field no study reads, such as `price`, keeps every summary.
+ * The entries: each the template names, each a card reference can name (a field's scope, the attribute it reads, a
+ * market's parts), each the query's token, --from, --to or --event-arg is, each whose address occurs anywhere in the summary's
+ * results, the tokens its traces' receipts logged among them, and each an attribute of one of those names, such as its
+ * factory, whose protocol it belongs to. With them, every market when a card field is one, each market all of whose
+ * parts are among those, and the rows of the attribute table those entries or the template name. `registry` is the one
+ * the study read, which for a template reported per vault holds that vault alone of those its field accepts.
  */
 export function registryFingerprint(repoRoot: string, registry: Registry, query: PastTxsRecording['query'], results: unknown): Hex {
-  const contracts = readJson(repoRoot, REGISTRY_PATH, {}) as Record<string, { readonly address?: unknown }>;
-  const markets = readJson(repoRoot, MARKETS_PATH, {}) as Record<string, Record<string, unknown>>;
-  const template = loadTemplate(repoRoot, query.template, registry);
+  const studied = studyRegistry(registry);
+  const template = loadTemplate(repoRoot, query.template, studied);
   const templateStrings = stringsIn(JSON.parse(readFileSync(join(repoRoot, TEMPLATES_DIR, query.template, 'template.json'), 'utf8')));
   const anyMarket = [...template.card.values()].some((field) => field.kind === 'market');
-  const marketParts = anyMarket ? [...registry.markets.values()].flatMap((market) => MARKET_ENTRY_PARTS.map((part) => market[part].name)) : [];
-  const queried = [query.token, query.from, query.to].flatMap((address) => (address === undefined ? [] : (registry.byAddress.get(address.toLowerCase() as Address)?.name ?? [])));
+  const marketParts = anyMarket ? [...studied.markets.values()].flatMap((market) => MARKET_ENTRY_PARTS.map((part) => market[part].name)) : [];
+  const queried = [query.token, query.from, query.to, query.eventArg !== undefined && 'address' in query.eventArg ? query.eventArg.address : undefined].flatMap((address) => (address === undefined ? [] : (studied.byAddress.get(address.toLowerCase() as Address)?.name ?? [])));
   const named = new Set([
     ...templateStrings.filter(isEntryName),
-    ...cardRefs(template).flatMap((ref) => refNames(ref, template, registry)),
+    ...cardRefs(template).flatMap((ref) => refNames(ref, template, studied)),
     ...marketParts,
     ...queried,
   ]);
   const text = JSON.stringify(results).toLowerCase();
-  const kept = [...registry.entries.values()].filter((entry) => named.has(entry.name) || text.includes(entry.address.slice(2))).map((entry) => entry.name);
-  const keptMarkets = [...registry.markets.keys()].filter((name) => anyMarket || MARKET_ENTRY_PARTS.every((part) => kept.includes(String(markets[name]?.[part]))));
-  const table = readJson(repoRoot, ATTRIBUTES_PATH, null) as Record<string, unknown> | null;
-  const read = new Set([
-    ...kept.flatMap((name) => [...Object.keys(registry.entries.get(name)?.attributes ?? {}), ...stringsIn(contracts[name])]),
-    ...templateStrings.flatMap((s) => s.split('.')),
-  ]);
+  const direct = [...studied.entries.values()].filter((entry) => named.has(entry.name) || text.includes(entry.address.slice(2)));
+  const kept = new Set(direct.flatMap((entry) => [entry.name, ...Object.values(entry.attributes)]));
+  const entries = [...studied.entries.values()].filter((entry) => kept.has(entry.name));
+  const markets = [...studied.markets.values()].filter((market) => anyMarket || MARKET_ENTRY_PARTS.every((part) => kept.has(market[part].name)));
+  const read = new Set([...entries.flatMap((entry) => Object.keys(entry.attributes)), ...templateStrings.flatMap((s) => s.split('.'))]);
   return keccakText(
     canonicalJson({
-      contracts: Object.fromEntries(kept.sort().map((name) => [name, contracts[name]])),
-      markets: Object.fromEntries(keptMarkets.sort().map((name) => [name, markets[name]])),
-      attributes: table === null ? null : Object.fromEntries(Object.entries(table).filter(([name]) => read.has(name))),
+      contracts: Object.fromEntries(entries.map((entry) => [entry.name, entry])),
+      markets: Object.fromEntries(markets.map(({ lltv, ...market }) => [market.name, { ...market, lltv: lltv.toString() }])),
+      attributes: Object.fromEntries([...studied.attributes].filter(([name]) => read.has(name))),
     }),
   );
 }
 
 /** A recording studied again from its answers, with `registry` and the template as this checkout holds it. */
 export async function studyRecording(repoRoot: string, recording: PastTxsRecording, registry: Registry): Promise<PastTxsSummary> {
-  const template = loadTemplate(repoRoot, recording.query.template, registry);
+  const template = loadTemplate(repoRoot, recording.query.template, studyRegistry(registry));
   return summaryOf(repoRoot, registry, recording.query, await replayPastTxs(recording, template, registry));
 }
 
@@ -344,8 +336,11 @@ function parseSender(p: Parser, at: string, raw: unknown): Sender {
 }
 
 function parseCallName(p: Parser, at: string, raw: unknown): CallName {
-  const o = p.object(at, raw, [], ['to', 'selector']);
-  return { to: p.optional(`${at}.to`, o.to, p.address), selector: p.optional(`${at}.selector`, o.selector, p.selector) };
+  const o = p.object(at, raw, [], ['to', 'selector', 'bytes']);
+  const to = p.optional(`${at}.to`, o.to, p.address);
+  if (o.selector !== undefined) return o.bytes === undefined ? { to, selector: p.selector(`${at}.selector`, o.selector) } : p.fail(`${at}.bytes`, 'beside a selector');
+  const bytes = p.optional(`${at}.bytes`, o.bytes, (a, x) => ([1, 2, 3].includes(x as number) ? (x as 1 | 2 | 3) : p.fail(a, 'not 1, 2 or 3 bytes, too few for a selector')));
+  return bytes === undefined ? { to, selector: undefined } : { to, selector: undefined, bytes };
 }
 
 function parseReason(p: Parser, at: string, raw: unknown): MisfitReason {
@@ -482,13 +477,15 @@ function parseMeasurement(p: Parser, at: string, raw: unknown): readonly [Hex, M
   return [p.hash(`${at}.hash`, o.hash), { kind, differences }];
 }
 
+const parseLogged = (p: Parser, at: string, raw: unknown) => (raw === undefined ? {} : { logged: p.list(`${at}.logged`, raw, p.address) });
+
 function parseTraced(p: Parser, at: string, raw: unknown): TracedTx {
   const kind = p.oneOf(['traced', 'unverifiable'] as const)(`${at}.kind`, (raw as Json | undefined)?.kind);
   if (kind === 'unverifiable') {
-    const o = p.object(at, raw, ['kind', 'hash', 'why']);
-    return { kind, hash: p.hash(`${at}.hash`, o.hash), why: p.text(`${at}.why`, o.why) };
+    const o = p.object(at, raw, ['kind', 'hash', 'why'], ['logged']);
+    return { kind, hash: p.hash(`${at}.hash`, o.hash), why: p.text(`${at}.why`, o.why), ...parseLogged(p, at, o.logged) };
   }
-  const o = p.object(at, raw, ['kind', 'hash', 'sender', 'calls']);
+  const o = p.object(at, raw, ['kind', 'hash', 'sender', 'calls'], ['logged']);
   const hash = p.hash(`${at}.hash`, o.hash);
   let trace;
   try {
@@ -497,7 +494,7 @@ function parseTraced(p: Parser, at: string, raw: unknown): TracedTx {
     return p.fail(at, (error as Error).message);
   }
   if (!('calls' in trace)) return p.fail(at, 'no calls');
-  return { kind, hash, sender: parseSender(p, `${at}.sender`, o.sender), calls: trace.calls };
+  return { kind, hash, sender: parseSender(p, `${at}.sender`, o.sender), calls: trace.calls, ...parseLogged(p, at, o.logged) };
 }
 
 function parseRange(p: Parser, at: string, raw: unknown) {
@@ -557,20 +554,30 @@ function parseCoverage(p: Parser, at: string, raw: unknown, head: bigint, maxPag
   return { kind, range, pages, time };
 }
 
-function canonicalEvent(signature: string): boolean {
+/** Canonical as `--record` writes it: unmarked, or with its indexed arguments marked and `eventArg` one of them. */
+function canonicalEvent(signature: string, eventArg: PastTxsRecording['query']['eventArg']): boolean {
   try {
-    return anchorEvent(signature).signature === signature;
+    if (eventArg === undefined) return anchorEvent(signature).signature === signature;
+    eventArgTopic(signature, eventArg);
+    return markedEvent(signature) === signature;
   } catch {
     return false;
   }
 }
+
+const isEventArg = (raw: unknown): boolean =>
+  typeof raw === 'object' &&
+  raw !== null &&
+  Number.isSafeInteger((raw as { position: unknown }).position) &&
+  ((Object.keys(raw).join() === 'position,address' && /^0x[0-9a-f]{40}$/.test(String((raw as { address: unknown }).address))) ||
+    (Object.keys(raw).join() === 'position,bytes32' && /^0x[0-9a-f]{64}$/.test(String((raw as { bytes32: unknown }).bytes32))));
 
 /** The report prints a summary's file name and query as a command, so each must be what `pnpm past-txs` writes. */
 function parseQuery(file: string, raw: unknown): PastTxsRecording['query'] {
   const query = raw as PastTxsRecording['query'];
   const address = (v: unknown) => typeof v === 'string' && /^0x[0-9a-fA-F]{40}$/.test(v);
   const block = (v: unknown) => v === undefined || (typeof v === 'string' && /^\d+$/.test(v));
-  const keys = ['template', 'token', 'anchor', 'from', 'to', 'event', 'fromBlock', 'toBlock', 'head', 'wholeYear', 'yearPages', 'maxPages', 'maxTxs'];
+  const keys = ['template', 'token', 'anchor', 'from', 'to', 'event', 'eventArg', 'txParty', 'fromBlock', 'toBlock', 'head', 'wholeYear', 'yearPages', 'maxPages', 'maxTxs'];
   const printable =
     typeof raw === 'object' &&
     raw !== null &&
@@ -583,7 +590,9 @@ function parseQuery(file: string, raw: unknown): PastTxsRecording['query'] {
     (query.to === undefined || address(query.to)) &&
     (ANCHOR_KINDS as readonly string[]).includes(query.anchor) &&
     (query.anchor === 'event') === (query.event !== undefined) &&
-    (query.event === undefined || (typeof query.event === 'string' && canonicalEvent(query.event))) &&
+    (query.eventArg === undefined || (query.event !== undefined && isEventArg(query.eventArg))) &&
+    (query.txParty === undefined || (query.txParty === true && query.anchor === 'event' && query.token !== undefined)) &&
+    (query.event === undefined || (typeof query.event === 'string' && canonicalEvent(query.event, query.eventArg))) &&
     block(query.fromBlock) &&
     block(query.toBlock) &&
     block(query.head) &&

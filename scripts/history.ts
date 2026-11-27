@@ -1,7 +1,7 @@
 import { nodeIo } from '../src/cli/main.ts';
-import { UsageError } from '../src/cli/io.ts';
 import { history } from '../src/history/history.ts';
 import { exitOnHelp } from '../src/script-help.ts';
+import { refusal } from '../src/script-refusal.ts';
 
 const HELP = `usage: pnpm history [--out <file.md>] [--refresh]
 usage: pnpm history fetch
@@ -45,7 +45,8 @@ exitOnHelp(HELP, args[0] === 'fetch' ? args.slice(1) : args);
 try {
   process.exitCode = await history(args, nodeIo());
 } catch (error) {
-  if (!(error instanceof Error) || (error.name === 'Error' && !(error instanceof UsageError))) throw error;
-  process.stderr.write(`history: ${error.message}\n`);
-  process.exitCode = 1;
+  const refused = refusal(error, 1);
+  if (refused === undefined && (!(error instanceof Error) || error.name === 'Error')) throw error;
+  process.stderr.write(refused === undefined ? `history: ${(error as Error).message}\n` : `${refused.line}\n`);
+  process.exitCode = refused?.code ?? 1;
 }

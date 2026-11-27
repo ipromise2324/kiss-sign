@@ -6,7 +6,9 @@ import { loadStoredConfig } from '../src/config.ts';
 import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { KEYS, findKey, kissSignHome } from '../src/keys.ts';
 import { checksumAddress, parseAddress, parseHex, parseOperation, parseUint256 } from '../src/safe/types.ts';
+import { UsageError } from '../src/cli/io.ts';
 import { exitOnHelp } from '../src/script-help.ts';
+import { refuseReadableErrors } from '../src/script-refusal.ts';
 
 const USAGE = 'usage: pnpm record-safe-tx <name> <safe> <safeTxHash | nonce>';
 const HELP = `${USAGE}
@@ -26,13 +28,14 @@ Rules: docs/design/flow.md, "First time an operation is done: build its template
   Write the template).`;
 
 exitOnHelp(HELP);
+refuseReadableErrors();
 
 const SERVICE = 'https://api.safe.global/tx-service/eth/api/v2';
 
 const [name, safeArg, which] = process.argv.slice(2);
 const alchemyKey = findKey(KEYS[0], process.env)?.value;
 if (name === undefined || safeArg === undefined || which === undefined || !/^[a-z0-9-]+$/.test(name)) {
-  throw new Error(USAGE);
+  throw new UsageError(USAGE);
 }
 if (alchemyKey === undefined || alchemyKey === '') throw new Error(`ALCHEMY_API_KEY is not set, in the environment or in $KISS_SIGN_HOME/.env\n${USAGE}`);
 

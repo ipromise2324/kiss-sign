@@ -233,7 +233,7 @@ test('a template names ETH as eth, never as a card field, and only what the Safe
   for (const [edit, path] of cases) {
     const broken = structuredClone(raw);
     edit(broken);
-    assert.throws(() => parseTemplate(broken, registry), (error: unknown) => error instanceof TemplateError && error.path === path, path);
+    assert.throws(() => parseTemplate(broken, registry, 'committed'), (error: unknown) => error instanceof TemplateError && error.path === path, path);
   }
   assert.throws(() => parseRegistry({ eth: { address: OTHER, kind: 'token', source: 'https://example.com' } }), RegistryError);
 });

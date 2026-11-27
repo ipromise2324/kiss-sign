@@ -1,6 +1,5 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { parseArgs } from 'node:util';
 import { loadAddressBook } from '../address-book.ts';
 import { cardsDir, loadSealed } from '../card.ts';
 import { canonicalJson } from '../canonical.ts';
@@ -25,6 +24,7 @@ import type { Evaluation, Prepared, TxInput, VerdictFile, VerifyInputs } from '.
 import type { Verdict } from '../verify/verdict.ts';
 import { BOX_WIDTH, box, paint, rows, text, wrap } from './format.ts';
 import type { Paint, Row } from './format.ts';
+import { parseFlags } from './flags.ts';
 import { FAILED, OK, UsageError } from './io.ts';
 import type { Labels } from './labels.ts';
 import type { Language } from '../language.ts';
@@ -77,7 +77,7 @@ async function txInput(file: string | undefined, safeTxHash: string | undefined,
 
 export async function verify(args: readonly string[], io: Io, w: Labels): Promise<number> {
   const V = w.verdict;
-  const { values } = parseArgs({
+  const { values } = parseFlags({
     args: [...args],
     options: { card: { type: 'string' }, tx: { type: 'string' }, 'safe-tx-hash': { type: 'string' } },
     strict: true,
@@ -185,8 +185,8 @@ export async function replay(args: readonly string[], io: Io, w: Labels): Promis
   const [path, ...extra] = args;
   if (path === undefined || extra.length > 0) throw new UsageError(V.replayUsage);
   const file = parseVerdictFile(JSON.parse(readFileSync(path, 'utf8')));
-  const result = await evaluate(file.inputs, replayReader(file.exchanges));
-  printReplay(result, prepare(file.inputs), io, w);
+  const result = await evaluate(file.inputs, replayReader(file.exchanges), true);
+  printReplay(result, prepare(file.inputs, true), io, w);
   if (canonicalJson(result) !== canonicalJson(file.result)) {
     const sameVerdict = canonicalJson(result.verdict) === canonicalJson(file.result.verdict);
     io.stderr(`kiss-sign: ${V.replayDiffers(file.result.verdict.kind, sameVerdict)}\n`);

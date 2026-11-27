@@ -4,7 +4,7 @@ import type { Endpoint } from '../chain/providers.ts';
 import type { Reader } from '../chain/reader.ts';
 import type { Transport } from '../chain/rpc.ts';
 import type { Receipt, Transaction } from '../chain/types.ts';
-import type { Registry } from '../registry.ts';
+import type { RegistryView } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { callSites, refNames, targetNames } from '../template/template.ts';
 import type { Template } from '../template/template.ts';
@@ -189,9 +189,13 @@ export function replayTraces(recorded: readonly unknown[] | undefined): TraceSou
 }
 
 /** A traced transaction, its reverted calls left out, or why its trace does not count. */
-export type TracedTx =
+export type TracedTx = (
   | { readonly kind: 'traced'; readonly hash: Hex; readonly sender: Sender; readonly calls: readonly TraceCall[] }
-  | { readonly kind: 'unverifiable'; readonly hash: Hex; readonly why: string };
+  | { readonly kind: 'unverifiable'; readonly hash: Hex; readonly why: string }
+) & {
+  /** Each token whose `Transfer` or `Approval` log the check read and nothing else here names, sorted; absent when none. */
+  readonly logged?: readonly Address[];
+};
 
 const withoutReverted = (calls: readonly TraceCall[]): TraceCall[] => {
   const kept: TraceCall[] = [];
@@ -270,11 +274,18 @@ export function tokenStepsDisagree(calls: readonly TraceCall[], receipt: Receipt
   return undefined;
 }
 
+/** The result with the tokens it would be judged otherwise by, were one of them a registry token, that it does not already name. */
+function withLogged(tx: TracedTx, receipt: Receipt): TracedTx {
+  const text = JSON.stringify(tx);
+  const logged = [...new Set(receipt.logs.flatMap((log) => logMovement(log)?.token ?? []))].filter((token) => !text.includes(token)).sort();
+  return logged.length === 0 ? tx : { ...tx, logged };
+}
+
 /**
  * A transaction's trace checked against the transaction and the receipt both providers agree on: its top call must be
- * the transaction, and its token steps must match the receipt's logs both ways.
+ * the transaction, and its token steps must match the receipt's logs both ways. `holds` then judges the trace that passed.
  */
-export async function checkTrace(hash: Hex, sender: Sender, answer: TraceAnswer, reader: Reader, registryTokens: ReadonlySet<Address>): Promise<TracedTx> {
+export async function checkTrace(hash: Hex, sender: Sender, answer: TraceAnswer, reader: Reader, registryTokens: ReadonlySet<Address>, holds: (tx: TracedTx) => TracedTx): Promise<TracedTx> {
   if (answer.kind === 'unreadable') return { kind: 'unverifiable', hash, why: `drpc's answer is no trace the program reads: ${answer.why}` };
   const { calls } = answer;
   const [tx, receipt] = await Promise.all([reader.getTransaction(hash), reader.getTransactionReceipt(hash)]);
@@ -284,7 +295,7 @@ export async function checkTrace(hash: Hex, sender: Sender, answer: TraceAnswer,
   if (top === undefined || !sameTop(top, tx.value)) return { kind: 'unverifiable', hash, why: "the trace's top call is not the transaction" };
   const kept = withoutReverted(calls);
   const disagrees = tokenStepsDisagree(kept, receipt.value, registryTokens);
-  return disagrees === undefined ? { kind: 'traced', hash, sender, calls: kept } : { kind: 'unverifiable', hash, why: disagrees };
+  return withLogged(holds(disagrees === undefined ? { kind: 'traced', hash, sender, calls: kept } : { kind: 'unverifiable', hash, why: disagrees }), receipt.value);
 }
 
 /** A `flow` line's `from` or `to`: a registry entry, or the token a card field of that name holds in each transaction. */
@@ -370,7 +381,7 @@ function shape(calls: readonly TraceCall[]): { readonly end: readonly number[]; 
  * in order, the calls the Safe makes with each call's selector, or no data for a call with none, to a contract the
  * call's target can be. Undefined when one is missing.
  */
-function templateCalls(template: Template, registry: Registry, tx: Extract<TracedTx, { kind: 'traced' }>): Map<number, number> | undefined {
+function templateCalls(template: Template, registry: RegistryView, tx: Extract<TracedTx, { kind: 'traced' }>): Map<number, number> | undefined {
   if (tx.sender.kind === 'eoa') return new Map([[tx.sender.call, 0]]);
   const safe = tx.sender.address.toLowerCase();
   const found = new Map<number, number>();
@@ -390,7 +401,7 @@ function templateCalls(template: Template, registry: Registry, tx: Extract<Trace
 }
 
 /** A traced transaction as it counts: UNVERIFIABLE, with why, when its trace does not hold the template's calls in order. */
-export const holdingTemplateCalls = (template: Template, registry: Registry, tx: TracedTx): TracedTx =>
+export const holdingTemplateCalls = (template: Template, registry: RegistryView, tx: TracedTx): TracedTx =>
   tx.kind === 'traced' && templateCalls(template, registry, tx) === undefined ? { kind: 'unverifiable', hash: tx.hash, why: "the trace does not hold the template's calls in order" } : tx;
 
 /**
@@ -402,7 +413,7 @@ export const holdingTemplateCalls = (template: Template, registry: Registry, tx:
  */
 export function compareFlow(
   template: Template,
-  registry: Registry,
+  registry: RegistryView,
   lines: readonly FlowLine[],
   traced: readonly Extract<TracedTx, { kind: 'traced' }>[],
   cards: ReadonlyMap<Hex, ReadonlyMap<string, Address>> = new Map(),

@@ -11,8 +11,8 @@
  "head": "26447463",
  "studiedWith": {
   "template": "0x019f8a5aa49ac01707ee8d605aeef1c3108d25aaa27c01baf36018ad9f803435",
-  "registry": "0x73c735d7a1f0614ae59742e3002c71f5493f80c3df94866c80b4e1957a9122e6",
-  "study": "0x92508a29cee7c49b83a1d4a9f9e4e04eac8df225cb741b31331cc10dacdd84ae"
+  "registry": "0x00974e43541203989be8a4f0abc920d5ae6461d4969b733b47441d8efd5e6815",
+  "study": "0x61f1ce5f5cd4adf417d5dffd036bcb1056828b2e57170ba4bcd0ef03b994e01d"
  },
  "search": {
   "year": {
@@ -118,7 +118,8 @@
     "915000000000000000",
     "10000000000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1771847135"
   }
  ],
  "measurements": [],

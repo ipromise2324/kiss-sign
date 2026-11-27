@@ -97,7 +97,7 @@
   <div class="grid">
     <div class="box signer"><div class="head"><span>Signer</span><span>step 1</span></div>
       <h3><i>1</i>State the intent</h3>
-      <p>In plain words, such as “deposit USDC into the Morpho Apex vault”. The AI researches first and asks only for a preference no evidence can settle, once, with the report.</p></div>
+      <p>In plain words, such as “deposit USDC into the Morpho Apex vault”. The AI researches first and asks only what no evidence can settle: at once when the answer changes what it builds, otherwise once, with the report.</p></div>
     <div class="arrow">→</div>
     <div class="box ai"><div class="head"><span>AI agent</span><span>step 2</span></div>
       <h3><i>2</i>Find the addresses</h3>
@@ -215,7 +215,7 @@
   <table class="src">
     <tr><th>Part</th><th>What it shows</th><th>Where it comes from</th></tr>
     <tr><td>Header</td><td>Title, summary, and a one-line verdict marked as advice</td><td><span class="tag ai">AI notes</span></td></tr>
-    <tr><td>Check strip</td><td>Address sources · Source verified · Code unchanged · Parameter checks · Call traces · Two providers, each with its count</td><td><span class="tag program">check-sources</span><span class="tag program">prove-abi</span><span class="tag program">pin-code</span><span class="tag program">mutation, perturb</span><span class="tag program">traces</span></td></tr>
+    <tr><td>Check strip</td><td>Transaction addresses · Reference addresses (when card new reads one) · Source verified · Code unchanged · Parameter checks · Call traces · Two providers, each with its count</td><td><span class="tag program">check-sources</span><span class="tag program">prove-abi</span><span class="tag program">pin-code</span><span class="tag program">mutation, perturb</span><span class="tag program">traces</span></td></tr>
     <tr><td>Flow (流程)</td><td>Solid numbered arrows: the template's calls. One lifeline per contract a call or view targets. Up to 4 AI flow lines: solid and “confirmed” when the traces saw it in every one, and at least one, of the traced transactions that make its call; dashed otherwise, and a result to review when a traced transaction that makes its call missed it. Green arrows back to the Safe: what the effects say it gets. Per argument: who decides it (you type, you pick, the program computes, fixed, the app fills) and an example value.</td><td><span class="tag program">template</span><span class="tag program">traces</span><span class="tag program">perturb recording</span><span class="tag ai">AI flow lines, field meanings</span></td></tr>
     <tr><td>Protocol</td><td>TVL, listing date, whether the contract is a proxy, hacks with date and amount; what the protocol is, audits, each hack's cause</td><td><span class="tag program">DefiLlama</span><span class="tag program">code pin</span><span class="tag ai">AI intro, audits, causes</span></td></tr>
     <tr><td>Instance (實例)</td><td>The factory's answer, monthly <code>totalAssets()</code> as a bar chart, holder count, the top 10's share</td><td><span class="tag program">instance-evidence</span></td></tr>

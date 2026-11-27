@@ -11,8 +11,8 @@
  "head": "26486454",
  "studiedWith": {
   "template": "0x1f359514725cc6838f3a236f23d81324a220ee3a5563b64f31480657c1cd035b",
-  "registry": "0xbb963821293c0c28b817bfad6e439456327916a2bb4971f420eeb3013dbe6288",
-  "study": "0x92508a29cee7c49b83a1d4a9f9e4e04eac8df225cb741b31331cc10dacdd84ae"
+  "registry": "0x1a6b23e9144682ba7d0189e3c198cd19294c6a5f2ae99ced0007fb36c8019d5e",
+  "study": "0x61f1ce5f5cd4adf417d5dffd036bcb1056828b2e57170ba4bcd0ef03b994e01d"
  },
  "search": {
   "coverage": {
@@ -143,7 +143,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1781599559"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x3a164f8cf15526f6849c638ebf5cce16c9ac522bc6f1e1e57f04e4abfacaa3d1"
+    }
+   ],
+   "time": "1781597855"
   },
   {
    "kind": "misfit",
@@ -166,7 +178,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1781625630"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xedff174fdc1ff5e7088aaed0f5530ea46a855f17180d3a128d4631b8a9cc848b"
+    }
+   ],
+   "time": "1781624171"
   },
   {
    "kind": "fit",
@@ -262,7 +286,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1781701911"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x21320aab4ab999dcc7b958f3af1982fe27209b8bce780927374e0facb2b52420"
+    }
+   ],
+   "time": "1781700131"
   },
   {
    "kind": "not-studied",
@@ -292,7 +328,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1781753906"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xc29b509d167f76ae0025096f1582a39154aeb36046d182fb236bec63f9c6f9fe"
+    }
+   ],
+   "time": "1781752175"
   },
   {
    "kind": "misfit",
@@ -319,7 +367,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1781791697"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xf22e60425723c4c93b2910fe813e73b0c7390a7e147c1f382639cfeaa080920c"
+    }
+   ],
+   "time": "1781790239"
   },
   {
    "kind": "misfit",
@@ -342,7 +402,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1781817057"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x570c4fa3a627d9856700f1a9400a5a3e14f45657a70f314637c511ea58a160d3"
+    }
+   ],
+   "time": "1781815295"
   },
   {
    "kind": "misfit",
@@ -365,7 +437,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1781886689"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xfb57a32f9abcb119011a81417e574edcd6d13e6a146d7f444837a022bfa4e357"
+    }
+   ],
+   "time": "1781885003"
   },
   {
    "kind": "misfit",
@@ -388,7 +472,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1781979299"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xe9d6870561d475730d1ab5ed9ee8009e26d9f974d98a2708a8e48575b77b642d"
+    }
+   ],
+   "time": "1781977559"
   },
   {
    "kind": "fit",
@@ -552,7 +648,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1782147489"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xa6281501463c6641d83f23b8ccd540cf8b1068e246d131b9c4aba25f81b93ff1"
+    }
+   ],
+   "time": "1782145775"
   },
   {
    "kind": "fit",
@@ -798,7 +906,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1782308328"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xa844c99a981e5d4357c389224b24a0eae0d1b4ed9eac5cb3b26806bfa8d0bcff"
+    }
+   ],
+   "time": "1782306851"
   },
   {
    "kind": "misfit",
@@ -825,7 +945,8 @@
      "type": "bytes32",
      "value": "0xe5a95f91b7c95db904f2e503afdfa5c9c265222b4b45fb6f36f4261eddc4f049"
     }
-   ]
+   ],
+   "time": "1782321179"
   },
   {
    "kind": "not-studied",
@@ -855,7 +976,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1782395551"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x388a729041a2463a6978386186c8548731420948e7f4ebbd2bbda30573681e98"
+    }
+   ],
+   "time": "1782394523"
   },
   {
    "kind": "fit",
@@ -1025,7 +1158,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1782470765"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xfc7d8ebec7a838306d3e3e78f2b367d84e9db0d7b2a475860607b4cdc3abdb4b"
+    }
+   ],
+   "time": "1782469223"
   },
   {
    "kind": "misfit",
@@ -1048,7 +1193,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1782496498"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xa73f243452f86cd24cd34ae74742533e1cf55de093ec9f153fdc8d345297def1"
+    }
+   ],
+   "time": "1782494747"
   },
   {
    "kind": "fit",
@@ -1217,7 +1374,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1782750903"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x945f0575502d9ff7940ffeca4d66ac95b37e8158e03accf81d4f404affcddcad"
+    }
+   ],
+   "time": "1782749183"
   },
   {
    "kind": "misfit",
@@ -1240,7 +1409,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1782792344"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x7ce2a5be383160d43755f606434360ad613c90cb634706614ab407b8ef61141f"
+    }
+   ],
+   "time": "1782790619"
   },
   {
    "kind": "fit",
@@ -1354,7 +1535,8 @@
      "type": "bytes32",
      "value": "0x001c9b05c1df85c8dcce668c23c8e93647bfde898fb5011d99daf054d934c555"
     }
-   ]
+   ],
+   "time": "1782883463"
   },
   {
    "kind": "fit",
@@ -1454,7 +1636,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1782934665"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xc2331bd43ccd65f815c9e7ad0122821f91eff0fbce83ee97cef5707a78d972a8"
+    }
+   ],
+   "time": "1782933011"
   },
   {
    "kind": "fit",
@@ -1652,7 +1846,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1783304599"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xef724ce1cd2de3d184fce41349a86ee811ab6a28a3df34006e025e30f36e926d"
+    }
+   ],
+   "time": "1783303019"
   },
   {
    "kind": "fit",
@@ -1822,7 +2028,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1783424359"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x5b1dbbd30e40cddf0ced4d0228f52186d63688d75862dc32781c30bd43f9e4f3"
+    }
+   ],
+   "time": "1783422707"
   },
   {
    "kind": "fit",
@@ -1918,7 +2136,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1815003062"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xa230867f2fd5faa7d4bfa721993e1126642b7b94152e4a511a3e5003759e2d6c"
+    }
+   ],
+   "time": "1783505339"
   },
   {
    "kind": "not-studied",
@@ -1948,7 +2178,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1783589722"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x64e286f0a2647b971b018618f18f091811c852f059b3429ab4f8fb4feb80d088"
+    }
+   ],
+   "time": "1783588331"
   },
   {
    "kind": "fit",
@@ -2347,7 +2589,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1784020089"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x1c92a591eb5255d78974c9e058a58c383597a801ae4a18f226af2cb2654fd8f9"
+    }
+   ],
+   "time": "1784018339"
   },
   {
    "kind": "misfit",
@@ -2380,8 +2634,19 @@
      "field": 8,
      "type": "bytes32",
      "value": "0x844bf2d2161c6a3d53409ea80454a333c31452e39d871178ded3afc4eb65437b"
+    },
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1784053873"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xecbda78bfbcb398096467600eea26783019c6fe384068f80bcf180ad927c84c7"
     }
-   ]
+   ],
+   "time": "1784052107"
   },
   {
    "kind": "fit",
@@ -2481,7 +2746,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1784137554"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x001c9b05c1df85c8dcce668c23c8e93647bfde898fb5011d99daf054d934c555"
+    }
+   ],
+   "time": "1784135867"
   },
   {
    "kind": "misfit",
@@ -2508,7 +2785,8 @@
      "type": "bytes32",
      "value": "0x77b85ceb1451b3bd48a93175d6750ab9326ec6db3282ab5c36f8a3cba6aee41a"
     }
-   ]
+   ],
+   "time": "1784186111"
   },
   {
    "kind": "misfit",
@@ -2550,7 +2828,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1784260268"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x23ea6bd69e1c1cc2a0e743dbabdfbb84aa328d2d50b485a9cffd59ec01ad1f94"
+    }
+   ],
+   "time": "1784258495"
   },
   {
    "kind": "misfit",
@@ -2577,7 +2867,8 @@
      "type": "bytes32",
      "value": "0xa230867f2fd5faa7d4bfa721993e1126642b7b94152e4a511a3e5003759e2d6c"
     }
-   ]
+   ],
+   "time": "1784297519"
   },
   {
    "kind": "fit",
@@ -2673,7 +2964,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1784408355"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x4579a31cada3e7eda9fa427bda70a4e32836d8577184ff45f12aa3d5bec5e1eb"
+    }
+   ],
+   "time": "1784406779"
   },
   {
    "kind": "fit",
@@ -2769,7 +3072,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1784566443"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x828bab856b0a9371f4586fb270884e5db31395ab2c4a3a337cf8ac0176d7853a"
+    }
+   ],
+   "time": "1784564819"
   },
   {
    "kind": "fit",
@@ -2880,7 +3195,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1784663052"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x43bc88346eca1ed39d35643fc89ded32539d68994f9ceaac65ff3641cc162c83"
+    }
+   ],
+   "time": "1784661335"
   },
   {
    "kind": "misfit",
@@ -2994,7 +3321,8 @@
      "type": "bytes32",
      "value": "0xa844c99a981e5d4357c389224b24a0eae0d1b4ed9eac5cb3b26806bfa8d0bcff"
     }
-   ]
+   ],
+   "time": "1784908571"
   },
   {
    "kind": "not-studied",
@@ -3108,7 +3436,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1785146178"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x992b80db189e791c4e5d6bcfe24be7315c35e59265be593423d30ecf53f6b26e"
+    }
+   ],
+   "time": "1785144503"
   },
   {
    "kind": "misfit",
@@ -3133,7 +3473,8 @@
      "type": "bytes32",
      "value": "0xe9efafff9b3dfc99344d3fce3d6a0abbf3bb830d01565195b408c0df35d81082"
     }
-   ]
+   ],
+   "time": "1785167243"
   },
   {
    "kind": "misfit",
@@ -3156,7 +3497,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1785212336"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x35525143b059b3fd5caca88fbda9d8c019ce7f2914e3fc776d1869a6d12c8407"
+    }
+   ],
+   "time": "1785210575"
   },
   {
    "kind": "fit",
@@ -3471,7 +3824,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1785424972"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x6da254fb187335424f34944f4b2792c559701f49dc6fc2a392d7f28f9dd24fda"
+    }
+   ],
+   "time": "1785423503"
   },
   {
    "kind": "not-studied",
@@ -3505,7 +3870,8 @@
      "type": "bytes32",
      "value": "0x18e9d42c32d73a837c0f1a33d92c46ad55b5ac341f6667d6c1d7d66e929e3fca"
     }
-   ]
+   ],
+   "time": "1785494519"
   },
   {
    "kind": "misfit",
@@ -3528,7 +3894,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1785517271"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x032378e64fe20a82e5fcc68f00481f9cb36cd106612ef6cf0eee5e7dd7eb8c80"
+    }
+   ],
+   "time": "1785515555"
   },
   {
    "kind": "misfit",
@@ -3551,7 +3929,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1785528523"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x6b505a4cfccb761670092f3e37b7ac8515d99ad0e9bd9312b17d8a2dbe4ccef3"
+    }
+   ],
+   "time": "1785526763"
   },
   {
    "kind": "misfit",
@@ -3574,7 +3964,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1785576575"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x4eb7e0f3d2447b7c7f5f1755389ee6efb37600a732ad72ae7cf7c5b2af8073cd"
+    }
+   ],
+   "time": "1785574895"
   },
   {
    "kind": "not-studied",
@@ -3677,7 +4079,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1785721176"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x451be70ad512199a68e31a63a03248c3b77a6c5fdd0c687c9a3dc7271c2d6594"
+    }
+   ],
+   "time": "1785719459"
   },
   {
    "kind": "misfit",
@@ -3700,7 +4114,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1785749048"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xe20c96960245ac3d86c0ab9a60fb2859cbe05b6b119a2b4e05d49a4c1f7452dd"
+    }
+   ],
+   "time": "1785747587"
   },
   {
    "kind": "fit",
@@ -3864,7 +4290,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1785794829"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x7ce2a5be383160d43755f606434360ad613c90cb634706614ab407b8ef61141f"
+    }
+   ],
+   "time": "1785794867"
   },
   {
    "kind": "not-studied",
@@ -4012,7 +4450,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1785962637"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x3e18a0b49a6698982171961bbd71cb3669ecab64eb7e00d0e4e0860d3fdba1cf"
+    }
+   ],
+   "time": "1785960983"
   },
   {
    "kind": "not-studied",
@@ -4042,7 +4492,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1786056314"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xe5a95f91b7c95db904f2e503afdfa5c9c265222b4b45fb6f36f4261eddc4f049"
+    }
+   ],
+   "time": "1786029947"
   },
   {
    "kind": "misfit",
@@ -4069,7 +4531,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1786047686"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xa356ac664566944f6aad9e66c4d6cb1c33fd290d57af7b81bafbf78fded468dc"
+    }
+   ],
+   "time": "1786046015"
   },
   {
    "kind": "misfit",
@@ -4092,7 +4566,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1786092604"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x1761677c9d30b3874c10fa66d07f1685cb7a10207a3b3ec376d8f13bb412def4"
+    }
+   ],
+   "time": "1786090883"
   },
   {
    "kind": "misfit",
@@ -4115,7 +4601,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1786112286"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x7ce2a5be383160d43755f606434360ad613c90cb634706614ab407b8ef61141f"
+    }
+   ],
+   "time": "1786110719"
   },
   {
    "kind": "not-studied",
@@ -4156,7 +4654,8 @@
      "type": "bytes32",
      "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
     }
-   ]
+   ],
+   "time": "1786200023"
   },
   {
    "kind": "not-studied",
@@ -4190,7 +4689,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1786393907"
   },
   {
    "kind": "fit",
@@ -4392,7 +4892,8 @@
      "type": "bytes32",
      "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
     }
-   ]
+   ],
+   "time": "1786571639"
   },
   {
    "kind": "misfit",
@@ -4415,7 +4916,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1786616665"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x8bc80633bbe812a4d13394587704e2abbc479ccc62057f674f7c0d3a50af5860"
+    }
+   ],
+   "time": "1786615007"
   },
   {
    "kind": "fit",
@@ -4586,7 +5099,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1786787696"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x55dfbbd571e6e32d6e39ec641527a7a895ea6534fedc57a09ad9bb2439f033e6"
+    }
+   ],
+   "time": "1786786043"
   },
   {
    "kind": "misfit",
@@ -4609,7 +5134,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1786826406"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xa6b228ae0a81b1c50c7e7da3eb6756e5a6d5edecb84145d4121667662e90f06b"
+    }
+   ],
+   "time": "1786824683"
   },
   {
    "kind": "fit",
@@ -4709,7 +5246,8 @@
      "type": "bytes32",
      "value": "0x1b1efdf2d70296b8da36e28ceffc2e34deabf4777467c77f01272061ca03d443"
     }
-   ]
+   ],
+   "time": "1786956311"
   },
   {
    "kind": "not-studied",
@@ -4983,7 +5521,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1787230894"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x476fa85ba7faf68aba93b4268dc33ef89615cde9eba5b573bf15a364721f506d"
+    }
+   ],
+   "time": "1787229383"
   },
   {
    "kind": "misfit",
@@ -5006,7 +5556,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1787249228"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x7b01596a61c6224d62da53f6218c9ebc5cec8a57c1087cc15bdbb6038aa4c4c4"
+    }
+   ],
+   "time": "1787247503"
   },
   {
    "kind": "fit",
@@ -5263,7 +5825,8 @@
      "type": "bytes32",
      "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
     }
-   ]
+   ],
+   "time": "1787408243"
   },
   {
    "kind": "not-studied",
@@ -5350,7 +5913,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1787579329"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x301224c2515b598bdbd01a6fab6461177326c077b85b70f8083e661d93181348"
+    }
+   ],
+   "time": "1787577995"
   },
   {
    "kind": "fit",
@@ -5450,7 +6025,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1788207199"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xa230867f2fd5faa7d4bfa721993e1126642b7b94152e4a511a3e5003759e2d6c"
+    }
+   ],
+   "time": "1787603111"
   },
   {
    "kind": "not-studied",
@@ -5754,7 +6341,8 @@
      "type": "bytes32",
      "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
     }
-   ]
+   ],
+   "time": "1787810135"
   },
   {
    "kind": "fit",
@@ -5861,7 +6449,8 @@
      "type": "bytes32",
      "value": "0xef724ce1cd2de3d184fce41349a86ee811ab6a28a3df34006e025e30f36e926d"
     }
-   ]
+   ],
+   "time": "1787897099"
   },
   {
    "kind": "misfit",
@@ -5884,7 +6473,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1787922276"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x55dfbbd571e6e32d6e39ec641527a7a895ea6534fedc57a09ad9bb2439f033e6"
+    }
+   ],
+   "time": "1787920703"
   },
   {
    "kind": "fit",
@@ -6148,7 +6749,8 @@
      "type": "bytes32",
      "value": "0x280a21c875603b9e71c87d3ff7b50382eb4750212d54f3d324e585772407de47"
     }
-   ]
+   ],
+   "time": "1788162167"
   },
   {
    "kind": "not-studied",
@@ -6178,7 +6780,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1788197524"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xcf290d27102ab529eef1b81eebf7ffb2f5f4d6f353db8a36a292db205de6fbed"
+    }
+   ],
+   "time": "1788195947"
   },
   {
    "kind": "not-studied",
@@ -6215,7 +6829,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1788263989"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xd6984761b8198ae88507e0a8f5b0d328bd5aec25a14375baddf9def2f8f0b668"
+    }
+   ],
+   "time": "1788262343"
   },
   {
    "kind": "fit",
@@ -6393,7 +7019,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1788369884"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x828bab856b0a9371f4586fb270884e5db31395ab2c4a3a337cf8ac0176d7853a"
+    }
+   ],
+   "time": "1788368123"
   },
   {
    "kind": "misfit",
@@ -6416,7 +7054,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1788391159"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x1b1efdf2d70296b8da36e28ceffc2e34deabf4777467c77f01272061ca03d443"
+    }
+   ],
+   "time": "1788389447"
   },
   {
    "kind": "not-studied",
@@ -6457,7 +7107,8 @@
      "type": "bytes32",
      "value": "0x86c8e3f7977b36b25f7076d84802a942acce179ae8e9ca92239c501b0752cf00"
     }
-   ]
+   ],
+   "time": "1788454379"
   },
   {
    "kind": "not-studied",
@@ -6491,7 +7142,8 @@
      "type": "bytes32",
      "value": "0x280a21c875603b9e71c87d3ff7b50382eb4750212d54f3d324e585772407de47"
     }
-   ]
+   ],
+   "time": "1788510035"
   },
   {
    "kind": "misfit",
@@ -6514,7 +7166,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1789131960"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x31ab85bb95678311b9951e0f2dd934497252e4b1a26a95b0f1e6929c50d5318b"
+    }
+   ],
+   "time": "1788527291"
   },
   {
    "kind": "fit",
@@ -6605,7 +7269,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1788608922"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x13c14d94e8273f9d42fa4ef6ba31bf4a6be2491cbf1ada8873cdde8b1a8710fa"
+    }
+   ],
+   "time": "1788607235"
   },
   {
    "kind": "not-studied",
@@ -6635,7 +7311,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1788686817"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x8f8e16c2d133a9dd48291f77101566e20c5a0b7a63fa7277eec3692920346bc6"
+    }
+   ],
+   "time": "1788685103"
   },
   {
    "kind": "misfit",
@@ -6658,7 +7346,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1788723215"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x61806360dacc3bbbde908b94bf70423785a77b41b81221c9f95eb4075d0dc9cf"
+    }
+   ],
+   "time": "1788721463"
   },
   {
    "kind": "fit",
@@ -6954,7 +7654,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1789035760"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x6b505a4cfccb761670092f3e37b7ac8515d99ad0e9bd9312b17d8a2dbe4ccef3"
+    }
+   ],
+   "time": "1789032311"
   },
   {
    "kind": "fit",
@@ -7045,7 +7757,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1789060000"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xbcb894fadd432932f0519e504c9a9a2568f61eadd2ffffc0e964f11152bf6945"
+    }
+   ],
+   "time": "1789058291"
   },
   {
    "kind": "not-studied",
@@ -7082,7 +7806,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1789139421"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xb18c885e85e850ea5302c0fe4c3b0923eecfe11050e7bffb47ec54e024c871a8"
+    }
+   ],
+   "time": "1789137815"
   },
   {
    "kind": "not-studied",
@@ -7210,7 +7946,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1789405145"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x975b1025b5a2ca0f67c5f5516214a822e7d08aa8e92f1a4a82caf640fcb9a437"
+    }
+   ],
+   "time": "1789403387"
   },
   {
    "kind": "fit",
@@ -7317,7 +8065,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1789489014"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xcfb49666bc310a3153d037a14bdd4a113af0c2b6268c412cada33c17bd1a075d"
+    }
+   ],
+   "time": "1789487471"
   },
   {
    "kind": "misfit",
@@ -7340,7 +8100,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1789590660"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    }
+   ],
+   "time": "1789504379"
   },
   {
    "kind": "not-studied",
@@ -7374,7 +8146,8 @@
      "type": "bytes32",
      "value": "0x844bf2d2161c6a3d53409ea80454a333c31452e39d871178ded3afc4eb65437b"
     }
-   ]
+   ],
+   "time": "1789566071"
   },
   {
    "kind": "not-studied",
@@ -7408,7 +8181,8 @@
      "type": "bytes32",
      "value": "0xa230867f2fd5faa7d4bfa721993e1126642b7b94152e4a511a3e5003759e2d6c"
     }
-   ]
+   ],
+   "time": "1789592747"
   },
   {
    "kind": "misfit",
@@ -7431,7 +8205,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1789639953"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xf4cfd23958299889df646a18e99b6658079edd1dc054e44b4c406da6bfd066b9"
+    }
+   ],
+   "time": "1789638335"
   },
   {
    "kind": "fit",
@@ -7538,7 +8324,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1789681063"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x446e387fa444fbd668a7f3de62eabcc504a732adb4c98fdaf67ecdfbca4b23f2"
+    }
+   ],
+   "time": "1789679291"
   },
   {
    "kind": "not-studied",
@@ -7865,7 +8663,8 @@
      "type": "bytes32",
      "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
     }
-   ]
+   ],
+   "time": "1789862687"
   },
   {
    "kind": "not-studied",
@@ -7977,7 +8776,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1790008060"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xd806aa6c9ae9561af3eb4126b72d15ef9b167d023144e6ad54435736687cc9c1"
+    }
+   ],
+   "time": "1790006567"
   },
   {
    "kind": "misfit",
@@ -8000,7 +8811,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1790024975"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x1faed7c04802cf4566f7c77bc01d8fd5422e72b88111a6e3f69cf1e8acb16270"
+    }
+   ],
+   "time": "1790023235"
   },
   {
    "kind": "fit",
@@ -8096,7 +8919,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1790071334"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x001c9b05c1df85c8dcce668c23c8e93647bfde898fb5011d99daf054d934c555"
+    }
+   ],
+   "time": "1790069567"
   },
   {
    "kind": "misfit",
@@ -8119,7 +8954,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1790081928"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x72966dfc5ea3a484193d7f2e1f0027ce97f4e8ed52a1d57f52ec822de14376b3"
+    }
+   ],
+   "time": "1790080163"
   },
   {
    "kind": "fit",
@@ -8215,7 +9062,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1821655742"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xa230867f2fd5faa7d4bfa721993e1126642b7b94152e4a511a3e5003759e2d6c"
+    }
+   ],
+   "time": "1790098175"
   },
   {
    "kind": "not-studied",
@@ -8325,7 +9184,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1790170220"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xfc01ce2dc251241c8a0f551ebd8f37de91394e918cb1d2c015cdcf97b7d759e0"
+    }
+   ],
+   "time": "1790168531"
   },
   {
    "kind": "fit",
@@ -8505,7 +9376,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1790239747"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xff0603c19e81f5810926678298542bf787172ffa58721133d9eb6beebd264666"
+    }
+   ],
+   "time": "1790238179"
   },
   {
    "kind": "not-studied",
@@ -8542,7 +9425,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1790282906"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xab51b35aa63dd0be064b8399765fce19f6b6641685dd7bd71de47dcabfe30a75"
+    }
+   ],
+   "time": "1790281151"
   },
   {
    "kind": "not-studied",
@@ -8647,7 +9542,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1790355257"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x22b3d44d50ea9f827116269242d8952ddc724675fef311ddc89f105e309aaed7"
+    }
+   ],
+   "time": "1790354063"
   },
   {
    "kind": "not-studied",
@@ -8773,7 +9680,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1790587245"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x793b253981da318a59a26222666a4732397221a140e4f86332e55b700ace7bb4"
+    }
+   ],
+   "time": "1790585579"
   },
   {
    "kind": "not-studied",
@@ -8880,7 +9799,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1790645945"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x2fb9af1185a794d55166766770621772daac46835f920345ff7ecd48e69ce0a2"
+    }
+   ],
+   "time": "1790644403"
   },
   {
    "kind": "fit",
@@ -9008,7 +9939,8 @@
      "type": "bytes32",
      "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
     }
-   ]
+   ],
+   "time": "1790768147"
   },
   {
    "kind": "misfit",
@@ -9035,7 +9967,8 @@
      "type": "bytes32",
      "value": "0xc196a22c7d1cbb3e048dcf39f7be4ab536d0abad27bcf2ffd143a8a5618fcfaa"
     }
-   ]
+   ],
+   "time": "1790785271"
   },
   {
    "kind": "misfit",
@@ -9062,7 +9995,8 @@
      "type": "bytes32",
      "value": "0xa230867f2fd5faa7d4bfa721993e1126642b7b94152e4a511a3e5003759e2d6c"
     }
-   ]
+   ],
+   "time": "1790796251"
   },
   {
    "kind": "not-studied",
@@ -9096,7 +10030,8 @@
      "type": "bytes32",
      "value": "0x8811330a2fd863fea1b4a9e63722f029203acb2254887c31cc6e7ce045101696"
     }
-   ]
+   ],
+   "time": "1790849015"
   },
   {
    "kind": "fit",
@@ -9196,7 +10131,8 @@
      "type": "bytes32",
      "value": "0xa230867f2fd5faa7d4bfa721993e1126642b7b94152e4a511a3e5003759e2d6c"
     }
-   ]
+   ],
+   "time": "1790878163"
   },
   {
    "kind": "fit",
@@ -9296,7 +10232,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1790933302"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xdd3f9d74d506da59885232737c07792cbe40756cc8f6e130534477aa82a8e422"
+    }
+   ],
+   "time": "1790931551"
   },
   {
    "kind": "misfit",
@@ -9497,7 +10445,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1791114277"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xeb7b34230483f22c5a0552e42d16ffd4ea2703a569badb1c2cf640d03d34badb"
+    }
+   ],
+   "time": "1791112571"
   },
   {
    "kind": "not-studied",
@@ -9618,7 +10578,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1791242859"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x1fd0629836d512f5e415329629a87bf15f52f6d456c5a9c9d98b81832f07e7e8"
+    }
+   ],
+   "time": "1791241199"
   },
   {
    "kind": "misfit",
@@ -9641,7 +10613,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1791277346"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x6d43548de32b5af6c5ea6064a97e247a5737db1264d19fc663d6ec657487a956"
+    }
+   ],
+   "time": "1791275903"
   },
   {
    "kind": "misfit",
@@ -9664,7 +10648,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1791292062"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x5f0d3e3d2cd58c3e0538e7f6bfd8e3986e9f9b4a2371bb1c89695aba28ae2ca6"
+    }
+   ],
+   "time": "1791290279"
   },
   {
    "kind": "not-studied",
@@ -9722,7 +10718,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1791447298"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xdf6599c789d4d266f42f173eb3f3f62c01314f418f5b177b412031cb049e2862"
+    }
+   ],
+   "time": "1791445511"
   },
   {
    "kind": "fit",
@@ -9833,7 +10841,8 @@
      "type": "bytes32",
      "value": "0x5c44d0318571cefc72e0acf8be88ab3d56a8584095ee420d7f01d781ef7b0d78"
     }
-   ]
+   ],
+   "time": "1791499415"
   },
   {
    "kind": "misfit",
@@ -9856,7 +10865,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1791536062"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x4494d26d3b0aae86094c3c09e68e31c7f9a2e718ce6c80841f2b0f9ea26045ce"
+    }
+   ],
+   "time": "1791534287"
   },
   {
    "kind": "fit",
@@ -9984,7 +11005,8 @@
      "type": "bytes32",
      "value": "0xb3af1d563890e612b5cddb41f2b46a4e963493295b048a74e9927aa58f47ae5f"
     }
-   ]
+   ],
+   "time": "1791749999"
   },
   {
    "kind": "fit",
@@ -10119,7 +11141,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1791906881"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x765f9f15d16cced2dccb0e1587c3670c5e52be034d133ca5d303e6f0a9ad7edc"
+    }
+   ],
+   "time": "1791905195"
   },
   {
    "kind": "misfit",
@@ -10142,7 +11176,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1791918838"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x9db6c47c975a04efdc9860ed8b87e12cadb1b83c335d689017c4a9bfea5dd04c"
+    }
+   ],
+   "time": "1791917567"
   },
   {
    "kind": "unreadable",
@@ -10174,7 +11220,8 @@
      "type": "bytes32",
      "value": "0xa230867f2fd5faa7d4bfa721993e1126642b7b94152e4a511a3e5003759e2d6c"
     }
-   ]
+   ],
+   "time": "1791984959"
   },
   {
    "kind": "not-studied",
@@ -10204,7 +11251,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1792014921"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x037735b46ce21943c48cb550e81bd7a43090cdc4b789d6f234c26f0172d69c14"
+    }
+   ],
+   "time": "1792013939"
   },
   {
    "kind": "misfit",
@@ -10227,7 +11286,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1792045602"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x6d43548de32b5af6c5ea6064a97e247a5737db1264d19fc663d6ec657487a956"
+    }
+   ],
+   "time": "1792044023"
   },
   {
    "kind": "fit",
@@ -10328,7 +11399,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1792068644"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x9ce1b80150d0a38ccf758b3eea8d409f7c84b7dcffc656402a3d383d4f647632"
+    }
+   ],
+   "time": "1792067207"
   },
   {
    "kind": "not-studied",
@@ -10528,7 +11611,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1792165087"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x6395f4a17d224fb872d9a81d5dab68aa5e61284702050ab77b9b945fbfa9f222"
+    }
+   ],
+   "time": "1792163495"
   },
   {
    "kind": "fit",
@@ -10642,7 +11737,8 @@
      "type": "bytes32",
      "value": "0x75cd9eb72b5c5424bcded4cc1b5aec9a34c227fc2b80a2429fe2f14f11b28ee5"
     }
-   ]
+   ],
+   "time": "1792332155"
   },
   {
    "kind": "not-studied",
@@ -10773,7 +11869,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1792513400"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xe29764491eded1ceb9b869d5199f8a432646a6771192d9c4d622aa18dffb7d5d"
+    }
+   ],
+   "time": "1792511747"
   },
   {
    "kind": "fit",
@@ -11039,7 +12147,8 @@
      "type": "bytes32",
      "value": "0x7bf116ffa5dcc0ea4f365fd027400c9d676603907c59af753a71384be9516fa8"
     }
-   ]
+   ],
+   "time": "1792667783"
   },
   {
    "kind": "misfit",
@@ -11062,7 +12171,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1793276901"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xe40061a27955323b335a83fa1e8ff3528561e8b2c21bdd3fa31e5a0d0bf27152"
+    }
+   ],
+   "time": "1792683059"
   },
   {
    "kind": "fit",
@@ -11462,7 +12583,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1792895058"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x3959d9027f72f9e6b554a161634ab5c06d67171cc842d74c6676b7f1d8c755d5"
+    }
+   ],
+   "time": "1792894271"
   },
   {
    "kind": "fit",
@@ -11562,7 +12695,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1793006779"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x425b79e004ce78755baf446f961580d58e9757280821cef170e3260555ea044e"
+    }
+   ],
+   "time": "1793005127"
   },
   {
    "kind": "fit",
@@ -11886,7 +13031,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1793197581"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xb97f19002cc7c47a35466ed309ed12fd815797e34e1c4f0ac4b6d7723479e19f"
+    }
+   ],
+   "time": "1793196287"
   },
   {
    "kind": "misfit",
@@ -11909,7 +13066,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1793217225"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x660ef1f93fe958c9aacf1084464022c6a32973885a64f740c342be9c10465812"
+    }
+   ],
+   "time": "1793216291"
   },
   {
    "kind": "not-studied",
@@ -11988,7 +13157,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1793350315"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xa8504ffb0dfac29cb45eab5267c86193bf75ac7187e60938174b0c8ee810ec51"
+    }
+   ],
+   "time": "1793348699"
   },
   {
    "kind": "misfit",
@@ -12015,7 +13196,8 @@
      "type": "bytes32",
      "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
     }
-   ]
+   ],
+   "time": "1793357867"
   },
   {
    "kind": "misfit",
@@ -12042,7 +13224,8 @@
      "type": "bytes32",
      "value": "0xa230867f2fd5faa7d4bfa721993e1126642b7b94152e4a511a3e5003759e2d6c"
     }
-   ]
+   ],
+   "time": "1793368283"
   },
   {
    "kind": "misfit",
@@ -12157,7 +13340,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1793426947"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x960c32283db4246172d8de8b8dae805a612d8d3e1426e768f57f2c890212f618"
+    }
+   ],
+   "time": "1793425187"
   },
   {
    "kind": "not-studied",
@@ -12191,7 +13386,8 @@
      "type": "bytes32",
      "value": "0x1bee8a88a34a8a944adfc6e861df62665c9114b80209dd21895025dbf204fbe7"
     }
-   ]
+   ],
+   "time": "1793487443"
   },
   {
    "kind": "not-studied",
@@ -12301,7 +13497,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1793626284"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x4c2a78c76ea1d6ae08de51b9de2fe9d23317c3e533c10c6332a68ef121efaba2"
+    }
+   ],
+   "time": "1793624519"
   },
   {
    "kind": "fit",
@@ -12401,7 +13609,8 @@
      "type": "bytes32",
      "value": "0x89040636d296d8ac897da1c1a97cd1204014213252f7304a1e6e194d97c1d28a"
     }
-   ]
+   ],
+   "time": "1793654519"
   },
   {
    "kind": "fit",
@@ -12650,7 +13859,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1793784041"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x1b1efdf2d70296b8da36e28ceffc2e34deabf4777467c77f01272061ca03d443"
+    }
+   ],
+   "time": "1793782487"
   },
   {
    "kind": "not-studied",
@@ -12757,7 +13978,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1793824915"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x00a2e33da0073c196a2025b1dadd3a14d2d8542623a002066e80c4b4a3b25212"
+    }
+   ],
+   "time": "1793823947"
   },
   {
    "kind": "misfit",
@@ -12782,7 +14015,8 @@
      "type": "bytes32",
      "value": "0x6b505a4cfccb761670092f3e37b7ac8515d99ad0e9bd9312b17d8a2dbe4ccef3"
     }
-   ]
+   ],
+   "time": "1793854187"
   },
   {
    "kind": "fit",
@@ -12882,7 +14116,8 @@
      "type": "bytes32",
      "value": "0x51c058bcb67a6559acf32341f441d2a94df2978e7c0fa2abaf889bcdfd461ecc"
     }
-   ]
+   ],
+   "time": "1793890415"
   },
   {
    "kind": "misfit",
@@ -12905,7 +14140,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1793902834"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x458657b004162eb7b8a09ae4b44f53f82ad3834e9a6ee0c95e4a2fc5383df209"
+    }
+   ],
+   "time": "1793901539"
   },
   {
    "kind": "fit",
@@ -12996,7 +14243,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1793961898"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x765f9f15d16cced2dccb0e1587c3670c5e52be034d133ca5d303e6f0a9ad7edc"
+    }
+   ],
+   "time": "1793960183"
   },
   {
    "kind": "fit",
@@ -13311,7 +14570,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1794092460"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x3063738ca6461ba55293e0b691765c14a739857c410b13898d3fd921d07570f2"
+    }
+   ],
+   "time": "1794091127"
   },
   {
    "kind": "misfit",
@@ -13338,7 +14609,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1794137887"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x8d364ccbb40a5d6743cd847824e7153c46500543ba72cdbe637f794ef1cada38"
+    }
+   ],
+   "time": "1794136247"
   },
   {
    "kind": "fit",
@@ -13440,7 +14723,8 @@
      "type": "bytes32",
      "value": "0x844bf2d2161c6a3d53409ea80454a333c31452e39d871178ded3afc4eb65437b"
     }
-   ]
+   ],
+   "time": "1794200843"
   },
   {
    "kind": "not-studied",
@@ -13575,7 +14859,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1794932988"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x280a21c875603b9e71c87d3ff7b50382eb4750212d54f3d324e585772407de47"
+    }
+   ],
+   "time": "1794328235"
   },
   {
    "kind": "fit",
@@ -13690,7 +14986,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1794418026"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x972f41de22b634f96f4e7fb9f105cbab9c5bfb5c2247717e83aee6765f6d74de"
+    }
+   ],
+   "time": "1794416267"
   },
   {
    "kind": "not-studied",
@@ -13720,7 +15028,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1794466319"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x468bbb2ac83a4a6b5eaaa5510ef70a34e8b8fc088784ee7d50f1906e622b5f89"
+    }
+   ],
+   "time": "1794465503"
   },
   {
    "kind": "misfit",
@@ -13765,8 +15085,29 @@
      "field": 8,
      "type": "bytes32",
      "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
+    },
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1797081807"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
+    },
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1797081839"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
     }
-   ]
+   ],
+   "time": "1794490031"
   },
   {
    "kind": "not-studied",
@@ -13803,7 +15144,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1794546483"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x468bbb2ac83a4a6b5eaaa5510ef70a34e8b8fc088784ee7d50f1906e622b5f89"
+    }
+   ],
+   "time": "1794544799"
   },
   {
    "kind": "misfit",
@@ -13849,7 +15202,8 @@
      "type": "bytes32",
      "value": "0x1e558dd696110d79677e96b205a9ef69a21919fdf0b3bc5e17504f9214d3978f"
     }
-   ]
+   ],
+   "time": "1794561119"
   },
   {
    "kind": "fit",
@@ -14022,7 +15376,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1795220272"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xa374db63a48d8ac1b43993fabe39e0ea0c801159a650b7736978fa5f7f72ccfc"
+    }
+   ],
+   "time": "1794615707"
   },
   {
    "kind": "not-studied",
@@ -14204,7 +15570,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1794699527"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x6b1dbdbcdd87f8ac00c62cff1e30b4b2c329081bc6245503639701ac29084c8c"
+    }
+   ],
+   "time": "1794697955"
   },
   {
    "kind": "not-studied",
@@ -14308,7 +15686,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1794779488"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x67d605e5117cf4719dec4c3d6d8c3542e17cecb23b552f9cca87f6e86980fd2a"
+    }
+   ],
+   "time": "1794777767"
   },
   {
    "kind": "not-studied",
@@ -14342,7 +15732,8 @@
      "type": "bytes32",
      "value": "0x297a23ed7a8f76cb3a698c6e12199212038a0c5fcb3b0c9ca42f7efe65ea1a36"
     }
-   ]
+   ],
+   "time": "1794816935"
   },
   {
    "kind": "misfit",
@@ -14365,7 +15756,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1794837325"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xcd85087fec81f66733bc8a9ca8f778f4bf05d5949950efac24043c09a2dd2805"
+    }
+   ],
+   "time": "1794835955"
   },
   {
    "kind": "not-studied",
@@ -14395,7 +15798,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1794884735"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xdc3c6f48f8eac2899638e671f1f5406cbabd0ee5ea84fbd1638ea990a1d90ade"
+    }
+   ],
+   "time": "1794883031"
   },
   {
    "kind": "not-studied",
@@ -14520,7 +15935,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1795037206"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x2b8694ed30082129598720860e8e972f07aa10d9b81cae16ca0e2cfb24743e24"
+    }
+   ],
+   "time": "1794998087"
   },
   {
    "kind": "fit",
@@ -14693,7 +16120,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1795046987"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x291897ac06a28aeb0460ace89ee50fdf4564540e3ac6c6874a726040c567f78f"
+    }
+   ],
+   "time": "1795045283"
   },
   {
    "kind": "not-studied",
@@ -14737,7 +16176,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1795133411"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x32dc8583660ce292592a2a1215e704e407a0232e26dde64b21a386b1aef1476d"
+    }
+   ],
+   "time": "1795131659"
   },
   {
    "kind": "misfit",
@@ -14760,7 +16211,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1795154997"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x960c32283db4246172d8de8b8dae805a612d8d3e1426e768f57f2c890212f618"
+    }
+   ],
+   "time": "1795153235"
   },
   {
    "kind": "misfit",
@@ -14787,7 +16250,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1795171125"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xa3b7877a5d982baced25d2ac69d52d9b8307cfde2528bdb3baa15a9622def943"
+    }
+   ],
+   "time": "1795169399"
   },
   {
    "kind": "not-studied",
@@ -14824,7 +16299,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1795795052"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    }
+   ],
+   "time": "1795190291"
   },
   {
    "kind": "misfit",
@@ -14847,7 +16334,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1795198731"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x960c32283db4246172d8de8b8dae805a612d8d3e1426e768f57f2c890212f618"
+    }
+   ],
+   "time": "1795196951"
   },
   {
    "kind": "not-studied",
@@ -15030,7 +16529,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1795275030"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x8e342243498b8d0f6c170e04f142676796c583f065b1de91acee4b6f28a1343f"
+    }
+   ],
+   "time": "1795273343"
   },
   {
    "kind": "not-studied",
@@ -15141,7 +16652,8 @@
      "type": "bytes32",
      "value": "0xa1dedc47a35eb314ede523abfc865fbab1ae62fbd3ac2835123d82150a9645d6"
     }
-   ]
+   ],
+   "time": "1795354091"
   },
   {
    "kind": "misfit",
@@ -15164,7 +16676,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1795367342"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0xd9e5e840b26fc1064dc2363a8fbfa0cc7845349dfcd6e0b7fb26402bbec41eb8"
+    }
+   ],
+   "time": "1795365575"
   },
   {
    "kind": "misfit",
@@ -15191,7 +16715,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1795375053"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x2b8694ed30082129598720860e8e972f07aa10d9b81cae16ca0e2cfb24743e24"
+    }
+   ],
+   "time": "1795383527"
   },
   {
    "kind": "not-studied",
@@ -15221,7 +16757,19 @@
      }
     ]
    },
-   "free": []
+   "free": [
+    {
+     "field": 7,
+     "type": "uint32",
+     "value": "1795435647"
+    },
+    {
+     "field": 8,
+     "type": "bytes32",
+     "value": "0x3787a0e208cf70359ff4d31e5906136a949979f6c44458959a3e49b6e9e1202a"
+    }
+   ],
+   "time": "1795433903"
   },
   {
    "kind": "not-studied",
@@ -15328,7 +16876,8 @@
      "type": "bytes32",
      "value": "0xc61a89aaf61d3780dbf2264df5e3176807091db36b76920de4cb4af9108e54bb"
     }
-   ]
+   ],
+   "time": "1795487039"
   },
   {
    "kind": "not-studied",

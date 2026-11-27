@@ -1,11 +1,11 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
-import { parseArgs } from 'node:util';
 import { mainnetEndpoints } from '../chain/providers.ts';
 import { createReader } from '../chain/reader.ts';
 import type { Reader } from '../chain/reader.ts';
 import { recordingTransport, replayReader } from '../chain/recording.ts';
 import type { Exchange } from '../chain/recording.ts';
+import { parseFlags } from '../cli/flags.ts';
 import { OK, UsageError } from '../cli/io.ts';
 import type { Io } from '../cli/io.ts';
 import { paint } from '../cli/format.ts';
@@ -256,7 +256,7 @@ async function fetchTxs(io: Io): Promise<number> {
 
 /** `history [--out <file.md>] [--refresh]`, or `history fetch`. */
 export async function history(args: readonly string[], io: Io): Promise<number> {
-  const { values, positionals } = parseArgs({
+  const { values, positionals } = parseFlags({
     args: [...args],
     allowPositionals: true,
     options: { out: { type: 'string' }, refresh: { type: 'boolean', default: false } },

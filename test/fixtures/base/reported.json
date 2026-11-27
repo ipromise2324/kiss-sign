@@ -1,0 +1,16 @@
+[
+  "compound/supply/instances/compound-v3-cusdcv3",
+  "fluid/vault-deposit/instances/fluid-fusdc",
+  "fluid/vault-deposit/instances/fluid-fusdt",
+  "morpho/vault-deposit/instances/hyperithm-usdc-apex-v2-9e2f",
+  "morpho/vault-deposit/instances/steakhouse-prime-usdc-v2-0f51",
+  "morpho/vault-v2-adapter-cap-accept/instances/kpk-usdc-prime-v2-9ee6",
+  "morpho/vault-v2-adapter-cap-submit/instances/kpk-usdc-prime-v2-9ee6",
+  "morpho/vault-v2-cap-accept/instances/acuto-usdc-v2-4a57",
+  "morpho/vault-v2-cap-decrease/instances/acuto-usdc-v2-4a57",
+  "morpho/vault-v2-cap-submit/instances/flowmark-fgenesis-v2-6439",
+  "morpho/vault-v2-cap-submit/instances/gauntlet-usdc-prime-v2-a3d0",
+  "morpho/vault-v2-cap-submit/instances/kpk-usdc-prime-v2-9ee6",
+  "morpho/vault-v2-collateral-cap-submit/instances/kpk-usdc-prime-v2-9ee6",
+  "morpho/vault-v2-revoke/instances/acuto-usdc-v2-4a57"
+]

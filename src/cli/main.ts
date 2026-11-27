@@ -16,6 +16,7 @@ import { httpsMessage } from '../verify/messages.ts';
 import { VerifyError } from '../verify/verify.ts';
 import { cardNew } from './card-new.ts';
 import { colorWanted } from './format.ts';
+import { RepeatedFlagError } from './flags.ts';
 import { FAILED, OK, USAGE, UsageError } from './io.ts';
 import type { Io } from './io.ts';
 import { LABELS } from './labels.ts';
@@ -168,7 +169,8 @@ step's question. It refuses without a terminal. It first fetches main of the con
 stops before asking anything, telling you to run git pull, when any file under templates/ or
 registry/ differs from origin/main.
 Each address is picked by number, exact name, full address or market id from the lists it
-prints: registry entries of the right kind, address-book entries or the Safe, or the markets.
+prints: registry entries of the right kind, only the names the template's field lists,
+address-book entries or the Safe, or the markets.
 Where the template is reported per instance, the list holds only the instances with a report for
 it, and it stops when there is none.
 Amounts are typed in whole tokens, such as 5, 1.25 or 1,000,611.448606, or max where the field
@@ -192,9 +194,9 @@ card"; docs/design/program-ownership.md, "The program checks itself first".
 const CARD_SEAL_HELP = `Seals a card written as a file. It runs the same check against GitHub's main as card new, resolves
 every name, and refuses 0 in a computed amount field or in one a share price bound or atLeast
 compares with, an entry that lacks an attribute the template reads, such as a vault with no
-adapter, and an instance, named in any field, with no report for its template (an entry of
-the kind the template is reported per, a vault unless its instanceField names another kind),
-reading the report folders from the clone. It prints the card in
+adapter, a contract the template's field does not list (not-listed), and an instance, named in
+any field, with no report for its template (an entry of the kind the template is reported per, a
+vault unless its instanceField names another kind), reading the report folders from the clone. It prints the card in
 one box with full addresses and each amount in base units, since it reads no decimals. After
 your yes at a terminal it stores the card and prints its hash.
 
@@ -261,7 +263,7 @@ const usageText = (w: Labels): string => `${w.usage}\n${Object.values(COMMANDS)
   .join('')}`;
 
 /**
- * The language a command prints in: the one its last `--language` names, as parseArgs takes, else the config's, else English, so a command run
+ * The language a command prints in: the one its `--language` names, the last when it repeats, else the config's, else English, so a command run
  * before any config exists, or whose config cannot be read, prints English.
  */
 function languageOf(argv: readonly string[], io: Io): Language {
@@ -322,8 +324,8 @@ export async function main(argv: readonly string[], io: Io): Promise<number> {
   } catch (error) {
     if (!(error instanceof Error)) throw error;
     const code = (error as NodeJS.ErrnoException).code;
-    if (error instanceof UsageError || code?.startsWith('ERR_PARSE_ARGS')) {
-      io.stderr(`kiss-sign: ${error.message}\n`);
+    if (error instanceof UsageError || (typeof code === 'string' && code.startsWith('ERR_PARSE_ARGS'))) {
+      io.stderr(`kiss-sign: ${error instanceof RepeatedFlagError ? w.repeatedFlag(error.flag) : error.message}\n`);
       return USAGE;
     }
     if (FAILURES.some((kind) => error instanceof kind) || error instanceof SyntaxError || code === 'ENOENT') {

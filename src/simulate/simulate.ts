@@ -12,6 +12,7 @@ import type { AllowanceChange, Observed, Permit2Allowance, Permit2Change, ViewAn
 import { PERMIT2, addressOf, executionOf, isEthTransfer, namesAddress, touchedBy, uintOf } from './events.ts';
 import type { Allowance, Execution, Touched } from './events.ts';
 import { parseSafeState, safeStateCalls } from './safe-state.ts';
+import type { SafeState, SafeStateEvidence } from './safe-state.ts';
 
 /** `logs` are every event the Safe transaction emitted, in order. */
 export type Observation =
@@ -128,19 +129,32 @@ export function permit2AllowanceOf(data: Hex): Permit2Allowance | undefined {
   return data.length === 2 + 3 * 64 ? { amount: uintOf(data, 0), expiration: uintOf(data, 1), nonce: uintOf(data, 2) } : undefined;
 }
 
-function executionOfCall(call: SimulatedCall, safe: Address, safeTxHash: Hex): Execution {
-  if (call.status === 'reverted') return 'reverted';
-  const execution = executionOf(call.logs, safe, safeTxHash);
-  return execution === 'success' && word(call.returnData) !== 1n ? 'execution-failure' : execution;
-}
+/** Who sent the transaction: a Safe through `execTransaction`, or an EOA making the one call itself. */
+export type Sender = 'safe' | 'eoa';
 
 type Executor = {
+  /** The `from` of every read around the transaction. */
   readonly sender: Address;
   readonly exec: (tx: SafeTx) => SimulationCall;
-  readonly blockApproving: (txs: readonly SafeTx[]) => Omit<SimulationRequest, 'calls'>;
+  readonly execution: (call: SimulatedCall, tx: SafeTx) => Execution;
+  readonly block: (txs: readonly SafeTx[]) => Omit<SimulationRequest, 'calls'>;
+  /** Set when a reverted run may not be the transaction's own revert, with why. */
+  readonly revertUnsure?: string;
+  /** The calls that read the sender's settings, and the evidence their results before and after give, or what could not be read. */
+  readonly settings: {
+    readonly calls: readonly SimulationCall[];
+    readonly evidence: (before: readonly SimulatedCall[], after: readonly SimulatedCall[]) => SafeStateEvidence | string;
+  };
 };
 
-async function executorFor(reader: Reader, input: { readonly tx: SafeTx; readonly parent: BlockHeader; readonly time: bigint }): Promise<Executor | { readonly reasons: readonly string[] }> {
+type ExecutorInput = { readonly tx: SafeTx; readonly parent: BlockHeader; readonly time: bigint };
+
+const blockOf = (input: ExecutorInput, overrides: SimulationRequest['stateOverrides']): Omit<SimulationRequest, 'calls'> => ({
+  block: { number: input.parent.number + 1n, time: input.time, gasLimit: input.parent.gasLimit, prevRandao: input.parent.mixHash },
+  stateOverrides: { ...overrides, [ETH_BALANCE_READER]: { code: ETH_BALANCE_READER_CODE } },
+});
+
+async function safeExecutor(reader: Reader, input: ExecutorInput): Promise<Executor | { readonly reasons: readonly string[] }> {
   const { tx, parent } = input;
   const safe = tx.safe;
   const problems: string[] = [];
@@ -158,42 +172,93 @@ async function executorFor(reader: Reader, input: { readonly tx: SafeTx; readonl
   const approvers = [...owners].sort((a, b) => (BigInt(a) < BigInt(b) ? -1 : 1)).slice(0, Number(threshold));
   const sender = approvers[0] as Address;
   const one = `0x${'1'.padStart(64, '0')}` as Hex;
+  const parsed = (results: readonly SimulatedCall[], when: string): SafeState | string => {
+    const state = parseSafeState(results, tx.version);
+    return 'unreadable' in state ? `the Safe's ${state.unreadable} could not be read ${when} the transaction` : state;
+  };
   return {
     sender,
     exec: (each) => ({ from: sender, to: safe, data: execTransactionData(each, approvers), gas: EXEC_GAS }),
-    blockApproving: (txs) => ({
-      block: { number: parent.number + 1n, time: input.time, gasLimit: parent.gasLimit, prevRandao: parent.mixHash },
-      stateOverrides: {
-        [safe]: {
-          stateDiff: Object.fromEntries(
-            txs.flatMap((each) => approvers.map((owner) => [approvedHashSlot(owner, hashSafeTx(each).safeTxHash), one])),
-          ),
-        },
-        [ETH_BALANCE_READER]: { code: ETH_BALANCE_READER_CODE },
+    execution: (call, each) => {
+      if (call.status === 'reverted') return 'reverted';
+      const execution = executionOf(call.logs, safe, hashSafeTx(each).safeTxHash);
+      return execution === 'success' && word(call.returnData) !== 1n ? 'execution-failure' : execution;
+    },
+    block: (txs) =>
+      blockOf(input, {
+        [safe]: { stateDiff: Object.fromEntries(txs.flatMap((each) => approvers.map((owner) => [approvedHashSlot(owner, hashSafeTx(each).safeTxHash), one]))) },
+      }),
+    settings: {
+      calls: safeStateCalls(safe, sender, tx.version),
+      evidence: (beforeCalls, afterCalls) => {
+        const [before, after] = [parsed(beforeCalls, 'before'), parsed(afterCalls, 'after')];
+        return typeof before === 'string' ? before : typeof after === 'string' ? after : { kind: 'read', before, after };
       },
-    }),
+    },
   };
 }
+
+/**
+ * Set by state override at the EOA when its call sends ETH, which a simulated call cannot carry: called by the EOA
+ * itself, it CALLs the address in the first calldata word with the ETH value in the second and the rest of the
+ * calldata, and returns or reverts with its answer; called by anyone else, it stops, as an EOA takes any call. So the
+ * target sees the EOA as `msg.sender` and `tx.origin`, the value leaves the EOA's own balance, and no gas does.
+ */
+const EOA_FORWARDER_CODE = '0x333014600757005b60403603806040600037600060008260006020356000355af13d600060003e602e573d6000fd5b3d6000f3' as Hex;
+
+/**
+ * An EOA's one call. Without ETH it is sent from the EOA as it is, with no override, so the EOA has no code, as on
+ * chain. With ETH it runs through the forwarder, which gives the EOA code for that block. A contract can read that
+ * code: an ERC-1271 signature check, an ERC-721, ERC-1155 or ERC-777 receiver hook, or a guard on the caller's code
+ * size then takes another path than for an EOA, so a forwarded call that reverts is unverifiable, not reverted.
+ */
+function eoaExecutor(input: ExecutorInput): Executor | { readonly reasons: readonly string[] } {
+  const { tx } = input;
+  const eoa = tx.safe;
+  if (tx.operation !== 0) return { reasons: ['an EOA makes a call, never a delegatecall'] };
+  if (tx.to === eoa) return { reasons: ["an EOA's call to itself is not simulated"] };
+  const forwarded = tx.value > 0n;
+  return {
+    sender: eoa,
+    exec: (each) =>
+      forwarded
+        ? { from: eoa, to: eoa, data: hex(concatBytes(addressWord(each.to), uintWord(each.value), bytesOf(each.data))), gas: EXEC_GAS }
+        : { from: eoa, to: each.to, data: each.data, gas: EXEC_GAS },
+    execution: (call) => (call.status === 'reverted' ? 'reverted' : 'success'),
+    ...(forwarded ? { revertUnsure: "the EOA's call sends ETH, so it ran through a forwarder that gives the EOA code a contract may read, and its revert may come from that code" } : {}),
+    block: () => blockOf(input, forwarded ? { [eoa]: { code: EOA_FORWARDER_CODE } } : {}),
+    settings: { calls: [], evidence: () => ({ kind: 'not-a-safe' }) },
+  };
+}
+
+const executorFor = (sender: Sender, reader: Reader, input: ExecutorInput): Promise<Executor | { readonly reasons: readonly string[] }> =>
+  sender === 'safe' ? safeExecutor(reader, input) : Promise.resolve(eoaExecutor(input));
 
 /**
  * Runs the Safe transaction on both providers. A first run finds the tokens, allowances and Permit2 allowances the
  * transaction touches; a second reads each of them, and the Safe's own settings, just before and just after it, in the
  * same block.
  */
-export async function simulateSafeTx(reader: Reader, input: SimulationInput): Promise<Observation> {
+export const simulateSafeTx = (reader: Reader, input: SimulationInput): Promise<Observation> => simulateTx('safe', reader, input);
+
+/**
+ * `simulateSafeTx` for either sender. An EOA's transaction is its one call, `tx.safe` the EOA: its effects are read on
+ * the EOA as a Safe's are on the Safe, and its evidence of settings is `not-a-safe`, since an EOA has none to read.
+ */
+export async function simulateTx(sender: Sender, reader: Reader, input: SimulationInput): Promise<Observation> {
   const { tx } = input;
   const safe = tx.safe;
   const unverifiable = (...reasons: string[]): Observation => ({ kind: 'unverifiable', reasons });
-  const executor = await executorFor(reader, input);
+  const executor = await executorFor(sender, reader, input);
   if ('reasons' in executor) return unverifiable(...executor.reasons);
-  const { safeTxHash } = hashSafeTx(tx);
   const exec = executor.exec(tx);
-  const base = executor.blockApproving([tx]);
+  const base = executor.block([tx]);
 
   const discovery = await reader.simulateV1({ ...base, calls: [exec] }, input.parent);
   if (discovery.kind === 'unverifiable') return unverifiable(discovery.reason);
   const alone = discovery.value[0] as SimulatedCall;
-  const execution = executionOfCall(alone, safe, safeTxHash);
+  const execution = executor.execution(alone, tx);
+  if (execution === 'reverted' && executor.revertUnsure !== undefined) return unverifiable(executor.revertUnsure);
   if (execution !== 'success') return { kind: 'observed', observed: { kind: 'not-executed', why: execution }, logs: alone.logs };
 
   const touched = touchedBy(alone.logs, safe);
@@ -201,7 +266,7 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
   const allowances = [...touched.approvals.values()];
   const permit2 = [...touched.permit2.values()];
   const reads = readsOf(safe, executor.sender, { tokens, allowances, permit2 });
-  const stateCalls = safeStateCalls(safe, executor.sender, tx.version);
+  const stateCalls = executor.settings.calls;
   const views = input.views ?? [];
   const viewReads = views.map(({ to, data }) => ({ from: executor.sender, to: STATIC_READER, data: `0x${bytesToHex(concatBytes(addressWord(to), bytesOf(data)))}` as Hex, gas: VIEW_GAS }));
   const around = [...reads.map((r) => r.call), ...stateCalls, ...viewReads];
@@ -210,7 +275,7 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
   if (measured.kind === 'unverifiable') return unverifiable(measured.reason);
   const calls = measured.value;
   const run = calls[around.length] as SimulatedCall;
-  if (executionOfCall(run, safe, safeTxHash) !== 'success') return unverifiable('the transaction executed alone but not between the balance reads');
+  if (executor.execution(run, tx) !== 'success') return unverifiable('the transaction executed alone but not between the balance reads');
   const unmeasured = unmeasuredBy(touchedBy(run.logs, safe), touched, tokens);
   if (unmeasured.length > 0) return unverifiable(`between the balance reads the transaction touched what it did not touch alone: ${unmeasured.join(', ')}`);
 
@@ -234,10 +299,8 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
     permit2Changes.push({ ...(permit2[i] as Allowance), before: b, after: a });
   }
   const viewsAt = reads.length + stateCalls.length;
-  const stateBefore = parseSafeState(calls.slice(reads.length, viewsAt), tx.version);
-  const stateAfter = parseSafeState(calls.slice(after0 + reads.length, after0 + viewsAt), tx.version);
-  if ('unreadable' in stateBefore) return unverifiable(`the Safe's ${stateBefore.unreadable} could not be read before the transaction`);
-  if ('unreadable' in stateAfter) return unverifiable(`the Safe's ${stateAfter.unreadable} could not be read after the transaction`);
+  const safeState = executor.settings.evidence(calls.slice(reads.length, viewsAt), calls.slice(after0 + reads.length, after0 + viewsAt));
+  if (typeof safeState === 'string') return unverifiable(safeState);
   const before = (i: number) => (words[i] as { before: bigint }).before;
   const after = (i: number) => (words[i] as { after: bigint }).after;
   const eth = after(0) - before(0);
@@ -259,7 +322,7 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
       allowances: allowanceChanges,
       permit2: permit2Changes,
       ends: new Map(input.ends.map((token) => [token, after(1 + tokens.indexOf(token))])),
-      safeState: { kind: 'read', before: stateBefore, after: stateAfter },
+      safeState,
       ...(views.length === 0 ? {} : { views: viewReadings }),
     },
     logs: run.logs,
@@ -289,7 +352,10 @@ export type CallScan =
  * `execTransaction`, one after another in one block on the given parent, and reads everything any of them touched
  * between each two. A call to the Safe itself without data is left out.
  */
-export async function scanCalls(reader: Reader, input: Omit<SimulationInput, 'ends' | 'views'>): Promise<CallScan> {
+export const scanCalls = (reader: Reader, input: Omit<SimulationInput, 'ends' | 'views'>): Promise<CallScan> => scanCallsOf('safe', reader, input);
+
+/** `scanCalls` for either sender; an EOA's transaction is its one call. */
+export async function scanCallsOf(sender: Sender, reader: Reader, input: Omit<SimulationInput, 'ends' | 'views'>): Promise<CallScan> {
   const { tx } = input;
   const safe = tx.safe;
   const unverifiable = (...reasons: string[]): CallScan => ({ kind: 'unverifiable', reasons });
@@ -297,12 +363,12 @@ export async function scanCalls(reader: Reader, input: Omit<SimulationInput, 'en
   if (unwrapped.kind !== 'direct' && unwrapped.kind !== 'multisend') return unverifiable('the transaction does not unwrap into calls');
   const inner = unwrapped.calls;
   const txs = inner.map((call, i): SafeTx => ({ ...tx, to: call.to, value: call.value, data: hex(regionBytes(call.data)), operation: call.operation, nonce: tx.nonce + BigInt(i) }));
-  const executor = await executorFor(reader, input);
+  const executor = await executorFor(sender, reader, input);
   if ('reasons' in executor) return unverifiable(...executor.reasons);
-  const base = executor.blockApproving(txs);
+  const base = executor.block(txs);
   const execs = txs.map(executor.exec);
   const failed = (run: readonly SimulatedCall[], at: (i: number) => number): string | undefined => {
-    const i = txs.findIndex((each, n) => executionOfCall(run[at(n)] as SimulatedCall, safe, hashSafeTx(each).safeTxHash) !== 'success');
+    const i = txs.findIndex((each, n) => executor.execution(run[at(n)] as SimulatedCall, each) !== 'success');
     return i === -1 ? undefined : `${inner[i]?.path} did not execute as a Safe transaction of its own`;
   };
 

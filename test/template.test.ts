@@ -61,7 +61,7 @@ test('a non-canonical encoding is a mismatch with a pointer', () => {
 test('a template that leaves an argument without a rule fails to load, naming the path', () => {
   const broken = structuredClone(rawTemplate);
   delete broken.calls[1].args.bundle.items[1].fields.data.call.args.receiver;
-  assert.throws(() => parseTemplate(broken, registry), (error: unknown) => {
+  assert.throws(() => parseTemplate(broken, registry, 'committed'), (error: unknown) => {
     assert.ok(error instanceof TemplateError);
     assert.equal(error.path, 'calls[1].args.bundle.items[1].fields.data.call.args.receiver');
     assert.match(error.message, /missing/);
@@ -84,7 +84,7 @@ test('a template rule that cannot bind its argument fails to load, naming the pa
   for (const [edit, path] of cases) {
     const broken = structuredClone(rawTemplate);
     edit(broken);
-    assert.throws(() => parseTemplate(broken, registry), (error: unknown) => error instanceof TemplateError && error.path === path, path);
+    assert.throws(() => parseTemplate(broken, registry, 'committed'), (error: unknown) => error instanceof TemplateError && error.path === path, path);
   }
 });
 
@@ -121,27 +121,27 @@ test('a computed card field reads a view with every argument bound as a view\'s 
   for (const [edit, path, problem] of cases) {
     const broken = structuredClone(rawTemplate);
     edit(broken);
-    assert.throws(() => parseTemplate(broken, registry), (error: unknown) => error instanceof TemplateError && error.path === path && problem.test(error.message), path);
+    assert.throws(() => parseTemplate(broken, registry, 'committed'), (error: unknown) => error instanceof TemplateError && error.path === path && problem.test(error.message), path);
   }
   const nested = structuredClone(rawTemplate);
   computed(nested).read.args.assets = balance;
-  assert.doesNotThrow(() => parseTemplate(nested, registry));
+  assert.doesNotThrow(() => parseTemplate(nested, registry, 'committed'));
   const older = structuredClone(rawTemplate);
   computed(older).read = { to: 'card.vault', function: 'previewRedeem(uint256 shares) returns (uint256 assets)', args: { shares: { to: 'card.vault', function: 'balanceOf(address account) returns (uint256 shares)', args: { account: 'safe' } } } };
   const newer = structuredClone(rawTemplate);
   computed(newer).read = { to: { card: 'vault' }, function: 'previewRedeem(uint256 shares) returns (uint256 assets)', args: { shares: { read: { to: { card: 'vault' }, function: 'balanceOf(address account) returns (uint256 shares)', args: { account: { safe: true } } } } } };
-  assert.deepEqual(parseTemplate(older, registry), parseTemplate(newer, registry), 'a template written before reads took rules reads the same');
+  assert.deepEqual(parseTemplate(older, registry, 'committed'), parseTemplate(newer, registry, 'committed'), 'a template written before reads took rules reads the same');
   const curve = structuredClone(rawTemplate);
   computed(curve).read = {
     to: { contract: 'bundler3' },
     function: 'get_dy(int128 i, int128 j, uint256 dx) returns (uint256 dy)',
     args: { i: { const: '0' }, j: { const: '-1' }, dx: { card: 'amount' } },
   };
-  assert.doesNotThrow(() => parseTemplate(curve, registry));
+  assert.doesNotThrow(() => parseTemplate(curve, registry, 'committed'));
   const tuple = structuredClone(rawTemplate);
   computed(tuple).read.function = 'quote(uint256 assets) returns (address token, (uint128 fee, uint64 shares) best)';
   computed(tuple).read.output = 'best.shares';
-  const field = parseTemplate(tuple, registry).card.get('min-shares');
+  const field = parseTemplate(tuple, registry, 'committed').card.get('min-shares');
   assert.deepEqual(field?.kind === 'amount' ? field.computed?.read.output : undefined, [1, 1]);
 });
 
@@ -149,10 +149,10 @@ test('a template\'s reasons are keyed by language, each holding the same languag
   const margin = (t: any) => t.card['min-shares'].computed.margin;
   const mixed = structuredClone(rawTemplate);
   margin(mixed).why = { en: 'only English' };
-  assert.throws(() => parseTemplate(mixed, registry), (error: unknown) => error instanceof TemplateError && error.path === 'template' && /same languages/.test(error.message));
+  assert.throws(() => parseTemplate(mixed, registry, 'committed'), (error: unknown) => error instanceof TemplateError && error.path === 'template' && /same languages/.test(error.message));
   const unknown = structuredClone(rawTemplate);
   margin(unknown).why = { fr: 'non' };
-  assert.throws(() => parseTemplate(unknown, registry), (error: unknown) => error instanceof TemplateError && error.path === 'card.min-shares.computed.margin.why');
+  assert.throws(() => parseTemplate(unknown, registry, 'committed'), (error: unknown) => error instanceof TemplateError && error.path === 'card.min-shares.computed.margin.why');
 });
 
 test('every shipped template holds each reason in English and Traditional Chinese', () => {
@@ -175,37 +175,24 @@ test('a share price bound or equals names a card amount or an earlier uint argum
   const deposit = (t: any) => t.calls[1].args.bundle.items[1].fields.data.call.args;
   const at = 'calls[1].args.bundle.items[1].fields.data.call.args';
   const cases: [(t: any) => void, string][] = [
-    [(t) => (deposit(t).maxSharePriceE27 = { maxSharePrice: { assets: 'card.vault', shares: 'card.min-shares' } }), `${at}.maxSharePriceE27.maxSharePrice.assets`],
-    [(t) => (deposit(t).maxSharePriceE27 = { maxSharePrice: { assets: 'card.amount', shares: `${at}.maxSharePriceE27` } }), `${at}.maxSharePriceE27.maxSharePrice.shares`],
+    [(t) => (deposit(t).maxSharePriceE27 = { maxSharePrice: { assets: 'card.vault', shares: 'card.min-shares', scale: 27 } }), `${at}.maxSharePriceE27.maxSharePrice.assets`],
+    [(t) => (deposit(t).maxSharePriceE27 = { maxSharePrice: { assets: 'card.amount', shares: `${at}.maxSharePriceE27`, scale: 27 } }), `${at}.maxSharePriceE27.maxSharePrice.shares`],
     [(t) => (t.calls[0].args.value = { equals: `${at}.assets` }), 'calls[0].args.value.equals'],
     [(t) => (deposit(t).receiver = { maxSharePrice: { assets: 'card.amount', shares: 'card.min-shares' } }), `${at}.receiver.maxSharePrice`],
   ];
   for (const [edit, path] of cases) {
     const broken = structuredClone(rawTemplate);
     edit(broken);
-    assert.throws(() => parseTemplate(broken, registry), (error: unknown) => error instanceof TemplateError && error.path === path, path);
+    assert.throws(() => parseTemplate(broken, registry, 'committed'), (error: unknown) => error instanceof TemplateError && error.path === path, path);
   }
   const earlier = structuredClone(rawTemplate);
   deposit(earlier).assets = { equals: 'calls[0].args.value' };
-  assert.equal(parseTemplate(earlier, registry).id, 'morpho/vault-deposit');
-});
-
-test('a share price scale is a whole power of ten from 1 to 36, 27 when absent, or the template fails to load', () => {
-  const at = 'calls[1].args.bundle.items[1].fields.data.call.args.maxSharePriceE27.maxSharePrice';
-  const scaled = (scale: unknown) => {
-    const raw = structuredClone(rawTemplate);
-    raw.calls[1].args.bundle.items[1].fields.data.call.args.maxSharePriceE27.maxSharePrice.scale = scale;
-    return () => parseTemplate(raw, registry);
-  };
-  for (const scale of [1, 18, 36]) assert.doesNotThrow(scaled(scale), String(scale));
-  for (const scale of [0, 37, 270, 27.5, '18', -1]) {
-    assert.throws(scaled(scale), (error: unknown) => error instanceof TemplateError && error.path === `${at}.scale` && /from 1 to 36/.test(error.message), String(scale));
-  }
+  assert.equal(parseTemplate(earlier, registry, 'committed').id, 'morpho/vault-deposit');
 });
 
 test('the template parses its card fields and effects', () => {
   const [vault, amount, minShares] = [...template.card];
-  assert.deepEqual(vault, ['vault', { kind: 'contract', scope: { registryKind: 'vault', protocol: 'morpho-blue', marketPart: undefined } }]);
+  assert.deepEqual(vault, ['vault', { kind: 'contract', scope: { registryKind: 'vault', protocol: 'morpho-blue', marketPart: undefined, names: undefined } }]);
   assert.deepEqual(amount, ['amount', { kind: 'amount', of: { field: 'vault', attribute: 'asset' }, computed: undefined, max: undefined }]);
   const [name, field] = minShares ?? assert.fail('min-shares');
   assert.equal(name, 'min-shares');
@@ -238,7 +225,7 @@ test('a card name the registry and address book do not know is refused', () => {
 });
 
 test('a contract field that names its protocol takes only that protocol\'s entries of its kind', () => {
-  const scoped = (slug: string) => parseTemplate({ ...rawTemplate, card: { ...rawTemplate.card, vault: { kind: 'contract', registryKind: 'vault', defillama: slug } } }, registry);
+  const scoped = (slug: string) => parseTemplate({ ...rawTemplate, card: { ...rawTemplate.card, vault: { kind: 'contract', registryKind: 'vault', defillama: slug } } }, registry, 'committed');
   const resolve = (slug: string, vault: string) => {
     const t = scoped(slug);
     const result = resolveCard({ operations: [{ template: t.id, values: { vault, amount: '1', 'min-shares': '1' } }] }, { ...context(), templates: new Map([[t.id, t]]) });
@@ -252,7 +239,7 @@ test('a contract field that names its protocol takes only that protocol\'s entri
 });
 
 test('a card resolves an address kind through the Safe, the registry and the address book', () => {
-  const recipients = parseTemplate({ ...rawTemplate, card: { ...rawTemplate.card, recipient: { kind: 'address' } } }, registry);
+  const recipients = parseTemplate({ ...rawTemplate, card: { ...rawTemplate.card, recipient: { kind: 'address' } } }, registry, 'committed');
   const book = new Map([['alice', OTHER as Address]]);
   const resolveRecipient = (name: string, addressBook = book) => {
     const result = resolveCard(
@@ -306,12 +293,12 @@ test('a free number may be declared a time, and only a number may', () => {
   const why = { en: 'When the order expires.', 'zh-TW': '訂單到期的時間。' };
   const timed = structuredClone(raw);
   fields(timed).validTo = { free: { time: why } };
-  const rule = parseTemplate(timed, registry);
+  const rule = parseTemplate(timed, registry, 'committed');
   assert.equal(rule.id, 'cow/swap');
   const bytes = structuredClone(raw);
   fields(bytes).appData = { free: { time: why } };
   assert.throws(
-    () => parseTemplate(bytes, registry),
+    () => parseTemplate(bytes, registry, 'committed'),
     (error: unknown) => error instanceof TemplateError && error.path.endsWith('fields.appData.free') && /a time is a number of seconds/.test(error.message),
   );
 });
@@ -333,4 +320,17 @@ test('every committed template keeps each reason card new prints, a max\'s and a
     }
   }
   assert.deepEqual(long, []);
+});
+
+test('a share price scale is a whole power of ten from 1 to 36, 27 when absent, or the template fails to load', () => {
+  const at = 'calls[1].args.bundle.items[1].fields.data.call.args.maxSharePriceE27.maxSharePrice';
+  const scaled = (scale: unknown) => {
+    const raw = structuredClone(rawTemplate);
+    raw.calls[1].args.bundle.items[1].fields.data.call.args.maxSharePriceE27.maxSharePrice.scale = scale;
+    return () => parseTemplate(raw, registry);
+  };
+  for (const scale of [1, 18, 36]) assert.doesNotThrow(scaled(scale), String(scale));
+  for (const scale of [0, 37, 270, 27.5, '18', -1]) {
+    assert.throws(scaled(scale), (error: unknown) => error instanceof TemplateError && error.path === `${at}.scale` && /from 1 to 36/.test(error.message), String(scale));
+  }
 });

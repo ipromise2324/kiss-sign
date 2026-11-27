@@ -1,0 +1,157 @@
+{
+  "id": "morpho/vault-v2-cap-decrease",
+  "card": {
+    "vault": {
+      "kind": "contract",
+      "registryKind": "vault",
+      "defillama": "morpho-blue"
+    },
+    "market": {
+      "kind": "market"
+    },
+    "absolute-cap": {
+      "kind": "amount",
+      "of": "vault.asset"
+    },
+    "relative-cap": {
+      "kind": "percent"
+    }
+  },
+  "same": [
+    "vault.asset",
+    "market.loanToken"
+  ],
+  "calls": [
+    {
+      "to": {
+        "card": "vault"
+      },
+      "value": {
+        "const": "0"
+      },
+      "function": "multicall(bytes[] data)",
+      "args": {
+        "data": {
+          "items": [
+            {
+              "call": {
+                "function": "decreaseAbsoluteCap(bytes idData, uint256 newAbsoluteCap)",
+                "args": {
+                  "idData": {
+                    "encoded": {
+                      "as": "capId(string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams)",
+                      "args": {
+                        "kind": {
+                          "const": "this/marketParams"
+                        },
+                        "adapter": {
+                          "card": "vault.adapter"
+                        },
+                        "marketParams": {
+                          "card": "market"
+                        }
+                      }
+                    }
+                  },
+                  "newAbsoluteCap": {
+                    "card": "absolute-cap"
+                  }
+                }
+              }
+            },
+            {
+              "call": {
+                "function": "decreaseRelativeCap(bytes idData, uint256 newRelativeCap)",
+                "args": {
+                  "idData": {
+                    "encoded": {
+                      "as": "capId(string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams)",
+                      "args": {
+                        "kind": {
+                          "const": "this/marketParams"
+                        },
+                        "adapter": {
+                          "card": "vault.adapter"
+                        },
+                        "marketParams": {
+                          "card": "market"
+                        }
+                      }
+                    }
+                  },
+                  "newRelativeCap": {
+                    "card": "relative-cap"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "effects": {
+    "gives": [],
+    "gets": [],
+    "views": [
+      {
+        "to": {
+          "card": "vault"
+        },
+        "function": "absoluteCap(bytes32 id) returns (uint256 absoluteCap)",
+        "args": {
+          "id": {
+            "keccak": {
+              "encoded": {
+                "as": "capId(string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams)",
+                "args": {
+                  "kind": {
+                    "const": "this/marketParams"
+                  },
+                  "adapter": {
+                    "card": "vault.adapter"
+                  },
+                  "marketParams": {
+                    "card": "market"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "change": {
+          "absoluteCap": "card.absolute-cap"
+        }
+      },
+      {
+        "to": {
+          "card": "vault"
+        },
+        "function": "relativeCap(bytes32 id) returns (uint256 relativeCap)",
+        "args": {
+          "id": {
+            "keccak": {
+              "encoded": {
+                "as": "capId(string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams)",
+                "args": {
+                  "kind": {
+                    "const": "this/marketParams"
+                  },
+                  "adapter": {
+                    "card": "vault.adapter"
+                  },
+                  "marketParams": {
+                    "card": "market"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "change": {
+          "relativeCap": "card.relative-cap"
+        }
+      }
+    ]
+  }
+}

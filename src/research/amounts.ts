@@ -3,13 +3,13 @@ import type { Reader } from '../chain/reader.ts';
 import type { EventLog, SimulationCall } from '../chain/types.ts';
 import { selectorOf } from '../decode/abi.ts';
 import { uintWord } from '../decode/codec.ts';
-import type { Registry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { uintOf } from '../simulate/events.ts';
 import { isNamedToken } from '../template/template.ts';
 import type { CardRef, EffectToken, LeafRule, Template, Tolerance } from '../template/template.ts';
 import type { Sender } from './study.ts';
+import type { StudyRegistry } from './study-registry.ts';
 
 /**
  * An effect whose amount the transaction states: an exact card amount of a token, which the argument bound to that
@@ -64,7 +64,7 @@ function cardValue(fit: FitLeaves, ref: CardRef): string | undefined {
   return i === -1 ? undefined : fit.values[i];
 }
 
-function addressOf(fit: FitLeaves, ref: CardRef, registry: Registry): Address | undefined {
+function addressOf(fit: FitLeaves, ref: CardRef, registry: StudyRegistry): Address | undefined {
   const held = cardValue(fit, ref);
   if (held !== undefined) return /^0x[0-9a-f]{40}$/.test(held) ? (held as Address) : undefined;
   if (ref.attribute === undefined) return undefined;
@@ -76,7 +76,7 @@ function addressOf(fit: FitLeaves, ref: CardRef, registry: Registry): Address | 
 type Stated = { readonly effect: number; readonly token: Address; readonly amount: bigint; readonly receiver: Address | undefined; readonly side: StatedEffect['side'] };
 
 /** Each effect the transaction states, resolved to its token, amount and receiver; an effect it does not state is left out. */
-function statedIn(fit: FitLeaves, effects: readonly StatedEffect[], registry: Registry): Stated[] {
+function statedIn(fit: FitLeaves, effects: readonly StatedEffect[], registry: StudyRegistry): Stated[] {
   return effects.flatMap((effect, i): Stated[] => {
     const token = effect.token === 'eth' ? undefined : isNamedToken(effect.token) ? registry.entries.get(effect.token.contract)?.address : addressOf(fit, effect.token, registry);
     const raw = effect.amount === undefined ? '0' : cardValue(fit, { field: effect.amount, attribute: undefined });
@@ -104,7 +104,7 @@ const logsOf = (logs: readonly EventLog[], token: Address): string => JSON.strin
  * Runs the transaction alone, as sent, on its parent block, and reads each party's balance of each stated token just
  * before and just after it in the same simulated block. Undefined when the transaction states no amount.
  */
-export async function measure(reader: Reader, fit: FitLeaves, effects: readonly StatedEffect[], registry: Registry): Promise<Measurement | undefined> {
+export async function measure(reader: Reader, fit: FitLeaves, effects: readonly StatedEffect[], registry: StudyRegistry): Promise<Measurement | undefined> {
   const stated = statedIn(fit, effects, registry);
   if (stated.length === 0) return undefined;
   const unmeasured = (why: string): Measurement => ({ kind: 'unmeasured', why });

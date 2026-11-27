@@ -1,0 +1,2426 @@
+{
+  "usdc": {
+    "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "kind": "token",
+    "source": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
+    "sourceLabel": "Ethereum",
+    "sourceHeading": "Mainnet",
+    "defillama": "circle-usdc",
+    "coingecko": "usd-coin",
+    "code": {
+      "hash": "0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505",
+      "implementation": {
+        "address": "0x43506849D7C04F9138D1A2050bbF3A0c054402dd",
+        "hash": "0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea"
+      },
+      "from": 18963716,
+      "earlier": [
+        {
+          "from": 6082465,
+          "hash": "0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505",
+          "implementation": {
+            "address": "0x0882477e7895bdC5cea7cB1552ed914aB157Fe56",
+            "hash": "0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa"
+          }
+        },
+        {
+          "from": 10743414,
+          "hash": "0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505",
+          "implementation": {
+            "address": "0xB7277a6e95992041568D9391D09d0122023778A2",
+            "hash": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
+          }
+        },
+        {
+          "from": 12317814,
+          "hash": "0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505",
+          "implementation": {
+            "address": "0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF",
+            "hash": "0x10d68f9bb2ba9f5e9163cadc4a3446be0c6b2ab8b1b65079e79dcd94a6dc329c"
+          }
+        }
+      ]
+    }
+  },
+  "usdt": {
+    "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+    "kind": "token",
+    "source": "https://tether.to/en/supported-protocols/",
+    "sourceLabel": "USD₮ contract address",
+    "defillama": "tether",
+    "coingecko": "tether",
+    "code": {
+      "hash": "0xb44fb4e949d0f78f87f79ee46428f23a2a5713ce6fc6e0beb3dda78c2ac1ea55",
+      "from": 4634748
+    }
+  },
+  "multisend-1.3.0": {
+    "address": "0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761",
+    "kind": "multisend",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/multi_send.json",
+    "sourceLabel": "canonical",
+    "defillama": "safe",
+    "code": {
+      "hash": "0x0208282bd262360d0320862c5ac70f375f5ed3b9d89a83a615b4d398415bdc83",
+      "from": 12504265
+    }
+  },
+  "multisend-1.3.0-eip155": {
+    "address": "0x998739BFdAAdde7C933B942a68053933098f9EDa",
+    "kind": "multisend",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/multi_send.json",
+    "sourceLabel": "eip155",
+    "defillama": "safe",
+    "code": {
+      "hash": "0x81db0e4afdf5178583537b58c5ad403bd47a4ac7f9bde2442ef3e341d433126a",
+      "from": 17934572
+    }
+  },
+  "multisend-call-only-1.3.0": {
+    "address": "0x40A2aCCbd92BCA938b02010E17A5b8929b49130D",
+    "kind": "multisend",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/multi_send_call_only.json",
+    "sourceLabel": "canonical",
+    "defillama": "safe",
+    "code": {
+      "hash": "0xa9865ac2d9c7a1591619b188c4d88167b50df6cc0c5327fcbd1c8c75f7c066ad",
+      "from": 12504266
+    }
+  },
+  "multisend-call-only-1.3.0-eip155": {
+    "address": "0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B",
+    "kind": "multisend",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/multi_send_call_only.json",
+    "sourceLabel": "eip155",
+    "defillama": "safe",
+    "code": {
+      "hash": "0xa9865ac2d9c7a1591619b188c4d88167b50df6cc0c5327fcbd1c8c75f7c066ad",
+      "from": 17934573
+    }
+  },
+  "multisend-1.4.1": {
+    "address": "0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526",
+    "kind": "multisend",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.4.1/multi_send.json",
+    "sourceLabel": "canonical",
+    "defillama": "safe",
+    "code": {
+      "hash": "0x0e4f7fc66550a322d1e7688e181b75e217e662a4f3f4d6a29b22bc61217c4b77",
+      "from": 17440627
+    }
+  },
+  "multisend-call-only-1.4.1": {
+    "address": "0x9641d764fc13c8B624c04430C7356C1C7C8102e2",
+    "kind": "multisend",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.4.1/multi_send_call_only.json",
+    "sourceLabel": "canonical",
+    "defillama": "safe",
+    "code": {
+      "hash": "0xecd5bd14a08c5d2122379900b2f272bdf107a7e92423c10dd5fe3254386c9939",
+      "from": 17446292
+    }
+  },
+  "multisend-1.5.0": {
+    "address": "0x218543288004CD07832472D464648173c77D7eB7",
+    "kind": "multisend",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.5.0/multi_send.json",
+    "sourceLabel": "canonical",
+    "defillama": "safe",
+    "code": {
+      "hash": "0xca1147a12963172a93910c5cb2bfa5ad0e941c7f03fc7eb017dd06a8ea4e5604",
+      "from": 22774982
+    }
+  },
+  "multisend-call-only-1.5.0": {
+    "address": "0xA83c336B20401Af773B6219BA5027174338D1836",
+    "kind": "multisend",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.5.0/multi_send_call_only.json",
+    "sourceLabel": "canonical",
+    "defillama": "safe",
+    "code": {
+      "hash": "0xcdbdcec38d2f1c7d961b0029ff8416b7e86e9974d6f0e9c9580c7d17fcfb6663",
+      "from": 22774983
+    }
+  },
+  "bundler3": {
+    "address": "0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245",
+    "kind": "router",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "Bundler3",
+    "moreSources": [
+      {
+        "url": "https://github.com/morpho-org/sdks/blob/8d702da09b69baa272ad00b77e55cd197191321d/packages/morpho-ts/src/addresses.ts",
+        "label": "bundler3"
+      }
+    ],
+    "defillama": "morpho-blue",
+    "code": {
+      "hash": "0xd3912f2b89d1e2848544ca398d337f59950ffb9ecc38a7bd644063fa094c8454",
+      "from": 21643807
+    }
+  },
+  "steakhouse-prime-usdc-v2-0f51": {
+    "address": "0xbeef088055857739C12CD3765F20b7679Def0f51",
+    "kind": "vault",
+    "source": "https://www.steakhouse.financial/docs/products/vault-products/current/prime-instant",
+    "sourceLabel": "Steakhouse Prime Instant USDC",
+    "defillama": "steakhouse-financial",
+    "coingecko": "steakhouse-usdc",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "vault-v2-factory"
+    },
+    "code": {
+      "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
+      "from": 23671611
+    }
+  },
+  "vault-v2-factory": {
+    "address": "0xA1D94F746dEfa1928926b84fB2596c06926C0405",
+    "kind": "factory",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "VaultV2Factory",
+    "moreSources": [
+      {
+        "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+        "label": "vaultV2Factory"
+      }
+    ],
+    "defillama": "morpho-blue",
+    "instanceCheck": "isVaultV2(address)",
+    "size": {
+      "function": "totalAssets()",
+      "unit": {
+        "function": "asset()",
+        "attribute": "asset"
+      },
+      "holders": true
+    },
+    "code": {
+      "hash": "0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503",
+      "from": 23375073
+    }
+  },
+  "usual-boosted-usdc-v1-3a3d": {
+    "address": "0xd63070114470f685b75B74D60EEc7c1113d33a3D",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0xd63070114470f685b75B74D60EEc7c1113d33a3D/usual-boosted-usdc",
+    "defillama": "morpho-blue",
+    "coingecko": "mev-capital-usual-boosted-usdc-morpho-vault",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "metamorpho-factory-v1-0"
+    },
+    "code": {
+      "hash": "0x962bef2305e60f683bf25cd0f822341c121ce763442e4c674a6cc746801febaa",
+      "from": 20377233
+    }
+  },
+  "vault-bundles-v1": {
+    "address": "0x02912516d49dE997db75B9D7858faAE59209650B",
+    "kind": "router",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "VaultBundlesV1",
+    "moreSources": [
+      {
+        "url": "https://github.com/morpho-org/sdks/blob/166277bc26a12235256bdf9162da012b80781a1e/packages/morpho-ts/src/addresses.ts",
+        "label": "vaultBundlesV1"
+      }
+    ],
+    "defillama": "morpho-blue",
+    "code": {
+      "hash": "0xa8ec5960bb20a33ed52e8248aed85ee3148135b185bba8bb74eb572a987fd4a5",
+      "from": 25720857
+    }
+  },
+  "fluid-fusdc": {
+    "address": "0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33",
+    "kind": "vault",
+    "source": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md",
+    "sourceLabel": "mainnet",
+    "sourceHeading": "fToken_fUSDC",
+    "moreSources": [
+      {
+        "url": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/fToken_fUSDC.json",
+        "label": "address"
+      },
+      {
+        "url": "https://docs.fluid.io/fluid-integration/lending/read/lending-tokens.html",
+        "label": "address"
+      }
+    ],
+    "defillama": "fluid-lending",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "fluid-lending-factory"
+    },
+    "code": {
+      "hash": "0x131b2014b67d86e5a1fcd6be7b6817b76ae9ac1663266f88366e526666297828",
+      "from": 19247609
+    },
+    "dependsOn": [
+      "fluid-liquidity"
+    ]
+  },
+  "fluid-fusdt": {
+    "address": "0x5C20B550819128074FD538Edf79791733ccEdd18",
+    "kind": "vault",
+    "source": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md",
+    "sourceLabel": "mainnet",
+    "sourceHeading": "fToken_fUSDT",
+    "moreSources": [
+      {
+        "url": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/fToken_fUSDT.json",
+        "label": "address"
+      },
+      {
+        "url": "https://docs.fluid.io/fluid-integration/lending/read/lending-tokens.html",
+        "label": "address"
+      }
+    ],
+    "defillama": "fluid-lending",
+    "attributes": {
+      "asset": "usdt",
+      "factory": "fluid-lending-factory"
+    },
+    "code": {
+      "hash": "0x662b760b02d5258965404cd8daca2c1ce5ef5567417cedec5a0acf895b775195",
+      "from": 19247666
+    },
+    "dependsOn": [
+      "fluid-liquidity"
+    ]
+  },
+  "fluid-lending-factory": {
+    "address": "0x54B91A0D94cb471F37f949c60F7Fa7935b551D03",
+    "kind": "factory",
+    "source": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md",
+    "sourceLabel": "mainnet",
+    "sourceHeading": "LendingFactory",
+    "moreSources": [
+      {
+        "url": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/LendingFactory.json",
+        "label": "address"
+      }
+    ],
+    "defillama": "fluid-lending",
+    "instanceCheck": {
+      "function": "computeToken(address,string)",
+      "args": [
+        {
+          "attribute": "asset"
+        },
+        {
+          "string": "fToken"
+        }
+      ]
+    },
+    "size": {
+      "function": "totalAssets()",
+      "unit": {
+        "function": "asset()",
+        "attribute": "asset"
+      },
+      "holders": true
+    },
+    "code": {
+      "hash": "0x8489c155ce8c58e8fd4a6dc6799c1e5d23259b55f69ceaeb8d525db13da01e9a",
+      "from": 19239226
+    }
+  },
+  "fluid-liquidity": {
+    "address": "0x52Aa899454998Be5b000Ad077a46Bbe360F4e497",
+    "kind": "lending",
+    "source": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md",
+    "sourceLabel": "mainnet",
+    "sourceHeading": "Liquidity",
+    "moreSources": [
+      {
+        "url": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/Liquidity.json",
+        "label": "address"
+      },
+      {
+        "url": "https://docs.fluid.io/integrate/dex-swaps.html",
+        "label": "Liquidity Layer"
+      }
+    ],
+    "defillama": "fluid-lending",
+    "routes": {
+      "implementationOf": "getSigsImplementation(bytes4)",
+      "selectorsOf": "getImplementationSigs(address)",
+      "seeds": [
+        "0xad967e15",
+        "0x69b48e4e",
+        "0x3ff8b31d",
+        "0xeae2c8f1"
+      ]
+    },
+    "code": {
+      "hash": "0xb3a458c72a3a0b3aa773f2c3e21d0eadfb06dacdc4568f447d9019d1c1451c35",
+      "implementation": {
+        "address": "0xCc331daf69752BEcE3DC98dBC63eAcd5092266A2",
+        "hash": "0x598bdb9407c802783c5efe368b73db1af7a05cf7c90d7c583df87ec1dd31f438"
+      },
+      "routes": [
+        {
+          "address": "0x463874c5A102ceEa919D63f748a433304D1bd1c0",
+          "hash": "0xbc00fc015819200e56be193bbd03bfead8c29986bdfe03f395c8e319e8c22fc1",
+          "selectors": [
+            "0x3ff8b31d",
+            "0x47e870e6",
+            "0x4cc44703",
+            "0x52d3667c",
+            "0x553fea25",
+            "0x981c829f",
+            "0xb788f3a1",
+            "0xde465d79",
+            "0xe7934bb5"
+          ]
+        },
+        {
+          "address": "0x4bDC8816F2f56914B66EbF3786D78872D3a73Ab7",
+          "hash": "0x6d4316677b0cf491853e301d8ad6147f49e81f86dfb42283d98ca076ec92c826",
+          "selectors": [
+            "0xad967e15",
+            "0xdacb5419"
+          ]
+        },
+        {
+          "address": "0x9191b9539DD588dB81076900deFDd79Cb1115f72",
+          "hash": "0x01fdb34c5f4052607a015ca4eb8b743c495f27a58c1d2e56236db41d80316400",
+          "selectors": [
+            "0x69b48e4e",
+            "0xb0bec846",
+            "0x17a08fa0",
+            "0x8147c989"
+          ]
+        },
+        {
+          "address": "0xea78faBC13D603895FE9efe8BB4A4F2c56e5698E",
+          "hash": "0xb79bc58959e4c0457f70d336ccee8a04e6a88fe0a49d0fbdf00e6b6d6108fda9",
+          "selectors": [
+            "0xeae2c8f1",
+            "0xe8025d77",
+            "0xac862bfa",
+            "0xdd4cbf6b",
+            "0xec048401",
+            "0x3f66feff",
+            "0xf4bfa000",
+            "0xa5eb43ef",
+            "0x3fad77fc",
+            "0x9dde5977",
+            "0x54bb0c1d",
+            "0x7f7b6002",
+            "0x01b88f86",
+            "0xc2da75f0",
+            "0x02c6bb6a",
+            "0x8f0c2916",
+            "0xc609684a",
+            "0x7a4df6eb"
+          ]
+        }
+      ],
+      "from": 25007782,
+      "earlier": [
+        {
+          "from": 19239106,
+          "hash": "0xb3a458c72a3a0b3aa773f2c3e21d0eadfb06dacdc4568f447d9019d1c1451c35",
+          "implementation": {
+            "address": "0xCA5E9219e1007931FD5d938C1815a90ef08f1584",
+            "hash": "0x14c5e011575d1bd4e3721fa61e81454a4ec8eacf1015dd74562f3d33f6f5c194"
+          },
+          "routes": []
+        },
+        {
+          "from": 19240726,
+          "hash": "0xb3a458c72a3a0b3aa773f2c3e21d0eadfb06dacdc4568f447d9019d1c1451c35",
+          "implementation": {
+            "address": "0x7D9B796BcDdbba1045e2daCCfaB90dBFfb909834",
+            "hash": "0x60912c54649d2ed3317ed1df6a8ffc999f2c68f02b70c435a6eddad2127384b4"
+          },
+          "routes": [
+            {
+              "address": "0x15D12D6ba6962d89c820DF9353219E8cfc9453E0",
+              "hash": "0x9622f5ec4e7369c4dc1b2a02d26d4d87ef448c4c6a0a1be898308ac4ed9d7d79",
+              "selectors": [
+                "0xeae2c8f1",
+                "0xe8025d77",
+                "0xac862bfa",
+                "0xdd4cbf6b",
+                "0xec048401",
+                "0x3f66feff",
+                "0xf4bfa000",
+                "0xa5eb43ef",
+                "0x3fad77fc",
+                "0x9dde5977",
+                "0x54bb0c1d",
+                "0x38b7e8e7",
+                "0x01b88f86",
+                "0xc2da75f0",
+                "0x02c6bb6a"
+              ]
+            },
+            {
+              "address": "0xfB45BC79e01b4e92706412A54e011db251104C74",
+              "hash": "0x47611689e1fb059a7e4b3a42c16401c26ff190c77f7e337ce6b4fd44d2f74b3f",
+              "selectors": [
+                "0xad967e15"
+              ]
+            }
+          ]
+        },
+        {
+          "from": 19732630,
+          "hash": "0xb3a458c72a3a0b3aa773f2c3e21d0eadfb06dacdc4568f447d9019d1c1451c35",
+          "implementation": {
+            "address": "0x7D9B796BcDdbba1045e2daCCfaB90dBFfb909834",
+            "hash": "0x60912c54649d2ed3317ed1df6a8ffc999f2c68f02b70c435a6eddad2127384b4"
+          },
+          "routes": [
+            {
+              "address": "0x15D12D6ba6962d89c820DF9353219E8cfc9453E0",
+              "hash": "0x9622f5ec4e7369c4dc1b2a02d26d4d87ef448c4c6a0a1be898308ac4ed9d7d79",
+              "selectors": [
+                "0xeae2c8f1",
+                "0xe8025d77",
+                "0xac862bfa",
+                "0xdd4cbf6b",
+                "0xec048401",
+                "0x3f66feff",
+                "0xf4bfa000",
+                "0xa5eb43ef",
+                "0x3fad77fc",
+                "0x9dde5977",
+                "0x54bb0c1d",
+                "0x38b7e8e7",
+                "0x01b88f86",
+                "0xc2da75f0",
+                "0x02c6bb6a"
+              ]
+            },
+            {
+              "address": "0x968738c127f91b560bD614487F859999D5D02d9c",
+              "hash": "0x48b016768981218d4e55b2f9d6d99185a3d9136beb09e105f902e1a877a99709",
+              "selectors": [
+                "0xad967e15"
+              ]
+            }
+          ]
+        },
+        {
+          "from": 19891970,
+          "hash": "0xb3a458c72a3a0b3aa773f2c3e21d0eadfb06dacdc4568f447d9019d1c1451c35",
+          "implementation": {
+            "address": "0x7D9B796BcDdbba1045e2daCCfaB90dBFfb909834",
+            "hash": "0x60912c54649d2ed3317ed1df6a8ffc999f2c68f02b70c435a6eddad2127384b4"
+          },
+          "routes": [
+            {
+              "address": "0x4Fc6D37FE897D6a7FfF0093D3B8418194ce1B1Bb",
+              "hash": "0xe8abef9201890d5c0b427f8fbbb7e5da1fbbc85e039d1cfc6a366b3fe7047b62",
+              "selectors": [
+                "0xad967e15"
+              ]
+            },
+            {
+              "address": "0xF191F36385FFeefda54fB564cE374AAA86E2D08b",
+              "hash": "0x8bce377b5261ee219ebcabc3ef1b4816e62af3f3a09fa7e2c870243c7804fed6",
+              "selectors": [
+                "0xeae2c8f1",
+                "0xe8025d77",
+                "0xac862bfa",
+                "0xdd4cbf6b",
+                "0xec048401",
+                "0x3f66feff",
+                "0xf4bfa000",
+                "0xa5eb43ef",
+                "0x3fad77fc",
+                "0x9dde5977",
+                "0x54bb0c1d",
+                "0x38b7e8e7",
+                "0x01b88f86",
+                "0xc2da75f0",
+                "0x02c6bb6a"
+              ]
+            }
+          ]
+        },
+        {
+          "from": 20025856,
+          "hash": "0xb3a458c72a3a0b3aa773f2c3e21d0eadfb06dacdc4568f447d9019d1c1451c35",
+          "implementation": {
+            "address": "0x102a42aa1F6BEA5c9eC200B95AFbf928ae4b855b",
+            "hash": "0x7be96d1cee22b03ff3cad870e5caca108959a85175b960cf6480b435e6b3f19a"
+          },
+          "routes": [
+            {
+              "address": "0xb290b44D34C4a44E233af73998C543832c418120",
+              "hash": "0x59133144f99fc475daf771082986ce54c0c348bbeb05052e0c99159fe13ce7c3",
+              "selectors": [
+                "0xad967e15"
+              ]
+            },
+            {
+              "address": "0xBDF3e6A0c721117B69150D00D9Fb27873023E4Df",
+              "hash": "0x2a98e77d64f5c56cbb432d102331d4abbe56b0e4da46bf5096be9a8eb3dc34f7",
+              "selectors": [
+                "0xeae2c8f1",
+                "0xe8025d77",
+                "0xac862bfa",
+                "0xdd4cbf6b",
+                "0xec048401",
+                "0x3f66feff",
+                "0xf4bfa000",
+                "0xa5eb43ef",
+                "0x3fad77fc",
+                "0x9dde5977",
+                "0x54bb0c1d",
+                "0x7f7b6002",
+                "0x01b88f86",
+                "0xc2da75f0",
+                "0x02c6bb6a"
+              ]
+            }
+          ]
+        },
+        {
+          "from": 20678887,
+          "hash": "0xb3a458c72a3a0b3aa773f2c3e21d0eadfb06dacdc4568f447d9019d1c1451c35",
+          "implementation": {
+            "address": "0xa57D7CeF617271F4cEa4f665D33ebcFcBA4929f6",
+            "hash": "0x54fe41b26d4b2c1e4c833995792756ec3168cdaa0291a96c5e7a098182e22079"
+          },
+          "routes": [
+            {
+              "address": "0x8eC5e29eA39b2f64B21e32cB9Ff11D5059982F8C",
+              "hash": "0x6d335caf23fca36c168997ec35832954f2371623ecb94a8dff5b92da789b70ca",
+              "selectors": [
+                "0xad967e15"
+              ]
+            },
+            {
+              "address": "0x9191b9539DD588dB81076900deFDd79Cb1115f72",
+              "hash": "0x01fdb34c5f4052607a015ca4eb8b743c495f27a58c1d2e56236db41d80316400",
+              "selectors": [
+                "0x69b48e4e",
+                "0xb0bec846",
+                "0x17a08fa0",
+                "0x8147c989"
+              ]
+            },
+            {
+              "address": "0xC3800E7527145837e525cfA6AD96B6B5DaE01586",
+              "hash": "0xca64f3f30aa77eb36b6495bdda595063e196a2f4341cff8b61867912bb2132f3",
+              "selectors": [
+                "0xeae2c8f1",
+                "0xe8025d77",
+                "0xac862bfa",
+                "0xdd4cbf6b",
+                "0xec048401",
+                "0x3f66feff",
+                "0xf4bfa000",
+                "0xa5eb43ef",
+                "0x3fad77fc",
+                "0x9dde5977",
+                "0x54bb0c1d",
+                "0x7f7b6002",
+                "0x01b88f86",
+                "0xc2da75f0",
+                "0x02c6bb6a",
+                "0x8f0c2916"
+              ]
+            }
+          ]
+        },
+        {
+          "from": 21048872,
+          "hash": "0xb3a458c72a3a0b3aa773f2c3e21d0eadfb06dacdc4568f447d9019d1c1451c35",
+          "implementation": {
+            "address": "0xa57D7CeF617271F4cEa4f665D33ebcFcBA4929f6",
+            "hash": "0x54fe41b26d4b2c1e4c833995792756ec3168cdaa0291a96c5e7a098182e22079"
+          },
+          "routes": [
+            {
+              "address": "0x6967e68F7f9b3921181f27E66Aa9c3ac7e13dBc0",
+              "hash": "0xd68a15f2c7798c6fe05cb18a5bf91f5f58a6c9701f1bb58896a585f69e1fee67",
+              "selectors": [
+                "0xad967e15"
+              ]
+            },
+            {
+              "address": "0x9191b9539DD588dB81076900deFDd79Cb1115f72",
+              "hash": "0x01fdb34c5f4052607a015ca4eb8b743c495f27a58c1d2e56236db41d80316400",
+              "selectors": [
+                "0x69b48e4e",
+                "0xb0bec846",
+                "0x17a08fa0",
+                "0x8147c989"
+              ]
+            },
+            {
+              "address": "0xC3800E7527145837e525cfA6AD96B6B5DaE01586",
+              "hash": "0xca64f3f30aa77eb36b6495bdda595063e196a2f4341cff8b61867912bb2132f3",
+              "selectors": [
+                "0xeae2c8f1",
+                "0xe8025d77",
+                "0xac862bfa",
+                "0xdd4cbf6b",
+                "0xec048401",
+                "0x3f66feff",
+                "0xf4bfa000",
+                "0xa5eb43ef",
+                "0x3fad77fc",
+                "0x9dde5977",
+                "0x54bb0c1d",
+                "0x7f7b6002",
+                "0x01b88f86",
+                "0xc2da75f0",
+                "0x02c6bb6a",
+                "0x8f0c2916"
+              ]
+            }
+          ]
+        },
+        {
+          "from": 23990301,
+          "hash": "0xb3a458c72a3a0b3aa773f2c3e21d0eadfb06dacdc4568f447d9019d1c1451c35",
+          "implementation": {
+            "address": "0xa57D7CeF617271F4cEa4f665D33ebcFcBA4929f6",
+            "hash": "0x54fe41b26d4b2c1e4c833995792756ec3168cdaa0291a96c5e7a098182e22079"
+          },
+          "routes": [
+            {
+              "address": "0x53EFFA0e612d88f39Ab32eb5274F2fae478d261C",
+              "hash": "0x5bae7bf9ffe1169e5639c54449c520dcadd3be2112f9d3f66738afc5a8fa6946",
+              "selectors": [
+                "0xeae2c8f1",
+                "0xe8025d77",
+                "0xac862bfa",
+                "0xdd4cbf6b",
+                "0xec048401",
+                "0x3f66feff",
+                "0xf4bfa000",
+                "0xa5eb43ef",
+                "0x3fad77fc",
+                "0x9dde5977",
+                "0x54bb0c1d",
+                "0x7f7b6002",
+                "0x01b88f86",
+                "0xc2da75f0",
+                "0x02c6bb6a",
+                "0x8f0c2916"
+              ]
+            },
+            {
+              "address": "0x9191b9539DD588dB81076900deFDd79Cb1115f72",
+              "hash": "0x01fdb34c5f4052607a015ca4eb8b743c495f27a58c1d2e56236db41d80316400",
+              "selectors": [
+                "0x69b48e4e",
+                "0xb0bec846",
+                "0x17a08fa0",
+                "0x8147c989"
+              ]
+            },
+            {
+              "address": "0xF1167F851509CA5Ef56f8521fB1EE07e4e5C92C8",
+              "hash": "0xebc166a0ca8214935330209ad887841968a2ba0e9736fe250e9792b288fc03cd",
+              "selectors": [
+                "0xad967e15"
+              ]
+            }
+          ]
+        },
+        {
+          "from": 24034712,
+          "hash": "0xb3a458c72a3a0b3aa773f2c3e21d0eadfb06dacdc4568f447d9019d1c1451c35",
+          "implementation": {
+            "address": "0xa57D7CeF617271F4cEa4f665D33ebcFcBA4929f6",
+            "hash": "0x54fe41b26d4b2c1e4c833995792756ec3168cdaa0291a96c5e7a098182e22079"
+          },
+          "routes": [
+            {
+              "address": "0x2e4015880367b7C2613Df77f816739D97A8C46aD",
+              "hash": "0xc9aed3d4c0daaf827f7875041744be6357914c0d34d6307ae45addd643a6579f",
+              "selectors": [
+                "0xad967e15"
+              ]
+            },
+            {
+              "address": "0x53EFFA0e612d88f39Ab32eb5274F2fae478d261C",
+              "hash": "0x5bae7bf9ffe1169e5639c54449c520dcadd3be2112f9d3f66738afc5a8fa6946",
+              "selectors": [
+                "0xeae2c8f1",
+                "0xe8025d77",
+                "0xac862bfa",
+                "0xdd4cbf6b",
+                "0xec048401",
+                "0x3f66feff",
+                "0xf4bfa000",
+                "0xa5eb43ef",
+                "0x3fad77fc",
+                "0x9dde5977",
+                "0x54bb0c1d",
+                "0x7f7b6002",
+                "0x01b88f86",
+                "0xc2da75f0",
+                "0x02c6bb6a",
+                "0x8f0c2916"
+              ]
+            },
+            {
+              "address": "0x9191b9539DD588dB81076900deFDd79Cb1115f72",
+              "hash": "0x01fdb34c5f4052607a015ca4eb8b743c495f27a58c1d2e56236db41d80316400",
+              "selectors": [
+                "0x69b48e4e",
+                "0xb0bec846",
+                "0x17a08fa0",
+                "0x8147c989"
+              ]
+            }
+          ]
+        },
+        {
+          "from": 24649359,
+          "hash": "0xb3a458c72a3a0b3aa773f2c3e21d0eadfb06dacdc4568f447d9019d1c1451c35",
+          "implementation": {
+            "address": "0xa57D7CeF617271F4cEa4f665D33ebcFcBA4929f6",
+            "hash": "0x54fe41b26d4b2c1e4c833995792756ec3168cdaa0291a96c5e7a098182e22079"
+          },
+          "routes": [
+            {
+              "address": "0x2e4015880367b7C2613Df77f816739D97A8C46aD",
+              "hash": "0xc9aed3d4c0daaf827f7875041744be6357914c0d34d6307ae45addd643a6579f",
+              "selectors": [
+                "0xad967e15"
+              ]
+            },
+            {
+              "address": "0x463874c5A102ceEa919D63f748a433304D1bd1c0",
+              "hash": "0xbc00fc015819200e56be193bbd03bfead8c29986bdfe03f395c8e319e8c22fc1",
+              "selectors": [
+                "0x3ff8b31d",
+                "0x47e870e6",
+                "0x4cc44703",
+                "0x52d3667c",
+                "0x553fea25",
+                "0x981c829f",
+                "0xb788f3a1",
+                "0xde465d79",
+                "0xe7934bb5"
+              ]
+            },
+            {
+              "address": "0x53EFFA0e612d88f39Ab32eb5274F2fae478d261C",
+              "hash": "0x5bae7bf9ffe1169e5639c54449c520dcadd3be2112f9d3f66738afc5a8fa6946",
+              "selectors": [
+                "0xeae2c8f1",
+                "0xe8025d77",
+                "0xac862bfa",
+                "0xdd4cbf6b",
+                "0xec048401",
+                "0x3f66feff",
+                "0xf4bfa000",
+                "0xa5eb43ef",
+                "0x3fad77fc",
+                "0x9dde5977",
+                "0x54bb0c1d",
+                "0x7f7b6002",
+                "0x01b88f86",
+                "0xc2da75f0",
+                "0x02c6bb6a",
+                "0x8f0c2916"
+              ]
+            },
+            {
+              "address": "0x9191b9539DD588dB81076900deFDd79Cb1115f72",
+              "hash": "0x01fdb34c5f4052607a015ca4eb8b743c495f27a58c1d2e56236db41d80316400",
+              "selectors": [
+                "0x69b48e4e",
+                "0xb0bec846",
+                "0x17a08fa0",
+                "0x8147c989"
+              ]
+            }
+          ]
+        },
+        {
+          "from": 24779519,
+          "hash": "0xb3a458c72a3a0b3aa773f2c3e21d0eadfb06dacdc4568f447d9019d1c1451c35",
+          "implementation": {
+            "address": "0xCc331daf69752BEcE3DC98dBC63eAcd5092266A2",
+            "hash": "0x598bdb9407c802783c5efe368b73db1af7a05cf7c90d7c583df87ec1dd31f438"
+          },
+          "routes": [
+            {
+              "address": "0x463874c5A102ceEa919D63f748a433304D1bd1c0",
+              "hash": "0xbc00fc015819200e56be193bbd03bfead8c29986bdfe03f395c8e319e8c22fc1",
+              "selectors": [
+                "0x3ff8b31d",
+                "0x47e870e6",
+                "0x4cc44703",
+                "0x52d3667c",
+                "0x553fea25",
+                "0x981c829f",
+                "0xb788f3a1",
+                "0xde465d79",
+                "0xe7934bb5"
+              ]
+            },
+            {
+              "address": "0x4bDC8816F2f56914B66EbF3786D78872D3a73Ab7",
+              "hash": "0x6d4316677b0cf491853e301d8ad6147f49e81f86dfb42283d98ca076ec92c826",
+              "selectors": [
+                "0xad967e15",
+                "0xdacb5419"
+              ]
+            },
+            {
+              "address": "0x53EFFA0e612d88f39Ab32eb5274F2fae478d261C",
+              "hash": "0x5bae7bf9ffe1169e5639c54449c520dcadd3be2112f9d3f66738afc5a8fa6946",
+              "selectors": [
+                "0xeae2c8f1",
+                "0xe8025d77",
+                "0xac862bfa",
+                "0xdd4cbf6b",
+                "0xec048401",
+                "0x3f66feff",
+                "0xf4bfa000",
+                "0xa5eb43ef",
+                "0x3fad77fc",
+                "0x9dde5977",
+                "0x54bb0c1d",
+                "0x7f7b6002",
+                "0x01b88f86",
+                "0xc2da75f0",
+                "0x02c6bb6a",
+                "0x8f0c2916"
+              ]
+            },
+            {
+              "address": "0x9191b9539DD588dB81076900deFDd79Cb1115f72",
+              "hash": "0x01fdb34c5f4052607a015ca4eb8b743c495f27a58c1d2e56236db41d80316400",
+              "selectors": [
+                "0x69b48e4e",
+                "0xb0bec846",
+                "0x17a08fa0",
+                "0x8147c989"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "morpho": {
+    "address": "0x58D97B57BB95320F9a05dC918Aef65434969c2B2",
+    "kind": "token",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "MORPHO",
+    "sourceHeading": "MORPHO Token",
+    "defillama": "morpho-blue",
+    "coingecko": "morpho",
+    "code": {
+      "hash": "0x9d47be5e1fade278a449fcd67e4fc7b69ce5c451c36ad7c4f380280d127f5532",
+      "implementation": {
+        "address": "0x4364fd2371b6318159366abFA51f190df5C24852",
+        "hash": "0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9"
+      },
+      "from": 21157386
+    }
+  },
+  "steakhouse-high-yield-usdc-v2-a757": {
+    "address": "0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757",
+    "kind": "vault",
+    "source": "https://www.steakhouse.financial/docs/products/vault-products/current/high-yield-instant",
+    "sourceLabel": "Steakhouse High Yield Instant USDC",
+    "defillama": "steakhouse-financial",
+    "coingecko": "steakhouse-high-yield-usdc",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "vault-v2-factory"
+    },
+    "code": {
+      "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
+      "from": 23671563
+    }
+  },
+  "cbbtc": {
+    "address": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+    "kind": "token",
+    "source": "https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts",
+    "sourceLabel": "CBBTC",
+    "defillama": "coinbase",
+    "coingecko": "coinbase-wrapped-btc",
+    "code": {
+      "hash": "0x91149353e08445ba77a52bf7e4cef919054027f4ad42812b4314bbaf2abd8b71",
+      "implementation": {
+        "address": "0x7458bfDC30034EB860B265E6068121D18Fa5Aa72",
+        "hash": "0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547"
+      },
+      "from": 20570548
+    }
+  },
+  "general-adapter-1": {
+    "address": "0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0",
+    "kind": "adapter",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "EthereumGeneralAdapter1",
+    "moreSources": [
+      {
+        "url": "https://github.com/morpho-org/sdks/blob/8d702da09b69baa272ad00b77e55cd197191321d/packages/morpho-ts/src/addresses.ts",
+        "label": "generalAdapter1"
+      }
+    ],
+    "defillama": "morpho-blue",
+    "code": {
+      "hash": "0xf9cc71076c5b97dca248a8085a0faaad24a5768948474306a20e345a739dd74c",
+      "from": 21872136
+    }
+  },
+  "metamorpho-factory-v1-0": {
+    "address": "0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101",
+    "kind": "factory",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "MetaMorpho Factory",
+    "sourceHeading": "Morpho Vault V1",
+    "defillama": "morpho-blue",
+    "instanceCheck": "isMetaMorpho(address)",
+    "size": {
+      "function": "totalAssets()",
+      "unit": {
+        "function": "asset()",
+        "attribute": "asset"
+      },
+      "holders": true
+    },
+    "code": {
+      "hash": "0x948cb0a2bf347795e99af306e37423dacabb048db2c650b34cd800d1dffba283",
+      "from": 18925584
+    }
+  },
+  "metamorpho-factory-v1-1": {
+    "address": "0x1897A8997241C1cD4bD0698647e4EB7213535c24",
+    "kind": "factory",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "MetaMorpho Factory V1.1",
+    "defillama": "morpho-blue",
+    "instanceCheck": "isMetaMorpho(address)",
+    "size": {
+      "function": "totalAssets()",
+      "unit": {
+        "function": "asset()",
+        "attribute": "asset"
+      },
+      "holders": true
+    },
+    "code": {
+      "hash": "0xc96dffc14441bb58cc55e7bdb1382f87dc718ffd44927f304177f235e94fa004",
+      "from": 21439510
+    }
+  },
+  "steakhouse-usdt-v1-cfba": {
+    "address": "0xbEef047a543E45807105E51A8BBEFCc5950fcfBa",
+    "kind": "vault",
+    "source": "https://www.steakhouse.financial/docs/products/vault-products/legacy-vaults",
+    "sourceLabel": "Steakhouse USDT",
+    "defillama": "steakhouse-financial",
+    "attributes": {
+      "asset": "usdt",
+      "factory": "metamorpho-factory-v1-0"
+    },
+    "coingecko": "steakhouse-usdt-morpho-vault",
+    "code": {
+      "hash": "0xbcde0c8dc4ac23745e9761d395a9bf8320fa14a1633ad990546908a0fde5d4af",
+      "from": 19043398
+    }
+  },
+  "smokehouse-usdc-v1-f5bc": {
+    "address": "0xBEeFFF209270748ddd194831b3fa287a5386f5bC",
+    "kind": "vault",
+    "source": "https://www.steakhouse.financial/docs/products/vault-products/legacy-vaults",
+    "sourceLabel": "Smokehouse USDC Ethereum",
+    "defillama": "steakhouse-financial",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "metamorpho-factory-v1-0"
+    },
+    "code": {
+      "hash": "0x8bff8e3326458676fbf3faf1d7e5f07469c3d8923c38cc70b3dcc9c1ee372753",
+      "from": 21337719
+    }
+  },
+  "smokehouse-usdt-v1-7484": {
+    "address": "0xA0804346780b4c2e3bE118ac957D1DB82F9d7484",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0xA0804346780b4c2e3bE118ac957D1DB82F9d7484/smokehouse-usdt",
+    "defillama": "morpho-blue",
+    "attributes": {
+      "asset": "usdt",
+      "factory": "metamorpho-factory-v1-1"
+    },
+    "code": {
+      "hash": "0x329984f5bf43e4b6ffd0c5046b21e19fed4d85374ac73c56b8acb960eb5bf9d9",
+      "from": 21522238
+    }
+  },
+  "hyperithm-usdc-apex-v1-7777": {
+    "address": "0x777791C4d6DC2CE140D00D2828a7C93503c67777",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0x777791C4d6DC2CE140D00D2828a7C93503c67777/hyperithm-usdc-apex",
+    "defillama": "morpho-blue",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "metamorpho-factory-v1-1"
+    },
+    "code": {
+      "hash": "0x872152c0dae0845c12d4d8088b927f5fd1049c1757e9f282b4b74c089ed8b294",
+      "from": 21922190
+    }
+  },
+  "hyperithm-usdc-apex-v2-9e2f": {
+    "address": "0x093272C07700d3cA5301C3Bf9B3A392624179E2F",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex",
+    "defillama": "morpho-blue",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "vault-v2-factory"
+    },
+    "code": {
+      "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
+      "from": 23666454
+    }
+  },
+  "safe-1.3.0": {
+    "address": "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552",
+    "kind": "singleton",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/gnosis_safe.json",
+    "sourceLabel": "canonical",
+    "moreSources": [
+      {
+        "url": "https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py",
+        "label": "v1.3.0"
+      }
+    ],
+    "defillama": "safe",
+    "code": {
+      "hash": "0xbba688fbdb21ad2bb58bc320638b43d94e7d100f6f3ebaab0a4e4de6304b1c2e",
+      "from": 12504268
+    }
+  },
+  "safe-1.4.1": {
+    "address": "0x41675C099F32341bf84BFc5382aF534df5C7461a",
+    "kind": "singleton",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.4.1/safe.json",
+    "sourceLabel": "canonical",
+    "moreSources": [
+      {
+        "url": "https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py",
+        "label": "v1.4.1"
+      },
+      {
+        "url": "https://docs.safe.global/advanced/erc-4337/guides/permissionless-detailed",
+        "label": "SAFE_SINGLETON_ADDRESS"
+      }
+    ],
+    "defillama": "safe",
+    "code": {
+      "hash": "0x1fe2df852ba3299d6534ef416eefa406e56ced995bca886ab7a553e6d0c5e1c4",
+      "from": 17487000
+    }
+  },
+  "gpv2-settlement": {
+    "address": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
+    "kind": "router",
+    "source": "https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json",
+    "sourceLabel": "GPv2Settlement",
+    "moreSources": [
+      {
+        "url": "https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts",
+        "label": "SETTLEMENT_CONTRACT"
+      }
+    ],
+    "defillama": "cowswap",
+    "immunefi": "cowprotocol",
+    "sdk": {
+      "package": "@cowprotocol/sdk-config",
+      "version": "2.11.2",
+      "sha256": "0xcefb8b4829e651dc333dd2e4309b17c98e152605ea46ae7dd6b962189713ea99",
+      "file": "dist/index.js",
+      "label": "SETTLEMENT_CONTRACT"
+    },
+    "code": {
+      "hash": "0x744d58584e38d214eb190629f131d5cf8b8703bd68e04452f9692177c37c4bc9",
+      "from": 12593265
+    }
+  },
+  "gpv2-vault-relayer": {
+    "address": "0xC92E8bdf79f0507f65a392b0ab4667716BFE0110",
+    "kind": "adapter",
+    "source": "https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json",
+    "sourceLabel": "GPv2VaultRelayer",
+    "moreSources": [
+      {
+        "url": "https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts",
+        "label": "VAULT_RELAYER"
+      }
+    ],
+    "defillama": "cowswap",
+    "immunefi": "cowprotocol",
+    "sdk": {
+      "package": "@cowprotocol/sdk-config",
+      "version": "2.11.2",
+      "sha256": "0xcefb8b4829e651dc333dd2e4309b17c98e152605ea46ae7dd6b962189713ea99",
+      "file": "dist/index.js",
+      "label": "VAULT_RELAYER"
+    },
+    "code": {
+      "hash": "0x500097799c1379a3728ed70b17de4132de2c07f6937b041c361deaade22b6a5e",
+      "from": 12593265
+    }
+  },
+  "permit2": {
+    "address": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+    "kind": "allowance",
+    "source": "https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments",
+    "sourceLabel": "Permit2",
+    "sourceHeading": "Ethereum",
+    "moreSources": [
+      {
+        "url": "https://github.com/Uniswap/sdks/blob/8ae0425c57e1699b0ae48ebb3077a2f526ae3818/sdks/permit2-sdk/src/constants.ts",
+        "label": "PERMIT2_ADDRESS"
+      }
+    ],
+    "defillama": "uniswap-v4",
+    "sdk": {
+      "package": "@uniswap/permit2-sdk",
+      "version": "1.4.1",
+      "sha256": "0x9580855c93ca0cc3ff4d592d7ac2ec0d84183b790d812f98ece5282276b3efbf",
+      "file": "dist/cjs/src/constants.js",
+      "label": "PERMIT2_ADDRESS"
+    },
+    "standingAllowance": {
+      "via": "erc20",
+      "why": "Permit2 has no owner and no proxy, and moves an owner's tokens only for a spender the owner approved on Permit2 itself, by its own call or signature (AllowanceTransfer.transferFrom), or for a transfer the owner signed (SignatureTransfer). An ERC-20 allowance to Permit2 alone lets no one move the Safe's tokens."
+    },
+    "code": {
+      "hash": "0xc67d1657868aa5146eaf24fb879fb1fdec3d2d493b3683a61c9c2f4fb2851131",
+      "from": 15986406
+    }
+  },
+  "universal-router-2.1.2": {
+    "address": "0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85",
+    "kind": "router",
+    "source": "https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments",
+    "sourceLabel": "Universal Router 2.1.2",
+    "sourceHeading": "Ethereum",
+    "moreSources": [
+      {
+        "url": "https://github.com/Uniswap/universal-router/blob/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json",
+        "label": "UniversalRouterV2_1_2"
+      }
+    ],
+    "defillama": "uniswap-v4",
+    "sdk": {
+      "package": "@uniswap/universal-router-sdk",
+      "version": "5.17.0",
+      "sha256": "0xe7abea16799826573fc5c69dc451a0ccfc5e25bb24f4bc4f166e46a1d6e74dd7",
+      "file": "dist/cjs/src/utils/constants.js",
+      "label": "UniversalRouterVersion.V2_1_2"
+    },
+    "standingAllowance": {
+      "via": "permit2",
+      "why": "The router pulls tokens through Permit2 only from the address that called execute, its locker (msgSender() in Dispatcher.sol, set by Lock.sol): Permit2Payments.permit2TransferFrom takes msgSender() as the owner for V2, V3 and V4 swaps with payerIsUser and for PERMIT2_TRANSFER_FROM, and PERMIT2_TRANSFER_FROM_BATCH reverts when a transfer's from is not the locker. It has no owner and no proxy. So a Permit2 allowance to it can be spent only by a later execute the Safe itself makes."
+    },
+    "ignoresTrailer": "UniversalRouter.execute(bytes,bytes[],uint256) reads only its ABI-decoded arguments: its verified source (contracts/UniversalRouter.sol, Dispatcher.sol and the modules) never reads msg.data or calldatasize, and it takes its caller from msg.sender through Lock.sol, never from calldata as an ERC-2771 contract does.",
+    "code": {
+      "hash": "0x55e6b334152096d60367d7ab24241948b31e8d0e66adc8b81cba049a19f9d2ac",
+      "from": 25999984
+    }
+  },
+  "morpho-blue": {
+    "address": "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb",
+    "kind": "lending",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "Morpho",
+    "moreSources": [
+      {
+        "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+        "label": "blue"
+      }
+    ],
+    "defillama": "morpho-blue",
+    "code": {
+      "hash": "0xfa259fa317198f88f5fa3c119f06c066295dbcd47d715e0a30e1bcf94c02ef8c",
+      "from": 18883124
+    }
+  },
+  "adaptive-curve-irm": {
+    "address": "0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC",
+    "kind": "irm",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "Adaptive Curve Irm",
+    "moreSources": [
+      {
+        "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+        "label": "adaptiveCurveIrm"
+      }
+    ],
+    "defillama": "morpho-blue",
+    "code": {
+      "hash": "0x73b578a0cd95d0d6e77f85a3945a670a9b8679670f8fc190ca97e89a1f07f6cd",
+      "from": 18883124
+    }
+  },
+  "morpho-market-v1-adapter-v2-factory": {
+    "address": "0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1",
+    "kind": "factory",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "MorphoMarketV1AdapterV2Factory",
+    "moreSources": [
+      {
+        "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+        "label": "morphoMarketV1AdapterV2Factory"
+      }
+    ],
+    "defillama": "morpho-blue",
+    "instanceCheck": [
+      "isMorphoMarketV1AdapterV2(address)",
+      {
+        "ask": {
+          "namedBy": "adapter"
+        },
+        "function": "isAdapter(address)",
+        "args": [
+          "instance"
+        ],
+        "answers": true
+      },
+      {
+        "ask": "instance",
+        "function": "parentVault()",
+        "args": [],
+        "answers": {
+          "namedBy": "adapter"
+        }
+      }
+    ],
+    "code": {
+      "hash": "0x0add593bff158a5b8cdfe1060056a9d886cd1d447da031e05eb0e6fa9e4fd5b4",
+      "from": 23981459
+    }
+  },
+  "morpho-oracle-cbbtc-usdc-86": {
+    "address": "0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a",
+    "kind": "oracle",
+    "source": "https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc",
+    "apiSource": {
+      "url": "https://api.morpho.org/graphql",
+      "method": "POST",
+      "body": {
+        "query": "query($id: String!, $chainId: Int!) { marketById(marketId: $id, chainId: $chainId) { oracle { address } } }",
+        "variables": {
+          "id": "0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64",
+          "chainId": 1
+        }
+      },
+      "path": [
+        "data",
+        "marketById",
+        "oracle",
+        "address"
+      ]
+    },
+    "sourceLabel": "Oracle",
+    "defillama": "morpho-blue",
+    "code": {
+      "hash": "0x2f02515e84336f19fede110d7b3fee0a087c629adb34a32c165559303675bf11",
+      "from": 20678797
+    }
+  },
+  "gauntlet-usdc-prime-v2-a3d0": {
+    "address": "0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0/gauntlet-usdc-prime",
+    "defillama": "morpho-blue",
+    "coingecko": "gauntlet-usdc-prime",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "vault-v2-factory",
+      "adapter": "gauntlet-usdc-prime-v2-a3d0-market-adapter"
+    },
+    "code": {
+      "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
+      "from": 23479188
+    }
+  },
+  "gauntlet-usdc-prime-v2-a3d0-market-adapter": {
+    "address": "0xDF62f57Ea333a842Db200d4892c90F98204fa22F",
+    "kind": "adapter",
+    "source": "https://app.morpho.org/ethereum/vault/0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0/gauntlet-usdc-prime",
+    "apiSource": {
+      "url": "https://api.morpho.org/graphql",
+      "method": "POST",
+      "body": {
+        "query": "query($vault: String!, $chainId: Int!) { vaultV2ByAddress(address: $vault, chainId: $chainId) { adapters { items { address } } } }",
+        "variables": {
+          "vault": "0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0",
+          "chainId": 1
+        }
+      },
+      "path": [
+        "data",
+        "vaultV2ByAddress",
+        "adapters",
+        "items",
+        0,
+        "address"
+      ]
+    },
+    "defillama": "morpho-blue",
+    "attributes": {
+      "factory": "morpho-market-v1-adapter-v2-factory"
+    },
+    "code": {
+      "hash": "0x4fb6881dcd9eeb017fa714f179ea3f691c98f1511fd0d41045c142b2a49c087a",
+      "from": 24879846
+    }
+  },
+  "flowmark-fgenesis-v2-6439": {
+    "address": "0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439/flowmark-fgenesis",
+    "defillama": "morpho-blue",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "vault-v2-factory",
+      "adapter": "flowmark-fgenesis-v2-6439-market-adapter"
+    },
+    "code": {
+      "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
+      "from": 25076384
+    }
+  },
+  "flowmark-fgenesis-v2-6439-market-adapter": {
+    "address": "0x79DA02d9C638cC9ae925188AD9DC245337981518",
+    "kind": "adapter",
+    "source": "https://app.morpho.org/ethereum/vault/0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439/flowmark-fgenesis",
+    "apiSource": {
+      "url": "https://api.morpho.org/graphql",
+      "method": "POST",
+      "body": {
+        "query": "query($vault: String!, $chainId: Int!) { vaultV2ByAddress(address: $vault, chainId: $chainId) { adapters { items { address } } } }",
+        "variables": {
+          "vault": "0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439",
+          "chainId": 1
+        }
+      },
+      "path": [
+        "data",
+        "vaultV2ByAddress",
+        "adapters",
+        "items",
+        0,
+        "address"
+      ]
+    },
+    "defillama": "morpho-blue",
+    "attributes": {
+      "factory": "morpho-market-v1-adapter-v2-factory"
+    },
+    "code": {
+      "hash": "0x6e6dee95322ce5509c4fe250f5069dd2ab817dc63e8e209fd954283ebc5734f7",
+      "from": 25079237
+    }
+  },
+  "usp": {
+    "address": "0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6",
+    "kind": "token",
+    "source": "https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts",
+    "sourceLabel": "USP",
+    "defillama": "piku-finance",
+    "coingecko": "usp-yield-optimized-stablecoin",
+    "code": {
+      "hash": "0x4c64cb2303edec6193910f660f82375d5bff982c070f14e1944c7a568ed5bb2e",
+      "implementation": {
+        "address": "0x9E40B6be5aFFC984F36cf118C778f0A83be20370",
+        "hash": "0x54c3c512b546d3b2daedf369c9de88d722a0ce1d9ee444bd0ec4e5d4b9221da7"
+      },
+      "from": 23195672
+    }
+  },
+  "morpho-oracle-usp-usdc": {
+    "address": "0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d",
+    "kind": "oracle",
+    "source": "https://app.morpho.org/ethereum/variable/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp",
+    "apiSource": {
+      "url": "https://api.morpho.org/graphql",
+      "method": "POST",
+      "body": {
+        "query": "query($id: String!, $chainId: Int!) { marketById(marketId: $id, chainId: $chainId) { oracle { address } } }",
+        "variables": {
+          "id": "0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461",
+          "chainId": 1
+        }
+      },
+      "path": [
+        "data",
+        "marketById",
+        "oracle",
+        "address"
+      ]
+    },
+    "sourceLabel": "Oracle",
+    "defillama": "morpho-blue",
+    "code": {
+      "hash": "0xf69bd2099fe1c6f91f0ecd55934adc3a9fd8b4cf0443f181086d590b13a131ec",
+      "from": 24512804
+    }
+  },
+  "acuto-usdc-v2-4a57": {
+    "address": "0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57/acuto",
+    "defillama": "morpho-blue",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "vault-v2-factory",
+      "adapter": "acuto-usdc-v2-4a57-market-adapter"
+    },
+    "code": {
+      "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
+      "from": 24509998
+    }
+  },
+  "acuto-usdc-v2-4a57-market-adapter": {
+    "address": "0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5",
+    "kind": "adapter",
+    "source": "https://app.morpho.org/ethereum/vault/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57/acuto",
+    "apiSource": {
+      "url": "https://api.morpho.org/graphql",
+      "method": "POST",
+      "body": {
+        "query": "query($vault: String!, $chainId: Int!) { vaultV2ByAddress(address: $vault, chainId: $chainId) { adapters { items { address } } } }",
+        "variables": {
+          "vault": "0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57",
+          "chainId": 1
+        }
+      },
+      "path": [
+        "data",
+        "vaultV2ByAddress",
+        "adapters",
+        "items",
+        0,
+        "address"
+      ]
+    },
+    "defillama": "morpho-blue",
+    "attributes": {
+      "factory": "morpho-market-v1-adapter-v2-factory"
+    },
+    "code": {
+      "hash": "0x0bfb1f9cdc766db966a6c758661a4ce7f015c43965158d606c797aabc2f4c696",
+      "from": 24510137
+    }
+  },
+  "kpk-usdc-prime-v2-9ee6": {
+    "address": "0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6",
+    "kind": "vault",
+    "source": "https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime",
+    "sourceLabel": "Address",
+    "defillama": "kpk",
+    "coingecko": "kpk-usdc-prime",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "vault-v2-factory",
+      "adapter": "kpk-usdc-prime-v2-9ee6-market-adapter"
+    },
+    "code": {
+      "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
+      "from": 23641853
+    }
+  },
+  "kpk-usdc-prime-v2-9ee6-market-adapter": {
+    "address": "0x1d511811ACA9d8817a3e50F29CadFf6243A02902",
+    "kind": "adapter",
+    "source": "https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime",
+    "sourceLabel": "Markets V1 Adapter",
+    "defillama": "kpk",
+    "attributes": {
+      "factory": "morpho-market-v1-adapter-v2-factory"
+    },
+    "code": {
+      "hash": "0x5094349533f13b8aa7bd4a41360a3416f0e27004d5f94c4022d01e0f97cbde63",
+      "from": 24877491
+    }
+  },
+  "weeth": {
+    "address": "0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee",
+    "kind": "token",
+    "source": "https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol",
+    "sourceLabel": "WEETH",
+    "defillama": "ether.fi-stake",
+    "coingecko": "wrapped-eeth",
+    "code": {
+      "hash": "0x0b58ec11caee361ca0c1e484c12f6e7177634222186f7639bd9183dfee9d2278",
+      "implementation": {
+        "address": "0xA6Ca0607190d03CF16fe6F2865Cf40c3D160ccf3",
+        "hash": "0xd43182be0eba15468f2e3f33cfe55685c9fcdda6c306156c046b6c4b076f52e7"
+      },
+      "from": 25533308,
+      "earlier": [
+        {
+          "from": 17664336,
+          "hash": "0x0b58ec11caee361ca0c1e484c12f6e7177634222186f7639bd9183dfee9d2278",
+          "implementation": {
+            "address": "0xDd78355BcF9a9435BFcDd9C1482C0e72E7b08F79",
+            "hash": "0xb43b3e05d90da5c1b662af7a56ee3532d52d6e80f6208693f568e12816099145"
+          }
+        },
+        {
+          "from": 18537431,
+          "hash": "0x0b58ec11caee361ca0c1e484c12f6e7177634222186f7639bd9183dfee9d2278",
+          "implementation": {
+            "address": "0xe629ee84C1Bd9Ea9c677d2D5391919fCf5E7d5D9",
+            "hash": "0x772dd1f6fee4934a63703e7e8adfdb8f4588e1eaa5442aa63d336e92c72cc52a"
+          }
+        },
+        {
+          "from": 22131382,
+          "hash": "0x0b58ec11caee361ca0c1e484c12f6e7177634222186f7639bd9183dfee9d2278",
+          "implementation": {
+            "address": "0x353E98F34b6E5a8D9d1876Bf6dF01284d05837cB",
+            "hash": "0xaf80b4e5c85a0e16d8f3fdbe108c24ef3d85f780a05cd926d255b0d97bf4bba1"
+          }
+        },
+        {
+          "from": 23089686,
+          "hash": "0x0b58ec11caee361ca0c1e484c12f6e7177634222186f7639bd9183dfee9d2278",
+          "implementation": {
+            "address": "0x2d10683E941275D502173053927AD6066e6aFd6B",
+            "hash": "0xb703f3fafa59bfdfe0e3b934ecc03fa59a5c2967afa0d60446971c86d20f46c7"
+          }
+        }
+      ]
+    }
+  },
+  "morpho-oracle-weeth-usdc-86": {
+    "address": "0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411",
+    "kind": "oracle",
+    "source": "https://app.morpho.org/ethereum/variable/0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e/usdc-weeth",
+    "apiSource": {
+      "url": "https://api.morpho.org/graphql",
+      "method": "POST",
+      "body": {
+        "query": "query($id: String!, $chainId: Int!) { marketById(marketId: $id, chainId: $chainId) { oracle { address } } }",
+        "variables": {
+          "id": "0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e",
+          "chainId": 1
+        }
+      },
+      "path": [
+        "data",
+        "marketById",
+        "oracle",
+        "address"
+      ]
+    },
+    "sourceLabel": "Oracle",
+    "defillama": "morpho-blue",
+    "code": {
+      "hash": "0x71eee5c03d8891e15a5e226b9df454b405fe78003e6a5c511a1c03b06a4f0974",
+      "from": 24923459
+    }
+  },
+  "compound-v3-cusdcv3": {
+    "address": "0xc3d688B66703497DAA19211EEdff47f25384cdc3",
+    "kind": "vault",
+    "source": "https://github.com/compound-finance/comet/blob/f766f51583c23acc33b2a7824654ef2029a96804/deployments/mainnet/usdc/roots.json",
+    "sourceLabel": "comet",
+    "moreSources": [
+      {
+        "url": "https://docs.compound.xyz/erc4626-wrapper/",
+        "label": "cUSDCv3"
+      }
+    ],
+    "defillama": "compound-v3",
+    "immunefi": "compoundfinance",
+    "attributes": {
+      "baseToken": "usdc"
+    },
+    "size": {
+      "function": "totalSupply()",
+      "unit": {
+        "function": "baseToken()",
+        "attribute": "baseToken"
+      },
+      "holders": true
+    },
+    "code": {
+      "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+      "implementation": {
+        "address": "0x0B07565A8ef48170e15918b251EbD95109B23255",
+        "hash": "0x82a5516ab5d27cb1ba58622c1f85398a7d5456429d99b8643919c4dd283dbbb4",
+        "extension": {
+          "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+          "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+        }
+      },
+      "from": 26364909,
+      "earlier": [
+        {
+          "from": 15331586,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x1C1853Bc7C6bFf0D276Da53972C0b1a066DB1AE7",
+            "hash": "0xbf8d4bb8823fa59353f99fb24b4712c32faeb4ab39cbdab5b80472bb42add3a6"
+          }
+        },
+        {
+          "from": 15331596,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x42F9505a376761b180e27a01bA0554244ED1DE7D",
+            "hash": "0x72b22c3f32f4738b95e0eb362d31f89e79e9a5e7ba1fdeaf939e75853bc5a410",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 15412370,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xe07C4e685E1f760f944c676C21E736a7664f4D22",
+            "hash": "0x4c86ff7acf1f9b5f44afda4c824ce61f30b38a9ed92c722d860f4d4d28bd3be1",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 15507603,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x2Db426600b566a47E37CB579e1fF46c992eae28e",
+            "hash": "0x73ef4274ea8f72db41c3e8b04aa393cb6dcf66ca77799e8386878293f916dab0",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 15696338,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x1f0A35d2d0c877224fA7Cf02d29BfF703906B757",
+            "hash": "0x62e08282e8acbaf7641a8409243d88f1fe365b9317b7a357445539464a096ad1",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 15867243,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x528c57A87706C31765001779168b42f24c694E1b",
+            "hash": "0x0fb28e75bd23c6fb1e95e36215425f92fc100b6794bef0eb660c26c797fb43ed",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 16133171,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x9a759bC2D5248b1Da689c642Ad2Ca3383657361c",
+            "hash": "0x7d2f7b50b017e6b1fc681c42a2853baecb63f7aa9ff43a76fa5875ca16524b0c",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 16219183,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xC82F17FE345047739eE5a77687FF8700a0EcB37D",
+            "hash": "0xd2fbafb83d769f28203d8b303d2886cddf4136905ea90ffc8dbc6c8dfa220bdf",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 16520572,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x77708e0fEE45CB9D177174b260A04bEDA47d0495",
+            "hash": "0x3e41886fe7fa4e775c4495a73cf080b16fee54fcd0e01d7cb135d4f4f729ef8d",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 16770545,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x75602Ddb5315CB3be0AA86c58D88E9b78737a59F",
+            "hash": "0x181b0c300e65703ed393f0268a76633ffb0200c92c22ba062560b86f4a8ee97f",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 16983730,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xCb005d849F384b64838aAD885d5Ff150fc8B7904",
+            "hash": "0x5904c53a8b836e5e0e798c2c8669c1144f96d8d95647b770d5d584d02afeeab6",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 17375147,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x3bee6ce5369596Fa86eA044A00Ad1Cb4e54a6A01",
+            "hash": "0x908f2e7b02c51ec620e67acb232eb21d8e47dfe072283f96bddc61cd7ab8b70f",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 17714451,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xea270CA1B5133e58f935A035F3BC5dA53975Fa9C",
+            "hash": "0x1f0ae024d2af82e33d312f458d12ff9946f0039051898d11dc8d84e0b31493d7",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 17813126,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xD1be6F69464BBa0F1D51857f88D28Df19008453f",
+            "hash": "0x798dceffcab3e0e75f8c4f77da007b3f80a6adac2de02ba94ff9daac8ba20a62",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 18164399,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xBFC4FeEc175996C08C8F3a0469793a7979526065",
+            "hash": "0x7d65e972eb9af241d65c1bc8ee9f357209bcf5ace3f4fb22731fe5fcde46afe9",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 18812600,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x8940a7E30682fBdbD0fa3c3D8971b3Dd0B59543A",
+            "hash": "0xb52cc2f09d85bd0445f2b382612a7c339aa12ffdec1d52a12617d6357f94c8a4",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 18977597,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x9e4dDE024f7ea5cF13D5f09c51a1555305c99F0c",
+            "hash": "0x1a141383caea584777c3d4f8688b4128f0fc50e15edb067e25a493b4b53e4a92",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 19212131,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x9655ED692F3949288DC217b9795BD543bf88d74F",
+            "hash": "0xc1b7eea01822738185d3e9d13bb944ca0d2fb4b31117901ab57e99beb529fcbf",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 19317537,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x2eE87cA60a8829516b501E575D0a1665aDc4383e",
+            "hash": "0x27111eaa6e6fa7e44f8baf95e6cf77a5de92beded71f7300625ee2e33d90b247",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 19393409,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x6d3F182426ABB60927fe4663dA8638D12d6e2c7e",
+            "hash": "0xc1a3b6cefcb7a7c62eaad9023364ee1dbf9fe57a32fe59de72fecfe15daf15fa",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 19469143,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x05de6C9B5Af01a592c1Fa3d8A3Ea8Baf1c700f62",
+            "hash": "0xa1debdf136caca68104477f4450fdc39e0dfac8387ae1147957f29e3fbcd621e",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 19528605,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x61521B0c4FEC3A973daA65942074DcFCB2B9C641",
+            "hash": "0x9c61a9e587ee31982a8d5f6dd7eb9169158b3b87671fe74c18a9d9e00ee00eae",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 19760918,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x9743591b23B83eD41E6AbCC84016a4C7702C706e",
+            "hash": "0xb17d28efea5cee3d88852e9b686147dc5ceb7ca5451c7cc0c54c48eda2928734",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 20411383,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xe6759c5cC568D9E7ac15191CC38976Dd3D9E7765",
+            "hash": "0x97abd439d40f240f735859e26370ddd385128dfd7f286e0df589f190b90b566d",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 20416950,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x3a533F89571a62B01b94Fa0d5e8d9e6e577019b3",
+            "hash": "0xcd93fa2df0866281d7c0fabcb5f8de4fcdbfcfc8147b122cb66c0652b3fcb557",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 20470106,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x9e81d7972f34cf8EA57d2b6649135a35164d031b",
+            "hash": "0x3fe82fb597720cb7349daca2f9af1c6f928470bbf64b276406bdde966930f446",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 20571732,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x8A807D39F1d642dD8C12Fe2E249fe97847f01BA0",
+            "hash": "0x95722f3143d41ad08e383e7d4825d0f27667aae1081e83f8a1d98b089ab48f50",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 20668487,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x7fdc2018C009278325f7b2cbCaBCcbD1318f3723",
+            "hash": "0x24f0a3e1c1fe21caafb27a579728a13344e08e92fa6fda4ad31697d46820185e",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 20720177,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x35B5dE07F859E7b57104be206D314c111DA7428A",
+            "hash": "0x4e2096fb22666cdcbf3c34e4e516393a67b896fe250ba38c65833c62f8caff5b",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 20721442,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x9E4f37E296E84BA7a2363F83398B5f55eFE80Ade",
+            "hash": "0xd16380714691036e02e96ad98caa060a2c498294b93e98563b249aa4cd1e9fee",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 20832020,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xAFb1Df7261B52Ba6273a3aD0ED7eD7B6b22Ff6Ef",
+            "hash": "0x3fd2c5492c2425fd25a69c3a119c0226171149ae24bd20fa685a1b49e860d0b4",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 20878779,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x2dc3c7642aCBa6Fc16Dfc52479e9dC11E7FFfc89",
+            "hash": "0x2fa8868bad2da2b69c2b10469b2b8bad92c4d190562733977268cd19caf98743",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 20963058,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xbbC07b3e52E0a62e4B8e7F5780F68268Af907584",
+            "hash": "0x7f466e9705af1a35231286ebcb53ee35bddce43d7faecea3e6b3ac8695672a48",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 21062602,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x9bAfa0a091d29dA4ce4b574F98D064bd26522aea",
+            "hash": "0xd02c98c9129a8aa75d09c70255d7a90db4227bec128272923254efa07c5102c5",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 21415455,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xbdc3e2517e17f887D7f6bBdE087A710Adafbc4D9",
+            "hash": "0xa27ce95034df2512fa577e1fa325da97cd89c7485029b61aa3d7a056017e7ed4",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 21421030,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x6D272bB5eD264114b796E0B078fA851b45553dDE",
+            "hash": "0xc5be84fd454e2ebe165587cf5096855288dc4d6124bb7a3029d827039b9e9add",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 21493223,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xE8F4F1033d5B33cFe7ac684E81E2750B38fD749F",
+            "hash": "0x5e520b929f6bc8870bdd714a087f179f0ed024f833ad3aa576f7fb9f9dbd65b6",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 21615936,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x1e27304547D82863103c6eb4230f60f9fa4b7f94",
+            "hash": "0x8a8a5d306ad4d9240f3db4127daf16ac74448ad79d838361cc91785b7e89f25d",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 21723565,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x940453f83aB4097714001355D0E696d0985546A2",
+            "hash": "0xcc90679108f93e8e83ca819814c73255248ab4032ec71017331d5ddc4f00508c",
+            "extension": {
+              "address": "0x285617313887d43256F852cAE0Ee4de4b68D45B0",
+              "hash": "0x3f4d9fa537210dea2e5e1422edd7b0eda7d41ec96b959af86396d5b5876bddd1"
+            }
+          }
+        },
+        {
+          "from": 21772250,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xaeC1954467B6d823A9042E9e9D6E4F40111069a9",
+            "hash": "0x4aea27b49273044a995c3b58c3e759e1e2e6626eec7a4d6db9b79a5f34465134",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 22167542,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x2C045e9a1afB125898d6E736D1ff09Fa28788E9d",
+            "hash": "0xb4461ef4433c7d563a747771e6d4697746689521303caf2a28ebda2797edb1fe",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 22176765,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x1caD465416857b9feA5900f3366008f27e93605c",
+            "hash": "0x180e4c1d0856e5128c9979659585002c04b8ce52f3d05bc86b9d3e1c399553e4",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 22370097,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xB6F802B52420F1098ad7B6799F208a97DF5016Ff",
+            "hash": "0xc13c2c89319594b2b131a9e9e72b5377caf41c4f2470445f42dd03dc278f5ab4",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 22447607,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xa3A99801Fb237786e06FC650AD4eFbe6FAC006A4",
+            "hash": "0x645a76076e35deb3a996492bb480bc1fe26a70508a341737e5924a3982f80479",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 22448837,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x40f6C8C12eB5009933449D6b22dE094024061821",
+            "hash": "0x7d4acfc9f1a9664a3218f51f823e3f6d79fbe813e72dd4e69f9dc44432719cd2",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 22842035,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x0dbdEeA86e01ce4eEfF9357d161d6DBe0a360288",
+            "hash": "0x098497416927ac2f71472edaa30db8c323a03ff8ec6a4d752d764da4eec12564",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 22893314,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xec871C64B3F25Cab33772BEABe55F764926006d0",
+            "hash": "0xbf1cf9c19232258987fe39a47ba3c4402f1fd78fd5cfa46692b8769b004daa45",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 23084176,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x7ee36557197016d1421bE2BEdB07D91ca07e9b89",
+            "hash": "0xf6784b8d8e25fd7ee3d21491bac2d1c39a10528e25a700bd650d5b04fb55fdc0",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 23196927,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xB5dCf2711Cf76bBE9D99f687c59A5421cA2Ce13b",
+            "hash": "0x21f0204fa370c24d838e66332d2ec65f92fd8703736f07eb9667778c71c81f8b",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 23639002,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xdf2cD7552610E3b5Cddd410Ca89A172aC0aD444C",
+            "hash": "0x19986ce3d24be2bdc3bb8c1a0f513156f03c3b70dafe0cc2f2195334fe323836",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 23742152,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xC5fb5c72eda5C609db7EA23a50FFD47c046032B7",
+            "hash": "0x4f42ac787600c11a6f345b63d397dc7c3c0bb884347d1298b91a139ded9d1dd8",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 23807162,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xEEB860216B1ea7E3aB80fE5Fc1886dAEf6bDc440",
+            "hash": "0x4451849a442258f3eae1f5d80589ab3fa8b749661f8c1f29140441c2078be904",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 24131754,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xEb330B7c1622E0F8b18a7dD1decc27Cf3d980E61",
+            "hash": "0x2f60d8f7313a6dcb938af2d928f41188e307762094fe57810e2c77bbd8dabd95",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 24539352,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xA0332AaFD9E9164A95b1fA521f8a479125573451",
+            "hash": "0x6637243a7014a164db0cea495dfe46825b5f7a0245c16a66d1da51decb6639a2",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 24677202,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xd5Bc47E1315F0F4F12D6C4e491174488c9C9Dd95",
+            "hash": "0xce3f3ba84380633f2570022e35d9276e0da45385079d81f2b45857228278382b",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 24803376,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xf1c4f39EdBdfECF8628a822dC15d1aA882118DAC",
+            "hash": "0xc61a5e3cf7ba943ff38692a3aaa8bfa4a0f3e401a9b846e3d7856404a18130c2",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 24958302,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x0644d1FdEEB3a64C880a42dFb778725d0551eEfB",
+            "hash": "0xa9e1b61c2e7595e239306511cd7983b3356b5e9c0eeef90beec6893dc02ad76f",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 24959701,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xb8c70eaE7AB3BD8C574362BA651704DD8E16Aab8",
+            "hash": "0x897940325eee35dba8eb1806846a820bb94f656d272f0efb2fce8c10e524d488",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 24962102,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0xFe36A00669bB4b5834A2F3E2b9A2908fEe21d141",
+            "hash": "0xf08d3cd5250af5024763807d0a840477b64744439b7be4c821e75aaf3ded75bf",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 25052163,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x83D491269720CE925f92C6bF9F66B7a0779A293a",
+            "hash": "0x7d767612bb3865bf73f435a453e9d7d11bd06145f9cdb02de0d7d6ad7084a187",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        },
+        {
+          "from": 25904935,
+          "hash": "0x64952234eab8f3aed74355c49119f627965640b1efeb6b28430b5a31b0d3b192",
+          "implementation": {
+            "address": "0x63e749153BaF1838f63cA22c275370BD2B1cEB15",
+            "hash": "0x15e1a8c972cffdd0c02e4553d5aa0fb0fa56443b9de67f77a5a003cd2ceda5e0",
+            "extension": {
+              "address": "0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC",
+              "hash": "0x3d6cc4c1b8959579ca13e2208bd5c0b083235b3a224a398daa7bb9defa1038c8"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "uniswap-stable-pair-hook": {
+    "address": "0x0000113dCf4ADd69999Fad8F20F2b63F979bfcC0",
+    "kind": "pool",
+    "source": "https://developers.uniswap.org/llms.mdx/docs/protocols/uniswap-labs-hooks/stable-pair/deployments",
+    "sourceLabel": "StablePairHook (hook)",
+    "sourceHeading": "Ethereum: 1",
+    "moreSources": [
+      {
+        "url": "https://github.com/Uniswap/v4-hooks-public/blob/e354058156f8f4f1aff1594a932513e7064956c7/README.md",
+        "label": "Ethereum",
+        "heading": "StablePairHook"
+      }
+    ],
+    "defillama": "uniswap-v4",
+    "code": {
+      "hash": "0xa5659fa6440c9830926d098ec347a558447bfd8e483643e0d02398dc4cff1685",
+      "implementation": {
+        "address": "0x5f216d21b1C81346938EDDc1Df7e0111A0F64000",
+        "hash": "0x3d1bc5ca01e9acbf8b04adec8354b9c3a36df23d58f87050767ceff7bf43ae98"
+      },
+      "from": 25626560
+    }
+  }
+}

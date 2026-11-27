@@ -19,6 +19,7 @@ const template = parseTemplate(
     effects: { gives: [], gets: [] },
   },
   registry,
+  'committed',
 );
 const resolve = (vault: string) =>
   resolveCard({ operations: [{ template: template.id, values: { vault, amount: '1' } }] }, { templates: new Map([[template.id, template]]), registry, addressBook: new Map(), safe: `0x${'11'.repeat(20)}` as Address });

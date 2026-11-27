@@ -1,0 +1,16 @@
+{
+  "source": "Measured on 2026-11-26 from the agent transcripts (tool-call timestamps) of three template builds from zero with the kiss-sign skill: uniswap/approve-permit2 (42 min, a 10-minute lock stall the operator caused left out), fluid/vault-deposit (two vaults, 43 min) and uniswap/swap (84 min when measured, still running). Each step's range is the lowest and highest of the three runs' minutes between the step's first and last command, rounded to whole minutes, at least 1.",
+  "minutes": {
+    "intent": [1, 2],
+    "addresses": [2, 10],
+    "abi": [1, 2],
+    "draft": [1, 8],
+    "pastTxs": [5, 45],
+    "health": [1, 2],
+    "report": [3, 5],
+    "notes": [3, 6],
+    "tests": [2, 4],
+    "commit": [2, 4],
+    "push": [1, 2]
+  }
+}

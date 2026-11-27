@@ -1,7 +1,7 @@
 import { request } from 'node:https';
 import { keccak_256 } from '@noble/hashes/sha3.js';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
-import { parseFunctionSignature } from '../decode/abi.ts';
+import { canonicalType, parseFunctionSignature } from '../decode/abi.ts';
 import { fallbackLookup } from '../chain/dns.ts';
 import { requestText, retried, transientStatus } from '../chain/https.ts';
 import type { NoteUnread } from '../chain/https.ts';
@@ -40,7 +40,35 @@ export type Anchor = {
   readonly to?: Address;
   /** Present exactly when `kind` is `event`. */
   readonly event?: AnchorEvent;
+  /**
+   * With `event`, only logs whose indexed argument logged as topic `index` is `word`, such as Permit2 as an `Approval`'s
+   * spender or a Uniswap v4 pool's id as a `Swap`'s.
+   */
+  readonly topic?: EventTopic;
 };
+
+/** The 32-byte word one indexed argument of an event must hold: the argument's place among the log's topics, 1 to 3. */
+export type EventTopic = { readonly index: 1 | 2 | 3; readonly word: Hex };
+
+/** The value `--event-arg` gives an indexed argument: an address, or a bytes32 such as a Uniswap v4 pool id. */
+export type EventArg = { readonly position: number; readonly address: string } | { readonly position: number; readonly bytes32: string };
+
+/** The types an indexed argument `--event-arg` filters may have: each logged as its own value, padded to a word. */
+export type IndexedType = 'address' | 'bytes32';
+
+/** `eventArg` as `--event-arg` takes it, such as `2=0x0000…` or `1=0x8aa4…`. */
+export const eventArgText = (eventArg: EventArg): string => `${eventArg.position}=${'address' in eventArg ? eventArg.address : eventArg.bytes32}`;
+
+/** The topic `eventArg` filters `signature`'s logs by; throws as `indexedTopic` does, or when the value is not of the argument's type. */
+export function eventArgTopic(signature: string, eventArg: EventArg): EventTopic {
+  const { index, type } = indexedTopic(signature, eventArg.position);
+  const value = 'address' in eventArg ? eventArg.address : eventArg.bytes32;
+  const digits = type === 'address' ? 40 : 64;
+  if (!new RegExp(`^0x[0-9a-fA-F]{${digits}}$`).test(value)) {
+    throw new ResearchError(`argument ${eventArg.position} of ${signature} is ${type === 'address' ? 'an address, 20 bytes' : 'a bytes32, 32 bytes'}, and ${value} is not 0x and ${digits} hex digits`);
+  }
+  return { index, word: `0x${value.slice(2).toLowerCase().padStart(64, '0')}` as Hex };
+}
 
 export const SOURCES = ['alchemy', 'etherscan'] as const;
 export type SourceName = (typeof SOURCES)[number];
@@ -49,6 +77,53 @@ export type SourceName = (typeof SOURCES)[number];
 export function anchorEvent(signature: string): AnchorEvent {
   const canonical = parseFunctionSignature(signature.replace(/\s+indexed\b/g, '')).signature;
   return { signature: canonical, topic: `0x${bytesToHex(keccak_256(utf8ToBytes(canonical)))}` as Hex };
+}
+
+/** The text of each top-level argument of `signature`, as written. */
+function argumentTexts(signature: string): string[] {
+  const open = signature.indexOf('(');
+  const inner = signature.slice(open + 1, signature.lastIndexOf(')'));
+  const parts: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < inner.length; i++) {
+    if (inner[i] === '(') depth++;
+    else if (inner[i] === ')') depth--;
+    else if (inner[i] === ',' && depth === 0) {
+      parts.push(inner.slice(start, i));
+      start = i + 1;
+    }
+  }
+  return inner.trim() === '' ? [] : [...parts, inner.slice(start)];
+}
+
+/**
+ * The signature as a summary keeps it for a search on one indexed argument: canonical, with `indexed` after each
+ * argument `signature` marks so, such as `Approval(address indexed,address indexed,uint256)`.
+ */
+export function markedEvent(signature: string): string {
+  const { name, params } = parseFunctionSignature(signature.replace(/\s+indexed\b/g, ''));
+  const marked = argumentTexts(signature).map((text) => /\sindexed\b/.test(text));
+  return `${name}(${params.map((p, i) => `${canonicalType(p.type)}${marked[i] === true ? ' indexed' : ''}`).join(',')})`;
+}
+
+/**
+ * The topic argument `position` (from 1) of `signature` is logged as, and its type: refused unless the signature marks
+ * that argument `indexed` and it is an address or a bytes32, since Etherscan filters a log by a topic only.
+ */
+export function indexedTopic(signature: string, position: number): { readonly index: EventTopic['index']; readonly type: IndexedType } {
+  const { params } = parseFunctionSignature(signature.replace(/\s+indexed\b/g, ''));
+  const marked = argumentTexts(signature).map((text) => /\sindexed\b/.test(text));
+  const param = params[position - 1];
+  if (!Number.isSafeInteger(position) || param === undefined) throw new ResearchError(`${signature} has no argument ${position}`);
+  if (marked[position - 1] !== true) {
+    throw new ResearchError(`argument ${position} of ${signature} is not marked indexed; mark each indexed argument, such as 'Approval(address indexed owner, address indexed spender, uint256 value)'`);
+  }
+  const type = canonicalType(param.type);
+  if (type !== 'address' && type !== 'bytes32') throw new ResearchError(`argument ${position} of ${signature} is ${type}, not an address or a bytes32`);
+  const index = marked.slice(0, position).filter(Boolean).length;
+  if (index > 3) throw new ResearchError(`${signature} marks more than 3 arguments indexed, more than a log has topics for`);
+  return { index: index as EventTopic['index'], type };
 }
 
 /**
@@ -168,6 +243,7 @@ async function searchEtherscan(anchor: Anchor, ask: Ask, pages: number, end: Eth
     ...(anchor.from !== undefined ? { topic0_1_opr: 'and', topic1: `0x${'00'.repeat(12)}${anchor.from.slice(2)}` } : {}),
     ...(anchor.to !== undefined ? { topic0_2_opr: 'and', topic2: `0x${'00'.repeat(12)}${anchor.to.slice(2)}` } : {}),
     ...(anchor.from !== undefined && anchor.to !== undefined ? { topic1_2_opr: 'and' } : {}),
+    ...(anchor.topic === undefined ? {} : { [`topic0_${anchor.topic.index}_opr`]: 'and', [`topic${anchor.topic.index}`]: anchor.topic.word }),
     offset: String(PAGE),
   };
   const logs: unknown[] = [];

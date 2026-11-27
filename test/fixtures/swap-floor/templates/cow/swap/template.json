@@ -3,11 +3,13 @@
   "card": {
     "sell-token": {
       "kind": "contract",
-      "registryKind": "token"
+      "registryKind": "token",
+      "names": ["usdc", "usdt", "morpho", "weeth", "cbbtc", "weth"]
     },
     "buy-token": {
       "kind": "contract",
-      "registryKind": "token"
+      "registryKind": "token",
+      "names": ["usdc", "usdt", "morpho", "weeth", "cbbtc", "weth"]
     },
     "sell-amount": {
       "kind": "amount",

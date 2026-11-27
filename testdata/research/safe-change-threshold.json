@@ -10,8 +10,8 @@
  "head": "26484568",
  "studiedWith": {
   "template": "0x9eea4c0ea8680a511e7dc739b4a4790f9c1e59c595253c70de477332e67fc15a",
-  "registry": "0x54173e3ef6d21d752fc566f76315381880f62b3cc6cf6f9cb3634438c8b0d934",
-  "study": "0x92508a29cee7c49b83a1d4a9f9e4e04eac8df225cb741b31331cc10dacdd84ae"
+  "registry": "0x0b8d71b4a3dde74fc50109d78086be0d9188aacc65d1ed1c63afd9af3115471e",
+  "study": "0x61f1ce5f5cd4adf417d5dffd036bcb1056828b2e57170ba4bcd0ef03b994e01d"
  },
  "search": {
   "coverage": {
@@ -128,7 +128,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1764202475"
   },
   {
    "kind": "fit",
@@ -153,7 +154,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1764385403"
   },
   {
    "kind": "fit",
@@ -178,7 +180,8 @@
     "0",
     "3"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1764616451"
   },
   {
    "kind": "fit",
@@ -203,7 +206,8 @@
     "0",
     "4"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1764751187"
   },
   {
    "kind": "misfit",
@@ -344,7 +348,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1765648931"
   },
   {
    "kind": "not-studied",
@@ -428,7 +433,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1766529587"
   },
   {
    "kind": "misfit",
@@ -541,7 +547,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1767775595"
   },
   {
    "kind": "misfit",
@@ -604,7 +611,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1768369919"
   },
   {
    "kind": "misfit",
@@ -656,7 +664,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1768576271"
   },
   {
    "kind": "misfit",
@@ -808,7 +817,8 @@
     "0",
     "3"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1769526767"
   },
   {
    "kind": "fit",
@@ -833,7 +843,8 @@
     "0",
     "3"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1769679203"
   },
   {
    "kind": "misfit",
@@ -931,7 +942,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1770331187"
   },
   {
    "kind": "not-studied",
@@ -1090,7 +1102,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1771535627"
   },
   {
    "kind": "unproven",
@@ -1121,7 +1134,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1771770899"
   },
   {
    "kind": "misfit",
@@ -1184,7 +1198,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1772132783"
   },
   {
    "kind": "misfit",
@@ -1228,7 +1243,8 @@
     "0",
     "4"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1772447819"
   },
   {
    "kind": "misfit",
@@ -1360,7 +1376,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1773498251"
   },
   {
    "kind": "unproven",
@@ -1410,7 +1427,8 @@
     "0",
     "3"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1773731159"
   },
   {
    "kind": "misfit",
@@ -1462,7 +1480,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1773894551"
   },
   {
    "kind": "misfit",
@@ -1609,7 +1628,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1774600607"
   },
   {
    "kind": "misfit",
@@ -1722,7 +1742,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1775067971"
   },
   {
    "kind": "misfit",
@@ -1933,7 +1954,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1776089483"
   },
   {
    "kind": "misfit",
@@ -1977,7 +1999,8 @@
     "0",
     "3"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1776352487"
   },
   {
    "kind": "unproven",
@@ -2106,7 +2129,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1777279307"
   },
   {
    "kind": "fit",
@@ -2131,7 +2155,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1777407203"
   },
   {
    "kind": "misfit",
@@ -2391,7 +2416,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1779423203"
   },
   {
    "kind": "fit",
@@ -2416,7 +2442,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1779427379"
   },
   {
    "kind": "misfit",
@@ -2460,7 +2487,8 @@
     "0",
     "3"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1779784235"
   },
   {
    "kind": "fit",
@@ -2485,7 +2513,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1779973127"
   },
   {
    "kind": "unproven",
@@ -2575,7 +2604,8 @@
     "0",
     "3"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1780523111"
   },
   {
    "kind": "misfit",
@@ -2619,7 +2649,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1781025071"
   },
   {
    "kind": "misfit",
@@ -2671,7 +2702,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1781551919"
   },
   {
    "kind": "fit",
@@ -2696,7 +2728,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1781693507"
   },
   {
    "kind": "not-studied",
@@ -2728,7 +2761,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1781862527"
   },
   {
    "kind": "misfit",
@@ -2943,7 +2977,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1783428779"
   },
   {
    "kind": "misfit",
@@ -2966,7 +3001,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1783672883"
   },
   {
    "kind": "fit",
@@ -2991,7 +3027,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1783960343"
   },
   {
    "kind": "misfit",
@@ -3077,7 +3114,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1784807351"
   },
   {
    "kind": "misfit",
@@ -3140,7 +3178,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1785320207"
   },
   {
    "kind": "fit",
@@ -3165,7 +3204,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1785493751"
   },
   {
    "kind": "misfit",
@@ -3236,7 +3276,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1786008527"
   },
   {
    "kind": "misfit",
@@ -3280,7 +3321,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1786369835"
   },
   {
    "kind": "not-studied",
@@ -3364,7 +3406,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1786910963"
   },
   {
    "kind": "fit",
@@ -3389,7 +3432,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1787045627"
   },
   {
    "kind": "misfit",
@@ -3433,7 +3477,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1787414531"
   },
   {
    "kind": "misfit",
@@ -3477,7 +3522,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1787762711"
   },
   {
    "kind": "misfit",
@@ -3543,7 +3589,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1788107399"
   },
   {
    "kind": "misfit",
@@ -3606,7 +3653,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1788537359"
   },
   {
    "kind": "misfit",
@@ -3681,7 +3729,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1789077467"
   },
   {
    "kind": "unproven",
@@ -3712,7 +3761,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1789325639"
   },
   {
    "kind": "fit",
@@ -3737,7 +3787,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1789502975"
   },
   {
    "kind": "unproven",
@@ -3799,7 +3850,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1789888811"
   },
   {
    "kind": "misfit",
@@ -3843,7 +3895,8 @@
     "0",
     "3"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1790204855"
   },
   {
    "kind": "fit",
@@ -3868,7 +3921,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1790340587"
   },
   {
    "kind": "fit",
@@ -3893,7 +3947,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1790602679"
   },
   {
    "kind": "fit",
@@ -3918,7 +3973,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1790702963"
   },
   {
    "kind": "fit",
@@ -3943,7 +3999,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1790768711"
   },
   {
    "kind": "fit",
@@ -3968,7 +4025,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1790898131"
   },
   {
    "kind": "fit",
@@ -3993,7 +4051,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1791036311"
   },
   {
    "kind": "fit",
@@ -4018,7 +4077,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1791224531"
   },
   {
    "kind": "fit",
@@ -4043,7 +4103,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1791302903"
   },
   {
    "kind": "misfit",
@@ -4110,7 +4171,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1791689915"
   },
   {
    "kind": "misfit",
@@ -4161,7 +4223,8 @@
     "0",
     "3"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1791949175"
   },
   {
    "kind": "misfit",
@@ -4232,7 +4295,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1792193435"
   },
   {
    "kind": "unproven",
@@ -4269,7 +4333,8 @@
     "0",
     "3"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1792410875"
   },
   {
    "kind": "fit",
@@ -4294,7 +4359,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1792591979"
   },
   {
    "kind": "unproven",
@@ -4348,7 +4414,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1792825727"
   },
   {
    "kind": "not-studied",
@@ -4380,7 +4447,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1792930607"
   },
   {
    "kind": "misfit",
@@ -4432,7 +4500,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1793132735"
   },
   {
    "kind": "fit",
@@ -4457,7 +4526,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1793266763"
   },
   {
    "kind": "unproven",
@@ -4561,7 +4631,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1793827799"
   },
   {
    "kind": "fit",
@@ -4586,7 +4657,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1793924963"
   },
   {
    "kind": "misfit",
@@ -4609,7 +4681,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1794055091"
   },
   {
    "kind": "fit",
@@ -4634,7 +4707,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1794236795"
   },
   {
    "kind": "not-studied",
@@ -4685,7 +4759,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1794554315"
   },
   {
    "kind": "misfit",
@@ -4764,7 +4839,8 @@
     "0",
     "3"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1794912755"
   },
   {
    "kind": "fit",
@@ -4789,7 +4865,8 @@
     "0",
     "1"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1794987095"
   },
   {
    "kind": "fit",
@@ -4814,7 +4891,8 @@
     "0",
     "3"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795039547"
   },
   {
    "kind": "fit",
@@ -4839,7 +4917,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795115591"
   },
   {
    "kind": "fit",
@@ -4864,7 +4943,8 @@
     "0",
     "2"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1795217543"
   },
   {
    "kind": "misfit",

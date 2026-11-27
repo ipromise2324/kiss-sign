@@ -1,16 +1,17 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { before, test } from 'node:test';
 import type { AbiRefusal } from '../src/contracts/prove.ts';
 import { parseFunctionSignature } from '../src/decode/abi.ts';
-import { MARKETS_PATH, REGISTRY_PATH, loadRegistry } from '../src/registry.ts';
+import { MARKETS_PATH, REGISTRY_PATH, loadRegistry, registryFromTexts } from '../src/registry.ts';
 import { weightOf } from '../src/research/grades.ts';
 import type { Grade } from '../src/research/grades.ts';
 import { forSigner, judge, stateOf, strip, worst } from '../src/research/ledger.ts';
 import type { EntryReport, FieldFact } from '../src/research/erc7730.ts';
 import type { State } from '../src/research/ledger.ts';
-import { NotesError, argumentTree, notesScope, readNotes } from '../src/research/notes.ts';
+import { NotesError, argumentTree, notesInstance, notesPath, notesScope, readNotes } from '../src/research/notes.ts';
+import { notesNeeded } from '../src/research/notes-needed.ts';
 import type { ArgNode } from '../src/research/notes.ts';
 import type { Kept, Misfit } from '../src/research/past-txs.ts';
 import type { Measurement } from '../src/research/amounts.ts';
@@ -22,7 +23,7 @@ import { WORDS } from '../src/research/report-words.ts';
 import { pastFields } from '../src/research/report-past.ts';
 import { cardAddresses, shapesOf } from '../src/research/study.ts';
 import { buildPage, constCast } from '../src/research/report-page.ts';
-import type { ArgRow, Body, DocLine, HtmlInputs, Inline, Page, PastBlock, WalletCall } from '../src/research/report-page.ts';
+import type { AddressRow, ArgRow, Body, DocLine, HtmlInputs, Inline, Page, PastBlock, WalletCall } from '../src/research/report-page.ts';
 import { pageUrlOf } from '../src/research/source-page.ts';
 import { STANDARDS } from '../src/research/standards.ts';
 import type { HttpsUrl, RegistryEntry } from '../src/registry.ts';
@@ -38,6 +39,7 @@ import type { TraceCall } from '../src/research/trace.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
 import { repoWithFrozenReports } from './frozen-reports.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
+import { tempDir } from './fixture-base.ts';
 import { parseRegistryAt } from './registry-at.ts';
 
 const ROOT = repoWithTestFixtures();
@@ -59,7 +61,7 @@ before(async () => {
   const depositReplayed = await replayInputs(FROZEN, frozenRegistry, deposit, compilers, loadPublicSuffixList());
   const depositTemplate = depositReplayed.inputs.subject.kind === 'template' ? depositReplayed.inputs.subject.template : assert.fail('a template report');
   depositInputs = { ...depositReplayed.inputs, fixtures: await judgeFixtures(FROZEN, depositTemplate, frozenRegistry) };
-  depositNotes = readNotes(FROZEN, deposit.template, frozenRegistry.entries.get(deposit.instance));
+  depositNotes = readNotes(FROZEN, deposit.template, notesInstance(depositInputs.subject));
   depositTitle = depositReplayed.title;
   depositPage = buildPage(depositInputs, depositNotes, depositTitle, 'zh-TW');
   const replayed = await replayInputs(ROOT, registry, target, compilers, loadPublicSuffixList());
@@ -109,7 +111,13 @@ const fieldsOf = (template: Template): ArgNode[] => {
   return argumentTree(template).flatMap((call) => call.args.flatMap(under));
 };
 const body = <K extends Body['kind']>(page: Page, kind: K): Extract<Body, { kind: K }> => page.sections.find((s) => s.body.kind === kind)?.body as Extract<Body, { kind: K }>;
+/** 地址's rows across its groups, open and folded. */
+const addressRows = (page: Page): { readonly open: readonly AddressRow[]; readonly folded: readonly AddressRow[] } => {
+  const { groups } = body(page, 'addresses');
+  return { open: groups.flatMap((g) => g.open), folded: groups.flatMap((g) => g.folded) };
+};
 const args = (page: Page): ArgRow[] => body(page, 'flow').flow.calls.flatMap((call) => call.args);
+const everyRow = (rows: readonly ArgRow[]): ArgRow[] => rows.flatMap((row) => [row, ...everyRow(row.parts.flatMap((g) => g.rows))]);
 const arg = (page: Page, key: string): ArgRow => args(page).find((a) => a.key === key) ?? assert.fail(`no row ${key}`);
 const plain = (spans: readonly unknown[] | undefined): string =>
   (spans ?? []).map((s) => (typeof s === 'string' ? s : 'label' in (s as object) ? (s as { label: string }).label : Object.values(s as object)[0])).join('');
@@ -134,7 +142,7 @@ test('each argument says who decides it and prints what cast decode-calldata pri
   assert.deepEqual(value.chips, [{ who: 'you-type', label: '你填：金額' }]);
   assert.equal(value.value, undefined);
   assert.equal(plain(value.words), '你填的金額');
-  assert.equal(value.qualifier, undefined);
+  assert.equal(plain(value.qualifier), '卡片記著這個值，交易裡不同就 MISMATCH');
 
   const market = arg(page, '2.blueBundlesV1Supply.marketParams');
   assert.deepEqual(market.chips, [{ who: 'you-pick', label: '你選：市場' }]);
@@ -145,41 +153,43 @@ test('each argument says who decides it and prints what cast decode-calldata pri
   assert.deepEqual(
     parts.map((p) => [p.name, p.value, p.chips.length]),
     [
-      ['loanToken', '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 0],
-      ['collateralToken', '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf', 0],
-      ['oracle', '0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a', 0],
-      ['irm', '0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC', 0],
-      ['lltv', '860000000000000000', 0],
-      ['loanToken', '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 0],
-      ['collateralToken', '0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6', 0],
-      ['oracle', '0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d', 0],
-      ['irm', '0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC', 0],
-      ['lltv', '860000000000000000', 0],
-      ['loanToken', '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 0],
-      ['collateralToken', '0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6', 0],
-      ['oracle', '0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d', 0],
-      ['irm', '0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC', 0],
-      ['lltv', '915000000000000000', 0],
-      ['loanToken', '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 0],
-      ['collateralToken', '0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee', 0],
-      ['oracle', '0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411', 0],
-      ['irm', '0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC', 0],
-      ['lltv', '860000000000000000', 0],
+      ['loanToken', '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 1],
+      ['collateralToken', '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf', 1],
+      ['oracle', '0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a', 1],
+      ['irm', '0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC', 1],
+      ['lltv', '860000000000000000', 1],
+      ['loanToken', '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 1],
+      ['collateralToken', '0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6', 1],
+      ['oracle', '0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d', 1],
+      ['irm', '0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC', 1],
+      ['lltv', '860000000000000000', 1],
+      ['loanToken', '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 1],
+      ['collateralToken', '0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6', 1],
+      ['oracle', '0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d', 1],
+      ['irm', '0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC', 1],
+      ['lltv', '915000000000000000', 1],
+      ['loanToken', '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 1],
+      ['collateralToken', '0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee', 1],
+      ['oracle', '0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411', 1],
+      ['irm', '0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC', 1],
+      ['lltv', '860000000000000000', 1],
     ],
   );
 
   const permit = arg(page, '2.blueBundlesV1Supply.loanTokenPermit');
-  assert.deepEqual([permit.chips, permit.mix], [[], [{ who: 'fixed', label: '固定', parts: ['kind'] }, { who: 'free', label: '不限', parts: ['data'] }]]);
+  assert.deepEqual(permit.chips, [], 'an argument whose parts differ carries no chip of its own');
   assert.equal(permit.value, undefined);
   assert.equal(plain(permit.words), '2 個部分');
   assert.deepEqual(
-    permit.parts.flatMap((g) => g.rows).map((p) => [p.name, p.value]),
+    permit.parts.flatMap((g) => g.rows).map((p) => [p.name, p.value, p.chips]),
     [
-      ['kind', '0'],
-      ['data', undefined],
+      ['kind', '0', [{ who: 'fixed', label: '固定' }]],
+      ['data', undefined, [{ who: 'free', label: '這裡不檢查' }]],
     ],
+    'each part carries its own chip, as a plain argument does',
   );
-  assert.deepEqual(arg(page, '2.blueBundlesV1Supply.deadline').chips, [{ who: 'free', label: '不限' }]);
+  assert.deepEqual(arg(page, '2.blueBundlesV1Supply.deadline').chips, [{ who: 'free', label: '這裡不檢查' }]);
+  assert.match(arg(page, '2.blueBundlesV1Supply.deadline').reason?.ai ?? '', /^模板為什麼不檢查它：./, "a free value shows the template's reason under its row");
   assert.equal(plain(arg(page, '2.blueBundlesV1Supply.referralFeeRecipient').words), '無（零地址）');
   assert.equal(arg(page, '2.blueBundlesV1Supply.deadline').ai?.ai, 'field 2.blueBundlesV1Supply.deadline');
 });
@@ -280,7 +290,7 @@ test('交易後 and the Markdown report show an atMost, a tolerance and a touche
   const notes = after.map((row) => plain(row.note));
   assert.ok(notes.some((n) => n.startsWith('給出的不能多於你填的')), notes.join(' / '));
   assert.ok(notes.some((n) => n.endsWith('因為捨入，Safe 最後的餘額可以低最多 2 個最小單位')), notes.join(' / '));
-  assert.ok(after.some((row) => plain(row.label) === `Safe 的 ${deposit.instance}` && plain(row.value) === '只能因捨入變動' && row.ai?.ai === why['zh-TW']), JSON.stringify(after.map((r) => r.label)));
+  assert.ok(after.some((row) => plain(row.label) === `Safe 的 ${deposit.instance}` && plain(row.value) === '只能因捨入變動' && row.ai?.ai === WORDS['zh-TW'].aiChose(WORDS['zh-TW'].toleranceChosen, why['zh-TW'])), JSON.stringify(after.map((r) => r.label)));
   const markdown = renderReport(inputs, depositTitle);
   assert.ok(markdown.includes("; the Safe's balance may end up to 2 base units lower than that, for rounding; written by the AI in the template: stETH rounds shares down; in Traditional Chinese: stETH 換算份額時無條件捨去 |"), markdown);
   assert.ok(markdown.includes("| the Safe gives | ETH | the card's `amount`; the Safe's balance may end up to 1 base unit higher than that, for rounding;"), markdown.split('## Effects')[1]?.slice(0, 900));
@@ -305,7 +315,7 @@ test('two official pages of one entry that share a short URL are each named with
   const entries = new Map([...depositInputs.registry.entries].map(([name, entry]) => [name, name === 'bundler3' ? moved : entry]));
   const moved3 = { ...depositInputs, registry: { ...depositInputs.registry, entries, byAddress: new Map([...entries.values()].map((e) => [e.address, e])) } };
   const page = buildPage(moved3, { ...notesFor(moved3), flow: [] }, depositTitle, 'zh-TW');
-  const { open, folded } = body(page, 'addresses');
+  const { open, folded } = addressRows(page);
   const row = [...open, ...folded].find((r) => r.name === 'bundler3') ?? assert.fail('the bundler3 row');
   assert.deepEqual(row.sources.slice(0, 2).map((s) => s.label), ['github.com/morpho-org/sdks/…/README.md', 'github.com/morpho-org/sdks/…/addresses.ts']);
 });
@@ -409,7 +419,7 @@ test('the vault its factory alone confirms is the one 待確認; every address r
   assert.deepEqual(body(depositPage, 'review').rows.map((r) => [r.id, r.state, plain(r.why).replace(/0x[0-9a-fA-F]{40}/, '<address>')]), [
     ['hyperithm-usdc-apex-v2-9e2f/address', 'warn', '只在 工廠 找到 <address>；至少要 2 個地方。'],
   ]);
-  const { open, folded } = body(depositPage, 'addresses');
+  const { open, folded } = addressRows(depositPage);
   assert.deepEqual(
     [...open, ...folded].map((r) => [r.name, r.confidence, r.confirmed]),
     [
@@ -439,9 +449,9 @@ test("a Vault V2's market adapter is confirmed by the protocol API and, as one p
   const replayed = await replayInputs(FROZEN, frozenRegistry, revoke, await warmCompilers(reportCases(FROZEN, frozenRegistry, [revoke])), loadPublicSuffixList());
   const revokeTemplate = replayed.inputs.subject.kind === 'template' ? replayed.inputs.subject.template : assert.fail('a template report');
   const of = { ...replayed.inputs, fixtures: await judgeFixtures(FROZEN, revokeTemplate, frozenRegistry) };
-  const page = buildPage(of, readNotes(FROZEN, revoke.template, frozenRegistry.entries.get(revoke.instance)), replayed.title, 'zh-TW');
+  const page = buildPage(of, readNotes(FROZEN, revoke.template, notesInstance(replayed.inputs.subject)), replayed.title, 'zh-TW');
   assert.ok(!body(page, 'review').rows.some((r) => r.id.startsWith('acuto-usdc-v2-4a57-market-adapter/')), 'the adapter is not for the signer');
-  const { open, folded } = body(page, 'addresses');
+  const { open, folded } = addressRows(page);
   const adapter = [...open, ...folded].find((r) => r.name === 'acuto-usdc-v2-4a57-market-adapter') ?? assert.fail('the adapter row');
   assert.equal(adapter.confirmed, '在 2 個地方確認：協議 API、工廠和它登記的每一項檢查');
   assert.deepEqual(
@@ -524,7 +534,7 @@ test('the three oracles only the protocol API confirms are the rows to review, o
       ['morpho-oracle-weeth-usdc-86/address', 'warn', 'a-morpho-oracle-weeth-usdc-86'],
     ],
   );
-  const addresses = body(page, 'addresses');
+  const addresses = addressRows(page);
   assert.deepEqual(
     addresses.open.map((r) => [r.name, r.confidence, r.reviewed, r.confirmed]),
     [
@@ -538,8 +548,8 @@ test('the three oracles only the protocol API confirms are the rows to review, o
   assert.deepEqual(
     page.header.strip.map((s) => [s.name, s.state, s.count]),
     [
-      ['地址來源', 'warn', '7 / 10'],
-      ['原始碼驗證', 'ok', '4 / 4'],
+      ['交易地址', 'warn', '7 / 10'],
+      ['原始碼驗證', 'ok', '6 / 6'],
       ['合約沒被換掉', 'ok', '10 / 10'],
       ['參數保護', 'ok', '1 / 1'],
       ['雙節點比對', 'ok', undefined],
@@ -609,7 +619,7 @@ test('past transactions count, per kind of sender, those using the operation and
   assert.equal(plain(worked.rest), 'EOA：0 次。');
   assert.equal(differ.lead, '8 筆交易做了這個模板不允許的事。');
   assert.deepEqual(
-    differ.open?.rows.map((row) => row.slice(0, 3).map(plain)),
+    differ.folded?.table.rows.map((row) => row.slice(0, 3).map(plain)),
     [
       ['blueBundlesV1Supply.loanTokenPermit.kind 是 2 種別的值，模板要 0', '0', '7'],
       ['形狀一樣，但 blueBundlesV1Supply.marketParams 用的是 registry 外的市場', '0', '1'],
@@ -623,7 +633,7 @@ test('a bundle with another number of items is grouped and named by the function
   const { differ, search } = past(depositPage);
   assert.equal(differ.lead, '336 筆交易做了這個模板不允許的事。');
   assert.deepEqual(
-    differ.open?.rows.map((row) => row.slice(0, 3).map(plain)),
+    differ.folded?.table.rows.map((row) => row.slice(0, 3).map(plain)),
     [
       ['multicall.bundle 有 3 項，模板是 2 項，呼叫 usdc.permit → general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit', '0', '324'],
       ['multicall.bundle 有 5 項，模板是 2 項', '0', '7'],
@@ -632,7 +642,7 @@ test('a bundle with another number of items is grouped and named by the function
       ['multicall.bundle 有 3 項，模板是 2 項，呼叫 general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Redeem → general-adapter-1.erc4626Deposit', '0', '1'],
     ],
   );
-  assert.match(JSON.stringify(differ.open?.rows[0]?.[4]), /https:\/\/etherscan\.io\/tx\/0x[0-9a-f]{64}/);
+  assert.match(JSON.stringify(differ.folded?.table.rows[0]?.[4]), /https:\/\/etherscan\.io\/tx\/0x[0-9a-f]{64}/);
   assert.ok(search.some((s) => s.lines.some((line) => /筆是別的操作，不列入：hyperithm-usdc-apex-v2-9e2f\.deposit \d+ 筆/.test(plain(line)))));
 });
 
@@ -643,7 +653,7 @@ test('過去交易 leads with how many past transactions were exactly the templa
   const noFits = depositInputs.pastTxs.map((p) => ({ ...p, run: { ...p.run, studies: p.run.studies.filter((s) => s.kind !== 'fit') } }));
   assert.equal(past(buildPage({ ...depositInputs, pastTxs: noFits }, depositNotes, depositTitle, 'zh-TW')).worked.answer, '研究過的交易裡沒有 Safe 這樣做過。');
   const onlyExact = depositInputs.pastTxs.map((p) => ({ ...p, run: { ...p.run, studies: p.run.studies.filter((s) => s.kind === 'fit') } }));
-  assert.equal(past(buildPage({ ...depositInputs, pastTxs: onlyExact }, depositNotes, depositTitle, 'zh-TW')).differ.open, undefined, 'no table of others when there are none');
+  assert.equal(past(buildPage({ ...depositInputs, pastTxs: onlyExact }, depositNotes, depositTitle, 'zh-TW')).differ.folded, undefined, 'no table of others when there are none');
   const twice = past(buildPage({ ...depositInputs, pastTxs: [...depositInputs.pastTxs, ...depositInputs.pastTxs] }, depositNotes, depositTitle, 'zh-TW'));
   assert.deepEqual([twice.worked, twice.numbers, twice.differ], [worked, past(depositPage).numbers, past(depositPage).differ]);
 });
@@ -711,16 +721,22 @@ test('a difference in a number shows it as a number, the largest uint256 by name
     misfitAt(2, { kind: 'field', at: 'call.approve.value', expected: '1', actual: `${2n ** 255n}` }),
     misfitAt(3, { kind: 'field', at: 'call.approve.data', expected: '0x', actual: `0x${'ab'.repeat(128)}` }),
   ]);
-  assert.deepEqual(differ.open?.rows.map((r) => plain(r[0])).sort(), [
+  assert.deepEqual(differ.folded?.table.rows.map((r) => plain(r[0])).sort(), [
     `approve.data was 0x${'ab'.repeat(8)}…(128 bytes), the template wants 0x`,
     'approve.value was 1,234,567, the template wants uint256 max (2^256 - 1)',
     `approve.value was ${(2n ** 255n).toLocaleString('en-US')}, the template wants 1`,
   ]);
 });
 
+test('every difference folds under one line that counts its kinds, the commonest first', () => {
+  const { differ } = studiedPage(Array.from({ length: 10 }, (_, i) => Array.from({ length: 11 - i }, (_, n) => misfitAt(i * 100 + n, { kind: 'field', at: `call.f.a${i}`, expected: '1', actual: '2' }))).flat());
+  assert.equal(differ.folded?.label, 'Show the 10 kinds of difference');
+  assert.deepEqual(differ.folded?.table.rows.map((r) => plain(r[1])), ['11', '10', '9', '8', '7', '6', '5', '4', '3', '2']);
+});
+
 test('a difference names its newest transaction and links the newest three, and names none as the newest when a block was not kept', () => {
   const reason = { kind: 'field', at: 'call.f.a', expected: '1', actual: '2' } as const;
-  const row = (studies: readonly Misfit[]) => studiedPage(studies).differ.open?.rows[0] ?? assert.fail('a row');
+  const row = (studies: readonly Misfit[]) => studiedPage(studies).differ.folded?.table.rows[0] ?? assert.fail('a row');
   const links = (spans: Inline | undefined) => (spans ?? []).flatMap((s) => (typeof s !== 'string' && 'href' in s ? [s.href] : []));
   const tx = (n: number) => `https://etherscan.io/tx/${hashOf(n)}`;
   const dated = row([misfitAt(2, reason), misfitAt(9, reason, { time: 1_700_000_000n }), misfitAt(1, reason), misfitAt(5, reason)]);
@@ -816,7 +832,7 @@ const VARIANTS: readonly { readonly what: string; readonly change: (of: HtmlInpu
     what: 'a source page with no answer',
     change: (of) => ({ ...of, pages: { ...of.pages, pages: new Map([...of.pages.pages, ['https://developers.circle.com/stablecoins/usdc-contract-addresses', { kind: 'unread', why: 'timeout' }]]) } }),
   },
-  { what: 'a test transaction now refused', change: (of) => ({ ...of, fixtures: [{ name: 'morpho-market-supply', outcome: { kind: 'card-refused', why: 'wrong-kind' } }] }) },
+  { what: 'a test transaction now refused', change: (of) => ({ ...of, fixtures: [{ name: 'morpho-market-supply', sender: 'safe', outcome: { kind: 'card-refused', why: 'wrong-kind' } }] }) },
 ];
 
 const RANK: Readonly<Record<State, number>> = { na: 0, ok: 1, warn: 2, bad: 3 };
@@ -841,7 +857,7 @@ for (const variant of VARIANTS) {
     const counts = (['key', 'reference'] as const).flatMap((grade) => (graded(grade).length > 0 ? [{ state: worst(graded(grade)), n: graded(grade).length, grade }] : []));
     assert.deepEqual(rail, { kind: 'states', counts: [...counts, { state: 'ask', n: review.judgments.length }] });
     const reviewed = new Set(review.rows.flatMap((r) => (r.entry === undefined ? [] : [r.entry])));
-    assert.deepEqual(new Set(body(page, 'addresses').open.map((r) => r.anchor)), reviewed);
+    assert.deepEqual(new Set(addressRows(page).open.map((r) => r.anchor)), reviewed);
     assert.equal(page.header.verdict.state, worst(ledger.results));
     assert.ok(review.rows.every((r) => stateOf(ledger.results.find((x) => x.id === r.id) ?? assert.fail(r.id)) === r.state));
   });
@@ -946,9 +962,9 @@ test('the who-decides key gives a free field the meaning of the claim the templa
 
 test('a free number says a test tried other values only when one did', () => {
   const words = (of: HtmlInputs) => args(pageOf(of)).flatMap((row) => (row.chips.some((c) => c.who === 'free') ? [plain(row.qualifier)] : []));
-  assert.ok(words(inputs).includes('換成別的值測過，結果不變或交易失敗'), JSON.stringify(words(inputs)));
+  assert.ok(words(inputs).includes(`${WORDS['zh-TW'].freeCaught.scalar}換成別的值測過，結果不變或交易失敗`), JSON.stringify(words(inputs)));
   const untested = { ...inputs, fixtures: [] };
-  assert.ok(words(untested).includes('模板允許任何值，沒有測試換過別的值'), JSON.stringify(words(untested)));
+  assert.ok(words(untested).some((text) => text.endsWith('測試看到的：沒有測試換過別的值')), JSON.stringify(words(untested)));
   assert.ok(!words(untested).some((text) => text.includes('測過')));
   assert.ok(freeItems(pageOf(untested)).some((k) => k.means === '模板允許任何值，沒有測試換過別的值。'));
   const failed = inputs.fixtures.map(({ name, outcome }) =>
@@ -956,7 +972,7 @@ test('a free number says a test tried other values only when one did', () => {
       ? { name, outcome }
       : { name, outcome: { ...outcome, perturbation: { ...outcome.perturbation, runs: outcome.perturbation.runs.map((run) => ({ ...run, outcome: 'reverted' as const })) } } },
   );
-  assert.ok(words({ ...inputs, fixtures: failed }).includes('換成別的值測過，每次交易都失敗或不符合卡片'));
+  assert.ok(words({ ...inputs, fixtures: failed }).some((text) => text.endsWith('測試看到的：換成別的值測過，每次交易都失敗或不符合卡片')));
   assert.ok(freeItems(pageOf({ ...inputs, fixtures: failed })).some((k) => k.means === '換成別的值測過，每次交易都失敗或不符合卡片。'), 'the legend says so too');
 });
 
@@ -1015,6 +1031,24 @@ test('a group of money calls that go both ways says what the sender paid, what i
   assert.equal(titles('trace.2.safe.usdc.transferFrom', 'en', [call(3, safe, usdc, '0x23b872dd')]), 'In 1 past transaction, a transferFrom the sender made under call 2 moved usdc, from whom to whom was not read; the template does not describe this step');
 });
 
+test("an argument the program reads from the Safe's owners is tagged as read on chain, not fixed, on its row and in the key, in both languages", async () => {
+  const repo = join(import.meta.dirname, '..');
+  const shipped = loadRegistry(repo);
+  const target = { template: 'safe/remove-owner' };
+  const replayed = await replayInputs(repo, shipped, target, await warmCompilers(reportCases(repo, shipped, [target])), loadPublicSuffixList());
+  for (const [language, label, means] of [
+    ['en', 'program reads', "verify reads it on chain from the Safe's getOwners() at each check. Any other value is a MISMATCH."],
+    ['zh-TW', '程式讀鏈上', 'verify 每次檢查時在鏈上讀 Safe 的 getOwners() 算出。換成別的值就 MISMATCH。'],
+  ] as const) {
+    const page = buildPage(replayed.inputs, readNotes(repo, target.template, undefined), replayed.title, language);
+    const prevOwner = everyRow(args(page)).find((row) => row.name === 'prevOwner') ?? assert.fail('the prevOwner row');
+    assert.deepEqual(prevOwner.chips.map((c) => c.label), [label]);
+    assert.equal(prevOwner.fixed, false, 'shown, not folded away with the fixed rows');
+    const key = body(page, 'flow').flow.key.flatMap((g) => g.items);
+    assert.deepEqual(key.filter((k) => k.label === label).map((k) => k.means), [means]);
+  }
+});
+
 test("a swap's page draws a line on the token the card names, says with which tokens it was seen, and leaves a token with no trace unconfirmed", async () => {
   const repo = join(import.meta.dirname, '..');
   const shipped = loadRegistry(repo);
@@ -1057,6 +1091,42 @@ test("a swap's page draws a line on the token the card names, says with which to
   }
 });
 
+/**
+ * The deposit report with a floor in place of its computed field, between the vault's asset and the vault, USD feeds
+ * on both when `feeds`, and with `pool` a pool of the two whose mean price is a second source.
+ */
+function floored(feeds: boolean, pool?: string): { readonly of: HtmlInputs; readonly name: string; readonly sells: string } {
+  const subject = depositInputs.subject.kind === 'template' ? depositInputs.subject : assert.fail('a template report');
+  const { template } = subject;
+  const [name, field] = [...template.card].find(([, f]) => f.kind === 'amount' && f.computed !== undefined) ?? assert.fail('a computed field');
+  const [sells] = [...template.card].find(([, f]) => f.kind === 'amount' && f.computed === undefined) ?? assert.fail('a typed field');
+  const card = new Map([[name, { ...field, computed: undefined, floor: { sells } } as typeof field], ['late', field], ...[...template.card].filter(([n]) => n !== name)]);
+  const vault = subject.vault ?? assert.fail('a per-vault report');
+  const asset = vault.attributes.asset ?? assert.fail('a vault asset');
+  const read = (file: string) => readFileSync(join(import.meta.dirname, 'fixtures', 'swap-floor', 'registry', file), 'utf8');
+  const fixture = registryFromTexts(read('contracts.json'), undefined, read('attributes.json'));
+  const priced = new Map([
+    [asset, { feed: 'usdc-usd', peg: 'usd' }],
+    [vault.name, { feed: 'usdt-usd', peg: 'usd' }],
+  ]);
+  const entries = new Map([...depositInputs.registry.entries].map(([key, entry]) => [key, feeds && priced.has(key) ? { ...entry, price: priced.get(key) } : entry] as const));
+  if (feeds) for (const feed of ['usdc-usd', 'usdt-usd']) entries.set(feed, fixture.entries.get(feed) ?? assert.fail(feed));
+  const twap = fixture.entries.get('v3-usdc-usdt-100') ?? assert.fail('a pool');
+  if (pool !== undefined) entries.set(pool, { ...twap, name: pool, attributes: { token0: asset, token1: vault.name } });
+  const registry = { ...depositInputs.registry, entries: entries as typeof depositInputs.registry.entries };
+  return { of: { ...depositInputs, registry, subject: { ...subject, template: { ...template, card } }, fixtures: [] }, name, sells };
+}
+
+test('the who-decides key says a computed value is read from the chain, and a floor computed from prices only when this report has them', () => {
+  const means = (of: HtmlInputs, language: 'en' | 'zh-TW') =>
+    body(buildPage(of, { ...notesFor(of), flow: [] }, depositTitle, language), 'flow').flow.key.flatMap((g) => g.items).filter((k) => k.who === 'computed').map((k) => k.means);
+  assert.deepEqual(means({ ...depositInputs, fixtures: [] }, 'en'), ['card new reads it from the chain at each signing. You check it.']);
+  const floor = WORDS.en.whoMeans.floor;
+  assert.ok(means(floored(true).of, 'en').includes(floor));
+  assert.ok(means(floored(true).of, 'zh-TW').includes('card new 每次簽名用價格來源和池子算，你核對；沒有獨立價格可用時，你自己填。'));
+  assert.ok(!means(floored(false).of, 'en').includes(floor), 'with no feed for any pair, the key does not say the program computes it');
+});
+
 test('a displayed limit is never above the real one, and a longest value never below it', () => {
   const years = 2n * 365n * 86400n;
   for (const [seconds, en, zh] of [[5436n, '1 hour 30 minutes 36 seconds', '1 小時 30 分鐘 36 秒'], [years + 1n, '2 years 1 second', '2 年 1 秒'], [5400n, '1.5 hours', '1.5 小時'], [604800n, '7 days', '7 天']] as const) {
@@ -1071,6 +1141,71 @@ test('a displayed limit is never above the real one, and a longest value never b
   assert.equal(WORDS.en.duration(86399n, 'up'), '1 day');
   assert.equal(WORDS.en.duration(0n, 'up'), '0 seconds');
   assert.equal(WORDS.en.duration(-95n, 'up'), '1 minute 35 seconds before');
+});
+
+test('a floor is said to be computed from the feeds this report names, after the amount it is for and before any other computed field, and typed with nothing to compare when no pair has feeds', () => {
+  for (const [language, said, pair, how, typed, none] of [
+    ['zh-TW', /獨立價格，替 (\S+) 算最少要收到多少/, /usdc 換 \S+：即時檢查都通過時程式算，價格來源是 usdc-usd、usdt-usd；只有一個價格來源：/, /按 Enter 是 0\.50%，最多 1\.00%.*0\.25% 餘裕.*這個餘裕是程式定的/, /：填 \S+ 最少要收到多少，用整顆幣。/, /沒有任何一組兩邊都有價格來源，所以程式不算/],
+    ['en', /computes the least to receive for (\S+) from an independent price/, /usdc for \S+: computed when the live checks pass, from the price feeds usdc-usd, usdt-usd; one price source only: /, /Enter is 0\.50%, at most 1\.00%.*a 0\.25% margin.*The margin is the program's/, /: type the least to receive for \S+, in whole tokens\./, /no pair of tokens the card can name has a price feed for both, so the program computes nothing/],
+  ] as const) {
+    const { of, name } = floored(true);
+    const page = buildPage(of, { ...notesFor(of), flow: [] }, depositTitle, language);
+    const { steps } = body(page, 'next');
+    const says = steps.map((s) => plain(s.say));
+    const at = says.findIndex((say) => said.test(say));
+    assert.ok(at > says.findIndex((say) => /1250\.5/.test(say)), 'after the amount typed');
+    assert.ok(at < says.findIndex((say) => /所以程式自己算|so the program computes it/.test(say)), 'before the computed field');
+    assert.equal(steps[at]?.id, `next-${name}`, 'the step is the one place a row links to');
+    const then = (steps[at]?.then ?? []).map(plain).join(' ');
+    assert.match(then, pair);
+    assert.match(then, how);
+    assert.ok(then.includes(WORDS[language].floorLive), 'a computed floor holds only while the live checks pass; else the signer types it');
+    const linked = everyRow(args(page)).filter((row) => (row.qualifier ?? []).some((span) => typeof span === 'object' && span !== null && 'href' in span && span.href === `next-${name}`));
+    assert.ok(linked.length > 0, 'a row that checks the floor links to the step that says how it is filled');
+
+    const bare = floored(false);
+    const plainPage = buildPage(bare.of, { ...notesFor(bare.of), flow: [] }, depositTitle, language);
+    const step = body(plainPage, 'next').steps.find((s) => s.id === `next-${bare.name}`) ?? assert.fail('the floor step');
+    assert.match(plain(step.say), typed);
+    assert.match(step.then.map(plain).join(' '), none);
+    assert.ok(!everyRow(args(plainPage)).some((row) => row.chips.some((c) => c.who === 'computed')), 'no chip says the program computes it');
+  }
+});
+
+test("a floor's second-source pool shows the minimum liquidity the AI chose, with the notes' reason or that none gives it, and notes-needed asks for it", () => {
+  const pool = 'twap-pool';
+  const { of, name } = floored(true, pool);
+  const why = { en: 'At the lowest calm and stressed 30-minute measure.', 'zh-TW': '取平穩與壓力區塊 30 分鐘量測的最低值。' };
+  const notes = notesFor(of);
+  const described = { ...notes, flow: [], entries: { ...(notes.entries as object), [pool]: { minLiquidity: why } } };
+  const said = {
+    en: [`The AI chose the minimum liquidity 20000000000000 of the pool ${pool}, not the protocol or its app. Why: ${why.en}`, `The AI chose the minimum liquidity 20000000000000 of the pool ${pool}, not the protocol or its app; no note gives its reason.`],
+    'zh-TW': [`池子 ${pool} 的最低流動性 20000000000000：由 AI 選定，不是協議或它的 app 定的。理由：${why['zh-TW']}`, `池子 ${pool} 的最低流動性 20000000000000：由 AI 選定，不是協議或它的 app 定的；說明裡沒有寫理由。`],
+  } as const;
+  for (const language of ['en', 'zh-TW'] as const) {
+    const ai = (page: Page) => (body(page, 'next').steps.find((s) => s.id === `next-${name}`) ?? assert.fail('the floor step')).ai?.map((a) => [a.ai, a.tag]);
+    const page = buildPage(of, described, depositTitle, language);
+    assert.deepEqual(ai(page), [[said[language][0], 'ai']]);
+    assert.ok(renderPage(page).includes(said[language][0]), 'the page shows it');
+    assert.deepEqual(ai(buildPage(of, { ...notes, flow: [] }, depositTitle, language)), [[said[language][1], 'ai']], 'a pool whose reason the notes lack says so');
+  }
+
+  const { template, vault } = of.subject;
+  const shared = notesPath('', template.id);
+  const repo = tempDir('kiss-sign-floor-notes-');
+  const write = (file: string, json: unknown) => {
+    mkdirSync(join(repo, dirname(file)), { recursive: true });
+    writeFileSync(join(repo, file), JSON.stringify(json));
+  };
+  const mine = vault === undefined ? undefined : notesPath('', template.id, vault.name);
+  const files = [shared, ...(mine === undefined ? [] : [mine])].map((file) => [file, JSON.parse(readFileSync(join(FROZEN, file), 'utf8'))] as const);
+  for (const [file, json] of files) write(file, json);
+  const asked = notesNeeded(repo, of, ['zh-TW']);
+  assert.deepEqual((asked.skeleton[shared] as { entries?: Record<string, unknown> }).entries?.[pool], { minLiquidity: { en: '', 'zh-TW': '' } });
+  assert.match(asked.about[`entries ${pool} minLiquidity`] ?? '', /twap\.minLiquidity 20000000000000.*pnpm pool-depth twap-pool --auto.*\[en 600, zh-TW 200\]/);
+  const [, notesJson] = files[0] ?? assert.fail('the template notes');
+  write(shared, { ...notesJson, entries: { ...notesJson.entries, [pool]: { minLiquidity: why } } });
+  assert.equal((notesNeeded(repo, of, ['zh-TW']).skeleton[shared] as { entries?: Record<string, unknown> } | undefined)?.entries?.[pool], undefined, 'asked no more once written');
 });
 
 test('a computed field the transaction does not carry is never said to be typed or filled by the app', () => {
@@ -1090,7 +1225,7 @@ test('a computed field the transaction does not carry is never said to be typed 
   const of: HtmlInputs = { ...depositInputs, subject: { ...depositInputs.subject, template: { ...template, calls, effects: { ...template.effects, gets } } }, fixtures: [] };
   assert.match(step(of), /交易裡沒有這個值/);
   const after = body(buildPage(of, { ...notesFor(of), flow: [] }, depositTitle, 'zh-TW'), 'flow').flow.after.map((r) => plain(r.note));
-  assert.ok(after.includes('收到的不能少於程式算的最少收到的數量'), JSON.stringify(after));
+  assert.ok(after.includes('收到的不能少於程式算的最少收到的數量；這份報告裡 card new 怎麼填'), JSON.stringify(after));
 });
 
 test('no strip explanation counts one thing as many', async () => {
@@ -1154,7 +1289,7 @@ test('an entry reached only through dependsOn shows its routes, seeds and code a
   assert.match(explain('abi'), /liquidity-layer 沒有呼叫直接打到，也不用它的函式定義解碼，所以沒有證明，不算在內；它跑的程式碼在「合約沒被換掉」比對。/);
   assert.match(explain('code'), /liquidity-layer 沒有 ABI 證明比對它今天的程式碼，報告另外在最新區塊讀它跑的程式碼/);
   assert.match(explain('code'), /seeds 接到的每個實作和它的函式清單也一樣確認，沒有 seed 接到的實作不檢查。/);
-  const addresses = body(page, 'addresses');
+  const addresses = addressRows(page);
   const row = [...addresses.open, ...addresses.folded].find((r) => r.name === 'liquidity-layer') ?? assert.fail('no address row');
   assert.equal(page.header.strip.find((item) => item.line === 'code')?.state, pageOf(inputs).header.strip.find((item) => item.line === 'code')?.state);
   assert.deepEqual(row.codeLines.map(plain), [
@@ -1183,7 +1318,7 @@ test('a dependency that runs other code at the latest block is red in 合約沒�
 
 test("a dependency with no code pin says only that it has no ABI proof, not that each signing checks its code", () => {
   const of = withLiquidityLayer(undefined, { pinned: false });
-  const addresses = body(pageOf(of), 'addresses');
+  const addresses = addressRows(pageOf(of));
   const row = [...addresses.open, ...addresses.folded].find((r) => r.name === 'liquidity-layer') ?? assert.fail('no address row');
   assert.deepEqual(row.codeLines.map(plain), ['沒有呼叫直接打到這個合約，所以沒有 ABI 證明。']);
   assert.ok(!judge(of, of.fixtures).results.some((r) => r.id === 'liquidity-layer/code.today'), 'an unpinned entry has only its not-pinned result');
@@ -1280,9 +1415,10 @@ test('a vault its factory admits by computing its address renders in both report
   const page = buildPage(of, notes, depositTitle, 'zh-TW');
   const factoryRow = body(page, 'vault').vault.rows.find((row) => row.label === '工廠') ?? assert.fail('no 工廠 row');
   assert.equal(plain(factoryRow.value), `vault-v2-factory 回答 computeToken(usdc,"fToken") = ${checksumAddress(vault.address)}`);
-  const addresses = body(page, 'addresses');
+  const addresses = addressRows(page);
   const row = [...addresses.open, ...addresses.folded].find((r) => r.name === vault.name) ?? assert.fail('no address row');
-  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'ok', phrase: undefined, others: [], site: undefined, newest: undefined });
+  const factory = `https://etherscan.io/address/${of.registry.entries.get('vault-v2-factory')?.address ?? assert.fail('no factory')}`;
+  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: factory, state: 'ok', phrase: undefined, why: undefined, others: [], site: undefined, newest: undefined });
   assert.ok(renderPage(page).includes('computeToken(usdc,&#34;fToken&#34;)'), 'the HTML report escapes the quoted constant');
 });
 
@@ -1292,9 +1428,11 @@ test("a vault its factory computed another address for renders in both reports, 
   const { of, notes } = withComputingFactory(first);
   assert.ok(renderReport(of, depositTitle).includes(`\`\`\`text\n${first}\n`), 'the Markdown report prints the stored line');
   const page = buildPage(of, notes, depositTitle, 'zh-TW');
-  const addresses = body(page, 'addresses');
+  const addresses = addressRows(page);
   const row = addresses.open.find((r) => r.name === vault.name) ?? assert.fail('the vault row is not open');
-  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'bad', phrase: 'not-created', others: [], site: undefined, newest: undefined });
+  const line = row.sources.find((l) => l.label === '工廠') ?? assert.fail('no 工廠 line');
+  assert.deepEqual([line.state, line.phrase, plain(line.why)], ['bad', 'not-created', '登記的工廠合約回答，這個地址不是它建立的，所以它不屬於工廠的協議。見「待確認」。']);
+  assert.match(line.href ?? '', /^https:\/\/etherscan\.io\/address\/0x[0-9a-f]{40}$/, "the factory's page");
   const review = body(page, 'review').rows.find((r) => r.id === `${vault.name}/factory.admitted`) ?? assert.fail('no review row');
   assert.equal(review.state, 'bad');
   assert.equal(plain(body(page, 'vault').vault.rows.find((r) => r.label === '工廠')?.value ?? []), `沒有記錄到 vault-v2-factory 回答它建立了這個合約`);
@@ -1305,7 +1443,7 @@ test('an address held as a 32-byte word reads as its address rule, left-padded, 
   const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'cctp', 'deposit-for-burn', 'template.json'), 'utf8'));
   const pageOfBurn = (language: 'en' | 'zh-TW', mintRecipient?: unknown): ArgRow => {
     if (mintRecipient !== undefined) raw.calls[1].args.mintRecipient = mintRecipient;
-    const burn = parseTemplate(raw, registry);
+    const burn = parseTemplate(raw, registry, 'committed');
     const of = { ...inputs, subject: { ...subject, template: burn, docs: parseDocs(readDocs(ROOT, burn.id), burn, registry) }, fixtures: [] };
     return arg(buildPage(of, { ...notesFor(of), flow: [] }, title, language), '2.depositForBurn.mintRecipient');
   };
@@ -1356,7 +1494,7 @@ test('a source page whose label binds another address shows that address in full
   const reviews = notesScope(of, judge(of, of.fixtures), subject.template, 'zh-TW').reviews.map((id) => [id, given[id] ?? { status: 'concern', text: both(`review ${id}`), recommendation: both('look') }]);
   const notes = { ...(depositNotes as object), reviews: Object.fromEntries(reviews) };
   const page = buildPage(of, notes, depositTitle, 'zh-TW');
-  const addresses = body(page, 'addresses');
+  const addresses = addressRows(page);
   const row = addresses.open.find((r) => r.name === 'usdc') ?? assert.fail('the usdc row is not open');
   const line = row.sources.find((l) => l.href === usdc.source) ?? assert.fail('no source line');
   assert.deepEqual([line.state, line.others], ['bad', [other]]);
@@ -1369,4 +1507,95 @@ test('a source page whose label binds another address shows that address in full
   const en = renderPage(buildPage(of, notes, depositTitle, 'en'));
   assert.ok(en.includes(`lists ${other} under the label`));
   assert.ok(en.includes(`next to the label the registry names: ${other}`));
+});
+
+test("the signer's requests open the page as given, labelled as theirs, above the AI's title and summary, and a template that kept none shows none", () => {
+  const said = 'I want to deposit USDC into the vault \u2764\ufe0f.\n<b>build me the template</b>';
+  for (const [language, label] of [['en', 'Your request, as you wrote it, when this template was built'], ['zh-TW', '你的要求（建立這個模板時，原文）']] as const) {
+    const page = buildPage(depositInputs, { ...(depositNotes as object), request: said, instanceRequest: 'add this vault' }, depositTitle, language);
+    assert.deepEqual(page.header.requests, [
+      { label, text: said },
+      { label: WORDS[language].instanceRequest, text: 'add this vault' },
+    ]);
+    const html = renderPage(page);
+    assert.ok(html.includes('I want to deposit USDC into the vault \u2764\ufe0f.\n&#60;b&#62;build me the template&#60;/b&#62;'), 'verbatim, escaped, line break and emoji kept');
+    assert.ok(html.indexOf(label) < html.indexOf('<h1>'), 'above the title');
+  }
+  assert.deepEqual(buildPage(depositInputs, depositNotes, depositTitle, 'en').header.requests, []);
+  const once = buildPage(depositInputs, { ...(depositNotes as object), request: 'build it', instanceRequest: 'build it' }, depositTitle, 'en');
+  assert.deepEqual(once.header.requests.map((r) => r.text), ['build it'], 'one request that built both the template and this instance shows once');
+});
+
+test('a number the AI chose is said to be its choice with its reason, where the row uses it and in 下一步', () => {
+  const subject = depositInputs.subject.kind === 'template' ? depositInputs.subject : assert.fail('a template report');
+  const [name, field] = [...subject.template.card].find(([, f]) => f.kind === 'amount' && f.computed?.margin !== undefined) ?? assert.fail('a computed field with a margin');
+  const margin = (field.kind === 'amount' ? field.computed?.margin : undefined) ?? assert.fail('a margin');
+  for (const language of ['en', 'zh-TW'] as const) {
+    const w = WORDS[language];
+    const page = buildPage(depositInputs, depositNotes, depositTitle, language);
+    const said = w.aiChose(w.marginChosen('0.07%'), margin.why[language] as string);
+    const step = body(page, 'next').steps.find((s) => s.id === `next-${name}`) ?? assert.fail('the computed step');
+    assert.deepEqual(step.ai?.map((a) => [a.ai, a.tag]), [[said, 'ai']], '下一步 says the AI chose the margin, and why');
+    const rows = everyRow(args(page));
+    assert.ok(rows.some((row) => row.reason?.ai === said), 'the row bound to the computed field says it too');
+    const trailer = body(page, 'flow').flow.calls.find((call) => call.trailer !== undefined) ?? assert.fail('a call with a trailer');
+    assert.match(trailer.trailer?.ai ?? '', language === 'en' ? /^The AI chose to let through at most 12 bytes after the arguments, not the protocol or its app\. Why: / : /^參數後面最多放行 12 bytes：由 AI 選定/);
+  }
+});
+
+test('an effect bounded by a computed card amount links to the step that says how card new fills it, in both languages', () => {
+  const subject = depositInputs.subject.kind === 'template' ? depositInputs.subject : assert.fail('a template report');
+  const { template } = subject;
+  const [name] = [...template.card].find(([, f]) => f.kind === 'amount' && f.computed !== undefined) ?? assert.fail('a computed field');
+  const gets = template.effects.gets.map((e) => ({ ...e, amount: { kind: 'at-least' as const, field: name } }));
+  const of = { ...depositInputs, subject: { ...subject, template: { ...template, effects: { ...template.effects, gets } } } };
+  for (const language of ['en', 'zh-TW'] as const) {
+    const page = buildPage(of, depositNotes, depositTitle, language);
+    const step = body(page, 'next').steps.find((s) => s.id === `next-${name}`) ?? assert.fail('the computed step');
+    const links = body(page, 'flow').flow.after.flatMap((row) => row.note.filter((span) => typeof span === 'object' && span !== null && 'href' in span));
+    assert.deepEqual(links, [{ href: step.id, label: WORDS[language].howFilled }], 'only the row naming the computed amount links, to its step');
+  }
+});
+
+test("a free value says the effects check bounds it only through the card's amount rules, apart from what the tests saw", () => {
+  for (const [language, bound, gone] of [
+    ['en', /^Only the effects check limits it, and only through the card's amount rules: .* What tests saw: \S/, /does not check it|allows any value/],
+    ['zh-TW', /^只有效果檢查限制它，而且只透過卡片的數量規則：.*測試看到的：\S/, /模板不檢查它|模板允許任何值/],
+  ] as const) {
+    const free = everyRow(args(buildPage(inputs, notesFor(inputs), title, language))).filter((row) => row.chips.some((c) => c.who === 'free'));
+    const said = free.map((row) => plain(row.qualifier));
+    assert.ok(said.some((text) => bound.test(text)), said.join('\n'));
+    assert.ok(!said.some((text) => gone.test(text)), 'the chip already says it is not checked here');
+  }
+});
+
+test('a nested call carries the chip its arguments agree on, and a container counts what is inside its nested calls', () => {
+  const rows = everyRow(args(depositPage));
+  const nested = rows.filter((row) => row.doc !== undefined);
+  assert.ok(nested.length > 0, 'the deposit report binds a nested call');
+  for (const row of nested) {
+    const inside = everyRow(row.parts.flatMap((g) => g.rows)).filter((r) => r.parts.length === 0);
+    const whos = new Set(inside.flatMap((r) => r.chips.map((c) => `${c.who}/${c.label}`)));
+    assert.equal(row.chips.length, whos.size === 1 ? 1 : 0, `${row.key}: one chip only when every argument agrees`);
+  }
+  const bundle = arg(depositPage, '2.multicall.bundle');
+  const leaves = new Set(everyRow(bundle.parts.flatMap((g) => g.rows)).filter((r) => r.parts.length === 0).flatMap((r) => r.chips.map((c) => c.who)));
+  assert.ok(leaves.size > 1, 'the bundle holds values decided differently');
+  assert.deepEqual(bundle.chips, [], 'so the bundle carries no chip of its own');
+});
+
+test("a time limit's row says the AI chose it and that its note says why, the Safe transaction's nonce row included, whose note the notes must hold", () => {
+  const subject = inputs.subject.kind === 'template' ? inputs.subject : assert.fail('a template report');
+  const limited: HtmlInputs = { ...inputs, subject: { ...subject, template: { ...subject.template, nonce: { kind: 'within-seconds', seconds: 3600n } } }, fixtures: [] };
+  const notes = notesFor(limited);
+  for (const language of ['en', 'zh-TW'] as const) {
+    const w = WORDS[language];
+    const [nonce] = body(buildPage(limited, notes, title, language), 'flow').flow.safeTx;
+    assert.equal(nonce?.name, 'nonce');
+    assert.equal(nonce?.ai?.ai, 'field nonce', "the row shows the note that gives the limit's reason");
+    assert.equal(nonce?.reason?.ai, w.aiChoseNoted(w.limitChosen(3600n), true));
+  }
+  const { nonce: _, ...others } = notes.fields as Record<string, unknown>;
+  assert.throws(() => buildPage(limited, { ...notes, fields: others }, title, 'en'), /nonce/);
+  assert.match(WORDS.en.aiChoseNoted(WORDS.en.limitChosen(3600n), false), /no note gives its reason\.$/);
 });

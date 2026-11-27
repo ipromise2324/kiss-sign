@@ -4,6 +4,8 @@ import type { AbiValue } from '../decode/codec.ts';
 import type { Feed, Registry, RegistryEntry } from '../registry.ts';
 import { feedChain, twapPools } from '../registry.ts';
 import type { TwapPool } from '../registry.ts';
+import { callRules, cardRefs } from '../template/template.ts';
+import type { CardRef, Template } from '../template/template.ts';
 import { visible } from '../verify/checklist.ts';
 import { harmonicLiquidity, meanTick, sqrtRatioAtTick } from './tick.ts';
 
@@ -83,6 +85,16 @@ function routesOf(sell: RegistryEntry, buy: RegistryEntry, pools: readonly TwapP
     if (found.length > 0) return found.map(({ route }) => route);
   }
   return [];
+}
+
+/**
+ * The entries a swap may trade through, so no pool among them is an independent price: each contract the template's calls
+ * name and each entry a card reference names, as `picked` reads it: the signer's pick in `card new`, and in a report
+ * every entry the reference can name that the pair does not settle.
+ */
+export function tradedThrough(template: Template, picked: (ref: CardRef) => readonly string[]): ReadonlySet<string> {
+  const ruled = callRules(template).flatMap((rule) => (rule.kind === 'contract' ? [rule.name] : []));
+  return new Set([...ruled, ...cardRefs(template).flatMap(picked)]);
 }
 
 export function pairFacts(sell: RegistryEntry, buy: RegistryEntry, registry: Registry, tradedThrough: ReadonlySet<string>): PairFacts {
@@ -178,17 +190,29 @@ async function readFeed(entry: FeedEntry, reads: PriceReads): Promise<FeedRead> 
 
 type PoolAnswer = { readonly kind: 'read'; readonly ratio: Ratio; readonly read: PoolRead } | { readonly kind: 'doubt'; readonly doubt: Doubt };
 
-async function readPool(pool: TwapPool, from: RegistryEntry, window: bigint, reads: PriceReads): Promise<PoolAnswer> {
+/** The arguments of `observe` for a pool's mean over the last `window` seconds. */
+export function observeArgs(window: bigint): readonly AbiValue[] {
   const span: AbiValue['span'] = [0, 0];
   const ago = (seconds: bigint): AbiValue => ({ kind: 'uint', value: seconds, span });
-  const unusable = (why: 'thin' | 'reverted', liquidity = 0n): PoolAnswer => ({ kind: 'doubt', doubt: { kind: 'pool-unusable', pool: pool.entry, why, window, liquidity } });
-  const answer = await reads.viewOrRevert(pool.entry, POOL_VIEWS.observe, [{ kind: 'array', items: [ago(window), ago(0n)], span } as AbiValue]);
-  if (answer === 'reverted') return unusable('reverted');
+  return [{ kind: 'array', items: [ago(window), ago(0n)], span }];
+}
+
+/** A pool's mean over `window` from its decoded `observe(observeArgs(window))` answer, or none when the answer holds no mean or its mean tick no price. */
+export function poolMean(answer: readonly AbiValue[], window: bigint): { readonly liquidity: bigint; readonly tick: bigint; readonly sqrt: bigint } | undefined {
   const [ticks, seconds] = [numbersAt(answer, 0), numbersAt(answer, 1)];
-  if (ticks.length !== 2 || seconds.length !== 2) return unusable('reverted');
-  const liquidity = harmonicLiquidity(seconds[0] as bigint, seconds[1] as bigint, window);
-  const sqrt = sqrtRatioAtTick(meanTick((ticks[1] as bigint) - (ticks[0] as bigint), window));
-  if (sqrt === undefined) return unusable('reverted');
+  if (ticks.length !== 2 || seconds.length !== 2) return undefined;
+  const tick = meanTick((ticks[1] as bigint) - (ticks[0] as bigint), window);
+  const sqrt = sqrtRatioAtTick(tick);
+  return sqrt === undefined ? undefined : { liquidity: harmonicLiquidity(seconds[0] as bigint, seconds[1] as bigint, window), tick, sqrt };
+}
+
+async function readPool(pool: TwapPool, from: RegistryEntry, window: bigint, reads: PriceReads): Promise<PoolAnswer> {
+  const unusable = (why: 'thin' | 'reverted', liquidity = 0n): PoolAnswer => ({ kind: 'doubt', doubt: { kind: 'pool-unusable', pool: pool.entry, why, window, liquidity } });
+  const answer = await reads.viewOrRevert(pool.entry, POOL_VIEWS.observe, observeArgs(window));
+  if (answer === 'reverted') return unusable('reverted');
+  const mean = poolMean(answer, window);
+  if (mean === undefined) return unusable('reverted');
+  const { liquidity, sqrt } = mean;
   if (liquidity < pool.minLiquidity) return unusable('thin', liquidity);
   const token1PerToken0: Ratio = { num: sqrt * sqrt, den: 1n << 192n };
   return { kind: 'read', ratio: from === pool.token0 ? token1PerToken0 : inverse(token1PerToken0), read: { entry: pool.entry, liquidity } };

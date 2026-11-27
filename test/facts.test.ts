@@ -19,7 +19,7 @@ const fact = {
   ratio: ['totalBorrowAssets', 'totalSupplyAssets'],
   reason: 'Morpho Blue computes utilization as totalBorrowAssets / totalSupplyAssets in its IRM',
 };
-const parse = (change: Record<string, unknown>, card: Record<string, unknown> = raw.card) => parseTemplate({ ...raw, card, facts: [{ ...fact, ...change }] }, registry);
+const parse = (change: Record<string, unknown>, card: Record<string, unknown> = raw.card) => parseTemplate({ ...raw, card, facts: [{ ...fact, ...change }] }, registry, 'committed');
 const refused = (change: Record<string, unknown>, message: string, card?: Record<string, unknown>) =>
   assert.throws(() => parse(change, card), (e: unknown) => e instanceof TemplateError && e.message === message, message);
 
@@ -33,9 +33,9 @@ test('a fact is read for the one card field its arguments name, counts each name
   ]);
   assert.deepEqual(parsed?.ratio, [2, 0]);
   const { facts, ...bare } = raw;
-  assert.deepEqual(parseTemplate(bare, registry).facts, []);
+  assert.deepEqual(parseTemplate(bare, registry, 'committed').facts, []);
   const { ratio, reason, ...plain } = fact;
-  assert.equal(parseTemplate({ ...raw, facts: [plain] }, registry).facts[0]?.ratio, undefined);
+  assert.equal(parseTemplate({ ...raw, facts: [plain] }, registry, 'committed').facts[0]?.ratio, undefined);
 });
 
 test('a fact is refused for each broken rule, by its message', () => {
@@ -53,7 +53,7 @@ test('a fact is refused for each broken rule, by its message', () => {
   refused({ function: 'f(bytes32 id) returns (address loanToken)', units: { loanToken: LOAN }, ratio: undefined, reason: undefined }, 'facts[0].units.loanToken: address is not a number; only a number is counted in a token');
   refused({ units: { totalSupplyAssets: 'usdc', totalBorrowAssets: LOAN } }, 'facts[0].units.totalSupplyAssets: must be eth or card.<field>');
   refused({ units: { totalSupplyAssets: 'card.amount', totalBorrowAssets: LOAN } }, 'facts[0].units.totalSupplyAssets: must name a token');
-  refused({ units: { totalSupplyAssets: 'card.token', totalBorrowAssets: LOAN } }, 'facts[0].units.totalSupplyAssets: must be a token of card field market, which the fact reads for', { ...raw.card, token: { kind: 'contract', registryKind: 'token' } });
+  refused({ units: { totalSupplyAssets: 'card.token', totalBorrowAssets: LOAN } }, 'facts[0].units.totalSupplyAssets: must be a token of card field market, which the fact reads for', { ...raw.card, token: { kind: 'contract', registryKind: 'token', names: ['usdc'] } });
   refused({ units: { totalSupplyAssets: LOAN } }, 'facts[0].units: names no unit for totalBorrowAssets; leave a return value unnamed to leave it unshown');
   refused({ ratio: ['totalBorrowAssets'] }, 'facts[0].ratio: must name two different named return values');
   refused({ ratio: ['totalBorrowAssets', 'totalBorrowAssets'] }, 'facts[0].ratio: must name two different named return values');

@@ -249,15 +249,30 @@ export const isMarketEntryPart = (raw: string): raw is MarketEntryPart => Object
 export const MARKET_PARTS = ['lending', 'loanToken', 'collateralToken', 'oracle', 'irm', 'lltv', 'id'] as const satisfies readonly (MarketEntryPart | 'lltv' | 'id')[];
 export type MarketPart = (typeof MARKET_PARTS)[number];
 
-/** A Morpho Blue market from `registry/markets.json`: its parameters as registry entries, and the id they hash to. */
-export type Market = { readonly name: string; readonly id: Hex; readonly lltv: bigint } & { readonly [P in MarketEntryPart]: RegistryEntry };
-
-export type Registry = {
-  readonly attributes: AttributeTable;
-  readonly entries: ReadonlyMap<string, RegistryEntry>;
-  readonly byAddress: ReadonlyMap<Address, RegistryEntry>;
-  readonly markets: ReadonlyMap<string, Market>;
+/**
+ * What a past-transaction study and a template read of an entry, a subset of `RegistryEntry`. A study is given nothing
+ * else: `studyRegistry` makes any other field throw, and `ignoresTrailer` the fact that the entry declares it.
+ */
+export type StudyEntry = Pick<RegistryEntry, 'name' | 'address' | 'kind' | 'attributes' | 'defillama'> & {
+  readonly standingAllowance?: Pick<StandingAllowance, 'via'>;
+  readonly ignoresTrailer?: string | true;
 };
+
+type MarketOf<E> = { readonly name: string; readonly id: Hex; readonly lltv: bigint } & { readonly [P in MarketEntryPart]: E };
+export type RegistryOf<E> = {
+  readonly attributes: AttributeTable;
+  readonly entries: ReadonlyMap<string, E>;
+  readonly byAddress: ReadonlyMap<Address, E>;
+  readonly markets: ReadonlyMap<string, MarketOf<E>>;
+};
+
+/** A Morpho Blue market from `registry/markets.json`: its parameters as registry entries, and the id they hash to. */
+export type Market = MarketOf<RegistryEntry>;
+export type StudyMarket = MarketOf<StudyEntry>;
+
+export type Registry = RegistryOf<RegistryEntry>;
+/** A registry of which only a `StudyEntry` of each entry is read; every `Registry` is one. */
+export type RegistryView = RegistryOf<StudyEntry>;
 
 export const REGISTRY_DIR = 'registry';
 export const REGISTRY_PATH = join(REGISTRY_DIR, 'contracts.json');

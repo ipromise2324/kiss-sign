@@ -1,0 +1,3 @@
+{
+  "approve(address,address,uint160,uint48)": { "contract": "permit2", "url": "https://developers.uniswap.org/llms.mdx/docs/protocols/permit2/concepts/allowance-transfer" }
+}

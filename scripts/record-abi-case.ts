@@ -12,7 +12,9 @@ import { loadRegistry } from '../src/registry.ts';
 import { parseAddress, parseUint256 } from '../src/safe/types.ts';
 import { ensureVendored } from '../src/vendor.ts';
 import { readRecording, recordingText } from '../src/chain/bytecode.ts';
+import { UsageError } from '../src/cli/io.ts';
 import { exitOnHelp } from '../src/script-help.ts';
+import { refuseReadableErrors } from '../src/script-refusal.ts';
 
 const USAGE = 'usage: pnpm record-abi-case <name> <address> [<block>]';
 const HELP = `${USAGE}
@@ -33,9 +35,10 @@ Rules: docs/design/flow.md, "First time an operation is done: build its template
   Establish the ABI).`;
 
 exitOnHelp(HELP);
+refuseReadableErrors();
 
 const [name, addressArg, blockArg] = process.argv.slice(2);
-if (name === undefined || addressArg === undefined || !/^[a-z0-9-]+$/.test(name)) throw new Error(USAGE);
+if (name === undefined || addressArg === undefined || !/^[a-z0-9-]+$/.test(name)) throw new UsageError(USAGE);
 const address = parseAddress('address', addressArg);
 
 if (!(await ensureVendored(['solc']))) process.exit(1);

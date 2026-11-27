@@ -3,10 +3,10 @@ import { join } from 'node:path';
 import { HTML_LANG, LANGUAGES } from '../language.ts';
 import type { Language } from '../language.ts';
 import type { Phrase, State } from './ledger.ts';
-import { NOTES_FILE, codeSpans, notesLanguages, readNotes } from './notes.ts';
+import { NOTES_FILE, codeSpans, notesInstance, notesLanguages, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
-import type { AddressRow, AiSource, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, NewestResult, Page, PastAmounts, PastNumbers, PastTable, PastTokenAmounts, ProtocolBlock, RailCount, Section, SeenLine, Sequence, SiteResult, SourceLine, Span, UsageBlock, VaultBlock, WalletRows } from './report-page.ts';
-import { CSS, Html, SYMBOLS, escape, h, icon } from '../html.ts';
+import type { AddressGroup, AddressRow, AiSource, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, NewestResult, Page, PastAmounts, PastNumbers, PastTable, PastTokenAmounts, ProtocolBlock, RailCount, Section, SeenLine, Sequence, SiteResult, SourceLine, Span, UsageBlock, VaultBlock, WalletRows } from './report-page.ts';
+import { CSS, Html, SYMBOLS, escape, h, icon, verbatim } from '../html.ts';
 import { WORDS } from './report-words.ts';
 import type { Words } from './report-words.ts';
 import { reportDir } from './report.ts';
@@ -72,7 +72,10 @@ const contents = (sections: readonly Section[], r: R): Html => h`<ol>${sections.
 
 function header(page: Page, r: R): Html {
   const { header: head, sections } = page;
-  return h`<header>
+  return h`<header>${head.requests.map(
+    (req) => h`
+  <figure class="request"><figcaption>${req.label}</figcaption><blockquote>${verbatim(req.text)}</blockquote></figure>`,
+  )}
   <h1>${ai(head.title, r)}</h1>
   <span class="opid">${page.id}</span>
   <p class="sub">${ai(head.summary, r)}</p>${head.onlyIn === undefined ? '' : h`
@@ -236,7 +239,7 @@ function diagram(sequence: Sequence, r: R): Html {
   <div class="scrollhint">${r.w.scrollTo(sequence.lifelines[lastLine]?.name ?? '')}</div>${legend(sequence, r)}`;
 }
 
-const CHIP_CLASS: Readonly<Record<Chip['who'], string>> = { 'you-type': 'who you', 'you-pick': 'who you', computed: 'who', fixed: 'who', free: 'who app', bounded: 'who app' };
+const CHIP_CLASS: Readonly<Record<Chip['who'], string>> = { 'you-type': 'who you', 'you-pick': 'who you', computed: 'who', reads: 'who', fixed: 'who', free: 'who app', bounded: 'who app' };
 const chip = (c: Chip): Html => h`<span class="${CHIP_CLASS[c.who]}">${c.label}</span>`;
 
 /** A result's phrase, after the source its icon leads. */
@@ -250,18 +253,10 @@ const docLine = (doc: DocLine, r: R): Html =>
 function valueLines(row: ArgRow, r: R): Html {
   return h`${row.value === undefined ? '' : h`<div class="raw">${row.value}</div>`}<div class="is">${text(row.words)}${
     row.qualifier === undefined ? '' : h` <span class="f3">${text(row.qualifier)}</span>`
-  }</div>${mixList(row)}${row.more === undefined ? '' : h`<details class="more"><summary>${decor('chev')}${row.more.label}</summary><div class="meta">${row.more.text}</div></details>`}${row.doc === undefined ? '' : docLine(row.doc, r)}${row.id === undefined ? '' : h`<div class="mid">${text(row.id)}</div>`}${row.ai === undefined ? '' : h`
-        <div class="ai">${ai(row.ai, r)}</div>`}`;
+  }</div>${row.more === undefined ? '' : h`<details class="more"><summary>${decor('chev')}${row.more.label}</summary><div class="meta">${row.more.text}</div></details>`}${row.doc === undefined ? '' : docLine(row.doc, r)}${row.id === undefined ? '' : h`<div class="mid">${text(row.id)}</div>`}${row.ai === undefined ? '' : h`
+        <div class="ai">${ai(row.ai, r)}</div>`}${row.reason === undefined ? '' : h`
+        <div class="ai">${ai(row.reason, r)}</div>`}`;
 }
-
-/** Who decides each part of an argument whose parts differ. */
-const mixList = (row: ArgRow): Html =>
-  row.mix.length === 0
-    ? h``
-    : h`
-      <dl class="mix">${row.mix.map((m) => h`
-        <dt>${chip(m)}</dt><dd>${m.parts.map((part) => h`<code>${part}</code> `)}</dd>`)}
-      </dl>`;
 
 /** A group's rows, the fixed ones folded under one line that counts them; inside a fold every row shows as it is. */
 function grouped(rows: readonly ArgRow[], one: (row: ArgRow, folded: boolean) => Html, folded: boolean, r: R): Html {
@@ -331,7 +326,7 @@ function flowBody(flow: Flow, r: R): Html {
   <div class="cb">
     <div class="callh"><span class="no">${call.n}</span>${callHead(call)}</div>${call.head.kind === 'fn' ? h`<div class="cdoc">${docLine(call.head.doc, r)}</div>` : ''}${
       call.sends === undefined ? '' : h`<div class="sends">${text(call.sends)}</div>`
-    }${argRows(call.args, r)}
+    }${call.trailer === undefined ? '' : h`<div class="ai">${ai(call.trailer, r)}</div>`}${argRows(call.args, r)}
   </div>`,
   )}
   <h3>${r.w.afterTx}</h3>${
@@ -488,8 +483,11 @@ function siteLine(site: SiteResult, r: R): Html {
   const [open, close] = r.w.compared;
   return h`<span class="site" data-state="${site.state}">${icon(site.state, r.language)}<span>${
     site.state === 'ok' ? r.w.siteOk(site.slug) : r.w.siteNot(site.phrase === undefined ? '' : r.w.phrase[site.phrase])
-  }${open}${places}${close}</span></span>`;
+  }${open}${places}${close}</span></span>${why(site.why)}`;
 }
+
+/** Why a source result failed or needs a look, on its own line under it. */
+const why = (line: Inline | undefined): Html => (line === undefined ? h`` : h`<span class="why">${text(line)}</span>`);
 
 function newestLine(newest: NewestResult, r: R): Html {
   return h`<span class="site" data-state="${newest.state}">${icon(newest.state, r.language)}<span>${
@@ -498,13 +496,13 @@ function newestLine(newest: NewestResult, r: R): Html {
       : newest.others.length > 0
         ? r.w.newestOther(newest.where, newest.others)
         : r.w.newestNot(newest.where, newest.phrase === undefined ? '' : r.w.phrase[newest.phrase])
-  }</span></span>`;
+  }</span></span>${why(newest.why)}`;
 }
 
 function sourceLine(line: SourceLine, r: R): Html {
   return h`<div class="src"><span class="srcrow" data-state="${line.state}">${icon(line.state, r.language)}<span>${line.href === undefined ? line.label : h`<a href="${line.href}">${line.label}</a>`}${
     line.others.length > 0 ? h`<span class="res">${r.w.labelOther(line.others)}</span>` : phrase(line.phrase, r)
-  }</span></span>${line.site === undefined ? '' : siteLine(line.site, r)}${line.newest === undefined ? '' : newestLine(line.newest, r)}</div>`;
+  }</span></span>${why(line.why)}${line.site === undefined ? '' : siteLine(line.site, r)}${line.newest === undefined ? '' : newestLine(line.newest, r)}</div>`;
 }
 
 function addressRow(row: AddressRow, r: R): Html {
@@ -516,7 +514,8 @@ function addressRow(row: AddressRow, r: R): Html {
       }</span></div>
       <div class="body"><span class="addr">${row.address}</span>
         <div class="srcs">${row.sources.map((line) => sourceLine(line, r))}</div>
-        <div class="confirmed">${row.confirmed}</div>${row.codeLines.map((line) => h`
+        <div class="confirmed">${row.confirmed}</div>${row.readFor === undefined ? '' : h`
+        <div class="confirmed">${row.readFor}</div>`}${row.codeLines.map((line) => h`
         <div class="confirmed">${text(line)}</div>`)}${row.aiSources.length === 0 ? '' : aiChecked(row.aiSources, r)}</div>
     </div>`;
 }
@@ -532,19 +531,23 @@ function aiChecked(sources: readonly AiSource[], r: R): Html {
         </details>`;
 }
 
-function addressBody(body: Extract<Body, { kind: 'addresses' }>, r: R): Html {
-  const worst = body.folded.some((row) => row.state === 'ok') ? 'ok' : 'na';
+function addressGroup(group: AddressGroup, r: R): Html {
+  const worst = group.folded.some((row) => row.state === 'ok') ? 'ok' : 'na';
   return h`
-  <div class="rows">${body.open.map((row) => addressRow(row, r))}${
-    body.folded.length === 0
+  <h3>${group.title}</h3>${group.lead === undefined ? '' : h`
+  <p class="lead">${group.lead}</p>`}
+  <div class="rows">${group.open.map((row) => addressRow(row, r))}${
+    group.folded.length === 0
       ? ''
       : h`
     <details class="fold">
-      <summary>${decor('chev')}${icon(worst, r.language)}${r.w.foldedAddresses(body.folded.length)}</summary>${body.folded.map((row) => addressRow(row, r))}
+      <summary>${decor('chev')}${icon(worst, r.language)}${r.w.foldedAddresses(group.folded.length)}</summary>${group.folded.map((row) => addressRow(row, r))}
     </details>`
   }
   </div>`;
 }
+
+const addressBody = (body: Extract<Body, { kind: 'addresses' }>, r: R): Html => h`${body.groups.map((group) => addressGroup(group, r))}`;
 
 const pastAmounts = (a: PastAmounts, r: R): Html => {
   const token = (t: PastTokenAmounts): Html => h`
@@ -574,8 +577,8 @@ function pastBody({ past }: Extract<Body, { kind: 'past' }>, r: R): Html {
   <p class="ans">${r.w.pastNoNumbers}</p>` : past.numbers.map((p) => pastNumbers(p, r))}
   <h3>${r.w.pastDiffer}</h3>
   <p class="ans">${differ.lead}</p>${past.conclusion === undefined ? '' : h`
-  <p class="ans">${ai(past.conclusion, r)}</p>`}${differ.open === undefined ? '' : table(differ.open)}${differ.more === undefined ? '' : h`
-  <details class="fold"><summary>${decor('chev')}<span>${differ.more.label}</span></summary>${table(differ.more.table)}
+  <p class="ans">${ai(past.conclusion, r)}</p>`}${differ.folded === undefined ? '' : h`
+  <details class="fold"><summary>${decor('chev')}<span>${differ.folded.label}</span></summary>${table(differ.folded.table)}
   </details>`}${past.amounts.length === 0 ? '' : h`
   <h3>${r.w.amountsTitle}</h3>
   <p class="cap">${r.w.amountsLead}</p>`}${past.amounts.map((a) => pastAmounts(a, r))}
@@ -592,8 +595,9 @@ function nextBody(body: Extract<Body, { kind: 'next' }>, r: R): Html {
   return h`
   <ol class="steps">${body.steps.map(
     (step) => h`
-    <li><div>${text(step.say)}${step.command === undefined ? '' : command(step.command)}${step.then.map((line) => h`
-      <p class="then">${text(line)}</p>`)}${step.hashes ? h`
+    <li${step.id === undefined ? '' : h` id="${step.id}"`}><div>${text(step.say)}${step.command === undefined ? '' : command(step.command)}${step.then.map((line) => h`
+      <p class="then">${text(line)}</p>`)}${(step.ai ?? []).map((note) => h`
+      <p class="then">${ai(note, r)}</p>`)}${step.hashes ? h`
       <div class="hash"><span>${r.w.compare}</span><span class="f2">${r.w.compareHashesWhat}</span></div>` : ''}</div></li>`,
   )}
   </ol>
@@ -694,7 +698,7 @@ ${page.sections.map((s) => section(s, r).text).join('')}
 
 /** The template's HTML report in every language from the recordings and `notes.json`, or undefined when it has none. Throws NotesError for notes the program refuses. */
 export function generatedHtml(repoRoot: string, inputs: ReportInputs, title: ReportTitle): ReadonlyMap<Language, string> | undefined {
-  const raw = readNotes(repoRoot, inputs.subject.template.id, inputs.subject.vault);
+  const raw = readNotes(repoRoot, inputs.subject.template.id, notesInstance(inputs.subject));
   if (raw === undefined) return undefined;
   return new Map(notesLanguages(raw).map((language) => [language, renderPage(buildPage(inputs, raw, title, language))]));
 }

@@ -8,9 +8,9 @@
   "maxTxs": 2000
  },
  "studiedWith": {
-  "template": "0x27f99162abe731906617e13c59322b8f563e7a1c3c821f836086ef3c5c5358ba",
-  "registry": "0x942b3efc49b29a0b1447db2bdb6b1d7eb945ee827dbec0511e2015141e7219a5",
-  "study": "0x92508a29cee7c49b83a1d4a9f9e4e04eac8df225cb741b31331cc10dacdd84ae"
+  "template": "0x20d1127eea14ff8191e14d12440bc2cd48278a192ead486ca0be54320c47df1e",
+  "registry": "0x610fd5f6a0c9d24dc359668dc4ada117729aa437af73c0d6b7f33d84c717959f",
+  "study": "0x61f1ce5f5cd4adf417d5dffd036bcb1056828b2e57170ba4bcd0ef03b994e01d"
  },
  "search": {
   "windows": [

@@ -19,11 +19,13 @@ import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { SignedMessage, Template } from '../src/template/template.ts';
 import { evaluate, evaluateTx, keccakText, parseVerdictFile } from '../src/verify/verify.ts';
 import type { VerdictFile } from '../src/verify/verify.ts';
+import { baseRepo } from './fixture-base.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const load = (dir: string, name: string) => readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8');
-const registry = loadRegistry(ROOT);
-const templates = new Map<string, Template>(['cow/swap', 'cow/swap-approve'].map((id) => [id, loadTemplate(ROOT, id, registry)]));
+const BASE = baseRepo();
+const registry = loadRegistry(BASE);
+const templates = new Map<string, Template>(['cow/swap', 'cow/swap-approve'].map((id) => [id, loadTemplate(BASE, id, registry)]));
 const nameOf = (address: string): string => registry.byAddress.get(address.toLowerCase() as Address)!.name;
 
 type Order = Record<string, unknown> & { uid: string; sellToken: string; buyToken: string; sellAmount: string; buyAmount: string };
@@ -234,13 +236,13 @@ test('the uid is the packed digest, owner and validTo of its order', () => {
 const VERDICT: VerdictFile = parseVerdictFile(JSON.parse(load('verify', 'cow-swap-approve')));
 
 test("verify's recorded MATCH for another Safe's order replays from its file, the order it read included", async () => {
-  const { verdict, hashes } = await evaluate(VERDICT.inputs, replayReader(VERDICT.exchanges));
+  const { verdict, hashes } = await evaluate(VERDICT.inputs, replayReader(VERDICT.exchanges), true);
   assert.equal(verdict.kind, 'MATCH');
   assert.equal(hashes.safeTxHash, '0xbe06ff68f8506330eeaea78ec95c41d32d44374b611046effbdcb4064357438b');
 });
 
 test('the same verdict file without the order it read is UNVERIFIABLE at the fields, naming the order API', async () => {
-  const { verdict } = await evaluate({ ...VERDICT.inputs, messages: [] }, replayReader(VERDICT.exchanges));
+  const { verdict } = await evaluate({ ...VERDICT.inputs, messages: [] }, replayReader(VERDICT.exchanges), true);
   assert.equal(verdict.kind, 'UNVERIFIABLE');
   const fields = verdict.causes.find((c) => c.check === 'fields');
   assert.match(fields?.details[0] ?? '', /no Order read from https:\/\/api\.cow\.fi\/mainnet\/api\/v1\/orders\/0x[0-9a-f]{112} hashes to/);
@@ -259,14 +261,14 @@ test('a uid of another length than its packed parts is MISMATCH at the uid', () 
   ]);
 });
 
-const rawTemplate = (id: string) => JSON.parse(readFileSync(join(ROOT, 'templates', id, 'template.json'), 'utf8'));
+const rawTemplate = (id: string) => JSON.parse(readFileSync(join(BASE, 'templates', id, 'template.json'), 'utf8'));
 const digestRule = (t: { calls: { args: { orderUid: { packed: { rule: { eip712: Record<string, unknown> } }[] } } }[] }) => t.calls.at(-1)!.args.orderUid.packed[0]!.rule.eip712;
 
 test('template load refuses a signed message whose type is not written as EIP-712 writes it, a free address member, and a lookup without one {arg}', () => {
   const refuses = (change: (t: ReturnType<typeof rawTemplate>) => void, problem: RegExp) => {
     const t = rawTemplate('cow/swap');
     change(t);
-    assert.throws(() => parseTemplate(t, registry), problem);
+    assert.throws(() => parseTemplate(t, registry, 'committed'), problem);
   };
   refuses((t) => (digestRule(t).type = (digestRule(t).type as string).replace(',address buyToken', ', address buyToken')), /not written as EIP-712 encodes it/);
   refuses((t) => ((digestRule(t).fields as Record<string, unknown>).receiver = { free: 'any' }), /an address is never free/);
@@ -277,7 +279,7 @@ test('template load refuses a signed message whose type is not written as EIP-71
 test('template load refuses an open approval whose amount counts another token', () => {
   const t = rawTemplate('cow/swap-approve');
   t.effects.approves[0].amount = 'card.min-buy';
-  assert.throws(() => parseTemplate(t, registry), /counts another token than card\.sell-token/);
+  assert.throws(() => parseTemplate(t, registry, 'committed'), /counts another token than card\.sell-token/);
 });
 
 test('verify reads the order from the template lookup and keeps only what hashes, cut to the order members', async () => {
@@ -288,7 +290,7 @@ test('verify reads the order from the template lookup and keeps only what hashes
   const { evaluation, inputs } = await evaluateTx({ ...VERDICT.inputs, messages: [forged] }, replayReader(VERDICT.exchanges), async (url) => {
     asked.push(url);
     return { text: served };
-  });
+  }, true);
   assert.equal(evaluation.verdict.kind, 'MATCH');
   assert.deepEqual(asked, [`https://api.cow.fi/mainnet/api/v1/orders/${order('cow-swap-approve-usdt').uid}`]);
   assert.deepEqual(Object.keys(JSON.parse(inputs.messages![0]!)), message('cow/swap-approve').struct.members.map((m) => m.name));
@@ -297,13 +299,13 @@ test('verify reads the order from the template lookup and keeps only what hashes
 
 test('an order the lookup does not serve is named once, by the URL the reader already gives', async () => {
   const url = `https://api.cow.fi/mainnet/api/v1/orders/${order('cow-swap-approve-usdt').uid}`;
-  const { evaluation, unread } = await evaluateTx({ ...VERDICT.inputs, messages: [] }, replayReader(VERDICT.exchanges), async (asked) => ({ why: `${asked} answered HTTP 404` }));
+  const { evaluation, unread } = await evaluateTx({ ...VERDICT.inputs, messages: [] }, replayReader(VERDICT.exchanges), async (asked) => ({ why: `${asked} answered HTTP 404` }), true);
   assert.equal(evaluation.verdict.kind, 'UNVERIFIABLE');
   assert.deepEqual(unread, [`${url} answered HTTP 404`]);
-  const host = await evaluateTx({ ...VERDICT.inputs, messages: [] }, replayReader(VERDICT.exchanges), async () => ({ why: 'api.cow.fi unreachable or timed out' }));
+  const host = await evaluateTx({ ...VERDICT.inputs, messages: [] }, replayReader(VERDICT.exchanges), async () => ({ why: 'api.cow.fi unreachable or timed out' }), true);
   assert.deepEqual(host.unread, [`${url}: api.cow.fi unreachable or timed out`]);
   const { sellToken: _, ...noSellToken } = JSON.parse(VERDICT.inputs.messages![0]!);
-  const partial = await evaluateTx({ ...VERDICT.inputs, messages: [] }, replayReader(VERDICT.exchanges), async () => ({ text: JSON.stringify(noSellToken) }));
+  const partial = await evaluateTx({ ...VERDICT.inputs, messages: [] }, replayReader(VERDICT.exchanges), async () => ({ text: JSON.stringify(noSellToken) }), true);
   assert.equal(partial.evaluation.verdict.kind, 'UNVERIFIABLE');
   assert.deepEqual(partial.unread, [`${url}: no sellToken of type address`]);
 });
@@ -328,10 +330,10 @@ function nestedOrder(): string {
 }
 
 test("a template's answer finds the order nested and its sell amount in hex; the verdict file keeps the members under their own names and replays", async () => {
-  const { evaluation, inputs } = await evaluateTx(withAnswer(NESTED), replayReader(VERDICT.exchanges), async () => ({ text: nestedOrder() }));
+  const { evaluation, inputs } = await evaluateTx(withAnswer(NESTED), replayReader(VERDICT.exchanges), async () => ({ text: nestedOrder() }), true);
   assert.equal(evaluation.verdict.kind, 'MATCH');
   assert.deepEqual(inputs.messages, VERDICT.inputs.messages);
-  const replayed = await evaluate(inputs, replayReader(VERDICT.exchanges));
+  const replayed = await evaluate(inputs, replayReader(VERDICT.exchanges), true);
   assert.equal(replayed.verdict.kind, 'MATCH');
 });
 
@@ -339,10 +341,10 @@ test('an answer that holds a member elsewhere than the template says is not read
   const url = `https://api.cow.fi/mainnet/api/v1/orders/${order('cow-swap-approve-usdt').uid}`;
   const served = JSON.parse(nestedOrder());
   served.data.order.amounts.sell = served.data.order.amounts.sell.replace('0x', '');
-  const { evaluation, unread } = await evaluateTx(withAnswer(NESTED), replayReader(VERDICT.exchanges), async () => ({ text: JSON.stringify(served) }));
+  const { evaluation, unread } = await evaluateTx(withAnswer(NESTED), replayReader(VERDICT.exchanges), async () => ({ text: JSON.stringify(served) }), true);
   assert.equal(evaluation.verdict.kind, 'UNVERIFIABLE');
   assert.deepEqual(unread, [`${url}: no sellAmount of type uint in hex at data.order.amounts.sell`]);
-  const flat = await evaluateTx(withAnswer(NESTED), replayReader(VERDICT.exchanges), async () => ({ text: VERDICT.inputs.messages![0]! }));
+  const flat = await evaluateTx(withAnswer(NESTED), replayReader(VERDICT.exchanges), async () => ({ text: VERDICT.inputs.messages![0]! }), true);
   assert.deepEqual(flat.unread, [`${url}: no JSON object at data.order`]);
 });
 
@@ -350,7 +352,7 @@ test('an answer path that leads to another order still has to hash to the digest
   const other = JSON.parse(load('messages', 'cow-swap-usdc'));
   const { evaluation, unread } = await evaluateTx(withAnswer({ path: ['orders', 1] }), replayReader(VERDICT.exchanges), async () => ({
     text: JSON.stringify({ orders: [JSON.parse(VERDICT.inputs.messages![0]!), other] }),
-  }));
+  }), true);
   assert.equal(evaluation.verdict.kind, 'UNVERIFIABLE');
   assert.deepEqual(unread, []);
   assert.match(evaluation.verdict.kind === 'UNVERIFIABLE' ? evaluation.verdict.causes.find((c) => c.check === 'fields')!.details[0]! : '', /no Order read from .* hashes to/);
@@ -360,7 +362,7 @@ test('template load refuses an answer naming no member of the struct, hex on a m
   const refuses = (answer: unknown, problem: RegExp) => {
     const t = rawTemplate('cow/swap');
     digestRule(t).answer = answer;
-    assert.throws(() => parseTemplate(t, registry), problem);
+    assert.throws(() => parseTemplate(t, registry, 'committed'), problem);
   };
   refuses({ members: { amount: { path: ['amount'] } } }, /answer\.members\.amount: not a member of Order/);
   refuses({ members: { receiver: { encoding: 'hex' } } }, /answer\.members\.receiver\.encoding: "hex", on a uintN member only/);

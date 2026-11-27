@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { cpSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { selectorOf } from '../src/decode/abi.ts';
@@ -13,11 +12,11 @@ import type { TracedRun } from '../src/research/trace-addresses.ts';
 import type { TraceCall, TracedTx } from '../src/research/trace.ts';
 import { checksumAddress } from '../src/safe/types.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
-import { TEMPLATES_DIR, loadTemplate } from '../src/template/template.ts';
+import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../src/template/template.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
+import { tempDir } from './fixture-base.ts';
 import { runOffline } from './run-offline.ts';
 
-const REPO = join(import.meta.dirname, '..');
 const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
 const template = loadTemplate(ROOT, 'uniswap/swap', registry);
@@ -205,10 +204,9 @@ test('a run always says over how many traces nothing was found, and how many do 
 
 const judgement = { judgement: 'not-fixed', reason: 'Each order is settled by another solver.', sources: ['https://example.org/solvers'] };
 const subjectIn = (of = template): { readonly root: string; readonly subject: Subject; readonly write: (raw: unknown) => void } => {
-  const root = mkdtempSync(join(tmpdir(), 'kiss-sign-judged-'));
-  process.on('exit', () => rmSync(root, { recursive: true, force: true }));
+  const root = tempDir('kiss-sign-judged-');
   mkdirSync(join(root, 'report'));
-  const subject: Subject = { kind: 'template', template: of, docs: [], vault: undefined, dir: 'report' };
+  const subject: Subject = { kind: 'template', template: of, docs: [], vault: undefined, shared: new Set(), dir: 'report' };
   return { root, subject, write: (raw) => writeFileSync(join(root, 'report', TRACE_ADDRESSES_FILE), JSON.stringify(raw)) };
 };
 const sections = (...traces: readonly TracedTx[]) => [{ run: runOf(traces) } as unknown as PastTxsSection];
@@ -259,33 +257,31 @@ test('a template that moves money with no counted trace is recorded only with a 
 });
 
 test('pnpm report --record refuses before any read while the traces are not settled', () => {
-  const run = runOffline('report.ts', ['erc20/transfer', '--record'], 'research', { exchanges: [] });
+  const run = runOffline('report.ts', ['erc20/transfer', '--record'], 'research', { exchanges: [] }, [], undefined, undefined, ROOT);
   assert.equal(run.status, 2, run.stderr + run.stdout);
   assert.match(run.stderr, /^REFUSED  no call trace counts/m);
   assert.deepEqual(run.written, []);
 });
 
-/** A copy of the repository's templates and registry with the report recording alone, fetched on `fetched`, and no past transaction. */
-function shippedReport(fetched: string): string {
-  const root = mkdtempSync(join(tmpdir(), 'kiss-sign-shipped-'));
-  process.on('exit', () => rmSync(root, { recursive: true, force: true }));
-  for (const dir of [TEMPLATES_DIR, 'registry']) cpSync(join(REPO, dir), join(root, dir), { recursive: true });
-  rmSync(join(root, TEMPLATES_DIR, 'erc20', 'transfer', TRACE_ADDRESSES_FILE), { force: true });
+/** A copy of the fixtures' templates and registry with eth/transfer's report recording alone, fetched on `fetched`, and no past transaction. */
+function recordedReport(fetched: string): string {
+  const root = tempDir('kiss-sign-recorded-');
+  for (const dir of [TEMPLATES_DIR, 'registry']) cpSync(join(ROOT, dir), join(root, dir), { recursive: true });
   for (const dir of ['report', 'research']) mkdirSync(join(root, 'testdata', dir), { recursive: true });
-  const recording = join('testdata', 'report', 'erc20-transfer.json');
-  writeFileSync(join(root, recording), JSON.stringify({ ...JSON.parse(readFileSync(join(REPO, recording), 'utf8')), fetched }));
+  const recording = join('testdata', 'report', 'eth-transfer.json');
+  writeFileSync(join(root, recording), JSON.stringify({ ...JSON.parse(readFileSync(join(ROOT, recording), 'utf8')), fetched }));
   return root;
 }
-const rendered = (root: string) => replayInputs(root, loadRegistry(root), { template: 'erc20/transfer' }, undefined as never, undefined as never);
+const rendered = (root: string) => replayInputs(root, loadRegistry(root), { template: 'eth/transfer' }, undefined as never, undefined as never);
 
 test('a report that judges its traced addresses, or recorded since the rule, is rendered only while they are settled', async () => {
-  const before = shippedReport('2026-11-25');
+  const before = recordedReport('2026-11-25');
   await assert.rejects(rendered(before), (error: Error) => !(error instanceof ReportError), 'one recorded before the rule with no file goes on to the reads this test leaves out');
-  writeFileSync(join(before, TEMPLATES_DIR, 'erc20', 'transfer', TRACE_ADDRESSES_FILE), JSON.stringify({ [POOL]: judgement, untraced: { reason: 'x' } }));
+  writeFileSync(join(before, TEMPLATES_DIR, 'eth', 'transfer', TRACE_ADDRESSES_FILE), JSON.stringify({ [POOL]: judgement, untraced: { reason: 'x' } }));
   await assert.rejects(rendered(before), (error: Error) => error instanceof ReportError && error.message.includes(`names ${checksumAddress(POOL)} as an address to settle`));
-  const since = shippedReport('2026-11-26');
+  const since = recordedReport('2026-11-26');
   await assert.rejects(rendered(since), (error: Error) => error instanceof ReportError && /no call trace counts/.test(error.message));
-  writeFileSync(join(since, TEMPLATES_DIR, 'erc20', 'transfer', TRACE_ADDRESSES_FILE), JSON.stringify({ untraced: { reason: 'Nobody has made it yet.' } }));
+  writeFileSync(join(since, TEMPLATES_DIR, 'eth', 'transfer', TRACE_ADDRESSES_FILE), JSON.stringify({ untraced: { reason: 'Nobody has made it yet.' } }));
   await assert.rejects(rendered(since), (error: Error) => !(error instanceof ReportError), 'a settled one goes on');
 });
 

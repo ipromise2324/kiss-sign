@@ -11,8 +11,8 @@
  "head": "26486775",
  "studiedWith": {
   "template": "0x92b1e16c7309562bf7ea4195818c04b7a5b558326adbaf8f26ee57608e4c8d77",
-  "registry": "0xf0e71a72592fc6812ed2f558ee9ef5939250b917b2392ca7ffc6624a67c9e2d4",
-  "study": "0x92508a29cee7c49b83a1d4a9f9e4e04eac8df225cb741b31331cc10dacdd84ae"
+  "registry": "0x47d8376fd4377bbba556740868f71407d0decec10fdfebb02a796295e013c0ef",
+  "study": "0x61f1ce5f5cd4adf417d5dffd036bcb1056828b2e57170ba4bcd0ef03b994e01d"
  },
  "search": {
   "coverage": {
@@ -143,7 +143,8 @@
     "expected": 2,
     "got": 4
    },
-   "free": []
+   "free": [],
+   "time": "1795373711"
   },
   {
    "kind": "not-studied",
@@ -349,7 +350,8 @@
     "expected": 2,
     "got": 3
    },
-   "free": []
+   "free": [],
+   "time": "1795388579"
   },
   {
    "kind": "not-studied",
@@ -1062,7 +1064,8 @@
     "expected": "canonical SETTLE(address,uint256,bool)",
     "actual": "differs at byte 675"
    },
-   "free": []
+   "free": [],
+   "time": "1795461071"
   },
   {
    "kind": "misfit",
@@ -1079,7 +1082,8 @@
     "expected": 2,
     "got": 4
    },
-   "free": []
+   "free": [],
+   "time": "1795462115"
   },
   {
    "kind": "not-studied",
@@ -1159,7 +1163,8 @@
     "expected": "canonical V4_SWAP(bytes,bytes[])",
     "actual": "differs at byte 304"
    },
-   "free": []
+   "free": [],
+   "time": "1795469699"
   },
   {
    "kind": "not-studied",
@@ -1267,7 +1272,8 @@
     "expected": 2,
     "got": 1
    },
-   "free": []
+   "free": [],
+   "time": "1795482995"
   },
   {
    "kind": "not-studied",
@@ -1483,7 +1489,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1795509635"
   },
   {
    "kind": "not-studied",

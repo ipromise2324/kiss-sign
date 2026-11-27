@@ -9,8 +9,8 @@ import { keccakCode } from '../src/contracts/code.ts';
 import { parseFunctionSignature } from '../src/decode/abi.ts';
 import type { Hex } from '../src/safe/types.ts';
 import type { Transport } from '../src/chain/rpc.ts';
+import { baseRepo } from './fixture-base.ts';
 
-const ROOT = join(import.meta.dirname, '..');
 const FIXTURE_TEMPLATES = join(import.meta.dirname, 'fixtures', 'templates');
 const SAFE = '0xAF177c57e369bBD30F47745DbAAF1D225f4B74D0';
 const RECIPIENT = '0x1111111111111111111111111111111111111111';
@@ -52,7 +52,7 @@ function publish(dir: string): string {
 
 function dataClone(): string {
   const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
-  for (const sub of ['registry', 'templates']) cpSync(join(ROOT, sub), join(dir, sub), { recursive: true });
+  for (const sub of ['registry', 'templates']) cpSync(join(baseRepo(), sub), join(dir, sub), { recursive: true });
   repinned(dir, 'steakhouse-prime-usdc-v2-0f51', { hash: keccakCode(VAULT_CODE), from: 0 });
   return dir;
 }
@@ -747,8 +747,8 @@ test('card new offers a transfer recipient only from the address book or the Saf
 
 test('card new asks for base units when the token is no registry contract, so it has no decimals to read', async () => {
   const repoRoot = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
-  cpSync(join(ROOT, 'registry'), join(repoRoot, 'registry'), { recursive: true });
-  const transfer = JSON.parse(readFileSync(join(ROOT, 'templates', 'erc20', 'transfer', 'template.json'), 'utf8'));
+  cpSync(join(baseRepo(), 'registry'), join(repoRoot, 'registry'), { recursive: true });
+  const transfer = JSON.parse(readFileSync(join(baseRepo(), 'templates', 'erc20', 'transfer', 'template.json'), 'utf8'));
   mkdirSync(join(repoRoot, 'templates', 'test', 'any-token'), { recursive: true });
   const template = { ...transfer, id: 'test/any-token', card: { ...transfer.card, token: { kind: 'address' } } };
   writeFileSync(join(repoRoot, 'templates', 'test', 'any-token', 'template.json'), JSON.stringify(template));
@@ -805,10 +805,52 @@ test('card new takes a Vault V2 cap as max or in whole tokens and a relative cap
   assert.match(refused.stderr, /relative-cap: "100\.5" is more than 100 percent/);
 });
 
+test('card new offers only the markets whose loan token is the picked vault\'s asset, as same asks, and says so when none is', async () => {
+  const withMarkets = (markets: (given: { readonly usdc: object; readonly rlusd: object }) => object): string => {
+    const dir = dataClone();
+    const contracts = JSON.parse(readFileSync(join(dir, 'registry', 'contracts.json'), 'utf8'));
+    const source = 'https://docs.morpho.org/get-started/resources/addresses';
+    const added = {
+      rlusd: { address: '0x8292Bb45bf1Ee4d140127049757C2E0fF06317eD', kind: 'token', source },
+      kbtc: { address: '0x73E0C0d45E048D25Fc26Fa3159b0aA04BfA4Db98', kind: 'token', source },
+      'morpho-oracle-kbtc-rlusd-86': { address: '0xBCC3D9834b84B32Cf540DBE948DEd4B47bec5ddb', kind: 'oracle', source },
+    };
+    writeFileSync(join(dir, 'registry', 'contracts.json'), JSON.stringify({ ...contracts, ...added }));
+    const rlusd = {
+      'rlusd-kbtc-86': {
+        lending: 'morpho-blue',
+        loanToken: 'rlusd',
+        collateralToken: 'kbtc',
+        oracle: 'morpho-oracle-kbtc-rlusd-86',
+        irm: 'adaptive-curve-irm',
+        lltv: '860000000000000000',
+        id: '0x15bb2a6af0c909eed19fb1f2ceeead34ecbdcba626de752c6b09389ee14eec32',
+      },
+    };
+    const usdc = JSON.parse(readFileSync(join(dir, 'registry', 'markets.json'), 'utf8'));
+    writeFileSync(join(dir, 'registry', 'markets.json'), JSON.stringify(markets({ usdc, rlusd })));
+    return publish(dir);
+  };
+  const home = freshHome();
+  configure(home);
+  const mixed = withMarkets(({ usdc, rlusd }) => ({ ...usdc, ...rlusd }));
+  const offered = await run(['card', 'new', 'morpho/vault-v2-cap-submit'], home, ['flowmark-fgenesis-v2-6439', 'rlusd-kbtc-86'], { ...decimalsChain({ [USDC]: 6 }), repoRoot: mixed });
+  assert.equal(offered.code, 1);
+  const listed = offered.stdout.slice(offered.stdout.indexOf('\nmarket ')).match(/^ +\d+\. +[a-z0-9-]+/gm)?.map((line) => line.trim().split(/ +/)[1]);
+  assert.deepEqual(listed, ['usdc-cbbtc-86', 'usdc-usp-86', 'usdc-usp-915', 'usdc-weeth-86']);
+  assert.equal(offered.asked[1], 'market: type its number (1-4): ');
+  assert.match(offered.stderr, /market: "rlusd-kbtc-86" is none of the listed choices/);
+
+  const none = await run(['card', 'new', 'morpho/vault-v2-cap-submit'], home, ['flowmark-fgenesis-v2-6439'], { ...decimalsChain({ [USDC]: 6 }), repoRoot: withMarkets(({ rlusd }) => rlusd) });
+  assert.equal(none.code, 1);
+  assert.equal(none.asked.length, 1);
+  assert.match(none.stderr, /market: none of the choices names one address for vault\.asset and market\.loanToken with vault flowmark-fgenesis-v2-6439/);
+});
+
 test('card new refuses a template reported per instance when no instance has a report', async () => {
   const repoRoot = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
-  cpSync(join(ROOT, 'registry'), join(repoRoot, 'registry'), { recursive: true });
-  cpSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), join(repoRoot, 'templates', 'morpho', 'vault-deposit', 'template.json'));
+  cpSync(join(baseRepo(), 'registry'), join(repoRoot, 'registry'), { recursive: true });
+  cpSync(join(baseRepo(), 'templates', 'morpho', 'vault-deposit', 'template.json'), join(repoRoot, 'templates', 'morpho', 'vault-deposit', 'template.json'));
   const home = freshHome();
   configure(home);
   const made = await run(['card', 'new', 'morpho/vault-deposit'], home, ['1'], { ...mainnet(), repoRoot });
@@ -873,8 +915,8 @@ test('card seal does not count a report reached through a symlinked folder, whic
 /** A clone whose `test/any-token` template takes its token through an address field, which may name any registry entry. */
 function anyTokenClone(): string {
   const repoRoot = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
-  cpSync(join(ROOT, 'registry'), join(repoRoot, 'registry'), { recursive: true });
-  const transfer = JSON.parse(readFileSync(join(ROOT, 'templates', 'erc20', 'transfer', 'template.json'), 'utf8'));
+  cpSync(join(baseRepo(), 'registry'), join(repoRoot, 'registry'), { recursive: true });
+  const transfer = JSON.parse(readFileSync(join(baseRepo(), 'templates', 'erc20', 'transfer', 'template.json'), 'utf8'));
   mkdirSync(join(repoRoot, 'templates', 'test', 'any-token'), { recursive: true });
   writeFileSync(join(repoRoot, 'templates', 'test', 'any-token', 'template.json'), JSON.stringify({ ...transfer, id: 'test/any-token', card: { ...transfer.card, token: { kind: 'address' } } }));
   return repoRoot;
@@ -942,8 +984,8 @@ test('card new does not offer a vault with no report for the template through an
 
 test('card new lists only the entries of the protocol a contract field names, and refuses any other', async () => {
   const repoRoot = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
-  cpSync(join(ROOT, 'registry'), join(repoRoot, 'registry'), { recursive: true });
-  const fluid = JSON.parse(readFileSync(join(ROOT, 'templates', 'fluid', 'vault-deposit', 'template.json'), 'utf8'));
+  cpSync(join(baseRepo(), 'registry'), join(repoRoot, 'registry'), { recursive: true });
+  const fluid = JSON.parse(readFileSync(join(baseRepo(), 'templates', 'fluid', 'vault-deposit', 'template.json'), 'utf8'));
   mkdirSync(join(repoRoot, 'templates', 'test', 'fluid-only'), { recursive: true });
   const template = { ...fluid, id: 'test/fluid-only', card: { ...fluid.card, vault: { kind: 'contract', registryKind: 'vault', defillama: 'fluid-lending' } } };
   writeFileSync(join(repoRoot, 'templates', 'test', 'fluid-only', 'template.json'), JSON.stringify(template));
@@ -956,10 +998,26 @@ test('card new lists only the entries of the protocol a contract field names, an
   assert.match(made.stderr, /vault: "steakhouse-prime-usdc-v2-0f51" is none of the listed choices/);
 });
 
+test('card new offers only the tokens a template lists, and refuses any other registry token', async () => {
+  const repoRoot = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
+  cpSync(join(baseRepo(), 'registry'), join(repoRoot, 'registry'), { recursive: true });
+  cpSync(join(baseRepo(), 'templates', 'uniswap', 'approve-permit2'), join(repoRoot, 'templates', 'uniswap', 'approve-permit2'), { recursive: true });
+  const names: string[] = JSON.parse(readFileSync(join(baseRepo(), 'templates', 'uniswap', 'approve-permit2', 'template.json'), 'utf8')).card.token.names;
+  const contracts = JSON.parse(readFileSync(join(baseRepo(), 'registry', 'contracts.json'), 'utf8')) as Record<string, { kind: string }>;
+  const other = Object.keys(contracts).find((name) => contracts[name]?.kind === 'token' && !names.includes(name)) ?? assert.fail('a registry token the template does not list');
+  const home = freshHome();
+  configure(home);
+  const made = await run(['card', 'new', 'uniswap/approve-permit2'], home, [other], { ...noChain, repoRoot });
+  assert.equal(made.code, 1);
+  const listed = [...made.stdout.matchAll(/^ *\d+\.\s+([a-z0-9.-]+)\s/gm)].map((m) => m[1]);
+  assert.deepEqual(listed, names);
+  assert.match(made.stderr, new RegExp(`token: "${other}" is none of the listed choices`));
+});
+
 test('card new lists each market with its id, its lltv and every part, takes the id as the answer, and counts its amount in the loan token', async () => {
   const repoRoot = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
-  cpSync(join(ROOT, 'registry'), join(repoRoot, 'registry'), { recursive: true });
-  const contracts = JSON.parse(readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8'));
+  cpSync(join(baseRepo(), 'registry'), join(repoRoot, 'registry'), { recursive: true });
+  const contracts = JSON.parse(readFileSync(join(baseRepo(), 'registry', 'contracts.json'), 'utf8'));
   const source = 'https://docs.morpho.org/get-started/resources/addresses';
   const added = {
     'morpho-blue': { address: '0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb', kind: 'lending', source },

@@ -11,8 +11,8 @@
  "head": "26447457",
  "studiedWith": {
   "template": "0x269bd2712c49d1e8b9ae5df349506157e2f5e6c69fafa9e590295e54cd74ee9d",
-  "registry": "0x26d4dee65d23afaa6e05d8f100022e3e3170f512f7e439737942100f729f8858",
-  "study": "0x92508a29cee7c49b83a1d4a9f9e4e04eac8df225cb741b31331cc10dacdd84ae"
+  "registry": "0xdbb2d9344cc94a17119fcfaaf3d27aa0d844d38b7094b59d23f27602c6175ee0",
+  "study": "0x61f1ce5f5cd4adf417d5dffd036bcb1056828b2e57170ba4bcd0ef03b994e01d"
  },
  "search": {
   "year": {
@@ -90,7 +90,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1778571695"
   },
   {
    "kind": "misfit",
@@ -106,7 +107,8 @@
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0xb192a84a"
    },
-   "free": []
+   "free": [],
+   "time": "1778588783"
   },
   {
    "kind": "misfit",
@@ -122,7 +124,8 @@
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0xb192a84a"
    },
-   "free": []
+   "free": [],
+   "time": "1778588831"
   },
   {
    "kind": "misfit",
@@ -138,7 +141,8 @@
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0xb192a84a"
    },
-   "free": []
+   "free": [],
+   "time": "1778589083"
   },
   {
    "kind": "misfit",
@@ -154,7 +158,8 @@
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0xb192a84a"
    },
-   "free": []
+   "free": [],
+   "time": "1778589179"
   },
   {
    "kind": "misfit",
@@ -170,7 +175,8 @@
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0x6a5f1aa2"
    },
-   "free": []
+   "free": [],
+   "time": "1778589527"
   },
   {
    "kind": "misfit",
@@ -186,7 +192,8 @@
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0x70897b23"
    },
-   "free": []
+   "free": [],
+   "time": "1778592695"
   },
   {
    "kind": "misfit",
@@ -202,7 +209,8 @@
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0x60d54d41"
    },
-   "free": []
+   "free": [],
+   "time": "1778592755"
   },
   {
    "kind": "misfit",
@@ -236,7 +244,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1778595599"
   },
   {
    "kind": "misfit",
@@ -270,7 +279,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1778595647"
   },
   {
    "kind": "misfit",
@@ -304,7 +314,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1778595755"
   },
   {
    "kind": "misfit",
@@ -320,7 +331,8 @@
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0x3e9d2ac7"
    },
-   "free": []
+   "free": [],
+   "time": "1778653151"
   },
   {
    "kind": "misfit",
@@ -336,7 +348,8 @@
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0xb2e32848"
    },
-   "free": []
+   "free": [],
+   "time": "1778723591"
   },
   {
    "kind": "misfit",
@@ -352,7 +365,8 @@
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0xb2e32848"
    },
-   "free": []
+   "free": [],
+   "time": "1778723627"
   },
   {
    "kind": "misfit",
@@ -368,7 +382,8 @@
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0xb2e32848"
    },
-   "free": []
+   "free": [],
+   "time": "1778723663"
   },
   {
    "kind": "misfit",
@@ -410,7 +425,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1778741195"
   },
   {
    "kind": "fit",
@@ -480,7 +496,8 @@
     "860000000000000000",
     "50000000000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1779720227"
   },
   {
    "kind": "misfit",
@@ -496,7 +513,8 @@
     "expected": "capId(string,address,(address,address,address,address,uint256))",
     "actual": "the heads run past the end"
    },
-   "free": []
+   "free": [],
+   "time": "1779720263"
   },
   {
    "kind": "misfit",
@@ -512,7 +530,8 @@
     "expected": "capId(string,address,(address,address,address,address,uint256))",
     "actual": "the heads run past the end"
    },
-   "free": []
+   "free": [],
+   "time": "1784801699"
   },
   {
    "kind": "fit",
@@ -587,7 +606,8 @@
      "at": "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams",
      "kind": "market"
     }
-   ]
+   ],
+   "time": "1784801735"
   },
   {
    "kind": "misfit",
@@ -603,7 +623,8 @@
     "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
     "actual": "0x70897b23"
    },
-   "free": []
+   "free": [],
+   "time": "1789967123"
   },
   {
    "kind": "misfit",
@@ -619,7 +640,8 @@
     "expected": "capId(string,address,(address,address,address,address,uint256))",
     "actual": "the heads run past the end"
    },
-   "free": []
+   "free": [],
+   "time": "1791717107"
   },
   {
    "kind": "fit",
@@ -694,7 +716,8 @@
      "at": "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams",
      "kind": "market"
     }
-   ]
+   ],
+   "time": "1791717131"
   },
   {
    "kind": "misfit",
@@ -716,7 +739,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1791717167"
   },
   {
    "kind": "misfit",
@@ -766,7 +790,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1792390691"
   },
   {
    "kind": "misfit",
@@ -782,7 +807,8 @@
     "expected": "capId(string,address,(address,address,address,address,uint256))",
     "actual": "the heads run past the end"
    },
-   "free": []
+   "free": [],
+   "time": "1792390799"
   },
   {
    "kind": "fit",
@@ -857,7 +883,8 @@
      "at": "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams",
      "kind": "market"
     }
-   ]
+   ],
+   "time": "1792391063"
   }
  ],
  "measurements": [],

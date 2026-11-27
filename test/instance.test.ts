@@ -10,10 +10,10 @@ import { proveInstance } from '../src/contracts/instance.ts';
 import type { InstanceAnswers, InstanceUnasked } from '../src/contracts/instance.ts';
 import { RegistryError, loadRegistry, parseRegistry } from '../src/registry.ts';
 import type { RegistryEntry } from '../src/registry.ts';
-import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 import type { Hex } from '../src/safe/types.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
 const AT: BlockRef = { number: 1n, hash: `0x${'ab'.repeat(32)}` as Hex };
 const FACTORY = '0x1897A8997241C1cD4bD0698647e4EB7213535c24';

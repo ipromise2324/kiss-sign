@@ -91,6 +91,8 @@ section{scroll-margin-top:24px}
 .tip:focus-visible .bub{opacity:1;visibility:visible;transition:none}
 .checks .tip{position:static}
 .checks .tip .bub{left:-8px;max-width:calc(100% + 16px)}
+.checks li>.tip{align-self:center}
+.checks li>.tip>.i{margin-top:0;vertical-align:0}
 @media (max-width:600px){.tip{position:static}.tip .bub{left:0;max-width:calc(100vw - 40px)}}
 
 section{border-top:1px solid var(--line2);padding-top:28px}
@@ -118,6 +120,9 @@ h3{font-size:16px;font-weight:590;margin:36px 0 10px}
 .nest dt,.nest dd{padding:5px 0}
 .nest dt{color:var(--fg2)}
 .srcline{font-size:var(--t-small);color:var(--fg3);margin:12px 0 0}
+.request{margin:0 0 18px;padding:10px 14px;border-left:3px solid var(--fg3)}
+.request figcaption{font-size:var(--t-small);color:var(--fg3)}
+.request blockquote{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
 .srcline a{color:var(--fg2)}
 @media (max-width:600px){.props.two>div{grid-template-columns:minmax(0,1fr)}.nest{grid-template-columns:minmax(0,1fr)}.nest dd{padding-top:0}}
 
@@ -158,10 +163,6 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .deciders .defs>div{display:grid;grid-template-columns:116px minmax(0,1fr);gap:0 14px;align-items:start;font-size:var(--t-small);line-height:24px;color:var(--fg2)}
 .deciders .who{justify-self:start}
 @media (max-width:560px){.deciders .grp{grid-template-columns:minmax(0,1fr)}}
-.mix{margin:10px 0 12px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 16px;align-items:start}
-.mix dt{justify-self:start}
-.mix dd{margin:0;display:flex;flex-wrap:wrap;gap:6px;line-height:24px}
-.mix code{font-size:var(--t-label)}
 .cb{margin-top:40px}
 .callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
 .callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
@@ -241,6 +242,8 @@ details.more[open]>summary .chev{transform:rotate(90deg)}
 .ad .srcrow>.i{width:14px;height:14px;margin-top:5px}
 .site{display:flex;gap:6px;align-items:flex-start;padding-left:22px;font-size:var(--t-small);color:var(--fg2)}
 .ad .site .i{width:14px;height:14px;margin-top:3px;flex:none}
+.src .why{padding-left:22px;font-size:var(--t-small);color:var(--fg2)}
+.src .site+.why{padding-left:42px}
 .aisrcs{font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
 .aisrcs>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;font-size:var(--t-small);color:var(--fg3)}
 .aisrcs>summary::-webkit-details-marker{display:none}
@@ -334,7 +337,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <span class="opid">safe/change-threshold</span>
   <p class="sub"><span class="aiw" data-ai><span>The Safe calls its own <code>changeThreshold</code>, setting how many signers must sign before a transaction can run to the number you type. The list of signers does not change.</span><span class="byai">AI research</span></span></p>
   <ul class="checks">
-    <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Address sources <span class="n num">2 / 2</span>
+    <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Transaction addresses <span class="n num">2 / 2</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">All 2 addresses are confirmed in at least 2 places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address.</span></span></li>
     <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Source verified <span class="n num">2 / 2</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">The source verified on Etherscan, compiled again with a pinned compiler, gives exactly the code on chain, so the function definitions used to decode the transaction belong to these contracts.</span></span></li>
@@ -394,7 +397,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">your Safe.</span>changeThreshold</span><span class="sel">0x694e80c3</span></div><div class="cdoc"><div class="doc" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><span class="f3">Docs: </span><a href="https://docs.safe.global/reference-smart-account/owners/changeThreshold">docs.safe.global/reference-smart-account/owners</a></span></div></div>
     <div class="arg" data-field="1.changeThreshold._threshold">
       <div class="nm"><span class="pn">_threshold</span><span class="who you">you type: threshold</span></div>
-      <div class="val"><div class="is">the threshold you type</div>
+      <div class="val"><div class="is">the threshold you type <span class="f3">the card holds it; another value in the transaction is a MISMATCH</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The new threshold, between 1 and the number of signers.</span></span></div></div>
     </div>
   </div>
@@ -433,6 +436,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="addresses">
   <h2>Addresses <span class="c">2</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Each address must be confirmed in at least two places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
+  <h3>Addresses the transaction touches 2</h3>
   <div class="rows">
     <div class="ad" id="a-safe-1.3.0" data-state="ok">
       <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
@@ -467,16 +471,18 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>Past transactions</h2>
   <h3>1. Has this template&#39;s transaction worked before?</h3>
-  <p class="ans"><b>Yes, 76 times, by 75 Safes.</b> EOA: 0. The newest: block 26459612. All of them succeeded. The newest 3: <a href="https://etherscan.io/tx/0x2de9bdcf42b10cf32c834dad34d20c9486cd70327fc190b0398e803847c0d22e">0x2de9bdcf…</a> <a href="https://etherscan.io/tx/0x02f571fca5cdda7b2269054c4586bbd7131848e37c4685b892e8657d9fa50ba0">0x02f571fc…</a> <a href="https://etherscan.io/tx/0x1631a2a8b754122c0f989c0e61bf55ba6facea963ad7ec7b8fbf2d2eedd6ad0d">0x1631a2a8…</a></p>
+  <p class="ans"><b>Yes, 76 times, by 75 Safes.</b> EOA: 0. The newest: 2026-11-20. All of them succeeded. The newest 3: <a href="https://etherscan.io/tx/0x2de9bdcf42b10cf32c834dad34d20c9486cd70327fc190b0398e803847c0d22e">0x2de9bdcf…</a> <a href="https://etherscan.io/tx/0x02f571fca5cdda7b2269054c4586bbd7131848e37c4685b892e8657d9fa50ba0">0x02f571fc…</a> <a href="https://etherscan.io/tx/0x1631a2a8b754122c0f989c0e61bf55ba6facea963ad7ec7b8fbf2d2eedd6ad0d">0x1631a2a8…</a></p>
   <h3>2. What values are normal in what the app fills?</h3>
   <p class="ans">This template leaves no value for the app to fill.</p>
   <h3>3. How did the others differ?</h3>
   <p class="ans">4 transactions did something this template refuses.</p>
-  <p class="ans"><span class="aiw" data-ai><span>All four misfits also change the owners, two with <code>enableModule</code> calls. kiss-sign refuses such a batch: each change is its own transaction.</span><span class="byai">AI research</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="tx">Examples (up to 3)</th></tr></thead><tbody>
-    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.addOwnerWithThreshold → itself.changeThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 25501061</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x0d8c0b4eb0ac585046931720b290490ce9d9b51803fc3833759fc24a69ecb64e">0x0d8c0b4e…</a></span></td></tr>
-    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.enableModule → 0xC46C6878390690764569a8E4eC597ecF465CEf5A.enableModule → itself.swapOwner → itself.changeThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 25769923</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xbe9a9338a22280aac15b52fbec303f797f40c7a022a76669f11761fdc8c6782a">0xbe9a9338…</a></span></td></tr>
-    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.enableModule → 0xbbaFeA932970F753e40Ff33Ee10a8626FBdC61c4.enableModule → itself.swapOwner → itself.changeThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 25869291</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xd5da73f81959bf7a3239750078454eba5e7f172ecd119822a28071c7acb2f84c">0xd5da73f8…</a></span></td></tr>
-    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.swapOwner → itself.changeThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 26363024</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x6a5e2601c372f2c7412804cf4223e0a444ab7943b90e1b0188631c02201f87e4">0x6a5e2601…</a></span></td></tr></tbody></table></div>
+  <p class="ans"><span class="aiw" data-ai><span>All four misfits also change the owners, two with <code>enableModule</code> calls. kiss-sign refuses such a batch: each change is its own transaction.</span><span class="byai">AI research</span></span></p>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>Show the 4 kinds of difference</span></summary><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="tx">Examples (up to 3)</th></tr></thead><tbody>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.addOwnerWithThreshold → itself.changeThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>2026-07-10</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x0d8c0b4eb0ac585046931720b290490ce9d9b51803fc3833759fc24a69ecb64e">0x0d8c0b4e…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.enableModule → 0xC46C6878390690764569a8E4eC597ecF465CEf5A.enableModule → itself.swapOwner → itself.changeThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>2026-08-16</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xbe9a9338a22280aac15b52fbec303f797f40c7a022a76669f11761fdc8c6782a">0xbe9a9338…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.enableModule → 0xbbaFeA932970F753e40Ff33Ee10a8626FBdC61c4.enableModule → itself.swapOwner → itself.changeThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>2026-08-30</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xd5da73f81959bf7a3239750078454eba5e7f172ecd119822a28071c7acb2f84c">0xd5da73f8…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>itself.swapOwner → itself.changeThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>2026-11-07</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x6a5e2601c372f2c7412804cf4223e0a444ab7943b90e1b0188631c02201f87e4">0x6a5e2601…</a></span></td></tr></tbody></table></div>
+  </details>
   <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>How the program searched</span></summary>
   <h3>Search of Safe ChangedThreshold: 8545 found, 238 studied, 202 of 8509 with a proven Safe party</h3>
   <p class="cap">Every transaction of the last year was searched, from block 23856505 (2025-11-22) to block 26484504 (2026-11-24), with no gap. Only Etherscan searches an event, and found <span class="num">8545</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
@@ -494,7 +500,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <p class="then">It prints the template, the commit of main on GitHub and the template&#39;s keccak256. Answer <code>y</code> only if it is the one you reviewed.</p></div></li>
     <li><div>Make the card<pre class="cmd"><code>pnpm kiss-sign card new safe/change-threshold</code></pre>
       <p class="then">When <code>templates/</code> or <code>registry/</code> in your clone differs from main on GitHub, it stops before asking anything and tells you to run <code>git pull</code> first.</p></div></li>
-    <li><div><code>threshold</code>: type the new threshold, the number of signers needed to execute, digits only, at least 1.</div></li>
+    <li id="next-threshold"><div><code>threshold</code>: type the new threshold, the number of signers needed to execute, digits only, at least 1.</div></li>
     <li><div>It prints the whole card, each name with its full address, and asks <code>Is this what you mean to do? [y/N]</code>. Type <code>y</code> only if all of it is what you want.
       <p class="then">It prints <code>Sealed card 0x…</code>, the card&#39;s hash, which the next step uses.</p></div></li>
     <li><div>Propose the transaction in the Safe web app, copy its safeTxHash, then run<pre class="cmd"><code>pnpm kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>

@@ -6,10 +6,13 @@ import type { Exchange } from '../src/chain/recording.ts';
 import type { AbiCase } from '../src/contracts/abi-case.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { withBlockTimes } from './block-times.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
+import { baseRepo } from './fixture-base.ts';
 import { SUMMARY_FIXTURES, runOffline } from './run-offline.ts';
 import type { Http, Run } from './run-offline.ts';
 
 const ROOT = join(import.meta.dirname, '..');
+const FIXTURES = repoWithTestFixtures();
 const REFUSAL = /^\d+ read\(s\) got no answer after every retry, so nothing is recorded; run the command again later:$/;
 
 /** The exchanges with every drpc answer to a request of `method` taken out, so drpc gives those reads no answer. */
@@ -40,10 +43,10 @@ function assertStopped(run: Run, why: RegExp): void {
 }
 
 test('perturb --record writes the recording when every read is answered, and nothing when a read gets no answer', () => {
-  const recording = readRecording<{ safeTx: string; card: unknown; exchanges: Exchange[] }>(join(ROOT, 'testdata', 'perturb', 'fluid-deposit-fusdc.json'));
+  const recording = readRecording<{ safeTx: string; card: unknown; exchanges: Exchange[] }>(join(FIXTURES, 'testdata', 'perturb', 'fluid-claim.json'));
   const args = [recording.safeTx, '--card', JSON.stringify(recording.card), '--record', 'offline'];
-  assertRecorded(runOffline('perturb.ts', args, 'perturb', recording), 'offline.json');
-  assertRefused(runOffline('perturb.ts', args, 'perturb', { exchanges: withheld(recording.exchanges, 'eth_simulateV1') }), 'drpc eth_simulateV1: unreachable');
+  assertRecorded(runOffline('perturb.ts', args, 'perturb', recording, [], undefined, undefined, FIXTURES), 'offline.json');
+  assertRefused(runOffline('perturb.ts', args, 'perturb', { exchanges: withheld(recording.exchanges, 'eth_simulateV1') }, [], undefined, undefined, FIXTURES), 'drpc eth_simulateV1: unreachable');
 });
 
 test('simulate --record writes the recording when every read is answered, and nothing when a read gets no answer', () => {
@@ -55,7 +58,7 @@ test('simulate --record writes the recording when every read is answered, and no
 
 test('past-txs --record writes the study when every read is answered, and nothing when a read gets no answer', () => {
   const name = 'morpho-vault-deposit-windows';
-  const recording = readRecording<PastTxsRecording>(join(ROOT, 'testdata', 'past-txs', `${name}.json`));
+  const recording = readRecording<PastTxsRecording>(join(FIXTURES, 'testdata', 'past-txs', `${name}.json`));
   const transfers: Exchange[] = [];
   const http: Http = {};
   for (const { request, answer } of recording.sources) {
@@ -64,16 +67,16 @@ test('past-txs --record writes the study when every read is answered, and nothin
   }
   const args = ['morpho/vault-deposit', '--token', 'steakhouse-prime-usdc-v2-0f51', '--anchor', 'mint', '--max-txs', '24', '--same-windows-as', name, '--record', 'offline'];
   const seed = [`${name}.json`];
-  assertRecorded(runOffline('past-txs.ts', args, 'research', { exchanges: [...withBlockTimes(recording.exchanges), ...transfers], http }, seed, undefined, SUMMARY_FIXTURES), 'offline.json');
+  assertRecorded(runOffline('past-txs.ts', args, 'research', { exchanges: [...withBlockTimes(recording.exchanges), ...transfers], http }, seed, undefined, SUMMARY_FIXTURES, FIXTURES), 'offline.json');
   const network = { exchanges: [...withheld(withBlockTimes(recording.exchanges), 'eth_getTransactionByHash'), ...transfers], http };
-  assertRefused(runOffline('past-txs.ts', args, 'research', network, seed, undefined, SUMMARY_FIXTURES), 'drpc eth_getTransactionByHash: unreachable');
+  assertRefused(runOffline('past-txs.ts', args, 'research', network, seed, undefined, SUMMARY_FIXTURES, FIXTURES), 'drpc eth_getTransactionByHash: unreachable');
   const noBlocks = { exchanges: [...withheld(withBlockTimes(recording.exchanges), 'eth_getBlockByNumber'), ...transfers], http };
-  assertRefused(runOffline('past-txs.ts', args, 'research', noBlocks, seed, undefined, SUMMARY_FIXTURES), 'drpc eth_getBlockByNumber: unreachable');
+  assertRefused(runOffline('past-txs.ts', args, 'research', noBlocks, seed, undefined, SUMMARY_FIXTURES, FIXTURES), 'drpc eth_getBlockByNumber: unreachable');
 });
 
 test('past-txs --record of a template reported per vault refuses a search anchored on no registry entry before any read', () => {
   const args = ['morpho/vault-deposit', '--token', `0x${'7e'.repeat(20)}`, '--anchor', 'mint', '--record', 'offline'];
-  const run = runOffline('past-txs.ts', args, 'research', { exchanges: [] });
+  const run = runOffline('past-txs.ts', args, 'research', { exchanges: [] }, [], undefined, undefined, FIXTURES);
   assert.equal(run.status, 64, run.stderr + run.stdout);
   assert.match(run.stderr, /^--record offline: morpho\/vault-deposit is reported per vault, and the search anchors on no registry entry$/m);
   assert.doesNotMatch(run.stderr, /got no answer/);
@@ -105,15 +108,15 @@ test('attacks --record writes nothing when a read gets no answer', () => {
   const recording = readRecording<{ service: { safe: string; nonce: number }; exchanges: Exchange[] }>(join(ROOT, 'testdata', 'attacks', 'wazirx', 'recording.json'));
   const service = `https://api.safe.global/tx-service/eth/api/v2/safes/${recording.service.safe}/multisig-transactions/?nonce=${recording.service.nonce}&executed=true`;
   const http = { [service]: { status: 200, text: JSON.stringify({ count: 1, results: [recording.service] }) } };
-  const run = runOffline('attacks.ts', ['--record', 'wazirx'], 'attacks', { exchanges: withheld(recording.exchanges, 'eth_getBalance'), http }, ['wazirx/case.json']);
+  const run = runOffline('attacks.ts', ['--record', 'wazirx'], 'attacks', { exchanges: withheld(recording.exchanges, 'eth_getBalance'), http }, ['wazirx/case.json'], undefined, undefined, baseRepo());
   assertRefused(run, 'drpc eth_getBalance: unreachable', 'attacks: wazirx: ');
 });
 
 test('prove-instance --record writes the recording when every read is answered, and nothing when a read gets no answer', () => {
   const recording = readRecording<{ exchanges: Exchange[] }>(join(ROOT, 'testdata', 'instance', 'uniswap-v3-usdc-weth-500.json'));
   const args = ['uniswap-v3-usdc-weth-500', '--registry', join(ROOT, 'test', 'fixtures', 'uniswap-v3', 'registry'), '--record', 'offline'];
-  assertRecorded(runOffline('prove-instance.ts', args, 'instance', recording), 'offline.json');
-  assertStopped(runOffline('prove-instance.ts', args, 'instance', { exchanges: withheld(recording.exchanges, 'eth_call') }), /^REFUSED .*drpc failed \(unreachable\)/m);
+  assertRecorded(runOffline('prove-instance.ts', args, 'instance', recording, [], undefined, undefined, baseRepo()), 'offline.json');
+  assertStopped(runOffline('prove-instance.ts', args, 'instance', { exchanges: withheld(recording.exchanges, 'eth_call') }, [], undefined, undefined, baseRepo()), /^REFUSED .*drpc failed \(unreachable\)/m);
 });
 
 test('record-safe-proxy writes the recording when every read is answered, and nothing when a read gets no answer', () => {

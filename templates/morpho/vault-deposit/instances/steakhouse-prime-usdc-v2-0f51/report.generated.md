@@ -204,7 +204,7 @@ senders, of 240 transactions studied:
   neither: 60
     59 calls no function the template calls (called 0x6e553f65 in 21, 0x374f435d in 15, 0x3da9b9d0 in 5, 0x8d80ff0a in 4, …)
     1 execTransaction calldata does not decode (called 0x6a761202 in 1)
-call traces, from drpc, of the transactions exactly the template: 30 transactions, 30 checked against the receipt both providers agree on
+call traces, from drpc, of the transactions exactly the template: 31 transactions, 31 checked against the receipt both providers agree on
 by proven Safes, the whole template in one transaction:
 another operation, making none of the template's calls: 16 transactions from 9 Safes; not counted below
   e.g. 0xaf19cb5f4376645e2326a95c60e1b54b439441baa12d0cdd22bd05451d5041b2: calls bundler3.0x374f435d

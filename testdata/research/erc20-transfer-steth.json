@@ -10,8 +10,8 @@
  "head": "26485874",
  "studiedWith": {
   "template": "0x73d152f3283d07ac245108b5462c02cedf55bbaf0f5c03fcddcf5cbe8574afc2",
-  "registry": "0x6847cb06d8d87035cacb6eb867c3d5ed87adbc860e1ff98c85359d040029bcb1",
-  "study": "0x92508a29cee7c49b83a1d4a9f9e4e04eac8df225cb741b31331cc10dacdd84ae"
+  "registry": "0xfcf56a32cafb9adeea3163dbc256707c98f073d4f0c61e0633d245dfdc8521f2",
+  "study": "0x61f1ce5f5cd4adf417d5dffd036bcb1056828b2e57170ba4bcd0ef03b994e01d"
  },
  "search": {
   "coverage": {
@@ -476,7 +476,8 @@
     "expected": "canonical transfer(address,uint256)",
     "actual": "differs at byte 68"
    },
-   "free": []
+   "free": [],
+   "time": "1794535919"
   },
   {
    "kind": "not-studied",
@@ -606,7 +607,8 @@
     "expected": "canonical transfer(address,uint256)",
     "actual": "differs at byte 68"
    },
-   "free": []
+   "free": [],
+   "time": "1794572255"
   },
   {
    "kind": "not-studied",
@@ -640,7 +642,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1794588155"
   },
   {
    "kind": "not-studied",
@@ -1235,7 +1238,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1794703643"
   },
   {
    "kind": "not-studied",
@@ -1583,7 +1587,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1794840635"
   },
   {
    "kind": "not-studied",
@@ -1986,7 +1991,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1794945095"
   },
   {
    "kind": "not-studied",
@@ -2150,7 +2156,8 @@
     "expected": "canonical transfer(address,uint256)",
     "actual": "differs at byte 68"
    },
-   "free": []
+   "free": [],
+   "time": "1795006883"
   },
   {
    "kind": "not-studied",
@@ -2397,7 +2404,8 @@
     "expected": "canonical transfer(address,uint256)",
     "actual": "differs at byte 68"
    },
-   "free": []
+   "free": [],
+   "time": "1795092551"
   },
   {
    "kind": "not-studied",
@@ -2574,7 +2582,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1795180271"
   },
   {
    "kind": "not-studied",
@@ -2703,7 +2712,8 @@
    "reason": {
     "kind": "foreign-delegatecall"
    },
-   "free": []
+   "free": [],
+   "time": "1795191683"
   },
   {
    "kind": "not-studied",
@@ -3019,7 +3029,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1795265963"
   },
   {
    "kind": "not-studied",
@@ -3618,7 +3629,8 @@
     "expected": "canonical transfer(address,uint256)",
     "actual": "differs at byte 68"
    },
-   "free": []
+   "free": [],
+   "time": "1795502927"
   },
   {
    "kind": "misfit",

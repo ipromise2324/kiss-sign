@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { before, test } from 'node:test';
 import { loadRegistry, pageUrlsOf } from '../src/registry.ts';
 import type { Registry } from '../src/registry.ts';
 import { STANDARDS } from '../src/research/standards.ts';
-import { NOTES_FILE, notesLanguages, notesPath, readNotes } from '../src/research/notes.ts';
+import { NOTES_FILE, NotesError, notesLanguages, notesPath, readNotes } from '../src/research/notes.ts';
+import type { NotesInstance } from '../src/research/notes.ts';
+import { notesNeeded } from '../src/research/notes-needed.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { h } from '../src/html.ts';
 import { LANGUAGES, isLanguage } from '../src/language.ts';
@@ -15,8 +17,8 @@ import { OLD_HTML_FILE, generatedHtml, generatedHtmlFile, generatedHtmlPath, htm
 import { buildPage } from '../src/research/report-page.ts';
 import type { Body, HtmlInputs, Page } from '../src/research/report-page.ts';
 import { WORDS } from '../src/research/report-words.ts';
-import { loadReport, readDocs, replayInputs, reportDir, templateTargets } from '../src/research/report.ts';
-import type { PastTxsSection, ReportInputs, ReportTitle } from '../src/research/report.ts';
+import { loadReport, readDocs, replayInputs, reportDir, sharedEntries, templateTargets } from '../src/research/report.ts';
+import type { PastTxsSection, ReportInputs, ReportTitle, TemplateTarget } from '../src/research/report.ts';
 import type { Coverage, SearchRun, YearSearch } from '../src/research/past-txs.ts';
 import { USAGE_DIR, modelName, parseUsage, readUsage, usagePath } from '../src/research/usage.ts';
 import { judgeFixtures } from '../src/template/perturb.ts';
@@ -25,6 +27,7 @@ import { NOT_YET_REBUILT, reportedInstances } from '../src/template/vault-report
 import { FROZEN_REPORTS, repoWithFrozenReports } from './frozen-reports.ts';
 import { PREDATE_REPORT } from './predate-report.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
+import { replayEach } from './replay-each.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -44,10 +47,14 @@ const withNotes = new Map([
   reportAt(MARKET, FIXTURES, loadRegistry(FIXTURES)),
   reportAt(HYPERITHM, FROZEN, loadRegistry(FROZEN)),
 ]);
+const instanceOf = (root: string, of: Registry, target: TemplateTarget): NotesInstance | undefined => {
+  const vault = target.instance === undefined ? undefined : (of.entries.get(target.instance) ?? assert.fail(target.instance));
+  return vault === undefined ? undefined : { vault, shared: sharedEntries(root, of, target.template, vault) };
+};
 const reportOf = (path: string) => withNotes.get(path) ?? assert.fail(path);
 const notesOf = (path: string): unknown => {
   const { target, root, registry } = reportOf(path);
-  return readNotes(root, target.template, target.instance === undefined ? undefined : registry.entries.get(target.instance));
+  return readNotes(root, target.template, instanceOf(root, registry, target));
 };
 
 /** Each report's page in each language, by its folder. */
@@ -55,19 +62,31 @@ const pages = new Map<string, { readonly inputs: ReportInputs; readonly title: R
 /** Every page of every report, by the path it is committed at. */
 const replayed = new Map<string, { readonly dir: string; readonly language: Language; readonly html: string }>();
 
+/** Each report that refused to replay, such as one reading a stale past-txs summary, with its refusal; its own test below fails. */
+let refused = new Map<string, string>();
+
 before(async () => {
   const compilers = await warmCompilers([...withNotes.values()].flatMap(({ target, root, registry }) => reportCases(root, registry, [target])));
-  for (const [dir, { target, root, registry }] of withNotes) {
+  const run = await replayEach(withNotes.keys(), async (dir) => {
+    const { target, root, registry } = reportOf(dir);
     const { inputs, title } = await replayInputs(root, registry, target, compilers, loadPublicSuffixList());
     const html = (await generatedHtml(root, inputs, title)) ?? assert.fail(`${dir}: notes but no HTML`);
-    pages.set(dir, { inputs, title, html });
     for (const [language, page] of html) replayed.set(join(root, generatedHtmlPath(root, target, language)), { dir, language, html: page });
-  }
+    return { inputs, title, html };
+  });
+  for (const [dir, page] of run.done) pages.set(dir, page);
+  refused = run.refused;
 });
+
+for (const dir of withNotes.keys()) {
+  test(`${relative(ROOT, dir) || dir} replays from its recordings and notes.json; the page tests check only the reports that do`, () => {
+    assert.equal(refused.get(dir), undefined, `${dir} refused`);
+  });
+}
 
 test('a report commits a page in exactly the languages its notes hold, none without notes.json, no old one-language page, and none has report.md', () => {
   for (const target of templateTargets(ROOT, registry)) {
-    const raw = readNotes(ROOT, target.template, target.instance === undefined ? undefined : registry.entries.get(target.instance));
+    const raw = readNotes(ROOT, target.template, instanceOf(ROOT, registry, target));
     const held = raw === undefined ? [] : notesLanguages(raw);
     for (const language of LANGUAGES) {
       const path = generatedHtmlPath(ROOT, target, language);
@@ -321,7 +340,7 @@ test('an after-the-transaction row shows its AI reason in a block of its own und
   const row = after.slice(0, after.indexOf('</dl>')).split('<div><dt>').find((r) => r.includes(why)) ?? assert.fail(`${id}: no row holds the reason`);
   const note = /<dd class="src">.*?<\/dd>/s.exec(row)?.[0] ?? assert.fail(`${id}: a row without its note`);
   assert.ok(!note.includes('data-ai'), `${id}: AI text inside the right-aligned note`);
-  assert.ok(row.trimEnd().endsWith(`</dd><div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>${why}</span></span></div></div>`), row);
+  assert.ok(row.trimEnd().endsWith(`</dd><div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The AI chose this tolerance, not the protocol or its app. Why: ${why}</span></span></div></div>`), row);
 });
 
 test('every source line and documentation line starts with its result icon, the source and any phrase after it', () => {
@@ -425,7 +444,7 @@ test('a report with a usage file prints it, names the file in the footer and say
   const measured = [...withNotes].filter(([, { target, root }]) => existsSync(join(root, usagePath(target))));
   const files = readdirSync(join(ROOT, USAGE_DIR), { recursive: true, encoding: 'utf8' }).filter((file) => file.endsWith('.json'));
   assert.deepEqual(measured.map(([, { target }]) => usagePath(target)).sort(), files.map((file) => join(USAGE_DIR, file)).sort(), 'each usage file belongs to a report');
-  for (const [dir, { target, root }] of measured) {
+  for (const [dir, { target, root }] of measured.filter(([dir]) => !refused.has(dir))) {
     const usage = readUsage(root, target) ?? assert.fail(dir);
     for (const [language, html] of pages.get(dir)?.html ?? assert.fail(dir)) {
       assert.ok(html.includes(WORDS[language].usageCalls(usage.models.map(modelName).join(' + '), usage.calls, usage.minutes)), dir);
@@ -685,6 +704,11 @@ test("過去交易 leads with the transactions exactly like the signer's, keeps 
   assert.match(textOf(open), /336 transactions did something this template refuses\./);
   const conclusion = (notesOf(hyperithm()) as { pastTxsConclusion: { en: string } }).pastTxsConclusion.en.split('`')[0] as string;
   assert.ok(unescape(open).includes(conclusion), "the AI's word on the other shapes is open under how they differed");
+  const differ = past.slice(past.indexOf('3. How did the others differ?'));
+  assert.doesNotMatch(differ.slice(0, differ.indexOf('<details class="fold">')), /<table/, 'no difference row is open');
+  const kinds = page.sections.flatMap((s) => (s.body.kind === 'past' ? [s.body.past?.differ.folded?.table.rows.length ?? 0] : []))[0] ?? 0;
+  assert.ok(kinds > 1);
+  assert.match(past, new RegExp(`<details class="fold"><summary><svg[^>]*>.*?</svg><span>Show the ${kinds} kinds of difference</span></summary><div class="sc"><table class="pt2">`, 's'), 'the differences table folds under the line that counts its kinds');
 });
 
 test("an instance's context notes show in its section under their titles, each with the AI tag and its sources", async () => {
@@ -724,4 +748,86 @@ test('in the call ledger, each group keeps the rows the signer decides open and 
       assert.ok(shut === -1 || flow.lastIndexOf('</details>', row.index) > shut, `${language}: ${field} stays open`);
     }
   }
+});
+
+/** A repository that holds only the report's notes files, each as `files` gives it. */
+function repoWithNotes(files: Readonly<Record<string, unknown>>): string {
+  const repo = mkdtempSync(join(tmpdir(), 'kiss-sign-notes-'));
+  for (const [file, notes] of Object.entries(files)) {
+    mkdirSync(join(repo, file, '..'), { recursive: true });
+    writeFileSync(join(repo, file), JSON.stringify(notes));
+  }
+  return repo;
+}
+
+/** A skeleton with every empty text written. */
+function written(value: unknown, path: readonly string[] = []): unknown {
+  if (value === '') return path.at(-1) === 'url' ? 'https://example.com/' : path.at(-1) === 'result' ? 'pass' : path.at(-1) !== 'status' ? 'x' : path[0] === 'verdict' ? 'safe' : 'confirmed';
+  if (Array.isArray(value)) return value.map((item) => written(item, path));
+  return Object.fromEntries(Object.entries(value as object).map(([key, item]) => [key, written(item, [...path, key])]));
+}
+
+/** `tree` with `more` written into it, key by key. */
+function deepMerge(tree: Record<string, unknown>, more: Record<string, unknown>): Record<string, unknown> {
+  const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
+  return { ...tree, ...Object.fromEntries(Object.entries(more).map(([key, value]) => [key, isObject(value) && isObject(tree[key]) ? deepMerge(tree[key], value) : value])) };
+}
+
+test('notes-needed asks, of a report with no notes, for exactly the texts the page needs, in the file each belongs in, the flow lines before the call traces\' reviews', () => {
+  for (const [dir, { inputs, title }] of pages) {
+    const { template, vault } = inputs.subject;
+    const shared = notesPath('', template.id);
+    const both: Record<string, Record<string, unknown>> = { [shared]: {}, ...(vault === undefined ? {} : { [notesPath('', template.id, vault.name)]: {} }) };
+    const needed = notesNeeded(repoWithNotes(both), inputs, ['zh-TW']);
+    const { root } = reportOf(dir);
+    for (const file of Object.keys(both)) {
+      const committed = JSON.parse(readFileSync(join(root, file), 'utf8')).reviews ?? {};
+      const asked = (needed.skeleton[file] as { reviews?: object } | undefined)?.reviews ?? {};
+      const untraced = (reviews: object) => Object.keys(reviews).filter((id) => !/^(flow|trace)\./.test(id)).sort();
+      assert.deepEqual(untraced(asked), untraced(committed), `${dir}: reviews asked for in ${file}`);
+      const described = Object.keys(JSON.parse(readFileSync(join(root, file), 'utf8')).entries ?? {});
+      const entriesAsked = Object.keys((needed.skeleton[file] as { entries?: object } | undefined)?.entries ?? {});
+      assert.deepEqual(entriesAsked.filter((name) => !described.includes(name)), [], `${dir}: entries asked for in ${file}, which the committed notes describe in the other file`);
+      if (vault !== undefined && file === shared) assert.deepEqual(Object.keys(asked).filter((id) => /^trace\./.test(id)), [], `${dir}: a trace's review asked for in the template's notes`);
+    }
+    const fill = (files: Record<string, Record<string, unknown>>, skeleton: Readonly<Record<string, unknown>>) =>
+      Object.fromEntries(Object.entries(files).map(([file, tree]) => [file, deepMerge(tree, written(skeleton[file] ?? {}) as Record<string, unknown>)]));
+    const traced = Object.keys(needed.toReview).some((id) => /^(flow|trace)\./.test(id));
+    assert.equal(Object.values(needed.skeleton).some((tree) => Object.hasOwn(tree as object, 'flow')), traced, `${dir}: flow asked for before the traces' reviews`);
+    const once = fill(both, needed.skeleton);
+    const last = notesNeeded(repoWithNotes(once), inputs, ['zh-TW']);
+    const files = fill(once, last.skeleton);
+    assert.deepEqual(notesNeeded(repoWithNotes(files), inputs, ['zh-TW']).skeleton, {}, `${dir}: asked for more after the second pass`);
+    const pageOf = (notes: Readonly<Record<string, unknown>>) => generatedHtml(repoWithNotes(notes), inputs, title);
+    assert.deepEqual([...(pageOf(files) ?? assert.fail(dir)).keys()], ['zh-TW'], dir);
+    for (const [file, tree] of Object.entries(files)) {
+      for (const [key, value] of Object.entries(tree)) {
+        if (key === 'flow' || key === 'request' || key === 'instanceRequest') continue;
+        const { [key]: _, ...rest } = tree;
+        assert.throws(() => pageOf({ ...files, [file]: rest }), NotesError, `${dir}: the page is written without ${key}`);
+        if (!['reviews', 'fields', 'protocols'].includes(key)) continue;
+        const [first, ...others] = Object.entries(value as object);
+        if (first === undefined) continue;
+        assert.throws(() => pageOf({ ...files, [file]: { ...tree, [key]: Object.fromEntries(others) } }), NotesError, `${dir}: the page is written without ${key} ${first[0]}`);
+      }
+    }
+    for (const row of Object.keys(last.toReview)) assert.ok(last.about[`reviews ${row}`] !== undefined || needed.about[`reviews ${row}`] !== undefined, `${dir}: ${row} is to review but not asked for`);
+  }
+});
+
+test("an entry every instance with a report names is described once, in the template's notes: an instance's notes may not hold it", () => {
+  const dir = join(ROOT, TEMPLATES_DIR, 'fluid/vault-deposit', 'instances', 'fluid-fusdt');
+  const { inputs, title } = pages.get(dir) ?? assert.fail(dir);
+  const sharedPath = notesPath('', 'fluid/vault-deposit');
+  const minePath = notesPath('', 'fluid/vault-deposit', 'fluid-fusdt');
+  const shared = JSON.parse(readFileSync(join(ROOT, sharedPath), 'utf8'));
+  const mine = JSON.parse(readFileSync(join(ROOT, minePath), 'utf8'));
+  const { 'fluid-liquidity': liquidity, ...rest } = shared.entries;
+  const moved = { [sharedPath]: { ...shared, entries: rest }, [minePath]: { ...mine, entries: { ...mine.entries, 'fluid-liquidity': liquidity } } };
+  assert.throws(
+    () => generatedHtml(repoWithNotes(moved), inputs, title),
+    (e: unknown) => e instanceof NotesError && e.message === `${minePath}.entries: "fluid-liquidity" is about fluid-liquidity, which every instance with a report of the template names; write it once in the template's notes.json`,
+  );
+  const review = { status: 'confirmed', text: { en: 'x', 'zh-TW': 'x' }, recommendation: { en: 'x', 'zh-TW': 'x' } };
+  assert.throws(() => generatedHtml(repoWithNotes({ [sharedPath]: shared, [minePath]: { ...mine, reviews: { ...mine.reviews, 'fluid-lending-factory/abi': review } } }), inputs, title), /"fluid-lending-factory\/abi" is about fluid-lending-factory, which every instance/);
 });

@@ -4,10 +4,11 @@ import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import { MARKET_ENTRY_PARTS, parseHttpsUrl } from '../registry.ts';
 import type { HttpsUrl, RegistryEntry } from '../registry.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
+import type { Sender } from '../simulate/simulate.ts';
 import { checkSources, githubLine } from './listings.ts';
-import type { DeployerShare, Line, SitePlace } from './listings.ts';
-import { abiUnused, docSiteLine, entriesOf, evidenceEntries, functionOnPage, hasMarket, missingFromAbi, pinVerdict, todayEntries } from './report.ts';
-import type { DocLink, ReportInputs, SpanCheck, TodayCheck } from './report.ts';
+import type { CommitWhy, DeployerShare, Line, NotCompared, SitePlace, SiteSeen } from './listings.ts';
+import { abiUnused, docSiteLine, entriesOf, evidenceEntries, functionOnPage, hasMarket, missingFromAbi, pinVerdict, readOnlyEntries, todayEntries } from './report.ts';
+import type { DocLink, ReadFor, ReportInputs, SpanCheck, TodayCheck } from './report.ts';
 import { packageKey } from './npm-package.ts';
 import { registrableDomain } from './public-suffix.ts';
 import { githubOrg } from './site-listings.ts';
@@ -15,7 +16,7 @@ import { isGitHubPage, pageUrlOf } from './source-page.ts';
 import { factoryAnswer } from './instance-evidence.ts';
 import type { Address } from '../safe/types.ts';
 import { tokenUntested } from './trace.ts';
-import type { FlowComparison, Uncovered } from './trace.ts';
+import type { FlowComparison, TracedTx, Uncovered } from './trace.ts';
 
 /** ok passed; warn evidence missing (amber); bad a real disagreement (red); na nothing to compare (grey). */
 export type State = 'ok' | 'warn' | 'bad' | 'na';
@@ -88,7 +89,7 @@ export type Finding =
   | { readonly kind: 'check-other-answer' }
   | { readonly kind: 'refused'; readonly why: string }
   /** The address is confirmed in fewer than two places; `by` names those that did. */
-  | { readonly kind: 'few-confirmations'; readonly by: readonly Place[] }
+  | { readonly kind: 'few-confirmations'; readonly by: readonly Place[]; readonly needs: number }
   /** A bounty program's scope, or an SDK file, does not hold the address: no confirmation. */
   | { readonly kind: 'not-listed' }
   /** The entry names an Immunefi program, but the protocol's sites are not known, so nothing ties the program to it. */
@@ -103,6 +104,8 @@ export type Finding =
   | { readonly kind: 'package-differs' }
   /** npm holds no provenance for the SDK version, so nothing ties its publisher to the protocol. */
   | { readonly kind: 'no-provenance' }
+  /** npm's provenance for the SDK version names another tarball than the one read. */
+  | { readonly kind: 'provenance-other-tarball' }
   /** The program could not prove the entry's creation from its transaction. */
   | { readonly kind: 'creation-unproven' }
   /** The entry's deployer deployed no other entry of the protocol confirmed in two places without its own deployer. */
@@ -174,6 +177,7 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'label-differs': 'bad',
   'package-differs': 'bad',
   'no-provenance': 'na',
+  'provenance-other-tarball': 'bad',
   'creation-unproven': 'na',
   'deployer-alone': 'na',
   'source-no-answer': 'na',
@@ -225,6 +229,7 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'label-differs': 'other-address',
   'package-differs': 'other-file',
   'no-provenance': 'no-provenance',
+  'provenance-other-tarball': 'other-file',
   'creation-unproven': 'creation-unproven',
   'deployer-alone': 'deployer-alone',
   'source-no-answer': 'unread',
@@ -264,7 +269,7 @@ export type Result = {
   readonly line: StripLine;
   readonly about:
     | { readonly kind: 'entry'; readonly entry: RegistryEntry }
-    | { readonly kind: 'fixture'; readonly name: string }
+    | { readonly kind: 'fixture'; readonly name: string; readonly sender: Sender }
     /** A `flow` line, by its place in the merged list from 1. */
     | { readonly kind: 'flow'; readonly line: number }
     | { readonly kind: 'money'; readonly uncovered: Uncovered };
@@ -272,7 +277,7 @@ export type Result = {
   readonly source: RowPart | undefined;
   /** For a result with a source, the owner of that source: sources with one owner are one place. */
   readonly owner?: string;
-  /** What it links: the entry's page, its API, its CoinGecko coin, or for a site its DefiLlama protocol. */
+  /** What it links: the entry's page, its API, the coin CoinGecko lists at its address, or for a site its DefiLlama protocol. */
   readonly link: HttpsUrl | undefined;
   readonly finding: Finding;
   /** For a site, the places that list it, or that were compared when none does. */
@@ -281,14 +286,51 @@ export type Result = {
   readonly shared?: DeployerShare;
   /** For a pinned page, SDK file or newest version, the addresses it binds the label to instead of the entry's. */
   readonly others?: readonly Address[];
+  /** For a site that differs or that DefiLlama lists nothing to compare with, the site found and those DefiLlama lists. */
+  readonly seen?: SiteSeen;
+  /** For a site not compared, why. */
+  readonly notCompared?: NotCompared;
+  /** The coin ids CoinGecko lists at the entry's address, when it lists any. */
+  readonly coins?: readonly string[];
+  /** For a GitHub commit not confirmed, what the check established. */
+  readonly commit?: CommitWhy;
+  /** For every result of an entry the operation only reads, the card fields `card new` reads it for. */
+  readonly readFor?: readonly ReadFor[];
 };
 
 export type Ledger = { readonly entries: readonly RegistryEntry[]; readonly results: readonly Result[] };
 
 export const stateOf = (result: Result): State => STATE_OF[result.finding.kind];
 
-/** The one rule for 待確認, the rail count and the reviews notes.json must hold: red or amber. */
-export const needsSigner = (result: Result): boolean => stateOf(result) === 'bad' || stateOf(result) === 'warn';
+const SITE_FINDINGS: ReadonlySet<FindingKind> = new Set(['site-differs', 'site-not-compared', 'no-second-source']);
+
+/**
+ * A finding that a source's site is not tied to the protocol, of an entry the operation only reads: its number reaches
+ * the transaction only through the card the signer confirms. Every other finding of such an entry, an address confirmed
+ * nowhere, an ABI or a code finding included, is not one.
+ */
+export const readOnlySite = (result: Result): boolean => result.readFor !== undefined && result.source?.part === 'site' && SITE_FINDINGS.has(result.finding.kind);
+
+/** Why a source result did not pass, from what its check saw, when that says more than its kind does; the page words it. */
+export type SourceWhy =
+  | { readonly kind: 'site-differs'; readonly via: 'page' | 'bounty'; readonly seen: SiteSeen }
+  | { readonly kind: 'no-second-source'; readonly site: string }
+  | { readonly kind: 'site-not-compared'; readonly cause: NotCompared }
+  | { readonly kind: 'coin'; readonly coins: readonly string[]; readonly named: string | undefined }
+  | { readonly kind: 'commit'; readonly commit: CommitWhy };
+
+export function sourceWhy(result: Result): SourceWhy | undefined {
+  const { finding, seen, notCompared, coins, commit } = result;
+  if (finding.kind === 'site-differs' && seen !== undefined) return { kind: 'site-differs', via: result.source?.of === 'bounty' ? 'bounty' : 'page', seen };
+  if (finding.kind === 'no-second-source' && seen?.found.kind === 'site') return { kind: 'no-second-source', site: seen.found.site };
+  if (finding.kind === 'site-not-compared' && notCompared !== undefined) return { kind: 'site-not-compared', cause: notCompared };
+  if ((finding.kind === 'other-coin' || finding.kind === 'unexplained-coin') && coins !== undefined) return { kind: 'coin', coins, named: result.about.kind === 'entry' ? result.about.entry.coingecko : undefined };
+  if (finding.kind === 'commit-unconfirmed' && commit !== undefined) return { kind: 'commit', commit };
+  return undefined;
+}
+
+/** The one rule for 待確認, the rail count and the reviews notes.json must hold: red or amber, and not a read-only entry's site finding. */
+export const needsSigner = (result: Result): boolean => (stateOf(result) === 'bad' || stateOf(result) === 'warn') && !readOnlySite(result);
 
 const LINE_KEYS: Readonly<Record<Line['check'], string>> = {
   page: 'source.page',
@@ -327,16 +369,17 @@ const SITE_CHECKS: ReadonlySet<Line['check']> = new Set(['defillama', 'api-site'
 const coingeckoUrl = (id: string | undefined) => (id === undefined ? undefined : parseHttpsUrl(`https://www.coingecko.com/en/coins/${id}`));
 const defillamaUrl = (slug: string | undefined) => (slug === undefined ? undefined : parseHttpsUrl(`https://defillama.com/protocol/${slug}`));
 
-function linkOf(entry: RegistryEntry, { of, part }: RowPart, line: Pick<Line, 'shared' | 'program'>): HttpsUrl | undefined {
-  const { shared, program } = line;
+/** A source's page: what the check read, or a page the program builds from what it found, such as the coin CoinGecko lists at the address. */
+function linkOf(entry: RegistryEntry, { of, part }: RowPart, line: Pick<Line, 'shared' | 'program' | 'coins'>): HttpsUrl | undefined {
+  const { shared, program, coins } = line;
   if (part === 'site') return defillamaUrl(entry.defillama);
   if (of.startsWith('more.')) return entry.moreSources?.[Number(of.slice(5)) - 1]?.url;
   if (of === 'page') return entry.source;
   if (of === 'api') return entry.apiSource?.url;
   if (of === 'bounty') return program === undefined ? undefined : parseHttpsUrl(`https://immunefi.com/bug-bounty/${program}/`);
   if (of === 'sdk') return entry.sdk === undefined ? undefined : parseHttpsUrl(`https://www.npmjs.com/package/${entry.sdk.package}/v/${entry.sdk.version}`);
-  if (of === 'deployer') return shared === undefined ? undefined : parseHttpsUrl(`https://etherscan.io/address/${shared.deployer}`);
-  return of === 'coingecko' ? coingeckoUrl(entry.coingecko) : undefined;
+  if (of === 'deployer') return parseHttpsUrl(`https://etherscan.io/address/${shared?.deployer ?? entry.address}`);
+  return of === 'coingecko' && coins?.length === 1 ? coingeckoUrl(coins[0]) : undefined;
 }
 
 function siteFinding(line: Line): Finding {
@@ -379,9 +422,10 @@ function lineFinding(entry: RegistryEntry, line: Line): Finding {
       if (line.cause === 'differs') return { kind: 'newer-differs' };
       if (line.cause === 'unexplained') return { kind: 'package-differs' };
       return line.cause === 'unattested' ? { kind: 'no-provenance' } : { kind: 'page-unread', why: 'not-fetched' };
+    case 'sdk-site':
+      return line.cause === 'other-tarball' ? { kind: 'provenance-other-tarball' } : siteFinding(line);
     case 'defillama':
     case 'api-site':
-    case 'sdk-site':
       return siteFinding(line);
   }
 }
@@ -407,6 +451,10 @@ function sourceResults(entry: RegistryEntry, lines: readonly Line[]): Result[] {
         ...(line.places === undefined ? {} : { places: line.places }),
         ...(line.shared === undefined ? {} : { shared: line.shared }),
         ...(line.others === undefined ? {} : { others: line.others }),
+        ...(line.seen === undefined ? {} : { seen: line.seen }),
+        ...(line.notCompared === undefined ? {} : { notCompared: line.notCompared }),
+        ...(line.coins === undefined ? {} : { coins: line.coins }),
+        ...(line.commit === undefined ? {} : { commit: line.commit }),
       };
     });
 }
@@ -482,7 +530,9 @@ const viewKey = (answer: Pick<ViewAnswer, 'index' | 'view' | 'namer'>): string =
 function factoryResults(entry: RegistryEntry, inputs: ReportInputs): Result[] {
   const factory = entry.attributes.factory;
   if (factory === undefined) return [];
-  const result = (key: string, finding: Finding): Result => ({ id: `${entry.name}/${key}`, line: 'sources', about: { kind: 'entry', entry }, source: { of: 'factory', part: 'address' }, link: undefined, finding });
+  const at = inputs.registry.entries.get(factory)?.address;
+  const link = at === undefined ? undefined : parseHttpsUrl(`https://etherscan.io/address/${at}`);
+  const result = (key: string, finding: Finding): Result => ({ id: `${entry.name}/${key}`, line: 'sources', about: { kind: 'entry', entry }, source: { of: 'factory', part: 'address' }, link, finding });
   if (inputs.vaults.has(entry.name) || evidenceEntries(inputs.subject).some((e) => e.name === entry.name)) return [result('factory.admitted', FACTORY_FINDINGS[factoryAnswer(inputs.vaults.get(entry.name), entry, inputs.registry)])];
   const proof = inputs.instances?.answers.get(entry.name);
   if (proof === undefined || proof.kind === 'unasked') return [result('factory.admitted', { kind: 'factory-unread' })];
@@ -505,14 +555,18 @@ function abiFinding(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefin
   return proof.metadataHashMasked || proof.extension?.metadataHashMasked === true ? { kind: 'metadata-differs' } : { kind: 'agrees' };
 }
 
-/** The entry's ABI result, and `<name>/abi.calls` when a proof that is not of the pin also lacks a function the template uses. */
+/**
+ * The entry's ABI result; `<name>/abi.calls` when a proof that is not of the pin also lacks a function the template
+ * uses; and `<name>/abi.proof`, passed, when the result is a masked metadata hash, since every other byte is proven.
+ */
 function abiResults(entry: RegistryEntry, unused: boolean, inputs: ReportInputs): Result[] {
   const proof = inputs.abi.get(entry.address);
   const missing = unused || entry.routes !== undefined || proof?.kind !== 'proven' ? [] : missingFromAbi(inputs.subject, inputs.registry, entry, proof);
   const result = (key: string, finding: Finding): Result => ({ id: `${entry.name}/${key}`, line: 'abi', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding });
   const finding = abiFinding(entry, proof, unused, missing);
   const hidden = missing.length > 0 && finding.kind !== 'fn-not-in-abi';
-  return [result('abi', finding), ...(hidden ? [result('abi.calls', { kind: 'fn-not-in-abi', signatures: missing })] : [])];
+  const masked = finding.kind === 'metadata-differs' ? [result('abi.proof', { kind: 'agrees' })] : [];
+  return [result('abi', finding), ...masked, ...(hidden ? [result('abi.calls', { kind: 'fn-not-in-abi', signatures: missing })] : [])];
 }
 
 const SPAN_FINDINGS: Readonly<Record<SpanCheck['kind'], Finding>> = {
@@ -612,13 +666,31 @@ function confirmingPlaces(results: readonly Result[]): Place[] {
   return [...places].map(([owner, of]) => ({ owner, sources: of }));
 }
 
+/** Every address a call of the traced transactions holds: its sender, its target and its address arguments. */
+function tracedAddresses(traces: readonly TracedTx[]): Set<Address> {
+  const found = new Set<Address>();
+  for (const tx of traces) {
+    if (tx.kind !== 'traced') continue;
+    for (const call of tx.calls) for (const address of [call.from, ...(call.to === undefined ? [] : [call.to]), ...(call.args ?? [])]) found.add(address.toLowerCase() as Address);
+  }
+  return found;
+}
+
 export const MIN_CONFIRMATIONS = 2;
 
-/** The entry's `<name>/address` result, first among its results: it passes when enough sources confirmed the address. */
-function withAddressResult(entry: RegistryEntry, results: readonly Result[]): Result[] {
+/** The places an entry's address needs: one for an entry the operation only reads, whose number the signer confirms on the card, two otherwise. */
+export const confirmationsNeeded = (readFor: readonly ReadFor[] | undefined): number => (readFor === undefined ? MIN_CONFIRMATIONS : 1);
+
+/**
+ * The entry's `<name>/address` result, first among its results: it passes when enough sources confirmed the address.
+ * With `readFor`, every result carries it.
+ */
+function withAddressResult(entry: RegistryEntry, results: readonly Result[], readFor: readonly ReadFor[] | undefined): Result[] {
   const by = confirmingPlaces(results);
-  const finding: Finding = by.length >= MIN_CONFIRMATIONS ? { kind: 'agrees' } : { kind: 'few-confirmations', by };
-  return [{ id: `${entry.name}/address`, line: 'sources', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding }, ...results];
+  const needs = confirmationsNeeded(readFor);
+  const finding: Finding = by.length >= needs ? { kind: 'agrees' } : { kind: 'few-confirmations', by, needs };
+  const all: Result[] = [{ id: `${entry.name}/address`, line: 'sources', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding }, ...results];
+  return readFor === undefined ? all : all.map((r) => ({ ...r, readFor }));
 }
 
 function fixtureFinding(judgement: FixtureJudgement): Finding {
@@ -658,9 +730,10 @@ export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[
     ]), inputs),
   }));
   const confirmedElsewhere = new Set(byEntry.filter(({ entry, results }) => confirmingPlaces(results.filter((r) => r.source?.of !== 'deployer' && !(r.source?.of === 'factory' && restsOnOthers(inputs.registry.entries.get(entry.attributes.factory ?? ''))))).length >= MIN_CONFIRMATIONS).map(({ entry }) => entry.name));
-  const results = byEntry.flatMap(({ entry, results: own }) => withAddressResult(entry, own.map((r) => deployerCounts(r, confirmedElsewhere))));
+  const readOnly = readOnlyEntries(subject, inputs.registry, tracedAddresses(inputs.pastTxs.flatMap(({ run }) => run.traces)));
+  const results = byEntry.flatMap(({ entry, results: own }) => withAddressResult(entry, own.map((r) => deployerCounts(r, confirmedElsewhere)), readOnly.get(entry.name)));
   const judged = fixtures.map(
-    (fixture): Result => ({ id: `fixture.${fixture.name}`, line: 'params', about: { kind: 'fixture', name: fixture.name }, source: undefined, link: undefined, finding: fixtureFinding(fixture) }),
+    (fixture): Result => ({ id: `fixture.${fixture.name}`, line: 'params', about: { kind: 'fixture', name: fixture.name, sender: 'safe' }, source: undefined, link: undefined, finding: fixtureFinding(fixture) }),
   );
   return { entries: checked.map(({ entry }) => entry), results: [...results, ...judged] };
 }
@@ -687,7 +760,10 @@ const RANK: Readonly<Record<State, number>> = { na: 0, ok: 1, warn: 2, bad: 3 };
 export const worst = (results: readonly Result[]): State => results.reduce<State>((acc, r) => (RANK[stateOf(r)] > RANK[acc] ? stateOf(r) : acc), 'na');
 
 /** 待確認: the results for the signer, red first, then amber, each in ledger order. */
-export const forSigner = (ledger: Ledger): Result[] => [...ledger.results.filter((r) => stateOf(r) === 'bad'), ...ledger.results.filter((r) => stateOf(r) === 'warn')];
+export const forSigner = (ledger: Ledger): Result[] => {
+  const open = ledger.results.filter(needsSigner);
+  return [...open.filter((r) => stateOf(r) === 'bad'), ...open.filter((r) => stateOf(r) === 'warn')];
+};
 
 const subjectOf = (result: Result): string => (result.about.kind === 'entry' ? result.about.entry.name : result.id);
 
@@ -710,35 +786,44 @@ export function strip(ledger: Ledger): StripItem[] {
 
 const resultsOf = (ledger: Ledger, entry: RegistryEntry): Result[] => ledger.results.filter((r) => r.about.kind === 'entry' && r.about.entry.name === entry.name);
 
-/** 地址: entries with a result for the signer or that `aiConcern` names open, in ledger order; the rest fold into one row. */
+/**
+ * 地址: entries with a result for the signer, a read-only entry's site finding, or one `aiConcern` names open, in ledger
+ * order; the rest fold into one row.
+ */
 export function addressRows(ledger: Ledger, aiConcern: (entry: RegistryEntry) => boolean): { readonly open: readonly RegistryEntry[]; readonly folded: readonly RegistryEntry[] } {
-  const asks = (entry: RegistryEntry) => aiConcern(entry) || resultsOf(ledger, entry).some(needsSigner);
+  const asks = (entry: RegistryEntry) => aiConcern(entry) || resultsOf(ledger, entry).some((r) => needsSigner(r) || readOnlySite(r));
   return { open: ledger.entries.filter(asks), folded: ledger.entries.filter((entry) => !asks(entry)) };
 }
 
 export type Confidence = 'high' | 'medium' | 'low';
 
+/** The card fields `card new` reads the entry for, when the operation only reads it. */
+export const readForOf = (ledger: Ledger, entry: RegistryEntry): readonly ReadFor[] | undefined => resultsOf(ledger, entry).find((r) => r.readFor !== undefined)?.readFor;
+
 /** The places that confirmed the entry's address, in row order. */
 export const confirmations = (ledger: Ledger, entry: RegistryEntry): Place[] => confirmingPlaces(resultsOf(ledger, entry));
 
 /**
- * From the entry's results alone: low when any is for the signer; high when none is, an official page is among the
- * address's confirmations, and a code pin span passed; medium otherwise. An AI review never moves it.
+ * From the entry's results alone: low when any is for the signer; medium when a read-only entry's site finding is
+ * among them; high when an official page is among the address's confirmations and a code pin span passed; medium
+ * otherwise. An AI review never moves it.
  */
 export function confidence(ledger: Ledger, entry: RegistryEntry): Confidence {
   const results = resultsOf(ledger, entry);
   if (results.some(needsSigner)) return 'low';
+  if (results.some(readOnlySite)) return 'medium';
   const page = confirmations(ledger, entry).some((place) => place.sources.some((source) => source === 'page' || source.startsWith('more.')));
   const pinned = results.some((r) => stateOf(r) === 'ok' && /^code\.\d+$/.test(r.id.slice(entry.name.length + 1)));
   return page && pinned ? 'high' : 'medium';
 }
 
-/** The worst of some results, worded by the worst one; a passing one has no phrase, only its icon. */
+/** The worst of some results, worded by the worst one, `shown`; a passing one has no phrase, only its icon. */
 export type Judged = {
   readonly state: State;
   readonly phrase: Phrase | undefined;
   readonly link: HttpsUrl | undefined;
   readonly places: readonly SitePlace[];
+  readonly shown: Result;
 };
 
 /**
@@ -756,7 +841,7 @@ export type SourceLine = Judged & {
 function judged(results: readonly Result[]): Judged {
   const state = worst(results);
   const shown = results.find((r) => stateOf(r) === state) as Result;
-  return { state, phrase: state === 'ok' ? undefined : PHRASE_OF[shown.finding.kind], link: shown.link, places: shown.places ?? [] };
+  return { state, phrase: state === 'ok' ? undefined : PHRASE_OF[shown.finding.kind], link: shown.link, places: shown.places ?? [], shown };
 }
 
 /** The entry's program sources in row order, each judged by its address results, with its site judged apart. */

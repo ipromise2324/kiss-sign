@@ -11,8 +11,8 @@
  "head": "26447462",
  "studiedWith": {
   "template": "0x5ffca1e5946d5a78fed71f0405b9dd3610fd2b011031b01afb2880a3ed303f67",
-  "registry": "0x73c735d7a1f0614ae59742e3002c71f5493f80c3df94866c80b4e1957a9122e6",
-  "study": "0x92508a29cee7c49b83a1d4a9f9e4e04eac8df225cb741b31331cc10dacdd84ae"
+  "registry": "0x00974e43541203989be8a4f0abc920d5ae6461d4969b733b47441d8efd5e6815",
+  "study": "0x61f1ce5f5cd4adf417d5dffd036bcb1056828b2e57170ba4bcd0ef03b994e01d"
  },
  "search": {
   "year": {
@@ -64,7 +64,8 @@
     "expected": "capId(string,address,(address,address,address,address,uint256))",
     "actual": "the heads run past the end"
    },
-   "free": []
+   "free": [],
+   "time": "1771736231"
   },
   {
    "kind": "misfit",
@@ -80,7 +81,8 @@
     "expected": "capId(string,address,(address,address,address,address,uint256))",
     "actual": "the heads run past the end"
    },
-   "free": []
+   "free": [],
+   "time": "1771736771"
   },
   {
    "kind": "fit",
@@ -150,7 +152,8 @@
     "915000000000000000",
     "1000000000000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1771768595"
   },
   {
    "kind": "misfit",
@@ -166,7 +169,8 @@
     "expected": "capId(string,address,(address,address,address,address,uint256))",
     "actual": "the heads run past the end"
    },
-   "free": []
+   "free": [],
+   "time": "1771769219"
   },
   {
    "kind": "fit",
@@ -236,7 +240,8 @@
     "860000000000000000",
     "1000000000000000000"
    ],
-   "outside": []
+   "outside": [],
+   "time": "1771819331"
   },
   {
    "kind": "misfit",
@@ -258,7 +263,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1772215523"
   },
   {
    "kind": "misfit",
@@ -308,7 +314,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1785182903"
   },
   {
    "kind": "misfit",
@@ -342,7 +349,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1786254203"
   },
   {
    "kind": "misfit",
@@ -376,7 +384,8 @@
      }
     ]
    },
-   "free": []
+   "free": [],
+   "time": "1786550915"
   }
  ],
  "measurements": [],

@@ -15,6 +15,10 @@ export const SOLC_PINS: Readonly<Record<string, SolcPin>> = {
     file: 'soljson-v0.4.24+commit.e67f0147.js',
     sha256: '9d9ec631865882a435fc577126fe068ccdf9c3962aa439acb2cdd0794907fccc',
   },
+  '0.6.6+commit.6c089d02': {
+    file: 'soljson-v0.6.6+commit.6c089d02.js',
+    sha256: '09f6098026622c5c334c7798c3ad2b8f7c0ebc62f87846c7d5e7e725c3d1cbc2',
+  },
   '0.6.12+commit.27d51765': {
     file: 'soljson-v0.6.12+commit.27d51765.js',
     sha256: '3e1956c550ca48e289044c7c0bd892403081b4b5e17e77ce707c815ce6c4228f',

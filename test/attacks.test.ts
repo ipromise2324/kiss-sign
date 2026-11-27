@@ -9,8 +9,10 @@ import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { replayTransport } from '../src/chain/recording.ts';
 import type { Transport } from '../src/chain/rpc.ts';
 import type { Io } from '../src/cli/io.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const REPO = join(import.meta.dirname, '..');
+const ROOT = repoWithTestFixtures();
 
 const results = await replayCases(ROOT);
 
@@ -43,7 +45,8 @@ test('pnpm attacks prints, per case, the card with full addresses, the decoded c
 async function recordInRepoCopy(id: string, transport: (served: Transport, drpc: string) => Transport): Promise<{ code: number | Error; before: string; after: string }> {
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-attacks-'));
   try {
-    for (const dir of ['templates', 'registry', join('testdata', 'attacks')]) cpSync(join(ROOT, dir), join(root, dir), { recursive: true });
+    for (const dir of ['templates', 'registry']) cpSync(join(ROOT, dir), join(root, dir), { recursive: true });
+    cpSync(join(REPO, 'testdata', 'attacks'), join(root, 'testdata', 'attacks'), { recursive: true });
     const path = join(root, 'testdata', 'attacks', id, 'recording.json');
     const before = readFileSync(path, 'utf8');
     const { service, exchanges } = loadRecording(root, id);

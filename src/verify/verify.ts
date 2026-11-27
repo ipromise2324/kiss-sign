@@ -135,14 +135,15 @@ export type Prepared = {
   readonly messages: Messages;
 };
 
-export function prepare(inputs: VerifyInputs): Prepared {
+/** `replayed` when the inputs are a verdict file's, whose templates may predate listed names (see `parseTemplate`). */
+export function prepare(inputs: VerifyInputs, replayed = false): Prepared {
   const registry = guard('the registry', () => registryFromTexts(inputs.registry, inputs.markets, inputs.attributes));
   const safe = guard('the configured Safe', () => parseAddress('safe', inputs.safe));
   if (keccakText(inputs.card.text) !== inputs.card.hash) throw new VerifyError(`the card does not hash to ${inputs.card.hash}`);
   const card = guard('the card', () => parseCard(JSON.parse(inputs.card.text)));
   const templates = new Map<string, Template>();
   const approvals = inputs.templates.map(({ id, text, approved }) => {
-    const template = guard(`template ${id}`, () => parseTemplate(JSON.parse(text), registry));
+    const template = guard(`template ${id}`, () => parseTemplate(JSON.parse(text), registry, replayed ? 'replayed' : 'recorded'));
     if (template.id !== id) throw new VerifyError(`template ${id} names itself ${template.id}`);
     templates.set(id, template);
     return { template: id, hash: keccakText(text), approved: approved === null ? undefined : guard(id, () => parseHex(id, approved)) };
@@ -237,8 +238,8 @@ export async function readOwners(reader: Reader, safe: Address, at: BlockRef): P
  * Runs every check on the inputs, reading the chain only through `reader`. The same inputs and the same chain answers
  * give the same verdict, which is what `replay` relies on.
  */
-export async function evaluate(inputs: VerifyInputs, reader: Reader): Promise<Evaluation> {
-  return (await evaluateTx(inputs, reader)).evaluation;
+export async function evaluate(inputs: VerifyInputs, reader: Reader, replayed = false): Promise<Evaluation> {
+  return (await evaluateTx(inputs, reader, undefined, replayed)).evaluation;
 }
 
 /**
@@ -283,6 +284,7 @@ export async function evaluateTx(
   given: VerifyInputs,
   reader: Reader,
   readMessage?: MessageReader,
+  replayed = false,
 ): Promise<{
   readonly evaluation: Evaluation;
   readonly tx: SafeTx;
@@ -294,7 +296,7 @@ export async function evaluateTx(
   readonly checks: AllChecks;
   readonly states: Readonly<Record<CheckName, CheckState>>;
 }> {
-  const parsed = prepare(given);
+  const parsed = prepare(given, replayed);
   const { safe } = parsed;
   const latest = await reader.block('latest');
   if (latest.kind === 'unverifiable') throw new VerifyError(`no agreed latest block: ${latest.reason}`);

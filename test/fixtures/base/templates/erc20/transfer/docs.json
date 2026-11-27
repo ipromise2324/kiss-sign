@@ -1,0 +1,3 @@
+{
+  "transfer(address,uint256)": { "contract": "usdc", "standard": "erc-20" }
+}

@@ -1,5 +1,4 @@
 import { readFileSync, statSync } from 'node:fs';
-import { parseArgs } from 'node:util';
 import { loadAddressBook, saveAddressBook } from '../address-book.ts';
 import { parseCard, resolveCard, sealCard } from '../card.ts';
 import type { Card, Refused } from '../card.ts';
@@ -16,6 +15,7 @@ import { keccakText } from '../verify/verify.ts';
 import { cardSummary } from './card-view.ts';
 import type { CardReads } from './card-view.ts';
 import { WIDTH, paint, rows, text, wrap } from './format.ts';
+import { parseFlags } from './flags.ts';
 import { FAILED, OK, UsageError, terminal } from './io.ts';
 import type { Labels } from './labels.ts';
 import type { Io, Terminal } from './io.ts';
@@ -36,7 +36,7 @@ function openCommand(platform: NodeJS.Platform, path: string): string {
 
 export async function init(args: readonly string[], io: Io, w: Labels): Promise<number> {
   const I = w.init;
-  const { values } = parseArgs({ args: [...args], options: { safe: { type: 'string' }, language: { type: 'string' } }, strict: true });
+  const { values } = parseFlags({ args: [...args], options: { safe: { type: 'string' }, language: { type: 'string' } }, strict: true });
   if (values.language !== undefined && !isLanguage(values.language)) throw new UsageError(I.languageFlag(LANGUAGES));
   const home = kissSignHome(io.env);
   const existing = loadStoredConfig(home);
@@ -199,7 +199,7 @@ export async function templateApprove(args: readonly string[], io: Io, w: Labels
     io.stderr(`kiss-sign: ${A.notMerged(`${TEMPLATES_DIR}/${id}/template.json`)}\n`);
     return FAILED;
   }
-  const template = parseTemplate(JSON.parse(json), registryFromTexts(fileAt(io.repoRoot, commit, REGISTRY_PATH), optionalFileAt(io.repoRoot, commit, MARKETS_PATH), optionalFileAt(io.repoRoot, commit, ATTRIBUTES_PATH)));
+  const template = parseTemplate(JSON.parse(json), registryFromTexts(fileAt(io.repoRoot, commit, REGISTRY_PATH), optionalFileAt(io.repoRoot, commit, MARKETS_PATH), optionalFileAt(io.repoRoot, commit, ATTRIBUTES_PATH)), 'committed');
   if (template.id !== id) throw new UsageError(A.namesItself(`${TEMPLATES_DIR}/${id}/template.json`, template.id));
   const hash = keccakText(json);
   const p = paint(io.color === true);
