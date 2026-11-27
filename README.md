@@ -258,22 +258,27 @@ kiss-sign checks a transaction against the card you sealed and the reports you m
 
 ## Token cost
 
-What it cost Claude Opus 5.5 to make one report, measured one report at a time between 2026-11-22 and 2026-11-25.
+What it cost Claude Opus 5.5 to build each template and its report from zero, one build at a time, on 2026-11-27. Each build got one short request, such as "I want to send USDC from my Safe. build me the template and its report", and a clone without that template, its report, its research or its test transactions.
 
-| Report | Tokens | Minutes | USD |
-|---|---:|---:|---:|
-| compound/supply | 6.68M | 26 | $3.22 |
-| morpho/vault-deposit (two vaults) | 12.31M | 49 | $7.34 |
-| safe/add-owner | 5.61M | 74 | $2.59 |
-| safe/change-threshold | 3.55M | 62 | $2.40 |
-| safe/remove-owner | 5.14M | 57 | $2.54 |
-| safe/swap-owner | 2.85M | 55 | $2.07 |
-| uniswap/allow-router | 2.83M | 15 | $2.62 |
-| uniswap/approve-permit2 | 2.51M | 15 | $2.29 |
-| uniswap/swap | 8.79M | 41 | $5.68 |
-| uniswap/swap-no-hook | 7.05M | 53 | $4.12 |
+| Report | Tokens | Minutes | Model calls | Cache reads |
+|---|---:|---:|---:|---:|
+| erc20/transfer | 7.80M | 10 | 72 | 98% |
+| eth/transfer | 9.43M | 12 | 74 | 98% |
+| safe/add-owner | 10.44M | 14 | 82 | 98% |
+| safe/remove-owner | 10.50M | 15 | 84 | 98% |
+| safe/swap-owner | 13.63M | 16 | 91 | 98% |
+| safe/change-threshold | 10.49M | 10 | 84 | 98% |
+| fluid/vault-deposit (fUSDC, new template) | 18.53M | 32 | 114 | 99% |
+| fluid/vault-deposit (fUSDT, added vault) | 8.82M | 14 | 76 | 98% |
+| compound/supply (cUSDCv3) | 20.79M | 46 | 129 | 99% |
+| morpho/vault-deposit (Steakhouse, new template) | 25.90M | 26 | 133 | 99% |
+| morpho/vault-deposit (Hyperithm, added vault) | 13.67M | 30 | 98 | 98% |
+| cow/swap | 28.55M | 51 | 148 | 98% |
+| morpho/vault-v2-cap-submit (KPK) | 16.89M | 30 | 113 | 98% |
+| morpho/vault-v2-cap-accept (Acuto) | 10.79M | 17 | 78 | 98% |
+| morpho/vault-v2-cap-decrease (Acuto) | 11.71M | 20 | 88 | 98% |
 
-Each run researched the operation, recorded the evidence, wrote the notes, ran the tests and opened the pull request. Most started from an existing template, and the Morpho and Uniswap swap rows leave out earlier research, so a first build from nothing can cost more. 89% to 96% of the tokens are cache reads. Dollars are [Anthropic's list prices](https://platform.claude.com/docs/en/about-claude/pricing) on 2026-11-25; a subscription bills differently. The session that starts the agents and reads the reports is not counted.
+15 builds, 217.9M tokens and 343 minutes in all. Each build researched every address, studied other Safes' past transactions, wrote the template and its notes, recorded test transactions and rendered the report; where the operation might need a step first, such as an approval, it read the configured Safe's state to see whether the step was done. A row marked "added vault" started from the template the row above it built, so it covers only the new vault's report. The compound/supply and cow/swap rows include one review round, after the report was read and a rule was sent back to tighten. 98% to 99% of the tokens are cache reads, because the model reads its whole conversation again on every call. Minutes count active time. The session that starts the builds, reads the reports and fixes the program is not counted. uniswap/swap is not in the table yet.
 
 ## Scope
 
