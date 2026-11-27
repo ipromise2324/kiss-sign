@@ -91,7 +91,7 @@ You need:
 
 - Node 22.21 or later and pnpm.
 - Free [Alchemy](https://dashboard.alchemy.com/), [drpc](https://drpc.org/login) and [Etherscan](https://etherscan.io/myapikey) keys. Commands that read the chain ask both Alchemy and drpc, and refuse to run without either key.
-- Optionally, a fine-grained [GitHub token](https://github.com/settings/personal-access-tokens/new) with access to "Public repositories" and no permissions. It lets your AI search a protocol's GitHub for files that list an address, and raises GitHub's limit from 60 to 5,000 requests an hour. It changes no verdict, and kiss-sign sends it only to `api.github.com`.
+- Optionally, a fine-grained [GitHub token](https://github.com/settings/personal-access-tokens/new) with read-only access to "Public repositories" and no permissions added. It lets your AI search a protocol's GitHub for files that list an address, and raises GitHub's limit from 60 to 5,000 requests an hour. It changes no verdict, and kiss-sign sends it only to `api.github.com`.
 - A hardware wallet that shows a Safe transaction's domain hash and message hash, or its safeTxHash.
 
 **Language.** English (`en`, the default) or Traditional Chinese (`zh-TW`); change it with `pnpm kiss-sign init --language zh-TW`. It changes only the text you read, never a verdict. Give `./check.sh init` on the second computer the same language, so the comparison rows match.
