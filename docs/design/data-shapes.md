@@ -152,7 +152,7 @@ A contract is never written as an address: a rule names it from the contract reg
 
 The rule that an approval is spent in the transaction that gives it has one exception, written as data: a registry entry may declare `standingAllowance: { "via": "erc20" | "permit2", "why" }`, saying an allowance from the Safe to this contract may stay open, and why its code makes that safe.
 The entry is reviewed with its source and code pin, and `verify` requires the contract to run its pinned code, as for any registry contract a template names.
-Two entries declare one:
+No entry declares one today. The Uniswap templates, removed until they are rebuilt, used these two:
 
 - **Permit2** (`0x000000000022D473030F116dDEE9F6B43aC78BA3`), through `erc20`: Permit2 has no owner and no proxy, and it moves an owner's tokens only for a spender the owner approved on Permit2 itself, by a call from the owner or by the owner's signature (`AllowanceTransfer`), or by a transfer the owner signed (`SignatureTransfer`).
   An ERC-20 allowance to Permit2 alone lets no one move the Safe's tokens.
@@ -347,8 +347,8 @@ Card values per operation, covering the operations in the Safe's history:
 | Supply to a Morpho market | market, amount | the market's params are the registry market's; the Safe gives exactly the amount; its supply shares in the market increase and its debt and collateral do not change, read before and after |
 | Claim rewards (Fluid, Merkl) | reward token | recipient is the Safe; amount and proof are free; the Safe gives nothing and receives only the reward token |
 | Receive USDC through CCTP | token, amount | the target is Circle's MessageTransmitter; the message and attestation are free; the Safe gives nothing and receives exactly the amount of the token |
-| Swap through a router (Uniswap, Odos) | sell token, buy token, sell amount, minimum buy amount | recipient is the Safe; the router is a named contract; for Uniswap, one Universal Router `execute` with one `V4_SWAP`, exact in: `uniswap/swap` in the USDC/USDT pool of the `uniswap-stable-pair-hook` entry, then a `SWEEP` to the Safe; `uniswap/swap-no-hook` in a USDC/USDT pool with no hook and tick spacing 1, its fee free; the Safe gives exactly the sell amount and gets at least the minimum |
-| Let Uniswap use a token (`uniswap/approve-permit2`, `uniswap/allow-router`) | token | an unlimited ERC-20 approval to Permit2, or a Permit2 allowance of 2^160-1 to the Universal Router, each kept open as its registry entry allows (see [Standing allowances](#standing-allowances)); the app sends them before a first swap, alone or with it in one MultiSend, which a card of several operations covers |
+| Swap through a router (Uniswap, Odos) | sell token, buy token, sell amount, minimum buy amount | recipient is the Safe; the router is a named contract; the Safe gives exactly the sell amount and gets at least the minimum |
+| Let Uniswap use a token | token | an unlimited ERC-20 approval to Permit2, or a Permit2 allowance of 2^160-1 to the Universal Router, each kept open as its registry entry allows (see [Standing allowances](#standing-allowances)); the app sends them before a first swap, alone or with it in one MultiSend, which a card of several operations covers |
 | Place a CoW Swap order from a Safe | sell token, buy token, sell amount, minimum buy amount | the transaction pre-signs one order, read by its digest (see [Signed messages](#signed-messages)): a sell order of exactly the sell amount, for at least the minimum, to the Safe, filled once, with ERC-20 balances and no fee; with an approval, it is exactly the sell amount to CoW's vault relayer, left open until an order spends it |
 | Cancel a queued transaction | the nonce to replace | 0 ETH to the Safe itself, no data |
 | Add an owner (Safe settings) | owner, threshold | the Safe calls itself, 0 ETH, `addOwnerWithThreshold`; its owners gain exactly the card's owner and its threshold ends at the card's |

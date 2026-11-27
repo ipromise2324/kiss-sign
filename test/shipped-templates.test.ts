@@ -17,9 +17,8 @@ const OWNERS_NOT_READ = "UNVERIFIABLE the Safe's owners: not read";
 
 /**
  * Each shipped template's test transactions in testdata/safe-tx/ and the card fields whose implied value is a bound.
- * uniswap/allow-router is not here: its test transactions batch it with a swap, and implied-card reads a transaction of
- * one template. fluid/vault-deposit is not here: its min-shares is checked on the simulated result, so no value of the
- * transaction implies it.
+ * fluid/vault-deposit is not here: its min-shares is checked on the simulated result, so no value of the transaction
+ * implies it.
  */
 const SHIPPED: Record<string, Shipped> = {
   'compound/supply': { fixtures: ['compound-supply-usdc', 'compound-supply-usdc-other-safe'] },
@@ -33,8 +32,6 @@ const SHIPPED: Record<string, Shipped> = {
   'safe/change-threshold': { fixtures: ['safe-change-threshold-1-3-0', 'safe-change-threshold-1-4-1'] },
   'safe/remove-owner': { fixtures: ['safe-remove-owner-1-4-1', 'safe-remove-owner-first-1-3-0', 'safe-remove-owner-to-1'], verdict: OWNERS_NOT_READ },
   'safe/swap-owner': { fixtures: ['safe-swap-owner-first-signer', 'safe-swap-owner-v130', 'safe-swap-owner-v141'], verdict: OWNERS_NOT_READ },
-  'uniswap/approve-permit2': { fixtures: ['uniswap-approve-permit2-usdt', 'uniswap-approve-permit2-usdt-2'] },
-  'uniswap/swap': { fixtures: ['uniswap-swap-usdc-usdt'], bounded: ['min-buy'] },
 };
 
 /** What `pnpm template implied-card` printed for one transaction: its verdict line and each bounded field, or each line that is neither. */

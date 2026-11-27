@@ -34,7 +34,6 @@ Never ask the signer about these before research, except which contract or marke
   The past-transactions study (step 5) corroborates or revises this, so run no search of its own for it.
   A step the app bundles shows there as an extra call in a misfit group; another sequence of steps is another template's shape, not a reason to change this one.
   A step it sends apart leaves no trace there, so settle that case from the app's code or docs.
-  `uniswap/approve-permit2` and `uniswap/allow-router`, on their own or before `uniswap/swap` on one card, predate this rule; a new operation does not copy them.
 - **Card.** The card asks what the protocol's own app asks a user to enter for this operation, such as the market, the collateral amount and the borrow amount, and nothing the app does not ask, except what safety strictly needs, explained in the report.
   Each contract field but one of the instance kind, such as a vault, lists the registry names it accepts as `"names"`, at first only the tokens the signer's request names: a swap's pair, an approval's token ([Intent card](../../../docs/design/data-shapes.md#intent-card)).
   A value the app fills in by itself, such as a slippage floor, a share-price cap, a minimum amount out or a deadline, is never asked.
@@ -92,7 +91,7 @@ When `prove-abi` refuses because the compiler is not pinned, run `pnpm pin-solc 
 
 Write `templates/<protocol>/<operation>/template.json`.
 Start from an existing template of a similar shape in `templates/`.
-For example, take `erc20/transfer` for a token transfer, `morpho/vault-deposit` or `fluid/vault-deposit` for an ERC-4626 deposit, `uniswap/swap` for a swap through a router, `cow/swap` for a signed order, one under `safe/` for an owner or threshold change, and `morpho/vault-v2-cap-submit` and its siblings for a curator's vault setting.
+For example, take `erc20/transfer` for a token transfer, `morpho/vault-deposit` or `fluid/vault-deposit` for an ERC-4626 deposit, `cow/swap` for a signed order, one under `safe/` for an owner or threshold change, and `morpho/vault-v2-cap-submit` and its siblings for a curator's vault setting.
 When none of these is there, take the nearest one that is.
 Then follow [Data shapes](../../../docs/design/data-shapes.md#data-shapes); template load refuses anything else.
 Run `pnpm template check <protocol>/<operation>` after each edit: it parses the draft as `verify` does and names the path and problem of anything refused, so import no program file in a script of your own to check it.

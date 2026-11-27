@@ -106,7 +106,7 @@ const proven = (signature: string): DecodeTxDeps['abiOf'] => {
 };
 
 test("decode-tx decodes the Universal Router's inputs by --template's encoded rules and says where an input does not fit them", async () => {
-  const deps = { abiOf: proven('execute(bytes commands, bytes[] inputs, uint256 deadline)'), nameOf };
+  const deps = { abiOf: proven('execute(bytes commands, bytes[] inputs, uint256 deadline)'), nameOf: (address: Address) => baseRegistry.byAddress.get(address)?.name };
   const tx = executed('uniswap-swap-no-hook-usdc-usdt');
   const plain = await renderDecodedTx(tx, deps);
   assert.match(plain, /\n {8}\[0\]: 0x[0-9a-f]{512}… \(SHORTENED: \d+ bytes, the first 256 shown; --full prints every byte\)\n/);

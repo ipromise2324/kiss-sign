@@ -33,7 +33,7 @@ const SCRIPT_FLAGS: readonly (readonly [script: string, flag: string, args: read
   ['find-sources', 'protocol', ['usdc']],
   ['instance-evidence', 'record', []],
   ['notes-needed', 'instance-of', ['erc20/transfer']],
-  ['past-txs', 'event-arg', ['uniswap/approve-permit2', '--token', 'usdt', '--anchor', 'event', '--event', 'Approval(address indexed owner, address indexed spender, uint256 value)']],
+  ['past-txs', 'event-arg', ['erc20/transfer', '--token', 'usdt', '--anchor', 'event', '--event', 'Approval(address indexed owner, address indexed spender, uint256 value)']],
   ['perturb', 'card', ['some-fixture']],
   ['progress', 'instance', ['erc20/transfer']],
   ['pool-depth', 'min', ['usdc', '--auto']],
