@@ -7,6 +7,7 @@ import { httpsTransport } from '../chain/rpc.ts';
 import { ConfigError, loadStoredConfig } from '../config.ts';
 import { KEYS, KeyError, findKey, keyFilePath, keySpec, kissSignHome, removeKey, saveKey } from '../keys.ts';
 import type { KeySpec } from '../keys.ts';
+import { keyFromPasted, keyPrompt } from './key-paste.ts';
 import { DEFAULT_LANGUAGE, isLanguage } from '../language.ts';
 import type { Language } from '../language.ts';
 import { RegistryError } from '../registry.ts';
@@ -46,13 +47,13 @@ async function keyAdd(args: readonly string[], io: Io): Promise<number> {
   if (io.readSecret === undefined) {
     throw new UsageError('key add reads the key at a hidden prompt, so run it in your own terminal with nothing piped into it.');
   }
-  const typed = await io.readSecret(`${spec.label} API key (typing is hidden): `);
+  const typed = await io.readSecret(keyPrompt(spec));
   if (typed === undefined || typed.trim() === '') {
     io.stderr('No key saved.\n');
     return FAILED;
   }
   const home = kissSignHome(io.env);
-  saveKey(home, spec, typed.trim());
+  saveKey(home, spec, keyFromPasted(spec, typed));
   io.stdout(`Saved the ${spec.label} key to ${keyFilePath(home)}, readable by you only.\n`);
   if (io.env[spec.env]) io.stdout(`${spec.env} is also set in your environment, and it wins over the file.\n`);
   return OK;
@@ -114,6 +115,9 @@ only. A command that reads the chain needs both ALCHEMY_API_KEY and DRPC_API_KEY
 counts only when both providers answer it alike. Only the research commands read GITHUB_TOKEN, and
 only for api.github.com, where it raises the limit from 60 to 5,000 requests an hour and changes no
 answer. verify, card, template approve, replay and pnpm history never read it.
+For alchemy and drpc, paste the whole Ethereum URL the dashboard shows, such as
+https://lb.drpc.live/ethereum/AbC123 or https://eth-mainnet.g.alchemy.com/v2/AbC123, or the key
+alone; only the key is saved.
 
 Writes: $KISS_SIGN_HOME/.env.
 Keys: none.
