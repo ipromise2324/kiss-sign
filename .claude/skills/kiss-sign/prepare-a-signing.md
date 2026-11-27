@@ -11,6 +11,7 @@ The signer runs every command from the clone as `pnpm kiss-sign <command>`, afte
 2. `pnpm kiss-sign card new <protocol>/<operation>`.
    It first fetches GitHub's `main` and stops, telling the signer to `git pull`, when the clone's `templates/` or `registry/` differ from it.
    It lists each contract, market or recipient with its full address; the signer picks by number, or by the exact name, full address or market id as listed.
+   When the template declares `same`, such as `"same": ["vault.asset", "market.loanToken"]` in the Vault V2 cap templates, each later list shows only the choices that agree with the earlier picks, and it stops, naming the fields, when none does.
    A token field lists only the tokens the template lists; when the signer's token is not among them, `card seal` refuses the card, and adding it to the list is a template pull request the signer approves again.
    It asks each amount in whole tokens (commas between thousands allowed), reading a registry token's decimals on chain itself; ETH is 18 with no read, and a token outside the registry is asked in base units.
    It does not ask a computed field, such as a vault deposit's `min-shares`: it checks that every contract the read names runs its pinned code, reads the declared view, applies the template's slippage, and prints the value with its slippage and source for the signer to check.

@@ -1,6 +1,6 @@
 ---
 name: kiss-sign
-description: Build a kiss-sign template for any Safe operation (a transfer, a swap, an approval, a Safe owner change, a vault deposit, a curator setting), add a per-instance report for a contract an existing template can name, add a registry entry (a token, a recipient contract, a market part) that existing templates can name, or prepare a signing with an existing template. Use when the user wants to sign anything through their Safe with kiss-sign, or asks for a new template, a new instance's report or a new registry entry.
+description: Build a kiss-sign template for any Safe operation (a transfer, a swap, a Safe owner change, a vault deposit, a curator setting; a step it needs first, such as an approval, goes inside the operation's template), add a per-instance report for a contract an existing template can name, add a registry entry (a token, a vault or market, a market part) that existing templates can name, or prepare a signing with an existing template. Use when the user wants to sign anything through their Safe with kiss-sign, or asks for a new template, a new instance's report or a new registry entry.
 ---
 
 # kiss-sign
@@ -10,7 +10,7 @@ You research operations, write templates and their reports, and change the progr
 The program runs the templates and prints `MATCH`, `MISMATCH` or `UNVERIFIABLE`.
 The signer owns a fork of kiss-sign; its `main` is what `verify` runs, and every pull request you open goes to that fork, the repository `origin` names.
 `docs/design.md` is the source of truth; if it disagrees with this skill, follow the design and tell the signer.
-Every command but `pnpm test` and `pnpm typecheck` answers `--help` with its flags and the design section that holds its rules; read it before you run the command.
+Every command but `pnpm install`, `pnpm test` and `pnpm typecheck` answers `--help` with its flags and the design section that holds its rules; read it before you run the command.
 
 ## Rules
 
@@ -77,6 +77,7 @@ Look in `templates/` for the operation, such as `templates/erc20/transfer/`, `te
   A card value of the instance kind needs a report through whatever field names it, and a template whose card has two contract fields of the instance kind has no per-instance report, so every card for it is refused.
   The rules are in step 6 of [First time an operation is done](../../../docs/design/flow.md#first-time-an-operation-is-done-build-its-template), the bold items One report, one operation and No report, no signing.
   `card new` lists only instances with a report, and `card seal` and `verify` refuse any other.
+  When the template declares `same`, `card new` also lists only the choices that name one address with the fields already picked, and stops when none does.
 - A contract the signer names is not in `registry/contracts.json` and is not a new instance: [Add a registry entry](#add-a-registry-entry).
 - A recipient that is not a contract goes in the signer's address book, never the registry: [Prepare a signing](#prepare-a-signing).
 - The template exists, every contract the signer names is in `registry/contracts.json`, and each instance has its report: [Prepare a signing](#prepare-a-signing).

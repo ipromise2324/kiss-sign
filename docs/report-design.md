@@ -158,7 +158,7 @@ None. There is no brand accent. Ink is the strongest non-state colour.
 
 ### State
 - **Pass Green** (state-ok): filled check icons, the "what the Safe receives" arrow and caption in the diagram, a positive change in after-transaction rows.
-- **Attention Amber** (state-warn): ring-with-! icons, the 不限 chip of an argument the program leaves unbound but tested, and the 有上限 chip of an argument the template bounds by time.
+- **Attention Amber** (state-warn): ring-with-! icons, the 這裡不檢查 chip of an argument the program leaves unbound but tested, and the 有上限 chip of an argument the template bounds by time.
 - **Fail Red** (state-bad): filled cross icons.
 
 ### Named Rules
@@ -224,10 +224,10 @@ One radius, a gentle 6px, on everything that has a corner: tags, who-decides chi
 Every state icon carries `role="img"` and an `aria-label` in the page's language; info and chevron are `aria-hidden`.
 
 ### Check Strip
-The first-viewport summary: one row of short named results between two hairlines, each an icon, a name, an optional Ink 2 count in tabular figures, and an info tooltip. The verdict line below pairs an Ink 3 "建議" label, a state icon, one sentence and the AI tag.
+The first-viewport summary: a grid of short named results between two hairlines, as many columns of at least 250px as fit and one column under 600px, each an icon, a name, an optional Ink 2 count in tabular figures, and an info tooltip. The verdict line below pairs an Ink 3 "建議" label, a state icon, one sentence and the AI tag.
 
 ### Tooltip (CSS only)
-A focusable `span` (tabindex 0) holding the info icon and a `role="tooltip"` bubble tied with `aria-describedby`. Bubble: Popover Graphite, Strong Hairline border, 6px radius, 9px 12px padding, 14px Ink, max 320px. Hover reveals after a 250ms delay with a 120ms fade; keyboard focus reveals instantly. The last two triggers in a row anchor right; on narrow screens the bubble anchors to the row's left edge.
+A focusable `span` (tabindex 0) holding the info icon and a `role="tooltip"` bubble tied with `aria-describedby`. Bubble: Popover Graphite, Strong Hairline border, 6px radius, 9px 12px padding, 14px Ink, max 320px. Hover reveals after a 250ms delay with a 120ms fade; keyboard focus reveals instantly. The bubble anchors to its trigger's left; in the check strip it stays within its cell, and on narrow screens it anchors to the row's left edge.
 
 ### Property Row
 A definition list of hairline rows: label (Ink 2), value (Ink), and an optional 14px Ink 3 note, right-aligned, used by 交易後 and 過去交易 for the rule or count behind a value. The note takes at most 45% of the row, 55% at 600px and below, and wraps past that, so the value keeps room for its words. A 14px Ink 3 sub-line may sit under a value. A 交易後 row's AI reason for a tolerance sits under the row across its full width, in the 14px Ink 2 block with the dashed AI tag that a card field's AI note uses, so a long reason never squeezes the value or the note. The protocol and wallet tables drop the note column; a row that groups others (a market, a call) nests them in its value behind a 1px Strong Hairline rule, 16px in, each a 96px Ink 2 label beside its value. Sources are never repeated per row: the protocol table names them once in a 14px Ink 3 line under it.
@@ -249,10 +249,10 @@ A heading row over a Strong Hairline: the call number in mono Ink 3, the functio
 
 ### Argument Row
 Left: the parameter name in 14px mono Ink, and under it its who-decides chip, or none for an argument whose parts differ, whose value column lists per chip the names of the parts it covers. Right, top to bottom: for a value the template fixes, the value as `cast decode-calldata` prints it, in mono Ink, and for a value decided at each signing nothing, since the report describes the template and shows no example; a 15px Ink line saying in words what it is (a registry name, 你填的金額, 不抽成, 無（零地址）), with an Ink 3 qualifier after it; and the AI line, a dashed `AI` tag followed by 14px Ink 2 text on what the argument does. A tuple shows its summary (such as the market's name and its id) in place of a value, and its parts nest under it as full-width rows: each level indented 12px behind a 1px Strong Hairline rule, each part a mono Ink 2 name in the argument's own name column, narrowed only by the indent, so every value at every depth starts at the same x, beside its value, plain-words line and AI line. The parts carry no chip of their own; the tuple's chip covers them.
-In each group, a call's arguments or one container's parts, the rows the signer decides or must check (你填, 你選, 程式算, 不限, 有上限) and any row under which a documentation page did not pass stay open in order; the rows whose rule is 固定 fold after them under one Ink 2 14px summary with a chevron, 4 個固定的值；改了任何一個都是 MISMATCH, which opens to the same rows. A container whose every part is fixed folds whole with its group, and one that holds a decided row stays open down to it.
+In each group, a call's arguments or one container's parts, the rows the signer decides or must check (你填, 你選, 程式算, 程式讀鏈上, 這裡不檢查, 有上限) and any row under which a documentation page did not pass stay open in order; the rows whose rule is 固定 fold after them under one Ink 2 14px summary with a chevron, 4 個固定的值；改了任何一個都是 MISMATCH, which opens to the same rows. A container whose every part is fixed folds whole with its group, and one that holds a decided row stays open down to it.
 
 ### Who-Decides Chip
-A 13px label in a 1px 6px-radius outline. The words, from the template's rule for the argument, include: 你填 (a card amount; Ink text, Ink 2 outline, 590), 你選 (a card choice such as a market or vault; same style), 程式算 (a value a computed card field bounds, which `card new` reads; same style as 固定), 固定 (a value the template fixes; Ink 3 on Strong Hairline), 不限 (an argument left free; Attention Amber text and outline), and 有上限 (a `withinSeconds` argument the app fills and the template bounds; the same amber style). A chip may name the card field after a colon, by its word (你填：金額, 你選：市場). A chip in an argument row stays on one line when it fits its column and wraps inside the column when it does not, so a long chip never runs over the value beside it.
+A 13px label in a 1px 6px-radius outline. The words, from the template's rule for the argument, include: 你填 (a card amount; Ink text, Ink 2 outline, 590), 你選 (a card choice such as a market or vault; same style), 程式算 (a value a computed card field bounds, which `card new` reads; same style as 固定), 程式讀鏈上 (a value the program reads on chain at signing, such as the previous owner in a Safe's owner list), 固定 (a value the template fixes; Ink 3 on Strong Hairline), 這裡不檢查 (an argument left free; Attention Amber text and outline), and 有上限 (a `withinSeconds` argument the app fills and the template bounds; the same amber style). A chip may name the card field after a colon, by its word (你填：金額, 你選：市場). A chip in an argument row stays on one line when it fits its column and wraps inside the column when it does not, so a long chip never runs over the value beside it.
 
 ### AI Tag
 12px label in a 1px dashed Ink 3 6px-radius outline, Ink 2 text, reading "AI 研究", "AI" on an argument's AI line, or "AI 研究：可以用" / "AI 研究：要小心" on the verdict line. The program's results carry no tag.
@@ -289,7 +289,7 @@ An ordered list of hairline rows with a mono Ink 3 counter ("1."), each command 
 - **Do** let icon shape carry state (filled check, ring with !, filled cross, dashed ring) and keep colour to state alone.
 - **Do** separate content with 1px hairline rows; use Strong Hairline only for section tops and outlines.
 - **Do** print every address and hash whole, in 14px mono, breakable anywhere.
-- **Do** say who decides each argument in the signer's words: 你填, 你選, 程式算, 固定, 不限, 有上限.
+- **Do** say who decides each argument in the signer's words: 你填, 你選, 程式算, 程式讀鏈上, 固定, 這裡不檢查, 有上限.
 - **Do** keep check explanations behind an info tooltip and keep section titles to one or two words.
 - **Do** list exceptions open and fold passes.
 - **Do** keep the whole system to one inline stylesheet and inline SVG symbols.

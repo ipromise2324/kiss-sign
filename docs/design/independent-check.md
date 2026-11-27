@@ -90,7 +90,7 @@ So a wrong or hostile hint shows the bytes raw with a warning, or a reading of t
 
 Both pages show the same block, the 比對清單, so the signer can lay them side by side.
 For the same transaction, decoded the same way, the two programs write it byte for byte the same, except the name column.
-`test/checklist.test.ts` compares kiss-sign's block for seven recorded transactions of other Safes, a Bundler3 deposit through MultiSend, an ETH transfer, a Merkl claim of two tokens, a CoW pre-signed order, a Uniswap swap through MultiSend with its two approvals, a Morpho Vault V2 cap submission and a Vault V2 reallocation, in each language, with the block `check.sh` writes for the same transaction in that language, `testdata/checklist/<language>/<fixture>.checklist.html`, a copy of `kiss-sign-check`'s `test/expected/<language>/` file, which that repository's tests pin against `check.sh`.
+`test/checklist.test.ts` compares kiss-sign's block for five recorded transactions of other Safes, a Bundler3 deposit through MultiSend, an ETH transfer, a Merkl claim of two tokens, a CoW pre-signed order and a Uniswap swap through MultiSend with its two approvals, each judged by a template the tests hold, in each language, with the block `check.sh` writes for the same transaction in that language, `testdata/checklist/<language>/<fixture>.checklist.html`, a copy of `kiss-sign-check`'s `test/expected/<language>/` file, which that repository's tests pin against `check.sh`.
 A change to either side's format fails one of the two tests until both change.
 
 The block is one HTML line per line, between `<!-- 比對清單 -->` and `<!-- /比對清單 -->`, inside `<div class="cl">`.

@@ -16,7 +16,7 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/readme/overview-dark.png">
-  <img src="docs/readme/overview.png" alt="kiss-sign at a glance. You say what you want. Once per operation, your AI finds each contract's address and kiss-sign confirms it in two separate sources; kiss-sign proves each contract's ABI by checking its published source is the code on chain; using that ABI, your AI writes a rule for every value in the transaction and lists the contracts it calls behind the scenes; kiss-sign finds a year of real transactions of the same kind and your AI sets safe limits from them; kiss-sign reads the protocol's size, past hacks and holders and your AI weighs audits and incidents; kiss-sign records each contract's code so a later upgrade is caught, and writes a report, with your AI's notes marked, which your AI sends you as a pull request to read, merge and approve. At every signing you fill a card; kiss-sign verify simulates the transaction on two providers and checks it against the card; a clean computer with no AI decodes it on its own with check.sh; and you compare the hashes on your hardware wallet before signing.">
+  <img src="docs/readme/overview.png" alt="kiss-sign at a glance. You say what you want. Once per operation, your AI finds each contract's address and kiss-sign confirms each address the transaction touches in two separate sources; kiss-sign proves each contract's ABI by checking its published source is the code on chain; using that ABI, your AI writes a rule for every value in the transaction and lists the contracts it calls behind the scenes; kiss-sign searches up to a year of real transactions of the same kind and your AI sets safe limits from them; kiss-sign reads the protocol's size, past hacks and holders and your AI weighs audits and incidents; kiss-sign records each contract's code so a later upgrade is caught, and writes a report, with your AI's notes marked, which your AI sends you as a pull request to read, merge and approve. At every signing you fill a card; kiss-sign verify simulates the transaction on two providers and checks it against the card; a clean computer with no AI decodes it on its own with check.sh; and you compare the hashes on your hardware wallet before signing.">
 </picture>
 
 ## Contents
@@ -82,6 +82,7 @@ git clone https://github.com/<you>/kiss-sign.git && cd kiss-sign
 pnpm install
 pnpm kiss-sign init --safe 0x… --language en   # or zh-TW for Traditional Chinese; see Language
 pnpm kiss-sign key add alchemy
+pnpm kiss-sign key add drpc
 pnpm kiss-sign key add etherscan   # to build or review templates
 pnpm kiss-sign key add github      # optional: lets your AI search GitHub and raises its hourly limit
 ```
@@ -89,9 +90,9 @@ pnpm kiss-sign key add github      # optional: lets your AI search GitHub and ra
 You need:
 
 - Node 22.21 or later and pnpm.
-- Free [Alchemy](https://dashboard.alchemy.com/) and [Etherscan](https://etherscan.io/myapikey) keys.
+- Free [Alchemy](https://dashboard.alchemy.com/), [drpc](https://drpc.org/login) and [Etherscan](https://etherscan.io/myapikey) keys. Every chain read asks both Alchemy and drpc, so a command that reads the chain refuses to run without either key.
 - Optionally, a [GitHub token](https://github.com/settings/personal-access-tokens/new), for building or reviewing templates. It changes no verdict.
-  - With it, your AI can search a protocol's GitHub organization for every file that lists an address, which can add a source to a report.
+  - With it, your AI can search a protocol's GitHub organization for files that list an address, up to 20 per address, which can add a source to a report.
   - GitHub then allows 5,000 requests an hour instead of 60. Without it, every command on your computer shares the 60, and a build can wait for the limit to reset.
   - Make it a fine-grained token with repository access "Public repositories" and no permissions added. kiss-sign sends it only to `api.github.com`.
 - A hardware wallet that shows a Safe transaction's domain hash and message hash, or its safeTxHash.
@@ -106,7 +107,7 @@ To install it, follow the [kiss-sign-check README](https://github.com/ipromise23
 
 ## How it works
 
-The pictures below come from real reports kiss-sign generated from other Safes' transactions.
+The pictures below come from real reports kiss-sign generated from other senders' transactions.
 
 ### 1. Tell your AI what you want
 
@@ -118,35 +119,35 @@ Open an AI coding agent, such as Claude Code or Codex, in the clone and say it i
 
 The report shows what the transaction will do and where each fact came from. Text the AI wrote is marked `AI`; the program read or checked the rest. Read it top to bottom.
 
-**The top.** A summary, the program's checks and the AI's advice. Here one check needs attention: 4 of 5 addresses are confirmed in two places.
+**The top.** A summary, the program's checks and the AI's advice. Here one check needs attention: 5 of the 6 addresses the transaction touches are confirmed in two places.
 
-![The top of the report: the title, the summary of the two calls, six checks with Address sources 4 / 5 marked for attention, and the AI's advice](docs/readme/report-top.png)
+![The top of the report: the title, the summary of the approve and the VaultBundlesV1 deposit, six checks with Transaction addresses 5 / 6 marked for attention, and the AI's advice to be careful](docs/readme/report-top.png)
 
 **To review.** What needs your attention, each with the AI's conclusion. Open Details for the reasons and the advice.
 
-![The To review section: one key item, the vault's address confirmed in too few places, and three AI judgments, each with Details folded](docs/readme/report-review.png)
+![The To review section: one key item, the vault's address confirmed in too few places, and four AI judgments, on the app's two routes, the vault's size, a second vault of the same name and the missing Safe deposits, each with Details folded](docs/readme/report-review.png)
 
 **The flow.** A diagram of where your tokens go: which contracts the Safe calls, which contracts those call in turn, and what comes back to the Safe. A solid line is a call the AI read in the contract's source and the program also saw in other senders' past transactions.
 
-![The call flow: the Safe approves USDC to general-adapter-1 and calls bundler3.multicall; the adapter pulls the USDC and deposits it into the vault, lines seen in 8 of 8 past transactions; the shares come back to the Safe](docs/readme/report-flow.png)
+![The call flow: the Safe approves USDC and calls vault-bundles-v1.vaultBundlesV1Deposit; the bundle pulls the USDC from the Safe and deposits it into the vault, lines seen in 2 of 2 past transactions; the shares come back to the Safe](docs/readme/report-flow.png)
 
-Under it, each argument says who decides it, down to the steps inside a bundle: you, the program or the template. Fixed values are folded; changing one is a MISMATCH.
+Under it, each argument says who decides it: you, the program or the template, or the app up to a limit. Fixed values are folded; changing one is a MISMATCH.
 
-![The first step inside bundler3.multicall, erc20TransferFrom: the token follows the vault you pick, the amount is what you type, and the fixed values are folded](docs/readme/report-fields.png)
+![The call vaultBundlesV1Deposit: the vault is the one you pick, the assets are what you type, the share-price ceiling is computed from your card, the deadline is at most 2 hours ahead, and the 3 fixed values are folded](docs/readme/report-fields.png)
 
 **The protocol and the instance.** The protocol's TVL, audits and incidents, then facts about the one contract you use, each read from two providers. For this vault: the factory that made it, its size and its holders, then a year of monthly size and the AI's notes on where your deposit goes.
 
-![The Instance section: the factory answers isVaultV2 = true, 6,603,958.14 USDC now, 169 holders, the largest 58.88% and the top 10 89.19%](docs/readme/report-instance.png)
+![The Instance section: the factory answers isVaultV2 = true, 7,222,136.69 USDC now, 168 holders, the largest 53.90% and the top 10 86.32%](docs/readme/report-instance.png)
 
-**Addresses.** Where each address was found and who owns that site. Sites with one owner count as one place. CoW's settlement contract is in four sources but two places: CoW's GitHub and Immunefi.
+**Addresses.** Where each address was found and who owns that site. Sites with one owner count as one place. An address the transaction touches needs two places; a reference address, which the transaction never touches and `card new` only reads a number from, needs one. CoW's settlement contract is in five sources but four places: CoW's docs, two repositories of CoW's GitHub, Immunefi and its deployer.
 
-![CoW's settlement contract: two GitHub pages and the npm SDK, all CoW's GitHub, count as one place; Immunefi is the second](docs/readme/report-address.png)
+![CoW's settlement contract: CoW's docs; two GitHub repositories, both CoW's GitHub, which count as one place; Immunefi's bug bounty scope; and the deployer, which also deployed the vault relayer: confirmed in 4 places](docs/readme/report-address.png)
 
 Weak evidence is shown, not hidden. Here the Hyperithm vault is confirmed only by its factory, so it is flagged.
 
 ![The Hyperithm vault confirmed only by its factory, flagged with low confidence](docs/readme/report-address-flagged.png)
 
-**Past transactions.** Other senders' executed transactions of this operation: here 8 match the template exactly.
+**Past transactions.** Other senders' executed transactions of this operation: here no Safe sent this deposit through VaultBundlesV1 in the year studied, and 2 EOAs made the same call, both of which succeeded.
 
 You review an operation once. After that you review only what is new or changed: a report for another contract the template can call, a registry pull request, or a changed template. Merging is your confirmation. Then approve the template on your own computer, which records its hash so `verify` refuses any other version:
 
@@ -159,7 +160,7 @@ A changed template has a new hash, so `verify` refuses it until you approve it a
 
 ### 3. Fill a card
 
-In your own terminal, answer what the template asks: pick each contract, such as a token, a recipient or a vault, from a list with full addresses, and type each amount. You never type a value the protocol's app fills in by itself, such as a minimum amount to receive: the program computes it from an on-chain read, the app's default slippage and a small margin the template states.
+In your own terminal, answer what the template asks: pick each contract, such as a token, a recipient or a vault, from a list with full addresses, and type each amount. You never type a value the protocol's app fills in by itself, such as a vault deposit's minimum shares: the program computes it from an on-chain read, the app's default slippage and a small margin the template states. A swap's minimum to receive is the exception: you type the slippage or the minimum, and the program compares it with an independent price.
 
 ![pnpm kiss-sign card new morpho/vault-deposit: the vault picked by number from a list with full addresses, the amount typed in whole tokens, and the minimum shares computed from previewDeposit with the protocol's default slippage and the template's margin](docs/readme/card-fill.png)
 
@@ -189,7 +190,7 @@ First the hashes. They must be identical on both pages and on your hardware wall
 
 ![The hash rows of both pages side by side: safeTxHash, domain hash and message hash, the same on kiss-sign verify and on check.sh](docs/readme/compare-hashes.png)
 
-Then every call, row by row, down to the calls inside a batch. In this deposit both sides split Bundler3's `multicall` into the token transfer and the vault deposit it runs. Every column must be identical except the names on the right, which only kiss-sign writes, from its registry:
+Then every call, row by row, down to the calls inside a batch. This is an older deposit into the same vault, sent through Bundler3 before Morpho's app moved to VaultBundlesV1: both sides split Bundler3's `multicall` into the token transfer and the vault deposit it runs. Every column must be identical except the names on the right, which only kiss-sign writes, from its registry:
 
 ![Some rows of call #3 on both pages side by side: the Bundler3 multicall, then its two inner calls, erc20TransferFrom of 1000611448606 and erc4626Deposit into the Hyperithm vault for the Safe, the same on both sides; only kiss-sign's side names the vault and the amounts in the last column](docs/readme/compare-multicall.png)
 
@@ -239,7 +240,7 @@ Models are trained to resist prompt injection, but a page your AI reads can stil
 
 | Attack | Stopped by |
 |---|---|
-| The AI gets something wrong, such as a template that allows too much | `verify` refuses a delegatecall other than to the official MultiSend, an unlimited approval other than a standing one the registry declares, such as to Permit2, a Safe setting change other than an owner or threshold change the card declares, and an unexplained balance change, whatever the template says; the rest shows in the report you review |
+| The AI gets something wrong, such as a template that allows too much | `verify` refuses a delegatecall other than to the official MultiSend, an unlimited approval other than one the template keeps for a registry contract that declares a standing allowance (no shipped template keeps one), a Safe setting change other than an owner or threshold change the card declares, and an unexplained balance change, whatever the template says; the rest shows in the report you review |
 | A steered AI changes the report, `verify`'s code or its verdict | A bad transaction must still reach your Safe, through a compromised web app or protocol app; otherwise the attack fails. A program change never shares a pull request with a template or the registry |
 | A steered AI adds a fake contract to the registry and makes the report look normal | Only you. `verify` and the second computer pass, since the transaction matches the card. The AI must be steered and change kiss-sign's code: hard, but possible. Open the sources the report lists, check that each domain is the protocol's own and that the page lists this address |
 
@@ -252,7 +253,7 @@ You choose the protocol; kiss-sign checks its state, its app's transactions and 
 | Attack | Stopped by |
 |---|---|
 | The protocol or vault you pick is unsafe right now, such as one just hacked, or a vault made yesterday with no holders | The report shows the protocol's TVL and hacks from DefiLlama, and the vault's size over 12 months and its holders, found through Alchemy and their balances read through both providers, for you to judge before you merge |
-| The protocol's app is compromised and sets a field you do not fill to a value no real user sends, such as a CoW order valid for a year | Of 136 CoW orders other Safes pre-signed, half expired within 30 minutes, nearly all within 3 hours, and the longest just under 7 days, so the template allows 7 days at most: later is `MISMATCH`. Drift was exploited in April 2026 through pre-signed transactions that durable nonces kept valid |
+| The protocol's app is compromised and sets a field you do not fill to a value no real user sends, such as a CoW order valid for a year | The 17 CoW orders other Safes pre-signed that fit the template were all valid for under 30 minutes, about what the app sets, so the template allows 12 hours at most: later is `MISMATCH`. Drift was exploited in April 2026 through pre-signed transactions that durable nonces kept valid |
 | A contract is upgraded or reconfigured to act maliciously | The simulation: a balance or allowance change the card does not explain, `MISMATCH`. The recorded code: a registry contract whose code changed since your review, `MISMATCH`. Settings an admin can change, such as a vault's curator, fees or caps, and contracts that are not registry entries, such as the markets and oracles behind a vault, are not checked |
 | The protocol is hacked while your funds are in it | Nothing: kiss-sign checks only the transactions you sign |
 
@@ -287,7 +288,7 @@ The builds run from simple to hard: a plain transfer took about 8M tokens and 10
 
 ## Scope
 
-Safe multisig transactions on Ethereum mainnet. Not EOAs, Safe off-chain messages or other chains. It checks only what you sign: not what other owners sign without it, a module's transactions, or a hardware wallet that shows false hashes. A Vault V2 curator's cap change covers one cap id per transaction: one market, one collateral or one adapter.
+Safe multisig transactions on Ethereum mainnet. Not EOAs, Safe off-chain messages or other chains. It checks only what you sign: not what other owners sign without it, a module's transactions, or a hardware wallet that shows false hashes. For a Vault V2 curator, the templates submit and accept an increase of one market's absolute cap per transaction; adapter and collateral caps, relative caps, decreases and revocations have no template.
 
 ## Contributing
 

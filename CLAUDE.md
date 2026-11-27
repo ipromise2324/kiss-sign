@@ -2,7 +2,7 @@
 
 kiss-sign checks a Safe transaction against the signer's stated intent before they sign. [docs/design.md](docs/design.md) is the source of truth. When you change the program and find that the code and the design disagree, stop and ask.
 
-Building a template or adding a vault follows the kiss-sign skill (`.claude/skills/kiss-sign/SKILL.md`); no other plugin is needed.
+Building a template, adding an instance's report (a vault, a lending market) or adding a registry entry follows the kiss-sign skill (`.claude/skills/kiss-sign/SKILL.md`); no other plugin is needed.
 
 ## Commands
 
@@ -40,7 +40,7 @@ Every command below but `pnpm install`, `pnpm test` and `pnpm typecheck` prints 
 - `pnpm events <address | registry name> --event '<signature>'`: prints one contract's logs of one event, such as its implementation or admin changes, with decoded arguments; orientation only.
 - `pnpm read <address | registry name> '<signature> returns (<types>)' [<argument>...] [--block <n>]`: calls one view through both providers at one agreed block and prints what it returns, such as a feed's `description()`; orientation only.
 - `pnpm past-txs <protocol>/<operation> ...`: finds and studies other senders' executed transactions of one operation; `--show <name>` lists a recorded run, and `--tx <hash>` one transaction with the card it implies.
-- `pnpm abi selector|topic|hash ...`: computes offline a function's selector, an event's topic, or keccak256 of abi.encode of typed values, such as a Uniswap v4 PoolId from its PoolKey.
+- `pnpm abi selector|topic|hash ...`: computes offline a function's selector, an event's topic, or keccak256 of abi.encode of typed values, such as a Vault V2 cap id from its parts.
 - `pnpm template check <protocol>/<operation>`, `pnpm template implied-card <protocol>/<operation> <fixture>...`: research only, parses a draft template with the parser `pnpm kiss-sign template approve` uses but approves nothing; prints each fixture's implied card and checks it, MATCH or not, offline.
 - `pnpm record-safe-tx`, `pnpm record-safe-proxy`, `pnpm record-abi-case`: record a Safe transaction, Safe proxy or ABI-proof fixture into `testdata/`.
 - `pnpm record-eoa-tx <name> <transaction hash>`: records an EOA's executed call as a test transaction, for an operation no Safe's transaction fits.

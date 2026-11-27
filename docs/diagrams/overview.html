@@ -123,13 +123,13 @@
         <li><b>Approval</b> <span class="note">the template's hash is the one you approved</span></li>
         <li><b>Decode</b> <span class="note">byte for byte, every field against the template and the card</span></li>
         <li><b>Mutations</b> <span class="note">each changed copy must give <code>MISMATCH</code>, or the verdict is <code>UNVERIFIABLE</code></span></li>
-        <li><b>Code pins</b> <span class="note">every registry contract runs its pinned code</span></li>
+        <li><b>Code pins</b> <span class="note">every registry contract the transaction or card uses runs its pinned code</span></li>
         <li><b>Simulate</b> <span class="note">balances, allowances and views must match the card</span> <span class="chip">Alchemy</span><span class="chip">drpc</span></li>
       </ul></li>
     <li class="step program"><div class="title">Verdict <span class="who">Program</span></div>
       <div class="verdict"><span class="m">MATCH</span> · <span class="x">MISMATCH</span> · <span class="u">UNVERIFIABLE</span></div></li>
     <li class="step signer"><div class="title">Independent check <span class="who">You · hardened tier</span></div>
-      <div class="desc">On a second computer with no AI and no kiss-sign, <code>check.sh &lt;nonce&gt;</code> computes the hashes and decodes each call. Compare its hashes with the wallet, its 比對清單 row by row with <code>verify</code>'s page, and the calls with what you meant. <span class="chip">Safe Transaction Service</span><span class="chip">Sourcify</span></div></li>
+      <div class="desc">On a second computer with no AI and no kiss-sign, the <code>check.sh</code> command <code>verify</code> prints, with any <code>--hints</code>, computes the hashes and decodes each call. Compare its hashes with the wallet, its 比對清單 row by row with <code>verify</code>'s page, and the calls with what you meant. <span class="chip">Safe Transaction Service</span><span class="chip">Sourcify</span></div></li>
     <li class="step signer"><div class="title">Sign on the wallet <span class="who">You</span></div>
       <div class="desc">Only on <code>MATCH</code>: compare both hashes on the device's screen. <span class="chip">Hardware wallet</span></div></li>
   </ol>

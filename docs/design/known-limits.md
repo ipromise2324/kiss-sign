@@ -45,11 +45,11 @@ Part of [the kiss-sign design](../design.md).
 - An SDK's provenance is npm's attestation, which npm checks at publishing; the program reads it from npm and does not verify its Sigstore signature itself.
 - A vault's `adapter` attribute, the Morpho Market V1 adapter a Vault V2's adapter and market caps are keyed by, is written during research and checked by the report through the adapter factory's `instanceCheck`: the factory answers that it created the adapter, the vault answers `isAdapter` true for it, the adapter answers `parentVault()` with the vault, and the curator's page or the Morpho API lists it among the vault's adapters.
   Those answers hold at the report's block; `verify` reads none of them at signing, and a curator can remove an adapter later; a wrong adapter in the registry would make a cap submission set a cap under an id no allocation uses, which the vault's `executableAt` view still shows as pending, so the report's answers are what stand behind it.
-- The Vault V2 templates take one cap id per transaction: one adapter, one collateral or one market.
+- The shipped Vault V2 templates, `morpho/vault-v2-cap-submit` and `morpho/vault-v2-cap-accept`, submit and accept an increase of one market's absolute cap per transaction.
   A Vault V2 keys its caps by three kinds of id, the adapter, each collateral token and each market, and the curator app lists them as rows.
-  The kinds and operations without a template are those no established curator's two-item `multicall` shows: of the last ~300 transactions of each of the 265 curator, allocator and sentinel Safes of the first 200 Vault V2s on Ethereum, a two-item `multicall` of one id was a submission 24 times for a market, 21 for a collateral and 7 for an adapter, an acceptance 7 times for an adapter, a decrease 2 times for an adapter and 2 for a market, and a revocation once for an adapter, with no acceptance, decrease or revocation of a collateral's caps alone.
+  Adapter and collateral caps, relative caps, decreases and revocations have no shipped template.
+  For scale, of the last ~300 transactions of each of the 265 curator, allocator and sentinel Safes of the first 200 Vault V2s on Ethereum, a two-item `multicall` of one id was a submission 24 times for a market, 21 for a collateral and 7 for an adapter, an acceptance 7 times for an adapter, a decrease 2 times for an adapter and 2 for a market, and a revocation once for an adapter, with no acceptance, decrease or revocation of a collateral's caps alone.
   The adapter decreases lowered a retired adapter to 0, not the vault's current `adapter`, which a template binding that attribute refuses.
-  The market templates other than a submission keep the fixtures of one smaller vault.
   Such a transaction is not signed with kiss-sign until a template covers it.
 - A curator who batches several ids' caps into one `multicall`, as 14 Safes did in 39 transactions of the last year that accepted two cap ids at once, or submits and accepts in the same transaction on a vault whose timelock is zero, gets `MISMATCH`, since a merged call needs a target the template names, and the vault is a card field.
   Such a batch is signed only after splitting it into one transaction per id.
@@ -224,10 +224,10 @@ Part of [the kiss-sign design](../design.md).
 - A signed message is read only from an API that serves it by its digest to one GET with no key, as one struct whose members are atomic, `string` or `bytes`.
   As of November 2026, CoW's order API fits with no `answer`, Velora's Delta API (`/delta/orders/hash/{hash}`) serves its order under `order` but signs a nested `Bridge` struct, 1inch's Fusion and orderbook APIs answer only with an API key, UniswapX's order API answers the order ABI-encoded inside a Permit2 witness of nested structs and arrays, and Bebop's order status is read by quote id, not by digest.
   None of those is read.
-- An approval `effects.approves` leaves open can be spent by any order the spender's protocol accepts from the Safe, not only the order of this transaction: for CoW, any of the Safe's orders still valid, such as an earlier pre-signed one or a conditional order the Safe's fallback handler signs.
+- An approval `effects.approves` leaves open, which no shipped template declares today, can be spent by any order the spender's protocol accepts from the Safe, not only the order of this transaction: for CoW, any of the Safe's orders still valid, such as an earlier pre-signed one or a conditional order the Safe's fallback handler signs.
   The approval is the card's sell amount, so no order can take more than that.
-- A CoW order is pre-signed for as long as its `validTo` allows and its approval stays open until the order fills.
-  Both CoW templates bind `validTo` to at most 604800 seconds (seven days) after the time of the block the transaction is judged on (`withinSeconds`), so a signed order can stay open for up to a week; the card has no expiry of its own.
+- A CoW order is pre-signed for as long as its `validTo` allows.
+  The `cow/swap` template binds `validTo` to at most 43200 seconds (12 hours) after the time of the block the transaction is judged on (`withinSeconds`), so a signed order can stay open for up to 12 hours; the card has no expiry of its own.
   The order fills at most once, at no less than the card's minimum, and the Safe can cancel it.
 - Safe 1.1.1 has no `getStorageAt`, so a simulation cannot read its settings, and a pending transaction of a 1.1.1 Safe is at best `UNVERIFIABLE`.
 
