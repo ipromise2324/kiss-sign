@@ -217,7 +217,7 @@ Compare the hashes on `verify`'s page with your hardware wallet's screen, charac
 | Attack | Stopped by |
 |---|---|
 | One provider gives a false answer, or none | `verify` compares the two answers: they differ, `UNVERIFIABLE` |
-| Both give the same false answer, such as a simulation that hides your funds going elsewhere | The attacker needs both companies at once, and a bad transaction must still reach your Safe. The Safe web app's own simulation, run by Tenderly rather than these two providers, may still show your funds going elsewhere, if the web app itself is not compromised |
+| Both give the same false answer, such as a simulation that hides your funds going elsewhere | **1. Both companies at once.** The attacker needs Alchemy and drpc to lie the same way<br>**2. A bad transaction.** It must still reach your Safe<br>**3. The web app's own simulation.** It runs on Tenderly, not these two providers, so it may still show your funds going elsewhere, if the web app itself is not compromised |
 
 ### Fake sources
 
@@ -250,8 +250,8 @@ You choose the protocol; kiss-sign checks its state, its app's transactions and 
 | Attack | Stopped by |
 |---|---|
 | The protocol or vault you pick is unsafe right now, such as one just hacked, or a vault made yesterday with no holders | The report shows the protocol's TVL and hacks from DefiLlama, and the vault's size over 12 months and its holders, found through Alchemy and their balances read through both providers, for you to judge before you merge |
-| The protocol's app is compromised and sets a field you do not fill to a value no real user sends, such as a CoW order valid for a year | Of 90 CoW orders other Safes pre-signed in the template's shape, half were valid for 29 minutes or less and the longest for about 11 hours, so the template allows 12 hours at most: later is `MISMATCH`. Drift was exploited in April 2026 through pre-signed transactions that durable nonces kept valid |
-| A contract is upgraded or reconfigured to act maliciously | The simulation: a balance or allowance change the card does not explain, `MISMATCH`. The recorded code: a registry contract whose code changed since your review, `MISMATCH`. Settings an admin can change, such as a vault's curator, fees or caps, and contracts that are not registry entries, such as the markets and oracles behind a vault, are not checked |
+| The protocol's app is compromised and sets a field you do not fill to a value no real user sends, such as a CoW order valid for a year | **The rule.** The template allows such a field only within what real users send. A CoW order valid for more than 12 hours is `MISMATCH`<br>**Where the limit comes from.** Of 90 CoW orders other Safes pre-signed in the template's shape, half were valid for 29 minutes or less and the longest for about 11 hours<br>**Why it matters.** Drift was exploited in April 2026 through pre-signed transactions that durable nonces kept valid |
+| A contract is upgraded or reconfigured to act maliciously | **1. The simulation.** A balance or allowance change the card does not explain: `MISMATCH`<br>**2. The recorded code.** A registry contract whose code changed since your review: `MISMATCH`<br>**Not checked.** Settings an admin can change, such as a vault's curator, fees or caps, and contracts that are not registry entries, such as the markets and oracles behind a vault |
 | The protocol is hacked while your funds are in it | Nothing: kiss-sign checks only the transactions you sign |
 
 ### You
