@@ -21,7 +21,7 @@ function cowSwapElsewhere() {
   const call = raw.calls[0];
   call.to = { contract: 'bundler3' };
   const [digest, owner] = call.args.orderUid.packed;
-  owner.rule = { contract: 'permit2' };
+  owner.rule = { contract: 'vault-bundles-v1' };
   digest.rule.eip712.fields.receiver = { contract: 'gpv2-vault-relayer' };
   return parseTemplate(raw, registry, 'committed');
 }
@@ -35,10 +35,10 @@ test('a contract a template names only inside packed bytes, a signed message or 
   assert.equal(card.kind, 'resolved');
   const claims = codeClaims(tx, card.card, new Map([[template.id, template]]), registry);
   const names = claims.map((entry) => entry.name);
-  for (const name of ['gpv2-settlement', 'permit2', 'gpv2-vault-relayer']) assert.ok(names.includes(name), `${name} is checked: ${names.join(', ')}`);
+  for (const name of ['gpv2-settlement', 'vault-bundles-v1', 'gpv2-vault-relayer']) assert.ok(names.includes(name), `${name} is checked: ${names.join(', ')}`);
   const otherCode = new Proxy({}, { get: (_, key) => (key === 'getCode' ? async () => ({ kind: 'agreed', value: '0x00', providers: ['alchemy', 'drpc'] }) : () => assert.fail(`${String(key)} is not read`)) }) as Reader;
   const result = await checkCode(otherCode, claims, { number: 1n, hash: `0x${'00'.repeat(32)}` as Hex }, 'pending');
   assert.equal(result.kind, 'mismatch');
   const mismatched = result.kind === 'mismatch' ? result.findings.map((finding) => finding.split(' ')[0]) : [];
-  for (const name of ['gpv2-settlement', 'permit2', 'gpv2-vault-relayer']) assert.ok(mismatched.includes(name), `${name} is MISMATCH: ${mismatched.join(', ')}`);
+  for (const name of ['gpv2-settlement', 'vault-bundles-v1', 'gpv2-vault-relayer']) assert.ok(mismatched.includes(name), `${name} is MISMATCH: ${mismatched.join(', ')}`);
 });

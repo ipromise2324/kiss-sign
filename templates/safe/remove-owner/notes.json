@@ -1,53 +1,16 @@
 {
-  "title": {
-    "en": "Remove a Safe signer",
-    "zh-TW": "移除 Safe 的簽署人"
-  },
-  "summary": {
-    "en": "The Safe calls its own `removeOwner`, removing the signer you pick and setting the threshold to the number you type. `prevOwner` is the signer just before them in the Safe's internal list. The program computes it by reading `getOwners` on chain, so you do not type it.",
-    "zh-TW": "Safe 呼叫自己的 `removeOwner`，移除你選的簽署人，並把門檻設成你填的數字。`prevOwner` 是 Safe 內部名單排在他前面的人，程式在鏈上讀 `getOwners` 算出，不用你填。"
-  },
-  "verdict": {
-    "status": "caution",
-    "text": {
-      "en": "Moves no asset, but changes who controls this Safe: confirm you are removing the right person and that enough signers remain.",
-      "zh-TW": "不動任何資產，但改的是誰能動這個 Safe：確認移除的是對的人，剩下的人數夠用。"
-    }
-  },
-  "pastTxsConclusion": {
-    "en": "Every misfit batches `removeOwner` with more calls in one MultiSend: mostly `swapOwner`, or more `removeOwner` calls; a few add `enableModule`, another contract's ownership transfer or a USDC transfer. A card holds one change, so verify refuses such a batch; make each change its own transaction. A single removal inside MultiSend 1.5.0 fits.",
-    "zh-TW": "不合的都在一個 MultiSend 裡把 `removeOwner` 和別的呼叫綁在一起：多半是 `swapOwner` 或更多 `removeOwner`；少數加 `enableModule`、別的合約的 ownership 轉移或 USDC 轉帳。一張卡片只放一項變更，verify 會拒絕這種批次，每項變更要各自一筆交易。MultiSend 1.5.0 裡只移除一個 owner 的交易符合模板。"
-  },
-  "flow": [],
-  "protocols": {},
-  "judgments": [
-    {
-      "text": {
-        "en": "After the removal, the number of signers left cannot be lower than the threshold. With the threshold set to the number left, losing one key means the signers can never sign a transaction again. Then only a module already enabled could still act; it needs no signatures.",
-        "zh-TW": "移除後，剩下的簽署人數不能少於門檻。門檻設成剩下的人數時，少一把鑰匙，簽署人就再也簽不出交易。那時只有事先啟用的 module 還能動，因為它不需要簽名。"
-      },
-      "recommendation": {
-        "en": "Leave some margin in the threshold: for example, 2 when 3 signers remain.",
-        "zh-TW": "門檻留一點餘裕：例如剩 3 人時設 2。"
-      },
-      "sources": [
-        "https://github.com/safe-global/safe-smart-account/blob/186a21a74b327f17fc41217a927dea7064f74604/contracts/base/ModuleManager.sol#L61-L73",
-        "https://github.com/safe-global/safe-smart-account/blob/bf943f80fec5ac647159d26161446ac5d716a294/contracts/base/ModuleManager.sol#L81-L93"
-      ]
-    }
-  ],
-  "reviews": {},
+  "request": "I want to remove an owner from my Safe. build me the template and its report",
   "entries": {
     "safe-1.3.0": {
       "role": {
-        "en": "The Safe 1.3.0 contract itself (singleton): Safes of version 1.3.0 run this code through a proxy",
-        "zh-TW": "Safe 1.3.0 的合約本體（singleton）：1.3.0 版的 Safe 透過 proxy 執行這份程式碼"
+        "en": "The Safe 1.3.0 contract itself (singleton): Safes of version 1.3.0 run this code through a proxy, `removeOwner` included",
+        "zh-TW": "Safe 1.3.0 的合約本體（singleton）：1.3.0 版的 Safe 透過 proxy 執行這份程式碼，包括 `removeOwner`"
       },
       "sources": [
         {
           "text": {
-            "en": "safe-deployments (safe-global GitHub), v1.3.0 gnosis_safe.json at commit ca9cb0d: the canonical deployment address is 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552; chain 1 lists canonical and eip155 (another address)",
-            "zh-TW": "safe-deployments（safe-global GitHub）v1.3.0 的 gnosis_safe.json，commit ca9cb0d：canonical 部署地址為 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552；chain 1 列出 canonical 和 eip155（另一個地址）"
+            "en": "safe-deployments (safe-global GitHub), v1.3.0 gnosis_safe.json at commit ca9cb0d: contractName GnosisSafe, version 1.3.0, canonical address 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552",
+            "zh-TW": "safe-deployments（safe-global GitHub）v1.3.0 的 gnosis_safe.json，commit ca9cb0d：contractName GnosisSafe、版本 1.3.0，canonical 地址 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552"
           },
           "url": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/gnosis_safe.json",
           "result": "pass"
@@ -62,16 +25,16 @@
         },
         {
           "text": {
-            "en": "Safe docs, supported networks v1.3.0: the page lists addresses only with JavaScript; fetched as served it shows no address, so it counts for nothing",
-            "zh-TW": "Safe 文件的 supported networks v1.3.0：頁面靠 JavaScript 才顯示地址；直接讀取看不到地址，不算一個地方"
+            "en": "Safe docs, supported networks v1.3.0: read as served, the page does not show the address (it lists addresses with scripts), so it counts for nothing",
+            "zh-TW": "Safe 文件的 supported networks v1.3.0：直接讀取的頁面沒有這個地址（地址靠 script 顯示），不算一個地方"
           },
           "url": "https://docs.safe.global/advanced/smart-account-supported-networks/v1.3.0",
           "result": "attention"
         },
         {
           "text": {
-            "en": "Etherscan: contract name GnosisSafe, creator 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26 (labelled Gnosis Safe: Deployer), through 0x4e59b44847b379578588920cA78FbF26c0B4956C (labelled Create2: Factory)",
-            "zh-TW": "Etherscan：合約名 GnosisSafe，建立者 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26（標籤 Gnosis Safe: Deployer），透過 0x4e59b44847b379578588920cA78FbF26c0B4956C（標籤 Create2: Factory）建立"
+            "en": "Etherscan API: verified as GnosisSafe, compiler 0.7.6; creation transaction 0x0b04589bdc11585fb98f270b1bfeff0fb3bbb3c56d35b104f62d8115d6f7c57f at block 12504268, sender 0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26, proven by both providers",
+            "zh-TW": "Etherscan API：驗證名稱 GnosisSafe，編譯器 0.7.6；建立交易 0x0b04589bdc11585fb98f270b1bfeff0fb3bbb3c56d35b104f62d8115d6f7c57f，區塊 12504268，發送者 0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26，兩個節點都證實"
           },
           "url": "https://etherscan.io/address/0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552#code",
           "result": "pass"
@@ -80,14 +43,14 @@
     },
     "safe-1.4.1": {
       "role": {
-        "en": "The Safe 1.4.1 contract itself (singleton): Safes of version 1.4.1 run this code through a proxy",
-        "zh-TW": "Safe 1.4.1 的合約本體（singleton）：1.4.1 版的 Safe 透過 proxy 執行這份程式碼"
+        "en": "The Safe 1.4.1 contract itself (singleton): Safes of version 1.4.1 run this code through a proxy, `removeOwner` included",
+        "zh-TW": "Safe 1.4.1 的合約本體（singleton）：1.4.1 版的 Safe 透過 proxy 執行這份程式碼，包括 `removeOwner`"
       },
       "sources": [
         {
           "text": {
-            "en": "safe-deployments (safe-global GitHub), v1.4.1 safe.json at commit ca9cb0d: the canonical deployment address 0x41675C099F32341bf84BFc5382aF534df5C7461a",
-            "zh-TW": "safe-deployments（safe-global GitHub）v1.4.1 的 safe.json，commit ca9cb0d：canonical 部署地址為 0x41675C099F32341bf84BFc5382aF534df5C7461a"
+            "en": "safe-deployments (safe-global GitHub), v1.4.1 safe.json at commit ca9cb0d: canonical address 0x41675C099F32341bf84BFc5382aF534df5C7461a; the same at the newer commit 7dcfd95",
+            "zh-TW": "safe-deployments（safe-global GitHub）v1.4.1 的 safe.json，commit ca9cb0d：canonical 地址 0x41675C099F32341bf84BFc5382aF534df5C7461a；較新的 commit 7dcfd95 也一樣"
           },
           "url": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.4.1/safe.json",
           "result": "pass"
@@ -102,16 +65,16 @@
         },
         {
           "text": {
-            "en": "Safe docs, ERC-4337 permissionless guide: the page as served shows const SAFE_SINGLETON_ADDRESS = 0x41675C099F32341bf84BFc5382aF534df5C7461a",
-            "zh-TW": "Safe 文件的 ERC-4337 permissionless 指南：直接讀取的頁面寫著 const SAFE_SINGLETON_ADDRESS = 0x41675C099F32341bf84BFc5382aF534df5C7461a"
+            "en": "Safe docs, ERC-4337 permissionless guide, under Contracts: const SAFE_SINGLETON_ADDRESS = 0x41675C099F32341bf84BFc5382aF534df5C7461a; docs.safe.global/llms-full.txt shows the same line",
+            "zh-TW": "Safe 文件的 ERC-4337 permissionless 指南，Contracts 段：const SAFE_SINGLETON_ADDRESS = 0x41675C099F32341bf84BFc5382aF534df5C7461a；docs.safe.global/llms-full.txt 也有同一行"
           },
           "url": "https://docs.safe.global/advanced/erc-4337/guides/permissionless-detailed",
           "result": "pass"
         },
         {
           "text": {
-            "en": "Etherscan: contract name Safe, creator 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26 (labelled Gnosis Safe: Deployer), through the contract 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7 (no name label)",
-            "zh-TW": "Etherscan：合約名 Safe，建立者 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26（標籤 Gnosis Safe: Deployer），透過合約 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7（沒有名稱標籤）建立"
+            "en": "Etherscan API: verified as Safe, compiler 0.7.6; creation transaction 0x8a72b65242de000b5fdf004fe8aea138d98e9a8ed9ade82d8fa7f0c0601786cf at block 17487000, sender 0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26, the same deployer as 1.3.0",
+            "zh-TW": "Etherscan API：驗證名稱 Safe，編譯器 0.7.6；建立交易 0x8a72b65242de000b5fdf004fe8aea138d98e9a8ed9ade82d8fa7f0c0601786cf，區塊 17487000，發送者 0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26，和 1.3.0 同一個部署者"
           },
           "url": "https://etherscan.io/address/0x41675C099F32341bf84BFc5382aF534df5C7461a#code",
           "result": "pass"
@@ -119,18 +82,82 @@
       ]
     }
   },
+  "title": {
+    "en": "Remove a Safe signer",
+    "zh-TW": "移除 Safe 的簽署人"
+  },
+  "summary": {
+    "en": "The Safe calls its own `removeOwner`, taking the signer you pick off its signers and setting the threshold to the number you type. The card asks only for the signer to remove and the new threshold, as the Safe web app does when it removes a signer.",
+    "zh-TW": "Safe 呼叫自己的 `removeOwner`，把你選的簽署人移出簽署人名單，並把門檻設成你填的數字。卡片只問要移除的簽署人和新門檻，跟 Safe web app 移除簽署人時問的一樣。"
+  },
+  "verdict": {
+    "status": "caution",
+    "text": {
+      "en": "Moves no asset, but changes who controls this Safe: pick the threshold for the signers who remain.",
+      "zh-TW": "不動任何資產，但改的是誰能動這個 Safe：門檻要配合剩下的簽署人來選。"
+    }
+  },
+  "protocols": {},
+  "judgments": [
+    {
+      "text": {
+        "en": "Once it runs, the removed address can no longer sign. A threshold of 1 lets any one remaining signer move all the assets; a threshold equal to the signers left means losing one more key locks the Safe.",
+        "zh-TW": "執行後，被移除的地址就不能再簽。門檻 1 表示剩下任何一個簽署人就能動全部資產；門檻等於剩下的人數時，再少一把鑰匙 Safe 就簽不出交易。"
+      },
+      "recommendation": {
+        "en": "Choose the threshold for the signers left, for example 2 of 3; with 2 left, weigh one lost key against one stolen key.",
+        "zh-TW": "依剩下的人數選門檻，例如 3 人設 2；只剩 2 人時，要在「掉一把鑰匙」和「被偷一把鑰匙」之間取捨。"
+      },
+      "sources": [
+        "https://github.com/safe-global/safe-smart-account/blob/bf943f80fec5ac647159d26161446ac5d716a294/contracts/base/OwnerManager.sol#L78-L90"
+      ]
+    },
+    {
+      "text": {
+        "en": "Safe's health: DefiLlama lists no hack of Safe, and the singleton code cannot be upgraded. The Bybit theft of 2025 came from a tampered Safe{Wallet} web page, not from the contracts.",
+        "zh-TW": "Safe 的健康狀況：DefiLlama 沒有列出 Safe 的駭客事件，singleton 的程式碼不能升級。2025 年 Bybit 被盜是 Safe{Wallet} 網頁被竄改，不是合約的問題。"
+      },
+      "recommendation": {
+        "en": "Trust what verify prints over what a web page shows, and compare the hashes on the hardware wallet.",
+        "zh-TW": "以 verify 印出的結果為準，而不是網頁上看到的；在硬體錢包上比對雜湊。"
+      },
+      "sources": [
+        "https://safe.global/blog/safe-ecosystem-foundation-statement",
+        "https://defillama.com/protocol/safe"
+      ]
+    },
+    {
+      "text": {
+        "en": "The simulation marks this call as moving no asset. What it changes is a setting: the Safe's signer list loses one address, and the threshold becomes the card's.",
+        "zh-TW": "模擬把這個呼叫標成不動任何資產。它改的是設定：Safe 的簽署人名單少一個地址，門檻變成卡片上的數字。"
+      },
+      "recommendation": {
+        "en": "Read verify's settings check: only the signer you picked may leave, and nothing else may change.",
+        "zh-TW": "看 verify 的設定檢查：只有你選的簽署人可以離開，其他設定都不能變。"
+      },
+      "sources": [
+        "https://docs.safe.global/reference-smart-account/owners/removeOwner"
+      ]
+    }
+  ],
   "fields": {
     "1.removeOwner.prevOwner": {
-      "en": "The Safe stores its signers as a linked list. This is the signer just before the one removed; the one before the first signer is 0x0000000000000000000000000000000000000001. If it is wrong, the transaction fails (GS205).",
-      "zh-TW": "Safe 把簽署人存成一條鏈；這是排在被移除者前面的那個人，第一個人的前面是 0x0000000000000000000000000000000000000001。填錯時交易失敗（GS205）。"
+      "en": "The signer just before the removed one in the Safe's linked list of signers; before the first signer it is 0x0000000000000000000000000000000000000001. If it is wrong, the transaction fails (GS205).",
+      "zh-TW": "Safe 簽署人鏈上排在被移除者前面的人；第一個人的前面是 0x0000000000000000000000000000000000000001。填錯時交易失敗（GS205）。"
     },
     "1.removeOwner.owner": {
-      "en": "The signer to remove.",
-      "zh-TW": "要移除的簽署人。"
+      "en": "The signer to remove. It must be a signer now, or the transaction fails.",
+      "zh-TW": "要移除的簽署人。必須是現在的簽署人，否則交易失敗。"
     },
     "1.removeOwner._threshold": {
-      "en": "The threshold after the removal. It cannot be greater than the number of signers left.",
-      "zh-TW": "移除後的門檻，不能大於剩下的人數。"
+      "en": "The threshold after the removal, at most the number of signers left (GS201). If it equals the current one, the Safe leaves the threshold as it is.",
+      "zh-TW": "移除後的門檻，最多是剩下的簽署人數（GS201）。跟原本一樣時 Safe 不改門檻。"
     }
-  }
+  },
+  "reviews": {},
+  "pastTxsConclusion": {
+    "en": "All but one misfit change several settings in one MultiSend: several `removeOwner` calls, or one with `swapOwner`, `changeThreshold` or `enableModule`. A card holds one change, so verify refuses such a batch.",
+    "zh-TW": "不合的除了一筆以外，都是在一個 MultiSend 裡改好幾項設定：好幾個 `removeOwner`，或再加 `swapOwner`、`changeThreshold`、`enableModule`。一張卡片只放一項變更，verify 會拒絕這種批次。"
+  },
+  "flow": []
 }

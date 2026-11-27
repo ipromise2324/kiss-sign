@@ -1,0 +1,115 @@
+{
+  "instanceRequest": "I curate Morpho's Sentora RLUSD Main vault. A market cap raise I submitted has passed its timelock, and I want to execute it from my Safe. build me the template and its report",
+  "entries": {
+    "sentora-rlusd-main-v2-e6bf": {
+      "role": {
+        "en": "Sentora's RLUSD Main vault (V2, senRLUSDv2), listed on Morpho, which you say you curate",
+        "zh-TW": "Sentora 的 RLUSD Main vault（V2，senRLUSDv2），在 Morpho 上架，你說你是它的 curator"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Morpho API `vaultV2ByAddress`, asked today, answers name Sentora RLUSD Main, symbol senRLUSDv2, listed true, asset RLUSD, curator 0x9e396dE3312D373b87F9BD8763fb48184b42aac0.",
+            "zh-TW": "今天問 Morpho API `vaultV2ByAddress`，回答名稱 Sentora RLUSD Main、代號 senRLUSDv2、已上架、資產 RLUSD、curator 0x9e396dE3312D373b87F9BD8763fb48184b42aac0。"
+          },
+          "url": "https://api.morpho.org/graphql",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "The Morpho app's vault page holds the address only in its code and its URL, so it confirms nothing by itself.",
+            "zh-TW": "Morpho app 的 vault 頁只在程式碼和網址裡有地址，自己不算確認。"
+          },
+          "url": "https://app.morpho.org/ethereum/vault/0x6dC58a0FdfC8D694e571DC59B9A52EEEa780E6bf/sentora-rlusd-main",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "Sentora's home page and the 32 morpho.org pages find-sources read today do not list the vault address as text.",
+            "zh-TW": "今天 find-sources 讀的 Sentora 首頁和 32 個 morpho.org 頁面，都沒有以文字列出 vault 地址。"
+          },
+          "url": "https://sentora.com/",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "Etherscan: verified as VaultV2, solc 0.8.28; VaultV2Factory 0xA1D94F746dEfa1928926b84fB2596c06926C0405 is named as its factory in the registry, which the report asks.",
+            "zh-TW": "Etherscan：驗證名稱 VaultV2，solc 0.8.28；registry 記它的工廠是 VaultV2Factory 0xA1D94F746dEfa1928926b84fB2596c06926C0405，報告會去問。"
+          },
+          "url": "https://etherscan.io/address/0x6dC58a0FdfC8D694e571DC59B9A52EEEa780E6bf",
+          "result": "pass"
+        }
+      ]
+    },
+    "sentora-rlusd-main-v2-e6bf-market-adapter": {
+      "role": {
+        "en": "The vault's one adapter, its Morpho Blue market adapter",
+        "zh-TW": "vault 唯一的轉接合約，Morpho Blue 市場轉接合約"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Morpho API, asked today: the vault's `adapters` list answers this one address.",
+            "zh-TW": "今天問 Morpho API：vault 的 `adapters` 只回答這一個地址。"
+          },
+          "url": "https://api.morpho.org/graphql",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: verified as MorphoMarketV1AdapterV2. On chain today the vault's `adaptersLength` is 1 and the adapter's `parentVault` is the vault.",
+            "zh-TW": "Etherscan：驗證名稱 MorphoMarketV1AdapterV2。今天鏈上讀 vault 的 `adaptersLength` 是 1，轉接合約的 `parentVault` 就是 vault。"
+          },
+          "url": "https://etherscan.io/address/0x3C6EAB22cFc03fc32AD1bf836f2F886A5015DFFF",
+          "result": "pass"
+        }
+      ]
+    }
+  },
+  "verdict": {
+    "status": "caution",
+    "text": {
+      "en": "Usable with care: only the factory confirms this vault; no page lists it as text.",
+      "zh-TW": "可以用但要小心：只有工廠確認這個 vault，沒有頁面以文字列出它。"
+    }
+  },
+  "judgments": [
+    {
+      "text": {
+        "en": "This vault holds about 337 million RLUSD. 310 addresses hold shares; the largest has 55.11% and the top 10 hold 91.14%. It began in 2026-03 with 168 million and peaked at 440 million in 2026-10.",
+        "zh-TW": "這個 vault 約 3.37 億 RLUSD，310 個地址持有股份，最大一個占 55.11%，前 10 名占 91.14%。2026-03 以 1.68 億起步，2026-10 最高到 4.4 億。"
+      },
+      "recommendation": {
+        "en": "Over half the shares sit with one holder, so the raised cap mostly lets that holder's funds into the market. Execute only the raise you meant.",
+        "zh-TW": "超過一半股份在同一個持有人手上，上限提高後進市場的大多是他的錢；只執行你本來要的那筆。"
+      }
+    },
+    {
+      "text": {
+        "en": "Only one Safe executed this vault's raises in the last year, the curator Safe 0x9e396dE3312D373b87F9BD8763fb48184b42aac0, so both test transactions are its own; 6 EOAs executed others. The timelock read on chain is 3 days, and until a raise is executed the curator or a sentinel can cancel it with `revoke`.",
+        "zh-TW": "過去一年只有一個 Safe 執行過這個 vault 的提高，就是 curator Safe 0x9e396dE3312D373b87F9BD8763fb48184b42aac0，所以兩筆測試交易都是它的；另有 6 個 EOA 執行過。鏈上讀到 timelock 是 3 天，提高被執行前 curator 或 sentinel 可用 `revoke` 取消。"
+      },
+      "recommendation": {
+        "en": "If you no longer want the raise, revoke it instead of executing it; once executed, lowering the cap is a separate `decreaseAbsoluteCap`.",
+        "zh-TW": "如果不想要這筆提高了，用 `revoke` 取消，不要執行；執行後要降低是另一筆 `decreaseAbsoluteCap`。"
+      }
+    }
+  ],
+  "reviews": {
+    "sentora-rlusd-main-v2-e6bf/address": {
+      "status": "concern",
+      "text": {
+        "en": "The program's only check is the factory: VaultV2Factory answers `isVaultV2` = true. Today AI asked the Morpho API about this address: name Sentora RLUSD Main, listed, curator 0x9e396dE3312D373b87F9BD8763fb48184b42aac0. AI found no page that lists it as text without the address in its URL.",
+        "zh-TW": "程式只有工廠確認：VaultV2Factory 回答 `isVaultV2` = true。AI 今天問 Morpho API 這個地址：名稱 Sentora RLUSD Main、已上架、curator 0x9e396dE3312D373b87F9BD8763fb48184b42aac0；AI 沒找到不靠網址帶地址、以文字列出它的頁面。"
+      },
+      "recommendation": {
+        "en": "Compare the address on the Morpho app's curator page with your own records as its curator.",
+        "zh-TW": "在 Morpho app 的 curator 頁比對地址，並對照你身為 curator 的紀錄。"
+      }
+    }
+  },
+  "pastTxsConclusion": {
+    "en": "Batches of many caps were market openings, with relative and collateral caps; every single raise the curator queued was executed alone, by the curator Safe or an EOA.",
+    "zh-TW": "多項一起送的是開新市場（含相對上限和抵押品上限）；curator 排隊的單一提高都是單獨執行，由 curator Safe 或 EOA 送出。"
+  }
+}

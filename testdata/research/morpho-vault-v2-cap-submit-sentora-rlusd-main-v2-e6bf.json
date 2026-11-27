@@ -1,0 +1,2755 @@
+{
+ "query": {
+  "template": "morpho/vault-v2-cap-submit",
+  "token": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+  "anchor": "event",
+  "event": "Submit(bytes4,bytes,uint256)",
+  "txParty": true,
+  "head": "26504303",
+  "maxPages": 50,
+  "maxTxs": 240
+ },
+ "head": "26504303",
+ "studiedWith": {
+  "template": "0xa2af8896c5471839e379cf437885c50569e8b806b90e71eb1b7a760ba7a4ce67",
+  "registry": "0x99c20da53943128fd69edae594e23ff27588da2059c4cc3ec6e070bd63183d7e",
+  "study": "0x61f1ce5f5cd4adf417d5dffd036bcb1056828b2e57170ba4bcd0ef03b994e01d"
+ },
+ "search": {
+  "coverage": {
+   "kind": "year",
+   "range": {
+    "fromBlock": "23876240",
+    "toBlock": "26504239"
+   },
+   "pages": 2,
+   "time": {
+    "from": "1764078935",
+    "to": "1795754747"
+   }
+  },
+  "safesFirst": {
+   "check": {
+    "kind": "checked",
+    "noun": "the address a transaction sent execTransaction to",
+    "block": "26504239",
+    "parties": 1,
+    "safes": 1,
+    "unreadable": 0
+   },
+   "selection": {
+    "safes": 55,
+    "safesChosen": 55,
+    "rest": 19,
+    "restChosen": 19
+   }
+  },
+  "found": {
+   "total": 74,
+   "only": {
+    "alchemy": [],
+    "etherscan": []
+   }
+  },
+  "otherEmitter": []
+ },
+ "studies": [
+  {
+   "kind": "not-studied",
+   "hash": "0x2f01dac2ed935a7e0bf3e9d1190c39649c04dbbf9f72e91ba6c1f40612fc9b8e",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xef7fa71b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9dfc6fd60616ed4c3efc1d34a2d9b0d05e4fb6c16c6dec460d06a4318aec6bf7",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xef7fa71b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3ceba4c197010f990657f127013efc1fd446b7d91c4370131ed611247bab3059",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xef7fa71b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xaf7783559075c322ab2854625792a16e7ca140ccb3093d48dbd5e3ad7272f38c",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xef7fa71b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x860c068c8716814a5aed7dc3e3a948541f8ca71580471522b6bb3036438fec8f",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xef7fa71b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x899b519cb4ed896c4c286b028fab476c2be6100abec3bb78158764881b1647fd",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xef7fa71b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0d6b9fab18f8284f8a8fb9d5b66cc3c0a396dca7e4dbfef9474ef99ecf54fcd5",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xef7fa71b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa8ff7f9a31e76bf53c74465f0624d4eeabf37a2ad3d9b6ba25d3b1358a9bc1f4",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xef7fa71b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb0d6720fa16cd848442720abadc2d5299517fccca83d96ad61c14c2cacd598f1",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xef7fa71b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb431940e6fc26997353651f68dc9b3f01a1eb48bc135a1c2b4a4225093407de6",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xef7fa71b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x83dc10dd18a4edcab43098f2a3675d3ec94378d4fb1ab2491209d323d6ab0c8b",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xef7fa71b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xbf6655b290539332585046a3e70d21796cd8ebf23c796c266958087705a46c50",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xef7fa71b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0082eab5a95abbd81182ea6ad98b621db9d79abc6893a13743da84da6593c875",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xef7fa71b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe87da91b5239696533e72fa22ca6ad45b13a56a594788f015afffe7e487de77a",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xef7fa71b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x02e0726cd693d99b19fb257992f267cec8325a4b33f82c0a6626722397f4c1d9",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xef7fa71b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6ea266e825ed06bacbb1ef087cef103dbc822eb51c8cd711759348a3290d66dc",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xef7fa71b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1ddf9a9700aa6f659d83023beb4d9115a8adb12ddb733da37d579899ee345f7a",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xef7fa71b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xada49564fe552c49ff5a3e1fb2291ad1009d01c54690f7609bed330fbfaf03b0",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xef7fa71b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdfb77ea2828600f1abfd1d8ae2862bc6beed0f4aa2adcf59af791cb97d75efef",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xef7fa71b"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x1bb1dac2153787c3c1dd6518421e8d7a9069c9912765ac7176b432d3354b718e",
+   "block": "24648939",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xfe56e232"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1773409631"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa23d72e3444a18a5e47ff52c980138dce84f0f9a6621f7d4a079d5d80a6c69ba",
+   "block": "24943206",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf0d212da35ca70b1ef909df1c00b841400c4f5c30c732c9b70ea4587eecea8cd",
+   "block": "24986538",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1777475255"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc052e57c27901cabade1f6a0de18e949158cbd6f2a4125983fab3a40f128131d",
+   "block": "25043723",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x33eb2be2cb30b662a7323441bd672d6249fe17684db4c04e556d3530dec10fc7",
+   "block": "25052535",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xee130f8d208b7b897ec455b797a6b9345ee791ec5416f9b500aae69fe9cbf9fc",
+   "block": "25101294",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1778857079"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc6cc3426634481e12f9fe73337dabf63efd5dddc969e917b12361d969c581ab0",
+   "block": "25101301",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1778857163"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x111df5576c6c87f62a7ac81e77098c47b755ee81870ba8ffc5ddc85a4cb0898d",
+   "block": "25101320",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1778857391"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc8e9e0b75b56ff510dc6729301f3b3849e8876da831da30a3aed610fb9749395",
+   "block": "25101328",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1778857487"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb7404cc841222242fb5221c9958c3b068d292edf0b476fabe908e299c4f77649",
+   "block": "25101337",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1778857595"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x6a4ec67ff3a8ebd9b959e15e7274ebc208f6dc48a7f8f3a64e51147b70c8bc19",
+   "block": "25101358",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1778857847"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe53155fd1e859b7f0f6f48a9cbc2f1719714b4232d358beab4e3bdd9fb8f7536",
+   "block": "25101366",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1778857943"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xef83a741a4811eaa2ea0338e7e181294f1fdfe0928de67b528742b2277fe29ba",
+   "block": "25101374",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1778858039"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x850d35698d6b4aadb622b91029e707454b5cd4d9b14ec68dde3ba5ee2f27419c",
+   "block": "25101519",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1778859791"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xeb56cf1d29900d53d44ee826e779149dcd08010f60aca2c50d7d7e14ba568671",
+   "block": "25101524",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1778859851"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x436ae9c6193aee9909778a66a6aaf166ff0de177ae2e08a3bed17ddc239a91e6",
+   "block": "25101530",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1778859923"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xcb5dad669c3b7deac576993c8cd5c33e6ea8f3c748944cd79fc2cc8fb8ef4478",
+   "block": "25101537",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1778860007"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe64ed1b1390cef960ebf65ac43353aa51c9be69e5adbcd5b0e014987c6821eed",
+   "block": "25101543",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1778860079"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x919c7579b469731ff94155987eb8f11b0e018d6b5ddaa52e0ce652743513295b",
+   "block": "25101551",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1778860175"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x1bfb76031863646a34ca3e3209b3c6b74bcd1666d09409694b24d253617b141f",
+   "block": "25101556",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1778860235"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x899e125a1b8ff363ac45cdb308d9196c8448097338c934e9d7e4a4c087a2f6ee",
+   "block": "25180304",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x6a5f1aa2"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1779808271"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd3cd14de0f905fd977be1d9e4023b33c299110429ac7f36fd0b50f9abe84c4ad",
+   "block": "25180343",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x70897b23"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1779808739"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xbc19a0f0dc1db2194585dcc6740b12c45458a4a66540ebf66addadfd1da577d7",
+   "block": "25189579",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xb192a84a"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1779919955"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf34bf32867c06c6c04277df473a27203be6caa35dc8a9686ff4763104cb77e15",
+   "block": "25199851",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "50000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1780043591"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xfa2d808663b721e685e20b324ac1a78a9ce8c44990c90d11895b8c64156f63d9",
+   "block": "25222884",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1780321247"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xabdcedc94f6831d84db7e129d0838d670c09d5c61b7262c784e9029e939bdf4b",
+   "block": "25222921",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1780321691"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xcc7ab6d308a84f2777f8336f6d1ac275f8fb455db5d63b6709cf3a0cf1dac78b",
+   "block": "25224991",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x80ac24aa929eaf5013f6436cda2a7ba190f5cc0b",
+    "0xf766f4f1bcb0cbbf4eef5e26ff7c7f66a713c1b5",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "915000000000000000",
+    "80000000000000000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams",
+     "kind": "market"
+    }
+   ],
+   "time": "1780346615"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x24a07996deeb01d246eb331a76facf7585e7621b7c643cabef4632735bed3d45",
+   "block": "25245593",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "80000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1780595051"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xa01cc5a2d360c79a34aa421a2e8961a0024a6ea6e27675154becaaff966f87a9",
+   "block": "25303050",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "100000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1781287367"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x11a4478cb5b05ea2317cd3ca40c86e5e892418c8a3a505c5c14a123a399ca7fa",
+   "block": "25395936",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf04e45b8854a10d75877d78cf2d69c5de696b25b6a003720a66615887ac6349f",
+   "block": "25439303",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "125000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1782928679"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x86bda50a58be2354aacc92bc92746f69832884843439d04d50b34eb98ec98c8c",
+   "block": "25454132",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x5a19fa369f2895dcd8d2cee62e4ceae58ef92bbb",
+    "0x968eb911db90bb8ea9e4792b05c94500bc1a62d7",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "915000000000000000",
+    "10000000000000000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams",
+     "kind": "market"
+    }
+   ],
+   "time": "1783107539"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x1d37e4eac9a35f9930efc0948df4e08c7e26fae61536d0caef0b8721ef9c57fb",
+   "block": "25503596",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "145000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1783703423"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xdd0ed5f7b3b8a21332fccf0c672b86aa1b84972cce545a2bcb361757f0191fd3",
+   "block": "25553102",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x95240c25aa9e05b87334bd07f49f879e42a85ce35b417715e7cd5083d1c4572c",
+   "block": "25597259",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "160000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1784831759"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x602360736c0997af363e8164cd0f3686f8de5c280579e2f0a3c7ef8d74b2e25c",
+   "block": "25603490",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0x6ab351ffde101bb24a97332f4f7162c1711f110b",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "95000000000000000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams",
+     "kind": "market"
+    }
+   ],
+   "time": "1784906807"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x684477e4f878825ec103453c8639553409140d46967d6445376faac028865ab6",
+   "block": "25633304",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1785265631"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xec2189bf824f8ec7c7884b18c596aa5911fb3ba29b778ef9175e6cf2a438f933",
+   "block": "25633340",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1785266063"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb50586ddd13ff4b0f5a9f8a79581d21135359cf48b2f059101211dbf8335ec77",
+   "block": "25633360",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1785266303"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x73fd0f7bbff89f8cb95932955052097ce2ca92e7bb1464d8a100defabd346bf8",
+   "block": "25705752",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0xce6170ea245dc8d1f275a710a062b70f125f0110",
+    "0x5ac03061500e0c97862a466a38a7e87fac4ac39d",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "770000000000000000",
+    "10000000000000000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams",
+     "kind": "market"
+    }
+   ],
+   "time": "1786137839"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x320114dbccd2662aa432136277077d092934a53d9e448b8714faf807167454bf",
+   "block": "25740775",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "175000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1786560083"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x19352738a59349bc3d8ec508ac30b82a3b161e4af029fc153b44b23413349b8f",
+   "block": "25854000",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "190000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1787923247"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x7b58aed6e23ab0a8514e63386838afde13f0bae9be0ef66b796307a8f2e6e8b2",
+   "block": "25897065",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0x6ab351ffde101bb24a97332f4f7162c1711f110b",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "107000000000000000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams",
+     "kind": "market"
+    }
+   ],
+   "time": "1788441935"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2b14e5adf83fb75669a4f8ac26215bf9b1184a4725e3bb40b18a2ef9c37bdeb4",
+   "block": "25932190",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "205000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1788864983"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x1264405b19c48b07d5ae2733b0061bc597004d69329a747f69a10a8231f34593",
+   "block": "25946013",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.multicall.data[0].submit.data.selector",
+    "expected": "0xf6f98fd5 increaseAbsoluteCap(bytes,uint256)",
+    "actual": "0x5c1a1a4f"
+   },
+   "free": [],
+   "time": "1789031567"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x22fadd41581e0ebb57cd28fdd5a3e832b8061ce83614e54ca209b19d6af779fd",
+   "block": "25984815",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "220000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1789498859"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x019dafde5a4ea554b46a807f5f1bd4b7da0d61f8002c7e2e848c19221a30213e",
+   "block": "26033080",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1790080727"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x67809aff8625e0f7feefc6c44f1d7c159a5cd3e4e2780f5503b55446edbcfeb1",
+   "block": "26033110",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 2,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1790081087"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x33de4eec9bc3351616c240871680e4853269e79ba817dbd5d54e7de1c545db7b",
+   "block": "26040933",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "235000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1790175599"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xc363d65969c2c1d0898958f9816d0b7e66d02df6aa500d39883f5a7dca0db8e5",
+   "block": "26142245",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "250000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1791397019"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x4cfa0702eb50a642017ffdc79082a44b064c91fd4605b3f6303df0eaf2a8f35a",
+   "block": "26147154",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x4c9edd5852cd905f086c759e8383e09bff1e68b3",
+    "0x0c13eec9b02cd9d85facc9edf17e71feafc3d8d7",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "915000000000000000",
+    "100000000000000000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams",
+     "kind": "market"
+    }
+   ],
+   "time": "1791456143"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xdbccdcd6bc1628aad02ef2d277a03c078e43eda5c9e2ab10d8caad2eb5355f0c",
+   "block": "26193099",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "265000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1792009295"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x615c03605ffc2bff61e0b8796116866cc5b88614de4a2c10484216c48bffa44d",
+   "block": "26242147",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0xce6170ea245dc8d1f275a710a062b70f125f0110",
+    "0x5ac03061500e0c97862a466a38a7e87fac4ac39d",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "770000000000000000",
+    "15000000000000000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams",
+     "kind": "market"
+    }
+   ],
+   "time": "1792599803"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xecdd770d1224a4fc72b1de0b9a59ef6c5845bafe22a2893f736df47d0030557c",
+   "block": "26307316",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 7,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xef7fa71b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1793384303"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xc89a59cd041c29e612261c89e014f152d3949a42cf7bca7e5acd9ba0c89b4991",
+   "block": "26342723",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "265000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1793810639"
+  }
+ ],
+ "measurements": [],
+ "traces": [
+  {
+   "kind": "traced",
+   "hash": "0xf34bf32867c06c6c04277df473a27203be6caa35dc8a9686ff4763104cb77e15",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x992592e073aa9b98daed79ee05c4af832e1d0abe",
+     "to": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xef7fa71b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x24a07996deeb01d246eb331a76facf7585e7621b7c643cabef4632735bed3d45",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x992592e073aa9b98daed79ee05c4af832e1d0abe",
+     "to": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xef7fa71b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xa01cc5a2d360c79a34aa421a2e8961a0024a6ea6e27675154becaaff966f87a9",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x992592e073aa9b98daed79ee05c4af832e1d0abe",
+     "to": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xef7fa71b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xf04e45b8854a10d75877d78cf2d69c5de696b25b6a003720a66615887ac6349f",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x992592e073aa9b98daed79ee05c4af832e1d0abe",
+     "to": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xef7fa71b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x1d37e4eac9a35f9930efc0948df4e08c7e26fae61536d0caef0b8721ef9c57fb",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x992592e073aa9b98daed79ee05c4af832e1d0abe",
+     "to": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xef7fa71b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x95240c25aa9e05b87334bd07f49f879e42a85ce35b417715e7cd5083d1c4572c",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x992592e073aa9b98daed79ee05c4af832e1d0abe",
+     "to": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xef7fa71b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x320114dbccd2662aa432136277077d092934a53d9e448b8714faf807167454bf",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x992592e073aa9b98daed79ee05c4af832e1d0abe",
+     "to": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xef7fa71b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x19352738a59349bc3d8ec508ac30b82a3b161e4af029fc153b44b23413349b8f",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x992592e073aa9b98daed79ee05c4af832e1d0abe",
+     "to": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xef7fa71b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x2b14e5adf83fb75669a4f8ac26215bf9b1184a4725e3bb40b18a2ef9c37bdeb4",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x992592e073aa9b98daed79ee05c4af832e1d0abe",
+     "to": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xef7fa71b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x22fadd41581e0ebb57cd28fdd5a3e832b8061ce83614e54ca209b19d6af779fd",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x992592e073aa9b98daed79ee05c4af832e1d0abe",
+     "to": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xef7fa71b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x33de4eec9bc3351616c240871680e4853269e79ba817dbd5d54e7de1c545db7b",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x992592e073aa9b98daed79ee05c4af832e1d0abe",
+     "to": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xef7fa71b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xc363d65969c2c1d0898958f9816d0b7e66d02df6aa500d39883f5a7dca0db8e5",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x992592e073aa9b98daed79ee05c4af832e1d0abe",
+     "to": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xef7fa71b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xdbccdcd6bc1628aad02ef2d277a03c078e43eda5c9e2ab10d8caad2eb5355f0c",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x992592e073aa9b98daed79ee05c4af832e1d0abe",
+     "to": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xef7fa71b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xc89a59cd041c29e612261c89e014f152d3949a42cf7bca7e5acd9ba0c89b4991",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x992592e073aa9b98daed79ee05c4af832e1d0abe",
+     "to": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xf3dcd346"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xef7fa71b"
+    }
+   ]
+  }
+ ]
+}

@@ -15,7 +15,7 @@ const ROOT = join(import.meta.dirname, '..');
 const BUNDLER3 = repoWithBundler3Deposit();
 const show = (...args: readonly string[]) => spawnSync(process.execPath, [join(ROOT, 'scripts', 'past-txs.ts'), '--show', ...args], { encoding: 'utf8', env: { PATH: process.env.PATH, HOME: '/nonexistent', KISS_SIGN_HOME: '/nonexistent' } });
 
-for (const name of ['safe-add-owner', 'cow-swap-presign', 'fluid-vault-deposit-fusdt', 'uniswap-swap-usdt-v4']) {
+for (const name of ['safe-add-owner', 'cow-swap-presign', 'fluid-vault-deposit-fusdt']) {
   const file = join(SUMMARIES_DIR, `${name}.json`);
   const summary = parseSummary(file, readFileSync(join(ROOT, file), 'utf8'));
   test(`past-txs --show ${name} lists each transaction that fits or misfits once, exact ones of Safes first, with no key and no network`, () => {

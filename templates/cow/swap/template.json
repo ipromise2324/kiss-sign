@@ -3,11 +3,19 @@
   "card": {
     "sell-token": {
       "kind": "contract",
-      "registryKind": "token"
+      "registryKind": "token",
+      "names": [
+        "usdc",
+        "usdt"
+      ]
     },
     "buy-token": {
       "kind": "contract",
-      "registryKind": "token"
+      "registryKind": "token",
+      "names": [
+        "usdc",
+        "usdt"
+      ]
     },
     "sell-amount": {
       "kind": "amount",
@@ -15,7 +23,10 @@
     },
     "min-buy": {
       "kind": "amount",
-      "of": "buy-token"
+      "of": "buy-token",
+      "floor": {
+        "sells": "sell-amount"
+      }
     }
   },
   "calls": [
@@ -31,7 +42,7 @@
         "orderUid": {
           "packed": [
             {
-              "name": "digest",
+              "name": "orderDigest",
               "type": "bytes32",
               "rule": {
                 "eip712": {
@@ -41,7 +52,6 @@
                     "verifyingContract": "gpv2-settlement"
                   },
                   "type": "Order(address sellToken,address buyToken,address receiver,uint256 sellAmount,uint256 buyAmount,uint32 validTo,bytes32 appData,uint256 feeAmount,string kind,bool partiallyFillable,string sellTokenBalance,string buyTokenBalance)",
-                  "lookup": "https://api.cow.fi/mainnet/api/v1/orders/{arg}",
                   "fields": {
                     "sellToken": {
                       "card": "sell-token"
@@ -59,12 +69,12 @@
                       "atLeast": "card.min-buy"
                     },
                     "validTo": {
-                      "withinSeconds": 604800
+                      "withinSeconds": 43200
                     },
                     "appData": {
                       "free": {
-                        "en": "The hash of the app's JSON note on the order (app code, slippage, an optional partner fee or hooks). The settlement contract never reads it and enforces the signed tokens, amounts and receiver whatever it says; a partner fee comes out of the price above the card's minimum, and a hook runs from CoW's trampoline contract, not as the Safe.",
-                        "zh-TW": "app 附在訂單上的 JSON 備註的 hash（app 代碼、滑價、可選的合作方手續費或 hooks）。結算合約從不讀它，不管它寫什麼，都照簽好的代幣、數量和收款人執行；合作方手續費從高於卡片最低值的價格中扣，hook 由 CoW 的 trampoline 合約執行，不是以 Safe 的身分執行。"
+                        "en": "The hash of the app's order metadata: app name, slippage, a partner fee, optional hooks. The settlement contract never reads it; the order still sells exactly the card amount to the Safe for at least the card minimum.",
+                        "zh-TW": "app 附在訂單上的資料的雜湊：app 名稱、滑價、合作方手續費、可選的 hooks。結算合約從不讀它；訂單仍然是剛好賣出卡片上的數量、收款人是 Safe、至少拿到卡片上的最低值。"
                       }
                     },
                     "feeAmount": {
@@ -82,7 +92,8 @@
                     "buyTokenBalance": {
                       "const": "erc20"
                     }
-                  }
+                  },
+                  "lookup": "https://api.cow.fi/mainnet/api/v1/orders/{arg}"
                 }
               }
             },
@@ -97,7 +108,7 @@
               "name": "validTo",
               "type": "uint32",
               "rule": {
-                "equals": "calls[0].args.orderUid.packed.digest.eip712.fields.validTo"
+                "withinSeconds": 43200
               }
             }
           ]

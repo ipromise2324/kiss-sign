@@ -1,229 +1,99 @@
 {
+  "request": "I want to send USDC from my Safe. build me the template and its report",
   "title": {
-    "en": "Send ERC-20 tokens from the Safe",
-    "zh-TW": "從 Safe 轉出 ERC-20 代幣"
+    "en": "Send USDC from your Safe to an address-book recipient",
+    "zh-TW": "從你的 Safe 把 USDC 轉給地址簿裡的收款人"
   },
   "summary": {
-    "en": "The Safe calls `transfer` directly on the token contract you pick, sending the amount you type to the recipient you pick. There is only one call. It goes through no router or other contract, and leaves no allowance.",
-    "zh-TW": "Safe 直接呼叫你選的代幣合約的 `transfer`，把你填的金額轉給你選的收款人。只有一個呼叫，不經過任何路由或其他合約，也不留下授權。"
+    "en": "Your Safe calls USDC's `transfer` once, sending exactly the card's amount to the card's recipient. It needs no approval first. Any other call, amount, recipient or balance change is refused.",
+    "zh-TW": "你的 Safe 呼叫 USDC 的 `transfer` 一次，把卡片上的金額原封不動轉給卡片上的收款人；不需要事先授權。其他呼叫、金額、收款人或餘額變化都會被拒絕。"
   },
   "verdict": {
     "status": "safe",
     "text": {
-      "en": "A plain token transfer: the Safe calls transfer on the token contract directly and leaves no allowance.",
-      "zh-TW": "單純的代幣轉帳：Safe 直接呼叫代幣合約的 transfer，不留下授權。"
+      "en": "A plain token transfer with no protocol in between. The risk is the recipient: check it outside the chat.",
+      "zh-TW": "單純的代幣轉帳，中間沒有協議；風險在收款人，要在聊天以外核對。"
     }
   },
-  "flow": [],
-  "protocols": {},
-  "judgments": [],
+  "judgments": [
+    {
+      "text": {
+        "en": "Circle can freeze USDC: its blacklister can block an address from sending or receiving, its pauser can stop all transfers, and its admin can upgrade the token's code.",
+        "zh-TW": "Circle 可以凍結 USDC：黑名單角色能禁止某地址收發，暫停角色能停止所有轉帳，管理員能升級代幣程式。"
+      },
+      "sources": [
+        "https://github.com/circlefin/stablecoin-evm/blob/fc85788bc7c23cefe3df1a757133048bfddadeaa/doc/tokendesign.md"
+      ],
+      "recommendation": {
+        "en": "Nothing to do for a transfer: verify checks the token's code against its pin, and a frozen or paused transfer simply fails.",
+        "zh-TW": "轉帳不用另外處理：verify 會比對代幣程式碼是否與釘選的一致，被凍結或暫停時轉帳只會失敗。"
+      }
+    },
+    {
+      "text": {
+        "en": "If the recipient is a contract, USDC runs no code there: an ERC-20 transfer only moves the balance. A contract that cannot handle USDC, or a mistyped address, can lose it for good.",
+        "zh-TW": "收款人是合約時，USDC 不會執行對方的程式，ERC-20 轉帳只改餘額；不會處理 USDC 的合約或打錯的地址，可能讓這筆錢永遠拿不回來。"
+      },
+      "recommendation": {
+        "en": "Add the recipient to the address book from a source outside the chat, and send a small amount first to a new address.",
+        "zh-TW": "從聊天以外的來源把收款人加進地址簿；轉給新地址時先送小額。"
+      }
+    }
+  ],
   "pastTxsConclusion": {
-    "en": "Only USP's search covers a year; USDC and USDT cover about an hour, the others 3 to 46 days, and older blocks were not searched. For each token the card can name, the fitting transfers measured moved exactly the stated amount. The largest misfit group, 111 Safe transactions, delegatecalls contracts listed in DeFi Saver's GitHub address file; what each did was not read. The rest are batches, or EOA calls to unverified contracts or with nonstandard data. verify refuses them all.",
-    "zh-TW": "只有 USP 搜滿一年；USDC、USDT 約一小時，其他 3 到 46 天，更早的沒搜。卡片能選的每個代幣，量過的轉帳都剛好轉出所寫的數量。最多的不符合是 111 筆 Safe delegatecall 到 DeFi Saver GitHub 地址檔列出的合約，每筆做什麼沒讀。其餘是批次，或 EOA 呼叫未驗證的合約、資料不標準。verify 全部拒絕。"
+    "en": "Safes that send several transfers at once batch them in one MultiSend: a card holding one transfer per recipient can cover that. A non-official MultiSend is refused.",
+    "zh-TW": "一次轉多筆的 Safe 會用一個 MultiSend 打包；卡片上每個收款人各一筆轉帳即可涵蓋。非官方的 MultiSend 會被拒絕。"
   },
-  "reviews": {},
   "entries": {
     "usdc": {
       "role": {
-        "en": "A token you can pick: USDC, issued by Circle",
-        "zh-TW": "可選的代幣：Circle 發行的 USDC"
+        "en": "The USDC token contract: the Safe calls its `transfer` to send USDC to the recipient.",
+        "zh-TW": "USDC 代幣合約：Safe 呼叫它的 `transfer`，把 USDC 轉給收款人。"
       },
       "sources": [
         {
           "text": {
-            "en": "Circle's USDC contract addresses page lists this address on the Ethereum row under Mainnet",
-            "zh-TW": "Circle 的 USDC 合約地址頁在 Mainnet 的 Ethereum 那一列列出這個地址"
+            "en": "Circle's developer docs list 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 in the Mainnet table, next to Ethereum.",
+            "zh-TW": "Circle 開發者文件的 Mainnet 表格中，Ethereum 旁列出 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48。"
           },
           "url": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
           "result": "pass"
         },
         {
           "text": {
-            "en": "CoinGecko's usd-coin coin lists this address for Ethereum",
-            "zh-TW": "CoinGecko 的 usd-coin 幣在 Ethereum 下列出這個地址"
+            "en": "The same table as Markdown on the same site lists the same address next to Ethereum; same owner, so not a second place.",
+            "zh-TW": "同網站的 Markdown 版同一表格，Ethereum 旁是同一地址；同一擁有者，不算第二個來源。"
+          },
+          "url": "https://developers.circle.com/stablecoins/usdc-contract-addresses.md",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's coin usd-coin (USDC) lists this address on Ethereum.",
+            "zh-TW": "CoinGecko 的 usd-coin（USDC）在 Ethereum 上列出這個地址。"
           },
           "url": "https://www.coingecko.com/en/coins/usd-coin",
           "result": "pass"
         },
         {
           "text": {
-            "en": "Etherscan: contract name FiatTokenProxy, creator 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911, creation transaction 0xe7e0fe390354509cd08c9a0168536938600ddc552b3f7cb96030ebef62e75895",
-            "zh-TW": "Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911，創建交易 0xe7e0fe390354509cd08c9a0168536938600ddc552b3f7cb96030ebef62e75895"
+            "en": "Etherscan: verified as FiatTokenProxy; created in block 6082465 by 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911, a deployer no Circle page names.",
+            "zh-TW": "Etherscan：驗證名稱 FiatTokenProxy；區塊 6082465 由 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911 建立，Circle 的頁面沒有列出這個部署者。"
           },
-          "url": "https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code",
-          "result": "pass"
-        }
-      ]
-    },
-    "usdt": {
-      "role": {
-        "en": "A token you can pick: USDT, issued by Tether",
-        "zh-TW": "可選的代幣：Tether 發行的 USDT"
-      },
-      "sources": [
-        {
-          "text": {
-            "en": "Tether's supported-protocols page gives this address as the USD₮ contract address on Ethereum",
-            "zh-TW": "Tether 的 supported-protocols 頁把這個地址列為 Ethereum 上的 USD₮ 合約地址"
-          },
-          "url": "https://tether.to/en/supported-protocols/",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "CoinGecko's tether coin lists this address for Ethereum",
-            "zh-TW": "CoinGecko 的 tether 幣在 Ethereum 下列出這個地址"
-          },
-          "url": "https://www.coingecko.com/en/coins/tether",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "Etherscan: contract name TetherToken, creator 0x36928500Bc1dCd7af6a2B4008875CC336b927D57, creation transaction 0x2f1c5c2b44f771e942a8506148e256f94f1a464babc938ae0690c6e34cd79190",
-            "zh-TW": "Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57，創建交易 0x2f1c5c2b44f771e942a8506148e256f94f1a464babc938ae0690c6e34cd79190"
-          },
-          "url": "https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code",
-          "result": "pass"
-        }
-      ]
-    },
-    "morpho": {
-      "role": {
-        "en": "A token you can pick: Morpho's governance token",
-        "zh-TW": "可選的代幣：Morpho 的治理代幣"
-      },
-      "sources": [
-        {
-          "text": {
-            "en": "Morpho's contract addresses page lists this address as MORPHO under MORPHO Token, Ethereum",
-            "zh-TW": "Morpho 的合約地址頁在 MORPHO Token 的 Ethereum 下把這個地址列為 MORPHO"
-          },
-          "url": "https://docs.morpho.org/developers/contracts/addresses/",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "CoinGecko's morpho coin lists this address for Ethereum",
-            "zh-TW": "CoinGecko 的 morpho 幣在 Ethereum 下列出這個地址"
-          },
-          "url": "https://www.coingecko.com/en/coins/morpho",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "Etherscan: contract name ERC1967Proxy, creator 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5, creation transaction 0x1a8de6a5ba99b4dcd91ff35424e2e3adf76b1de440f97e4a48b22bfe9a8f96e9",
-            "zh-TW": "Etherscan：合約名 ERC1967Proxy，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5，創建交易 0x1a8de6a5ba99b4dcd91ff35424e2e3adf76b1de440f97e4a48b22bfe9a8f96e9"
-          },
-          "url": "https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code",
-          "result": "pass"
-        }
-      ]
-    },
-    "cbbtc": {
-      "role": {
-        "en": "A token you can pick: cbBTC, issued by Coinbase",
-        "zh-TW": "可選的代幣：Coinbase 發行的 cbBTC"
-      },
-      "sources": [
-        {
-          "text": {
-            "en": "Coinbase's agentkit token list binds CBBTC to this address under ethereum-mainnet (and under base-mainnet, the same address)",
-            "zh-TW": "Coinbase 的 agentkit 代幣清單在 ethereum-mainnet 下把 CBBTC 對到這個地址（base-mainnet 下也是同一個地址）"
-          },
-          "url": "https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "CoinGecko's coinbase-wrapped-btc coin lists this address for Ethereum",
-            "zh-TW": "CoinGecko 的 coinbase-wrapped-btc 幣在 Ethereum 下列出這個地址"
-          },
-          "url": "https://www.coingecko.com/en/coins/coinbase-wrapped-btc",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "Etherscan: contract name FiatTokenProxy, creator 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05, creation transaction 0x09001d384305288073faa8f5cf3051c6cc13d55b66114064be17e12f71469753",
-            "zh-TW": "Etherscan：合約名 FiatTokenProxy，創建者 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05，創建交易 0x09001d384305288073faa8f5cf3051c6cc13d55b66114064be17e12f71469753"
-          },
-          "url": "https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code",
-          "result": "pass"
-        }
-      ]
-    },
-    "usp": {
-      "role": {
-        "en": "A token you can pick: USP, Piku's yield-bearing stablecoin",
-        "zh-TW": "可選的代幣：Piku 的生息穩定幣 USP"
-      },
-      "sources": [
-        {
-          "text": {
-            "en": "Piku's token and workflow contracts page lists this address next to the ticker USP",
-            "zh-TW": "Piku 的 token and workflow contracts 頁在代號 USP 旁列出這個地址"
-          },
-          "url": "https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "CoinGecko's usp-yield-optimized-stablecoin coin lists this address for Ethereum",
-            "zh-TW": "CoinGecko 的 usp-yield-optimized-stablecoin 幣在 Ethereum 下列出這個地址"
-          },
-          "url": "https://www.coingecko.com/en/coins/usp-yield-optimized-stablecoin",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "Etherscan: contract name TransparentUpgradeableProxy, creator 0xB8eaa4f956C6324435f4088cAe9cDa974C358508, creation transaction 0xe38f329a0426954fc83ec5bc5314f24dca2cfbcebefeb679cf43aebbbba70dda",
-            "zh-TW": "Etherscan：合約名 TransparentUpgradeableProxy，創建者 0xB8eaa4f956C6324435f4088cAe9cDa974C358508，創建交易 0xe38f329a0426954fc83ec5bc5314f24dca2cfbcebefeb679cf43aebbbba70dda"
-          },
-          "url": "https://etherscan.io/address/0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6#code",
-          "result": "pass"
-        }
-      ]
-    },
-    "weeth": {
-      "role": {
-        "en": "A token you can pick: weETH, ether.fi's wrapped staked ETH",
-        "zh-TW": "可選的代幣：ether.fi 的包裝質押 ETH weETH"
-      },
-      "sources": [
-        {
-          "text": {
-            "en": "ether.fi's deployments file sets the constant WEETH to this address",
-            "zh-TW": "ether.fi 的部署檔把常數 WEETH 設為這個地址"
-          },
-          "url": "https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "CoinGecko's wrapped-eeth coin lists this address for Ethereum",
-            "zh-TW": "CoinGecko 的 wrapped-eeth 幣在 Ethereum 下列出這個地址"
-          },
-          "url": "https://www.coingecko.com/en/coins/wrapped-eeth",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "Etherscan: contract name UUPSProxy, creator 0xf8a86ea1Ac39EC529814c377Bd484387D395421e, creation transaction 0xa034bdf7ec3b407125fcfbb786d908b0bcfd9976f2fbaf489776ba58b9db61ac",
-            "zh-TW": "Etherscan：合約名 UUPSProxy，創建者 0xf8a86ea1Ac39EC529814c377Bd484387D395421e，創建交易 0xa034bdf7ec3b407125fcfbb786d908b0bcfd9976f2fbaf489776ba58b9db61ac"
-          },
-          "url": "https://etherscan.io/address/0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee#code",
-          "result": "pass"
+          "url": "https://etherscan.io/tx/0xe7e0fe390354509cd08c9a0168536938600ddc552b3f7cb96030ebef62e75895",
+          "result": "attention"
         }
       ]
     }
   },
   "fields": {
     "1.transfer.to": {
-      "en": "The recipient address.",
-      "zh-TW": "收款地址。"
+      "en": "The address that receives the USDC. It must be the recipient you picked from your address book; USDC sends it to exactly this address and cannot be recalled.",
+      "zh-TW": "收到 USDC 的地址，必須是你從地址簿選的收款人；USDC 會原封不動送到這個地址，送出後無法撤回。"
     },
     "1.transfer.value": {
-      "en": "The amount sent, in the token's base units. card new lets you type whole tokens and converts them with the token's `decimals`, read on chain.",
-      "zh-TW": "轉出的數量，以代幣的最小單位計；card new 讓你填整顆代幣，再用鏈上的 `decimals` 換算。"
+      "en": "How much USDC to send, in base units (6 decimals: 1 USDC is 1000000). It must equal the card's amount exactly.",
+      "zh-TW": "要轉多少 USDC，以最小單位計（6 位小數：1 USDC 是 1000000）；必須和卡片上的金額完全相同。"
     }
   }
 }

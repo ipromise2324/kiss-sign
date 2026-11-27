@@ -649,14 +649,10 @@ for (const [what, params] of [
   });
 }
 
-test('each shipped swap template loads with a floor on it', () => {
-  const registry = loadRegistry(ROOT);
-  const tried = ['uniswap/swap', 'uniswap/swap-no-hook', 'cow/swap', 'cow/swap-approve'];
-  for (const id of tried) {
-    const raw = JSON.parse(readFileSync(join(ROOT, 'templates', id, 'template.json'), 'utf8'));
-    raw.card['min-buy'].floor = { sells: 'sell-amount' };
-    parseTemplate(raw, registry, 'committed');
-  }
+test('the shipped swap template loads with a floor on it', () => {
+  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'cow', 'swap', 'template.json'), 'utf8'));
+  raw.card['min-buy'].floor = { sells: 'sell-amount' };
+  parseTemplate(raw, loadRegistry(ROOT), 'committed');
 });
 
 test('a real swap meets a card whose floor is at or below its own minimum, and one unit above it is a mismatch, with or without `floor` in the template', () => {

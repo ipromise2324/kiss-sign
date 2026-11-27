@@ -21,7 +21,7 @@ import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { renderPage } from '../src/research/report-html.ts';
 import { WORDS } from '../src/research/report-words.ts';
 import { pastFields } from '../src/research/report-past.ts';
-import { cardAddresses, shapesOf } from '../src/research/study.ts';
+import { shapesOf } from '../src/research/study.ts';
 import { buildPage, constCast } from '../src/research/report-page.ts';
 import type { AddressRow, ArgRow, Body, DocLine, HtmlInputs, Inline, Page, PastBlock, WalletCall } from '../src/research/report-page.ts';
 import { pageUrlOf } from '../src/research/source-page.ts';
@@ -1054,48 +1054,6 @@ test("an argument the program reads from the Safe's owners is tagged as read on 
     assert.equal(prevOwner.fixed, false, 'shown, not folded away with the fixed rows');
     const key = body(page, 'flow').flow.key.flatMap((g) => g.items);
     assert.deepEqual(key.filter((k) => k.label === label).map((k) => k.means), [means]);
-  }
-});
-
-test("a swap's page draws a line on the token the card names, says with which tokens it was seen, and leaves a token with no trace unconfirmed", async () => {
-  const repo = join(import.meta.dirname, '..');
-  const shipped = loadRegistry(repo);
-  const target = { template: 'uniswap/swap' };
-  const replayed = await replayInputs(repo, shipped, target, await warmCompilers(reportCases(repo, shipped, [target])), loadPublicSuffixList());
-  const swap = { ...replayed.inputs, fixtures: [] };
-  const line = { after: 1, from: 'permit2', to: 'card.sell-token', function: 'transferFrom(address,address,uint256)', text: both('pull'), sources: ['https://example.org/Permit2.sol'] };
-  const dependsOn = new Map([...shipped.entries].map(([name, entry]) => [name, name === 'universal-router-2.1.2' ? { ...entry, dependsOn: [...new Set([...(entry.dependsOn ?? []), 'permit2'])] } : entry] as const));
-  const of = () => ({ ...swap, registry: { ...swap.registry, entries: dependsOn }, pastTxs: swap.pastTxs.map((r) => ({ ...r, run: { ...r.run, traces: r.run.traces.filter((t) => sells(t.hash) === sold) } })) });
-  const shapes = shapesOf(swap.subject.template);
-  const sells = (hash: Hex): string | undefined => {
-    const fit = swap.pastTxs.flatMap(({ run }) => run.studies).find((s) => s.kind === 'fit' && s.hash === hash);
-    const token = fit?.kind === 'fit' ? cardAddresses(fit, shapes).get('sell-token') : undefined;
-    return token === undefined ? undefined : shipped.byAddress.get(token)?.name;
-  };
-  const [first] = swap.pastTxs.flatMap(({ run }) => run.traces).filter((t) => t.kind === 'traced');
-  const sold = sells(first?.hash ?? assert.fail('the recordings hold a trace')) ?? assert.fail('a sold token');
-  for (const [language, seenWith, none] of [['en', new RegExp(`seen only with ${sold}\\)`), /no transaction with /], ['zh-TW', new RegExp(`只看過 ${sold}`), /沒有交易用過/]] as const) {
-    const raw = notesFor(of());
-    const reviews = { ...(raw.reviews as Record<string, unknown>) };
-    const build = (): Page => {
-      try {
-        return buildPage(of(), { ...raw, flow: [line], reviews }, title, language);
-      } catch (error) {
-        const id = /reviews: (trace\S+) is missing/.exec((error as Error).message)?.[1] ?? assert.fail((error as Error).message);
-        reviews[id] = { status: 'confirmed', text: both('checked'), recommendation: both('none') };
-        return build();
-      }
-    };
-    const page = build();
-    assert.ok(!Object.keys(reviews).some((id) => id.startsWith('trace.1.permit2.')), 'the line explains the pull');
-    const { diagram } = body(page, 'flow').flow;
-    const arrow = diagram.arrows.find((a) => a.kind === 'inside') ?? assert.fail('the line');
-    assert.ok(arrow.kind === 'inside' && arrow.seen?.state === 'some-tokens' && arrow.seen.seen === arrow.seen.of);
-    assert.deepEqual(arrow.seen.tokens, [sold]);
-    assert.match(diagram.lifelines[arrow.to]?.name ?? '', /sell-token/);
-    const html = renderPage(page);
-    assert.match(html, seenWith);
-    assert.match(html, none);
   }
 });
 

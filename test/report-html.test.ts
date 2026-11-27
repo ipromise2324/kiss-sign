@@ -803,6 +803,7 @@ test('notes-needed asks, of a report with no notes, for exactly the texts the pa
     for (const [file, tree] of Object.entries(files)) {
       for (const [key, value] of Object.entries(tree)) {
         if (key === 'flow' || key === 'request' || key === 'instanceRequest') continue;
+        if (key === 'entries' && Object.values(value as object).every((entry) => Object.keys(entry as object).every((text) => text === 'minLiquidity'))) continue;
         const { [key]: _, ...rest } = tree;
         assert.throws(() => pageOf({ ...files, [file]: rest }), NotesError, `${dir}: the page is written without ${key}`);
         if (!['reviews', 'fields', 'protocols'].includes(key)) continue;

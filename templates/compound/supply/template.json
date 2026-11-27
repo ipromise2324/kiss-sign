@@ -1,7 +1,8 @@
 {
   "id": "compound/supply",
+  "instanceField": "market",
   "card": {
-    "market": { "kind": "contract", "registryKind": "vault", "defillama": "compound-v3" },
+    "market": { "kind": "contract", "registryKind": "lending", "defillama": "compound-v3" },
     "amount": { "kind": "amount", "of": "market.baseToken" }
   },
   "calls": [
@@ -32,8 +33,9 @@
         "amount": "card.amount",
         "tolerance": {
           "less": 2,
-          "why": { "en": "Comet rounds the supply down twice, to principal and back. In 85 USDC supplies studied, the balance rose 1 unit less than the amount in 70 and 2 less in 15.",
-            "zh-TW": "Comet 存入時會往下取整兩次：換成本金、再換回餘額。研究的 85 筆 USDC 存入裡，餘額比金額少 1 單位的有 70 筆、少 2 單位的有 15 筆。"
+          "why": {
+            "en": "In 22 supplies studied (2 Safes, 20 EOAs), the sender's cUSDCv3 balance rose by the amount less 1 unit in 17 and less 2 units in 5, never more: Comet rounds the supply down.",
+            "zh-TW": "研究的 22 筆存入（2 個 Safe、20 個 EOA）中，送出者的 cUSDCv3 餘額增加的是金額少 1 單位的有 17 筆、少 2 單位的有 5 筆，沒有更多：Comet 存入時向下取整。"
           }
         }
       }

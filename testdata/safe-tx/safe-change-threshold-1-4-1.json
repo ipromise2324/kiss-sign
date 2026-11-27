@@ -1,0 +1,67 @@
+{
+  "chainId": 1,
+  "safe": "0xdad6bf8ec92a05df56c782de4778a87fe9d90777",
+  "block": 25800927,
+  "providers": [
+    "alchemy",
+    "drpc"
+  ],
+  "chain": {
+    "version": "1.4.1",
+    "domainSeparator": "0xa92ccebe0fef76b24aceb88046873f89a0ad38b2173597b16797b267d7dfa549",
+    "transactionHash": "0x5c76736c12d292cd3eea5cbdbc7b642881212734d4170fb7515c6856624947e9"
+  },
+  "service": {
+    "safe": "0xdad6BF8EC92A05DF56C782dE4778A87FE9d90777",
+    "to": "0xdad6BF8EC92A05DF56C782dE4778A87FE9d90777",
+    "value": "0",
+    "data": "0x694e80c30000000000000000000000000000000000000000000000000000000000000003",
+    "operation": 0,
+    "gasToken": "0x0000000000000000000000000000000000000000",
+    "safeTxGas": "0",
+    "baseGas": "0",
+    "gasPrice": "0",
+    "refundReceiver": "0x0000000000000000000000000000000000000000",
+    "nonce": "13",
+    "executionDate": "2026-08-21T03:50:35Z",
+    "submissionDate": "2026-08-21T03:50:27.421076Z",
+    "modified": "2026-08-21T03:50:35Z",
+    "blockNumber": 25800927,
+    "transactionHash": "0xc244a09cbf9a38d57b9402515b6bf37dee4a1b6af7eeec17ed825f1f7196adc0",
+    "safeTxHash": "0x5c76736c12d292cd3eea5cbdbc7b642881212734d4170fb7515c6856624947e9",
+    "proposer": "0x2bff9cB1C0e355595130038b56AE705E9BCB8508",
+    "proposedByDelegate": null,
+    "executor": "0x2bff9cB1C0e355595130038b56AE705E9BCB8508",
+    "isExecuted": true,
+    "isSuccessful": true,
+    "ethGasPrice": "57378698",
+    "maxFeePerGas": "66445012",
+    "maxPriorityFeePerGas": "220893",
+    "gasUsed": 52999,
+    "fee": "3041013615302",
+    "payment": "0",
+    "origin": "{\"url\": \"https://app.safe.global\", \"name\": \"\", \"note\": null}",
+    "dataDecoded": {
+      "method": "changeThreshold",
+      "parameters": [
+        {
+          "name": "_threshold",
+          "type": "uint256",
+          "value": "3"
+        }
+      ]
+    },
+    "confirmationsRequired": 1,
+    "confirmations": [
+      {
+        "owner": "0x2bff9cB1C0e355595130038b56AE705E9BCB8508",
+        "submissionDate": "2026-08-21T03:50:35Z",
+        "transactionHash": null,
+        "signature": "0x0000000000000000000000002bff9cb1c0e355595130038b56ae705e9bcb8508000000000000000000000000000000000000000000000000000000000000000001",
+        "signatureType": "APPROVED_HASH"
+      }
+    ],
+    "trusted": true,
+    "signatures": "0x0000000000000000000000002bff9cb1c0e355595130038b56ae705e9bcb8508000000000000000000000000000000000000000000000000000000000000000001"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "chainId": 1,
+  "safe": "0x961e05c5bd93d883d3171edd524e7b58d47e2076",
+  "block": 26234895,
+  "providers": [
+    "alchemy",
+    "drpc"
+  ],
+  "chain": {
+    "version": "1.3.0",
+    "domainSeparator": "0xcae19f2ad0adfe5f498864070a7abe1c1a06b3e4d0796d9afcb69a13e3c905d8",
+    "transactionHash": "0x38b3a13df65a6aeb688270aacae418899e14769c7100857df62f3fdbbdcbe1c0"
+  },
+  "service": {
+    "safe": "0x961e05C5bd93d883d3171eDD524e7b58D47e2076",
+    "to": "0x961e05C5bd93d883d3171eDD524e7b58D47e2076",
+    "value": "0",
+    "data": "0x694e80c30000000000000000000000000000000000000000000000000000000000000002",
+    "operation": 0,
+    "gasToken": "0x0000000000000000000000000000000000000000",
+    "safeTxGas": "0",
+    "baseGas": "0",
+    "gasPrice": "0",
+    "refundReceiver": "0x0000000000000000000000000000000000000000",
+    "nonce": "21",
+    "executionDate": "2026-10-20T16:08:47Z",
+    "submissionDate": "2026-10-20T16:08:47Z",
+    "modified": "2026-10-20T16:08:47Z",
+    "blockNumber": 26234895,
+    "transactionHash": "0xfa913113304378b14706cd052714164cf2894ddf53d52db72df983a800de4f51",
+    "safeTxHash": "0x38b3a13df65a6aeb688270aacae418899e14769c7100857df62f3fdbbdcbe1c0",
+    "proposer": null,
+    "proposedByDelegate": null,
+    "executor": "0xf3ffB98b646d75DE50E041FC89F0511c90DA1B5b",
+    "isExecuted": true,
+    "isSuccessful": true,
+    "ethGasPrice": "619955900",
+    "maxFeePerGas": "622240606",
+    "maxPriorityFeePerGas": "22310843",
+    "gasUsed": 56706,
+    "fee": "35155219265400",
+    "payment": "0",
+    "origin": "{}",
+    "dataDecoded": {
+      "method": "changeThreshold",
+      "parameters": [
+        {
+          "name": "_threshold",
+          "type": "uint256",
+          "value": "2"
+        }
+      ]
+    },
+    "confirmationsRequired": 1,
+    "confirmations": [
+      {
+        "owner": "0xf3ffB98b646d75DE50E041FC89F0511c90DA1B5b",
+        "submissionDate": "2026-10-20T16:08:47Z",
+        "transactionHash": null,
+        "signature": "0x900f9d3617d46dfb90d5afd8d7622d1a3d84fd9b76816a78f79a7be0377fed795c850d991231dafd07bdf62a644cd12b749818c1d6714f9958ddaa9832570dfa1c",
+        "signatureType": "EOA"
+      }
+    ],
+    "trusted": true,
+    "signatures": "0x900f9d3617d46dfb90d5afd8d7622d1a3d84fd9b76816a78f79a7be0377fed795c850d991231dafd07bdf62a644cd12b749818c1d6714f9958ddaa9832570dfa1c"
+  }
+}

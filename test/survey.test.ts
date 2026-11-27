@@ -170,7 +170,7 @@ test('one survey searches the transfers of each --token given, every search with
     if (request.source === 'etherscan' && request.query.topic0 !== EXECUTION_SUCCESS) asked.push(request.query);
     return { status: '0', message: 'No records found', result: [] };
   };
-  const [USDC, USDT, ROUTER] = ['usdc', 'usdt', 'universal-router-2.1.2'].map((name) => registry.entries.get(name)?.address as Address);
+  const [USDC, USDT, ROUTER] = ['usdc', 'usdt', 'gpv2-settlement'].map((name) => registry.entries.get(name)?.address as Address);
   const warned: string[] = [];
   const run = await survey({ kind: 'transfers', tokens: [USDC as Address, USDT as Address], to: ROUTER as Address, contracts: [] }, { ask, reader: onlyBlocks, exclude: undefined, maxPages: 20, maxTxs: 1, blocks: 500_000n, head: HEAD, warn: (w) => void warned.push(w) });
   assert.deepEqual(asked.map((q) => [q.address, q.topic2]).sort(), [[USDC, `0x${'00'.repeat(12)}${(ROUTER as string).slice(2)}`], [USDT, `0x${'00'.repeat(12)}${(ROUTER as string).slice(2)}`]].sort());

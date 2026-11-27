@@ -1,0 +1,124 @@
+{
+  "verdict": {
+    "status": "caution",
+    "text": {
+      "en": "Usable with care: only the factory confirms this vault; no page lists it as text.",
+      "zh-TW": "可以用但要小心：只有工廠確認這個 vault，沒有頁面以文字列出它。"
+    }
+  },
+  "judgments": [
+    {
+      "text": {
+        "en": "This vault holds about 337 million RLUSD. 310 addresses hold shares; the largest has 55.11% and the top 10 hold 91.14%. It began in 2026-03 with 167 million and peaked at 440 million in 2026-10.",
+        "zh-TW": "這個 vault 約 3.37 億 RLUSD，310 個地址持有股份，最大一個占 55.11%，前 10 名占 91.14%。2026-03 以 1.67 億起步，2026-10 最高到 4.4 億。"
+      },
+      "recommendation": {
+        "en": "Over half the shares sit with one holder, so a raised cap moves mostly that holder's funds. Set it by your risk framework.",
+        "zh-TW": "超過一半股份在同一個持有人手上，提高上限動的大多是他的錢；照你的風險框架給。"
+      }
+    },
+    {
+      "text": {
+        "en": "This vault's timelock for `increaseAbsoluteCap` is 3 days (`timelock` read on chain, 259200 seconds). In that time depositors can see the change, and a sentinel or the curator can cancel it with `revoke`.",
+        "zh-TW": "這個 vault 的 `increaseAbsoluteCap` timelock 是 3 天（鏈上讀 `timelock`，259200 秒）：這段時間存款人看得到變更，sentinel 或 curator 可以用 `revoke` 取消。"
+      },
+      "recommendation": {
+        "en": "If you find a mistake within 3 days of sending, cancel it with `revoke`; do not wait for it to be executed.",
+        "zh-TW": "送出後 3 天內發現填錯，用 `revoke` 取消，不要等它被執行。"
+      }
+    },
+    {
+      "text": {
+        "en": "The vault's curator, read on chain, is the Safe 0x9e396dE3312D373b87F9BD8763fb48184b42aac0, 1 of 1 owners. Only the curator may `submit`; from any other Safe the call reverts.",
+        "zh-TW": "鏈上讀到的 vault curator 是 Safe 0x9e396dE3312D373b87F9BD8763fb48184b42aac0，1/1 簽。只有 curator 能 `submit`，其他 Safe 呼叫會 revert。"
+      },
+      "recommendation": {
+        "en": "Sign this only from the curator Safe; check that verify names it as the sender.",
+        "zh-TW": "只從 curator Safe 簽；確認 verify 顯示的送出者就是它。"
+      }
+    }
+  ],
+  "reviews": {
+    "sentora-rlusd-main-v2-e6bf/address": {
+      "status": "concern",
+      "text": {
+        "en": "The program's only check is the factory: VaultV2Factory answers `isVaultV2` = true. AI asked the Morpho API about this address: name Sentora RLUSD Main, listed, curator 0x9e396dE3312D373b87F9BD8763fb48184b42aac0. AI found no page that lists it without the address in the URL.",
+        "zh-TW": "程式只有工廠確認：VaultV2Factory 回答 `isVaultV2` = true。AI 問 Morpho API 這個地址：名稱 Sentora RLUSD Main、已上架、curator 0x9e396dE3312D373b87F9BD8763fb48184b42aac0；AI 沒找到不靠網址帶地址就列出它的頁面。"
+      },
+      "recommendation": {
+        "en": "First compare the address on the Morpho app's curator page with your own records as its curator.",
+        "zh-TW": "先在 Morpho app 的 curator 頁比對地址，並對照你身為 curator 的紀錄。"
+      }
+    }
+  },
+  "entries": {
+    "sentora-rlusd-main-v2-e6bf": {
+      "role": {
+        "en": "Sentora's RLUSD Main vault (V2, senRLUSDv2), listed on Morpho; you are its curator",
+        "zh-TW": "Sentora 的 RLUSD Main vault（V2，senRLUSDv2），在 Morpho 上架；你是它的 curator"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Morpho API `vaultV2ByAddress` answers name Sentora RLUSD Main, symbol senRLUSDv2, listed true, curator 0x9e396dE3312D373b87F9BD8763fb48184b42aac0; its asset list of RLUSD vaults names it once.",
+            "zh-TW": "Morpho API `vaultV2ByAddress` 回答名稱 Sentora RLUSD Main、代號 senRLUSDv2、已上架、curator 0x9e396dE3312D373b87F9BD8763fb48184b42aac0；RLUSD vault 清單裡只有它叫這個名字。"
+          },
+          "url": "https://api.morpho.org/graphql",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "The Morpho app's vault page names it, but its URL holds the address, so it confirms nothing by itself.",
+            "zh-TW": "Morpho app 的 vault 頁列出它，但網址帶著地址，自己不算確認。"
+          },
+          "url": "https://app.morpho.org/ethereum/vault/0x6dC58a0FdfC8D694e571DC59B9A52EEEa780E6bf/sentora-rlusd-main",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "Sentora's site lists no vault address as text (find-sources read 32 pages of sentora.com).",
+            "zh-TW": "Sentora 網站沒有以文字列出 vault 地址（find-sources 讀了 sentora.com 32 頁）。"
+          },
+          "url": "https://sentora.com/",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "Etherscan: verified as VaultV2, solc 0.8.28, code first in block 24587448; VaultV2Factory 0xA1D94F746dEfa1928926b84fB2596c06926C0405 answers `isVaultV2` = true.",
+            "zh-TW": "Etherscan：驗證名稱 VaultV2，solc 0.8.28，區塊 24587448 起有程式碼；VaultV2Factory 0xA1D94F746dEfa1928926b84fB2596c06926C0405 回答 `isVaultV2` = true。"
+          },
+          "url": "https://etherscan.io/address/0x6dC58a0FdfC8D694e571DC59B9A52EEEa780E6bf",
+          "result": "pass"
+        }
+      ]
+    },
+    "sentora-rlusd-main-v2-e6bf-market-adapter": {
+      "role": {
+        "en": "The vault's one adapter, its Morpho Blue market adapter",
+        "zh-TW": "vault 唯一的轉接合約，Morpho Blue 市場轉接合約"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Morpho API: the vault's `adapters` list answers this one address.",
+            "zh-TW": "Morpho API：vault 的 `adapters` 只回答這一個地址。"
+          },
+          "url": "https://api.morpho.org/graphql",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "On chain the vault's `adapters` at index 0 is this address and `adaptersLength` is 1; the adapter's `parentVault` is the vault.",
+            "zh-TW": "鏈上 vault 的 `adapters` 第 0 個就是這個地址、`adaptersLength` 是 1；轉接合約的 `parentVault` 是這個 vault。"
+          },
+          "url": "https://etherscan.io/address/0x3C6EAB22cFc03fc32AD1bf836f2F886A5015DFFF",
+          "result": "pass"
+        }
+      ]
+    }
+  },
+  "pastTxsConclusion": {
+    "en": "Only one Safe, the vault's curator, sends these, so both tests are its transactions. Misfits add a relative cap for a new market, or submit other settings.",
+    "zh-TW": "只有一個 Safe（vault 的 curator）送這種交易，所以兩筆測試都是它的。不合的是新市場連相對上限一起提交，或提交其他設定。"
+  }
+}

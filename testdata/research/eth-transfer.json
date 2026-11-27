@@ -1,0 +1,5369 @@
+{
+ "query": {
+  "template": "eth/transfer",
+  "anchor": "event",
+  "event": "ExecutionSuccess(bytes32,uint256)",
+  "head": "26501700",
+  "maxPages": 50,
+  "maxTxs": 240
+ },
+ "head": "26501700",
+ "studiedWith": {
+  "template": "0xa9102d61de39d03490addf81ad527ed6286851fca0fa715c5a40cfc784e047c7",
+  "registry": "0x39ef716bbaa2b4f6bdb310dcc2b23e6d1dc2ffac45bf1c4f6a1d6e2e386198bb",
+  "study": "0x61f1ce5f5cd4adf417d5dffd036bcb1056828b2e57170ba4bcd0ef03b994e01d"
+ },
+ "search": {
+  "coverage": {
+   "kind": "recent",
+   "range": {
+    "fromBlock": "26465928",
+    "toBlock": "26501636"
+   },
+   "pages": 50,
+   "time": {
+    "from": "1795293623",
+    "to": "1795723391"
+   }
+  },
+  "safesFirst": {
+   "check": {
+    "kind": "checked",
+    "noun": "the contract that logged the event",
+    "block": "26501636",
+    "parties": 6416,
+    "safes": 6398,
+    "unreadable": 0
+   },
+   "selection": {
+    "safes": 28573,
+    "safesChosen": 180,
+    "rest": 104,
+    "restChosen": 60
+   }
+  },
+  "found": {
+   "total": 28677,
+   "only": {
+    "alchemy": [],
+    "etherscan": []
+   }
+  },
+  "otherEmitter": []
+ },
+ "studies": [
+  {
+   "kind": "misfit",
+   "hash": "0xebfc17ff5e55895341690e125dc9eda21d00d68e9fb27ddd8a8f6aba773f009b",
+   "block": "26465928",
+   "sender": {
+    "kind": "safe",
+    "address": "0x6e13e93a9cf41c5185f72936e6199065031796e4"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xe688b84b23f322a994a53dbf8e15fa82cdb71127"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0x4838b106fce9647bdf1e7877bf73ce8b0bad5f97"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xdd3c982a1f8f122e28c79970322be080d7c5c06ce3b5a63044a3642627e97f76",
+   "block": "26466149",
+   "sender": {
+    "kind": "safe",
+    "address": "0x998ae2b7d67e78a8873be398b1867bb3b02ac057"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbeef007ecfbfdf9b919d0050821a9b6dbd634ff0",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae",
+      "selector": "0xbdac7ca3"
+     },
+     {
+      "to": "0x5f7827fdeb7c20b443265fc2f40845b715385ff2",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
+      "selector": "0x095ea7b3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x2371860404f0331eaff892a00136297e992341f672242ffd6316be67065ce6c1",
+   "block": "26466392",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7fc19d8586d03161df1ada418fa48ab4c010a4f2"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3969ce8d2f86800915be43cde0726cf757947505240b0d408cd5270cefadddbf",
+   "block": "26466660",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8a25a24ede9482c4fc0738f99611be58f1c839ab"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
+      "selector": "0xde34d3dd"
+     },
+     {
+      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
+      "selector": "0x96122b62"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb79ee05600eef9dd3b35988eedc72e30a31ace98faa879690c0d684831e901dc",
+   "block": "26466952",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8fdeaa5443141f45049f774947c298985b5c93eb"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xcd8fcaccff60d04604e9abdae57c3208055c279ab7e2a9fd8c02aafdfd21f676",
+   "block": "26467217",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7622c579e297749cc2bf79550233e4732a1634ac"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xab6b4b11378a57933333e4acfdc45567dd78f14e"
+     },
+     {
+      "to": "0xa3d4ae293a98434f3ffd279c63a2c0c899ef3ff7"
+     },
+     {
+      "to": "0x5f19e8c1efeb698502b7fa26b61d243ed378f36c"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     },
+     {
+      "to": "0x91e53d2c181879e454318528866658d012351525"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x44d60a721222c772aba888784fcb1309a35cf2c6c2815dbd5e2669b50d3c2402",
+   "block": "26467465",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1f077215a6f2657147d07ac045019a44257c346"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x755290b23711a7cb550da6377778bd44f467dace",
+      "selector": "0x8f2a0bb0"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "unproven",
+   "hash": "0x0e526300fb91caa39856f57abb40199b4c338d77e10f4cea5d962f769c96eb61",
+   "contract": "0x3419553762343818e424143b63b2385658f67d2b",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x76fe7db8aa46f10342b3ebc3a3d5513ed0ba996a182bab7287f5deb91f6d7b31",
+   "why": "calls no function the template calls",
+   "to": "0xdb9b1e94b5b69df7e401ddbede43491141047db3",
+   "selector": "0xcef6d209"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x45d1ad235d8aba2e22f1e4b9a870260449be7d8ad13be45faca0f42c0bd26a0d",
+   "block": "26468027",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7622c579e297749cc2bf79550233e4732a1634ac"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x879a9b4b95ae7f521dc88fbccff0bd9c7af282ff"
+     },
+     {
+      "to": "0xa3d4ae293a98434f3ffd279c63a2c0c899ef3ff7"
+     },
+     {
+      "to": "0x5f19e8c1efeb698502b7fa26b61d243ed378f36c"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     },
+     {
+      "to": "0x91e53d2c181879e454318528866658d012351525"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x2c2a5f8fef879c20fb48576908fba360bb991c10322a906bc7d6923280300ecd",
+   "block": "26468239",
+   "sender": {
+    "kind": "safe",
+    "address": "0xa4c8ac52c0656c49d4f06e088320ba4f348c711e"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbeef007ecfbfdf9b919d0050821a9b6dbd634ff0",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae",
+      "selector": "0xbdac7ca3"
+     },
+     {
+      "to": "0x5f7827fdeb7c20b443265fc2f40845b715385ff2",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
+      "selector": "0x095ea7b3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x24601d494cf98386d2d0bf5a28aaaf9288b61ff460f966b066a5f971345c8e4f",
+   "block": "26468483",
+   "sender": {
+    "kind": "safe",
+    "address": "0x34922a7c50706642d3a5dff0c3c445a5b1acfc9e"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xf939e0a03fb07f59a73314e73794be0e57ac1b4e",
+      "selector": "0x095ea7b3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x64f3498c6c91f762de33172998c70d59d52802b45fc37caf3fd6beffa13a83d0",
+   "block": "26468761",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x388c818ca8b9251b393131c08a736a67ccb19297"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x79159a48ebeaec29d5165babdc7ac6f306ecc03739aa31b6626e25c647218fe3",
+   "block": "26469022",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x73f7b1184b5cd361cc0f7654998953e2a251dd58"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf0e7d429f748d277f1f54abc6b5ff312e4bdd3bd4825c01d079b61be317b69a7",
+   "block": "26469334",
+   "sender": {
+    "kind": "safe",
+    "address": "0xda21f8d9bf280f2273f2534db28a24755d901ca0"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xdc481096637790720d4d06aefac623f3691b51add21107b319a6d7b603ee89cf",
+   "block": "26469587",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc37e6d18ee56440b186257968a295eb54036821a"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+      "selector": "0xec6cb13f"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x2b92bf5e6bbe27c7e5e9f4b14ae502a61547dfc1a824a586628a721a6bcb4898",
+   "block": "26469907",
+   "sender": {
+    "kind": "safe",
+    "address": "0xf2af916fccc764593bd60e9db659199c8caff770"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xf2af916fccc764593bd60e9db659199c8caff770",
+      "selector": "0x694e80c3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "unproven",
+   "hash": "0xa5b814e4e9b877827e14e3365936731ba2f9cc41df3dae8801cac9f2e49ef78e",
+   "contract": "0x02c44bdaa5f6a4d0e1d85cfc957aeaf24e065a69",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x2bfc26b8953324d30bb8a576ff51013a4167bedb9fbf4afe5e8f6789fdf98cac",
+   "block": "26470171",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x7da0aef1b75035cbf364a690411bcca7e7859df8"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xecdc5da1e1e766ee901101255465a511f795419cd422855d58e3a3e9b46f5485",
+   "block": "26470478",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7622c579e297749cc2bf79550233e4732a1634ac"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x043227cad8fd9021dcd1df7f4444b89207cd601c"
+     },
+     {
+      "to": "0xa3d4ae293a98434f3ffd279c63a2c0c899ef3ff7"
+     },
+     {
+      "to": "0x5f19e8c1efeb698502b7fa26b61d243ed378f36c"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     },
+     {
+      "to": "0x91e53d2c181879e454318528866658d012351525"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x434fa71ee1ad36586cab4f91f38ab43a794d0c25bb9345e4f853fb6dfcd59d6d",
+   "block": "26470681",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x5c9244e0c43403d2f8bd6f9757c51f582fb3004f"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x6adb3bab5730852eb53987ea89d8e8f16393c200"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xcde8d9d29ace730d4c715d911aa511a40ae3c2c10cdfec4db2cf730e77e2adb9",
+   "block": "26470954",
+   "sender": {
+    "kind": "safe",
+    "address": "0x578a3008cba50d63f8ddeefa68f02553f724c608"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+      "selector": "0xec6cb13f"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe48c6350513f8771d8a9bd1fb015200b498733a7eb6ce552ceb0fb51f41332e1",
+   "block": "26471175",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xcc20850f1907be2aab7474b9819112e37e630d7b"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "unproven",
+   "hash": "0x32974650aab12baf8ab92ef80b3c2db3c159b807da087e445f0249528192d19e",
+   "contract": "0xf856b5eda0aa212628d81d2360c08ae0bcfe789c",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xbbb70c712c6046482b331f030aa997398fea0d233186dff5fdebc6f4982e2d16",
+   "block": "26471447",
+   "sender": {
+    "kind": "safe",
+    "address": "0x6e911ffbaddb2adf716a4774a616d4d12e86037a"
+   },
+   "paths": [
+    "call.to",
+    "call.value"
+   ],
+   "types": [
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0x6c94ce2a7104c754d267731635b51928a9e298d0",
+    "1300000000000000"
+   ],
+   "outside": [],
+   "time": "1795360019"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xdb2b296f4e16bca05b9a45311fd328438ce58f6e187d5bf870609cd99ccf2f5e",
+   "block": "26471691",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x388c818ca8b9251b393131c08a736a67ccb19297"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2e81132390e2475c74a6bcb224779402685275763ea54004926175fa99e7af2c",
+   "why": "calls no function the template calls",
+   "to": "0x006cd14f36f65ecbb29b2519ccbe63a0dc8549f2",
+   "selector": "0x7f576d13"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb39b11cfa361b5f9c5e294d8568f032369da55b4d01cc8465e9f19330498f3a3",
+   "block": "26471886",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x388c818ca8b9251b393131c08a736a67ccb19297"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x6adb3bab5730852eb53987ea89d8e8f16393c200"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "unproven",
+   "hash": "0x62e46d820ab862d2ec4c923041e5e3c886d4a2410133231389b47f1c5416364a",
+   "contract": "0x860413f97cb24d820f3c5503d19dfa2745ff3e4c",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "unproven",
+   "hash": "0x22c14a76b7a61b93f70aaf752758c09130b543ccaae4ea93941d2b26ddc39a59",
+   "contract": "0x860413f97cb24d820f3c5503d19dfa2745ff3e4c",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe82ae5044073f184e04d6a7e391de84a7c7e9b079e39e0a7896d59078cb720cf",
+   "block": "26472068",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7622c579e297749cc2bf79550233e4732a1634ac"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x388c818ca8b9251b393131c08a736a67ccb19297"
+     },
+     {
+      "to": "0xa3d4ae293a98434f3ffd279c63a2c0c899ef3ff7"
+     },
+     {
+      "to": "0x5f19e8c1efeb698502b7fa26b61d243ed378f36c"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     },
+     {
+      "to": "0x91e53d2c181879e454318528866658d012351525"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xea5dedea578f876a947b614cdb7babe444a5fd67012bea9192158737b249f85a",
+   "block": "26472303",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x9e0b720b50809645e648fc749823879a68e5b8ea"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x32e987ce5723671e450752668d1df064384e62c6baac5ac14773cdf107917cc2",
+   "block": "26472543",
+   "sender": {
+    "kind": "safe",
+    "address": "0xef8b56cdcb152abfdfab6c72502899f614280ed7"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x34d64774b1005240bdb4233482ad7926cf7a60df",
+      "selector": "0x6a761202"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3efaa9278da1b57ff34f4f2687e9d3e34ef2052724fdc4b2ec79692b8acb7b41",
+   "why": "calls no function the template calls",
+   "to": "0x006cd14f36f65ecbb29b2519ccbe63a0dc8549f2",
+   "selector": "0x7f576d13"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3c186769d22e0451a0fb56bbc47aa9237e025a73de70f6c43210e43a3fe54f7f",
+   "block": "26472795",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x6d2e03b7effeae98bd302a9f836d0d6ab0002766"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf50a71a2e55dfab5b540f700c18a19642d02177209e25fbefa4cc8b65b36bf11",
+   "block": "26473078",
+   "sender": {
+    "kind": "safe",
+    "address": "0x6fde04145a3749e8e1d2000d3fb988125d19c51b"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbeef007ecfbfdf9b919d0050821a9b6dbd634ff0",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae",
+      "selector": "0xbdac7ca3"
+     },
+     {
+      "to": "0x5f7827fdeb7c20b443265fc2f40845b715385ff2",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
+      "selector": "0x095ea7b3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "unproven",
+   "hash": "0x5411f0478e720b81872105e067af7f225f195e39252241d0afb2aedbf8a35107",
+   "contract": "0x7948adea85cf57ec2b5784979055ff35287a2025",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "unproven",
+   "hash": "0x8ac130b489e19c9c6e0b623bd075698046c93002dcce51c529f696af69d1d657",
+   "contract": "0x05cd6c8be5ea01786a3def03f126c549417dae6a",
+   "why": "its singleton is not an official Safe singleton"
+  },
+  {
+   "kind": "unproven",
+   "hash": "0x32090e163884df80eb90ca8851be142f0edea1931cdad33a1527fb41d057ca3f",
+   "contract": "0x05cd6c8be5ea01786a3def03f126c549417dae6a",
+   "why": "its singleton is not an official Safe singleton"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x99438b64e8a59b16450f3aaf2a1b22b56633f97253a4f2b00a264cba5c255248",
+   "block": "26473313",
+   "sender": {
+    "kind": "safe",
+    "address": "0xceee73a1504cdada04964d72c85528783137a755"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
+      "selector": "0x617ba037"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6789ffe9a95cb37ce7161d589eafc03fc447987be0366fd9650eaa40dda4a34e",
+   "why": "calls no function the template calls",
+   "to": "0x006cd14f36f65ecbb29b2519ccbe63a0dc8549f2",
+   "selector": "0x7f576d13"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x961676f8c240fbfa952744fa36db7c4f0ad6382801d031d0793215df05aac892",
+   "block": "26473506",
+   "sender": {
+    "kind": "safe",
+    "address": "0xfbf899c66e4675da02a9f144d55a7ab26dfcb11a"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbeef007ecfbfdf9b919d0050821a9b6dbd634ff0",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae",
+      "selector": "0xbdac7ca3"
+     },
+     {
+      "to": "0x5f7827fdeb7c20b443265fc2f40845b715385ff2",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
+      "selector": "0x095ea7b3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x72ac813cfda10084ea5c63f6e9a4f90e0649adaf96c908efa3f4d8be60968ec0",
+   "block": "26473787",
+   "sender": {
+    "kind": "safe",
+    "address": "0x85b8530eafba1cff05d64717fe7e6ac1f6fbb36c"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x815d450f443466d52d3c1fb7a57d74d463d1e6f0",
+      "selector": "0xcefc1429"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x14d2273f921315cf1601cf31a2bf9523fb9a986dd973f08cac56e9c939643fb5",
+   "block": "26474077",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xe688b84b23f322a994a53dbf8e15fa82cdb71127"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x6b21f124017fc1aca5136f29cf5fb2c6a6ea3b669bd3291cc18771cb3acba87a",
+   "block": "26474328",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa3ec0df24fd8c231a04ae0b4783c9dc001f5f464"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf6b0e25ffa869dd4391f783ef5c3666eaf29a93b9d0b4ca8be9eaae127d2d28a",
+   "block": "26474607",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb300459022f09173a54ca49c52242113c05010f3"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xdfc8e272cbc6dc1bfab967e666ef8b15ae5fb0a8",
+      "selector": "0x8f2a0bb0"
+     },
+     {
+      "to": "0xdfc8e272cbc6dc1bfab967e666ef8b15ae5fb0a8",
+      "selector": "0xe38335e5"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6ffdf0732327955b9022f9378bb48ae3a36599913cc43ca59be8fe33937146ce",
+   "why": "calls no function the template calls",
+   "to": "0x006cd14f36f65ecbb29b2519ccbe63a0dc8549f2",
+   "selector": "0x7f576d13"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x13ce33a6d8ab17fbacfee4ce2f4ff40d2fba6233cfadfe982670e2c5ccad1691",
+   "why": "calls no function the template calls",
+   "to": "0x006cd14f36f65ecbb29b2519ccbe63a0dc8549f2",
+   "selector": "0x7f576d13"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xec9d0a08bc8d8c83e84fe067c219ead5391b8af347606baba62d1d6a73e35c82",
+   "why": "calls no function the template calls",
+   "to": "0x993957af78b3ce0efc0d019d92992a76e489a8dd",
+   "selector": "0xf6cc15d0"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x55042083e0c3c3255eeade7b196862649a082ff2e9a1a8b2b979bb11e9c933a1",
+   "block": "26474909",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x388c818ca8b9251b393131c08a736a67ccb19297"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2be11c32783e0730810bc7fcc0ba84ae5b4a0ae0ca6034aac28e3a221b4689e0",
+   "why": "calls no function the template calls",
+   "to": "0x993957af78b3ce0efc0d019d92992a76e489a8dd",
+   "selector": "0xf6cc15d0"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd5e349c6c1c038210cfed619ee320b57b19444e4013fd7cbc08ed06d0592ab5c",
+   "block": "26475212",
+   "sender": {
+    "kind": "safe",
+    "address": "0x72f57b74c0b2d556589ceb393103bea0f631933b"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xe1fe12b379587d3c8f4914885bd2859b68a8e991"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x67bd4b826856568e0629db00dc61c69cebde486641a2490c1a43b768334d7b65",
+   "block": "26475393",
+   "sender": {
+    "kind": "safe",
+    "address": "0x40fc9dd8a846134c0c4583d7668ec75dd2f9c423"
+   },
+   "paths": [
+    "call.to",
+    "call.value"
+   ],
+   "types": [
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0x07720554047a0c30b29a09b23db59e5ad2f328af",
+    "20000000000000000"
+   ],
+   "outside": [],
+   "time": "1795407515"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x60012d48fd0cdfc2ee8ef8cec5df80b3fa2dbdeaba8746791f44e28325eb843d",
+   "block": "26475550",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x4675c7e5baafbffbca748158becba61ef3b0a263"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7e0424f7e9f9537846e6403b6ec4f5c5dfbd5a093710c78b0aafee4e3474efda",
+   "why": "calls no function the template calls",
+   "to": "0x006cd14f36f65ecbb29b2519ccbe63a0dc8549f2",
+   "selector": "0x7f576d13"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe11e6881526d3b20758d4eeb7cf5ed8ddea9665efd57107c28b18e0fb38d0701",
+   "block": "26475722",
+   "sender": {
+    "kind": "safe",
+    "address": "0x481f50a5bdccc0bc4322c4dca04301433ded50f0"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xc3b462225bd9bd030043703b5a0b4fa72699c742",
+      "selector": "0xac9650d8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "unproven",
+   "hash": "0xb04b48449456fb7ec02d1be45b8065c0d9d609b3b57a0d1ebd4c39d422d4e179",
+   "contract": "0x05cd6c8be5ea01786a3def03f126c549417dae6a",
+   "why": "its singleton is not an official Safe singleton"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x1b8f69145830c330d99c0cd082f631e102f1cf5d5a39dbdc8e1cefcb3141e698",
+   "block": "26475961",
+   "sender": {
+    "kind": "safe",
+    "address": "0x40e11df0adbf5657fc8c0f1549c196c9b90cb7f6"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x0a5e677a6a24b2f1a2bf4f3bffc443231d2fdec8",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x1180c114f7fadcb6957670432a3cf8ef08ab5354",
+      "selector": "0xc5ebeaec"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x420a14b5df631d9d448410c2aba6b45fb83ef555b98e80d3813903784e16dbd3",
+   "block": "26476231",
+   "sender": {
+    "kind": "safe",
+    "address": "0x6162ed31657d847e1dfe4ebdcbdad2a50cca0238"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x6162ed31657d847e1dfe4ebdcbdad2a50cca0238",
+      "selector": "0x0d582f13"
+     },
+     {
+      "to": "0x6162ed31657d847e1dfe4ebdcbdad2a50cca0238",
+      "selector": "0x0d582f13"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x1a107eea522830f8106509b0f2c4c46f1416a07573cc0c240bac9c2c469f6fd1",
+   "block": "26476444",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xd61ca26088e223f9629b55ea2c7f1ff46ea6015c"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x55c418b26c26bfe1df6448e1d89e19e294310d8a08d6009fcbce68b15bb25620",
+   "why": "calls no function the template calls",
+   "to": "0xe7bfde727524f913118cb7756cde33af1ff29071",
+   "selector": "0xf6cc15d0"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x9cabbbdd4da5e442dd0cf5c76c64277cc7fde9310396ec2d657cb64b75727b77",
+   "block": "26476642",
+   "sender": {
+    "kind": "safe",
+    "address": "0x95bbbbadc3010ccc2db918e040a3630af6ffe788"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x826180541412d574cf1336d22c0c0a287822678a",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb22695d7bf63084a68f566c8546a9e32e8d1b394d3ed8d068d5d71cdccd63b7a",
+   "block": "26476823",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc9bc3a0715a717c5195501e470141d31dc6d0240"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "unproven",
+   "hash": "0x3ede1ff10bf90120fa0252cc77ebc1230d0877da145e6de835667f638eb0708b",
+   "contract": "0x65a7e0feb36dd0840af2af2887be84d325febec7",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "unproven",
+   "hash": "0x9837c2dd8447375b62b4f0a54a2eca193a5cc5831e21f713f826298f187e340b",
+   "contract": "0x65a7e0feb36dd0840af2af2887be84d325febec7",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x422f623806427072d3a235a2cd6b306e1af01bd1468354cbd354de21bf628f76",
+   "block": "26476984",
+   "sender": {
+    "kind": "safe",
+    "address": "0x5451bc14917633e5884fb6f8732d1202c5faa3cc"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x21c0949a7512dd7353daf2c79bf763e2bc28d3a9dc481cbcedab4188ced6e2f2",
+   "block": "26477183",
+   "sender": {
+    "kind": "safe",
+    "address": "0xcecac713b972f7b45e278e621f2fe192403669c9"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": [],
+   "time": "1795429055"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x128fc22c7bcfd1783c12ff4a01b9e393f6765eda0a3d8a2d233588a8d879bee9",
+   "block": "26477363",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57da45ee907f9d58d781c6ed5abf730eb6673d80"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x1cbd1a27237fefe017ecd49a50df5777eaaeaa45",
+      "selector": "0xe9f22169"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3491f299a50ffe6452d2548529d645eb82e951d858d0eb6fd9b8a13156221888",
+   "block": "26477529",
+   "sender": {
+    "kind": "safe",
+    "address": "0x65c7a108c868a1daa51bc16d2248bfd4fc4f3193"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x914d7fec6aac8cd542e72bca78b30650d45643d7",
+      "selector": "0x00000000"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x9c3f9e61c7fc2f9c5f93e030c81d865722f528ee1175ee9bc80d4f1e5b7fa430",
+   "block": "26477679",
+   "sender": {
+    "kind": "safe",
+    "address": "0x2cb1468e7f5dfbc2d89b4ead86740b78f863c00e"
+   },
+   "paths": [
+    "call.to",
+    "call.value"
+   ],
+   "types": [
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0x2cb1468e7f5dfbc2d89b4ead86740b78f863c00e",
+    "0"
+   ],
+   "outside": [],
+   "time": "1795435019"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc2d10c8c70e12060875dd0127b3c5353fed4352d6aad42c0086d183788cf0486",
+   "block": "26477790",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa9602df1da8943851ae5f8242a549c430d659650"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x44e5bbc0118008f0b872fa2d36d353c6c9f9f02695afff6e718131977a6ce61f",
+   "block": "26477962",
+   "sender": {
+    "kind": "safe",
+    "address": "0x215475a957fae863d99af5b5453b186dfec2536d"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbeef007ecfbfdf9b919d0050821a9b6dbd634ff0",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae",
+      "selector": "0xbdac7ca3"
+     },
+     {
+      "to": "0x5f7827fdeb7c20b443265fc2f40845b715385ff2",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
+      "selector": "0x095ea7b3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xbdeb006ee19a460817e8896838ea3912ae283ce99c8f9b412ca4ca8e5d0133b9",
+   "block": "26478104",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7622c579e297749cc2bf79550233e4732a1634ac"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x97e813b9a81d097e60a5e6311bc9a475199b67ae"
+     },
+     {
+      "to": "0xa3d4ae293a98434f3ffd279c63a2c0c899ef3ff7"
+     },
+     {
+      "to": "0x6adb3bab5730852eb53987ea89d8e8f16393c200"
+     },
+     {
+      "to": "0x91e53d2c181879e454318528866658d012351525"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe7cd26aa3479e74b458c88171c2ee87459e196a7a3d4c1d2ac0a411178828f3c",
+   "block": "26478239",
+   "sender": {
+    "kind": "safe",
+    "address": "0x738ada4cec3de102f6b3e56dd6ec28b8882be16f"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x49ab537883051d70cd923bdb583b1eacd98e91c803d93183df7ea7122a82aa90",
+   "block": "26478411",
+   "sender": {
+    "kind": "safe",
+    "address": "0xf267823cf091917b3072245566cd073833aff65b"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xf34c3b55467c27ade496afe116f5f5cd6427654b",
+      "selector": "0x4585e33b"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3efa7a69f160cde99fe8be264d1963d7698ef6e7bd4f7bbb8408a37a9f84e134",
+   "block": "26478561",
+   "sender": {
+    "kind": "safe",
+    "address": "0xbe484cd4e9f59e902ef88e422ad89ec58235e9b8"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": [],
+   "time": "1795445675"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb9dd4732cbe160a09fc98454a38a7bf18c63804cdd93468435f41ef4d92fd2ad",
+   "block": "26478737",
+   "sender": {
+    "kind": "safe",
+    "address": "0xddedfa1b44669160794e7adbba260495bebf473b"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa144a29687211f22cc42d7349d13706406e37130",
+      "selector": "0x6a761202"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "unproven",
+   "hash": "0xda0c1e3cea5d6fa0605116c49480627acaca5dccaff6a2d3c36faed1108ba528",
+   "contract": "0x05cd6c8be5ea01786a3def03f126c549417dae6a",
+   "why": "its singleton is not an official Safe singleton"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb756524b01c0804bcffa79af7ad29e18c19f6d26167ec40eadb67df129beb658",
+   "block": "26478883",
+   "sender": {
+    "kind": "safe",
+    "address": "0x6b71ba91d12bfedaf54b95d89ea1f57c1e547483"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbeef007ecfbfdf9b919d0050821a9b6dbd634ff0",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae",
+      "selector": "0xbdac7ca3"
+     },
+     {
+      "to": "0x5f7827fdeb7c20b443265fc2f40845b715385ff2",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
+      "selector": "0x095ea7b3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xff40dc73abc5f78d8deae0ef4d2113dd0d8ea0e620e9d9feaeed8dfa0a6b78c7",
+   "block": "26479019",
+   "sender": {
+    "kind": "safe",
+    "address": "0xa3c9d4610ab66434efb2c760fff2ef7b5cf513c9"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x4da27a545c0c5b758a6ba100e3a049001de870f5",
+      "selector": "0x955e18af"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x7257dcd542170be8697e6004b1a3ac9bbd5e8ac559d5148116f90fdc23edc4bc",
+   "block": "26479167",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9dc3c205ccd15bdbdb5c11ad7bb3d43d6abbb7bb"
+   },
+   "paths": [
+    "call.to",
+    "call.value"
+   ],
+   "types": [
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0x9dc3c205ccd15bdbdb5c11ad7bb3d43d6abbb7bb",
+    "0"
+   ],
+   "outside": [],
+   "time": "1795452959"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xaa82e5c01d90604623149a6004b1b22efaf7b317b2c769e5c7ef39c7a6087e80",
+   "block": "26479312",
+   "sender": {
+    "kind": "safe",
+    "address": "0x93e5260ac975b475af8bf818c14deee7fefd5927"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x5dd8bfa6c5c68d05d25ef6143e05c11e26c4cdb7",
+      "selector": "0x224d8703"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xaa436a42ac8620544ef514805de91c3674be3e382c62a9ef37dd11ce0679fdd9",
+   "block": "26479446",
+   "sender": {
+    "kind": "safe",
+    "address": "0x2222222fe632649bd1ea279540ba14528bb5cda0"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x6552c8fb228f7776fc0e4056aa217c139d4bada1",
+      "selector": "0x56781388"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "unproven",
+   "hash": "0x4a066581e41336df5ebd1ed8e537f9f0c3c55b28836aef4bd833acd982c2649e",
+   "contract": "0x05cd6c8be5ea01786a3def03f126c549417dae6a",
+   "why": "its singleton is not an official Safe singleton"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x0e2e6ba94b192e0efaf0dbef7bf9b96e2a63c6524946ea8b1174ba7310b19742",
+   "block": "26479622",
+   "sender": {
+    "kind": "safe",
+    "address": "0x74e7fb936e4cb364a7d91037a2b0357cf328b5e4"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf11ae3b6c7ea7816c8ebb7cc9e5ef2d8f35b79f74c885a1ee32f4d792080982b",
+   "why": "calls no function the template calls",
+   "to": "0x8090a9db6aca56ffa186c75ca0787b18af1058a0",
+   "selector": "0xd85064c2"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe67eff62eb1dc2196babf896d5f6e519431a054562738bf3f46177a8c546af0f",
+   "block": "26479989",
+   "sender": {
+    "kind": "safe",
+    "address": "0x21f07691bf90b93c9acb4c340030b38f69250270"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x361549e9bbeec9c475e9a0cd65d1f74e9c93c7280ae5c2cd906fc6b449668842",
+   "block": "26480169",
+   "sender": {
+    "kind": "safe",
+    "address": "0x93645c372f84df818c4efac2b80d58269859dc28"
+   },
+   "paths": [
+    "call.to",
+    "call.value"
+   ],
+   "types": [
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xb0057443597b1614d758e6a046baa558aed78ab7",
+    "1174832696313398886"
+   ],
+   "outside": [],
+   "time": "1795465019"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x39854cec4004f3f9100e5bb15530c3695244a615826aca5e5a7f93aae0395a05",
+   "block": "26480316",
+   "sender": {
+    "kind": "safe",
+    "address": "0xbf41c0dc65ea4879d8a74e0a69737af7b3e0fa13"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xfc63243b7ece266bf8a1cf7806749f7bb0cd6fa2",
+      "selector": "0xa87a20ce"
+     },
+     {
+      "to": "0x547136a1cdbdb0eb20994e9fca169724aeee4e15",
+      "selector": "0xa87a20ce"
+     },
+     {
+      "to": "0xabdb2146189871274121d429fa71a4f7aab916ea",
+      "selector": "0xa87a20ce"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x7e235c03b2db51c0fad93053851eb62db089d242af30d582152c4a31feeaaeaa",
+   "block": "26480528",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x73f7b1184b5cd361cc0f7654998953e2a251dd58"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "unproven",
+   "hash": "0x9489f28306f175dec2ca6551d21850563681295c294dfcdae152ea6b9b004e27",
+   "contract": "0x1d4eca55db4487fd9d7c10c4c2ae4ae83c426dad",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "unproven",
+   "hash": "0x0178a3325f8c7543d34cab47d8be8aa212729ca016d6a0850ec6bf5e265adc4f",
+   "contract": "0x1d4eca55db4487fd9d7c10c4c2ae4ae83c426dad",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "unproven",
+   "hash": "0x28948e3290c226099c4520576847a3a27339999d3a44c80b2296c14d435595d8",
+   "contract": "0x1d4eca55db4487fd9d7c10c4c2ae4ae83c426dad",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "unproven",
+   "hash": "0xe5aaa7a133ec99e60cc6fa02a00d230732cab76a0225fae402ce6c358043d63c",
+   "contract": "0x1d4eca55db4487fd9d7c10c4c2ae4ae83c426dad",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "unproven",
+   "hash": "0xdec3fcd9cc3ada82fa7671a3e38e1548b85802239d4ef5fe4ca180e49b534e20",
+   "contract": "0x1d4eca55db4487fd9d7c10c4c2ae4ae83c426dad",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "unproven",
+   "hash": "0x21b3dce1457ced212809ea8b7e01cf07f2bac1c6241f5edc2acf3bf7c0baaea3",
+   "contract": "0x1d4eca55db4487fd9d7c10c4c2ae4ae83c426dad",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x4c5149e2ade059868928583a18163973f042984a469ece8f86a2befc93f89fd9",
+   "block": "26480735",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x388c818ca8b9251b393131c08a736a67ccb19297"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xffe216ff0d748b34b9f472c758ba385d3a151473d08b3e65e1a6ce831a8cc8b6",
+   "block": "26480890",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x4ad393206569465ffa4f3e0fc34aa181887a5d3e"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd87ffeb56f90e60f880ea333198685ebffc7ea7ca07f7af34b12032c6371514f",
+   "why": "calls no function the template calls",
+   "to": "0x9641d764fc13c8b624c04430c7356c1c7c8102e2",
+   "selector": "0x8d80ff0a"
+  },
+  {
+   "kind": "unproven",
+   "hash": "0x7f8d4e250304acbbe594f8bebd401ecb8d9e78f765018bc2e6b72c8cae0dc246",
+   "contract": "0x3419553762343818e424143b63b2385658f67d2b",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "unproven",
+   "hash": "0x238fb01f0d22dc260109a771a03509a5636b25d1487e6336a0ced36e070af069",
+   "contract": "0x8c0997b6a5a5c47386da80f54d086e28e213dd03",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc6d71a263ed05330cf78f5b5fe17fd92aaa97ef8e24a115a6695569f413cf46d",
+   "block": "26481336",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x2bf916f8169ed2a77324d3e168284fc252ae4087"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x1003c371f0e59a3e8c86ad33ace0a56ab65efabe7fb690a624fcacffa2847fe4",
+   "block": "26481769",
+   "sender": {
+    "kind": "safe",
+    "address": "0x491d054af6bd2c218286b4198dec568da78c1516"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x69a238ae7ebeb3c53ff3b544e48b96a2142fc284",
+      "selector": "0xac9650d8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "unproven",
+   "hash": "0xad9f1f30c517d1464e36fa85e67dd38489390141418ebe0ab41cbfc219885e31",
+   "contract": "0x02c44bdaa5f6a4d0e1d85cfc957aeaf24e065a69",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xfdaec890072fafeb9958c8efce08f4fa3541f74663ea3318ee4288663b04b230",
+   "block": "26482079",
+   "sender": {
+    "kind": "safe",
+    "address": "0xa5687e85d569ee17ba2503f6e5142d80d3b8f037"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbeef007ecfbfdf9b919d0050821a9b6dbd634ff0",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae",
+      "selector": "0xbdac7ca3"
+     },
+     {
+      "to": "0x5f7827fdeb7c20b443265fc2f40845b715385ff2",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
+      "selector": "0x095ea7b3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "unproven",
+   "hash": "0x16549eb28b2e8945802cca2b710cf1c24d208e168a2c3dae0eb306e96b1c8152",
+   "contract": "0x02c44bdaa5f6a4d0e1d85cfc957aeaf24e065a69",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "unproven",
+   "hash": "0xce0335b2e3b77acdc158f2651b398379a83170fe2e0672f7a35f01697e048940",
+   "contract": "0x458af6bc5f6a854c641d1173172dae42ca5926eb",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe67a1418b439bcbc2ee83945590cf96b99f31b093dbb6694954bd0ab1bf5c8d5",
+   "why": "calls no function the template calls",
+   "to": "0x993957af78b3ce0efc0d019d92992a76e489a8dd",
+   "selector": "0xf6cc15d0"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1cb2355a5323c9dcff4692a8cd759680fd834d9cca5445bc24c7fad367f55044",
+   "why": "calls no function the template calls",
+   "to": "0x993957af78b3ce0efc0d019d92992a76e489a8dd",
+   "selector": "0xf6cc15d0"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x25b1216b0b05b5e4ad9646e2f08b2eda81772f57a01f84cfdd0462ec77d07bbb",
+   "block": "26482316",
+   "sender": {
+    "kind": "safe",
+    "address": "0x4d2fb5f8ec243fde4df1a9678b82238570c7e0e4"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbeef007ecfbfdf9b919d0050821a9b6dbd634ff0",
+      "selector": "0xac9650d8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4c51c10cfcedabb3bbcbc0d531692be65784a10a00e835c924172dafcb363485",
+   "why": "calls no function the template calls",
+   "to": "0x3f1ada2c5436c2ac2ef12ee486ca3bbeea21ba81",
+   "selector": "0xf6cc15d0"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x7a6511118a78e14dfa1ef92921d9ddb7ed0129ae3479dfc90027915454286d9f",
+   "block": "26482491",
+   "sender": {
+    "kind": "safe",
+    "address": "0x4d2fb5f8ec243fde4df1a9678b82238570c7e0e4"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbeef007ecfbfdf9b919d0050821a9b6dbd634ff0",
+      "selector": "0xac9650d8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2003bbae876b5ac9e231a06ce9eeb38ce720bd464bc3c07ccd8f40027e58451a",
+   "why": "calls no function the template calls",
+   "to": "0x3f1ada2c5436c2ac2ef12ee486ca3bbeea21ba81",
+   "selector": "0xf6cc15d0"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa724e84cf34bf868c50147c48701cc3787160ded19a24a6af45912e8b9e47b6b",
+   "block": "26482670",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x8df4ef8b5871ae3a9e0438369b3867f69a733776"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x21680c033c51c6836e7d1fe3eb53a4335124c03924d768e050c85ca0d1efd7b3",
+   "block": "26482936",
+   "sender": {
+    "kind": "safe",
+    "address": "0xaf177c57e369bbd30f47745dbaaf1d225f4b74d0"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x02912516d49de997db75b9d7858faae59209650b",
+      "selector": "0x932084a8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x1c0f37daaaf4307f970d1018669b5a7dc2b6efc421dec4b2b7b1eac80cd4952d",
+   "block": "26483240",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xed488e6cc4b030eb5bfdde3227c3d5da2b9040e8"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x09e9a1d48be30452726bde9216e496c45e5d879feaa4a0e94185912428c9fbe3",
+   "block": "26483479",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x34842c43e655779a86e890e2b56d09bc477a1ce3"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xff26e76492b22e90f3b43daffe0875b5b993c67e5a66da5fcae2e15373e5d252",
+   "why": "calls no function the template calls",
+   "to": "0x7d2d47e441915ff9c2d5a6e4a7aadd5e02722e29",
+   "selector": "0x60657de7"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x5486482c566b470158efa21f7f924ce7f435c9c8da066a4a020b9b11310f92ca",
+   "block": "26483694",
+   "sender": {
+    "kind": "safe",
+    "address": "0x67b3c56788790426ece58e5611694d33a2aad809"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x00000000219ab540356cbb839cbe05303d7705fa",
+      "selector": "0x22895118"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xcaad19848b7d6cecdc4a21b8a2a334f6b7273e944efc9d6b182cd6a62a1e7553",
+   "block": "26483867",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd60307b5136cd53513ceb49283d8d93b97e0adff"
+   },
+   "paths": [
+    "call.to",
+    "call.value"
+   ],
+   "types": [
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0x1240231f11c710f66721bb13c559c4160f152bc0",
+    "501253679592886"
+   ],
+   "outside": [],
+   "time": "1795509479"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x6c784df412bdd43f2a3ff311f799fc11cfb4389146531b7b439f027e4b353a94",
+   "block": "26484054",
+   "sender": {
+    "kind": "safe",
+    "address": "0xaf376831c0701c787d8821ac6d7372fc4f65d901"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x6d2e03b7effeae98bd302a9f836d0d6ab0002766"
+     },
+     {
+      "to": "0xa3d4ae293a98434f3ffd279c63a2c0c899ef3ff7"
+     },
+     {
+      "to": "0x4838b106fce9647bdf1e7877bf73ce8b0bad5f97"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x91e53d2c181879e454318528866658d012351525"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb943ae5a399baed5815b70022d1cb83d440b537b1fada2068f1c2cb8aa58d93e",
+   "block": "26484206",
+   "sender": {
+    "kind": "safe",
+    "address": "0xe45d66982282f5ecf1bcc44cb27e9067391da73d"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xd01607c3c5ecaba394d8be377a08590149325722",
+      "selector": "0x474cf53d"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3173e823c1e500c665438e69f3b9554498f1d7a910fb3d58a67b18c593ba6bf5",
+   "why": "calls no function the template calls",
+   "to": "0xe7bfde727524f913118cb7756cde33af1ff29071",
+   "selector": "0xf6cc15d0"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd430a98d6134f29686e830d38076c25bca0aeebc370f274cbccd33e478eaad89",
+   "block": "26484366",
+   "sender": {
+    "kind": "safe",
+    "address": "0xe2be08b5ab22339a012524f2002236e353e0fa76"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xac4c6e212a361c968f1725b4d055b47e63f80b75",
+      "selector": "0x5f3bd1c8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3b31f38c37b0a9123a99d5a648d7011c6a89ef43e93a2974423c3fd81b65ef02",
+   "block": "26484523",
+   "sender": {
+    "kind": "safe",
+    "address": "0xaf376831c0701c787d8821ac6d7372fc4f65d901"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x854292e72c4aec1ebf60d634db342c871bf32110"
+     },
+     {
+      "to": "0xa3d4ae293a98434f3ffd279c63a2c0c899ef3ff7"
+     },
+     {
+      "to": "0x4838b106fce9647bdf1e7877bf73ce8b0bad5f97"
+     },
+     {
+      "to": "0x91e53d2c181879e454318528866658d012351525"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x5d3155bbcf88ce187423f0c2e536a8926a0c99d23e0d5ef97efecc1ad0a46caf",
+   "block": "26484676",
+   "sender": {
+    "kind": "safe",
+    "address": "0xf8b94cf40378edd80e36dad89379000c04db1361"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbeef007ecfbfdf9b919d0050821a9b6dbd634ff0",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae",
+      "selector": "0xbdac7ca3"
+     },
+     {
+      "to": "0x5f7827fdeb7c20b443265fc2f40845b715385ff2",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
+      "selector": "0x095ea7b3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x324c118ad743befe261d5a364ee5cd34df54d5d8efeedbf1adce7b7b0dd14bea",
+   "block": "26484836",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x388c818ca8b9251b393131c08a736a67ccb19297"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x1966f2532ce0499eb96a62f9302607b2a72718cd6ddfa207348b27776b40e4a9",
+   "block": "26484990",
+   "sender": {
+    "kind": "safe",
+    "address": "0xe4f02accc88a3000f11afec71c04896127a3aeb5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xe343167631d89b6ffc58b88d6b7fb0228795491d",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xf5438dafc165b466f4a61ce57bd3aa59bcd5979e",
+      "selector": "0x5fe704f9"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x21a23446267ae7f272b9cfa0ab83f8137d1fbddf598994ece4450360f39063dd",
+   "block": "26485142",
+   "sender": {
+    "kind": "safe",
+    "address": "0xbc4e9594fc69d5fd711cc52ae4137ad8e5d02bd8"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x25654223526b663504309f78df73170fd4ea2aa2262d186fc34625e3f016d188",
+   "block": "26485313",
+   "sender": {
+    "kind": "safe",
+    "address": "0x2fe367d6f8a755ca22efae7f29004f9b5fa868e8"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xe6ec1f0ae6cd023bd0a9b4d0253bdc755103253c",
+      "selector": "0xd4d9bdcd"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf6dbac0df86a937ae2b73a78664ed2b59fdb9bb91b9227c44084e160537bb183",
+   "block": "26485444",
+   "sender": {
+    "kind": "safe",
+    "address": "0xe4ccc5400f9dbdbcea5e9d3f79382cda60193fe6"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x0b9af1fd73885ad52680a1aeaa7a3f17ac702afa",
+      "selector": "0xc2998238"
+     },
+     {
+      "to": "0xf80eeec09f417fa7fcc4a848ef03af9df2658d7b",
+      "selector": "0xc5ebeaec"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb5b1ef5d04b2b222568fec2ecdd43c43cfee0a3834ae2a4006c992c2cf8fedf2",
+   "block": "26485548",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8fe5532a29e3896c6ed941d269a6325642bf30b0"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x162c92aaca2825b3763a9bc5d8fbf52f5f902ab5",
+      "selector": "0xd4d9bdcd"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x93ef2266d5fd5d7a46450d7b355e2826d2df89a15e641873fd4a48c75ff850d2",
+   "block": "26485666",
+   "sender": {
+    "kind": "safe",
+    "address": "0xf267823cf091917b3072245566cd073833aff65b"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xf34c3b55467c27ade496afe116f5f5cd6427654b",
+      "selector": "0x4585e33b"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x4bfa6894d1cffbc227f7b773946b377c7e14b8554d67657b1f586ac5b74572e2",
+   "block": "26485814",
+   "sender": {
+    "kind": "safe",
+    "address": "0x90e19aeaec9dc86ef305c1517169a591aab78cf6"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x388c818ca8b9251b393131c08a736a67ccb19297"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0x4838b106fce9647bdf1e7877bf73ce8b0bad5f97"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x59007b94aa3569e14261b5a12ee4e8f8940a8e7ebe05c9f0fb9e487afd82ff84",
+   "block": "26485960",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb8cef0875dd3a2147450e53bccf359ec56f2d568"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xa0d3707c569ff8c87fa923d3823ec5d81c98be78",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x1ea5870f7c037930ce1d5d8d9317c670e89e13e3",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x1ea5870f7c037930ce1d5d8d9317c670e89e13e3",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xa1290d69c65a6fe4df752f95823fae25cb99e5a7",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+      "selector": "0x095ea7b3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x3f551166b0f92e59b29efe1397c06812575bef922c15b8bd1c73814550b20236",
+   "block": "26486106",
+   "sender": {
+    "kind": "safe",
+    "address": "0x255c7705e8bb334dfcae438197f7c4297988085a"
+   },
+   "paths": [
+    "call.to",
+    "call.value"
+   ],
+   "types": [
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0x255c7705e8bb334dfcae438197f7c4297988085a",
+    "0"
+   ],
+   "outside": [],
+   "time": "1795536407"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xdc44fea2246b3d24861750a8e59fbb7c6b92c77491368a4070e88f3b7ed58848",
+   "block": "26486243",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x388c818ca8b9251b393131c08a736a67ccb19297"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x11691dff42be95b3fe55e9b7269649c2e4b2b714f7a9b1c512280c12d8b5086d",
+   "block": "26486426",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8fdeaa5443141f45049f774947c298985b5c93eb"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa12e14939552363696c12f833048c734604df3dfda025571e292353ce3a8dcd0",
+   "block": "26486588",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb261db3e2a4a5dc542f7d40dc3b465c7bb104af4"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xc36442b4a4522e871399cd717abdd847ab11fe88",
+      "selector": "0x219f5d17"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x6decd49a3db22f330e6ef5351a704f4c1176f89ed0e430861fb358169f4c30a3",
+   "block": "26486771",
+   "sender": {
+    "kind": "safe",
+    "address": "0x42cab3696a60c6fc51381bb533797e4121e1f168"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x40e3d1a4b2c47d9aa61261f5606136ef73e28042",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc33a3317d6f25465488f458a05dc87238663833c02b70c65f2bc3e262eaad77c",
+   "block": "26486947",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc67aad57ea006fda2e1b3e5e6497895fc30e50aa"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xe09fadba7590afeb3e21f42fa2f6a82ca10fd7f9"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0x4838b106fce9647bdf1e7877bf73ce8b0bad5f97"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x09afe146d6b619da48f0e3e68712d91678e943119c21dab501004c0fac4776da",
+   "block": "26487131",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7607c08928bdbab77f88872b49667dcb877524db"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xace8e719899f6e91831b18ae746c9a965c2119f1",
+      "selector": "0x40c10f19"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf1d06153055e8e27135832f4e432d1103c568b733a48b9c91ddef7279065aada",
+   "block": "26487310",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8a25a24ede9482c4fc0738f99611be58f1c839ab"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xc953972cd006d1f12686fd7185c6d443b15900cd",
+      "selector": "0x96122b62"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x12b329eca5894744a20ec4937d64961c59d8b0ac62ebbf058f9c5b79c66599dd",
+   "block": "26487513",
+   "sender": {
+    "kind": "safe",
+    "address": "0x017a5e2b3afd0f374c72c7d294dc1ac739c416eb"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "selector": "0x095ea7b3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3dec07a17d31c25d10060e5ac7a65f7c8e742e80f108cd54a5887c87183da9fd",
+   "block": "26487654",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8fdeaa5443141f45049f774947c298985b5c93eb"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x9d4c05302a665f2840843129fc6f6d386b1ec0d6fa387191efc16a7fab9de6b6",
+   "block": "26487849",
+   "sender": {
+    "kind": "safe",
+    "address": "0x720c780aa79a1a9f8ea751bd7771312d827069b3"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0x7508dd98"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0x0c6c76b8"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0xa8ec43ee"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0xa8ec43ee"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0xa8ec43ee"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0xa8ec43ee"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0xa8ec43ee"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0xa8ec43ee"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0xa8ec43ee"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0xa8ec43ee"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0x7508dd98"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0x7508dd98"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0x0c6c76b8"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0x7508dd98"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0x0c6c76b8"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0x7508dd98"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0x0c6c76b8"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0x7508dd98"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0x0c6c76b8"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0x7508dd98"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0x0c6c76b8"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0x7508dd98"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0x0c6c76b8"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0x7508dd98"
+     },
+     {
+      "to": "0x55da0ff31863a72d2773f479cf37f26d723319f6",
+      "selector": "0x0c6c76b8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xcf42edcace7fbbd2e3d6290aa4aca6dea9bb533a95f4486bd999829c0a4248f9",
+   "block": "26488062",
+   "sender": {
+    "kind": "safe",
+    "address": "0x90e19aeaec9dc86ef305c1517169a591aab78cf6"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x4675c7e5baafbffbca748158becba61ef3b0a263"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0x4838b106fce9647bdf1e7877bf73ce8b0bad5f97"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x99ced4e62b73197302b8e2a5aa045af1e7626ea8db3a7138a3ac8a6b81d44d17",
+   "block": "26488327",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7622c579e297749cc2bf79550233e4732a1634ac"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x73f7b1184b5cd361cc0f7654998953e2a251dd58"
+     },
+     {
+      "to": "0xa3d4ae293a98434f3ffd279c63a2c0c899ef3ff7"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     },
+     {
+      "to": "0x91e53d2c181879e454318528866658d012351525"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa2689fdac8b8c9faa28661e0b1a0440f993dd18cf7eee2449f323edb09e42121",
+   "block": "26488608",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x879a9b4b95ae7f521dc88fbccff0bd9c7af282ff"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7e90b81911ef9fcc487781693a7e1c7f084cff68ac4d7cfda3a978917ab1302c",
+   "why": "calls no function the template calls",
+   "to": "0x781388759eacb9892f60d77d9a99c9be2f7f4ada",
+   "selector": "0x710a9f68"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x2a629745874e0834b75db3aadbe2d3379b9b47cb5d7a585c03ff68f13ab392e7",
+   "block": "26489176",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7b86a8b51041fca2973194122f2f67cfaf2ec523"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x7b86a8b51041fca2973194122f2f67cfaf2ec523",
+      "selector": "0x0d582f13"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x527b9a973bb7ecf2e5fc85428315d0fde648fdcd811e3bb2e8c516edeab6798a",
+   "why": "calls no function the template calls",
+   "to": "0x993957af78b3ce0efc0d019d92992a76e489a8dd",
+   "selector": "0xf6cc15d0"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1e3819b8b0df9895b03c32bc5b82ad8eb18ae9eb5d683a1303514e1b92e90e81",
+   "why": "calls no function the template calls",
+   "to": "0x993957af78b3ce0efc0d019d92992a76e489a8dd",
+   "selector": "0xf6cc15d0"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x83c508b4e8712f7dcbe5cbfa07b17dfc9f9dec11d1a27c6b76301f47ef09a8ba",
+   "block": "26489400",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xd4e96ef8eee8678dbff4d535e033ed1a4f7605b7"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xda87baefe0d25a100e057f7e49c5b7b5169dcdb97d367fe37569ca8543cbf016",
+   "block": "26489592",
+   "sender": {
+    "kind": "safe",
+    "address": "0x3eaac28f488727ec5f16e111cacae5d104a16abe"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+      "selector": "0xec6cb13f"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x198baa20b82ddbc3e8e559556e654b795d40aed6a2134310ee153a8ae8620775",
+   "why": "calls no function the template calls",
+   "to": "0x3f1ada2c5436c2ac2ef12ee486ca3bbeea21ba81",
+   "selector": "0xf6cc15d0"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xde624603b5d234e3a1fec44d0c9fef1dc617de9e77271fbcb54944593d4edf39",
+   "block": "26489814",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xd878229c9c3575f224784de610911b5607a3ad15"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1cb3bf285579b4b17796329d51aff8aea15818fcb6e7a576fa6ea2be847ce9ee",
+   "why": "calls no function the template calls",
+   "to": "0x3f1ada2c5436c2ac2ef12ee486ca3bbeea21ba81",
+   "selector": "0xf6cc15d0"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x96cb6430581217c37bb85baf63a4b99bd47a9175da3ccb6eaa6a815a58ea87ff",
+   "block": "26490026",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8f9c67680b5efddc17e1739333f03e738c6cf38b"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbeef007ecfbfdf9b919d0050821a9b6dbd634ff0",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae",
+      "selector": "0xbdac7ca3"
+     },
+     {
+      "to": "0x5f7827fdeb7c20b443265fc2f40845b715385ff2",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
+      "selector": "0x095ea7b3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x79d23e5e640584be78591211f85701642aee39b123da0068e0dd418d665020db",
+   "why": "calls no function the template calls",
+   "to": "0x3f1ada2c5436c2ac2ef12ee486ca3bbeea21ba81",
+   "selector": "0xf6cc15d0"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x141ca6634b7dfa5be041fc17017c066dcf64c3df8a5befe4760634e2b840e1f8",
+   "block": "26490310",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd11a04fbc05b4a2029c5b8843f1763e9bc8ba01f"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
+      "selector": "0xa415bcad"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x0aa20272db64e8674a2d5a06ec5a8991383540c3f7c2bf39f014c4ee1ae64477",
+   "block": "26490552",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x2bf916f8169ed2a77324d3e168284fc252ae4087"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xc46b7b10b43a96767e8fcce58bf60a509f1dbba5edad2a848173a09c432ee4a2",
+   "block": "26490765",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb1feb2f07356cb9e440ce83988d88a36e5e85912"
+   },
+   "paths": [
+    "call.to",
+    "call.value"
+   ],
+   "types": [
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xb1feb2f07356cb9e440ce83988d88a36e5e85912",
+    "0"
+   ],
+   "outside": [],
+   "time": "1795592447"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3fc99ae9687a1e70559fc4655bb97731b154ae5a200cf008e875f8949a40fae1",
+   "block": "26490896",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd9bb597fbfa363b76629451d7bcbdf7250204616"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x000000effdc3c95de4385781007bb89467182050",
+      "selector": "0x77329f35"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x2c253f703eedc1d6ee496d1cd0d83f27f4c136a0226e44e508c80e3356523885",
+   "block": "26491054",
+   "sender": {
+    "kind": "safe",
+    "address": "0x90e19aeaec9dc86ef305c1517169a591aab78cf6"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x2990555a8139b4b4bbf8ebcbcf9eccd763727088"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0x4838b106fce9647bdf1e7877bf73ce8b0bad5f97"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "unproven",
+   "hash": "0xc8aa491b020ace9e8c6e5202a7f05da9667e9f3c7fd14eb5d578cf08347ca8ce",
+   "contract": "0x58c970918b4e186d9de3794c1fb99bd17c22aaf3",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x7aee73ea0d957e5fa468ed7b8e625ec6e7b0ce20c8721a102dd257c907421637",
+   "block": "26491206",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xc0ec1bb7f9c27e9880abf7ed0537c489067d800e"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x4f0421a496aaee9e68d1b84fddb504d2689f9ed745212346643c27f67721b152",
+   "block": "26491342",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7622c579e297749cc2bf79550233e4732a1634ac"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbce289f27d0a69c5039793e10ddc99de7c9c3f13"
+     },
+     {
+      "to": "0xa3d4ae293a98434f3ffd279c63a2c0c899ef3ff7"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     },
+     {
+      "to": "0x91e53d2c181879e454318528866658d012351525"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x4fe7a8a91f325c08b6ca30f9a1c80889b758a7303cd9fea72b0b8b3e90ca82cc",
+   "block": "26491487",
+   "sender": {
+    "kind": "safe",
+    "address": "0x12a6bfb2f81267b847743c87767b3a45b897b1c0"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x8457ca5040ad67fdebbcc8edce889a335bc0fbfb",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x46b065e91f791ebfbe864b8823f0e2fafb698a12d0250f409063bb52a2177ad3",
+   "block": "26491610",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd70b36a24a106dd425f4fa318c38010d6f7900fd"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "unproven",
+   "hash": "0xb92ca45aaad88be446f3064bb260d8f092e08ef25cef1f70b54607cae8d187e4",
+   "contract": "0x65a7e0feb36dd0840af2af2887be84d325febec7",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3940c338a7fd953c4aba0904dcd4984cc67c05f4d211954da2de92cf9cf9f3e8",
+   "block": "26491767",
+   "sender": {
+    "kind": "safe",
+    "address": "0x3254482825fbb2e9295e316112c62b89dd6b575d"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xda5928d59ece82808af2cbbe4f2872fea8e12cd6",
+      "selector": "0xa0712d68"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x531e94334dfb4abcba4d7d610aee2a08e2316bb46f97f469b91157c6f94fbbfb",
+   "block": "26491955",
+   "sender": {
+    "kind": "safe",
+    "address": "0x0356fe0526290aa9abcbf2f319a6d6b147b68577"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x2747f2db3c62d4dbe98e0121f25b918bfd2976ce2602b5197411dba1db73bda5",
+   "block": "26492116",
+   "sender": {
+    "kind": "safe",
+    "address": "0x2f471f35c7c629656f76e318e572574339180f87"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": [],
+   "time": "1795608743"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xa3cce2a87d68bec4c98f19ad6afadfce58ef69e8ffb7db6c20b2f2f48c3cebf4",
+   "block": "26492283",
+   "sender": {
+    "kind": "safe",
+    "address": "0x0f77c442d156da0abef3a8ff09c24390b6be254d"
+   },
+   "paths": [
+    "call.to",
+    "call.value"
+   ],
+   "types": [
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0x0f77c442d156da0abef3a8ff09c24390b6be254d",
+    "0"
+   ],
+   "outside": [],
+   "time": "1795610747"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5594ce2c1e293e3fc6de8384f435d9c6b9a6b04293b649785ae9c4d5cedaa957",
+   "why": "calls no function the template calls",
+   "to": "0xe7bfde727524f913118cb7756cde33af1ff29071",
+   "selector": "0xf6cc15d0"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3576f5a429e451d6109d916b97fd8dda76daaf816cbc3493f1d65a677a1c656d",
+   "block": "26492426",
+   "sender": {
+    "kind": "safe",
+    "address": "0x188e9f30195ba04e53402129dd66908a2ec84299"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x5ba1e12693dc8f9c48aad8770482f4739beed696",
+      "selector": "0x252dba42"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x8d3994683e4734581d846ec95140e2a58a499e90887f5865a142432e2f34eaad",
+   "block": "26492558",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8fdeaa5443141f45049f774947c298985b5c93eb"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf9faed6aac035b175ba2973a358d759ad534a53b7118b6afd71991350a6b1a56",
+   "block": "26492704",
+   "sender": {
+    "kind": "safe",
+    "address": "0xdee50018dfddac5d03ebd27cfd7e425bb54e1571"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x50c4e75a512f2a14a7b304787adf79c4531a5909",
+      "selector": "0x2213bc0b"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xcee86f8fae7b5f9e1b5c3ff9fc11d01299b40a1a142a8fff69c082f0c7cb945b",
+   "block": "26492862",
+   "sender": {
+    "kind": "safe",
+    "address": "0x2b6ce195ca3cb1c96a128ed3df8d8c5f478d67de"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x2b6ce195ca3cb1c96a128ed3df8d8c5f478d67de",
+      "selector": "0x610b5925"
+     },
+     {
+      "to": "0x2df2ab0d28e26486aa5d474632001bff8fcb6781",
+      "selector": "0x610b5925"
+     },
+     {
+      "to": "0x2b6ce195ca3cb1c96a128ed3df8d8c5f478d67de",
+      "selector": "0xe318b52b"
+     },
+     {
+      "to": "0x2b6ce195ca3cb1c96a128ed3df8d8c5f478d67de",
+      "selector": "0x694e80c3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xea61562ae5d42038a25c504c2868b843be9a3b01192a922458b929b8cf48407b",
+   "block": "26493011",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7e76772e02ba471a7be4330942ccba307f3daa38"
+   },
+   "paths": [
+    "call.to",
+    "call.value"
+   ],
+   "types": [
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0x7e76772e02ba471a7be4330942ccba307f3daa38",
+    "0"
+   ],
+   "outside": [],
+   "time": "1795619507"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x9fab0c362e5e0d056b7c4761ff8346be8c1c77cdbd195c7f78ec6692dcd015a4",
+   "block": "26493145",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8fdeaa5443141f45049f774947c298985b5c93eb"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x33861c817784ad12b546a5f74d8ad6943b2f45d7a00bd7dbfa8b26896f1b6d3b",
+   "block": "26493274",
+   "sender": {
+    "kind": "safe",
+    "address": "0xa90f96b5fcd5bdc0aae788c0485786b0e546d950"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xf939e0a03fb07f59a73314e73794be0e57ac1b4e",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x02d9876a21af7545f8632c3af76ec90b5ad4b66d",
+      "selector": "0x7266cc31"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x6e2588c0dc08859ed22615c0127bd6073f3d566cb179cd3906a40b5c582dd6ec",
+   "block": "26493438",
+   "sender": {
+    "kind": "safe",
+    "address": "0xf93edc3cbd5250170c947c2f7d132137e734a188"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+      "selector": "0xec6cb13f"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x0eb3193ab358c774546c11798c34f8c89276712c1989c67caf31ca26526c6181",
+   "block": "26493573",
+   "sender": {
+    "kind": "safe",
+    "address": "0xdd979b109ddeae72d14dc20dc63cae1d038f8440"
+   },
+   "paths": [
+    "call.to",
+    "call.value"
+   ],
+   "types": [
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xe69b5281a173045d5da35e8229e1272e2a3a2025",
+    "100000000000000"
+   ],
+   "outside": [],
+   "time": "1795626275"
+  },
+  {
+   "kind": "unproven",
+   "hash": "0xabf48684e5ccf391ce9761401dd8895f970eb2dfe36043fc1ecdda5f33e1859c",
+   "contract": "0x02c44bdaa5f6a4d0e1d85cfc957aeaf24e065a69",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "unproven",
+   "hash": "0xb59f2326e4e8d8e9fdfd9ce9376304fba79ddc32fd850689e5577e55c950a134",
+   "contract": "0x29dad01b55ab8cf788c2ae6f6d6f5c09610bc0eb",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x57dcbf106c52e1a477abb4e1edd6a95586429302ddcb10232a04fc5be30e21cd",
+   "block": "26493729",
+   "sender": {
+    "kind": "safe",
+    "address": "0x52167425504f4291edb856be5d3f653d73965dd6"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x0dc4f92879b7670e5f4e4e6e3c801d229129d90d",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x691fa30bf3e108c9812f83301a073f008d5bd78a74ab22d87d48f5e8c87c7a1c",
+   "block": "26493914",
+   "sender": {
+    "kind": "safe",
+    "address": "0x40ddccac38e4f6f2cb802c09f0a08f39d3dcb48f"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xe05fadf242331808f504661bea65972594869826",
+      "selector": "0xac9650d8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x98d99d4959246fa20831eb3378069d3bf5a9e877af997620740dee970121e77f",
+   "block": "26494081",
+   "sender": {
+    "kind": "safe",
+    "address": "0x47c71dfeb55ebaa431ae3fbf99ea50e0d3d30fa8"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x13a9cc64344b02bacc5ad9cf38b5711f1b9ec3d4",
+      "selector": "0xdecec215"
+     },
+     {
+      "to": "0x13a9cc64344b02bacc5ad9cf38b5711f1b9ec3d4",
+      "selector": "0x55caa163"
+     },
+     {
+      "to": "0x13a9cc64344b02bacc5ad9cf38b5711f1b9ec3d4",
+      "selector": "0x55caa163"
+     },
+     {
+      "to": "0x13a9cc64344b02bacc5ad9cf38b5711f1b9ec3d4",
+      "selector": "0x55caa163"
+     },
+     {
+      "to": "0x13a9cc64344b02bacc5ad9cf38b5711f1b9ec3d4",
+      "selector": "0x55caa163"
+     },
+     {
+      "to": "0x13a9cc64344b02bacc5ad9cf38b5711f1b9ec3d4",
+      "selector": "0x55caa163"
+     },
+     {
+      "to": "0x13a9cc64344b02bacc5ad9cf38b5711f1b9ec3d4",
+      "selector": "0x55caa163"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x71c2b95a474a7c45916fea791845a885c790e1dd53a75a11356b98120badc82b",
+   "block": "26494204",
+   "sender": {
+    "kind": "safe",
+    "address": "0xbc215a726ebf3bcc8ba97a832fd3c3bebca57300"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x02d613c8e5646bf3649c6a32ea0367880a0fb392"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0x4838b106fce9647bdf1e7877bf73ce8b0bad5f97"
+     },
+     {
+      "to": "0x6adb3bab5730852eb53987ea89d8e8f16393c200"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x27f52355cdb84e024e8bb8e1634386f41af5179311a6b2a06eb0145c3c087bc8",
+   "block": "26494361",
+   "sender": {
+    "kind": "safe",
+    "address": "0xce46d2291a546a165d38664001c30b1be9f3d3c1"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbeef007ecfbfdf9b919d0050821a9b6dbd634ff0",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae",
+      "selector": "0xbdac7ca3"
+     },
+     {
+      "to": "0x5f7827fdeb7c20b443265fc2f40845b715385ff2",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
+      "selector": "0x095ea7b3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x58d82237ea4f162e8fc1c8942a8e5b5ac12e4b748fb10da3595c077ca2840586",
+   "block": "26494539",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x02d613c8e5646bf3649c6a32ea0367880a0fb392"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x744d6975e9d05d42f52f3f227bafd08d92921360d467eaff084e9e01a31da3a6",
+   "block": "26494708",
+   "sender": {
+    "kind": "safe",
+    "address": "0x72b4556b385bbf9fd1671fef0734def11126dd0e"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xc9f800c5410e44a167b4a0aa4c6a2e68bee17f4c",
+      "selector": "0x8a0dac4a"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x37abdc4a5d48b53ec544c698e30bce4a5f95a2e82abff6afed22e6044b521eff",
+   "block": "26494889",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xcc31dd59242e06292eb2534e46b8210f0b33df43"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x6adb3bab5730852eb53987ea89d8e8f16393c200"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe6c5f3f9ca339fe9b13fcca749ae9d530d2996bd5e4f3ea5e0eb414dd714b711",
+   "block": "26495108",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x7d16d2c4e96bcfc8f815e15b771ac847ecbdb48b"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x9db636dec1cc2b104f5e7d1306ca0b7dda3cff8d2fdcbd729ff9303e5da86340",
+   "block": "26495322",
+   "sender": {
+    "kind": "safe",
+    "address": "0x725d2ea25eb334c38d6d9acc377aaa1cf0e322e9"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": [],
+   "time": "1795647359"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xada071b9e17598457980642df8bede2459c482fbd419e8f00e1b1d7a1c8d668f",
+   "block": "26495529",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x4ad393206569465ffa4f3e0fc34aa181887a5d3e"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x395ff6fbbaf81989b05c669a6912d73ea88ce2cd31a3a5ae6d9178275d3dd143",
+   "block": "26495767",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8fdeaa5443141f45049f774947c298985b5c93eb"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc26073c22074ff89d019d5edecc4fa7f00f7146849aef8009cb1d63096aad0b4",
+   "block": "26496013",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x388c818ca8b9251b393131c08a736a67ccb19297"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x5af56b849fc11770fd7df961542c87324ea1427c68c2d300dd8bef26b8fda902",
+   "block": "26496243",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x73f7b1184b5cd361cc0f7654998953e2a251dd58"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x6adb3bab5730852eb53987ea89d8e8f16393c200"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc5188ac5965971a040b8ff40681087877aad90ecbc2da82098c24287fad1a76d",
+   "why": "calls no function the template calls",
+   "to": "0x993957af78b3ce0efc0d019d92992a76e489a8dd",
+   "selector": "0xf6cc15d0"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9d87a8040b9df56490e2a14d6df981ee438384cc4ae7e6fb3775377f4901bfae",
+   "why": "calls no function the template calls",
+   "to": "0x993957af78b3ce0efc0d019d92992a76e489a8dd",
+   "selector": "0xf6cc15d0"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xd5512a95859a92752ec7679bc060a6145cdcf2901c42e08fd1a57943fb9b299e",
+   "block": "26496511",
+   "sender": {
+    "kind": "safe",
+    "address": "0x129bb1b1708de6c0c2c0be4ed1d199488fb2d0aa"
+   },
+   "paths": [
+    "call.to",
+    "call.value"
+   ],
+   "types": [
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0x0000000000000000000000000000000000000000",
+    "0"
+   ],
+   "outside": [],
+   "time": "1795661651"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x2c62e488f177ef123e813eb2b64936a63f6529dfb73f6b0304c72a880b35b102",
+   "block": "26496696",
+   "sender": {
+    "kind": "safe",
+    "address": "0x4d2fb5f8ec243fde4df1a9678b82238570c7e0e4"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbeef007ecfbfdf9b919d0050821a9b6dbd634ff0",
+      "selector": "0xac9650d8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "unproven",
+   "hash": "0x7b826d49d380ae1a744607f8d1c943678dd1bd52a92ef7d398e50ac53249bcbf",
+   "contract": "0x3419553762343818e424143b63b2385658f67d2b",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "unproven",
+   "hash": "0xf023c11f16d5193178a0172e92edfb363e9509111af45c9435c26f4dcad5a3e0",
+   "contract": "0x8c0997b6a5a5c47386da80f54d086e28e213dd03",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "unproven",
+   "hash": "0xecd88e24800a924ef1be131db2176287b4be25b1c3b9f7fa60c8d75acfccb834",
+   "contract": "0x8c0997b6a5a5c47386da80f54d086e28e213dd03",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x48e0518a43980cdce6d6fb7f97b77f59db0cac7ff3ca5679dd2dc24314a92ad4",
+   "why": "calls no function the template calls",
+   "to": "0x3f1ada2c5436c2ac2ef12ee486ca3bbeea21ba81",
+   "selector": "0xf6cc15d0"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xceddf399026e9b5f0a659d852bcc96934cb805af0d94da97a8b8e675d980c983",
+   "block": "26496914",
+   "sender": {
+    "kind": "safe",
+    "address": "0x4d2fb5f8ec243fde4df1a9678b82238570c7e0e4"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbeef007ecfbfdf9b919d0050821a9b6dbd634ff0",
+      "selector": "0xac9650d8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7b57b68e2444a321325a830b7448143e920f99eb02852a07fe90db103341eb69",
+   "why": "calls no function the template calls",
+   "to": "0x3f1ada2c5436c2ac2ef12ee486ca3bbeea21ba81",
+   "selector": "0xf6cc15d0"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xcadc23cebf17f043c3f4c7a08ddb8f89853ffdc27ee27c881faa40431e05b435",
+   "block": "26497097",
+   "sender": {
+    "kind": "safe",
+    "address": "0x51f762510578ec4b880d9267194800d1cd4678ce"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd79c9dd2625c5d6fed94ec7feff72335333c760afdc8fc4b8c7e10460e5bdd85",
+   "block": "26497377",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x388c818ca8b9251b393131c08a736a67ccb19297"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x6adb3bab5730852eb53987ea89d8e8f16393c200"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x85f442312b37b162cf1df0542621d88ef0d7ae19cfe402faf0479a3e90c8ccfa",
+   "block": "26497644",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xe556bf2a4452dba4b02598c1810900e0dd3c1f58"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x6adb3bab5730852eb53987ea89d8e8f16393c200"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc9a10aed617dc96688a2f84f30d8d50f8664cba5c25c60b28cf67c117e8e1552",
+   "block": "26497867",
+   "sender": {
+    "kind": "safe",
+    "address": "0xaf376831c0701c787d8821ac6d7372fc4f65d901"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xc3fa6be47ffeeccc39b74bc7fdc4815822494195"
+     },
+     {
+      "to": "0xa3d4ae293a98434f3ffd279c63a2c0c899ef3ff7"
+     },
+     {
+      "to": "0x4838b106fce9647bdf1e7877bf73ce8b0bad5f97"
+     },
+     {
+      "to": "0x91e53d2c181879e454318528866658d012351525"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "unproven",
+   "hash": "0xd4cb95734b3d7ca7ed6f4990adaf0b3b8bc51422aac958eb4eda26437a8bbc1f",
+   "contract": "0x58c970918b4e186d9de3794c1fb99bd17c22aaf3",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "unproven",
+   "hash": "0x4790fde14fe32b49ed86898177a6db9b374c58fd267202ca866f85c28efaa27b",
+   "contract": "0x8c0997b6a5a5c47386da80f54d086e28e213dd03",
+   "why": "its code is not a known Safe proxy"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x636a8924ab529b5216093941c854db17da33ed58ed62339456e3f96046801566",
+   "block": "26498088",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x388c818ca8b9251b393131c08a736a67ccb19297"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2865dee16d58742d18e5dc29e27f59e9dfbc49a52e403ecb4a0eefa0124af448",
+   "why": "calls no function the template calls",
+   "to": "0x006cd14f36f65ecbb29b2519ccbe63a0dc8549f2",
+   "selector": "0x7f576d13"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x50dd9afa174c1baa2db599b11f496313d05ed18ea26af03124286222bd1c292b",
+   "block": "26498263",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x8824371958ac2726c2cfe835b8b4d43329a1cb0e"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x6adb3bab5730852eb53987ea89d8e8f16393c200"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x7b6d9b01de66253682f96c8cfe227ed5601ebd687eb15eab60d19ffcd8adcb87",
+   "block": "26498417",
+   "sender": {
+    "kind": "safe",
+    "address": "0xded5f427562bc5d0b77fb820179b5cc6fd76141a"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "selector": "0x095ea7b3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x12affb26537ceb89096a6dd0e645acc92797d868a1464ff054affed9710989a7",
+   "block": "26498547",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xd4d3fde5145141ddf7c465889923f29154526de3"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0xeb01674123dc50ddc8fd8b6d667527cc04d6b855"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x29e73bba4faa8db883fb6f9cd03cc457c39f13fb9f40e83dc909aa8e8272078c",
+   "block": "26498708",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbbc5f8c1cf6eaa9de194c1a347b73b717443572b"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x6adb3bab5730852eb53987ea89d8e8f16393c200"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x926901087e10bac85c48f5d42c35c51ef07e7efd324b8f3fd89268aa54febde4",
+   "why": "calls no function the template calls",
+   "to": "0x7d2d47e441915ff9c2d5a6e4a7aadd5e02722e29",
+   "selector": "0x60657de7"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x4e95a01d8837e34ad1b021cbc891c60bb076081ab51c2d34e40f97c900e868d5",
+   "block": "26498884",
+   "sender": {
+    "kind": "safe",
+    "address": "0x4d2fb5f8ec243fde4df1a9678b82238570c7e0e4"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbeef007ecfbfdf9b919d0050821a9b6dbd634ff0",
+      "selector": "0xac9650d8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x05f5c714e03f370fee5b11dc8f239d833f67d0e126b069650ea048f6b6c4179e",
+   "block": "26499017",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc1df8cdfd26d575fb46de5570074689118564af5"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xed488e6cc4b030eb5bfdde3227c3d5da2b9040e8"
+     },
+     {
+      "to": "0x2b3604ded748e848176c045ec701bcf70176b618"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x6adb3bab5730852eb53987ea89d8e8f16393c200"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb09bf164775c5b0b17a136b9cf9087bcb74182aaf5cf9d9b5aee74a8d094b786",
+   "block": "26499166",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd2a6e8831180e05fbf19d4c9282f3ddfa79f285c"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xdc035d45d973e3ec169d2276ddab16f1e407384f",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xa188eec8f81263234da3622a406892f3d630f98c",
+      "selector": "0x8d7ef9bb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x52fc0672cbeb598a270f0993fe75d3ac5ee56d65043fb5b9713ee324c65fecac",
+   "why": "calls no function the template calls",
+   "to": "0x781388759eacb9892f60d77d9a99c9be2f7f4ada",
+   "selector": "0x710a9f68"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x742e2fe3252058fac30533f79a6f4e2203cecef2960930edee6c4d1a8b931718",
+   "block": "26499430",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xe556bf2a4452dba4b02598c1810900e0dd3c1f58"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0x6adb3bab5730852eb53987ea89d8e8f16393c200"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x55b6dc75bfd5f987c15420adffb1ac5e45a3d92e1f77be7c7c1a09e3f3b2ab50",
+   "block": "26499584",
+   "sender": {
+    "kind": "safe",
+    "address": "0x04f05fde195ff7568ed58eaf23cd0ead9b9e3c85"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbeef007ecfbfdf9b919d0050821a9b6dbd634ff0",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae",
+      "selector": "0xbdac7ca3"
+     },
+     {
+      "to": "0x5f7827fdeb7c20b443265fc2f40845b715385ff2",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
+      "selector": "0x095ea7b3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa5c6fd6d87703b17aaab64950b6425c8324a114d0c5e5a150cd343cab96bc8be",
+   "block": "26499733",
+   "sender": {
+    "kind": "safe",
+    "address": "0xe586d8eacae0f1032c0c598fd2bc6dfad08800a7"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc20e500a167958da0fbdf6e9b916bf9da4af6604af423113b46f66e363304ec9",
+   "block": "26499887",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1ec3cbe8fb1d8019092500cca2111c158a35bc82"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+      "selector": "0xec6cb13f"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc26e7570c2544b6cde3bda5e6a8ff9b8be5464296a829d665ea31877ba516182",
+   "block": "26500063",
+   "sender": {
+    "kind": "safe",
+    "address": "0x15128528e36e70cb2b14fcfb4cf281f8741ad179"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xcfe5e2d70823d03b44a3fd7fa2792d78248e4809276692b6a69b93c6b46e2f9e",
+   "block": "26500213",
+   "sender": {
+    "kind": "safe",
+    "address": "0xaa43b07e3c82d01ab10e92415245356a5e0b6b51"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x7743e50f534a7f9f1791dde7dcd89f7783eefc39",
+      "selector": "0xba087652"
+     },
+     {
+      "to": "0x65c9a641afceb9c0e6034e558a319488fa0fa3be",
+      "selector": "0x5e5c29e8"
+     },
+     {
+      "to": "0x085780639cc2cacd35e474e71f4d000e2405d8f6",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
+      "selector": "0x374f435d"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xbaa81ec11e859b5087d544183e9f19aaff630a4615df2b133afaea698e25ec11",
+   "block": "26500364",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8fdeaa5443141f45049f774947c298985b5c93eb"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xfa4e747a9e1c00fcbc3a3513d37aa9eb8955c365352d19a0b1a7297e7afb4379",
+   "block": "26500522",
+   "sender": {
+    "kind": "safe",
+    "address": "0x026bb75383eb8ae08fed8da9b7936eea0db60050"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x7f5a7871cae828fe3c86f3eeaead977fbd3dfec3271b14d47266d142a395c318",
+   "block": "26500713",
+   "sender": {
+    "kind": "safe",
+    "address": "0x96fc15fcedda31066add6d12ab966e3768e0c8bc"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x81d40f21f12a8f0e3252bccb954d722d4c464b64",
+      "selector": "0x57ecfd28"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x5e5de6ae0a000b225cab44790182e0cf858231c4f1ab7ef453fdec54f6148dae",
+   "block": "26500943",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd3bffedb064f57d90d35871c3d75bbd67a85d78d"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x68780209374d1606e5681c879234a47588422aac78d3d692d2b0305d73ca68a6",
+   "block": "26501180",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc67aad57ea006fda2e1b3e5e6497895fc30e50aa"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x6be457e04092b28865e0cba84e3b2cfa0f871e67"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0x4838b106fce9647bdf1e7877bf73ce8b0bad5f97"
+     },
+     {
+      "to": "0x15566c4f33a9c279f9d3e1a5bb7589fc5a7158b1"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd23541b46a56d3a0b78f1895b44aac3dc170389f3bd9b98c82cd413ca2fa14d8",
+   "block": "26501392",
+   "sender": {
+    "kind": "safe",
+    "address": "0x57eb6f1506a62a14aea9706917fc7388b7ec6287"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x0077732907bfc6208933cfd2a51afb8f33ca5958"
+     },
+     {
+      "to": "0x0cc733b6201861b85d05bd54cb1f0ad455aea0fd"
+     },
+     {
+      "to": "0x167cfb08e8a253283a9e9e011899fffa23ec4983"
+     },
+     {
+      "to": "0x85c2e985a4fb5c3ff25ee27ee424abd851e4cb33"
+     }
+    ]
+   },
+   "free": []
+  }
+ ],
+ "measurements": [],
+ "traces": [
+  {
+   "kind": "traced",
+   "hash": "0xbbb70c712c6046482b331f030aa997398fea0d233186dff5fdebc6f4982e2d16",
+   "sender": {
+    "kind": "safe",
+    "address": "0x6e911ffbaddb2adf716a4774a616d4d12e86037a"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xa36702f45887d5d348406ef17a8b7ee9c92b71af",
+     "to": "0x6e911ffbaddb2adf716a4774a616d4d12e86037a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x6e911ffbaddb2adf716a4774a616d4d12e86037a",
+     "to": "0x29fcb43b46531bca003ddc8fcb67ffe91900c762",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x6e911ffbaddb2adf716a4774a616d4d12e86037a",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x38bf1f29"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x6e911ffbaddb2adf716a4774a616d4d12e86037a",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x38bf1f29"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x6e911ffbaddb2adf716a4774a616d4d12e86037a",
+     "to": "0x6c94ce2a7104c754d267731635b51928a9e298d0",
+     "value": "0x49e57d6354000"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x67bd4b826856568e0629db00dc61c69cebde486641a2490c1a43b768334d7b65",
+   "sender": {
+    "kind": "safe",
+    "address": "0x40fc9dd8a846134c0c4583d7668ec75dd2f9c423"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x5ad5e75ee65aeae5422e8b9f2c6027ce416eae99",
+     "to": "0x40fc9dd8a846134c0c4583d7668ec75dd2f9c423",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x40fc9dd8a846134c0c4583d7668ec75dd2f9c423",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x40fc9dd8a846134c0c4583d7668ec75dd2f9c423",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x411443ad"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x40fc9dd8a846134c0c4583d7668ec75dd2f9c423",
+     "to": "0x07720554047a0c30b29a09b23db59e5ad2f328af",
+     "value": "0x470de4df820000"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x9c3f9e61c7fc2f9c5f93e030c81d865722f528ee1175ee9bc80d4f1e5b7fa430",
+   "sender": {
+    "kind": "safe",
+    "address": "0x2cb1468e7f5dfbc2d89b4ead86740b78f863c00e"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xb52e30eabc877064acd086b6662c3a583fd3eae3",
+     "to": "0x2cb1468e7f5dfbc2d89b4ead86740b78f863c00e",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x2cb1468e7f5dfbc2d89b4ead86740b78f863c00e",
+     "to": "0xff51a5898e281db6dfc7855790607438df2ca44b",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x2cb1468e7f5dfbc2d89b4ead86740b78f863c00e",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x3968040c"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x2cb1468e7f5dfbc2d89b4ead86740b78f863c00e",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x3968040c"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x2cb1468e7f5dfbc2d89b4ead86740b78f863c00e",
+     "to": "0x2cb1468e7f5dfbc2d89b4ead86740b78f863c00e"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x2cb1468e7f5dfbc2d89b4ead86740b78f863c00e",
+     "to": "0xff51a5898e281db6dfc7855790607438df2ca44b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x7257dcd542170be8697e6004b1a3ac9bbd5e8ac559d5148116f90fdc23edc4bc",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9dc3c205ccd15bdbdb5c11ad7bb3d43d6abbb7bb"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x0db6270993df13bda0f3bbdd46f8ebaa0e7b3b04",
+     "to": "0x9dc3c205ccd15bdbdb5c11ad7bb3d43d6abbb7bb",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9dc3c205ccd15bdbdb5c11ad7bb3d43d6abbb7bb",
+     "to": "0xff51a5898e281db6dfc7855790607438df2ca44b",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x9dc3c205ccd15bdbdb5c11ad7bb3d43d6abbb7bb",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x45b69fa4"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9dc3c205ccd15bdbdb5c11ad7bb3d43d6abbb7bb",
+     "to": "0x9dc3c205ccd15bdbdb5c11ad7bb3d43d6abbb7bb"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x9dc3c205ccd15bdbdb5c11ad7bb3d43d6abbb7bb",
+     "to": "0xff51a5898e281db6dfc7855790607438df2ca44b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x361549e9bbeec9c475e9a0cd65d1f74e9c93c7280ae5c2cd906fc6b449668842",
+   "sender": {
+    "kind": "safe",
+    "address": "0x93645c372f84df818c4efac2b80d58269859dc28"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x231a276c84f8e8ae28843e9a68b5dc5adeda73a4",
+     "to": "0x93645c372f84df818c4efac2b80d58269859dc28",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x93645c372f84df818c4efac2b80d58269859dc28",
+     "to": "0xff51a5898e281db6dfc7855790607438df2ca44b",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x93645c372f84df818c4efac2b80d58269859dc28",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xfd71df94"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x93645c372f84df818c4efac2b80d58269859dc28",
+     "to": "0xb0057443597b1614d758e6a046baa558aed78ab7",
+     "value": "0x104dd81cde464666"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xcaad19848b7d6cecdc4a21b8a2a334f6b7273e944efc9d6b182cd6a62a1e7553",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd60307b5136cd53513ceb49283d8d93b97e0adff"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x1240231f11c710f66721bb13c559c4160f152bc0",
+     "to": "0xd60307b5136cd53513ceb49283d8d93b97e0adff",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xd60307b5136cd53513ceb49283d8d93b97e0adff",
+     "to": "0xff51a5898e281db6dfc7855790607438df2ca44b",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xd60307b5136cd53513ceb49283d8d93b97e0adff",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x9cce9f2a"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xd60307b5136cd53513ceb49283d8d93b97e0adff",
+     "to": "0x1240231f11c710f66721bb13c559c4160f152bc0",
+     "value": "0x1c7e33783b5b6"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x3f551166b0f92e59b29efe1397c06812575bef922c15b8bd1c73814550b20236",
+   "sender": {
+    "kind": "safe",
+    "address": "0x255c7705e8bb334dfcae438197f7c4297988085a"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x394f3d6519a444b4189cca4cc95f358f8889f717",
+     "to": "0x255c7705e8bb334dfcae438197f7c4297988085a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x255c7705e8bb334dfcae438197f7c4297988085a",
+     "to": "0xff51a5898e281db6dfc7855790607438df2ca44b",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x255c7705e8bb334dfcae438197f7c4297988085a",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xffb16a9d"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x255c7705e8bb334dfcae438197f7c4297988085a",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xffb16a9d"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x255c7705e8bb334dfcae438197f7c4297988085a",
+     "to": "0x255c7705e8bb334dfcae438197f7c4297988085a"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x255c7705e8bb334dfcae438197f7c4297988085a",
+     "to": "0xff51a5898e281db6dfc7855790607438df2ca44b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xc46b7b10b43a96767e8fcce58bf60a509f1dbba5edad2a848173a09c432ee4a2",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb1feb2f07356cb9e440ce83988d88a36e5e85912"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xc43f96a61942764de3351b112b896e7a0035775a",
+     "to": "0xb1feb2f07356cb9e440ce83988d88a36e5e85912",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xb1feb2f07356cb9e440ce83988d88a36e5e85912",
+     "to": "0xff51a5898e281db6dfc7855790607438df2ca44b",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xb1feb2f07356cb9e440ce83988d88a36e5e85912",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xa9c7715a"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xb1feb2f07356cb9e440ce83988d88a36e5e85912",
+     "to": "0xb1feb2f07356cb9e440ce83988d88a36e5e85912"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xb1feb2f07356cb9e440ce83988d88a36e5e85912",
+     "to": "0xff51a5898e281db6dfc7855790607438df2ca44b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xa3cce2a87d68bec4c98f19ad6afadfce58ef69e8ffb7db6c20b2f2f48c3cebf4",
+   "sender": {
+    "kind": "safe",
+    "address": "0x0f77c442d156da0abef3a8ff09c24390b6be254d"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xcd7239c450336d43ec607753222c1b26038746ef",
+     "to": "0x0f77c442d156da0abef3a8ff09c24390b6be254d",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x0f77c442d156da0abef3a8ff09c24390b6be254d",
+     "to": "0xff51a5898e281db6dfc7855790607438df2ca44b",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x0f77c442d156da0abef3a8ff09c24390b6be254d",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x1fb48f59"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x0f77c442d156da0abef3a8ff09c24390b6be254d",
+     "to": "0x0f77c442d156da0abef3a8ff09c24390b6be254d"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x0f77c442d156da0abef3a8ff09c24390b6be254d",
+     "to": "0xff51a5898e281db6dfc7855790607438df2ca44b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xea61562ae5d42038a25c504c2868b843be9a3b01192a922458b929b8cf48407b",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7e76772e02ba471a7be4330942ccba307f3daa38"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x53feda4ffa0b260d2b310a3ce659742a70f50e7d",
+     "to": "0x7e76772e02ba471a7be4330942ccba307f3daa38",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x7e76772e02ba471a7be4330942ccba307f3daa38",
+     "to": "0xff51a5898e281db6dfc7855790607438df2ca44b",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x7e76772e02ba471a7be4330942ccba307f3daa38",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xfd628591"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x7e76772e02ba471a7be4330942ccba307f3daa38",
+     "to": "0x7e76772e02ba471a7be4330942ccba307f3daa38"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x7e76772e02ba471a7be4330942ccba307f3daa38",
+     "to": "0xff51a5898e281db6dfc7855790607438df2ca44b"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x0eb3193ab358c774546c11798c34f8c89276712c1989c67caf31ca26526c6181",
+   "sender": {
+    "kind": "safe",
+    "address": "0xdd979b109ddeae72d14dc20dc63cae1d038f8440"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xaf5fcfa528681c9d818ae51f55993087b171d6f5",
+     "to": "0xdd979b109ddeae72d14dc20dc63cae1d038f8440",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xdd979b109ddeae72d14dc20dc63cae1d038f8440",
+     "to": "0x3e5c63644e683549055b9be8653de26e0b4cd36e",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xdd979b109ddeae72d14dc20dc63cae1d038f8440",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x725f9669"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xdd979b109ddeae72d14dc20dc63cae1d038f8440",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x725f9669"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xdd979b109ddeae72d14dc20dc63cae1d038f8440",
+     "to": "0xe69b5281a173045d5da35e8229e1272e2a3a2025",
+     "value": "0x5af3107a4000"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xd5512a95859a92752ec7679bc060a6145cdcf2901c42e08fd1a57943fb9b299e",
+   "sender": {
+    "kind": "safe",
+    "address": "0x129bb1b1708de6c0c2c0be4ed1d199488fb2d0aa"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xba2bc8811485927900fea5874baf05d64b50962c",
+     "to": "0x129bb1b1708de6c0c2c0be4ed1d199488fb2d0aa",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x129bb1b1708de6c0c2c0be4ed1d199488fb2d0aa",
+     "to": "0x29fcb43b46531bca003ddc8fcb67ffe91900c762",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x129bb1b1708de6c0c2c0be4ed1d199488fb2d0aa",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x0b735bec"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x129bb1b1708de6c0c2c0be4ed1d199488fb2d0aa",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x0b735bec"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x129bb1b1708de6c0c2c0be4ed1d199488fb2d0aa",
+     "to": "0x0000000000000000000000000000000000000000"
+    }
+   ]
+  }
+ ]
+}

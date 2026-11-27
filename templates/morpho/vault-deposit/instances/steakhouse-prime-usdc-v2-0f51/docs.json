@@ -1,0 +1,3 @@
+{
+  "approve(address,uint256)": { "contract": "usdc", "url": "https://github.com/circlefin/stablecoin-evm/blob/fc85788bc7c23cefe3df1a757133048bfddadeaa/contracts/v1/FiatTokenV1.sol" }
+}

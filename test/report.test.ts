@@ -287,7 +287,7 @@ const answering =
   };
 
 test("the report asks an adapter's factory and the vault naming it, from its recording too, and a vault that no longer allocates through it is a key finding", async () => {
-  const { subject, registry: seen } = loadReport(ROOT, registry, { template: 'morpho/vault-v2-revoke', instance: 'acuto-usdc-v2-4a57' });
+  const { subject, registry: seen } = loadReport(ROOT, registry, { template: 'morpho/vault-v2-cap-submit', instance: 'sentora-rlusd-main-v2-e6bf' });
   const block: BlockRef = { number: 300n, hash: `0x${'30'.repeat(32)}` as Hex };
   const options = { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [] };
   const recorded = recordingTransport(answering(`0x${'00'.repeat(31)}01` as Hex), REPLAY_ENDPOINTS);
@@ -295,12 +295,12 @@ test("the report asks an adapter's factory and the vault naming it, from its rec
   assert.deepEqual(await readInstances(replayReader(recorded.exchanges()), subject, seen, block), live, 'the recorded reads give the same result');
   const render = (instances: ReportInputs['instances']) => quick(recording.pages, new Map(), subject, undefined, undefined, undefined, seen, undefined, undefined, instances);
   const committed = render(live);
-  assert.match(committed, /^\| `acuto-usdc-v2-4a57-market-adapter` \| `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2\(address\)` \| true \| 300 \|$/m);
-  assert.match(committed, /^\| `acuto-usdc-v2-4a57-market-adapter` \| `acuto-usdc-v2-4a57` `isAdapter\(address\)` \| true \| 300 \|$/m);
+  assert.match(committed, /^\| `sentora-rlusd-main-v2-e6bf-market-adapter` \| `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2\(address\)` \| true \| 300 \|$/m);
+  assert.match(committed, /^\| `sentora-rlusd-main-v2-e6bf-market-adapter` \| `sentora-rlusd-main-v2-e6bf` `isAdapter\(address\)` \| true \| 300 \|$/m);
   const removed = await readInstances(createReader(REPLAY_ENDPOINTS, answering(`0x${'00'.repeat(32)}` as Hex), options), subject, seen, { ...block, number: 400n });
   const denied = render(removed);
-  assert.match(denied, /^\| `acuto-usdc-v2-4a57-market-adapter` \| `acuto-usdc-v2-4a57` `isAdapter\(address\)` \| REFUSED: acuto-usdc-v2-4a57 answered isAdapter\(address\) false for acuto-usdc-v2-4a57-market-adapter: it does not vouch for it \| 400 \|$/m);
-  assertKeyFindings(committed, denied, [['acuto-usdc-v2-4a57-market-adapter/factory.1.isAdapter.acuto-usdc-v2-4a57', 'a check the factory declares says no']]);
+  assert.match(denied, /^\| `sentora-rlusd-main-v2-e6bf-market-adapter` \| `sentora-rlusd-main-v2-e6bf` `isAdapter\(address\)` \| REFUSED: sentora-rlusd-main-v2-e6bf answered isAdapter\(address\) false for sentora-rlusd-main-v2-e6bf-market-adapter: it does not vouch for it \| 400 \|$/m);
+  assertKeyFindings(committed, denied, [['sentora-rlusd-main-v2-e6bf-market-adapter/factory.1.isAdapter.sentora-rlusd-main-v2-e6bf', 'a check the factory declares says no']]);
   assert.doesNotMatch(render(undefined), /isAdapter/, 'a recording that predates the answers prints them as not read');
   assert.equal(await readInstances(replayReader([]), scoped.subject, scoped.registry, block), undefined, 'a report with no such entry reads nothing');
 });
@@ -708,7 +708,8 @@ test('pnpm report --render and --offline print why a report is refused, not a st
     for (const name of readdirSync(ROOT)) if (!['.git', '.cache', 'testdata', ...copied].includes(name)) symlinkSync(join(ROOT, name), join(sandbox, name));
     for (const name of copied) cpSync(join(ROOT, name), join(sandbox, name), { recursive: true });
     cpSync(join(ROOT, 'testdata', 'report', 'eth-transfer.json'), join(sandbox, 'testdata', 'report', 'eth-transfer.json'));
-    for (const name of readdirSync(join(ROOT, 'testdata'))) if (name !== 'report') symlinkSync(join(ROOT, 'testdata', name), join(sandbox, 'testdata', name));
+    for (const name of readdirSync(join(ROOT, 'testdata'))) if (name !== 'report' && name !== 'research') symlinkSync(join(ROOT, 'testdata', name), join(sandbox, 'testdata', name));
+    mkdirSync(join(sandbox, 'testdata', 'research'));
     const folder = join(sandbox, TEMPLATES_DIR, 'eth', 'transfer');
     rmSync(join(folder, 'trace-addresses.json'), { force: true });
     const rewrite = (path: string, change: object) => writeFileSync(path, JSON.stringify({ ...JSON.parse(readFileSync(path, 'utf8')), ...change }));
@@ -792,41 +793,27 @@ test("a signed message's answer is shown on its digest's row: where the message 
   assert.match(nested, /the message is read from https:\/\/api\.cow\.fi\/mainnet\/api\/v1\/orders\/<argument> under `data\.order`, `sellAmount` at `data\.order\.amounts\.sell` in hex and must hash to this digest/);
 });
 
-const RLUSD_ENTRIES = {
-  rlusd: { address: '0x8292Bb45bf1Ee4d140127049757C2E0fF06317eD', kind: 'token', source: 'https://docs.ripple.com/products/stablecoin/overview/token-addresses' },
-  kbtc: { address: '0x73E0C0d45E048D25Fc26Fa3159b0aA04BfA4Db98', kind: 'token', source: 'https://support.kraken.com/articles/what-is-kbtc' },
-  'morpho-oracle-kbtc-rlusd-86': { address: '0xBCC3D9834b84B32Cf540DBE948DEd4B47bec5ddb', kind: 'oracle', source: 'https://app.morpho.org/ethereum/variable' },
-};
-const RLUSD_MARKET = {
-  'rlusd-kbtc-86': {
-    lending: 'morpho-blue',
-    loanToken: 'rlusd',
-    collateralToken: 'kbtc',
-    oracle: 'morpho-oracle-kbtc-rlusd-86',
-    irm: 'adaptive-curve-irm',
-    lltv: '860000000000000000',
-    id: '0x15bb2a6af0c909eed19fb1f2ceeead34ecbdcba626de752c6b09389ee14eec32',
-  },
-};
-
 test("a per-instance report names only the markets that can share the address same asks of its instance; the template's own report names every market", () => {
-  const contracts = { ...JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8')), ...RLUSD_ENTRIES };
-  const usdcMarkets = JSON.parse(readFileSync(join(ROOT, MARKETS_PATH), 'utf8'));
-  const both = parseRegistryAt(ROOT, contracts, { ...usdcMarkets, ...RLUSD_MARKET });
-  const target = { template: 'morpho/vault-v2-cap-submit', instance: 'kpk-usdc-prime-v2-9ee6' };
-  const { subject, registry: seen } = loadReport(ROOT, both, target);
+  const contracts = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8'));
+  const markets: Record<string, { readonly loanToken: string; readonly oracle: string }> = JSON.parse(readFileSync(join(ROOT, MARKETS_PATH), 'utf8'));
+  const usdcMarkets = Object.fromEntries(Object.entries(markets).filter(([, market]) => market.loanToken === 'usdc'));
+  assert.ok(Object.keys(usdcMarkets).length > 0, 'the registry holds a USDC market the RLUSD vault cannot take');
+  const target = { template: 'morpho/vault-v2-cap-submit', instance: 'sentora-rlusd-main-v2-e6bf' };
+  const { subject, registry: seen } = loadReport(ROOT, registry, target);
   const text = quick(recording.pages, new Map(), subject, new Map(), [], new Map(), seen);
-  for (const name of Object.keys(usdcMarkets)) assert.ok(text.includes(`| \`${name}\` |`), `${name} is not listed`);
-  for (const name of ['rlusd-kbtc-86', 'rlusd', 'kbtc', 'morpho-oracle-kbtc-rlusd-86']) assert.ok(!text.includes(`\`${name}\``), `${name} appears in the report`);
-  assert.ok(!entriesOf(subject, seen).some((entry) => entry.name === 'morpho-oracle-kbtc-rlusd-86'));
-  assert.ok(!signedEntryNames(subject.template, seen).has('morpho-oracle-kbtc-rlusd-86'));
+  assert.ok(text.includes('| `rlusd-kbtc-86` |'), 'rlusd-kbtc-86 is not listed');
+  for (const name of Object.keys(usdcMarkets)) assert.ok(!text.includes(`\`${name}\``), `${name} appears in the report`);
+  for (const oracle of new Set(Object.values(usdcMarkets).map((market) => market.oracle))) {
+    assert.ok(!entriesOf(subject, seen).some((entry) => entry.name === oracle), `${oracle} is an entry of the report`);
+    assert.ok(!signedEntryNames(subject.template, seen).has(oracle), `${oracle} is signed`);
+  }
 
-  const whole = quick(recording.pages, new Map(), { ...subject, vault: undefined }, new Map(), [], new Map(), both);
-  assert.ok(whole.includes('| `rlusd-kbtc-86` |') && whole.includes('| `usdc-cbbtc-86` |'));
+  const whole = quick(recording.pages, new Map(), { ...subject, vault: undefined }, new Map(), [], new Map(), registry);
+  for (const name of Object.keys(markets)) assert.ok(whole.includes(`| \`${name}\` |`), `${name} is not listed in the template's own report`);
 
   assert.throws(
-    () => loadReport(ROOT, parseRegistryAt(ROOT, contracts, RLUSD_MARKET), target),
-    (e: unknown) => e instanceof ReportError && e.message === 'market: no market in registry/markets.json names one address for vault.asset and market.loanToken with vault kpk-usdc-prime-v2-9ee6',
+    () => loadReport(ROOT, parseRegistryAt(ROOT, contracts, usdcMarkets), target),
+    (e: unknown) => e instanceof ReportError && e.message === 'market: no market in registry/markets.json names one address for vault.asset and market.loanToken with vault sentora-rlusd-main-v2-e6bf',
   );
 });
 

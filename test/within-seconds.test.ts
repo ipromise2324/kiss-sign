@@ -17,16 +17,18 @@ import { TemplateError, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { evaluate, keccakText, parseVerdictFile } from '../src/verify/verify.ts';
 import type { VerdictFile, VerifyInputs } from '../src/verify/verify.ts';
+import { baseRepo } from './repo-with-test-fixtures.ts';
 
 const ROOT = join(import.meta.dirname, '..');
-const registry = loadRegistry(ROOT);
+const BASE = baseRepo();
+const registry = loadRegistry(BASE);
 const load = (dir: string, name: string): string => readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8');
 
 type Raw = { calls: { args: { orderUid: { packed: { rule: { eip712: { fields: Record<string, unknown> } } }[] } } }[] };
 
 /** The CoW swap template with `validTo` bound by `rule`, as a test fixture: the shipped template stays as it is. */
 function cowWith(rule: unknown, id = 'cow/swap'): Raw {
-  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', id, 'template.json'), 'utf8')) as Raw;
+  const raw = JSON.parse(readFileSync(join(BASE, 'templates', id, 'template.json'), 'utf8')) as Raw;
   raw.calls.at(-1)!.args.orderUid.packed[0]!.rule.eip712.fields.validTo = rule;
   return raw;
 }
@@ -120,15 +122,15 @@ test('a plain argument bound by withinSeconds matches up to that many seconds af
 type Order = Record<string, unknown> & { sellToken: string; buyToken: string; sellAmount: string; buyAmount: string; validTo: number };
 
 test('an order member bound by withinSeconds is MISMATCH past the bound, and the mutation check moves it one second past', () => {
-  const fixture = JSON.parse(load('safe-tx', 'cow-swap-usdt'));
+  const fixture = JSON.parse(load('safe-tx', 'cow-swap-usdt-base'));
   const tx = parseServiceTx(fixture.service, { chainId: 1n, version: fixture.chain.version });
-  const order = JSON.parse(load('messages', 'cow-swap-usdt')) as Order;
+  const order = JSON.parse(load('messages', 'cow-swap-usdt-base')) as Order;
   const template = parseTemplate(cowWith({ withinSeconds: 600 }), registry, 'committed');
   const templates = new Map([[template.id, template]]);
   const name = (address: string) => registry.byAddress.get(address.toLowerCase() as Address)!.name;
   const values = { 'sell-token': name(order.sellToken), 'buy-token': name(order.buyToken), 'sell-amount': order.sellAmount, 'min-buy': order.buyAmount };
   const card = resolvedFor(templates, { operations: [{ template: 'cow/swap', values }] }, tx.safe);
-  const messages = [load('messages', 'cow-swap-usdt')];
+  const messages = [load('messages', 'cow-swap-usdt-base')];
   const at = (seconds: bigint): FieldChain => ({ blockTime: { kind: 'read', number: 1n, time: BigInt(order.validTo) - seconds } });
   assert.deepEqual(checkTemplateFields(tx, card, templates, registry, messages, at(600n)), { kind: 'match' });
   const late = checkTemplateFields(tx, card, templates, registry, messages, at(601n));

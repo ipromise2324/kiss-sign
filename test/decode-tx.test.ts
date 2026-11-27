@@ -13,12 +13,16 @@ import { EXEC_TRANSACTION, renderDecodedTx } from '../src/research/decode-tx.ts'
 import { EXECUTION_SUCCESS } from '../src/simulate/events.ts';
 import type { CallAbi, DecodeTxDeps, ExecutedTx } from '../src/research/decode-tx.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
+import { baseRepo } from './repo-with-test-fixtures.ts';
 import { warmCompilers } from './solc-pool.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
 const nameOf = (address: Address) => registry.byAddress.get(address)?.name;
 const SPAN = [0, 0] as const;
+/** The frozen templates the decoding tests read: uniswap/swap-no-hook and the cow/swap these fixtures were made for. */
+const BASE = baseRepo();
+const baseRegistry = loadRegistry(BASE);
 
 /** The executed transaction of a recorded Safe fixture: execTransaction with the service's fields and signatures. */
 function executed(name: string): ExecutedTx {
@@ -55,7 +59,7 @@ async function provenAbis(addresses: readonly Address[]): Promise<DecodeTxDeps['
 }
 
 test('decode-tx unwraps a Safe execTransaction into its MultiSend parts and decodes each with the proven ABI of its target', { timeout: 600_000 }, async () => {
-  const tx = executed('fluid-deposit-usdt');
+  const tx = executed('fluid-deposit-usdt-base');
   const text = await renderDecodedTx(tx, { abiOf: await provenAbis([USDT, FUSDT]), nameOf });
   const amount = 0xbea480d64n.toString();
   assert.match(text, /^transaction 0xbf3f89984eae08bd1c73628d5777815592ed85a339223a2517f380a2bf91c801, block 26304863\n/);
@@ -68,7 +72,7 @@ test('decode-tx unwraps a Safe execTransaction into its MultiSend parts and deco
 
 test("decode-tx prints a Safe transaction's nonce and safeTxHash from its ExecutionSuccess log, logged as a topic (1.4.1) or as data (1.3.0)", async () => {
   const none = { abiOf: async (): Promise<CallAbi> => ({ kind: 'none', why: 'no proof here' }), nameOf };
-  for (const name of ['fluid-deposit-usdt', 'cow-swap-usdc']) {
+  for (const name of ['fluid-deposit-usdt-base', 'cow-swap-usdc-base']) {
     const fixture = JSON.parse(readFileSync(join(ROOT, 'testdata', 'safe-tx', `${name}.json`), 'utf8')) as { chain: { version: string; transactionHash: Hex }; service: { nonce: string } };
     const safeTxHash = fixture.chain.transactionHash;
     const tx = executed(name);
@@ -76,12 +80,12 @@ test("decode-tx prints a Safe transaction's nonce and safeTxHash from its Execut
     const text = await renderDecodedTx({ ...tx, logs: [{ address: tx.to as Address, ...event }] }, none);
     assert.match(text, new RegExp(`\\nSafe nonce ${fixture.service.nonce}, safeTxHash ${safeTxHash}\\n`));
   }
-  const tx = executed('fluid-deposit-usdt');
+  const tx = executed('fluid-deposit-usdt-base');
   assert.match(await renderDecodedTx({ ...tx, logs: [] }, none), /\nSafe nonce: not read, the receipt holds 0 ExecutionSuccess logs of 0x[0-9a-f]{40}, not one\n/);
 });
 
 test('decode-tx prints the selector and raw words of a call whose target has no proven ABI, and says why', async () => {
-  const text = await renderDecodedTx(executed('fluid-deposit-usdt'), { abiOf: async () => ({ kind: 'none', why: 'no proof here' }), nameOf });
+  const text = await renderDecodedTx(executed('fluid-deposit-usdt-base'), { abiOf: async () => ({ kind: 'none', why: 'no proof here' }), nameOf });
   assert.match(text, new RegExp(`multiSend\\[0\\]: call to ${USDT} \\(registry: usdt\\), value 0 wei\\n {6}selector 0x095ea7b3, not decoded: no proof here\\n {8}word 0: 0x0{24}${FUSDT.slice(2)}\\n {8}word 1: 0x0+bea480d64\\n`));
 });
 
@@ -102,11 +106,11 @@ const proven = (signature: string): DecodeTxDeps['abiOf'] => {
 };
 
 test("decode-tx decodes the Universal Router's inputs by --template's encoded rules and says where an input does not fit them", async () => {
-  const deps = { abiOf: proven('execute(bytes commands, bytes[] inputs, uint256 deadline)'), nameOf };
+  const deps = { abiOf: proven('execute(bytes commands, bytes[] inputs, uint256 deadline)'), nameOf: (address: Address) => baseRegistry.byAddress.get(address)?.name };
   const tx = executed('uniswap-swap-no-hook-usdc-usdt');
   const plain = await renderDecodedTx(tx, deps);
   assert.match(plain, /\n {8}\[0\]: 0x[0-9a-f]{512}… \(SHORTENED: \d+ bytes, the first 256 shown; --full prints every byte\)\n/);
-  const text = await renderDecodedTx(tx, { ...deps, template: loadTemplate(ROOT, 'uniswap/swap-no-hook', registry) });
+  const text = await renderDecodedTx(tx, { ...deps, template: loadTemplate(BASE, 'uniswap/swap-no-hook', baseRegistry) });
   assert.match(text, /bytes inside decoded by uniswap\/swap-no-hook's call \[0\], this call's target and position\n/);
   assert.match(text, /\n {8}\[0\]: \d+ bytes, decoded as the template's encoded parameters V4_SWAP\(bytes,bytes\[\]\)\n {10}actions: 0x[0-9a-f]+\n {10}params: 3 items\n/);
   assert.match(text, new RegExp(`\\n {18}currency0: ${registry.entries.get('usdc')?.address} \\(registry: usdc\\)\\n`));
@@ -114,7 +118,7 @@ test("decode-tx decodes the Universal Router's inputs by --template's encoded ru
   const execute = parseFunctionSignature('execute(bytes commands, bytes[] inputs, uint256 deadline)');
   const odd = new Uint8Array(64).fill(1);
   const input = `${execute.selector}${bytesToHex(encodeParams(execute, [{ kind: 'bytes', value: hexToBytes('10'), span: SPAN }, { kind: 'array', items: [{ kind: 'bytes', value: odd, span: SPAN }, { kind: 'bytes', value: odd, span: SPAN }], span: SPAN }, { kind: 'uint', value: 1n, span: SPAN }]))}` as Hex;
-  const unfit = await renderDecodedTx({ ...tx, input }, { ...deps, template: loadTemplate(ROOT, 'uniswap/swap-no-hook', registry) });
+  const unfit = await renderDecodedTx({ ...tx, input }, { ...deps, template: loadTemplate(BASE, 'uniswap/swap-no-hook', baseRegistry) });
   assert.match(unfit, /bytes inside shown where they fit uniswap\/swap-no-hook's call \[0\], the first with this function, to another contract; this call is at position \[0\]\n/);
   assert.match(unfit, /\n {2}inputs: 2 items; the template's rule has 1, applied by position\n/);
   assert.match(unfit, /\n {4}\[1\]: 0x(01){64}\n/);
@@ -122,8 +126,8 @@ test("decode-tx decodes the Universal Router's inputs by --template's encoded ru
 });
 
 test("decode-tx prints a CoW order uid as --template's packed parts", async () => {
-  const deps = { abiOf: proven('setPreSignature(bytes orderUid, bool signed)'), nameOf, template: loadTemplate(ROOT, 'cow/swap', registry) };
-  const text = await renderDecodedTx(executed('cow-swap-usdc'), deps);
+  const deps = { abiOf: proven('setPreSignature(bytes orderUid, bool signed)'), nameOf, template: loadTemplate(BASE, 'cow/swap', baseRegistry) };
+  const text = await renderDecodedTx(executed('cow-swap-usdc-base'), deps);
   assert.match(text, /\n {6}orderUid: 56 bytes, decoded as the template's packed parts\n {8}digest: 0x[0-9a-f]{64}\n {8}owner: 0x[0-9a-f]{40}\n {8}validTo: \d+\n/);
 });
 

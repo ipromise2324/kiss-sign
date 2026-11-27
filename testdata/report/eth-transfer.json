@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-11-17",
+  "fetched": "2026-11-26",
   "defillama": [],
   "coingecko": [],
   "pages": {},
@@ -8,6 +8,10 @@
   "vaults": {},
   "erc7730": {
     "commit": "3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4",
+    "block": {
+      "number": "26501708",
+      "hash": "0x81eacc469af81b6ec567f4f2b9031cb500eb85295f4b24587d3d4495439bafbf"
+    },
     "files": {
       "registry/safe/calldata-Safe-1.3.0.json": "{\n  \"$schema\": \"../../specs/erc7730-v2.schema.json\",\n  \"includes\": \"common-Safe.json\",\n  \"context\": {\n    \"$id\": \"Safe\",\n    \"contract\": {\n      \"deployments\": [\n        { \"chainId\": 1, \"address\": \"0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552\" },\n        { \"chainId\": 10, \"address\": \"0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552\" },\n        { \"chainId\": 56, \"address\": \"0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552\" },\n        { \"chainId\": 137, \"address\": \"0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552\" },\n        { \"chainId\": 8453, \"address\": \"0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552\" },\n        { \"chainId\": 42161, \"address\": \"0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552\" },\n        { \"chainId\": 11155111, \"address\": \"0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552\" },\n        { \"chainId\": 1, \"address\": \"0x69f4D1788e39c87893C980c06EdF4b7f686e2938\" },\n        { \"chainId\": 10, \"address\": \"0x69f4D1788e39c87893C980c06EdF4b7f686e2938\" },\n        { \"chainId\": 56, \"address\": \"0x69f4D1788e39c87893C980c06EdF4b7f686e2938\" },\n        { \"chainId\": 137, \"address\": \"0x69f4D1788e39c87893C980c06EdF4b7f686e2938\" },\n        { \"chainId\": 8453, \"address\": \"0x69f4D1788e39c87893C980c06EdF4b7f686e2938\" },\n        { \"chainId\": 42161, \"address\": \"0x69f4D1788e39c87893C980c06EdF4b7f686e2938\" },\n        { \"chainId\": 11155111, \"address\": \"0x69f4D1788e39c87893C980c06EdF4b7f686e2938\" },\n        { \"chainId\": 7777777, \"address\": \"0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552\" }\n      ]\n    }\n  },\n  \"metadata\": { \"contractName\": \"Safe\" }\n}\n",
       "registry/safe/calldata-Safe-1.4.1.json": "{\n  \"$schema\": \"../../specs/erc7730-v2.schema.json\",\n  \"includes\": \"common-Safe.json\",\n  \"context\": {\n    \"$id\": \"Safe\",\n    \"contract\": {\n      \"deployments\": [\n        { \"chainId\": 1, \"address\": \"0x41675C099F32341bf84BFc5382aF534df5C7461a\" },\n        { \"chainId\": 10, \"address\": \"0x41675C099F32341bf84BFc5382aF534df5C7461a\" },\n        { \"chainId\": 56, \"address\": \"0x41675C099F32341bf84BFc5382aF534df5C7461a\" },\n        { \"chainId\": 137, \"address\": \"0x41675C099F32341bf84BFc5382aF534df5C7461a\" },\n        { \"chainId\": 8453, \"address\": \"0x41675C099F32341bf84BFc5382aF534df5C7461a\" },\n        { \"chainId\": 42161, \"address\": \"0x41675C099F32341bf84BFc5382aF534df5C7461a\" },\n        { \"chainId\": 11155111, \"address\": \"0x41675C099F32341bf84BFc5382aF534df5C7461a\" }\n      ]\n    }\n  },\n  \"metadata\": { \"contractName\": \"Safe\" }\n}\n",
@@ -23,8 +27,8 @@
   "code": [],
   "facts": {
     "block": {
-      "number": "26434340",
-      "hash": "0x546ff607f1c54cf3f5e776a26d689c751d4deb91fcf0c87e159af7ba6d077f6a"
+      "number": "26501708",
+      "hash": "0x81eacc469af81b6ec567f4f2b9031cb500eb85295f4b24587d3d4495439bafbf"
     },
     "defillama": [],
     "hacks": [],

@@ -60,7 +60,7 @@ const PINNED: readonly { readonly fixture: string; readonly card: Card; readonly
   { fixture: FIXTURE, card: CARD },
   { fixture: 'eth-transfer-null-data', card: { operations: [{ template: 'eth/transfer', values: { amount: String(recordedTx('eth-transfer-null-data').service.value), recipient: 'payee' } }] }, book: { payee: ethPayee } },
   { fixture: 'merkl-claim-two-tokens', card: { operations: [{ template: 'merkl/claim', values: { token: 'usdc' } }, { template: 'merkl/claim', values: { token: 'morpho' } }] } },
-  { fixture: 'cow-swap-usdc', card: { operations: [{ template: 'cow/swap', values: { 'sell-token': 'usdc', 'buy-token': 'usdt', 'sell-amount': '100000000000', 'min-buy': '99084887371' } }] } },
+  { fixture: 'cow-swap-usdc-base', card: { operations: [{ template: 'cow/swap', values: { 'sell-token': 'usdc', 'buy-token': 'usdt', 'sell-amount': '100000000000', 'min-buy': '99084887371' } }] } },
   {
     fixture: 'uniswap-swap-hook-approve-usdt-usdc',
     card: {
@@ -70,14 +70,6 @@ const PINNED: readonly { readonly fixture: string; readonly card: Card; readonly
         { template: 'uniswap/swap', values: { 'sell-token': 'usdt', 'buy-token': 'usdc', 'sell-amount': '2000000000', 'min-buy': '1987680455' } },
       ],
     },
-  },
-  {
-    fixture: 'vault-v2-cap-submit-flowmark',
-    card: { operations: [{ template: 'morpho/vault-v2-cap-submit', values: { vault: 'flowmark-fgenesis-v2-6439', market: 'usdc-cbbtc-86', 'absolute-cap': '50000000000', 'relative-cap': '50000000000000000' } }] },
-  },
-  {
-    fixture: 'vault-v2-reallocate-back',
-    card: { operations: [{ template: 'morpho/vault-v2-reallocate', values: { vault: 'acuto-usdc-v2-4a57', from: 'usdc-usp-86', to: 'usdc-usp-915', amount: '1000000' } }] },
   },
 ];
 

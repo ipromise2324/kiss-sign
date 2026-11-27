@@ -1,4 +1,1 @@
-{
-  "approve(address,uint256)": { "contract": "usdc", "standard": "erc-20" },
-  "supply(address,uint256)": { "contract": "compound-v3-cusdcv3", "url": "https://docs.compound.xyz/collateral-and-borrowing/" }
-}
+{}

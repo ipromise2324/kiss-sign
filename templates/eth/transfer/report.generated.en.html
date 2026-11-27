@@ -333,16 +333,17 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <div class="main">
 
 <header>
+  <figure class="request"><figcaption>Your request, as you wrote it, when this template was built</figcaption><blockquote>I want to send ETH from my Safe. build me the template and its report</blockquote></figure>
   <h1><span class="aiw" data-ai><span>Send ETH from the Safe</span><span class="byai">AI research</span></span></h1>
   <span class="opid">eth/transfer</span>
-  <p class="sub"><span class="aiw" data-ai><span>The Safe sends the amount of ETH you type straight to the recipient you pick, calling no contract. The card asks only for the recipient and the amount, the same as the Safe web app asks when it sends ETH.</span><span class="byai">AI research</span></span></p>
+  <p class="sub"><span class="aiw" data-ai><span>The Safe sends the amount of ETH you type to the recipient you pick from your address book, as a plain transfer with no data. It calls no contract and leaves no allowance; a transaction with data, a delegatecall or another amount is refused.</span><span class="byai">AI research</span></span></p>
   <ul class="checks">
     <li data-state="na" data-line="params"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>Parameter checks <span class="n num">no tests</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">The template has no argument that takes any value: each is bound to the card or to a fixed value, so nothing needs a perturbation test and none is recorded. At each signing, verify changes every bound argument one by one and checks that each becomes a MISMATCH.</span></span></li>
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Two providers
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Every chain read asks two providers; when they disagree, there is no result. Three research reads have one source, and none of them reaches a verdict: past transactions&#39; call traces (drpc), the search for past transactions (a transaction either Alchemy or Etherscan finds counts; only Etherscan searches for an event), and the addresses that ever received a vault&#39;s shares (Alchemy; each one&#39;s balance is still read through both).</span></span></li>
   </ul>
-  <div class="verdict" data-state="na"><span class="lbl">Advice</span><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span class="aiw" data-ai><span>The simplest operation, calling no protocol contract. The only risk is the recipient address: when you add it to the address book, check it against a source outside the chat.</span><span class="byai">AI research: OK to use</span></span></div>
+  <div class="verdict" data-state="na"><span class="lbl">Advice</span><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span class="aiw" data-ai><span>A plain ETH transfer: one call with no data to your address-book recipient, no contract and no allowance.</span><span class="byai">AI research: OK to use</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
     <ol><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>1</span></a></li><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li><li><a href="#usage">AI usage</a></li></ol>
   </details>
@@ -354,10 +355,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="rows">
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>If the recipient is a contract (another Safe, for example), it runs its own code when it receives ETH.</span><span class="byai">AI research</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>When the recipient is a contract, sending ETH runs its code, which can pass the ETH on.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>verify checks every balance and allowance change of your Safe, and any extra movement (even 1 wei) is a MISMATCH. But it cannot see what the other contract records inside it, or what it later does with this ETH.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>When the recipient is a contract, first confirm it can receive ETH. The first time you send to a new address, send a small amount first.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>verify checks only that the Safe gave exactly the amount to that address. <a class="aisrc" href="https://docs.soliditylang.org/en/v0.8.28/contracts.html#receive-ether-function">source</a></span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Put in your address book only addresses you control or know; to pay into a protocol&#39;s contract, ask for that protocol&#39;s own template.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
   </div>
@@ -438,7 +439,24 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="past">
-  <h2>Past transactions</h2><p class="lead">No past transactions were studied for this operation.</p>
+  <h2>Past transactions</h2>
+  <h3>1. Has this template&#39;s transaction worked before?</h3>
+  <p class="ans"><b>Yes, 12 times, by 12 Safes.</b> EOA: 0. The newest: 2026-11-26. All of them succeeded. The newest 3: <a href="https://etherscan.io/tx/0xd5512a95859a92752ec7679bc060a6145cdcf2901c42e08fd1a57943fb9b299e">0xd5512a95…</a> <a href="https://etherscan.io/tx/0x0eb3193ab358c774546c11798c34f8c89276712c1989c67caf31ca26526c6181">0x0eb3193a…</a> <a href="https://etherscan.io/tx/0xea61562ae5d42038a25c504c2868b843be9a3b01192a922458b929b8cf48407b">0xea61562a…</a></p>
+  <h3>2. What values are normal in what the app fills?</h3>
+  <p class="ans">This template leaves no value for the app to fill.</p>
+  <h3>3. How did the others differ?</h3>
+  <p class="ans">4 transactions did something this template refuses.</p>
+  <p class="ans"><span class="aiw" data-ai><span>Of the 12 that fit, 5 sent ETH to another address, 6 sent 0 ETH to the Safe itself, which cancels a queued transaction, and 1 sent 0 ETH to the zero address. No event marks an ETH transfer, so the search read every Safe&#39;s executions and reaches back only 5 days. Batches paying several addresses in one MultiSend, and 4 delegatecalls to contracts that are not MultiSend, do not fit this one-call template.</span><span class="byai">AI research</span></span></p>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>Show the 1 kind of difference</span></summary><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="tx">Examples (up to 3)</th></tr></thead><tbody>
+    <tr><td class="what" data-label="What was different"><span>A delegatecall to a contract that is not the official MultiSend</span></td><td class="n" data-label="Safe"><span><span class="num">4</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>2026-11-25</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x9db636dec1cc2b104f5e7d1306ca0b7dda3cff8d2fdcbd729ff9303e5da86340">0x9db636de…</a> <a href="https://etherscan.io/tx/0x2747f2db3c62d4dbe98e0121f25b918bfd2976ce2602b5197411dba1db73bda5">0x2747f2db…</a> <a href="https://etherscan.io/tx/0x3efa7a69f160cde99fe8be264d1963d7698ef6e7bd4f7bbb8408a37a9f84e134">0x3efa7a69…</a></span></td></tr></tbody></table></div>
+  </details>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>How the program searched</span></summary>
+  <h3>Search of Safe ExecutionSuccess: 28677 found, 240 studied, 180 of 28573 with a proven Safe party</h3>
+  <p class="cap">Every transaction from block 26465928 (2026-11-21) to block 26501636 (2026-11-26) was searched, newest first, 35709 blocks, about 4 days 23 hours, with no gap; the search stops at its cap of 50 pages of 1,000, so the year&#39;s older transactions were not searched. Only Etherscan searches an event, and found <span class="num">28677</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
+  <p class="cap">These transactions were found through event logs, and a failed transaction leaves none.</p>
+  <p class="cap">191 more are other operations, not counted: <code>usdt.0xa9059cbb</code> 13, <code>0x388C818CA8B9251b393131C08a736A67ccB19297 (no data)</code> 12, <code>0xBEeF007ECFBfdF9B919d0050821A9B6DbD634fF0.0x095ea7b3</code> 11, <code>usdc.0xa9059cbb</code> 10, and others.</p>
+  <p class="cap">33 more came from contracts that are not Safes, failed, or could not be read, and are not counted.</p>
+  </details>
 </section>
 
 <section id="next">
@@ -476,10 +494,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="usage">
   <h2>AI usage</h2>
-  <p class="lead">The AI usage of this report was not measured.</p>
+  <p class="lead">Opus 5.5 made this report in 74 calls over 12 minutes.</p>
+  <table class="ut"><thead><tr><th scope="col">Item</th><th scope="col">Tokens</th></tr></thead><tbody><tr><th scope="row">Re-read (cache reads)</th><td class="num">9.2M</td></tr><tr><th scope="row">Newly read (input and cache writes)</th><td class="num">0.16M</td></tr><tr><th scope="row">Output</th><td class="num">0.03M</td></tr></tbody><tfoot><tr><th scope="row">Total</th><td class="num">9.4M</td></tr></tfoot></table>
+  <p class="cap">Source: the usage the API reported, in Claude Code&#39;s transcripts, without the coordinator. No program checks these numbers.</p>
 </section>
 
-<footer class="foot">Written by <code>pnpm report eth/transfer --record</code> from <code>templates/eth/transfer/template.json</code>, <code>templates/eth/transfer/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/eth-transfer.json</code>, <code>testdata/abi</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/eth/transfer/notes.json</code>; the data was read on 2026-11-17. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
+<footer class="foot">Written by <code>pnpm report eth/transfer --record</code> from <code>templates/eth/transfer/template.json</code>, <code>templates/eth/transfer/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/eth-transfer.json</code>, <code>testdata/abi</code>, <code>testdata/research/eth-transfer.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/eth/transfer/notes.json</code>, <code>testdata/usage/eth-transfer.json</code>; the data was read on 2026-11-26. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI or the usage numbers.</footer>
 
 </div>
 </div>

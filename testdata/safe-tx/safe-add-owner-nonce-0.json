@@ -1,0 +1,72 @@
+{
+  "chainId": 1,
+  "safe": "0x5c795fa52d9aa6ed6da9151289ad74a36bc4d8f9",
+  "block": 24036982,
+  "providers": [
+    "alchemy",
+    "drpc"
+  ],
+  "chain": {
+    "version": "1.4.1",
+    "domainSeparator": "0xb97a1fff0f3407f254d7d53e9da6a0fa014db3e830fa57b1ee91be4622663961",
+    "transactionHash": "0x9027b6b7dfb8190f9bd810ee4598e3cbe42da2b4cea6b3581d13a52e56505145"
+  },
+  "service": {
+    "safe": "0x5C795fa52D9aa6eD6DA9151289ad74A36bC4D8f9",
+    "to": "0x5C795fa52D9aa6eD6DA9151289ad74A36bC4D8f9",
+    "value": "0",
+    "data": "0x0d582f13000000000000000000000000a75bbd73b5ee18f71ff6d1c452c3dde222feb9870000000000000000000000000000000000000000000000000000000000000001",
+    "operation": 0,
+    "gasToken": "0x0000000000000000000000000000000000000000",
+    "safeTxGas": "0",
+    "baseGas": "0",
+    "gasPrice": "0",
+    "refundReceiver": "0x0000000000000000000000000000000000000000",
+    "nonce": "0",
+    "executionDate": "2025-12-18T04:03:47Z",
+    "submissionDate": "2025-12-18T04:02:50.371089Z",
+    "modified": "2025-12-18T04:03:47Z",
+    "blockNumber": 24036982,
+    "transactionHash": "0x8615e98b9f927f0cb88e7c0cf162591b787d755ed02237158f1dbc53bdabc377",
+    "safeTxHash": "0x9027b6b7dfb8190f9bd810ee4598e3cbe42da2b4cea6b3581d13a52e56505145",
+    "proposer": "0x191940D9063dA368902942f9E92d376a525E6124",
+    "proposedByDelegate": null,
+    "executor": "0x191940D9063dA368902942f9E92d376a525E6124",
+    "isExecuted": true,
+    "isSuccessful": true,
+    "ethGasPrice": "30332627",
+    "maxFeePerGas": "30904122",
+    "maxPriorityFeePerGas": "2809465",
+    "gasUsed": 98579,
+    "fee": "2990160037033",
+    "payment": null,
+    "origin": "{}",
+    "dataDecoded": {
+      "method": "addOwnerWithThreshold",
+      "parameters": [
+        {
+          "name": "owner",
+          "type": "address",
+          "value": "0xA75bbd73B5eE18F71ff6D1C452c3dde222FEB987"
+        },
+        {
+          "name": "_threshold",
+          "type": "uint256",
+          "value": "1"
+        }
+      ]
+    },
+    "confirmationsRequired": 1,
+    "confirmations": [
+      {
+        "owner": "0x191940D9063dA368902942f9E92d376a525E6124",
+        "submissionDate": "2025-12-18T04:03:47Z",
+        "transactionHash": null,
+        "signature": "0x000000000000000000000000191940d9063da368902942f9e92d376a525e6124000000000000000000000000000000000000000000000000000000000000000001",
+        "signatureType": "APPROVED_HASH"
+      }
+    ],
+    "trusted": true,
+    "signatures": "0x000000000000000000000000191940d9063da368902942f9e92d376a525e6124000000000000000000000000000000000000000000000000000000000000000001"
+  }
+}

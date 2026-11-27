@@ -28,13 +28,13 @@
         "bound": "floor",
         "default": {
           "bps": 3,
-          "source": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/blue-sdk/src/constants.ts#L24"
+          "source": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/blue-sdk/src/constants.ts"
         },
         "margin": {
           "bps": 7,
           "why": {
-            "en": "The Morpho app prices the deposit again when it builds the transaction. If the share price moves against the card meanwhile, the default alone makes it MISMATCH. 0.07% more covers 3 days at 8% a year.",
-            "zh-TW": "Morpho app 組交易時會重新計算一次存款價格。若期間每股價格往不利於卡片的方向變動，只用預設值的話，app 自己組的交易就會 MISMATCH。多 0.07% 大約夠年化 8% 的金庫三天的變動。"
+            "en": "The app prices the deposit again when it builds the transaction, and the share price keeps rising (about 0.37% in 30 days), so the default alone can make it a MISMATCH",
+            "zh-TW": "app 建立交易時會重新計價，而份額價格持續上漲（30 天約 0.37%），只用預設值可能讓 app 自己的交易 MISMATCH"
           }
         }
       }
@@ -76,7 +76,8 @@
         "maxSharePriceE27": {
           "maxSharePrice": {
             "assets": "card.amount",
-            "shares": "card.min-shares"
+            "shares": "card.min-shares",
+            "scale": 27
           }
         },
         "assetPermit": {
@@ -85,12 +86,7 @@
               "const": "0"
             },
             "data": {
-              "free": {
-                "unread": {
-                  "en": "VaultBundlesV1 reads the permit data only for kind 1 (ERC-2612) or 2 (Permit2); kind is bound to 0, which pulls the amount with transferFrom",
-                  "zh-TW": "VaultBundlesV1 只在 kind 為 1（ERC-2612）或 2（Permit2）時才讀 permit 的 data；這裡 kind 綁定為 0，用 transferFrom 拉款"
-                }
-              }
+              "const": "0x"
             }
           }
         },
@@ -101,14 +97,14 @@
           "const": "0x0000000000000000000000000000000000000000"
         },
         "deadline": {
-          "withinSeconds": 604800
+          "withinSeconds": 7200
         }
       },
       "trailer": {
         "maxBytes": 12,
         "why": {
-          "en": "the Morpho app appends a 4-byte timestamp and one or two 4-byte origin tags (morpho-org/sdks, addTransactionMetadata); vaultBundlesV1Deposit reads only its arguments",
-          "zh-TW": "Morpho app 會在後面附上 4 bytes 的時間戳記和一到兩個 4 bytes 的來源標記（morpho-org/sdks，addTransactionMetadata）；vaultBundlesV1Deposit 只讀它的引數"
+          "en": "The Morpho app appends up to 12 bytes to vaultBundlesV1Deposit, a timestamp and one or two origin tags, in the 34 Safe transactions of this shape studied; the contract reads only its seven arguments.",
+          "zh-TW": "Morpho app 會在 vaultBundlesV1Deposit 後面附上最多 12 bytes（時間戳記和一或兩個來源標記），研究過的 34 筆這種形狀的 Safe 交易都有；合約只讀它的七個引數。"
         }
       }
     }
@@ -123,7 +119,9 @@
     "gets": [
       {
         "token": "card.vault",
-        "amount": "positive"
+        "amount": {
+          "atLeast": "card.min-shares"
+        }
       }
     ]
   }

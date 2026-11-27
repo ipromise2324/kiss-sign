@@ -1,35 +1,59 @@
 {
+  "request": "I want to add an owner to my Safe. build me the template and its report",
   "title": {
     "en": "Add a Safe signer",
     "zh-TW": "新增 Safe 的簽署人"
   },
   "summary": {
-    "en": "The Safe calls its own `addOwnerWithThreshold`, adding the address you pick as a signer and setting the threshold to the number you type. The card asks only for the new signer and the threshold, the same as the Safe web app asks when it adds a signer.",
-    "zh-TW": "Safe 呼叫自己的 `addOwnerWithThreshold`，把你選的地址加成簽署人，並把門檻設成你填的數字。卡片只問新簽署人和門檻，跟 Safe web app 新增簽署人時問的一樣。"
+    "en": "The Safe calls its own `addOwnerWithThreshold`, adding the signer you pick from your address book and setting the threshold to the number you type. It needs no earlier step. A transaction that adds anyone else, changes another setting or moves an asset gets MISMATCH.",
+    "zh-TW": "Safe 呼叫自己的 `addOwnerWithThreshold`，加入你從地址簿選的簽署人，並把門檻設成你填的數字。不需要先做別的步驟。加了別人、改了別的設定或動到資產的交易會得到 MISMATCH。"
   },
   "verdict": {
     "status": "caution",
     "text": {
-      "en": "Moves no asset, but changes who controls this Safe: check the new signer's address against a source outside the chat.",
-      "zh-TW": "不動任何資產，但改的是誰能動這個 Safe：新簽署人的地址要從聊天以外的來源核對。"
+      "en": "Moves no asset, but gives a new person a key to this Safe: confirm the address with them and choose the threshold on purpose.",
+      "zh-TW": "不動任何資產，但會讓新的人拿到這個 Safe 的鑰匙：跟對方本人確認地址，門檻要想清楚再填。"
     }
-  },
-  "pastTxsConclusion": {
-    "en": "Every misfit changes several owners in one MultiSend: several `addOwnerWithThreshold` calls, or one with `swapOwner` or `removeOwner`. A card holds one change, so verify refuses such a batch; make each change its own transaction.",
-    "zh-TW": "不合的全是在一個 MultiSend 裡改好幾個 owner：好幾個 `addOwnerWithThreshold`，或再加 `swapOwner`、`removeOwner`。一張卡片只放一項變更，verify 會拒絕這種批次；每項變更要各自一筆交易。"
   },
   "flow": [],
   "protocols": {},
   "judgments": [
     {
       "text": {
-        "en": "From then on the new signer can sign the Safe's transactions. If the threshold is too low, a few keys can move all the assets. verify only checks that the transaction does what the card says; it does not judge whether this person should be a signer.",
-        "zh-TW": "新簽署人之後就能簽 Safe 的交易；門檻太低時，少數幾把鑰匙就能動全部資產。verify 只檢查交易做的跟卡片一樣，不判斷這個人該不該當簽署人。"
+        "en": "verify checks that the new signer is exactly the address your address book holds under the name you pick, not that this address belongs to the person you mean. A look-alike address saved in the book would pass.",
+        "zh-TW": "verify 檢查的是新簽署人正好是你地址簿裡那個名字的地址，不是這個地址真的屬於你想加的人。地址簿裡存了長得像的假地址也會通過。"
       },
       "recommendation": {
-        "en": "Before you add it to the address book, confirm the full address with the person through a channel outside the chat. Keep the threshold at your current level of safety.",
-        "zh-TW": "加進地址簿前，用聊天以外的管道跟本人確認完整地址；門檻維持在你原本的安全水準。"
+        "en": "Before you save the address in your book, confirm the full address with the new signer through a second channel, such as a call, character by character.",
+        "zh-TW": "存進地址簿之前，透過第二個管道（例如電話）跟新簽署人逐字確認完整地址。"
       }
+    },
+    {
+      "text": {
+        "en": "Adding a signer without raising the threshold lowers the share of signers needed: 2 of 3 becomes 2 of 4. The Safe app keeps the current threshold by default, so this happens unless you type a higher one.",
+        "zh-TW": "加人但不提高門檻，需要簽名的比例就變低：3 取 2 變成 4 取 2。Safe 的 app 預設維持目前門檻，所以除非你填更高的數字，就會這樣。"
+      },
+      "recommendation": {
+        "en": "Choose the threshold for the new signer count on purpose; the card asks for it and verify holds the Safe to it.",
+        "zh-TW": "依新的人數刻意選門檻；卡片會問，verify 會要求 Safe 最後就是這個數字。"
+      },
+      "sources": [
+        "https://github.com/safe-global/safe-core-sdk/blob/6bd6a225ebd40a04283019ef892b790868103d9d/packages/protocol-kit/src/managers/ownerManager.ts#L83-L93",
+        "https://github.com/safe-global/safe-smart-account/blob/bf943f80fec5ac647159d26161446ac5d716a294/contracts/base/OwnerManager.sol#L58-L69"
+      ]
+    },
+    {
+      "text": {
+        "en": "The simulation marks `addOwnerWithThreshold` as moving no asset of the Safe. What it changes is control: the new address can sign, and with enough signatures move every asset the Safe holds.",
+        "zh-TW": "模擬標示 `addOwnerWithThreshold` 不動 Safe 的任何資產。它改的是控制權：新地址可以簽署，湊滿簽名就能動 Safe 裡的所有資產。"
+      },
+      "recommendation": {
+        "en": "Treat this like handing over a key: add only an address whose holder you know and who keeps the key on a hardware wallet.",
+        "zh-TW": "把這當成交出一把鑰匙：只加你認識、且用硬體錢包保管鑰匙的人的地址。"
+      },
+      "sources": [
+        "https://docs.safe.global/reference-smart-account/owners/addOwnerWithThreshold"
+      ]
     }
   ],
   "reviews": {},
@@ -117,12 +141,16 @@
   },
   "fields": {
     "1.addOwnerWithThreshold.owner": {
-      "en": "The signer to add. It cannot be the zero address, 0x…01 or the Safe itself, and cannot already be a signer, or the transaction fails.",
-      "zh-TW": "要加的簽署人。不能是零地址、0x…01 或 Safe 自己，也不能已經是簽署人，否則交易失敗。"
+      "en": "The new signer, taken from your address book. The Safe refuses the zero address, the list marker 0x0000000000000000000000000000000000000001, the Safe itself (GS203) and a current signer (GS204). From then on this key signs like every other.",
+      "zh-TW": "新的簽署人，取自你的地址簿。Safe 拒絕零地址、名單標記 0x0000000000000000000000000000000000000001、Safe 自己（GS203）和現有簽署人（GS204）。之後這把鑰匙和其他人一樣能簽。"
     },
     "1.addOwnerWithThreshold._threshold": {
-      "en": "The threshold after the addition. If it equals the current one, the Safe leaves the threshold as it is. Otherwise the threshold becomes this number, which must be between 1 and the number of signers.",
-      "zh-TW": "加完之後的門檻。跟原本一樣時 Safe 不改門檻；不同時改成這個數，必須介於 1 和簽署人數之間。"
+      "en": "How many signatures every later transaction needs, counted over all signers including the new one. It must be from 1 to the new number of signers (GS201, GS202). The Safe app fills in the current threshold unless you change it.",
+      "zh-TW": "之後每筆交易需要幾個簽名，以加入新人後的全部簽署人計算。必須介於 1 到新的人數之間（GS201、GS202）。Safe 的 app 預設填目前的門檻，除非你改。"
     }
+  },
+  "pastTxsConclusion": {
+    "en": "Every misfit batches `addOwnerWithThreshold` with more owner changes in one transaction: more additions, `swapOwner` or `removeOwner`. A card holds one owner change, so verify refuses such a batch; send each change as its own transaction.",
+    "zh-TW": "不合的都在一筆交易裡把 `addOwnerWithThreshold` 和其他 owner 變更綁在一起：再加人、`swapOwner` 或 `removeOwner`。一張卡片只放一項 owner 變更，verify 會拒絕這種批次，每項變更要各自一筆交易。"
   }
 }

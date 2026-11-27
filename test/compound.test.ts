@@ -29,7 +29,7 @@ const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
 const templates = new Map<string, Template>([['compound/supply', loadTemplate(ROOT, 'compound/supply', registry)]]);
 const OTHER = '0x1111111111111111111111111111111111111111' as Address;
-const FIXTURES = ['compound-supply-usdc', 'compound-supply-usdc-again', 'compound-supply-usdc-other-safe'];
+const FIXTURES = ['compound-supply-usdc-base', 'compound-supply-usdc-again', 'compound-supply-usdc-other-safe-base'];
 const addressOf = (name: string): Address => registry.entries.get(name)!.address;
 const load = (dir: string, name: string) => readRecording<any>(join(ROOT, 'testdata', dir, `${name}.json`));
 
@@ -91,12 +91,12 @@ for (const name of FIXTURES) {
 }
 
 test('a card amount other than the batch states mismatches at the approval and the supply', () => {
-  const tx = safeTx('compound-supply-usdc');
+  const tx = safeTx('compound-supply-usdc-base');
   assert.deepEqual(mismatchAt(check(tx, impliedCard(tx, supplied(tx) - 1n))), ['multiSend[0].approve.value', 'multiSend[1].supply.amount']);
 });
 
 test('a supply card naming a vault of another protocol is refused before any check', () => {
-  const tx = safeTx('compound-supply-usdc');
+  const tx = safeTx('compound-supply-usdc-base');
   const result = resolveCard({ operations: [{ template: 'compound/supply', values: { market: 'fluid-fusdc', amount: '1' } }] }, { templates, registry, addressBook: new Map(), safe: tx.safe });
   assert.equal(result.kind === 'refused' ? result.reason : result.kind, 'wrong-protocol');
 });
@@ -131,7 +131,7 @@ const executedOf = (observed: Observed) => observed as Extract<Observed, { kind:
 const judge = (tx: SafeTx, observed: Observed, card: Card = impliedCard(tx)): EffectVerdict => judgeEffects(observed, resolved(tx, card), templates, registry);
 
 test('a supply gives exactly the card amount of USDC, gets cUSDCv3 within 2 units of it, and spends its exact approval', async () => {
-  const { tx, simulated, receipt } = await observations('compound-supply-usdc');
+  const { tx, simulated, receipt } = await observations('compound-supply-usdc-base');
   for (const observed of [simulated, receipt]) {
     const { tokens, allowances } = executedOf(observed);
     assert.equal(tokens.get(addressOf('usdc')), -supplied(tx));
@@ -146,7 +146,7 @@ test('a supply gives exactly the card amount of USDC, gets cUSDCv3 within 2 unit
 });
 
 test('an approval the supply leaves open is a mismatch', async () => {
-  const { tx, receipt } = await observations('compound-supply-usdc');
+  const { tx, receipt } = await observations('compound-supply-usdc-base');
   const open = { token: addressOf('usdc'), spender: addressOf('compound-v3-cusdcv3'), before: 0n, after: 1n };
   assert.deepEqual(judge(tx, { ...executedOf(receipt), allowances: [open] }), { kind: 'mismatch', findings: [{ kind: 'open-allowance', ...open }] });
 });

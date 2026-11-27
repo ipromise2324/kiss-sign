@@ -12,17 +12,18 @@ import { inspectTemplateFields } from '../src/template/check.ts';
 import { judgeFixtures, replayPerturbRecording } from '../src/template/perturb.ts';
 import type { FixtureJudgement } from '../src/template/perturb.ts';
 import { parseTemplate } from '../src/template/template.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
-const NAME = 'uniswap-swap-hook-usdc-usdt';
+const NAME = 'uniswap-swap-permit-usdc-usdt';
 const recording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'perturb', `${NAME}.json`), 'utf8'));
 
 type Raw = { calls: { args: { deadline: unknown } }[] };
 
-/** The Uniswap swap template with its `deadline` bound by `withinSeconds`, as a test fixture: the shipped template stays free. */
+/** The fixture template uniswap/swap-permit with its `deadline` bound by `withinSeconds`. */
 function swapWithin(seconds: bigint) {
-  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'uniswap', 'swap', 'template.json'), 'utf8')) as Raw;
+  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'uniswap', 'swap-permit', 'template.json'), 'utf8')) as Raw;
   raw.calls.at(-1)!.args.deadline = { withinSeconds: Number(seconds) };
   return parseTemplate(raw, registry, 'committed');
 }

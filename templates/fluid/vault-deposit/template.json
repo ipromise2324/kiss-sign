@@ -1,31 +1,95 @@
 {
   "id": "fluid/vault-deposit",
   "card": {
-    "vault": { "kind": "contract", "registryKind": "vault", "defillama": "fluid-lending" },
-    "amount": { "kind": "amount", "of": "vault.asset" }
+    "vault": {
+      "kind": "contract",
+      "registryKind": "vault",
+      "defillama": "fluid-lending"
+    },
+    "amount": {
+      "kind": "amount",
+      "of": "vault.asset"
+    },
+    "min-shares": {
+      "kind": "amount",
+      "of": "vault",
+      "computed": {
+        "read": {
+          "to": {
+            "card": "vault"
+          },
+          "function": "previewDeposit(uint256 assets_) returns (uint256)",
+          "args": {
+            "assets_": {
+              "card": "amount"
+            }
+          }
+        },
+        "bound": "floor",
+        "default": {
+          "bps": 0,
+          "source": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/contracts/protocols/lending/fToken/main.sol#L763-L767"
+        },
+        "margin": {
+          "bps": 10,
+          "why": {
+            "en": "Fluid sets no slippage for a plain deposit, and the share price only rises. 0.10% covers the price rising for about 4 days at 9% a year before the transaction runs.",
+            "zh-TW": "Fluid 對一般存款不設滑價，且每股價格只會上升。0.10% 大約足夠年化 9% 的情況下，交易執行前價格上升四天的幅度。"
+          }
+        }
+      }
+    }
   },
   "calls": [
     {
-      "to": { "card": "vault.asset" },
-      "value": { "const": "0" },
+      "to": {
+        "card": "vault.asset"
+      },
+      "value": {
+        "const": "0"
+      },
       "function": "approve(address spender, uint256 value)",
       "args": {
-        "spender": { "card": "vault" },
-        "value": { "card": "amount" }
+        "spender": {
+          "card": "vault"
+        },
+        "value": {
+          "card": "amount"
+        }
       }
     },
     {
-      "to": { "card": "vault" },
-      "value": { "const": "0" },
-      "function": "deposit(uint256 assets, address receiver)",
+      "to": {
+        "card": "vault"
+      },
+      "value": {
+        "const": "0"
+      },
+      "function": "deposit(uint256 assets_, address receiver_)",
       "args": {
-        "assets": { "card": "amount" },
-        "receiver": { "safe": true }
+        "assets_": {
+          "card": "amount"
+        },
+        "receiver_": {
+          "safe": true
+        }
       }
     }
   ],
   "effects": {
-    "gives": [{ "token": "card.vault.asset", "amount": "card.amount" }],
-    "gets": [{ "token": "card.vault", "amount": "positive" }]
+    "gives": [
+      {
+        "token": "card.vault.asset",
+        "amount": "card.amount"
+      }
+    ],
+    "gets": [
+      {
+        "token": "card.vault",
+        "amount": {
+          "atLeast": "card.min-shares"
+        }
+      }
+    ]
   }
 }

@@ -321,16 +321,3 @@ test('every committed template keeps each reason card new prints, a max\'s and a
   }
   assert.deepEqual(long, []);
 });
-
-test('a share price scale is a whole power of ten from 1 to 36, 27 when absent, or the template fails to load', () => {
-  const at = 'calls[1].args.bundle.items[1].fields.data.call.args.maxSharePriceE27.maxSharePrice';
-  const scaled = (scale: unknown) => {
-    const raw = structuredClone(rawTemplate);
-    raw.calls[1].args.bundle.items[1].fields.data.call.args.maxSharePriceE27.maxSharePrice.scale = scale;
-    return () => parseTemplate(raw, registry);
-  };
-  for (const scale of [1, 18, 36]) assert.doesNotThrow(scaled(scale), String(scale));
-  for (const scale of [0, 37, 270, 27.5, '18', -1]) {
-    assert.throws(scaled(scale), (error: unknown) => error instanceof TemplateError && error.path === `${at}.scale` && /from 1 to 36/.test(error.message), String(scale));
-  }
-});

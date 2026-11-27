@@ -442,11 +442,11 @@ test('a missing compiler file is refused with the command that fetches it', asyn
 test('a compiler version with no pin is refused', async () => {
   const fixture = load('bundler3');
   const answer = edited(fixture.etherscan[BUNDLER3], (result) => {
-    result.CompilerVersion = 'v0.8.29+commit.ab55807c';
+    result.CompilerVersion = 'v0.8.30+commit.73712a01';
   });
   const refused = refusal(await proveAbi(abiCaseReader(fixture), BUNDLER3, abiCaseBlock(fixture), { etherscan: abiCaseEtherscan({ [BUNDLER3]: answer }), compilers }));
-  assert.deepEqual(refused, { why: 'compiler-not-pinned', version: '0.8.29+commit.ab55807c' });
-  assert.match(describeRefusal(refused), /run `pnpm pin-solc 0\.8\.29\+commit\.ab55807c`$/);
+  assert.deepEqual(refused, { why: 'compiler-not-pinned', version: '0.8.30+commit.73712a01' });
+  assert.match(describeRefusal(refused), /run `pnpm pin-solc 0\.8\.30\+commit\.73712a01`$/);
 });
 
 test('an unverifiable code read is refused, not proven', async () => {

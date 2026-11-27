@@ -327,15 +327,16 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
+  <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
 </nav>
 
 <div class="main">
 
 <header>
+  <figure class="request"><figcaption>你的要求（建立這個模板時，原文）</figcaption><blockquote>I want to add an owner to my Safe. build me the template and its report</blockquote></figure>
   <h1><span class="aiw" data-ai><span>新增 Safe 的簽署人</span><span class="byai">AI 研究</span></span></h1>
   <span class="opid">safe/add-owner</span>
-  <p class="sub"><span class="aiw" data-ai><span>Safe 呼叫自己的 <code>addOwnerWithThreshold</code>，把你選的地址加成簽署人，並把門檻設成你填的數字。卡片只問新簽署人和門檻，跟 Safe web app 新增簽署人時問的一樣。</span><span class="byai">AI 研究</span></span></p>
+  <p class="sub"><span class="aiw" data-ai><span>Safe 呼叫自己的 <code>addOwnerWithThreshold</code>，加入你從地址簿選的簽署人，並把門檻設成你填的數字。不需要先做別的步驟。加了別人、改了別的設定或動到資產的交易會得到 MISMATCH。</span><span class="byai">AI 研究</span></span></p>
   <ul class="checks">
     <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>交易地址 <span class="n num">2 / 2</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">2 個地址都至少在 2 個地方確認：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件或共用的部署者列出同一個地址。</span></span></li>
@@ -348,22 +349,38 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">鏈上資料都同時問兩家節點，答案不一樣就不給結果。研究時有三種資料只有一個來源，都不會影響判定：過去交易的呼叫追蹤（drpc）、搜尋過去交易（Alchemy 或 Etherscan 找到的都算，找事件只用 Etherscan），和金庫曾經收過份額的地址名單（Alchemy，每個地址的餘額仍問兩家）。</span></span></li>
   </ul>
-  <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>不動任何資產，但改的是誰能動這個 Safe：新簽署人的地址要從聊天以外的來源核對。</span><span class="byai">AI 研究：要小心</span></span></div>
+  <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>不動任何資產，但會讓新的人拿到這個 Safe 的鑰匙：跟對方本人確認地址，門檻要想清楚再填。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
+    <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
   </details>
 </header>
 
 <section id="review">
-  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></span></h2>
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
   <p class="lead">每一項 AI 都先查過，附上建議。</p>
   <div class="rows">
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>新簽署人之後就能簽 Safe 的交易；門檻太低時，少數幾把鑰匙就能動全部資產。</span><span class="byai">AI 研究</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>verify 檢查的是新簽署人正好是你地址簿裡那個名字的地址，不是這個地址真的屬於你想加的人。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="aiw" data-ai><span>verify 只檢查交易做的跟卡片一樣，不判斷這個人該不該當簽署人。</span><span class="byai">AI 研究</span></span></div>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>加進地址簿前，用聊天以外的管道跟本人確認完整地址；門檻維持在你原本的安全水準。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>地址簿裡存了長得像的假地址也會通過。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>存進地址簿之前，透過第二個管道（例如電話）跟新簽署人逐字確認完整地址。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>加人但不提高門檻，需要簽名的比例就變低：3 取 2 變成 4 取 2。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span>Safe 的 app 預設維持目前門檻，所以除非你填更高的數字，就會這樣。 <a class="aisrc" href="https://github.com/safe-global/safe-core-sdk/blob/6bd6a225ebd40a04283019ef892b790868103d9d/packages/protocol-kit/src/managers/ownerManager.ts#L83-L93">來源 1</a> <a class="aisrc" href="https://github.com/safe-global/safe-smart-account/blob/bf943f80fec5ac647159d26161446ac5d716a294/contracts/base/OwnerManager.sol#L58-L69">來源 2</a></span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>依新的人數刻意選門檻；卡片會問，verify 會要求 Safe 最後就是這個數字。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>模擬標示 <code>addOwnerWithThreshold</code> 不動 Safe 的任何資產。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span>它改的是控制權：新地址可以簽署，湊滿簽名就能動 Safe 裡的所有資產。 <a class="aisrc" href="https://docs.safe.global/reference-smart-account/owners/addOwnerWithThreshold">來源</a></span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>把這當成交出一把鑰匙：只加你認識、且用硬體錢包保管鑰匙的人的地址。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
     </div>
   </div>
@@ -399,12 +416,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="arg" data-field="1.addOwnerWithThreshold.owner">
       <div class="nm"><span class="pn">owner</span><span class="who you">你選：簽署人</span></div>
       <div class="val"><div class="is">你選的簽署人 <span class="f3">從你的地址簿選，卡片記著完整地址，交易裡不同就 MISMATCH</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要加的簽署人。不能是零地址、0x…01 或 Safe 自己，也不能已經是簽署人，否則交易失敗。</span></span></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>新的簽署人，取自你的地址簿。Safe 拒絕零地址、名單標記 0x0000000000000000000000000000000000000001、Safe 自己（GS203）和現有簽署人（GS204）。之後這把鑰匙和其他人一樣能簽。</span></span></div></div>
     </div>
     <div class="arg" data-field="1.addOwnerWithThreshold._threshold">
       <div class="nm"><span class="pn">_threshold</span><span class="who you">你填：門檻</span></div>
       <div class="val"><div class="is">你填的門檻 <span class="f3">卡片記著這個值，交易裡不同就 MISMATCH</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>加完之後的門檻。跟原本一樣時 Safe 不改門檻；不同時改成這個數，必須介於 1 和簽署人數之間。</span></span></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>之後每筆交易需要幾個簽名，以加入新人後的全部簽署人計算。必須介於 1 到新的人數之間（GS201、GS202）。Safe 的 app 預設填目前的門檻，除非你改。</span></span></div></div>
     </div>
   </div>
   <h3>交易後</h3>
@@ -480,27 +497,28 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>過去交易</h2>
   <h3>1. 這個模板的交易以前成功過嗎？</h3>
-  <p class="ans"><b>成功過，64 個 Safe 一共做過 64 次。</b> EOA：0 次。最近一次是 2026-11-19。全部成功執行。最近 3 筆：<a href="https://etherscan.io/tx/0xcad90e0aaa911df76132d4f428d5d48dbc71a319d4aeadf4b77115900c8f0d3e">0xcad90e0a…</a> <a href="https://etherscan.io/tx/0x28a333b660dcfafdae2a043fdb81b7f0e40d64dd05ee7371632d1f14504e6f6c">0x28a333b6…</a> <a href="https://etherscan.io/tx/0xf33c9e766e11fb9fe9c35febd7cd5bbf9f94693cdcbefcd6a22442af78749c50">0xf33c9e76…</a></p>
+  <p class="ans"><b>成功過，65 個 Safe 一共做過 65 次。</b> EOA：0 次。最近一次是 2026-11-25。全部成功執行。最近 3 筆：<a href="https://etherscan.io/tx/0x88385f6471cb0c668b4dc839a8fd6c4a3af157ca1d2f4180fb3bbbda53f97f43">0x88385f64…</a> <a href="https://etherscan.io/tx/0xd6512addfbf9823b8af97d7c75297bad37aeae67e6cd34ba2d053b97983933f9">0xd6512add…</a> <a href="https://etherscan.io/tx/0x7d9481e070418e35d8e1b6ba561aa3dd0ccd8e48f6441111712b0b5e44999d67">0x7d9481e0…</a></p>
   <h3>2. app 填的值，一般是多少？</h3>
   <p class="ans">這個模板沒有留任何值給 app 填。</p>
   <h3>3. 其他交易哪裡不同？</h3>
-  <p class="ans">29 筆交易做了這個模板不允許的事。</p>
-  <p class="ans"><span class="aiw" data-ai><span>不合的全是在一個 MultiSend 裡改好幾個 owner：好幾個 <code>addOwnerWithThreshold</code>，或再加 <code>swapOwner</code>、<code>removeOwner</code>。一張卡片只放一項變更，verify 會拒絕這種批次；每項變更要各自一筆交易。</span><span class="byai">AI 研究</span></span></p>
-  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>顯示這 8 種不同</span></summary><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="tx">例子（最多 3 筆）</th></tr></thead><tbody>
-    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">13</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-10-21</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x3b4dd50147e96ccf1eae7ded88b5c70aa1bac128c3d5c7797a35bb2e938fdfb3">0x3b4dd501…</a> <a href="https://etherscan.io/tx/0x550e4f86a3221810570f2a978db1b0ecf6f9aca343a6b28ca1a6dbb63e50c136">0x550e4f86…</a> <a href="https://etherscan.io/tx/0x2eb5d830bfecd71232b38979c8f31743a5eb4f7cda2289cd3cd763c24450b31c">0x2eb5d830…</a></span></td></tr>
-    <tr><td class="what" data-label="哪裡不同"><span>一次超過 4 個呼叫的批次</span></td><td class="n" data-label="Safe"><span><span class="num">4</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-05-06</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x2153b1f655667c69fc0282ea36100d0be80da64ef4c4751a747d4bd9fb2723e9">0x2153b1f6…</a> <a href="https://etherscan.io/tx/0x0f28825573d70df219b3b5cb6b11865a82f656f9728fa7660bdf138151bab360">0x0f288255…</a> <a href="https://etherscan.io/tx/0x6bc4b88d18c96aa17b24bd48b74af439797028b6dca7b620f353c4b0937e8174">0x6bc4b88d…</a></span></td></tr>
-    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.swapOwner → 自己.swapOwner → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">3</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-03-12</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xb7721598b5977ba70428ad780dd2a956b362e69c4bfffa8f7510576d91746c84">0xb7721598…</a> <a href="https://etherscan.io/tx/0x834bbe10b0951706e0687f718aedf73a612a472bd525c3ce2c52b56917e26b92">0x834bbe10…</a> <a href="https://etherscan.io/tx/0xaaf5f4ebb593853097e8def5f7709ea42b5233db9ec4ce52aeabb1784d363960">0xaaf5f4eb…</a></span></td></tr>
-    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">3</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-11-10</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xcf33c43a0bf0b17daa1665857ea0cd4e480ac73c99954a71fdec8b30c8750f59">0xcf33c43a…</a> <a href="https://etherscan.io/tx/0x1e76197019237dd366cc5bcc1c5c0b56f0ee235c355d94cc1f49b6ba06b389f4">0x1e761970…</a> <a href="https://etherscan.io/tx/0x760f4f5b40f474462a07641bf67c032345a35defe00460d615f14d683c07c911">0x760f4f5b…</a></span></td></tr>
-    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.swapOwner → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">2</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-11-14</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x236ae79edcac3e266abae27906422432afb286a6de272b6e5cafcb8dea1e5f90">0x236ae79e…</a> <a href="https://etherscan.io/tx/0x9b63e4d5d89c2b766345f5631475b56060ea9cf24dcd707d732c2a27368956e9">0x9b63e4d5…</a></span></td></tr>
-    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">2</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-06-11</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xdd3d6489a1ca413fd86b836906e67e2c547a3b091b19e3c1b33dfcd9dd9402a9">0xdd3d6489…</a> <a href="https://etherscan.io/tx/0x1cb961b161a2cc6dbbb29cc76686607a08a9ae81cfa4a7d8acc71f36b923dfa9">0x1cb961b1…</a></span></td></tr>
-    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.removeOwner → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-05-27</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x9b284f0d30c2fcc6c0d06ff4a27bc38ea348c3739cc18a9b5a5edeb939cac5a5">0x9b284f0d…</a></span></td></tr>
-    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.swapOwner → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-10-27</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xc6397d3702401f94a7cb4d791d7fcbf3592540da39d485d470577a0e2284a6e6">0xc6397d37…</a></span></td></tr></tbody></table></div>
+  <p class="ans">27 筆交易做了這個模板不允許的事。</p>
+  <p class="ans"><span class="aiw" data-ai><span>不合的都在一筆交易裡把 <code>addOwnerWithThreshold</code> 和其他 owner 變更綁在一起：再加人、<code>swapOwner</code> 或 <code>removeOwner</code>。一張卡片只放一項 owner 變更，verify 會拒絕這種批次，每項變更要各自一筆交易。</span><span class="byai">AI 研究</span></span></p>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>顯示這 9 種不同</span></summary><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="tx">例子（最多 3 筆）</th></tr></thead><tbody>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">9</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-10-14</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xc4b5c554ac220886fbe9be947cd4821ae8a47a36f4de2602a779e4cdb911bd3f">0xc4b5c554…</a> <a href="https://etherscan.io/tx/0x69c44137ce72cf5266581630f19a490fcf52d0c3445b8a05fd5cd4dc26f0c188">0x69c44137…</a> <a href="https://etherscan.io/tx/0xfd2ce63a1498ec565c33f6ecb4596b68f7fa2b099472d36ba8623e18d855ec37">0xfd2ce63a…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">6</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-11-11</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xcdb38d6c52034e8622cca10da2ead96bd31e768da4b95f8220a2a675cf74cd74">0xcdb38d6c…</a> <a href="https://etherscan.io/tx/0xff18ecee56935e445f3acaf3f4492552272193a14e113a7cc43645e56e20757f">0xff18ecee…</a> <a href="https://etherscan.io/tx/0xff86ea6a8283e251fb8b417cac730e8322f2de4b3e7aa97ba3ed8833de8f1c19">0xff86ea6a…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>一次超過 4 個呼叫的批次</span></td><td class="n" data-label="Safe"><span><span class="num">5</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-11-06</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xf95ad761e538f0ad0a4b015be716bf4801130b9d0462309f35e68e907d4be7e8">0xf95ad761…</a> <a href="https://etherscan.io/tx/0xb49ffc8f4b3fa401a0e8061bd0d9c6e19f859e2077a9f69f0244f92b89d95370">0xb49ffc8f…</a> <a href="https://etherscan.io/tx/0xbf1648a897551a5f977bd89d35482ac6a1c73619f108c9cee25bcc3d97b57336">0xbf1648a8…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.swapOwner → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">2</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-01-07</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xc38a1f2c93f363e1d3cd6661f05b45a234d74e53162b1300726de5a6e4d3aeb9">0xc38a1f2c…</a> <a href="https://etherscan.io/tx/0x6ea503a65012ab318cf95676f5aec6a9808b1bbbadfea51b64056b7ae3287400">0x6ea503a6…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.swapOwner → 自己.swapOwner → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-02-25</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x9f8d73fd0676eb607cee0eea6598a88a586cf349fce38f6073409cbe11bb7f8c">0x9f8d73fd…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.swapOwner → 自己.swapOwner → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-03-31</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x2f31a24f085d75e0ddb783f11ab6c0a6cb9f681c343a9585c1b4931ba9c13365">0x2f31a24f…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-06-22</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xb6ccc9a19df610d20e47f6b06be7e0e082660ee7dc4a88db228939e8cf502e78">0xb6ccc9a1…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.swapOwner → 自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-08-15</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x5dc13b193ee4bfaf49828d4c69ffba80689a0ff01b2392bc6b1b1b45d386aaed">0x5dc13b19…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>自己.addOwnerWithThreshold → 自己.addOwnerWithThreshold → 自己.removeOwner</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-09-08</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x2eb63d48ec689136c700cab8281b33d70cc5a24f6c2a794930231ca859859ace">0x2eb63d48…</a></span></td></tr></tbody></table></div>
   </details>
   <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>程式怎麼搜尋</span></summary>
-  <h3>搜尋 Safe 的AddedOwner，找到 23228 筆，研究 237 筆，含證實為 Safe 的參與方的 23164 筆中研究 177 筆</h3>
-  <p class="cap">從最新的區塊往回，搜尋了區塊 23965880（2025-12-08）到區塊 26471479（2026-11-22）的每一筆交易，共 2505600 個區塊，約 349 天 10 小時，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。只有 Etherscan 搜尋事件，找到 <span class="num">23228</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
+  <h3>搜尋 Safe 的AddedOwner，找到 23137 筆，研究 237 筆，含證實為 Safe 的參與方的 23071 筆中研究 177 筆</h3>
+  <p class="cap">從最新的區塊往回，搜尋了區塊 24036946（2025-12-18）到區塊 26501700（2026-11-26）的每一筆交易，共 2464755 個區塊，約 343 天 16 小時，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。只有 Etherscan 搜尋事件，找到 <span class="num">23137</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
   <p class="cap">這些交易是從事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。</p>
-  <p class="cap">另外 104 筆是別的操作，不列入：<code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 16 筆、<code>0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789.0x1fad948c</code> 10 筆、<code>0x65b5fd50576255c2f46832b154C9a62576567C1C.0xaef05629</code> 9 筆、<code>0xf620aF9Ab698F5F3914641d50e9d939F20AA0fa9.0x1688f0b9</code> 7 筆，還有別的。</p>
+  <p class="cap">另外 105 筆是別的操作，不列入：<code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 15 筆、<code>0x65b5fd50576255c2f46832b154C9a62576567C1C.0xaef05629</code> 8 筆、<code>0xf620aF9Ab698F5F3914641d50e9d939F20AA0fa9.0x1688f0b9</code> 7 筆、<code>0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789.0x1fad948c</code> 7 筆，還有別的。</p>
   <p class="cap">另外 40 筆來自不是 Safe 的合約、執行失敗或讀不到，不列入。</p>
   </details>
 </section>
@@ -542,12 +560,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="usage">
   <h2>AI 用量</h2>
-  <p class="lead">Opus 5.5 用 71 次呼叫、74 分鐘做出這份報告。</p>
-  <table class="ut"><thead><tr><th scope="col">項目</th><th scope="col">token</th></tr></thead><tbody><tr><th scope="row">重複讀取（cache 讀取）</th><td class="num">5.4M</td></tr><tr><th scope="row">新讀入（input 與 cache 寫入）</th><td class="num">0.17M</td></tr><tr><th scope="row">output</th><td class="num">0.03M</td></tr></tbody><tfoot><tr><th scope="row">總共</th><td class="num">5.6M</td></tr></tfoot></table>
+  <p class="lead">Opus 5.5 用 82 次呼叫、14 分鐘做出這份報告。</p>
+  <table class="ut"><thead><tr><th scope="col">項目</th><th scope="col">token</th></tr></thead><tbody><tr><th scope="row">重複讀取（cache 讀取）</th><td class="num">10.2M</td></tr><tr><th scope="row">新讀入（input 與 cache 寫入）</th><td class="num">0.17M</td></tr><tr><th scope="row">output</th><td class="num">0.04M</td></tr></tbody><tfoot><tr><th scope="row">總共</th><td class="num">10.4M</td></tr></tfoot></table>
   <p class="cap">來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者。這些數字程式不檢查。</p>
 </section>
 
-<footer class="foot">由 <code>pnpm report safe/add-owner --record</code> 從 <code>templates/safe/add-owner/template.json</code>、<code>templates/safe/add-owner/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/safe-add-owner.json</code>、<code>testdata/abi</code>、<code>testdata/research/safe-add-owner.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/safe/add-owner/notes.json</code>、<code>testdata/usage/safe-add-owner.json</code> 寫出，資料在 2026-11-22 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。用量的數字程式也不檢查。</footer>
+<footer class="foot">由 <code>pnpm report safe/add-owner --record</code> 從 <code>templates/safe/add-owner/template.json</code>、<code>templates/safe/add-owner/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/safe-add-owner.json</code>、<code>testdata/abi</code>、<code>testdata/research/safe-add-owner.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/safe/add-owner/notes.json</code>、<code>testdata/usage/safe-add-owner.json</code> 寫出，資料在 2026-11-26 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。用量的數字程式也不檢查。</footer>
 
 </div>
 </div>

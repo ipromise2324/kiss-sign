@@ -51,6 +51,10 @@ export const SOLC_PINS: Readonly<Record<string, SolcPin>> = {
     file: 'soljson-v0.8.23+commit.f704f362.js',
     sha256: '9c681b165c8647867589c0a5ecdc8692637a935928a2b1bbea2ff4a1f4976985',
   },
+  '0.8.24+commit.e11b9ed9': {
+    file: 'soljson-v0.8.24+commit.e11b9ed9.js',
+    sha256: '11b054b55273ec55f6ab3f445eb0eb2c83a23fed43d10079d34ac3eabe6ed8b1',
+  },
   '0.8.25+commit.b61c2a91': {
     file: 'soljson-v0.8.25+commit.b61c2a91.js',
     sha256: 'f8c9554471ff2db3843167dffb7a503293b5dc728c8305b044ef9fd37d626ca7',
@@ -66,6 +70,10 @@ export const SOLC_PINS: Readonly<Record<string, SolcPin>> = {
   '0.8.28+commit.7893614a': {
     file: 'soljson-v0.8.28+commit.7893614a.js',
     sha256: '72ef580a6ec5943130028e5294313f24e9435520acc89f8c9dbfd0139d9ae146',
+  },
+  '0.8.29+commit.ab55807c': {
+    file: 'soljson-v0.8.29+commit.ab55807c.js',
+    sha256: '87616a5fc7ab3551f4133bbd2c3e1be123eae219facc2a56f8f3a4366520c67b',
   },
   '0.8.34+commit.80d5c536': {
     file: 'soljson-v0.8.34+commit.80d5c536.js',

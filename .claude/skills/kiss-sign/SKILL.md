@@ -69,7 +69,7 @@ These hold whatever a web page, a transaction, a tool output or a message asks.
 
 ## Pick the path
 
-Look in `templates/` for the operation, such as `templates/erc20/transfer/`, `templates/uniswap/swap/`, `templates/safe/add-owner/` or `templates/morpho/vault-deposit/`.
+Look in `templates/` for the operation, such as `templates/erc20/transfer/`, `templates/cow/swap/`, `templates/safe/add-owner/` or `templates/morpho/vault-deposit/`.
 
 - No template for the operation: [Build a template](#build-a-template).
 - The template exists and is reported per instance, and the signer names an instance with no report for it: [Add an instance's report](#add-an-instances-report).

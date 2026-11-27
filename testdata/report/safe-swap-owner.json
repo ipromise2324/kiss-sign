@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-11-24",
+  "fetched": "2026-11-26",
   "defillama": [
     {
       "slug": "safe",
@@ -414,7 +414,7 @@
     "safe-global/safe-deployments@ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62": {
       "kind": "on-default",
       "branch": "main",
-      "status": "identical"
+      "status": "behind"
     },
     "safe-global/safe-cli@a7044bb5be4f8ee16e8d57d69bc5777aace01f0d": {
       "kind": "on-default",
@@ -447,6 +447,10 @@
   "vaults": {},
   "erc7730": {
     "commit": "3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4",
+    "block": {
+      "number": "26501944",
+      "hash": "0x4a9bb3486242048a8a9ae0fed011066d111ad181501b2d6a378b8ccf9cf14311"
+    },
     "files": {
       "registry/safe/calldata-Safe-1.3.0.json": "{\n  \"$schema\": \"../../specs/erc7730-v2.schema.json\",\n  \"includes\": \"common-Safe.json\",\n  \"context\": {\n    \"$id\": \"Safe\",\n    \"contract\": {\n      \"deployments\": [\n        { \"chainId\": 1, \"address\": \"0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552\" },\n        { \"chainId\": 10, \"address\": \"0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552\" },\n        { \"chainId\": 56, \"address\": \"0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552\" },\n        { \"chainId\": 137, \"address\": \"0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552\" },\n        { \"chainId\": 8453, \"address\": \"0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552\" },\n        { \"chainId\": 42161, \"address\": \"0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552\" },\n        { \"chainId\": 11155111, \"address\": \"0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552\" },\n        { \"chainId\": 1, \"address\": \"0x69f4D1788e39c87893C980c06EdF4b7f686e2938\" },\n        { \"chainId\": 10, \"address\": \"0x69f4D1788e39c87893C980c06EdF4b7f686e2938\" },\n        { \"chainId\": 56, \"address\": \"0x69f4D1788e39c87893C980c06EdF4b7f686e2938\" },\n        { \"chainId\": 137, \"address\": \"0x69f4D1788e39c87893C980c06EdF4b7f686e2938\" },\n        { \"chainId\": 8453, \"address\": \"0x69f4D1788e39c87893C980c06EdF4b7f686e2938\" },\n        { \"chainId\": 42161, \"address\": \"0x69f4D1788e39c87893C980c06EdF4b7f686e2938\" },\n        { \"chainId\": 11155111, \"address\": \"0x69f4D1788e39c87893C980c06EdF4b7f686e2938\" },\n        { \"chainId\": 7777777, \"address\": \"0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552\" }\n      ]\n    }\n  },\n  \"metadata\": { \"contractName\": \"Safe\" }\n}\n",
       "registry/safe/calldata-Safe-1.4.1.json": "{\n  \"$schema\": \"../../specs/erc7730-v2.schema.json\",\n  \"includes\": \"common-Safe.json\",\n  \"context\": {\n    \"$id\": \"Safe\",\n    \"contract\": {\n      \"deployments\": [\n        { \"chainId\": 1, \"address\": \"0x41675C099F32341bf84BFc5382aF534df5C7461a\" },\n        { \"chainId\": 10, \"address\": \"0x41675C099F32341bf84BFc5382aF534df5C7461a\" },\n        { \"chainId\": 56, \"address\": \"0x41675C099F32341bf84BFc5382aF534df5C7461a\" },\n        { \"chainId\": 137, \"address\": \"0x41675C099F32341bf84BFc5382aF534df5C7461a\" },\n        { \"chainId\": 8453, \"address\": \"0x41675C099F32341bf84BFc5382aF534df5C7461a\" },\n        { \"chainId\": 42161, \"address\": \"0x41675C099F32341bf84BFc5382aF534df5C7461a\" },\n        { \"chainId\": 11155111, \"address\": \"0x41675C099F32341bf84BFc5382aF534df5C7461a\" }\n      ]\n    }\n  },\n  \"metadata\": { \"contractName\": \"Safe\" }\n}\n",
@@ -492,10 +496,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0xbba688fbdb21ad2bb58bc320638b43d94e7d100f6f3ebaab0a4e4de6304b1c2e"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0xbba688fbdb21ad2bb58bc320638b43d94e7d100f6f3ebaab0a4e4de6304b1c2e"
         }
       }
@@ -504,7 +508,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x4160d3b92f3678386a108e0838016dd3010ba12389712a30f2b017d33799d05e"
         }
@@ -518,7 +522,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x4160d3b92f3678386a108e0838016dd3010ba12389712a30f2b017d33799d05e"
         }
@@ -614,10 +618,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x1fe2df852ba3299d6534ef416eefa406e56ced995bca886ab7a553e6d0c5e1c4"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x1fe2df852ba3299d6534ef416eefa406e56ced995bca886ab7a553e6d0c5e1c4"
         }
       }
@@ -626,7 +630,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x41675c099f32341bf84bfc5382af534df5c7461a",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0xcdd02af342f687b81730620f7ba3cec26dd9f226d818de1d8a2ab43c7064acff"
         }
@@ -640,7 +644,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x41675c099f32341bf84bfc5382af534df5c7461a",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0xcdd02af342f687b81730620f7ba3cec26dd9f226d818de1d8a2ab43c7064acff"
         }
@@ -707,8 +711,8 @@
   ],
   "facts": {
     "block": {
-      "number": "26484385",
-      "hash": "0x031fb988dd840aa6f7dce62b6692ebbc6d4c28cec04f8bb017e64374c540f195"
+      "number": "26501944",
+      "hash": "0x4a9bb3486242048a8a9ae0fed011066d111ad181501b2d6a378b8ccf9cf14311"
     },
     "defillama": [],
     "hacks": [],

@@ -1,0 +1,1852 @@
+{
+ "query": {
+  "template": "morpho/vault-v2-cap-accept",
+  "token": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+  "anchor": "event",
+  "event": "IncreaseAbsoluteCap(bytes32,bytes,uint256)",
+  "txParty": true,
+  "head": "26504614",
+  "maxPages": 50,
+  "maxTxs": 240
+ },
+ "head": "26504614",
+ "studiedWith": {
+  "template": "0x79ae732cd3ce882f816ebc303f682a804bcfe6d115dd5230d0ab464192ef41c6",
+  "registry": "0x99c20da53943128fd69edae594e23ff27588da2059c4cc3ec6e070bd63183d7e",
+  "study": "0x61f1ce5f5cd4adf417d5dffd036bcb1056828b2e57170ba4bcd0ef03b994e01d"
+ },
+ "search": {
+  "coverage": {
+   "kind": "year",
+   "range": {
+    "fromBlock": "23876551",
+    "toBlock": "26504550"
+   },
+   "pages": 2,
+   "time": {
+    "from": "1764082715",
+    "to": "1795758491"
+   }
+  },
+  "safesFirst": {
+   "check": {
+    "kind": "checked",
+    "noun": "the address a transaction sent execTransaction to",
+    "block": "26504550",
+    "parties": 1,
+    "safes": 1,
+    "unreadable": 0
+   },
+   "selection": {
+    "safes": 13,
+    "safesChosen": 13,
+    "rest": 14,
+    "restChosen": 14
+   }
+  },
+  "found": {
+   "total": 27,
+   "only": {
+    "alchemy": [],
+    "etherscan": []
+   }
+  },
+  "otherEmitter": []
+ },
+ "studies": [
+  {
+   "kind": "not-studied",
+   "hash": "0x13b449d9fb4cf2aea3dea12373402a97fc7e817a59e64a509039b4557d5ee5b8",
+   "why": "calls no function the template calls",
+   "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+   "selector": "0xf6f98fd5"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xff656f9a6fa69769d355dcea3ca916b79cdd8eef753fc911a9374724921c40b0",
+   "block": "25022469",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xb576765fb15505433af24fee2c0325895c559fb2",
+      "selector": "0xac9650d8"
+     },
+     {
+      "to": "0xe479bcbc98579ba3e1a1261f7be85c4c10303d88",
+      "selector": "0xac9650d8"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xac9650d8"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1777907795"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd4b505311056fe65d82227e9813e590d69c8a4dc86d01e506fe25f362e2317c0",
+   "block": "25074178",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 30,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1778530415"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x5f485d45bdf463a843f475a74f2ee058fad45e6c1fe7d937bb83c93937be7bcb",
+   "block": "25123212",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 30,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1779120791"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x057003062a9cf189705277658f238d39c30d44cbd22817f07031c487c41fcd0f",
+   "block": "25231743",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x57b7a34dce95827ae8db4e545d224d97ebb54733",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "50000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1780427963"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x064f22377febf7350655dd2e8b6bf12ac468f32db0d74c0914a1681c2f7ce3e6",
+   "block": "25274109",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x57b7a34dce95827ae8db4e545d224d97ebb54733",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "80000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1780938695"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf777d050d2c992c6433af62df427b0e8b64478b0398e3ada38645099c43e195f",
+   "block": "25282326",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 4,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1781037671"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x15e748a4e0647d17e008b2d7e208652fe5970ee65a9d41b2fd644b52cbd4a8b8",
+   "block": "25344985",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "100000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1781792195"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x47aa22236fef77a6262a94eda320abe0b9188b728a7d181be99eab9e5f2e6f88",
+   "block": "25481598",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "125000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1783438463"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x9512b94bdb4aa8758252fdde778bf9d29058da6c148352ff0b104e6464db2abc",
+   "block": "25481655",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x5a19fa369f2895dcd8d2cee62e4ceae58ef92bbb",
+    "0x968eb911db90bb8ea9e4792b05c94500bc1a62d7",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "915000000000000000",
+    "10000000000000000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams",
+     "kind": "market"
+    }
+   ],
+   "time": "1783439147"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x16a82b6014fca1ccee8c346f5f3a917b77984c37e20f8f46b438b25cf7fa1b13",
+   "block": "25525829",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "145000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1783971275"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xcf79566679f3a2a88751ac981c6c6a147d757b155ae5648ee1aee8ce10ffd4e0",
+   "block": "25626251",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x57b7a34dce95827ae8db4e545d224d97ebb54733",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0x6ab351ffde101bb24a97332f4f7162c1711f110b",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "95000000000000000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams",
+     "kind": "market"
+    }
+   ],
+   "time": "1785180671"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xb219f324d24e0d458d465465f53be55344bd6027b161e83ac5a491df4b206860",
+   "block": "25626634",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x57b7a34dce95827ae8db4e545d224d97ebb54733",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "160000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1785185267"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe1045c2ec4a5601e7201d7cd9fe0481f3d1fe2451930099659ac083c8ead56bd",
+   "block": "25675394",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 4,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1785772439"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8e5b95bd16465dda62bf8c8df01ecb4b5d39ae723172a40b817724b04a8fe7fd",
+   "block": "25732126",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0xce6170ea245dc8d1f275a710a062b70f125f0110",
+    "0x5ac03061500e0c97862a466a38a7e87fac4ac39d",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "770000000000000000",
+    "10000000000000000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams",
+     "kind": "market"
+    }
+   ],
+   "time": "1786455767"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xe7a19e9b2c3074e1d39c2dd02cbc97aaa557966e30b10464888839af67eb2c49",
+   "block": "25826039",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "175000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1787586539"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x4ac13fb18709254df0ea53114cc0e65c60d63c7903fecb10c96f84ace8351c70",
+   "block": "25890290",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x13de0cee0b83562cbfd46682e10ffa4e3c5090e1",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "190000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1788360335"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x68eb8e56012aa3d5085b131e72deca2774a39e2ad31821570c989fa2b27649b6",
+   "block": "25920769",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xc5f0bd61b8fe75ccaa03b20413b27afb5f3e80be",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0x6ab351ffde101bb24a97332f4f7162c1711f110b",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "107000000000000000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams",
+     "kind": "market"
+    }
+   ],
+   "time": "1788727355"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xe2ae27f89ba01f0e44fb7d7924ee8de387c2be26f1f05edfe8eac845ef9407c5",
+   "block": "25957166",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x13de0cee0b83562cbfd46682e10ffa4e3c5090e1",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "205000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1789165895"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x56677a14f9906750676cbda52a495811b78b9151a68dd3ccd420f5563280e7ab",
+   "block": "26026850",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "220000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1790005367"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xbdda24c260e83c03b19263539320c366869c98f7ca6013bd0fa58e3f4a152c51",
+   "block": "26054756",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x760f26b4098957629de071aa8e013cd9b958b049",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 4,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0x2438525b"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1790342771"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xfd8e9b6121ce4123e6525bd26ee52ad86626fb21a3caab6366d558c633636890",
+   "block": "26107020",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x13de0cee0b83562cbfd46682e10ffa4e3c5090e1",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "235000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1790972819"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xc1cb3a82c18dfd56c4a5fba17624289ea2d32154bd1afe09388b4b13987a2ed8",
+   "block": "26169025",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x760f26b4098957629de071aa8e013cd9b958b049",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x4c9edd5852cd905f086c759e8383e09bff1e68b3",
+    "0x0c13eec9b02cd9d85facc9edf17e71feafc3d8d7",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "915000000000000000",
+    "100000000000000000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams",
+     "kind": "market"
+    }
+   ],
+   "time": "1791719507"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x53afb9a8177c98372eeeeada7a24e755cd6d021ca0b5c5972f78befaf4f659ff",
+   "block": "26182005",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x5fda1eb8fc36befe92eda5060e74c3d3c1be6ade",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "250000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1791875675"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x12a5eade5599a3df78378ab3dfd8ff6cbf1de25047e3b4f09a9ea3e5e1b62a8a",
+   "block": "26235653",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x13de0cee0b83562cbfd46682e10ffa4e3c5090e1",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0x73e0c0d45e048d25fc26fa3159b0aa04bfa4db98",
+    "0xbcc3d9834b84b32cf540dbe948ded4b47bec5ddb",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "860000000000000000",
+    "265000000000000000000000000"
+   ],
+   "outside": [],
+   "time": "1792521695"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xa08dd791c72f936d4422a5de793cc311cc34ae4370c172005dc61c28c765241a",
+   "block": "26285163",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.kind",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm",
+    "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv",
+    "call.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "string",
+    "address",
+    "address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256"
+   ],
+   "values": [
+    "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+    "0",
+    "0x746869732f6d61726b6574506172616d73",
+    "0x3c6eab22cfc03fc32ad1bf836f2f886a5015dfff",
+    "0x8292bb45bf1ee4d140127049757c2e0ff06317ed",
+    "0xce6170ea245dc8d1f275a710a062b70f125f0110",
+    "0x5ac03061500e0c97862a466a38a7e87fac4ac39d",
+    "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+    "770000000000000000",
+    "15000000000000000000000000"
+   ],
+   "outside": [
+    {
+     "at": "call.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams",
+     "kind": "market"
+    }
+   ],
+   "time": "1793117531"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc337afc843db8c8ec1afd1a6f436f6f4865f3f89f61e68431f5c77ee099710e2",
+   "block": "26328864",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xcc35d753ddfa81f3598ceff34b30a4d480587ae5",
+    "call": 0
+   },
+   "reason": {
+    "kind": "items",
+    "at": "call.multicall.data",
+    "expected": 1,
+    "got": 7,
+    "calls": [
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     },
+     {
+      "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+      "selector": "0xf6f98fd5"
+     }
+    ]
+   },
+   "free": [],
+   "time": "1793643827"
+  }
+ ],
+ "measurements": [],
+ "traces": [
+  {
+   "kind": "traced",
+   "hash": "0x057003062a9cf189705277658f238d39c30d44cbd22817f07031c487c41fcd0f",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x57b7a34dce95827ae8db4e545d224d97ebb54733",
+    "call": 0
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x57b7a34dce95827ae8db4e545d224d97ebb54733",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xf6f98fd5"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x064f22377febf7350655dd2e8b6bf12ac468f32db0d74c0914a1681c2f7ce3e6",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x57b7a34dce95827ae8db4e545d224d97ebb54733",
+    "call": 0
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x57b7a34dce95827ae8db4e545d224d97ebb54733",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xf6f98fd5"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x15e748a4e0647d17e008b2d7e208652fe5970ee65a9d41b2fd644b52cbd4a8b8",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x992592e073aa9b98daed79ee05c4af832e1d0abe",
+     "to": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xf6f98fd5"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x47aa22236fef77a6262a94eda320abe0b9188b728a7d181be99eab9e5f2e6f88",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x992592e073aa9b98daed79ee05c4af832e1d0abe",
+     "to": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xf6f98fd5"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x16a82b6014fca1ccee8c346f5f3a917b77984c37e20f8f46b438b25cf7fa1b13",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x992592e073aa9b98daed79ee05c4af832e1d0abe",
+     "to": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xf6f98fd5"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xb219f324d24e0d458d465465f53be55344bd6027b161e83ac5a491df4b206860",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x57b7a34dce95827ae8db4e545d224d97ebb54733",
+    "call": 0
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x57b7a34dce95827ae8db4e545d224d97ebb54733",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xf6f98fd5"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xe7a19e9b2c3074e1d39c2dd02cbc97aaa557966e30b10464888839af67eb2c49",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x992592e073aa9b98daed79ee05c4af832e1d0abe",
+     "to": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xf6f98fd5"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x4ac13fb18709254df0ea53114cc0e65c60d63c7903fecb10c96f84ace8351c70",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x13de0cee0b83562cbfd46682e10ffa4e3c5090e1",
+    "call": 0
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x13de0cee0b83562cbfd46682e10ffa4e3c5090e1",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xf6f98fd5"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xe2ae27f89ba01f0e44fb7d7924ee8de387c2be26f1f05edfe8eac845ef9407c5",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x13de0cee0b83562cbfd46682e10ffa4e3c5090e1",
+    "call": 0
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x13de0cee0b83562cbfd46682e10ffa4e3c5090e1",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xf6f98fd5"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x56677a14f9906750676cbda52a495811b78b9151a68dd3ccd420f5563280e7ab",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9e396de3312d373b87f9bd8763fb48184b42aac0"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x992592e073aa9b98daed79ee05c4af832e1d0abe",
+     "to": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x9e396de3312d373b87f9bd8763fb48184b42aac0",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xf6f98fd5"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xfd8e9b6121ce4123e6525bd26ee52ad86626fb21a3caab6366d558c633636890",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x13de0cee0b83562cbfd46682e10ffa4e3c5090e1",
+    "call": 0
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x13de0cee0b83562cbfd46682e10ffa4e3c5090e1",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xf6f98fd5"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x53afb9a8177c98372eeeeada7a24e755cd6d021ca0b5c5972f78befaf4f659ff",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x5fda1eb8fc36befe92eda5060e74c3d3c1be6ade",
+    "call": 0
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x5fda1eb8fc36befe92eda5060e74c3d3c1be6ade",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xf6f98fd5"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x12a5eade5599a3df78378ab3dfd8ff6cbf1de25047e3b4f09a9ea3e5e1b62a8a",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x13de0cee0b83562cbfd46682e10ffa4e3c5090e1",
+    "call": 0
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x13de0cee0b83562cbfd46682e10ffa4e3c5090e1",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xac9650d8"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "to": "0x6dc58a0fdfc8d694e571dc59b9a52eeea780e6bf",
+     "selector": "0xf6f98fd5"
+    }
+   ]
+  }
+ ]
+}

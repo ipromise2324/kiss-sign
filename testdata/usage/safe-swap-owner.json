@@ -3,10 +3,10 @@
   "models": [
     "claude-opus-5-5"
   ],
-  "calls": 37,
-  "minutes": 55,
-  "input": 74,
-  "cacheWrite": 204564,
-  "cacheRead": 2614534,
-  "output": 26227
+  "calls": 91,
+  "minutes": 16,
+  "input": 182,
+  "cacheWrite": 197655,
+  "cacheRead": 13388467,
+  "output": 44083
 }

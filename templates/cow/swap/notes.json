@@ -1,43 +1,51 @@
 {
+  "request": "I want to swap USDC to USDT on CoW Swap. build me the template and its report",
   "title": {
-    "en": "Place a sell order on CoW Swap (token allowance already in place)",
-    "zh-TW": "在 CoW Swap 下賣單（代幣已授權）"
+    "en": "Place a CoW Swap sell order between USDC and USDT from the Safe",
+    "zh-TW": "從 Safe 在 CoW Swap 下一張 USDC 和 USDT 之間的賣單"
   },
   "summary": {
-    "en": "The Safe calls `setPreSignature` on CoW's settlement contract to pre-sign a sell order. A solver can then fill it until it expires (the app sets 30 minutes). The transaction holds only the order's hash. verify reads the full order back from CoW's API, computes the same hash, then compares the tokens, amounts and recipient one by one. The token to sell must first have an allowance for CoW's vault relayer.",
-    "zh-TW": "Safe 呼叫 CoW 結算合約的 `setPreSignature`，預先簽下一張賣單；solver 在到期前都可以成交（app 設 30 分鐘後到期）。交易裡只有訂單的雜湊，verify 從 CoW 的 API 讀回訂單原文，算出同一個雜湊後，再逐項比對代幣、數量、收款人。賣的代幣要先授權給 CoW 的 vault relayer。"
+    "en": "The Safe calls `setPreSignature` on CoW's settlement contract to pre-sign one sell order: exactly the card amount, for at least the card minimum, paid to the Safe. Needs an allowance to CoW's vault relayer first. Refuses buy, partial and fee orders.",
+    "zh-TW": "Safe 呼叫 CoW 結算合約的 `setPreSignature`，預先簽一張賣單：剛好賣出卡片上的數量、至少換到卡片上的最低值、付給 Safe。事先要有給 CoW vault relayer 的授權。買單、可部分成交和帶手續費的訂單都會被拒絕。"
   },
   "verdict": {
     "status": "caution",
     "text": {
-      "en": "The hash locks the order's contents. Note that verify depends on the CoW API to read the order back.",
-      "zh-TW": "訂單內容由雜湊鎖住；要注意 verify 依賴 CoW API 讀回訂單。"
+      "en": "The order is bound to your amounts; solvers fill it later, and the order lives until it expires.",
+      "zh-TW": "訂單綁定你的數量；之後由 solver 成交，訂單在到期前都有效。"
     }
   },
   "flow": [],
+  "pastTxsConclusion": {
+    "en": "Misfits bundle an approval or a WETH wrap before the order, or are buy, partial or other-receiver orders; both directions of the pair fit, but the pre-signing calls move no token to trace.",
+    "zh-TW": "不符合的交易在訂單前多了授權或包 WETH，或是買單、可部分成交、收款人不是自己的訂單；這組代幣兩個方向都有符合的交易，但預簽本身不移動代幣，追蹤不到資金路徑。"
+  },
   "protocols": {
     "cowswap": {
       "intro": {
-        "en": "CoW Protocol (CoW Swap): a trading protocol that matches orders in batch auctions. Solvers compete to fill the orders.",
-        "zh-TW": "CoW Protocol（CoW Swap）：用批次拍賣撮合的交易協議，訂單由 solver 競標成交。"
+        "en": "CoW Protocol: a trading protocol where users sign orders and solvers compete to settle them in batches through one settlement contract.",
+        "zh-TW": "CoW Protocol：使用者簽訂單，solver 競爭把訂單批次送進同一個結算合約成交的交易協定。"
       },
       "audits": {
         "text": {
-          "en": "G0 Group and Hacken audited the GPv2 contracts in 2021. The reports are in the audits folder of the contracts repo.",
-          "zh-TW": "GPv2 合約 2021 年由 G0 Group 與 Hacken 審計，報告在合約 repo 的 audits 資料夾。"
+          "en": "The settlement contracts were audited before launch (G0 Group, May 2021) and again in December 2021; both reports are in the contracts repository's audits folder. CoW's docs list GPv2Settlement and GPv2VaultRelayer as not upgradeable; only the solver allow-list is.",
+          "zh-TW": "結算合約上線前經過審計（G0 Group，2021 年 5 月），2021 年 12 月又審了一次；兩份報告都在合約 repo 的 audits 資料夾。CoW 文件寫明 GPv2Settlement 和 GPv2VaultRelayer 不可升級，只有 solver 白名單可以。"
         },
         "sources": [
-          "https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/audits/GnosisProtocolV2May2021.pdf"
+          "https://github.com/cowprotocol/contracts/blob/53cc6b74d455d09d73dd8ae57e06d2a557d8000b/audits/GnosisProtocolV2May2021.pdf",
+          "https://github.com/cowprotocol/contracts/tree/53cc6b74d455d09d73dd8ae57e06d2a557d8000b/audits",
+          "https://docs.cow.fi/cow-protocol/reference/contracts/core"
         ]
       },
       "incidents": [
         {
           "text": {
-            "en": "The Barter solver's contract had an arbitrary-call bug, and about 166,000 USD in fees that had built up in the settlement contract was taken. Users' funds were not affected.",
-            "zh-TW": "Barter solver 的合約有任意呼叫漏洞，被拿走結算合約裡累積的手續費約 16.6 萬美元；使用者的錢沒有受影響。"
+            "en": "7 February 2023: a newly allow-listed solver (Barter) had left an approval from the settlement contract to its SwapGuard contract, whose arbitrary call let an attacker take about 166,000 USD of fees the settlement contract held. No user order or allowance was touched; the approvals were revoked and the solver repaid the loss.",
+            "zh-TW": "2023 年 2 月 7 日：剛加入白名單的 solver（Barter）留下了結算合約對它 SwapGuard 合約的授權，攻擊者利用 SwapGuard 的任意呼叫，拿走結算合約裡約 16.6 萬美元的手續費。沒有動到使用者的訂單或授權；授權已撤銷，solver 已賠償。"
           },
           "sources": [
-            "https://cow.fi/learn/cow-swap-solver-exploit-post-mortem"
+            "https://cow.fi/learn/cow-swap-solver-exploit-post-mortem",
+            "https://forum.cow.fi/t/cip-22-slashing-of-the-barter-solver-responsible-for-a-hack-causing-cow-dao-a-loss-of-1-week-fee-accrual/1440"
           ]
         }
       ]
@@ -46,55 +54,154 @@
   "judgments": [
     {
       "text": {
-        "en": "verify must read the full order back from CoW's order API (api.cow.fi). When the API cannot be read, the result is UNVERIFIABLE. The API's answer is treated only as data, and it does not count if its hash does not match.",
-        "zh-TW": "verify 要從 CoW 的訂單 API（api.cow.fi）讀回訂單原文。API 讀不到時結果是 UNVERIFIABLE。API 回的內容只當資料，雜湊對不上就不算數。"
-      },
-      "recommendation": {
-        "en": "On UNVERIFIABLE, do not sign. Wait until the API is back, then run verify again.",
-        "zh-TW": "UNVERIFIABLE 時不要簽，等 API 恢復再跑一次 verify。"
-      }
-    },
-    {
-      "text": {
-        "en": "You type the card's \"minimum to receive\" yourself. The CoW app's slippage differs with each quote (smart slippage), and there is no CoW quote on chain to read.",
-        "zh-TW": "卡片的「最少收到的數量」要你自己填：CoW app 的滑價每次報價不同（smart slippage），鏈上也沒有 CoW 的報價可讀。"
-      },
-      "recommendation": {
-        "en": "Type the minimum to receive that the CoW app shows. Do not type a lower one.",
-        "zh-TW": "照 CoW app 顯示的最少收到數量填，不要填得更低。"
-      }
-    },
-    {
-      "text": {
-        "en": "The app fills the expiry and appData itself. The template limits the expiry to at most 7 days after the block (the app sets 30 minutes) and does not limit appData (may include a 0.1% partner fee). The fill still gives no less than the minimum you type, and only to the Safe.",
-        "zh-TW": "到期時間和 appData 這兩項 app 會自己填。到期時間模板限制在區塊時間後 7 天內（app 設 30 分鐘）；appData 模板不限制（可能含 0.1% 的合作方手續費）。成交仍不會少於你填的最少數量，也只給 Safe。"
-      },
-      "recommendation": {
-        "en": "Acceptable. If you no longer want the order before it expires, cancel it from the Safe.",
-        "zh-TW": "可以接受。訂單過期前不想要了，用 Safe 撤回。"
-      }
-    },
-    {
-      "text": {
-        "en": "On 14 April 2026 the cow.fi domain was hijacked for several hours and served a copy of the app that asked visitors to sign malicious transactions; CoW's contracts were not hacked. verify checks only the transaction you give it against your card.",
-        "zh-TW": "2026 年 4 月 14 日 cow.fi 網域被劫持數小時，假的 app 讓訪客簽下惡意交易；CoW 的合約沒有被駭。verify 只拿你給它的交易比對你的卡片。"
-      },
-      "recommendation": {
-        "en": "Open the CoW app from a saved bookmark, and run verify on every transaction it proposes before signing.",
-        "zh-TW": "從存好的書籤打開 CoW app，它提出的每筆交易都先跑 verify 再簽。"
+        "en": "Route: the CoW Swap Safe app pre-signs one order with `setPreSignature`. It adds an approval to the vault relayer in a MultiSend only when the allowance is short. Your Safe's USDC allowance to it was unlimited on 2026-11-27, so a USDC sell is this call alone.",
+        "zh-TW": "路徑：CoW Swap 的 Safe app 用 `setPreSignature` 預簽一張訂單；只有授權不夠時，才在 MultiSend 裡先加一筆給 vault relayer 的授權。你的 Safe 在 2026-11-27 對它的 USDC 授權是無上限，所以賣 USDC 只有這一個呼叫。"
       },
       "sources": [
-        "https://forum.cow.fi/t/cip-86-discretionary-grants-program-for-victims-of-the-cow-fi-domain-hijacking/3431",
-        "https://cow.fi/learn/cow-dao-monthly-recap-april-2026"
-      ]
+        "https://docs.cow.fi/cow-protocol/reference/core/signing-schemes"
+      ],
+      "recommendation": {
+        "en": "Selling USDT needs a USDT approval first (none yet); a transaction with an approval gets MISMATCH: ask for that template then.",
+        "zh-TW": "賣 USDT 要先授權 USDT（目前沒有）；帶授權的交易會得到 MISMATCH，那時再請 AI 做那個 template。"
+      }
+    },
+    {
+      "text": {
+        "en": "Your Safe keeps an unlimited USDC allowance to CoW's vault relayer. Only the settlement contract can make the relayer pull, and only for an order the Safe signed, within that order's amounts.",
+        "zh-TW": "你的 Safe 對 CoW vault relayer 一直保有無上限的 USDC 授權。只有結算合約能讓 relayer 扣款，而且只限 Safe 簽過的訂單、只在該訂單的數量內。"
+      },
+      "sources": [
+        "https://github.com/cowprotocol/contracts/blob/53cc6b74d455d09d73dd8ae57e06d2a557d8000b/src/contracts/GPv2VaultRelayer.sol"
+      ],
+      "recommendation": {
+        "en": "If you stop using CoW, set that allowance back to 0 in a transaction of its own.",
+        "zh-TW": "不再用 CoW 時，另外發一筆交易把這個授權設回 0。"
+      }
+    },
+    {
+      "text": {
+        "en": "After signing, the order stays fillable until its `validTo`, at most 12 hours after the block verify reads. A solver fills it once, at your minimum or better; until then the Safe can cancel it with `invalidateOrder`, or `setPreSignature` with false.",
+        "zh-TW": "簽完後，訂單在 `validTo` 前都可以成交，最多是 verify 讀的區塊之後 12 小時。solver 只會成交一次，價格不低於你的最低值；成交前 Safe 可以用 `invalidateOrder`，或以 false 呼叫 `setPreSignature` 取消。"
+      },
+      "sources": [
+        "https://docs.cow.fi/cow-protocol/reference/contracts/core/settlement"
+      ],
+      "recommendation": {
+        "en": "Check the order on the CoW explorer after execution; cancel it if you change your mind before it fills.",
+        "zh-TW": "執行後到 CoW explorer 看訂單；成交前改變主意就取消它。"
+      }
+    },
+    {
+      "text": {
+        "en": "Who may settle is decided by CoW's solver allow-list, an upgradeable proxy 0x2c4c28DDBdAc9C5E7055b4C863b72eA0149D8aFE that CoW DAO controls; verify does not check its code. A solver can only fill your order within its signed amounts.",
+        "zh-TW": "誰能結算由 CoW 的 solver 白名單決定，它是 CoW DAO 控制、可升級的 proxy 0x2c4c28DDBdAc9C5E7055b4C863b72eA0149D8aFE；verify 不檢查它的程式碼。solver 只能在你簽的數量內成交你的訂單。"
+      },
+      "sources": [
+        "https://docs.cow.fi/cow-protocol/reference/contracts/core"
+      ],
+      "recommendation": {
+        "en": "Nothing to do per signing; know that CoW DAO picks the solvers.",
+        "zh-TW": "每次簽名不用另外做什麼；知道 solver 是 CoW DAO 挑的就好。"
+      }
     }
   ],
-  "pastTxsConclusion": {
-    "en": "A sample of 161.9 days (the search hit its 50-page cap; older blocks unsearched). Most misfitting Safe orders also put an `approve` or WETH `deposit` in the batch (cow/swap-approve covers an approval of exactly the sell amount); others were buy orders, partly fillable, paid another receiver, or batched other calls. verify refuses these shapes. CoW's API answered 404 for 2 orders (cause not confirmed); verify gives UNVERIFIABLE there.",
-    "zh-TW": "樣本涵蓋 161.9 天，搜尋到 50 頁上限，更早的區塊沒查。不符合的 Safe 訂單多半同批加了 `approve` 或 WETH `deposit`（剛好授權賣出數量的用 cow/swap-approve）；其他是買單、可部分成交、付給別人，或同批有別的呼叫，verify 都拒絕。2 筆訂單 CoW API 回 404（原因未確認），verify 會給 UNVERIFIABLE。"
-  },
-  "reviews": {},
   "entries": {
+    "gpv2-settlement": {
+      "role": {
+        "en": "CoW's settlement contract: the Safe pre-signs the order here, and solvers settle it here.",
+        "zh-TW": "CoW 的結算合約：Safe 在這裡預簽訂單，solver 也在這裡成交。"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "CoW docs, core contracts page, Deployments table: GPv2Settlement row, Upgradeable: No, then this address.",
+            "zh-TW": "CoW 文件 core contracts 頁的 Deployments 表：GPv2Settlement 那列寫 Upgradeable: No，接著是這個地址。"
+          },
+          "url": "https://docs.cow.fi/cow-protocol/reference/contracts/core",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "cowprotocol/contracts networks.json at a pinned commit: GPv2Settlement, chain 1, this address and creation transaction 0xf49f90aa5a268c40001d1227b76bb4dd8247f18361fcad9fffd4a7a44f1320d3.",
+            "zh-TW": "cowprotocol/contracts 固定 commit 的 networks.json：GPv2Settlement、鏈 1、這個地址，建立交易 0xf49f90aa5a268c40001d1227b76bb4dd8247f18361fcad9fffd4a7a44f1320d3。"
+          },
+          "url": "https://github.com/cowprotocol/contracts/blob/53cc6b74d455d09d73dd8ae57e06d2a557d8000b/networks.json",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "cow-sdk contracts.ts: SETTLEMENT_CONTRACT is this address.",
+            "zh-TW": "cow-sdk 的 contracts.ts：SETTLEMENT_CONTRACT 就是這個地址。"
+          },
+          "url": "https://github.com/cowprotocol/cow-sdk/blob/97cf803c2f3cf337688ab60f9ccf9257b3d44b9c/packages/config/src/chains/const/contracts.ts",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Immunefi's cowprotocol program lists this address in scope.",
+            "zh-TW": "Immunefi 的 cowprotocol 計畫把這個地址列在範圍內。"
+          },
+          "url": "https://immunefi.com/bug-bounty/cowprotocol/",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: verified GPv2Settlement, sent by 0x7EAbac82dA8ea6Ac980d619Cb562a9924d1E3bAa through the public CREATE2 deployer in the transaction above.",
+            "zh-TW": "Etherscan：已驗證的 GPv2Settlement，由 0x7EAbac82dA8ea6Ac980d619Cb562a9924d1E3bAa 透過公開的 CREATE2 deployer 在上面那筆交易建立。"
+          },
+          "url": "https://etherscan.io/address/0x9008D19f58AAbD9eD0D60971565AA8510560ab41#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "gpv2-vault-relayer": {
+      "role": {
+        "en": "CoW's vault relayer: the spender of the Safe's allowance; it pulls the sold tokens only when the settlement contract asks.",
+        "zh-TW": "CoW 的 vault relayer：Safe 授權的對象；只有結算合約要求時，它才把賣出的代幣拉走。"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "CoW docs, core contracts page, Deployments table: GPv2VaultRelayer row, Upgradeable: No, then this address.",
+            "zh-TW": "CoW 文件 core contracts 頁的 Deployments 表：GPv2VaultRelayer 那列寫 Upgradeable: No，接著是這個地址。"
+          },
+          "url": "https://docs.cow.fi/cow-protocol/reference/contracts/core",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "cowprotocol/contracts networks.json at a pinned commit: GPv2VaultRelayer, chain 1, this address, same creation transaction as the settlement contract.",
+            "zh-TW": "cowprotocol/contracts 固定 commit 的 networks.json：GPv2VaultRelayer、鏈 1、這個地址，建立交易和結算合約相同。"
+          },
+          "url": "https://github.com/cowprotocol/contracts/blob/53cc6b74d455d09d73dd8ae57e06d2a557d8000b/networks.json",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "cow-sdk contracts.ts: VAULT_RELAYER is this address.",
+            "zh-TW": "cow-sdk 的 contracts.ts：VAULT_RELAYER 就是這個地址。"
+          },
+          "url": "https://github.com/cowprotocol/cow-sdk/blob/97cf803c2f3cf337688ab60f9ccf9257b3d44b9c/packages/config/src/chains/const/contracts.ts",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Immunefi's cowprotocol program lists this address in scope.",
+            "zh-TW": "Immunefi 的 cowprotocol 計畫把這個地址列在範圍內。"
+          },
+          "url": "https://immunefi.com/bug-bounty/cowprotocol/",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: verified GPv2VaultRelayer, created by the settlement contract 0x9008D19f58AAbD9eD0D60971565AA8510560ab41 in its own deployment.",
+            "zh-TW": "Etherscan：已驗證的 GPv2VaultRelayer，由結算合約 0x9008D19f58AAbD9eD0D60971565AA8510560ab41 在自己部署時建立。"
+          },
+          "url": "https://etherscan.io/address/0xC92E8bdf79f0507f65a392b0ab4667716BFE0110#code",
+          "result": "pass"
+        }
+      ]
+    },
     "usdc": {
       "role": {
         "en": "A token you can pick: USDC, issued by Circle",
@@ -103,24 +210,24 @@
       "sources": [
         {
           "text": {
-            "en": "Circle's USDC contract addresses page lists this address on the Ethereum row under Mainnet",
-            "zh-TW": "Circle 的 USDC 合約地址頁在 Mainnet 的 Ethereum 那一列列出這個地址"
+            "en": "Circle's USDC contract addresses page lists this address next to Ethereum under Mainnet.",
+            "zh-TW": "Circle 的 USDC 合約地址頁在 Mainnet 的 Ethereum 旁列出這個地址。"
           },
           "url": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
           "result": "pass"
         },
         {
           "text": {
-            "en": "CoinGecko's usd-coin coin lists this address for Ethereum",
-            "zh-TW": "CoinGecko 的 usd-coin 幣在 Ethereum 下列出這個地址"
+            "en": "CoinGecko's coin usd-coin lists this address on Ethereum.",
+            "zh-TW": "CoinGecko 的 usd-coin 在 Ethereum 列出這個地址。"
           },
           "url": "https://www.coingecko.com/en/coins/usd-coin",
           "result": "pass"
         },
         {
           "text": {
-            "en": "Etherscan: contract name FiatTokenProxy, creator 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911, creation transaction 0xe7e0fe390354509cd08c9a0168536938600ddc552b3f7cb96030ebef62e75895",
-            "zh-TW": "Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911，創建交易 0xe7e0fe390354509cd08c9a0168536938600ddc552b3f7cb96030ebef62e75895"
+            "en": "Etherscan: verified FiatTokenProxy, creator 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911.",
+            "zh-TW": "Etherscan：已驗證的 FiatTokenProxy，建立者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911。"
           },
           "url": "https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code",
           "result": "pass"
@@ -135,147 +242,232 @@
       "sources": [
         {
           "text": {
-            "en": "Tether's supported-protocols page gives this address as the USD₮ contract address on Ethereum",
-            "zh-TW": "Tether 的 supported-protocols 頁把這個地址列為 Ethereum 上的 USD₮ 合約地址"
+            "en": "Tether's supported protocols page shows this address as the USD₮ contract address on Ethereum.",
+            "zh-TW": "Tether 的 supported protocols 頁把這個地址列為以太坊上的 USD₮ 合約地址。"
           },
           "url": "https://tether.to/en/supported-protocols/",
           "result": "pass"
         },
         {
           "text": {
-            "en": "CoinGecko's tether coin lists this address for Ethereum",
-            "zh-TW": "CoinGecko 的 tether 幣在 Ethereum 下列出這個地址"
+            "en": "CoinGecko's coin tether lists this address on Ethereum.",
+            "zh-TW": "CoinGecko 的 tether 在 Ethereum 列出這個地址。"
           },
           "url": "https://www.coingecko.com/en/coins/tether",
           "result": "pass"
         },
         {
           "text": {
-            "en": "Etherscan: contract name TetherToken, creator 0x36928500Bc1dCd7af6a2B4008875CC336b927D57, creation transaction 0x2f1c5c2b44f771e942a8506148e256f94f1a464babc938ae0690c6e34cd79190",
-            "zh-TW": "Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57，創建交易 0x2f1c5c2b44f771e942a8506148e256f94f1a464babc938ae0690c6e34cd79190"
+            "en": "Etherscan: verified TetherToken, creator 0x36928500Bc1dCd7af6a2B4008875CC336b927D57.",
+            "zh-TW": "Etherscan：已驗證的 TetherToken，建立者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57。"
           },
           "url": "https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code",
           "result": "pass"
         }
       ]
     },
-    "gpv2-settlement": {
+    "chainlink-usdc-usd": {
       "role": {
-        "en": "CoW's settlement contract: it records the order the Safe pre-signed, and a solver later fills it here",
-        "zh-TW": "CoW 的結算合約：記下 Safe 預先簽好的訂單，solver 之後在這裡成交"
+        "en": "Chainlink's USDC / USD feed, which card new reads to compute the least USDC or USDT to receive.",
+        "zh-TW": "Chainlink 的 USDC / USD 價格來源，card new 用它算最少要收到多少。"
       },
       "sources": [
         {
           "text": {
-            "en": "CoW's contracts repo networks.json gives GPv2Settlement on chain 1 this address",
-            "zh-TW": "CoW 合約 repo 的 networks.json 在 chain 1 的 GPv2Settlement 下寫的就是這個地址"
+            "en": "Chainlink's DataFeeds.json in smartcontractkit/hardhat-chainlink: USDC / USD, chain 1, proxyAddress is this address.",
+            "zh-TW": "smartcontractkit/hardhat-chainlink 的 DataFeeds.json：USDC / USD、鏈 1，proxyAddress 就是這個地址。"
           },
-          "url": "https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json",
+          "url": "https://github.com/smartcontractkit/hardhat-chainlink/blob/f181816637778064fc2bde3c373a5ffc9a4a0790/src/registries/json/DataFeeds.json",
           "result": "pass"
         },
         {
           "text": {
-            "en": "CoW's SDK config file sets SETTLEMENT_CONTRACT to this address",
-            "zh-TW": "CoW SDK 的設定檔把 SETTLEMENT_CONTRACT 設為這個地址"
+            "en": "Chainlink's feed list (vercel host its docs load): USDC / USD, heartbeat 82800 s, deviation 0.25%, 8 decimals, attributeType cex_price.",
+            "zh-TW": "Chainlink 價格來源清單（它文件載入的 vercel 主機）：USDC / USD，heartbeat 82800 秒、偏差 0.25%、8 位小數、attributeType cex_price。"
           },
-          "url": "https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts",
+          "url": "https://reference-data-directory.vercel.app/feeds-mainnet.json",
           "result": "pass"
         },
         {
           "text": {
-            "en": "The core contracts page on docs.cow.fi lists GPv2Settlement at this address, not upgradeable",
-            "zh-TW": "docs.cow.fi 的核心合約頁列出 GPv2Settlement 在這個地址，不可升級"
+            "en": "On chain, description() answers USDC / USD and decimals() 8. Etherscan: verified EACAggregatorProxy.",
+            "zh-TW": "鏈上 description() 回答 USDC / USD，decimals() 回答 8。Etherscan：已驗證的 EACAggregatorProxy。"
           },
-          "url": "https://docs.cow.fi/cow-protocol/reference/contracts/core",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "CoW Protocol's Immunefi program has this address in scope",
-            "zh-TW": "CoW Protocol 的 Immunefi 計畫把這個地址列在範圍內"
-          },
-          "url": "https://immunefi.com/bug-bounty/cowprotocol/scope/",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "Etherscan: contract name GPv2Settlement, creator 0x7EAbac82dA8ea6Ac980d619Cb562a9924d1E3bAa, creation transaction 0xf49f90aa5a268c40001d1227b76bb4dd8247f18361fcad9fffd4a7a44f1320d3, sent through the public CREATE2 deployer",
-            "zh-TW": "Etherscan：合約名 GPv2Settlement，創建者 0x7EAbac82dA8ea6Ac980d619Cb562a9924d1E3bAa，創建交易 0xf49f90aa5a268c40001d1227b76bb4dd8247f18361fcad9fffd4a7a44f1320d3，經公開的 CREATE2 部署器送出"
-          },
-          "url": "https://etherscan.io/address/0x9008D19f58AAbD9eD0D60971565AA8510560ab41#code",
+          "url": "https://etherscan.io/address/0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6#code",
           "result": "pass"
         }
       ]
+    },
+    "chainlink-usdt-usd": {
+      "role": {
+        "en": "Chainlink's USDT / USD feed, which card new reads to compute the least USDC or USDT to receive.",
+        "zh-TW": "Chainlink 的 USDT / USD 價格來源，card new 用它算最少要收到多少。"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Chainlink's DataFeeds.json in smartcontractkit/hardhat-chainlink: USDT / USD, chain 1, proxyAddress is this address.",
+            "zh-TW": "smartcontractkit/hardhat-chainlink 的 DataFeeds.json：USDT / USD、鏈 1，proxyAddress 就是這個地址。"
+          },
+          "url": "https://github.com/smartcontractkit/hardhat-chainlink/blob/f181816637778064fc2bde3c373a5ffc9a4a0790/src/registries/json/DataFeeds.json",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Chainlink's feed list (vercel host its docs load): USDT / USD, heartbeat 86400 s, deviation 0.25%, 8 decimals, attributeType cex_price.",
+            "zh-TW": "Chainlink 價格來源清單（它文件載入的 vercel 主機）：USDT / USD，heartbeat 86400 秒、偏差 0.25%、8 位小數、attributeType cex_price。"
+          },
+          "url": "https://reference-data-directory.vercel.app/feeds-mainnet.json",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "On chain, description() answers USDT / USD and decimals() 8. Etherscan: verified EACAggregatorProxy.",
+            "zh-TW": "鏈上 description() 回答 USDT / USD，decimals() 回答 8。Etherscan：已驗證的 EACAggregatorProxy。"
+          },
+          "url": "https://etherscan.io/address/0x3E7d1eAB13ad0104d2750B8863b489D65364e32D#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "uniswap-v3-factory": {
+      "role": {
+        "en": "Uniswap v3's factory, asked whether it made the USDC/USDT pool card new reads.",
+        "zh-TW": "Uniswap v3 的 factory，用來確認 card new 讀的 USDC/USDT 池子是它建的。"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Uniswap/contracts deployments/1.md at a pinned commit: Uniswap V3 Factory is this address.",
+            "zh-TW": "Uniswap/contracts 固定 commit 的 deployments/1.md：Uniswap V3 Factory 就是這個地址。"
+          },
+          "url": "https://github.com/Uniswap/contracts/blob/064a8db9b34117c3abb9d7ca90ff51f91430e83d/deployments/1.md",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Uniswap's deployments page lists this address for Ethereum.",
+            "zh-TW": "Uniswap 的 deployments 頁在 Ethereum 列出這個地址。"
+          },
+          "url": "https://developers.uniswap.org/deployments",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: verified UniswapV3Factory, creator 0x6C9FC64A53c1b71FB3f9Af64d1ae3A4931A5f4E9.",
+            "zh-TW": "Etherscan：已驗證的 UniswapV3Factory，建立者 0x6C9FC64A53c1b71FB3f9Af64d1ae3A4931A5f4E9。"
+          },
+          "url": "https://etherscan.io/address/0x1F98431c8aD98523631AE4a59f267346ea31F984#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "uniswap-v3-usdc-usdt-100": {
+      "role": {
+        "en": "Uniswap v3 USDC/USDT 0.01% pool, a second price for card new. minLiquidity 6,660,000,000,000: just under the lowest measured over a year (stressed day), so it prices in a stress like that.",
+        "zh-TW": "Uniswap v3 USDC/USDT 0.01% 池子，card new 的第二個價格。minLiquidity 6,660,000,000,000：略低於一年內量到的最低值（壓力日），遇到同樣的壓力仍能報價。"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "The factory's getPool(USDC, USDT, 100) answers this address, through both providers.",
+            "zh-TW": "factory 的 getPool(USDC, USDT, 100) 回答這個地址，兩個節點一致。"
+          },
+          "url": "https://github.com/Uniswap/v3-core/blob/5ea68a77cb541c6b3812df783be71ba8c081e25f/contracts/UniswapV3Factory.sol",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "pnpm pool-depth uniswap-v3-usdc-usdt-100 --auto: calm 41137149129847228 (block 25969908), stressed and lowest 6660026988514 (block 26301108), 30 min; with --min 6660000000000, 0 of 366 days under.",
+            "zh-TW": "pnpm pool-depth uniswap-v3-usdc-usdt-100 --auto：平穩 41137149129847228（區塊 25969908），壓力與最低 6660026988514（區塊 26301108），30 分鐘；--min 6660000000000 時 366 天裡 0 天低於它。"
+          },
+          "url": "https://etherscan.io/address/0x3416cF6C708Da44DB2624D63ea0AAef7113527C6",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "No official page lists the pool's address; Etherscan shows a verified UniswapV3Pool.",
+            "zh-TW": "沒有官方頁面列出這個池子的地址；Etherscan 顯示已驗證的 UniswapV3Pool。"
+          },
+          "url": "https://etherscan.io/address/0x3416cF6C708Da44DB2624D63ea0AAef7113527C6#code",
+          "result": "attention"
+        }
+      ],
+      "minLiquidity": {
+        "en": "pnpm pool-depth --auto over 366 daily samples: calm 41137149129847228 (block 25969908), stressed and lowest 6660026988514 (block 26301108), 30-minute window, the one this pegged pair is priced at. I took the lowest, rounded down to 6660000000000, so the pool still prices on a day as thin as the worst measured; 0 of 366 days fall under it.",
+        "zh-TW": "pnpm pool-depth --auto 取樣 366 天：平穩 41137149129847228（區塊 25969908），壓力與最低 6660026988514（區塊 26301108），30 分鐘窗口（這組同錨定代幣用的窗口）。取最低值往下取整成 6660000000000，讓池子在和量到最差一樣薄的日子仍能報價；366 天中 0 天低於它。"
+      }
     }
   },
   "fields": {
     "1.setPreSignature.orderUid": {
-      "en": "The order uid, 56 bytes: the order hash, the owner and the expiry joined together. The contract only records it as \"pre-signed\" and does not check its contents.",
-      "zh-TW": "訂單 uid，56 bytes：訂單雜湊、擁有者、到期時間接在一起。合約只把它記成「已預簽」，不檢查內容。"
+      "en": "The order's id: its EIP-712 digest, its owner and its expiry, packed back to back. The settlement contract stores the pre-signature under this id and fills only the order that hashes to it.",
+      "zh-TW": "訂單的 id：EIP-712 雜湊、擁有者、到期時間，依序緊接在一起。結算合約用這個 id 存預簽，只成交雜湊等於它的那張訂單。"
     },
-    "1.setPreSignature.orderUid.digest": {
-      "en": "The order's EIP-712 hash. verify reads the full order back from CoW's order API and computes the hash itself. Only if the hashes match does it compare each item below.",
-      "zh-TW": "訂單的 EIP-712 雜湊。verify 從 CoW 的訂單 API 讀回訂單原文，自己算雜湊，一樣才拿來比對下面每一項。"
+    "1.setPreSignature.orderUid.orderDigest": {
+      "en": "The hash of the whole order under CoW's domain. The transaction holds only this hash; verify reads the order from CoW's API and requires it to hash to exactly this value before it checks each member.",
+      "zh-TW": "整張訂單在 CoW domain 下的雜湊。交易裡只有這個雜湊；verify 從 CoW 的 API 讀回訂單，算出的雜湊要完全相同，才逐項檢查。"
     },
-    "1.setPreSignature.orderUid.digest.sellToken": {
-      "en": "The token to sell.",
-      "zh-TW": "要賣的代幣。"
+    "1.setPreSignature.orderUid.orderDigest.sellToken": {
+      "en": "The token the order sells, the card's sell token.",
+      "zh-TW": "訂單賣出的代幣，也就是卡片上的賣出代幣。"
     },
-    "1.setPreSignature.orderUid.digest.buyToken": {
-      "en": "The token to buy.",
-      "zh-TW": "要買的代幣。"
+    "1.setPreSignature.orderUid.orderDigest.buyToken": {
+      "en": "The token the order buys, the card's buy token.",
+      "zh-TW": "訂單買入的代幣，也就是卡片上的買入代幣。"
     },
-    "1.setPreSignature.orderUid.digest.receiver": {
-      "en": "Who gets the bought token. The CoW app fills in the Safe itself; any other address would send the money away.",
-      "zh-TW": "買到的代幣給誰。CoW app 填 Safe 自己；填別的地址就會把錢送走。"
+    "1.setPreSignature.orderUid.orderDigest.receiver": {
+      "en": "Who receives the bought tokens. It must be the Safe itself, written out; another address would let the swap pay someone else.",
+      "zh-TW": "誰收到買到的代幣。必須明寫是 Safe 自己；換成別的地址，換到的錢就會付給別人。"
     },
-    "1.setPreSignature.orderUid.digest.sellAmount": {
-      "en": "The amount to sell. A sell order sells all of it.",
-      "zh-TW": "要賣的數量，賣單整筆賣出。"
+    "1.setPreSignature.orderUid.orderDigest.sellAmount": {
+      "en": "Exactly how much the order sells, the card's sell amount. A sell order never takes more than this.",
+      "zh-TW": "訂單剛好賣出多少，就是卡片上的賣出數量。賣單不會拿走比這更多。"
     },
-    "1.setPreSignature.orderUid.digest.buyAmount": {
-      "en": "The minimum amount to buy (the limit price). The settlement contract ensures the fill is no less than this.",
-      "zh-TW": "最少要買到的數量（限價）。結算合約保證成交不少於這個數。"
+    "1.setPreSignature.orderUid.orderDigest.buyAmount": {
+      "en": "The least the order may buy for the whole sell amount. The settlement contract refuses any fill below this limit price, so it holds when the order runs, not only at signing.",
+      "zh-TW": "整個賣出數量至少要換到多少。結算合約拒絕任何低於這個限價的成交，所以它在訂單執行時仍然有效，不只是簽名時。"
     },
-    "1.setPreSignature.orderUid.digest.validTo": {
-      "en": "The order expires at this time (Unix seconds); the app sets it 30 minutes after the quote. A later expiry only keeps the order open longer: it still fills at most once, for no less than the card's minimum, to the Safe. `invalidateOrder` cancels it; an expired one cannot fill. The limit exists because an open order can fill long after you stop watching; 7 days is a margin, not a measured need.",
-      "zh-TW": "訂單在這個時間到期（Unix 秒），app 設為報價後 30 分鐘。較晚到期只讓訂單開著更久：仍最多成交一次，不少於卡片的最低值，付給 Safe。可用 `invalidateOrder` 取消；過期就不能成交。有上限，是因為開著的訂單在你不再注意後很久仍能成交；7 天是餘裕，不是量出來的需要。"
+    "1.setPreSignature.orderUid.orderDigest.validTo": {
+      "en": "When the order expires. The app sets about 30 minutes; the limit is 12 hours, above the longest other Safes used, so a slow multisig still fits, while an order valid for days or a year is refused.",
+      "zh-TW": "訂單到期的時間。app 設約 30 分鐘；上限是 12 小時，高於其他 Safe 用過的最長值，讓簽得慢的多簽也能用，但有效好幾天或一年的訂單會被拒絕。"
     },
-    "1.setPreSignature.orderUid.digest.appData": {
-      "en": "The hash of the JSON the app attaches to the order (app name, slippage, fees, hooks). The settlement contract does not read it.",
-      "zh-TW": "app 附在訂單上的 JSON 的雜湊（app 名稱、滑價、手續費、hooks）。結算合約不讀它。"
+    "1.setPreSignature.orderUid.orderDigest.appData": {
+      "en": "The hash of the app's metadata for the order, such as its name and slippage. The contract does not read it; it cannot change the tokens, amounts or receiver.",
+      "zh-TW": "app 給這張訂單的資料（例如名稱、滑價）的雜湊。合約不讀它；它不能改變代幣、數量或收款人。"
     },
-    "1.setPreSignature.orderUid.digest.feeAmount": {
-      "en": "The fee taken inside the order. It is 0 on every CoW order today.",
-      "zh-TW": "訂單內扣的手續費，現在 CoW 的訂單都是 0。"
+    "1.setPreSignature.orderUid.orderDigest.feeAmount": {
+      "en": "A fee taken on top of the sell amount; it must be 0, as the app sends, so the Safe gives no more than the card's amount.",
+      "zh-TW": "在賣出數量之外另收的手續費；必須是 0（app 就是這樣送），Safe 才不會付出超過卡片上的數量。"
     },
-    "1.setPreSignature.orderUid.digest.kind": {
-      "en": "sell means a sell order: it sells a fixed amount and buys at least the limit.",
-      "zh-TW": "sell 表示賣單：賣出固定數量，買到至少限價。"
+    "1.setPreSignature.orderUid.orderDigest.kind": {
+      "en": "The order kind: sell, so the sold amount is exact and the bought amount is at least the limit. A buy order is refused.",
+      "zh-TW": "訂單種類：sell，賣出數量固定，買到的至少是限價。買單會被拒絕。"
     },
-    "1.setPreSignature.orderUid.digest.partiallyFillable": {
-      "en": "false means it fills all at once, not in parts.",
-      "zh-TW": "false 表示一次全部成交，不分次。"
+    "1.setPreSignature.orderUid.orderDigest.partiallyFillable": {
+      "en": "false: the order fills once and whole, never in parts over time.",
+      "zh-TW": "false：訂單一次全部成交，不會分批慢慢成交。"
     },
-    "1.setPreSignature.orderUid.digest.sellTokenBalance": {
-      "en": "erc20 means it is taken from the Safe's ordinary token balance, not through the Balancer vault.",
-      "zh-TW": "erc20 表示從 Safe 的一般代幣餘額扣，不用 Balancer vault。"
+    "1.setPreSignature.orderUid.orderDigest.sellTokenBalance": {
+      "en": "erc20: the sold tokens come from the Safe's own balance through its allowance to the vault relayer, not from a Balancer vault balance.",
+      "zh-TW": "erc20：賣出的代幣從 Safe 自己的餘額、經由給 vault relayer 的授權扣出，不是從 Balancer vault 的餘額。"
     },
-    "1.setPreSignature.orderUid.digest.buyTokenBalance": {
-      "en": "erc20 means the bought token goes straight into the Safe's ordinary balance.",
-      "zh-TW": "erc20 表示買到的代幣直接轉進 Safe 的一般餘額。"
+    "1.setPreSignature.orderUid.orderDigest.buyTokenBalance": {
+      "en": "erc20: the bought tokens are paid as plain tokens to the receiver.",
+      "zh-TW": "erc20：買到的代幣以一般代幣付給收款人。"
     },
     "1.setPreSignature.orderUid.owner": {
-      "en": "The order's owner. It must be the Safe that sends this transaction; the contract checks this too.",
-      "zh-TW": "訂單擁有者，必須是送出這筆交易的 Safe；合約也會檢查。"
+      "en": "The order's owner, the Safe itself: only the owner can pre-sign its own order, and the settlement contract checks the caller is this owner.",
+      "zh-TW": "訂單的擁有者，就是 Safe 自己：只有擁有者能預簽自己的訂單，結算合約會檢查呼叫者就是它。"
     },
     "1.setPreSignature.orderUid.validTo": {
-      "en": "The same as the expiry in the order.",
-      "zh-TW": "跟訂單裡的到期時間相同。"
+      "en": "The expiry again, as the id carries it; it must match the order's own. Same 12-hour limit, for the same reason.",
+      "zh-TW": "id 裡再帶一次的到期時間，必須和訂單自己的相同。同樣是 12 小時上限，理由相同。"
     },
     "1.setPreSignature.signed": {
-      "en": "true means pre-sign; false means cancel.",
-      "zh-TW": "true 表示預簽；false 是撤回。"
+      "en": "true pre-signs the order; false would cancel an earlier pre-signature.",
+      "zh-TW": "true 是預簽訂單；false 則是取消之前的預簽。"
     }
-  }
+  },
+  "reviews": {}
 }

@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
+<title>compound/supply · compound-v3-cusdcv3 報告</title>
+<style>
+:root{
+  --bg:#0b0c0e; --sunk:#08090a; --hover:#121317; --pop:#1a1c20; --line:#212328; --line2:#30333a;
+  --fg:#eceef0; --fg2:#b0b4ba; --fg3:#8a8f97;
+  --ok:#4cb782; --warn:#eda152; --bad:#ec6a5e;
+  --shadow:rgb(4 5 8 / .55);
+  --r:6px;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC","Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --t-body:16px; --t-row:15px; --t-small:14px; --t-label:13px; --t-mono:14px;
+  color-scheme:dark;
+  scrollbar-color:var(--line2) transparent;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{overflow-x:clip}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:var(--t-body);line-height:1.65;letter-spacing:.005em;-webkit-font-smoothing:antialiased}
+::selection{background:var(--line2)}
+a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
+a:hover{text-decoration-color:var(--fg2)}
+:focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+[data-ai]{overflow-wrap:anywhere}
+code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
+.addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
+.addr.line{display:block;margin-top:4px}
+.num{font-variant-numeric:tabular-nums}
+.f2{color:var(--fg2)} .f3{color:var(--fg3)}
+b,strong{font-weight:590}
+.wrap{max-width:1180px;margin:0 auto;padding-block:32px 120px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+
+.i{width:16px;height:16px;flex:none;display:inline-block;vertical-align:-3px}
+.i.ok{color:var(--ok)} .i.warn{color:var(--warn)} .i.bad{color:var(--bad)} .i.mute{color:var(--fg3)}
+
+.page{display:grid;grid-template-columns:184px minmax(0,1fr);gap:0 56px;align-items:start}
+.main{display:flex;flex-direction:column;gap:72px;max-width:880px;min-width:0}
+.rail{position:sticky;top:32px;font-size:var(--t-small)}
+.rail h2{font-size:var(--t-label);font-weight:590;color:var(--fg3);margin:0 0 10px;letter-spacing:.02em}
+.rail ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+.rail a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0 6px 14px;margin-left:-1px;border-left:1px solid transparent;color:var(--fg2);text-decoration:none;line-height:1.4;overflow-wrap:anywhere}
+.rail a:hover{color:var(--fg);border-left-color:var(--fg2)}
+.cnt{display:inline-flex;align-items:center;gap:5px;color:var(--fg3);font-variant-numeric:tabular-nums}
+.cnt .i{width:14px;height:14px}
+.tocfold{display:none}
+@media (max-width:1040px){
+  .page{grid-template-columns:minmax(0,1fr)}
+  .rail{display:none}
+  .main{max-width:none}
+  .tocfold{display:block;margin-top:24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .tocfold>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;padding:10px 0;color:var(--fg2);font-size:var(--t-small)}
+  .tocfold>summary::-webkit-details-marker{display:none}
+  .tocfold[open]>summary .chev{transform:rotate(90deg)}
+  .tocfold ol{list-style:none;margin:0 0 10px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 16px}
+  .tocfold a{display:flex;justify-content:space-between;gap:8px;padding:6px 0;color:var(--fg2);text-decoration:none;font-size:var(--t-small)}
+}
+
+h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:0;overflow-wrap:break-word}
+h1 .byai{vertical-align:6px}
+h1 .aiw>:first-child{margin-right:12px}
+.opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
+.sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
+:is(.sub,h3,.intro,.ans,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
+.verdict .byai{margin-left:8px}
+.checks{list-style:none;margin:28px 0 0;padding:14px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.checks li{display:flex;align-items:flex-start;gap:8px;font-size:var(--t-row);position:relative}
+.checks li>.i{margin-top:4px}
+.checks .n{color:var(--fg2)}
+@media (max-width:600px){.checks{grid-template-columns:minmax(0,1fr)}}
+.verdict{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-top:18px;font-size:var(--t-row)}
+.verdict .lbl{color:var(--fg3);flex:none}
+.verdict .i{align-self:flex-start;margin-top:4px}
+.verdict .aiw>span:first-child{flex:1 1 14em}
+@media (max-width:600px){.verdict{display:grid;grid-template-columns:auto auto minmax(0,1fr);row-gap:8px}.verdict .byai{grid-column:3;justify-self:start;margin-left:0}}
+section{scroll-margin-top:24px}
+
+.byai{display:inline-block;font-size:12px;color:var(--fg2);border:1px dashed var(--fg3);border-radius:var(--r);padding:0 6px;line-height:20px;white-space:nowrap;font-weight:400;letter-spacing:0}
+.aiw{display:contents}
+.aisrc{color:var(--fg2);font-size:var(--t-small)}
+
+.tip{position:relative;display:inline-flex;cursor:help;color:var(--fg3)}
+.tip:hover,.tip:focus-visible{color:var(--fg)}
+.tip .bub{position:absolute;left:-8px;top:calc(100% + 8px);width:max-content;max-width:min(320px,calc(100vw - 48px));background:var(--pop);border:1px solid var(--line2);color:var(--fg);font-size:var(--t-small);line-height:1.55;padding:9px 12px;border-radius:var(--r);box-shadow:0 6px 14px var(--shadow);opacity:0;visibility:hidden;transition:opacity .12s ease-out,visibility 0s linear .12s;z-index:5;pointer-events:none;font-weight:400;letter-spacing:0}
+.tip:hover .bub{opacity:1;visibility:visible;transition:opacity .12s ease-out .25s,visibility 0s linear .25s}
+.tip:focus-visible .bub{opacity:1;visibility:visible;transition:none}
+.checks .tip{position:static}
+.checks .tip .bub{left:-8px;max-width:calc(100% + 16px)}
+.checks li>.tip{align-self:center}
+.checks li>.tip>.i{margin-top:0;vertical-align:0}
+@media (max-width:600px){.tip{position:static}.tip .bub{left:0;max-width:calc(100vw - 40px)}}
+
+section{border-top:1px solid var(--line2);padding-top:28px}
+section>h2 .tip{align-self:center}
+section>h2{font-size:22px;font-weight:590;letter-spacing:-.012em;margin:0 0 8px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+section>h2 .c{font-weight:400;font-size:var(--t-small);color:var(--fg3);letter-spacing:0}
+.lead{color:var(--fg3);font-size:var(--t-small);margin:0 0 20px}
+.lead.keylead{margin-top:12px}
+.intro{color:var(--fg2);margin:0 0 20px}
+h3{font-size:16px;font-weight:590;margin:36px 0 10px}
+
+.props{margin:0;font-size:var(--t-row);border-top:1px solid var(--line)}
+.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) fit-content(45%);gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.props dt,.props dd{margin:0}
+.props dt{color:var(--fg2)}
+.props dd.src{text-align:right;font-size:var(--t-small);color:var(--fg3)}
+.props .sub2{display:block;font-size:var(--t-small);color:var(--fg3);margin-top:2px}
+.props .pos{color:var(--ok)}
+@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) fit-content(55%)}.props dt{grid-column:1/-1}}
+.props.two>div{grid-template-columns:minmax(140px,24%) minmax(0,1fr)}
+.nest{margin:10px 0 0;border-left:1px solid var(--line2);padding-left:16px}
+.nest.flat{margin-top:0}
+.nest{display:grid;grid-template-columns:minmax(96px,max-content) minmax(0,1fr);gap:0 16px}
+.nest>div{display:contents}
+.nest dt,.nest dd{padding:5px 0}
+.nest dt{color:var(--fg2)}
+.srcline{font-size:var(--t-small);color:var(--fg3);margin:12px 0 0}
+.request{margin:0 0 18px;padding:10px 14px;border-left:3px solid var(--fg3)}
+.request figcaption{font-size:var(--t-small);color:var(--fg3)}
+.request blockquote{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.srcline a{color:var(--fg2)}
+@media (max-width:600px){.props.two>div{grid-template-columns:minmax(0,1fr)}.nest{grid-template-columns:minmax(0,1fr)}.nest dd{padding-top:0}}
+
+.diagram{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--sunk)}
+.diagram svg{display:block;width:100%;min-width:660px;height:auto}
+svg .life{stroke:var(--line2);stroke-dasharray:2 4}
+svg .node{fill:var(--hover);stroke:var(--line2)}
+svg .nodet{fill:var(--fg);font:590 14px var(--sans)}
+svg .nodes{fill:var(--fg3);font:12.5px var(--sans)}
+svg .call{stroke:var(--fg);stroke-width:1.4;fill:none}
+svg .inner{stroke:var(--fg3);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+svg .inner.seen{stroke:var(--fg2);stroke-dasharray:none}
+svg .nested{stroke:var(--fg2);stroke-width:1.2;fill:none}
+svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
+svg .ah{fill:var(--fg)}
+svg .fn{fill:var(--fg);font:400 14px var(--mono)}
+svg .no{fill:var(--fg3);font:400 14px var(--mono)}
+svg .cap{margin:0;display:flex;align-items:flex-start;gap:8px;padding-top:2px;color:var(--fg2);font:14px/20px var(--sans)}
+svg .cap code{font-size:13px;padding:2px 6px;white-space:nowrap}
+.mark{font-size:17px} .mark.ok{color:var(--ok)} .mark.bad{color:var(--bad)}
+svg .capg{fill:var(--ok);font:590 14px var(--sans)}
+svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
+svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
+svg .axis{stroke:var(--line2)}
+svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.chart svg{min-width:0}
+@media (max-width:600px){.chart .tick{font-size:18px}.chart .thin{display:none}}
+.legend{list-style:none;margin:10px 0 14px;padding:0;display:flex;flex-direction:column;gap:4px;font-size:var(--t-small);color:var(--fg2)}
+.scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
+@media (max-width:700px){.scrollhint{display:block}}
+
+.deciders{margin:36px 0 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}
+.deciders h3{margin:0 0 10px;font-size:var(--t-small);color:var(--fg2)}
+.deciders dl{margin:0;display:flex;flex-direction:column;gap:12px}
+.deciders .grp{display:grid;grid-template-columns:88px minmax(0,1fr);gap:0 16px;align-items:start}
+.deciders .gh{font-size:var(--t-small);line-height:24px;color:var(--fg);font-weight:590}
+.deciders .defs{margin:0;display:flex;flex-direction:column;gap:6px}
+.deciders .defs>div{display:grid;grid-template-columns:116px minmax(0,1fr);gap:0 14px;align-items:start;font-size:var(--t-small);line-height:24px;color:var(--fg2)}
+.deciders .who{justify-self:start}
+@media (max-width:560px){.deciders .grp{grid-template-columns:minmax(0,1fr)}}
+.cb{margin-top:40px}
+.callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
+.callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.callh .fnn{font-family:var(--mono);font-size:16px;font-weight:590;overflow-wrap:anywhere}
+.callh .fnn .ct{color:var(--fg2);font-weight:400}
+.callh .sel{font-family:var(--mono);font-size:var(--t-label);color:var(--fg3)}
+.callh .what{font-size:16px;font-weight:590}
+.sends{font-size:var(--t-row);color:var(--fg2);padding:10px 0;border-bottom:1px solid var(--line)}
+.doc{display:flex;gap:8px;align-items:flex-start;font-size:var(--t-small);color:var(--fg2);margin-top:4px}
+.doc>.i{width:14px;height:14px;margin-top:3px}
+.cdoc{padding:10px 0;border-bottom:1px solid var(--line)}
+.cdoc .doc{margin-top:0}
+.arg{display:grid;grid-template-columns:248px minmax(0,1fr);gap:4px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
+.arg .nm{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.arg .pn{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere}
+.arg .val{min-width:0}
+.arg .mid{margin-top:6px;font-size:var(--t-small);color:var(--fg3)}
+.arg .mid .addr{font-size:13px;color:var(--fg2)}
+.arg .raw{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere;line-height:1.5}
+.arg .is{color:var(--fg);font-size:var(--t-row);margin-top:4px}
+.arg .is .f3{font-size:var(--t-small)}
+:is(.arg,.props) .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
+:is(.arg,.props) .ai .byai{flex:none}
+.props>div>.ai{grid-column:1/-1;margin-top:6px}
+.who{display:inline-flex;align-items:center;font-size:var(--t-label);line-height:22px;padding:0 8px;border-radius:var(--r);border:1px solid var(--line2);color:var(--fg3);white-space:nowrap}
+.who.you{color:var(--fg);border-color:var(--fg2);font-weight:590}
+.who.app{color:var(--warn);border-color:rgb(237 161 82 / .45)}
+.arg .who{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.parts{grid-column:1/-1;display:grid;grid-template-columns:subgrid;row-gap:0;margin-top:12px;border-left:1px solid var(--line2);padding-left:12px}
+.plabel{grid-column:1/-1;font-size:var(--t-small);color:var(--fg2);padding:2px 0 8px}
+.part{grid-column:1/-1;display:grid;grid-template-columns:subgrid;row-gap:2px;padding:10px 0;border-top:1px solid var(--line)}
+.part:first-child,.plabel+.part{border-top:0;padding-top:2px}
+.part .pn{font-family:var(--mono);font-size:var(--t-small);color:var(--fg2);overflow-wrap:anywhere}
+.part .pchips{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:6px;font-family:var(--sans)}
+.part .raw{font-size:var(--t-small)}
+.part .is{font-size:var(--t-small)}
+.part .ai{margin-top:4px}
+details.fixed>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);color:var(--fg2);font-size:var(--t-small)}
+details.fixed>summary::-webkit-details-marker{display:none}
+details.fixed>summary:hover{color:var(--fg)}
+details.fixed[open]>summary .chev{transform:rotate(90deg)}
+.parts>details.fixed{grid-column:1/-1;display:grid;grid-template-columns:subgrid}
+.parts>details.fixed[open]::details-content{display:contents}
+.parts>details.fixed>summary{grid-column:1/-1;padding:10px 0;border-bottom:0;border-top:1px solid var(--line)}
+.parts>details.fixed:first-child>summary,.plabel+details.fixed>summary{border-top:0;padding-top:2px}
+@media (max-width:720px){
+  .arg{grid-template-columns:minmax(0,1fr)}
+  .arg .nm{flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
+}
+
+.rows{border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.row:hover,.ad:hover{background:var(--hover)}
+.row .i{margin-top:4px}
+.row .t{font-weight:590;font-size:var(--t-body)}
+.row .t .grade{font-weight:400;font-size:var(--t-label);color:var(--fg3);margin-right:10px;padding-right:10px;border-right:1px solid var(--line2);vertical-align:1px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.row .meta{font-size:var(--t-row);color:var(--fg2);margin-top:6px}
+.row .meta a{margin-left:8px;color:var(--fg2)}
+.row .rec{font-size:var(--t-row);margin-top:8px}
+.row .rec .lbl{color:var(--fg3);margin-right:8px}
+details.more>summary{cursor:pointer;list-style:none;display:inline-flex;gap:6px;align-items:center;margin-top:6px;color:var(--fg3);font-size:var(--t-small)}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary:hover{color:var(--fg)}
+details.more[open]>summary .chev{transform:rotate(90deg)}
+
+.ad{scroll-margin-top:24px;display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.ad .i{margin-top:4px}
+.ad .nm{font-weight:590}
+.ad .role{color:var(--fg3);font-size:var(--t-small);margin-left:10px}
+.ad .conf{margin-left:10px}
+.ad .reviewed{margin-left:10px;color:var(--fg2)}
+.ad .body{grid-column:2;display:flex;flex-direction:column;gap:8px}
+.srcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row)}
+.src{display:flex;flex-direction:column;gap:4px}
+.srcrow{display:flex;gap:8px;align-items:flex-start}
+.ad .srcrow>.i{width:14px;height:14px;margin-top:5px}
+.site{display:flex;gap:6px;align-items:flex-start;padding-left:22px;font-size:var(--t-small);color:var(--fg2)}
+.ad .site .i{width:14px;height:14px;margin-top:3px;flex:none}
+.src .why{padding-left:22px;font-size:var(--t-small);color:var(--fg2)}
+.src .site+.why{padding-left:42px}
+.aisrcs{font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
+.aisrcs>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;font-size:var(--t-small);color:var(--fg3)}
+.aisrcs>summary::-webkit-details-marker{display:none}
+.aisrcs>summary:hover{color:var(--fg)}
+.aisrcs[open]>summary .chev{transform:rotate(90deg)}
+.aisrcs>div{margin-top:6px;overflow-wrap:anywhere}
+.aisrcs .byai{margin-right:8px}
+.aires{margin-left:8px;font-size:var(--t-small);color:var(--fg3)}
+.res{margin-left:10px;color:var(--fg2)}
+.confirmed{font-size:var(--t-small);color:var(--fg2)}
+details.fold{border-bottom:1px solid var(--line)}
+details.fold>summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;padding:14px 0;color:var(--fg2);font-size:var(--t-row)}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary:hover{color:var(--fg)}
+.chev{color:var(--fg3);transition:transform .15s ease-out}
+details.fold[open]>summary .chev{transform:rotate(90deg)}
+details.fold .ad:last-child{border-bottom:0}
+
+.warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
+.ans{margin:0 0 10px;color:var(--fg2)}
+.ans b{color:var(--fg)}
+.cap{margin:8px 0 0;font-size:var(--t-small);color:var(--fg3)}
+.lm{color:var(--warn)}
+.sh{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-size:var(--t-small);color:var(--fg2);margin-top:18px}
+.sc{overflow-x:auto;margin:12px 0 8px}
+.pt2{border-collapse:collapse;width:100%;font-size:var(--t-small);font-variant-numeric:tabular-nums}
+.pt2 th{font-size:var(--t-label);font-weight:400;color:var(--fg3);text-align:left;padding:6px 16px 6px 0;border-bottom:1px solid var(--line2);white-space:nowrap}
+.pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
+.pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
+.pt2 .n{text-align:right}
+.pt2 th{vertical-align:bottom}
+.pt2 th.n{white-space:normal}
+.pt2 td.nw{white-space:nowrap}
+.pt2 td.v{color:var(--fg);font-weight:590}
+.pt2 .tx{min-width:104px}
+@media (max-width:760px){
+  .pt2,.pt2 tbody,.pt2 tr{display:block}
+  .pt2 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .pt2 tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .pt2 td,.pt2 td.n{display:grid;grid-template-columns:minmax(0,130px) minmax(0,1fr);gap:12px;padding:3px 0;border-bottom:0;text-align:left}
+  .pt2 td::before{content:attr(data-label);font-size:var(--t-label);font-weight:400;color:var(--fg3)}
+  .pt2 td.nw{white-space:normal}
+  .pt2 td.what{min-width:0}
+}
+@media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
+.warnline .i{margin-top:4px;color:var(--fg3)}
+
+ol.steps{list-style:none;margin:0;padding:0;counter-reset:s;border-top:1px solid var(--line)}
+ol.steps>li{display:grid;grid-template-columns:32px minmax(0,1fr);padding:14px 0;border-bottom:1px solid var(--line);counter-increment:s}
+ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.cmd{margin:10px 0 0;padding:10px 12px;background:var(--sunk);border:1px solid var(--line2);border-radius:var(--r);overflow-x:auto}
+.cmd code{border:0;padding:0;white-space:pre}
+.then{margin:8px 0 0;font-size:var(--t-row);color:var(--fg2)}
+.hash{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;font-size:var(--t-row);margin-top:10px}
+.hash span:nth-child(odd){color:var(--fg3)}
+.auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
+.auto li{display:flex;gap:10px;align-items:baseline}
+.auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
+.ut{border-collapse:collapse;width:100%;margin:16px 0 12px;font-size:var(--t-row)}
+.ut th,.ut td{padding:9px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left;color:var(--fg2)}
+.ut thead th{font-size:var(--t-label);color:var(--fg3);border-bottom-color:var(--line2)}
+.ut th+td,.ut th+th{text-align:right;font-variant-numeric:tabular-nums}
+.ut tfoot th,.ut tfoot td{color:var(--fg);font-weight:590;border-bottom:0}
+.foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
+.foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ok" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5 8.2l2 2 4-4.4" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="warn" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.6v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.1" r=".95" fill="currentColor"/></symbol>
+  <symbol id="bad" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5.6 5.6l4.8 4.8M10.4 5.6l-4.8 4.8" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="ask" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.6 1.9"/><circle cx="8" cy="8" r="1.6" fill="currentColor"/></symbol>
+  <symbol id="info" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="currentColor"/></symbol>
+  <symbol id="na" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.2 8h5.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="chev" viewBox="0 0 16 16"><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+<div class="wrap">
+<div class="page">
+
+<nav class="rail" aria-label="目錄">
+  <h2>目錄</h2>
+  <ol><li><a href="#review">待確認 <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>重要 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-compound-v3">compound-v3</a></li><li><a href="#vault-compound-v3-cusdcv3">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
+</nav>
+
+<div class="main">
+
+<header>
+  <figure class="request"><figcaption>你的要求（建立這個模板時，原文）</figcaption><blockquote>I want to supply USDC to Compound&#39;s cUSDCv3. build me the template and its report</blockquote></figure>
+  <h1><span class="aiw" data-ai><span>把基礎資產存入 Compound III 市場（Comet）</span><span class="byai">AI 研究</span></span></h1>
+  <span class="opid">compound/supply · compound-v3-cusdcv3</span>
+  <p class="sub"><span class="aiw" data-ai><span>Safe 在同一個 MultiSend 裡先授權你選的市場剛好你填的金額，再呼叫它的 <code>supply</code> 存入基礎資產；Safe 的存款餘額必須增加這個金額，最多少 2 單位。單獨送出的 <code>supply</code> 會被拒絕。</span><span class="byai">AI 研究</span></span></p>
+  <ul class="checks">
+    <li data-state="bad" data-line="sources"><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>交易地址 <span class="n num">1 / 2</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">1 個地址有結果要你看，見「待確認」。另外那個地址至少在 2 個地方確認。</span></span></li>
+    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>原始碼驗證 <span class="n num">2 / 2</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Etherscan 上驗證的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。usdc 重新編譯後只有 metadata hash 跟鏈上不同，所以函式選擇器和參數型別有證明，算通過；參數名稱沒有證明。</span></span></li>
+    <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>合約沒被換掉 <span class="n num">2 / 2</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">每次簽名都確認卡片用到的每個合約還是研究時那份程式碼。被升級或換掉就擋下。</span></span></li>
+    <li data-state="na" data-line="params"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>參數保護 <span class="n num">沒有測試</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">模板沒有不限的參數：每個參數都綁定卡片或固定值，沒有參數要換值測試，所以沒有換值測試的記錄。每次簽名，verify 都把每個綁定的參數逐一改掉，確認都變成 MISMATCH。</span></span></li>
+    <li data-state="ok" data-line="trace"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>呼叫追蹤 <span class="n num">1 / 1</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">程式在過去交易的呼叫追蹤裡找 AI 寫的每條流程線，也確認每筆動到錢的內部呼叫都有模板或流程線說明；1 項裡 1 項通過。追蹤只來自 drpc，其中代幣的轉帳和授權都跟兩家節點都同意的收據核對過。</span></span></li>
+    <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">鏈上資料都同時問兩家節點，答案不一樣就不給結果。研究時有三種資料只有一個來源，都不會影響判定：過去交易的呼叫追蹤（drpc）、搜尋過去交易（Alchemy 或 Etherscan 找到的都算，找事件只用 Etherscan），和金庫曾經收過份額的地址名單（Alchemy，每個地址的餘額仍問兩家）。</span></span></li>
+  </ul>
+  <div class="verdict" data-state="bad"><span class="lbl">建議</span><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg><span class="aiw" data-ai><span>規模大、運作已久的市場；治理經常升級它，每次升級後在新的 code pin 合併前都會判 MISMATCH。</span><span class="byai">AI 研究：要小心</span></span></div>
+  <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
+    <ol><li><a href="#review">待確認 <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>重要 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-compound-v3">compound-v3</a></li><li><a href="#vault-compound-v3-cusdcv3">實例</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
+  </details>
+</header>
+
+<section id="review">
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>重要 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
+  <p class="lead">每一項 AI 都先查過，附上建議。</p>
+  <div class="rows">
+    <div class="row" data-state="bad" data-grade="key" data-result="compound-v3-cusdcv3/source.bounty">
+      <svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>
+      <div><div class="t"><span class="grade"><span class="vh">等級：</span>重要</span>網站跟 DefiLlama 列的不同 · compound-v3-cusdcv3</div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>打開 Immunefi 的 compoundfinance 頁：寫明由 Compound DAO 付賞金，連到 https://compound.finance/，而 DefiLlama 列的是 compound.xyz。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="meta">Immunefi 漏洞賞金範圍</div>
+          <div class="meta">這個頁面的網域或 GitHub 組織，不是 DefiLlama 列給這個協議的。<a href="#a-compound-v3-cusdcv3">看來源</a></div>
+          <div class="rec"><span class="aiw" data-ai><span>範圍清單本身我沒打開；check-sources 在其中找到 0xc3d688B66703497DAA19211EEdff47f25384cdc3。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>打開 Immunefi 頁確認是 Compound 自己的計畫；地址另在 Compound 文件和 GitHub 上確認過。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>一年內只有 2 個 Safe 在同一個 MultiSend 送出剛好的授權加 <code>supply</code>；25 個 Safe 單獨送 <code>supply</code>。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span>兩筆測試交易就是這 2 個 Safe 的。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>把授權和 <code>supply</code> 做成同一批交易；單獨送出的 <code>supply</code> 會判 MISMATCH。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>治理已更換 cUSDCv3 的實作 60 多次，最近一次在區塊 26,364,909。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span>若 Safe 已借了 USDC，存入會先還債，存款餘額不會增加這個金額，verify 判 MISMATCH。 <a class="aisrc" href="https://docs.compound.xyz/collateral-and-borrowing/">來源 1</a> <a class="aisrc" href="https://docs.compound.xyz/governance/">來源 2</a></span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>升級後等新的 code pin 合併再簽；只從在這裡沒有 USDC 借款的 Safe 存入。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>過去一年每個月市場都有 3.26 億到 4.27 億 USDC，增減都是漸進的、沒有突變。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span>持有人數無法算全，因為餘額變動不一定有 Transfer 事件。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>看報告裡這個市場的規模歷史；沒有看到新成立或突然暴增。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+  </div>
+</section>
+
+<section id="flow">
+  <h2>流程 <span class="c">2 個呼叫</span></h2>
+  <p class="lead">實線是 Safe 發出的呼叫、模板綁定的內部呼叫，和程式在過去交易裡看到的流程線；虛線是還沒核對的 AI 研究；綠線是你得到的。</p>
+  <div class="diagram">
+  <svg viewBox="0 0 660 284" role="img" aria-labelledby="dt dd">
+    <title id="dt">交易流程</title>
+    <desc id="dd">呼叫 1：Safe 呼叫 usdc 的 approve。呼叫 2：Safe 呼叫 compound-v3-cusdcv3 的 supply。結果：你得到 compound-v3-cusdcv3。</desc>
+    <defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>
+    <line class="life" x1="90" y1="58" x2="90" y2="276"/>
+    <rect class="node" x="24" y="14" width="132" height="44" rx="6"/><text class="nodet" x="90" y="34" text-anchor="middle">你的 Safe</text><text class="nodes" x="90" y="50" text-anchor="middle">發起</text>
+    <line class="life" x1="280" y1="58" x2="280" y2="276"/>
+    <rect class="node" x="214" y="14" width="132" height="44" rx="6"/><text class="nodet" x="280" y="34" text-anchor="middle">usdc</text><text class="nodes" x="280" y="50" text-anchor="middle">代幣</text>
+    <line class="life" x1="477" y1="58" x2="477" y2="276"/>
+    <rect class="node" x="383" y="14" width="188" height="44" rx="6"/><text class="nodet" x="477" y="34" text-anchor="middle">compound-v3-cusdcv3</text><text class="nodes" x="477" y="50" text-anchor="middle">借貸合約</text>
+    <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">approve</text>
+    <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#head)"/>
+    <text class="no" x="102" y="142">2</text><text class="fn" x="120" y="142">supply</text>
+    <line class="call" x1="90" y1="156" x2="474" y2="156" marker-end="url(#head)"/>
+    <foreignObject x="151.60000000000002" y="177" width="508.4" height="44"><div class="cap" data-ai><span class="mark ok">①</span><span>市場用 <code>transferFrom</code> 從 Safe 拉走 USDC，用掉第 1 個呼叫給的授權</span></div></foreignObject>
+    <line class="inner seen" x1="477" y1="224" x2="283" y2="224" marker-end="url(#head)"/>
+    <text class="capg" x="104" y="250">你得到 compound-v3-cusdcv3</text>
+    <line class="gain" x1="477" y1="260" x2="93" y2="260" marker-end="url(#head)"/>
+  </svg>
+  </div>
+  <div class="scrollhint">圖可以左右滑動，最右邊是 compound-v3-cusdcv3</div>
+  <ul class="legend">
+    <li data-state="ok">兩邊都確認：程式在過去交易的呼叫追蹤裡看到這條線（<a href="https://github.com/compound-finance/comet/blob/f766f51583c23acc33b2a7824654ef2029a96804/contracts/CometWithExtendedAssetList.sol#L661">①</a> 22 筆中 22 筆），AI 也讀過合約原始碼；每條線旁的說明是 AI 寫的。</li>
+  </ul>
+  <p class="lead">呼叫追蹤只顯示過去交易走過的路；合約可能依當時狀態走別條路，簽名時保護你的是效果檢查。</p>
+  <div class="deciders">
+    <h3>每個值由誰決定</h3>
+    <dl>
+      <div class="grp"><dt class="gh">你</dt><dd class="defs">
+        <div><span class="who you">你填</span><span>每次簽名你自己填。</span></div>
+        <div><span class="who you">你選</span><span>每次簽名你從清單裡選。</span></div></dd></div>
+    </dl>
+  </div>
+  <p class="lead keylead">下面逐一列出交易的每個呼叫。每個參數都寫出由誰決定、它的值或必須符合的規則，以及它的作用。</p>
+  
+  <div class="cb">
+    <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">usdc.</span>approve</span><span class="sel">0x095ea7b3</span></div><div class="cdoc"><div class="doc" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><span class="f3">文件：</span><a href="https://github.com/circlefin/stablecoin-evm/blob/fc85788bc7c23cefe3df1a757133048bfddadeaa/contracts/v1/FiatTokenV1.sol">github.com/circlefin/stablecoin-evm</a></span></div></div>
+    <div class="arg" data-field="1.approve.spender">
+      <div class="nm"><span class="pn">spender</span><span class="who you">你選：借貸合約</span></div>
+      <div class="val"><div class="raw">0xc3d688B66703497DAA19211EEdff47f25384cdc3</div><div class="is"><a href="#a-compound-v3-cusdcv3">compound-v3-cusdcv3</a> <span class="f3">你選的借貸合約</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>就是市場本身，也就是 <code>supply</code> 時拉走代幣的合約；其他對象一律拒絕。</span></span></div></div>
+    </div>
+    <div class="arg" data-field="1.approve.value">
+      <div class="nm"><span class="pn">value</span><span class="who you">你填：金額</span></div>
+      <div class="val"><div class="is">你填的金額 <span class="f3">卡片記著這個值，交易裡不同就 MISMATCH</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>剛好是卡片上的金額，<code>supply</code> 會用完整個授權，交易後不留任何授權。</span></span></div></div>
+    </div>
+  </div>
+  <div class="cb">
+    <div class="callh"><span class="no">2</span><span class="fnn"><span class="ct">compound-v3-cusdcv3.</span>supply</span><span class="sel">0xf2b9fdb8</span></div><div class="cdoc"><div class="doc" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><span class="f3">文件：</span><a href="https://docs.compound.xyz/collateral-and-borrowing/">docs.compound.xyz/collateral-and-borrowing</a></span></div></div>
+    <div class="arg" data-field="2.supply.asset">
+      <div class="nm"><span class="pn">asset</span><span class="who you">你選：借貸合約</span></div>
+      <div class="val"><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</div><div class="is"><a href="#a-usdc">usdc</a> <span class="f3">你選的借貸合約的 baseToken</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>registry 記錄的市場基礎資產。若換成其他資產就變成存抵押品，不會賺利息。</span></span></div></div>
+    </div>
+    <div class="arg" data-field="2.supply.amount">
+      <div class="nm"><span class="pn">amount</span><span class="who you">你填：金額</span></div>
+      <div class="val"><div class="is">你填的金額 <span class="f3">卡片記著這個值，交易裡不同就 MISMATCH</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>剛好是卡片金額。若是 uint256 最大值，會改成還清 Safe 的全部借款，打字輸入的金額不會變成它。</span></span></div></div>
+    </div>
+  </div>
+  <h3>交易後</h3>
+  <dl class="props">
+    <div><dt>Safe 的 usdc</dt><dd class="">你填的金額</dd><dd class="src">剛好你填的金額</dd></div>
+    <div><dt>Safe 的 compound-v3-cusdcv3</dt><dd class="pos">你填的金額</dd><dd class="src">剛好你填的金額；因為捨入，Safe 最後的餘額可以低最多 2 個最小單位</dd><div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這個容許差：由 AI 選定，不是協議或它的 app 定的。理由：研究的 22 筆存入（2 個 Safe、20 個 EOA）中，送出者的 cUSDCv3 餘額增加的是金額少 1 單位的有 17 筆、少 2 單位的有 5 筆，沒有更多：Comet 存入時向下取整。</span></span></div></div>
+    <div><dt>給 <a href="#a-compound-v3-cusdcv3">compound-v3-cusdcv3</a> 的 usdc 授權</dt><dd class=""><span class="num">0</span></dd><dd class="src">交易內用完，不能比交易前高</dd></div>
+  </dl>
+</section>
+
+<section id="protocol-compound-v3">
+  <h2>compound-v3</h2>
+  <p class="intro"><span class="aiw" data-ai><span>Compound III（Comet）：每個市場只借出一種基礎資產（如 USDC），借款人押抵押品；存入基礎資產的人賺利息，所有市場由 Compound 治理的 Timelock 控制。</span><span class="byai">AI 研究</span></span></p>
+  <dl class="props two">
+    <div><dt>TVL</dt><dd><span><span class="num">$1.06 B</span></span><span class="sub2">Ethereum 上 <span class="num">$982.27 M</span></span></dd></div>
+    <div><dt>上線</dt><dd><span><span class="num">2022-09-14</span></span><span class="sub2">DefiLlama 開始列的日期</span></dd></div>
+    <div><dt>proxy</dt><dd><span>是 proxy，可以換實作</span><span class="sub2"><a href="#a-compound-v3-cusdcv3">compound-v3-cusdcv3</a>，從 code pin 讀到</span></dd></div>
+    <div><dt>稽核</dt><dd><span class="aiw" data-ai><span>Compound 文件列出 Compound III 的兩份稽核：OpenZeppelin 與 ChainSecurity，都是 2022 年上線時的程式碼。之後市場經治理升級多次，AI 沒有找到標明現在所跑實作的稽核報告。 <a class="aisrc" href="https://docs.compound.xyz/#security">來源 1</a> <a class="aisrc" href="https://blog.openzeppelin.com/compound-iii-audit/">來源 2</a> <a class="aisrc" href="https://chainsecurity.com/security-audit/compound-iii/">來源 3</a></span><span class="byai">AI 研究</span></span></dd></div>
+    <div><dt>事故</dt><dd><span>0 起</span><span class="sub2">DefiLlama hacks 列在這個協議或它上層協議下的</span></dd></div>
+  </dl>
+  <p class="srcline">程式在 2026-11-26 讀 <a href="https://defillama.com/protocol/compound-v3">DefiLlama</a>、<a href="https://defillama.com/hacks">DefiLlama hacks</a>和鏈上。標 AI 研究的是 AI 查的。</p>
+</section>
+
+<section id="vault-compound-v3-cusdcv3">
+  <h2>實例</h2>
+  <p class="lead"><a href="#a-compound-v3-cusdcv3">compound-v3-cusdcv3</a>：程式記錄的 <code>pnpm instance-evidence</code> 輸出，每個數字都同時問兩家節點，只有曾經收過份額的地址名單來自 Alchemy 一家。這裡不換算成美元。</p>
+  <dl class="props">
+    <div><dt>工廠</dt><dd>沒有登記工廠，沒有工廠為它的程式碼背書</dd><dd class="src"></dd></div>
+    <div><dt>現在的 totalSupply</dt><dd><span class="num">357,444,338.63 usdc</span></dd><dd class="src">2026-11-26，區塊 26502327</dd></div>
+    <div><dt>持有人</dt><dd>讀不到</dd><dd class="src"></dd></div>
+  </dl>
+  <h3>每月的 totalAssets</h3>
+  <div class="diagram chart">
+  <svg viewBox="0 0 660 198" role="img" aria-labelledby="vt vd">
+    <title id="vt">每月的 totalAssets</title>
+    <desc id="vd">13 個月，2025-11-30 到 2026-11-26，最高 426,916,665.47 usdc</desc>
+    <text class="tick" x="16" y="18">最高 426,916,665.47 usdc</text>
+    <line class="axis" x1="16" y1="150" x2="644" y2="150"/>
+    <rect class="bar" x="25.7" y="39" width="29.0" height="111"><title>2025-11-30：407,573,791.28 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">11月</text><text class="tick" x="40.2" y="188" text-anchor="middle">2025</text>
+    <rect class="bar" x="74.0" y="34" width="29.0" height="116"><title>2025-12-30：426,916,665.47 usdc</title></rect><text class="tick thin" x="88.5" y="168" text-anchor="middle">12月</text>
+    <rect class="bar" x="122.3" y="35" width="29.0" height="115"><title>2026-01-29：424,208,705.97 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">1月</text><text class="tick" x="136.8" y="188" text-anchor="middle">2026</text>
+    <rect class="bar" x="170.6" y="45" width="29.0" height="105"><title>2026-02-28：385,861,637.02 usdc</title></rect><text class="tick thin" x="185.1" y="168" text-anchor="middle">2月</text>
+    <rect class="bar" x="218.9" y="48" width="29.0" height="102"><title>2026-03-31：375,104,346.58 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">3月</text>
+    <rect class="bar" x="267.2" y="55" width="29.0" height="95"><title>2026-04-30：351,276,595.01 usdc</title></rect><text class="tick thin" x="281.7" y="168" text-anchor="middle">4月</text>
+    <rect class="bar" x="315.5" y="58" width="29.0" height="92"><title>2026-05-30：336,924,476.36 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">5月</text>
+    <rect class="bar" x="363.8" y="61" width="29.0" height="89"><title>2026-06-29：326,210,523.28 usdc</title></rect><text class="tick thin" x="378.3" y="168" text-anchor="middle">6月</text>
+    <rect class="bar" x="412.1" y="57" width="29.0" height="93"><title>2026-07-29：343,080,743.58 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">7月</text>
+    <rect class="bar" x="460.4" y="51" width="29.0" height="99"><title>2026-08-28：365,700,054.33 usdc</title></rect><text class="tick thin" x="474.9" y="168" text-anchor="middle">8月</text>
+    <rect class="bar" x="508.7" y="46" width="29.0" height="104"><title>2026-09-27：381,073,884.27 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">9月</text>
+    <rect class="bar" x="557.0" y="48" width="29.0" height="102"><title>2026-10-27：376,183,338.62 usdc</title></rect><text class="tick thin" x="571.5" y="168" text-anchor="middle">10月</text>
+    <rect class="bar last" x="605.4" y="53" width="29.0" height="97"><title>2026-11-26：357,444,338.63 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">11月</text>
+  </svg>
+  </div>
+  <details class="fold">
+    <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>13 個月的數字</summary>
+    <dl class="props">
+      <div><dt class="num">2025-11-30</dt><dd class="num">407,573,791.28 usdc</dd></div>
+      <div><dt class="num">2025-12-30</dt><dd class="num">426,916,665.47 usdc</dd></div>
+      <div><dt class="num">2026-01-29</dt><dd class="num">424,208,705.97 usdc</dd></div>
+      <div><dt class="num">2026-02-28</dt><dd class="num">385,861,637.02 usdc</dd></div>
+      <div><dt class="num">2026-03-31</dt><dd class="num">375,104,346.58 usdc</dd></div>
+      <div><dt class="num">2026-04-30</dt><dd class="num">351,276,595.01 usdc</dd></div>
+      <div><dt class="num">2026-05-30</dt><dd class="num">336,924,476.36 usdc</dd></div>
+      <div><dt class="num">2026-06-29</dt><dd class="num">326,210,523.28 usdc</dd></div>
+      <div><dt class="num">2026-07-29</dt><dd class="num">343,080,743.58 usdc</dd></div>
+      <div><dt class="num">2026-08-28</dt><dd class="num">365,700,054.33 usdc</dd></div>
+      <div><dt class="num">2026-09-27</dt><dd class="num">381,073,884.27 usdc</dd></div>
+      <div><dt class="num">2026-10-27</dt><dd class="num">376,183,338.62 usdc</dd></div>
+      <div><dt class="num">2026-11-26</dt><dd class="num">357,444,338.63 usdc</dd></div>
+    </dl>
+  </details>
+</section>
+
+<section id="wallet">
+  <h2>錢包顯示 <span class="c">ERC-7730 描述檔</span></h2>
+  <p class="lead">這筆 Safe 交易用 MultiSend 打包 2 個呼叫，沒有描述檔解得開打包在裡面的呼叫，所以請比對裝置上的 domain hash 和 message hash，跟 <code>verify</code> 產生的頁面上的是否一樣。</p>
+  <dl class="props two">
+    <div><dt>Safe 交易（SafeTx）</dt><dd>
+      <dl class="nest flat">
+        <div><dt><code>to</code></dt><dd>官方 MultiSend，是這 8 個 Safe 部署之一：<span class="addr line">0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761</span><span class="addr line">0x998739BFdAAdde7C933B942a68053933098f9EDa</span><span class="addr line">0x40A2aCCbd92BCA938b02010E17A5b8929b49130D</span><span class="addr line">0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B</span><span class="addr line">0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526</span><span class="addr line">0x9641d764fc13c8B624c04430C7356C1C7C8102e2</span><span class="addr line">0x218543288004CD07832472D464648173c77D7eB7</span><span class="addr line">0xA83c336B20401Af773B6219BA5027174338D1836</span></dd></div>
+        <div><dt><code>value</code></dt><dd><span class="addr">0</span></dd></div>
+        <div><dt><code>operation</code></dt><dd>Delegate Call（1），呼叫官方 MultiSend</dd></div>
+        <div><dt><code>data</code></dt><dd>MultiSend 打包的呼叫，只顯示原始資料</dd></div>
+        <div><dt><code>baseGas</code></dt><dd><span class="addr">0</span></dd></div>
+        <div><dt><code>gasPrice</code></dt><dd><span class="addr">0</span></dd></div>
+        <div><dt><code>gasToken</code></dt><dd>無（零地址）</dd></div>
+        <div><dt><code>refundReceiver</code></dt><dd>無（零地址）</dd></div>
+      </dl></dd></div>
+  </dl>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>你的 Safe 是 proxy：Ledger 透過 Ledger 自己的伺服器把它解析成 safe-1.3.0 或 safe-1.4.1，才用得上這些描述檔；不解析 proxy 的錢包只顯示原始資料。</span></div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>SafeTx：錢包不顯示 <code>safeTxGas</code>、<code>nonce</code>，只有 hash 涵蓋它們。</span></div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>用 Ledger 簽的話，先在 Ethereum app 的設定打開「Transaction hash」：套用描述檔時，要打開它裝置才會顯示 domain hash 和 message hash。比對這兩個 hash 才是 kiss-sign 靠的檢查，解讀看起來再對也要比。</span></div>
+</section>
+
+<section id="addresses">
+  <h2>地址 <span class="c">2 個</span><span class="tip" tabindex="0" aria-label="信心等級說明" aria-describedby="t7"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t7" role="tooltip">每個地址至少要在兩個地方確認：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件或共用的部署者列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題；來源下面的「網站」行標「–」，不影響那個來源算不算確認。AI 補查不改變信心等級。</span></span></h2>
+  <h3>交易會碰到的地址 2 個</h3>
+  <div class="rows">
+    <div class="ad" id="a-compound-v3-cusdcv3" data-state="bad">
+      <svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>
+      <div><span class="nm">compound-v3-cusdcv3</span><span class="role"><span class="aiw" data-ai><span>Compound III 的 USDC 市場（cUSDCv3，Comet），收 USDC、記入 Safe 的存款餘額</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
+      <div class="body"><span class="addr">0xc3d688B66703497DAA19211EEdff47f25384cdc3</span>
+        <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://github.com/compound-finance/comet/blob/f766f51583c23acc33b2a7824654ef2029a96804/deployments/mainnet/usdc/roots.json">github.com/compound-finance/comet</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 compound-v3（<a href="https://defillama.com/protocol/compound-v3">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/compound-governance-token">CoinGecko</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（main）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://docs.compound.xyz/erc4626-wrapper/">docs.compound.xyz/erc4626-wrapper</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 compound-v3（<a href="https://defillama.com/protocol/compound-v3">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/compound-governance-token">CoinGecko</a> 對照）</span></span></div><div class="src"><span class="srcrow" data-state="bad"><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg><span><a href="https://immunefi.com/bug-bounty/compoundfinance/">Immunefi 漏洞賞金範圍</a><span class="res">是另一個網站</span></span></span><span class="why">Immunefi 沒有給這個計畫網站或 GitHub 組織，對不到 DefiLlama 列的 compound.xyz、github.com/compound-finance。見「<a href="#review">待確認</a>」。</span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x343715fa797b8e9fe48b9efab4b54f01ca860e78">部署者 0x343715FA797B8e9fe48b9eFaB4b54f01CA860e78</a><span class="res">沒有已確認的合約同一個部署者</span></span></span></div></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、docs.compound.xyz/erc4626-wrapper</div>
+        <details class="aisrcs" open><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 4 處 · AI 判斷：要注意</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Compound 的 comet repo 中 deployments/mainnet/usdc/roots.json 在 main 上的 commit 把 &#34;comet&#34; 對到這個地址 <a class="aisrc" href="https://github.com/compound-finance/comet/blob/f766f51583c23acc33b2a7824654ef2029a96804/deployments/mainnet/usdc/roots.json">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Compound 文件的 ERC-4626 wrapper 頁，Deployed Contracts 表的 cUSDCv3 列是這個地址 <a class="aisrc" href="https://docs.compound.xyz/erc4626-wrapper/">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Immunefi 的 Compound Finance 計畫（由 Compound DAO 付款）範圍內有這個地址；計畫連到 compound.finance，不是 compound.xyz <a class="aisrc" href="https://immunefi.com/bug-bounty/compoundfinance/">來源</a></span></span><span class="aires">AI 判斷：要注意</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：已驗證 TransparentUpgradeableProxy，由 0x343715FA797B8e9fe48b9eFaB4b54f01CA860e78 在 0xfe8e6819f1b43dedacf864d96beaf6b924b69796a28e8c4a5622f21b3cc83cc0 建立；沒有官方頁面寫出這個部署者 <a class="aisrc" href="https://etherscan.io/address/0xc3d688B66703497DAA19211EEdff47f25384cdc3#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        </details></div>
+    </div>
+    <details class="fold">
+      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>另外 1 個地址沒有要你看的結果</summary>
+    <div class="ad" id="a-usdc" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>cUSDCv3 的基礎資產，由 Safe 存入</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
+        <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 circle-usdc（<a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a> 對照）</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x95ba4cf87d6723ad9c0db21737d862be80e93911">部署者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911</a><span class="res">沒有已確認的合約同一個部署者</span></span></span></div></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 3 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Circle 的 USDC 合約地址頁在 Mainnet 的 Ethereum 那一列列出這個地址 <a class="aisrc" href="https://developers.circle.com/stablecoins/usdc-contract-addresses">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko 的 usd-coin 幣在 Ethereum 下列出這個地址 <a class="aisrc" href="https://www.coingecko.com/en/coins/usd-coin">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 FiatTokenProxy，由 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911 在 0xe7e0fe390354509cd08c9a0168536938600ddc552b3f7cb96030ebef62e75895 建立 <a class="aisrc" href="https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        </details></div>
+    </div>
+    </details>
+  </div>
+</section>
+
+<section id="past">
+  <h2>過去交易</h2>
+  <h3>1. 這個模板的交易以前成功過嗎？</h3>
+  <p class="ans"><b>成功過，2 個 Safe 一共做過 2 次。</b> EOA：20 次，來自 20 個地址，各自送模板的一個呼叫。最近一次是 2026-10-10。全部成功執行。最近 3 筆：<a href="https://etherscan.io/tx/0x69b643ae3076b4eb4d52f918defdba68022f8ef4cd31102e75966ee73de42f26">0x69b643ae…</a> <a href="https://etherscan.io/tx/0x2c31ba00d049b370032761d267693e6957aef3b84aed2d8b5edae7e4fb742183">0x2c31ba00…</a> <a href="https://etherscan.io/tx/0x567a743ac4d6547b8fd747eed63b74d1c715f6fefb1554fd9bb7183cdff92f55">0x567a743a…</a></p>
+  <h3>2. app 填的值，一般是多少？</h3>
+  <p class="ans">這個模板沒有留任何值給 app 填。</p>
+  <h3>3. 其他交易哪裡不同？</h3>
+  <p class="ans">75 筆交易做了這個模板不允許的事。</p>
+  <p class="ans"><span class="aiw" data-ai><span>多數 Safe 先另外授權、再單獨呼叫 <code>supply</code>；本範本拒絕這種形狀，只接受同一個 MultiSend 裡的剛好授權加 <code>supply</code>。</span><span class="byai">AI 研究</span></span></p>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>顯示這 5 種不同</span></summary><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="tx">例子（最多 3 筆）</th></tr></thead><tbody>
+    <tr><td class="what" data-label="哪裡不同"><span>沒有 <code>approve</code>：只有 <code>compound-v3-cusdcv3.supply</code></span></td><td class="n" data-label="Safe"><span><span class="num">58</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-11-09</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x099c0d2dae1ae1fc15fef1883a67d4a649a59c209af5d5f79c71036177f27670">0x099c0d2d…</a> <a href="https://etherscan.io/tx/0x80e4e2704ce22e2ecbad92690fcac6e003f8d664b1fe65f348687c4627abd939">0x80e4e270…</a> <a href="https://etherscan.io/tx/0x4ffaef50a7ad730b04edff22d392f016882fb0a5f12acc7e4553f90330fd5361">0x4ffaef50…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>delegatecall 到不是官方 MultiSend 的合約</span></td><td class="n" data-label="Safe"><span><span class="num">12</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-10-12</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x6d186ea987391f9607ae5b1f1c8493475e3f342fcd5a9c70470be00622ab3d90">0x6d186ea9…</a> <a href="https://etherscan.io/tx/0xa5dec9c6307ccac74e4e2e5e76501aeb8893b179e00eb30d577e6b731c1d64b0">0xa5dec9c6…</a> <a href="https://etherscan.io/tx/0xc5bdc26f0e5f6770c8dfc883eef98152efa20d2b437d551ae9958d2c55275657">0xc5bdc26f…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>0x8E5ce3c78D099667499aceD49B4D5E3D21c81510.0x6a761202 → usdc.approve → compound-v3-cusdcv3.supply</code></span></td><td class="n" data-label="Safe"><span><span class="num">3</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-10-26</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xa856766fbe8dbbc40ca1b97eeabf3f9fff3683f40df0b7c7c4ca5d611ed6e679">0xa856766f…</a> <a href="https://etherscan.io/tx/0x421d37f137a65b098a08ccba382618b32158d840366c3632e04750ca11877197">0x421d37f1…</a> <a href="https://etherscan.io/tx/0x7ab2382f83b2f6d0df204d0ddd0a131e74a362d0274dcc5593184168e45193aa">0x7ab2382f…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>一次超過 4 個呼叫的批次</span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-01-01</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x79cd605220e51649c8055fccf8afcd22044bfc5f42e2010f662ff5a3c61f6555">0x79cd6052…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>0x6B175474E89094C44Da98b954EedeAC495271d0F.approve → 0xf6e72Db5454dd049d0788e411b06CfAF16853042.0x8d7ef9bb → usdc.approve → compound-v3-cusdcv3.supply</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-03-10</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x4a2bbdda41e98aa51a14264fb499efedd6eaadfa73ce9b7dad64d2dad82e4d34">0x4a2bbdda…</a></span></td></tr></tbody></table></div>
+  </details>
+  <h3>餘額有沒有剛好照金額變動？</h3>
+  <p class="cap">每筆符合的交易都在它的上一個區塊上單獨重跑一次，比較它前後的餘額跟交易寫的金額。</p>
+  <div class="sh"><code>gets card.amount of card.market</code><span>模板宣告的誤差：最多少 2、多 0 個最小單位</span></div>
+    <p class="cap">compound-v3-cusdcv3：22 筆（Safe 2 筆、EOA 20 筆）</p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">餘額最後</th><th scope="col" class="n">寄出方</th></tr></thead><tbody>
+    <tr><td class="what" data-label="餘額最後"><span>少 2 個最小單位</span></td><td class="n" data-label="寄出方"><span><span class="num">5</span></span></td></tr>
+    <tr><td class="what" data-label="餘額最後"><span>少 1 個最小單位</span></td><td class="n" data-label="寄出方"><span><span class="num">17</span></span></td></tr></tbody></table></div>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>程式怎麼搜尋</span></summary>
+  <h3>搜尋 compound-v3-cusdcv3 的鑄造，找到 9283 筆，研究 290 筆，含證實為 Safe 的參與方的 213 筆全數研究</h3>
+  <p class="cap">搜尋了最近一年的每一筆交易，從區塊 23874180（2025-11-25）到區塊 26502179（2026-11-26），沒有遺漏。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">9283 = 9283</span>）。</p>
+  <p class="cap">這些交易是從事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。</p>
+  <p class="cap">另外 193 筆是別的操作，不列入：<code>0xB9E62Cb9b4cE8ec13c886FaE67369Da417EE2714.0x6e553f65</code> 27 筆、<code>0x00000000005aD9ce1f5035FD62CA96CEf16AdAAF.0x8f5c3522</code> 21 筆、<code>compound-v3-cusdcv3.transfer</code> 19 筆、<code>0xF15c683FfBa50254BAb340eFE49FA2038EE9354c.0x087ad9a3</code> 18 筆，還有別的。</p>
+  </details>
+</section>
+
+<section id="next">
+  <h2>下一步</h2>
+  <ol class="steps">
+    <li><div>核准前，到「<a href="#addresses">地址</a>」逐一打開每個地址的來源，確認每個網域都是協議自己的，而且頁面上列著這個地址。</div></li>
+    <li><div>第一次用這個模板，或模板改過之後，先核准它<pre class="cmd"><code>pnpm kiss-sign template approve compound/supply</code></pre>
+      <p class="then">它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 <code>y</code>。</p></div></li>
+    <li><div>做卡片<pre class="cmd"><code>pnpm kiss-sign card new compound/supply</code></pre>
+      <p class="then">你這份 clone 的 <code>templates/</code> 或 <code>registry/</code> 跟 GitHub 上的 main 不一樣時，它什麼都不問就停下，叫你先跑 <code>git pull</code> 。</p></div></li>
+    <li id="next-market"><div>借貸合約（<code>market</code>）：它列出可選的合約，每個附完整地址。選 <a href="#a-compound-v3-cusdcv3">compound-v3-cusdcv3</a>，地址是 <span class="addr">0xc3d688B66703497DAA19211EEdff47f25384cdc3</span>
+      <p class="then">列表的編號可能跟別人的不同，照名字選；也可以直接打名字 <code>compound-v3-cusdcv3</code> 。</p></div></li>
+    <li id="next-amount"><div>金額（<code>amount</code>）：打 usdc 的數量，用整顆幣，例如 <code>1250.5</code> ；可以有千位逗號，例如 <code>1,000,611.448606</code> 。
+      <p class="then">它在問 [y/N] 之前顯示的卡片列出整顆和 base units 兩種寫法，核對數字是你要的。</p></div></li>
+    <li><div>它印出整張卡片，每個名字都附完整地址，最後問 <code>Is this what you mean to do? [y/N]</code> 。全部是你要的才打 <code>y</code> 。
+      <p class="then">它印出 <code>Sealed card 0x…</code> ，這是卡片的 hash，下一步要用。</p></div></li>
+    <li><div>在 Safe web app 提出交易（第一次用這個模板或這個合約，先用小額），複製它的 safeTxHash，然後跑<pre class="cmd"><code>pnpm kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
+      <p class="then"><code>MATCH</code>：它印出 safeTxHash 和一個網頁的路徑，網頁上有 domain hash、message hash 和比對清單，往下走。</p>
+      <p class="then"><code>MISMATCH</code> 或 <code>UNVERIFIABLE</code>：不要簽。看它列出的檢查，再看本報告「<a href="#review">待確認</a>」裡 AI 的判斷，可能說明原因。</p></div></li>
+    <li><div>加強等級：在獨立電腦上跑<pre class="cmd"><code>./check.sh &#60;nonce&#62;</code></pre>
+      <p class="then">它算出的 hash 跟硬體錢包比對；它的網頁上的比對清單跟 <code>verify</code> 網頁上的逐列比對。</p></div></li>
+    <li><div>硬體錢包上的 domain hash 和 message hash，跟 <code>verify</code> 網頁上的逐字比對，一樣才簽。
+      <p class="then">用 Ledger 簽的話，先在 Ethereum app 的設定打開「Transaction hash」：套用描述檔時，要打開它裝置才會顯示 domain hash 和 message hash。比對這兩個 hash 才是 kiss-sign 靠的檢查，解讀看起來再對也要比。</p>
+      <div class="hash"><span>比對</span><span class="f2">domain hash 和 message hash，都是 0x 開頭 64 個字元</span></div></div></li>
+  </ol>
+  <div class="auto"><h3>程式每次簽名自動做的事</h3>
+    <ul>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>交易只有這 2 個呼叫，MultiSend 也一個個解開</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>每個參數符合上面的規則，重新編碼要一模一樣</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬後 Safe 給出的 usdc 剛好是你填的金額</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬後 Safe 收到 compound-v3-cusdcv3</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬後 Safe 的 compound-v3-cusdcv3：因為捨入，Safe 最後的餘額可以低最多 2 個最小單位</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>沒有任何授權在交易後變高</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>卡片用到的每個登記合約，程式碼還是 code pin 記錄的那份</span></li>
+    </ul>
+  </div>
+</section>
+
+<section id="usage">
+  <h2>AI 用量</h2>
+  <p class="lead">Opus 5.5 用 129 次呼叫、46 分鐘做出這份報告。</p>
+  <table class="ut"><thead><tr><th scope="col">項目</th><th scope="col">token</th></tr></thead><tbody><tr><th scope="row">重複讀取（cache 讀取）</th><td class="num">20.5M</td></tr><tr><th scope="row">新讀入（input 與 cache 寫入）</th><td class="num">0.21M</td></tr><tr><th scope="row">output</th><td class="num">0.06M</td></tr></tbody><tfoot><tr><th scope="row">總共</th><td class="num">20.8M</td></tr></tfoot></table>
+  <p class="cap">來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者。這些數字程式不檢查。</p>
+</section>
+
+<footer class="foot">由 <code>pnpm report compound/supply --instance-of compound-v3-cusdcv3 --record</code> 從 <code>templates/compound/supply/template.json</code>、<code>templates/compound/supply/docs.json</code>、<code>templates/compound/supply/instances/compound-v3-cusdcv3/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/compound-supply/compound-v3-cusdcv3.json</code>、<code>testdata/abi</code>、<code>testdata/research/compound-supply.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/compound/supply/notes.json</code>、<code>templates/compound/supply/instances/compound-v3-cusdcv3/notes.json</code>、<code>testdata/usage/compound-supply/compound-v3-cusdcv3.json</code> 寫出，資料在 2026-11-26 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。用量的數字程式也不檢查。</footer>
+
+</div>
+</div>
+</div>
+</body>
+</html>

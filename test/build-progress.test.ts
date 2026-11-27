@@ -138,19 +138,19 @@ test('a template reported per instance is refused without --instance', () => {
 });
 
 test("a template whose calls reach only tokens has no protocol to note, so step 6 is done; one that calls a protocol needs its notes, and one DefiLlama does not list a judgment", () => {
-  const root = checkout(['templates/uniswap/approve-permit2/template.json', 'templates/fluid/vault-deposit/template.json', 'templates/uniswap/allow-router/template.json']);
+  const root = checkout(['templates/erc20/transfer/template.json', 'templates/fluid/vault-deposit/template.json', 'templates/cow/swap/template.json']);
   const step6 = (args: string[]) => lines(progress(root, args).stdout)[6];
   try {
-    for (const template of ['uniswap/approve-permit2', 'fluid/vault-deposit']) writeFileSync(join(root, 'templates', template, 'notes.json'), JSON.stringify({ title: { en: 'x' } }));
-    assert.equal(step6(['uniswap/approve-permit2']), " 6. Check the protocol's health: done");
+    for (const template of ['erc20/transfer', 'fluid/vault-deposit']) writeFileSync(join(root, 'templates', template, 'notes.json'), JSON.stringify({ title: { en: 'x' } }));
+    assert.equal(step6(['erc20/transfer']), " 6. Check the protocol's health: done");
     assert.equal(step6(['fluid/vault-deposit', '--instance', 'fluid-fusdc']), " 6. Check the protocol's health: not started (missing: notes.json: protocols.fluid-lending)");
     const contracts = JSON.parse(readFileSync(join(root, 'registry', 'contracts.json'), 'utf8'));
-    delete contracts.permit2.defillama;
+    delete contracts['gpv2-settlement'].defillama;
     writeFileSync(join(root, 'registry', 'contracts.json'), JSON.stringify(contracts));
-    writeFileSync(join(root, 'templates', 'uniswap/allow-router', 'notes.json'), JSON.stringify({ title: { en: 'x' } }));
-    assert.equal(step6(['uniswap/allow-router']), " 6. Check the protocol's health: not started (missing: notes.json: judgments (the health of permit2, which DefiLlama does not list))");
-    writeFileSync(join(root, 'templates', 'uniswap/allow-router', 'notes.json'), JSON.stringify({ title: { en: 'x' }, judgments: [{ text: { en: 'x' } }] }));
-    assert.equal(step6(['uniswap/allow-router']), " 6. Check the protocol's health: done");
+    writeFileSync(join(root, 'templates', 'cow/swap', 'notes.json'), JSON.stringify({ title: { en: 'x' } }));
+    assert.equal(step6(['cow/swap']), " 6. Check the protocol's health: not started (missing: notes.json: judgments (the health of gpv2-settlement, which DefiLlama does not list))");
+    writeFileSync(join(root, 'templates', 'cow/swap', 'notes.json'), JSON.stringify({ title: { en: 'x' }, judgments: [{ text: { en: 'x' } }] }));
+    assert.equal(step6(['cow/swap']), " 6. Check the protocol's health: done");
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
