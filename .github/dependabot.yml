@@ -1,0 +1,18 @@
+# Dependabot waits seven days after a release, as pnpm's minimumReleaseAge does, before it proposes an update.
+# A dependency update still pins its files first (node scripts/pin-packages.ts), in a program pull request.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
