@@ -66,7 +66,7 @@ kiss-sign does both: you write down what you want first, and before you sign, it
 - **[Safenet](https://safe.global/blog/safenet-launches) adds checks by outside security firms, but it is still early.** Safe launched it in October 2026.
   - **How it works.** Before a transaction executes, four security firms check it against one set of rules: a swapped recipient, a change of owners or threshold, a dangerous approval, a delegatecall, a known malicious address. An optional Guard then lets only checked transactions execute.
   - **Few can use it yet.** Only Safe Pro users can use it until 2027.
-  - **Its penalties are not settled.** Until the end of 2026, a firm that gets a verdict wrong [risks only 0.40 USDC](https://cryptonews.net/news/security/33597811/), and the longer-term slashing terms are to be reviewed in early 2027.
+  - **Its penalties are light for now.** Until the end of 2026, a firm that gets a verdict wrong [risks only 0.40 USDC](https://cryptonews.net/news/security/33597811/). Safe's CEO [said at Devcon 8](https://www.youtube.com/watch?v=MJhwB7mzhxM&t=940s) that slashing is not built yet, because they want adoption first and stronger penalties later.
 
 ## Install
 
