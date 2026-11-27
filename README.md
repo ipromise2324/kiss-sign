@@ -63,9 +63,7 @@ kiss-sign does both: you write down what you want first, and before you sign, it
 
   kiss-sign needs no descriptor. Your wallet only has to show the hashes.
 
-- **What kiss-sign adds.** Kirk Baird's talk [Why Blockchain Security Has Failed: Single Points of Failure](https://www.youtube.com/watch?v=J9q6FMKIQrw&t=163s) names three ways to reduce risk: harden, diversify and bound. kiss-sign does the first two; bound, how much a transaction can lose, depends on what you choose to sign, such as the amount.
-  - **Harden.** The web app flags general risks: unverified contracts, new or lookalike addresses, known threats. kiss-sign checks what you meant: every byte against your card and the template, each address against the protocol's own sources, each contract's code against the code you reviewed.
-  - **Diversify.** Not only the web app's word: your computer, two RPC providers, your hardware wallet's hashes and, ideally, a second computer must agree.
+- **[Safenet](https://safe.global/blog/safenet-launches) checks shared rules, not what you meant.** Safe launched it in October 2026. Before a transaction executes, four security firms check it against one set of rules: a swapped recipient, a change of owners or threshold, a dangerous approval, a delegatecall, a known malicious address. An optional Guard then lets only checked transactions execute. It is new: it is open only to Safe Pro users until 2027, and until the end of 2026 a firm that gets a verdict wrong [risks only 0.40 USDC](https://cryptonews.net/news/security/33597811/). And no shared rule can tell that a vault, an amount or a recipient is not the one you meant.
 
 ## Install
 
