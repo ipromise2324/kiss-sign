@@ -63,10 +63,10 @@ kiss-sign does both: you write down what you want first, and before you sign, it
 
   kiss-sign needs no descriptor. Your wallet only has to show the hashes.
 
-- **[Safenet](https://safe.global/blog/safenet-launches) checks shared rules, not what you meant.** Safe launched it in October 2026.
+- **[Safenet](https://safe.global/blog/safenet-launches) adds checks by outside security firms, but it is still early.** Safe launched it in October 2026.
   - **How it works.** Before a transaction executes, four security firms check it against one set of rules: a swapped recipient, a change of owners or threshold, a dangerous approval, a delegatecall, a known malicious address. An optional Guard then lets only checked transactions execute.
-  - **It is new.** Only Safe Pro users can use it until 2027. Until the end of 2026, a firm that gets a verdict wrong [risks only 0.40 USDC](https://cryptonews.net/news/security/33597811/).
-  - **It cannot know your intent.** No shared rule can tell that a vault, an amount or a recipient is not the one you meant.
+  - **Few can use it yet.** Only Safe Pro users can use it until 2027.
+  - **Its penalties are not settled.** Until the end of 2026, a firm that gets a verdict wrong [risks only 0.40 USDC](https://cryptonews.net/news/security/33597811/), and the longer-term slashing terms are to be reviewed in early 2027.
 
 ## Install
 
