@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { Exchange } from '../src/chain/recording.ts';
-import { tempDir } from './fixture-base.ts';
+import { tempDir } from './repo-with-test-fixtures.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const HOOK = pathToFileURL(join(import.meta.dirname, 'offline-network.ts')).href;

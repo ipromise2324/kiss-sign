@@ -38,8 +38,7 @@ import type { Rule, Template } from '../src/template/template.ts';
 import type { TraceCall } from '../src/research/trace.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
 import { repoWithFrozenReports } from './frozen-reports.ts';
-import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
-import { tempDir } from './fixture-base.ts';
+import { repoWithTestFixtures, tempDir } from './repo-with-test-fixtures.ts';
 import { parseRegistryAt } from './registry-at.ts';
 
 const ROOT = repoWithTestFixtures();
@@ -960,6 +959,15 @@ test('the who-decides key gives a free field the meaning of the claim the templa
   assert.ok(supply.some((k) => k.means === '換成別的值，結果一樣或交易失敗。'), JSON.stringify(supply));
 });
 
+test("an EOA's test transaction is named as one in its row and in the parameter checks line", () => {
+  const of = { ...inputs, fixtures: [{ name: 'morpho-market-supply-eoa', sender: 'eoa', outcome: { kind: 'card-refused', why: 'wrong-kind' } }] } satisfies HtmlInputs;
+  const page = pageOf(of);
+  assert.ok(body(page, 'review').rows.some((r) => r.title.endsWith('· morpho-market-supply-eoa（EOA 的交易）')), JSON.stringify(body(page, 'review').rows.map((r) => r.title)));
+  const params = page.header.strip.find((item) => item.line === 'params')?.explain ?? '';
+  assert.match(params, /其中 1 筆是 EOA 送的，不是 Safe：它們測得到模板的呼叫，測不到只有 Safe 才有的設定、nonce、delegatecall，以及 Safe 交易自己的欄位（gas 和退款欄位都填 0）。$/);
+  assert.doesNotMatch(pageOf(inputs).header.strip.find((item) => item.line === 'params')?.explain ?? '', /EOA/, 'a Safe-only test set says nothing of EOAs');
+});
+
 test('a free number says a test tried other values only when one did', () => {
   const words = (of: HtmlInputs) => args(pageOf(of)).flatMap((row) => (row.chips.some((c) => c.who === 'free') ? [plain(row.qualifier)] : []));
   assert.ok(words(inputs).includes(`${WORDS['zh-TW'].freeCaught.scalar}換成別的值測過，結果不變或交易失敗`), JSON.stringify(words(inputs)));
@@ -967,10 +975,10 @@ test('a free number says a test tried other values only when one did', () => {
   assert.ok(words(untested).some((text) => text.endsWith('測試看到的：沒有測試換過別的值')), JSON.stringify(words(untested)));
   assert.ok(!words(untested).some((text) => text.includes('測過')));
   assert.ok(freeItems(pageOf(untested)).some((k) => k.means === '模板允許任何值，沒有測試換過別的值。'));
-  const failed = inputs.fixtures.map(({ name, outcome }) =>
+  const failed = inputs.fixtures.map(({ name, sender, outcome }) =>
     outcome.kind === 'card-refused' || outcome.perturbation.kind === 'not-run'
-      ? { name, outcome }
-      : { name, outcome: { ...outcome, perturbation: { ...outcome.perturbation, runs: outcome.perturbation.runs.map((run) => ({ ...run, outcome: 'reverted' as const })) } } },
+      ? { name, sender, outcome }
+      : { name, sender, outcome: { ...outcome, perturbation: { ...outcome.perturbation, runs: outcome.perturbation.runs.map((run) => ({ ...run, outcome: 'reverted' as const })) } } },
   );
   assert.ok(words({ ...inputs, fixtures: failed }).some((text) => text.endsWith('測試看到的：換成別的值測過，每次交易都失敗或不符合卡片')));
   assert.ok(freeItems(pageOf({ ...inputs, fixtures: failed })).some((k) => k.means === '換成別的值測過，每次交易都失敗或不符合卡片。'), 'the legend says so too');

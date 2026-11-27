@@ -5,7 +5,7 @@ import { RECORDINGS_DIR, SUMMARIES_DIR } from '../src/research/past-txs-summary.
 import { USAGE_DIR } from '../src/research/usage.ts';
 import { PERTURB_DIR } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
-import { tempDir } from './fixture-base.ts';
+import { tempDir } from './repo-with-test-fixtures.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 

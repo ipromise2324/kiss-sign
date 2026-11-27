@@ -6,8 +6,7 @@ import type { Exchange } from '../src/chain/recording.ts';
 import type { AbiCase } from '../src/contracts/abi-case.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { withBlockTimes } from './block-times.ts';
-import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
-import { baseRepo } from './fixture-base.ts';
+import { baseRepo, repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 import { SUMMARY_FIXTURES, runOffline } from './run-offline.ts';
 import type { Http, Run } from './run-offline.ts';
 

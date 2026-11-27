@@ -19,7 +19,7 @@ import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { SignedMessage, Template } from '../src/template/template.ts';
 import { evaluate, evaluateTx, keccakText, parseVerdictFile } from '../src/verify/verify.ts';
 import type { VerdictFile } from '../src/verify/verify.ts';
-import { baseRepo } from './fixture-base.ts';
+import { baseRepo } from './repo-with-test-fixtures.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const load = (dir: string, name: string) => readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8');

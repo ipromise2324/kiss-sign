@@ -1,6 +1,5 @@
 import { bytesToHex, concatBytes, hexToBytes } from '@noble/hashes/utils.js';
 import assert from 'node:assert/strict';
-import { join } from 'node:path';
 import { test } from 'node:test';
 import { resolveCard } from '../../src/card.ts';
 import type { Card } from '../../src/card.ts';
@@ -17,8 +16,9 @@ import type { Observed } from '../../src/simulate/effects.ts';
 import { topic, wordOf } from '../../src/simulate/events.ts';
 import type { SafeState } from '../../src/simulate/safe-state.ts';
 import { loadTemplate } from '../../src/template/template.ts';
+import { repoWithTestFixtures } from '../repo-with-test-fixtures.ts';
 
-const ROOT = join(import.meta.dirname, '..', '..');
+const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
 const IDS = ['safe/add-owner', 'eth/transfer', 'uniswap/approve-permit2', 'uniswap/swap'];
 const templates = new Map(IDS.map((id) => [id, loadTemplate(ROOT, id, registry)]));
@@ -30,6 +30,10 @@ const OTHER = '0x4444444444444444444444444444444444444444' as Address;
 const ZERO = '0x0000000000000000000000000000000000000000' as Address;
 const USDC = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' as Address;
 const USDT = '0xdac17f958d2ee523a2206206994597c13d831ec7' as Address;
+const tokenField = templates.get('uniswap/approve-permit2')?.card.get('token');
+const APPROVED_NAME = (tokenField?.kind === 'contract' ? tokenField.scope.names?.[0] : undefined) ?? assert.fail('uniswap/approve-permit2 lists a token');
+const APPROVED = registry.entries.get(APPROVED_NAME)?.address ?? assert.fail(`${APPROVED_NAME} is in the registry`);
+const UNAPPROVED = APPROVED === USDC ? USDT : USDC;
 const PERMIT2 = '0x000000000022d473030f116ddee9f6b43ac78ba3' as Address;
 const MAX = (1n << 256n) - 1n;
 
@@ -42,12 +46,12 @@ const allowedBy = (card: Card): FloorAllowed => {
 const addOwnerAndApprove: Card = {
   operations: [
     { template: 'safe/add-owner', values: { owner: 'alice', threshold: '2' } },
-    { template: 'uniswap/approve-permit2', values: { token: 'usdc' } },
+    { template: 'uniswap/approve-permit2', values: { token: APPROVED_NAME } },
   ],
 };
 const approveAndSwap: Card = {
   operations: [
-    { template: 'uniswap/approve-permit2', values: { token: 'usdc' } },
+    { template: 'uniswap/approve-permit2', values: { token: APPROVED_NAME } },
     { template: 'uniswap/swap', values: { 'sell-token': 'usdc', 'buy-token': 'usdt', 'sell-amount': '1000000', 'min-buy': '990000' } },
   ],
 };
@@ -111,16 +115,16 @@ const ALICE_ADDED = { owners: [ALICE, BOB], threshold: 2n };
 
 test('a card that adds an owner and approves Permit2 passes both floors only for that owner and that approval', () => {
   const allowed = allowedBy(addOwnerAndApprove);
-  assert.deepEqual(checkFloor(multiSend(addAlice, approve(USDC, PERMIT2)), allowed), { kind: 'pass' });
-  assert.deepEqual(rules(checkFloor(multiSend(addAlice, approve(USDC, OTHER)), allowed)), ['unlimited-approval multiSend[1]']);
-  assert.deepEqual(rules(checkFloor(multiSend(addAlice, approve(USDT, PERMIT2)), allowed)), ['unlimited-approval multiSend[1]']);
-  assert.deepEqual(rules(checkFloor(multiSend(addAlice, approve(USDC, PERMIT2), enableModule), allowed)), ['self-call multiSend[2]']);
+  assert.deepEqual(checkFloor(multiSend(addAlice, approve(APPROVED, PERMIT2)), allowed), { kind: 'pass' });
+  assert.deepEqual(rules(checkFloor(multiSend(addAlice, approve(APPROVED, OTHER)), allowed)), ['unlimited-approval multiSend[1]']);
+  assert.deepEqual(rules(checkFloor(multiSend(addAlice, approve(UNAPPROVED, PERMIT2)), allowed)), ['unlimited-approval multiSend[1]']);
+  assert.deepEqual(rules(checkFloor(multiSend(addAlice, approve(APPROVED, PERMIT2), enableModule), allowed)), ['self-call multiSend[2]']);
 
-  const kept = { token: USDC, spender: PERMIT2, before: 0n, after: MAX };
+  const kept = { token: APPROVED, spender: PERMIT2, before: 0n, after: MAX };
   assert.deepEqual(checkSimulatedFloor(observed(ALICE_ADDED, [kept]), SAFE, allowed), { kind: 'pass' });
   assert.deepEqual(rules(checkSimulatedFloor(observed(ALICE_ADDED, [kept, { ...kept, spender: OTHER }]), SAFE, allowed)), ['unlimited-approval allowances']);
-  assert.deepEqual(rules(checkSimulatedFloor(observed(ALICE_ADDED, [{ ...kept, token: USDT }]), SAFE, allowed)), ['unlimited-approval allowances']);
-  const viaPermit2 = { token: USDC, spender: PERMIT2, before: { amount: 0n, expiration: 0n, nonce: 0n }, after: { amount: PERMIT2_MAX, expiration: 0n, nonce: 0n } };
+  assert.deepEqual(rules(checkSimulatedFloor(observed(ALICE_ADDED, [{ ...kept, token: UNAPPROVED }]), SAFE, allowed)), ['unlimited-approval allowances']);
+  const viaPermit2 = { token: APPROVED, spender: PERMIT2, before: { amount: 0n, expiration: 0n, nonce: 0n }, after: { amount: PERMIT2_MAX, expiration: 0n, nonce: 0n } };
   assert.deepEqual(rules(checkSimulatedFloor(observed(ALICE_ADDED, [kept], [viaPermit2]), SAFE, allowed)), ['unlimited-approval permit2']);
   assert.deepEqual(rules(checkSimulatedFloor(observed({ owners: [OTHER, BOB], threshold: 2n }, [kept]), SAFE, allowed)), ['safe-state safe']);
   assert.deepEqual(rules(checkSimulatedFloor(observed({ ...ALICE_ADDED, modules: [OTHER] }, [kept]), SAFE, allowed)), ['safe-state safe']);
@@ -129,10 +133,10 @@ test('a card that adds an owner and approves Permit2 passes both floors only for
 test('enableModule, or an owner function, is refused for a card that holds a Uniswap swap, whatever its allowances keep', () => {
   const allowed = allowedBy(approveAndSwap);
   assert.equal(allowed.change, undefined);
-  assert.deepEqual(checkFloor(multiSend(approve(USDC, PERMIT2)), allowed), { kind: 'pass' });
-  assert.deepEqual(rules(checkFloor(multiSend(approve(USDC, PERMIT2), enableModule), allowed)), ['self-call multiSend[1]']);
+  assert.deepEqual(checkFloor(multiSend(approve(APPROVED, PERMIT2)), allowed), { kind: 'pass' });
+  assert.deepEqual(rules(checkFloor(multiSend(approve(APPROVED, PERMIT2), enableModule), allowed)), ['self-call multiSend[1]']);
   assert.deepEqual(rules(checkFloor({ ...BASE, data: `0x${bytesToHex(enableModule.data)}` as Hex }, allowed)), ['self-call call']);
-  assert.deepEqual(rules(checkFloor(multiSend(approve(USDC, PERMIT2), addAlice), allowed)), ['self-call multiSend[1]']);
+  assert.deepEqual(rules(checkFloor(multiSend(approve(APPROVED, PERMIT2), addAlice), allowed)), ['self-call multiSend[1]']);
   const module = { address: SAFE, topics: [topic('EnabledModule(address)')], data: wordOf(OTHER) };
   const receipt = executed({ kind: 'receipt', logs: [module] });
   assert.deepEqual(rules(checkSimulatedFloor(receipt, SAFE, allowed)), ['safe-state receipt']);

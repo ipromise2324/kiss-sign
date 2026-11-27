@@ -831,3 +831,24 @@ test("an entry every instance with a report names is described once, in the temp
   const review = { status: 'confirmed', text: { en: 'x', 'zh-TW': 'x' }, recommendation: { en: 'x', 'zh-TW': 'x' } };
   assert.throws(() => generatedHtml(repoWithNotes({ [sharedPath]: shared, [minePath]: { ...mine, reviews: { ...mine.reviews, 'fluid-lending-factory/abi': review } } }), inputs, title), /"fluid-lending-factory\/abi" is about fluid-lending-factory, which every instance/);
 });
+
+test('notes-needed asks nothing of a committed report, and names a text left empty, a language left out and a key the page refuses', () => {
+  for (const [dir, { inputs }] of pages) {
+    const { root } = reportOf(dir);
+    const needed = notesNeeded(root, inputs, ['zh-TW']);
+    assert.deepEqual([needed.skeleton, needed.remove], [{}, []], dir);
+  }
+  const { inputs } = pages.get(join(ROOT, TEMPLATES_DIR, 'safe/add-owner')) ?? assert.fail('safe/add-owner');
+  const path = notesPath('', 'safe/add-owner');
+  const notes = JSON.parse(readFileSync(join(ROOT, path), 'utf8'));
+  const [field] = Object.keys(notes.fields) as [string];
+  notes.fields[field].en = ' ';
+  delete notes.summary['zh-TW'];
+  notes.reviews['usdc/source.page'] = { status: 'confirmed', text: { en: 'x', 'zh-TW': 'x' }, recommendation: { en: 'x', 'zh-TW': 'x' } };
+  assert.throws(() => notesNeeded(repoWithNotes({ [path]: notes }), inputs, ['en']), /holds texts in/);
+  notes.summary['zh-TW'] = '';
+  const needed = notesNeeded(repoWithNotes({ [path]: notes }), inputs, ['en']);
+  assert.deepEqual(needed.skeleton, { [path]: { summary: { 'zh-TW': '' }, fields: { [field]: { en: '' } } } });
+  assert.deepEqual(needed.remove, [`${path} reviews usdc/source.page`]);
+  assert.match(needed.about.summary ?? '', /\[en 750, zh-TW 250\]/);
+});

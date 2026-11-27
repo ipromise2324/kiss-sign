@@ -1,0 +1,29 @@
+// An excerpt of vendor/publicsuffix/public_suffix_list.dat at its pinned commit: these lines, verbatim, in order.
+// ===BEGIN ICANN DOMAINS===
+*.ck
+!www.ck
+cn
+公司.cn
+com
+fi
+io
+org
+to
+uk
+co.uk
+app
+finance
+global
+limo
+xyz
+// ===END ICANN DOMAINS===
+// ===BEGIN PRIVATE DOMAINS===
+githubusercontent.com
+github.io
+gitlab.io
+herokuapp.com
+*.eth.limo
+readthedocs.io
+vercel.app
+webflow.io
+// ===END PRIVATE DOMAINS===

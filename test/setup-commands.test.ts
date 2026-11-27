@@ -9,7 +9,7 @@ import { keccakCode } from '../src/contracts/code.ts';
 import { parseFunctionSignature } from '../src/decode/abi.ts';
 import type { Hex } from '../src/safe/types.ts';
 import type { Transport } from '../src/chain/rpc.ts';
-import { baseRepo } from './fixture-base.ts';
+import { baseRepo } from './repo-with-test-fixtures.ts';
 
 const FIXTURE_TEMPLATES = join(import.meta.dirname, 'fixtures', 'templates');
 const SAFE = '0xAF177c57e369bBD30F47745DbAAF1D225f4B74D0';

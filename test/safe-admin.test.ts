@@ -23,7 +23,7 @@ import { checkMutations } from '../src/template/mutation.ts';
 import { detailText } from '../src/verify/detail-text.ts';
 import { TemplateError, loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
-import { baseRepo } from './fixture-base.ts';
+import { baseRepo } from './repo-with-test-fixtures.ts';
 
 /** A card that declares an owner change, which lets the four owner and threshold functions past the static floor. */
 const DECLARES_CHANGE: FloorAllowed = { change: { add: '0x00000000000000000000000000000000000000aa' as Address, remove: undefined, threshold: undefined } };

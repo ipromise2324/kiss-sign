@@ -1,7 +1,7 @@
 {
   "id": "merkl/claim",
   "card": {
-    "token": { "kind": "contract", "registryKind": "token" }
+    "token": { "kind": "contract", "registryKind": "token", "names": ["usdc", "morpho"] }
   },
   "calls": [
     {

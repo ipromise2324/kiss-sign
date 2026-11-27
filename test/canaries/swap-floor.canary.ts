@@ -54,8 +54,8 @@ const ATTRIBUTES = { asset: 'token', factory: 'factory', adapter: 'adapter', tok
 const swapTemplate = (floor: object) => ({
   id: 'test/swap',
   card: {
-    'sell-token': { kind: 'contract', registryKind: 'token' },
-    'buy-token': { kind: 'contract', registryKind: 'token' },
+    'sell-token': { kind: 'contract', registryKind: 'token', names: ['one', 'two'] },
+    'buy-token': { kind: 'contract', registryKind: 'token', names: ['one', 'two'] },
     'sell-amount': { kind: 'amount', of: 'sell-token' },
     'min-buy': { kind: 'amount', of: 'buy-token', ...floor },
   },
@@ -89,7 +89,7 @@ function swapOf(minOut: bigint): SafeTx {
 
 test('a swap whose minimum is one base unit under the card\'s is a mismatch, and one at or over it is not', () => {
   const registry = parseRegistry(plainRegistry);
-  const templates = new Map([['test/swap', parseTemplate(swapTemplate({}), registry)]]);
+  const templates = new Map([['test/swap', parseTemplate(swapTemplate({}), registry, 'committed')]]);
   const card = resolveCard({ operations: [{ template: 'test/swap', values: { 'sell-token': 'one', 'buy-token': 'two', 'sell-amount': `${SOLD}`, 'min-buy': '992500000' } }] }, { templates, registry, addressBook: new Map(), safe: SAFE });
   assert.equal(card.kind, 'resolved');
   const judged = (minOut: bigint) => checkTemplateFields(swapOf(minOut), (card as Extract<typeof card, { kind: 'resolved' }>).card, templates, registry).kind;
@@ -213,7 +213,7 @@ async function cardNew({ world = {}, drpc = world, registry = priced, pair = ['o
 /** Before a program knows `floor`, loading the template refuses it with exactly this, and there is nothing to guard. */
 function knowsFloor(): boolean {
   try {
-    parseTemplate(swapTemplate(FLOOR), parseRegistry(plainRegistry));
+    parseTemplate(swapTemplate(FLOOR), parseRegistry(plainRegistry), 'committed');
     return true;
   } catch (error) {
     if (error instanceof TemplateError && error.message === 'card.min-buy.floor: unexpected field') return false;

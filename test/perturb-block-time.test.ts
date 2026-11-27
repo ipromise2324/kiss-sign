@@ -24,7 +24,7 @@ type Raw = { calls: { args: { deadline: unknown } }[] };
 function swapWithin(seconds: bigint) {
   const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'uniswap', 'swap', 'template.json'), 'utf8')) as Raw;
   raw.calls.at(-1)!.args.deadline = { withinSeconds: Number(seconds) };
-  return parseTemplate(raw, registry);
+  return parseTemplate(raw, registry, 'committed');
 }
 
 async function executedTime(): Promise<bigint> {
@@ -102,7 +102,7 @@ test("a perturb recording whose executed block's time was edited is refused: the
   );
 });
 
-test('a perturb recording whose executed block was rebuilt, with a later time and its new hash, is refused: the Safe Transaction Service gives another time', async () => {
+test('a perturb recording whose executed block was rebuilt, with a later time and its new hash, is refused: its fixture gives another time', async () => {
   await assert.rejects(
     replayEdited((raw) => {
       const [block] = executedBlocks(raw);
@@ -114,7 +114,7 @@ test('a perturb recording whose executed block was rebuilt, with a later time an
       }
       raw.executed.hash = forged.hash;
     }),
-    /has time \d+; the Safe Transaction Service says the transaction ran in block \d+ at time \d+/,
+    /has time \d+; its fixture says the transaction ran in block \d+ at time \d+/,
   );
 });
 

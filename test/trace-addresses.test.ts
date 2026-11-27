@@ -13,8 +13,7 @@ import type { TraceCall, TracedTx } from '../src/research/trace.ts';
 import { checksumAddress } from '../src/safe/types.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../src/template/template.ts';
-import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
-import { tempDir } from './fixture-base.ts';
+import { repoWithTestFixtures, tempDir } from './repo-with-test-fixtures.ts';
 import { runOffline } from './run-offline.ts';
 
 const ROOT = repoWithTestFixtures();
@@ -169,9 +168,12 @@ test('a Safe sender and a template of two calls: the call an address is reached 
 });
 
 test('an entry the card of another transaction could name is checked only in a trace whose own calls hold it', () => {
+  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'uniswap', 'swap', 'template.json'), 'utf8'));
+  for (const field of ['sell-token', 'buy-token']) raw.card[field].names.push('weeth');
+  const listingWeeth = parseTemplate(raw, registry, 'committed');
   const other = at('weeth');
   const tx = swap(1, POOL, USDT, other);
-  const found = (values: readonly Address[]) => outsideAddresses(template, registry, [runOf([tx], [fit(1, ...values)])]).map(({ address }) => address);
+  const found = (values: readonly Address[]) => outsideAddresses(listingWeeth, registry, [runOf([tx], [fit(1, ...values)])]).map(({ address }) => address);
   assert.ok(found([USDT, USDC]).includes(other));
   assert.ok(!found([USDT, other]).includes(other));
   assert.ok(!found([]).includes(other));

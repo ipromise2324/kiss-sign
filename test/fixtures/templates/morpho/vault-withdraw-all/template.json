@@ -93,7 +93,8 @@
                       "minSharePriceE27": {
                         "minSharePrice": {
                           "assets": "card.min-assets",
-                          "shares": "calls[1].args.bundle.items[0].fields.data.call.args.shares"
+                          "shares": "calls[1].args.bundle.items[0].fields.data.call.args.shares",
+                          "scale": 27
                         }
                       },
                       "receiver": {

@@ -39,7 +39,7 @@ const observedOf = (observation: Observation): Observed => {
 
 /** What the effects check finds in `observed` for a card of the template `id`, its effects replaced by `effects`. */
 function judged(observed: Observed, id: string, effects: object, values: Record<string, string>, book: Record<string, Address>, safe: Address): string[] {
-  const template = parseTemplate({ ...templateText(id), effects }, registry);
+  const template = parseTemplate({ ...templateText(id), effects }, registry, 'committed');
   const templates = new Map([[template.id, template]]);
   const card = resolveCard({ operations: [{ template: template.id, values }] }, { templates, registry, addressBook: new Map(Object.entries(book)), safe });
   assert.equal(card.kind, 'resolved');

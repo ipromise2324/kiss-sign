@@ -144,6 +144,38 @@ const entryIn = (contracts: RawEntries, name: string): Record<string, unknown> =
 /** Another address next to `address`, so a pool naming its token keeps its two tokens in address order. */
 const beside = (address: string): string => `${address.slice(0, -1).toLowerCase()}${(parseInt(address.slice(-1), 16) ^ 1).toString(16)}`;
 
+test('an entry gaining a field no study reads keeps every committed summary', () => {
+  const changed = changedBy((contracts) => {
+    for (const [token, byte] of [['usdc', '7a'], ['usdt', '7b']] as const) {
+      const feed = { description: `${token.toUpperCase()} / USD`, decimals: 8, heartbeat: 86400, deviationBps: 25, sourceClass: 'cex_price', quote: 'usd' };
+      contracts[`a-feed-of-${token}`] = { address: `0x${byte.repeat(20)}`, kind: 'oracle', source: entryIn(contracts, token).source, code: entryIn(contracts, 'usdc').code, feed };
+      entryIn(contracts, token).price = { feed: `a-feed-of-${token}` };
+    }
+    entryIn(contracts, 'usdc').dependsOn = ['permit2'];
+    entryIn(contracts, 'usdc').sourceLabel = 'Another label';
+    entryIn(contracts, 'usdc').coingecko = 'another-coin';
+    entryIn(contracts, 'universal-router-2.1.2').ignoresTrailer = 'Another reason.';
+    (entryIn(contracts, 'universal-router-2.1.2').standingAllowance as { why: string }).why = 'Another reason.';
+  });
+  assert.deepEqual(changed, []);
+});
+
+test('a change of a field a study reads makes stale the summaries that read it, and not one that reads none of it', () => {
+  const stale = (read: string, unread: string, edit: (contracts: RawEntries) => void) => assert.deepEqual(changedBy(edit, [read, unread]), [read]);
+  const transfer = ['erc20-transfer-steth', 'morpho-vault-v2-revoke-acuto-usdc-v2-4a57'] as const;
+  stale(...transfer, (c) => (entryIn(c, 'usdt').address = beside(entryIn(c, 'usdt').address as string)));
+  stale(...transfer, (c) => (entryIn(c, 'usdt').defillama = 'another-protocol'));
+  stale(...transfer, (c) => (entryIn(c, 'usdt').standingAllowance = { via: 'erc20', why: 'A reason.' }));
+  stale(...transfer, (c) => (entryIn(c, 'usdt').ignoresTrailer = 'A reason.'));
+  const adapter = ['morpho-vault-v2-revoke-acuto-usdc-v2-4a57', 'erc20-transfer-steth'] as const;
+  stale(...adapter, (c) => (entryIn(c, 'acuto-usdc-v2-4a57-market-adapter').attributes = { factory: 'vault-v2-factory' }));
+  stale(...adapter, (c) => (entryIn(c, 'morpho-market-v1-adapter-v2-factory').defillama = 'another-protocol'));
+  const readBy = (name: string, entry: string) => assert.ok(changedBy((c) => (entryIn(c, entry).defillama = 'another-protocol'), [name]).includes(name), `${name} reads ${entry}, which the test above gives fields no study reads`);
+  readBy('morpho-market-supply', 'usdc');
+  readBy('uniswap-allow-router-permit2', 'universal-router-2.1.2');
+  readBy('uniswap-allow-router-permit2', 'permit2');
+});
+
 test('a study that reads a field its entries are not given is refused, and one that reads a field they are given sees the registry\'s', () => {
   const full = registry.entries.get('universal-router-2.1.2') as RegistryEntry;
   const studied = studyRegistry(registry);
@@ -190,6 +222,23 @@ test('a summary is refused when a token its traces logged and no call names join
   };
   assert.deepEqual(added(TOKEN), ['registry entries it reads']);
   assert.deepEqual(added(`0x${'7d'.repeat(20)}`), [], 'a token no trace logged keeps the summary');
+});
+
+test('a token that joins the registry leaves a summary fresh until its template lists it, though no studied transaction holds its address', () => {
+  const root = scratchRepo();
+  const file = join(SUMMARIES_DIR, 'erc20-transfer-steth.json');
+  const summary = parseSummary(file, readFileSync(join(FIXTURES, file), 'utf8'));
+  const stale = () => staleParts(root, pastTxsRegistry(root, loadRegistry(root), summary.query), summary);
+  assert.deepEqual(stale(), []);
+  const contracts = join(root, 'registry', 'contracts.json');
+  const raw = JSON.parse(readFileSync(contracts, 'utf8')) as Record<string, Record<string, unknown>>;
+  writeFileSync(contracts, JSON.stringify({ ...raw, 'unrelated-token': aToken(`0x${'7e'.repeat(20)}`) }, null, 2));
+  assert.deepEqual(stale(), [], 'no field of erc20/transfer lists the new token');
+  const transfer = join(root, 'templates', 'erc20', 'transfer', 'template.json');
+  const template = JSON.parse(readFileSync(transfer, 'utf8'));
+  template.card.token.names.push('unrelated-token');
+  writeFileSync(transfer, JSON.stringify(template, null, 2));
+  assert.deepEqual(stale(), ['template', 'registry entries it reads'], 'the token field of erc20/transfer now lists the new token');
 });
 
 test('a summary holds a string decoded from the chain whatever its characters, and reads back as the same summary', async () => {
@@ -251,14 +300,22 @@ test('a summary whose misfit holds a value at a place the template binds or lack
 });
 
 test('every committed past-txs summary names a template and was studied with its template, registry entries and study code as this checkout holds them', () => {
-  const fixtures = repoWithTestFixtures();
   const problems = readdirSync(join(ROOT, SUMMARIES_DIR)).flatMap((f) => {
     const file = join(SUMMARIES_DIR, f);
     const summary = parseSummary(file, readFileSync(join(ROOT, file), 'utf8'));
-    const root = [ROOT, fixtures].find((r) => existsSync(join(r, 'templates', summary.query.template, 'template.json')));
-    if (root === undefined) return [`${file}: names no template in templates/ or test/fixtures/templates/`];
-    const parts = staleParts(root, pastTxsRegistry(root, loadRegistry(root), summary.query), summary);
-    return parts.length === 0 ? [] : [`${file}: the ${parts.join(' and the ')} changed since it was studied`];
+    if (!existsSync(join(ROOT, 'templates', summary.query.template, 'template.json'))) return [`${file}: names no template in templates/`];
+    const parts = staleParts(ROOT, pastTxsRegistry(ROOT, loadRegistry(ROOT), summary.query), summary);
+    return parts.length === 0 ? [] : [`${file}: the ${parts.join(' and the ')} changed since it was studied; run pnpm past-txs --restudy ${f.replace(/\.json$/, '')}`];
+  });
+  assert.deepEqual(problems, []);
+});
+
+test("every test-only past-txs summary was studied with the test fixtures' templates and registry entries and this checkout's study code", () => {
+  const problems = readdirSync(join(FIXTURES, SUMMARIES_DIR)).flatMap((f) => {
+    const file = join(SUMMARIES_DIR, f);
+    const summary = parseSummary(file, readFileSync(join(FIXTURES, file), 'utf8'));
+    const parts = staleParts(FIXTURES, pastTxsRegistry(FIXTURES, loadRegistry(FIXTURES), summary.query), summary);
+    return parts.length === 0 ? [] : [`${join('test', 'fixtures', file)}: the ${parts.join(' and the ')} changed since it was studied; run node test/fixture-summaries.ts ${f.replace(/\.json$/, '')}`];
   });
   assert.deepEqual(problems, []);
 });

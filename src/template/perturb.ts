@@ -11,13 +11,15 @@ import type { BlockHeader, EventLog } from '../chain/types.ts';
 import { headerHash } from '../chain/header-hash.ts';
 import { uintWord } from '../decode/codec.ts';
 import type { Registry } from '../registry.ts';
-import { parseServiceTx } from '../safe/parse.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
-import { endsNeeded, expectedChanges, judgeEffects, keptAllowances, keptKey, viewCalls } from '../simulate/effects.ts';
+import { describeFinding, endsNeeded, expectedChanges, judgeEffects, keptAllowances, keptKey, viewCalls } from '../simulate/effects.ts';
 import type { KeptAllowances } from '../simulate/effects.ts';
 import type { Observed } from '../simulate/effects.ts';
 import { APPROVAL, EXECUTION_SUCCESS, PERMIT2, PERMIT2_INDEXED, addressOf, namesAddress } from '../simulate/events.ts';
-import { simulateSafeTx } from '../simulate/simulate.ts';
+import { simulateTx } from '../simulate/simulate.ts';
+import type { Sender } from '../simulate/simulate.ts';
+import { eoaCannotTest, eoaReceiptDiffers, loadRecordedTx } from './recorded-tx.ts';
+import type { ExecutedAt, RecordedTx } from './recorded-tx.ts';
 import type { Observation } from '../simulate/simulate.ts';
 import { checkTemplateFields, inspectTemplateFields } from './check.ts';
 import { checkMutations } from './mutation.ts';
@@ -41,7 +43,10 @@ export type Run = { readonly leaf: Leaf; readonly value: string; readonly outcom
 export type PerturbationReport =
   | { readonly kind: 'pass'; readonly runs: readonly Run[] }
   | { readonly kind: 'fail'; readonly runs: readonly Run[]; readonly failed: readonly Run[] }
-  | { readonly kind: 'not-run'; readonly cause: 'fields' | 'unverifiable' | 'not-executed'; readonly reason: string };
+  | { readonly kind: 'not-run'; readonly cause: 'fields' | 'unverifiable' | 'not-executed' | 'baseline'; readonly reason: string };
+
+/** What the original's simulation is held to besides executing: the logs its receipt holds when they are its call's own, as an EOA's are. */
+export type PerturbationContext = { readonly chain?: FieldChain; readonly receiptLogs?: readonly EventLog[] | undefined };
 
 const ALLOWED: Readonly<Record<FreeClaim, readonly Outcome[]>> = {
   scalar: ['reverted', 'refused', 'same'],
@@ -138,9 +143,10 @@ function effectsText(observed: Extract<Observed, { kind: 'executed' }>, unlimite
 }
 
 /**
- * Changes every free field of a matching transaction, one value at a time, simulates each copy, and requires its
- * outcome to be one the field's claim allows: a scalar may stop the call or be refused but must otherwise change
- * nothing, a proof must stop the call, and an unread field must change nothing. This finds a free field that grants a
+ * First the original must execute, emit the logs `receiptLogs` holds when given, and pass the effects check, since each
+ * copy is judged by how it differs from the original. Then it changes every free field of the transaction, one value at
+ * a time, simulates each copy, and requires its outcome to be one the field's claim allows: a scalar may stop the call
+ * or be refused but must otherwise change nothing, a proof must stop the call, and an unread field must change nothing. This finds a free field that grants a
  * permission, approves a hash or moves value where the effects check does not look.
  */
 export async function checkPerturbations(
@@ -149,13 +155,20 @@ export async function checkPerturbations(
   templates: ReadonlyMap<string, Template>,
   registry: Registry,
   simulate: (tx: SafeTx) => Promise<Observation>,
-  chain: FieldChain = {},
+  { chain = {}, receiptLogs }: PerturbationContext = {},
 ): Promise<PerturbationReport> {
   const { check, leaves } = inspectTemplateFields(tx, card, templates, registry, [], chain);
   if (check.kind !== 'match') return { kind: 'not-run', cause: 'fields', reason: `the transaction's fields give ${check.kind}` };
   const base = await simulate(tx);
   if (base.kind === 'unverifiable') return { kind: 'not-run', cause: 'unverifiable', reason: base.reasons.join('; ') };
   if (base.observed.kind !== 'executed') return { kind: 'not-run', cause: 'not-executed', reason: `the transaction did not execute: ${base.observed.why}` };
+  const unlike = receiptLogs === undefined ? undefined : eoaReceiptDiffers(receiptLogs, base.logs);
+  if (unlike !== undefined) return { kind: 'not-run', cause: 'baseline', reason: unlike };
+  const baseVerdict = judgeEffects(base.observed, card, templates, registry);
+  if (baseVerdict.kind === 'unverifiable') return { kind: 'not-run', cause: 'unverifiable', reason: `the original's effects could not be judged: ${baseVerdict.reasons.join('; ')}` };
+  if (baseVerdict.kind === 'mismatch') {
+    return { kind: 'not-run', cause: 'baseline', reason: `the original's effects give MISMATCH: ${baseVerdict.findings.map((f) => describeFinding(f, registry)).join('; ')}` };
+  }
   const unlimited = unlimitedOf(keptAllowances(card, templates, registry).kept);
   const baseLogs = logText(base.logs, tx.safe, unlimited);
   const baseEffects = effectsText(base.observed, unlimited);
@@ -189,7 +202,7 @@ export async function checkPerturbations(
 
 export const PERTURB_DIR = join('testdata', 'perturb');
 
-/** A `pnpm perturb --record` file: the Safe transaction it changed, the card, any replacing template, and the chain's answers. */
+/** A `pnpm perturb --record` file: the test transaction it changed, the card, any replacing template, and the chain's answers. */
 type PerturbRecording = {
   readonly safeTx: string;
   readonly card: unknown;
@@ -207,28 +220,18 @@ const agreed = <T>(read: Read<T>, what: string): T => {
 const readPerturbRecording = (repoRoot: string, name: string): PerturbRecording =>
   readRecording(join(repoRoot, PERTURB_DIR, `${name}.json`)) as PerturbRecording;
 
-/** The block the Safe Transaction Service says the transaction ran in: its `blockNumber` and its `executionDate` in seconds. */
-export type ServiceExecution = { readonly number: bigint; readonly time: bigint };
-
-export function serviceExecution(service: { readonly blockNumber?: unknown; readonly executionDate?: unknown }): ServiceExecution {
-  const ms = typeof service.executionDate === 'string' ? Date.parse(service.executionDate) : Number.NaN;
-  if (!Number.isSafeInteger(service.blockNumber) || !Number.isSafeInteger(ms) || ms % 1000 !== 0) throw new Error('the Safe Transaction Service record has no whole blockNumber and executionDate');
-  return { number: BigInt(service.blockNumber as number), time: BigInt(ms / 1000) };
-}
-
-function recordedTx(repoRoot: string, recording: PerturbRecording): { readonly tx: SafeTx; readonly execution: ServiceExecution } {
-  const fixture = JSON.parse(readFileSync(join(repoRoot, 'testdata', 'safe-tx', `${recording.safeTx}.json`), 'utf8'));
-  return { tx: parseServiceTx(fixture.service, { chainId: 1n, version: fixture.chain.version }), execution: serviceExecution(fixture.service) };
-}
-
 const BLOCK_METHODS = new Set(['eth_getBlockByNumber', 'eth_getBlockByHash']);
 
 /**
  * Refuses a recording whose block headers are not what they claim: each block answer must hash to its own `hash` and,
  * at the height of the executed or parent block, be that block; the executed block must name the recorded parent as
- * its parent, and its number and time must be those the Safe Transaction Service gave for the transaction.
+ * its parent, and its number and time, and its hash when the fixture gives one, must be those its fixture gives for the
+ * transaction.
  */
-export function checkRecordedBlocks(file: string, recording: Pick<PerturbRecording, 'executed' | 'parent' | 'exchanges'>, execution: ServiceExecution): void {
+export function checkRecordedBlocks(file: string, recording: Pick<PerturbRecording, 'executed' | 'parent' | 'exchanges'>, execution: ExecutedAt): void {
+  if (execution.hash !== undefined && execution.hash !== recording.executed.hash) {
+    throw new Error(`${file}: the transaction ran in block ${execution.hash} by its fixture, the recording simulates it after block ${recording.executed.hash}`);
+  }
   for (const exchange of recording.exchanges.filter((e) => BLOCK_METHODS.has(e.method))) {
     for (const [provider, answer] of Object.entries(exchange.answers)) {
       if (answer === null) continue;
@@ -239,7 +242,7 @@ export function checkRecordedBlocks(file: string, recording: Pick<PerturbRecordi
       if (block.hash !== recording.executed.hash) continue;
       if ((answer as { parentHash?: unknown }).parentHash !== recording.parent.hash) throw new Error(`${file}: block ${block.number} does not name the recorded parent ${recording.parent.hash}`);
       if (block.number !== execution.number || block.time !== execution.time) {
-        throw new Error(`${file}: block ${block.number} has time ${block.time}; the Safe Transaction Service says the transaction ran in block ${execution.number} at time ${execution.time}`);
+        throw new Error(`${file}: block ${block.number} has time ${block.time}; its fixture says the transaction ran in block ${execution.number} at time ${execution.time}`);
       }
     }
   }
@@ -250,7 +253,18 @@ export const executedOn = (executed: BlockHeader): FieldChain => ({ blockTime: {
 
 type Replayed = { readonly reader: Reader; readonly parent: BlockHeader; readonly executed: BlockHeader };
 
-async function replayed(name: string, recording: PerturbRecording, execution: ServiceExecution): Promise<Replayed> {
+/**
+ * The logs the receipt of an EOA's transaction holds, which are its one call's own; undefined for a Safe's, whose
+ * receipt also holds the logs of whatever sent `execTransaction`.
+ */
+export async function ownReceiptLogs(reader: Reader, { sender, hash, executed }: RecordedTx): Promise<readonly EventLog[] | undefined> {
+  if (sender === 'safe') return undefined;
+  const receipt = agreed(await reader.getTransactionReceipt(hash), 'its receipt');
+  if (receipt === null || receipt.transactionHash !== hash || receipt.blockHash !== executed.hash) throw new Error(`the receipt of ${hash} is not in block ${executed.hash}, where its fixture says it ran`);
+  return receipt.logs;
+}
+
+async function replayed(name: string, recording: PerturbRecording, execution: ExecutedAt): Promise<Replayed> {
   const file = `${PERTURB_DIR}/${name}.json`;
   checkRecordedBlocks(file, recording, execution);
   const reader = replayReader(recording.exchanges);
@@ -258,7 +272,8 @@ async function replayed(name: string, recording: PerturbRecording, execution: Se
   return { reader, parent: await header(recording.parent), executed: await header(recording.executed) };
 }
 
-function replay({ reader, parent, executed }: Replayed, tx: SafeTx, card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): Promise<PerturbationReport> {
+async function replay({ reader, parent, executed }: Replayed, recorded: RecordedTx, card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): Promise<PerturbationReport> {
+  const { sender, tx } = recorded;
   const expectations = expectedChanges(card, templates, registry);
   const watch = expectations.kind === 'expected' ? [...expectations.changes.keys()].filter((asset): asset is Address => asset !== 'eth') : [];
   return checkPerturbations(
@@ -266,8 +281,8 @@ function replay({ reader, parent, executed }: Replayed, tx: SafeTx, card: Resolv
     card,
     templates,
     registry,
-    (copy) => simulateSafeTx(reader, { tx: copy, parent, time: executed.time, watch, ends: endsNeeded(expectations), views: viewCalls(card, templates, registry) }),
-    executedOn(executed),
+    (copy) => simulateTx(sender, reader, { tx: copy, parent, time: executed.time, watch, ends: endsNeeded(expectations), views: viewCalls(card, templates, registry) }),
+    { chain: executedOn(executed), receiptLogs: await ownReceiptLogs(reader, recorded) },
   );
 }
 
@@ -277,21 +292,25 @@ function replay({ reader, parent, executed }: Replayed, tx: SafeTx, card: Resolv
  */
 export async function replayPerturbRecording(repoRoot: string, name: string, registry: Registry): Promise<PerturbationReport> {
   const recording = readPerturbRecording(repoRoot, name);
-  const { tx, execution } = recordedTx(repoRoot, recording);
+  const recorded = loadRecordedTx(repoRoot, recording.safeTx);
+  const { tx } = recorded;
   const card = parseCard(recording.card);
   const templates = new Map(card.operations.map((op) => [op.template, loadTemplate(repoRoot, op.template, registry)]));
   if (recording.template !== undefined) {
-    const replacing = parseTemplate(recording.template, registry);
+    const replacing = parseTemplate(recording.template, registry, 'recorded');
     templates.set(replacing.id, replacing);
   }
+  const untestable = [...templates.values()].map((template) => eoaCannotTest(recorded, template)).find((why) => why !== undefined);
+  if (untestable !== undefined) throw new Error(`${PERTURB_DIR}/${name}.json: ${untestable}`);
   const resolution = resolveCard(card, { templates, registry, addressBook: new Map(), safe: tx.safe });
   if (resolution.kind === 'refused') throw new Error(`${PERTURB_DIR}/${name}.json: card refused: ${resolution.reason} at ${resolution.at}: ${resolution.detail}`);
-  return replay(await replayed(name, recording, execution), tx, resolution.card, templates, registry);
+  return replay(await replayed(name, recording, recorded.executed), recorded, resolution.card, templates, registry);
 }
 
 /** A recorded transaction of one template, judged again offline with the template as it is now. */
 export type FixtureJudgement = {
   readonly name: string;
+  readonly sender: Sender;
   readonly outcome:
     | { readonly kind: 'card-refused'; readonly why: string }
     | { readonly kind: 'judged'; readonly mutations: MutationResult; readonly perturbation: PerturbationReport };
@@ -312,32 +331,28 @@ function recordingsOf(repoRoot: string, template: Template): { readonly name: st
 
 /**
  * Every recording `recordingsOf` names, in file-name order: its card resolved, its bound fields mutated
- * (`checkMutations`) and its free fields perturbed again from the recording. Each is named by its Safe transaction fixture.
+ * (`checkMutations`) and its free fields perturbed again from the recording. Each is named by its `testdata/safe-tx/` fixture.
  */
 export async function judgeFixtures(repoRoot: string, template: Template, registry: Registry): Promise<FixtureJudgement[]> {
   const templates = new Map([[template.id, template]]);
   const judged: FixtureJudgement[] = [];
   for (const { name, recording, card } of recordingsOf(repoRoot, template)) {
-    const { tx, execution } = recordedTx(repoRoot, recording);
-    const resolution = resolveCard(card, { templates, registry, addressBook: new Map(), safe: tx.safe });
-    if (resolution.kind === 'refused') {
-      judged.push({ name: recording.safeTx, outcome: { kind: 'card-refused', why: `${resolution.reason} at ${resolution.at}: ${resolution.detail}` } });
+    const recorded = loadRecordedTx(repoRoot, recording.safeTx);
+    const { sender, tx } = recorded;
+    const untestable = eoaCannotTest(recorded, template);
+    if (untestable !== undefined) {
+      judged.push({ name: recording.safeTx, sender, outcome: { kind: 'card-refused', why: untestable } });
       continue;
     }
-    const at = await replayed(name, recording, execution);
+    const resolution = resolveCard(card, { templates, registry, addressBook: new Map(), safe: tx.safe });
+    if (resolution.kind === 'refused') {
+      judged.push({ name: recording.safeTx, sender, outcome: { kind: 'card-refused', why: `${resolution.reason} at ${resolution.at}: ${resolution.detail}` } });
+      continue;
+    }
+    const at = await replayed(name, recording, recorded.executed);
     const mutations = checkMutations(tx, resolution.card, templates, registry, [], executedOn(at.executed));
-    const perturbation = await replay(at, tx, resolution.card, templates, registry);
-    judged.push({ name: recording.safeTx, outcome: { kind: 'judged', mutations, perturbation } });
+    const perturbation = await replay(at, recorded, resolution.card, templates, registry);
+    judged.push({ name: recording.safeTx, sender, outcome: { kind: 'judged', mutations, perturbation } });
   }
   return judged;
-}
-
-/** The template's first recorded test transaction, of `recordingsOf`, whose card resolves against `registry`, with its card. */
-export function firstRecordedTx(repoRoot: string, template: Template, registry: Registry): { readonly name: string; readonly tx: SafeTx; readonly card: ResolvedCard } | undefined {
-  for (const { recording, card } of recordingsOf(repoRoot, template)) {
-    const { tx } = recordedTx(repoRoot, recording);
-    const resolution = resolveCard(card, { templates: new Map([[template.id, template]]), registry, addressBook: new Map(), safe: tx.safe });
-    if (resolution.kind === 'resolved') return { name: recording.safeTx, tx, card: resolution.card };
-  }
-  return undefined;
 }

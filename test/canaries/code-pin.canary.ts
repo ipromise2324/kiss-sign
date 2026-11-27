@@ -7,6 +7,8 @@ import type { Exchange } from '../../src/chain/recording.ts';
 import { replayReader } from '../../src/chain/recording.ts';
 import { ZEPPELINOS_IMPLEMENTATION_SLOT } from '../../src/contracts/proxy.ts';
 import { RegistryError, loadRegistry, parseRegistry } from '../../src/registry.ts';
+import { parseRegistryAt } from '../registry-at.ts';
+import { BASE_DIR } from '../repo-with-test-fixtures.ts';
 import type { BlockRef, BlockTag } from '../../src/chain/types.ts';
 import type { Reader } from '../../src/chain/reader.ts';
 import { keccakCode, readCodeHistory } from '../../src/contracts/code.ts';
@@ -130,13 +132,13 @@ test('a pinned implementation that delegates a call it has no function for to an
 
 test('every entry in registry/contracts.json carries a code pin', () => {
   const unpinned = [...loadRegistry(ROOT).entries.values()].filter((entry) => entry.code === undefined).map((entry) => entry.name);
-  assert.deepEqual(unpinned, []);
+  assert.deepEqual(unpinned, [], `pin each with pnpm pin-code ${unpinned.join(' ')}`);
 });
 
 test('a code pin with an implementation but no implementation hash is refused', () => {
-  const raw = JSON.parse(readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8'));
+  const raw = JSON.parse(readFileSync(join(BASE_DIR, 'registry', 'contracts.json'), 'utf8'));
   delete raw.usdc.code.implementation.hash;
-  assert.throws(() => parseRegistry(raw), (error: unknown) => error instanceof RegistryError && error.message === 'usdc.code.implementation.hash: not 0x-prefixed even-length hex');
+  assert.throws(() => parseRegistryAt(BASE_DIR, raw), (error: unknown) => error instanceof RegistryError && error.message === 'usdc.code.implementation.hash: not 0x-prefixed even-length hex');
 });
 
 const PARENT = { number: 26048222n, hash: '0xb7f7661dfa747c98c1765100e40139b9e67e773fd143891d2ea46555a846f2b2' as Hex };
@@ -183,11 +185,11 @@ test('a transaction to sign needs the current pin: code that only an earlier pin
 });
 
 test('earlier pins out of block order, or under a current pin with no from, are refused', () => {
-  const raw = JSON.parse(readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8'));
+  const raw = JSON.parse(readFileSync(join(BASE_DIR, 'registry', 'contracts.json'), 'utf8'));
   raw.bundler3.code = { hash: UPGRADED, from: 300, earlier: [{ from: 200, hash: BUNDLER3_PIN }, { from: 100, hash: BUNDLER3_PIN }] };
-  assert.throws(() => parseRegistry(raw), { message: 'bundler3.code.earlier[1].from: not after 200, the from of the pin before it' });
+  assert.throws(() => parseRegistryAt(BASE_DIR, raw), { message: 'bundler3.code.earlier[1].from: not after 200, the from of the pin before it' });
   raw.bundler3.code = { hash: UPGRADED, earlier: [{ from: 100, hash: BUNDLER3_PIN }] };
-  assert.throws(() => parseRegistry(raw), { message: 'bundler3.code.from: not after 100, the from of the pin before it' });
+  assert.throws(() => parseRegistryAt(BASE_DIR, raw), { message: 'bundler3.code.from: not after 100, the from of the pin before it' });
 });
 
 /** A chain where `address` has no code before block 100, code 0x6001 from 100, and code 0x6002 from 250 to the head at 400. */

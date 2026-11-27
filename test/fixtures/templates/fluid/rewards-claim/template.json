@@ -1,7 +1,7 @@
 {
   "id": "fluid/rewards-claim",
   "card": {
-    "token": { "kind": "contract", "registryKind": "token" }
+    "token": { "kind": "contract", "registryKind": "token", "names": ["fluid"] }
   },
   "calls": [
     {

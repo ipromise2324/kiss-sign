@@ -1,4 +1,5 @@
 {
+  "request": "Supply USDC to a Morpho Blue market from my Safe.",
   "title": {
     "en": "Deposit into a Morpho market",
     "zh-TW": "存入 Morpho market"

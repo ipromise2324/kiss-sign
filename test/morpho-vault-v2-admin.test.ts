@@ -35,7 +35,12 @@ const IDS = [
   'morpho/vault-v2-adapter-cap-accept',
   'morpho/vault-v2-collateral-cap-submit',
 ];
-const templates = new Map(IDS.map((id) => [id, loadTemplate(ROOT, id, registry)]));
+const listingLseth = (id: string): Template => {
+  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', id, 'template.json'), 'utf8'));
+  raw.card.collateral.names.push('lseth');
+  return parseTemplate(raw, registry, 'committed');
+};
+const templates = new Map(IDS.map((id) => [id, id === 'morpho/vault-v2-collateral-cap-submit' ? listingLseth(id) : loadTemplate(ROOT, id, registry)]));
 const VAULT = 'acuto-usdc-v2-4a57';
 const NO_LIMIT = `${(1n << 128n) - 1n}`;
 const ALL = '1000000000000000000';
@@ -100,6 +105,11 @@ for (const c of CASES) {
   });
 }
 
+test("a cap card naming a market whose loan token is not the vault's asset is refused before any check", () => {
+  const result = resolveCard(card('morpho/vault-v2-cap-submit', { ...unlimited(KPK_ETH), market: 'usdc-weeth-86' }), { templates, registry, addressBook: new Map(), safe: safeTx('vault-v2-cap-submit-kpk').safe });
+  assert.deepEqual(result.kind === 'refused' ? [result.reason, result.detail] : result.kind, ['not-the-same', 'morpho/vault-v2-cap-submit needs one address for vault.asset weth and market.loanToken usdc']);
+});
+
 test('a cap submission with another absolute cap or another market on the card is a mismatch at that field', () => {
   const tx = safeTx('vault-v2-cap-submit-other-safe');
   assert.deepEqual(mismatchedArgs(check(tx, card('morpho/vault-v2-cap-submit', caps('usdc-usp-915', '1000001', '10000000000000000')))), ['newAbsoluteCap']);
@@ -140,7 +150,7 @@ test('a percent above 100 is refused on the card', () => {
 const raw = (id: string): Record<string, unknown> => JSON.parse(readFileSync(join(ROOT, 'templates', id, 'template.json'), 'utf8'));
 const refusal = (template: unknown): string => {
   try {
-    parseTemplate(template, registry);
+    parseTemplate(template, registry, 'committed');
   } catch (error) {
     if (error instanceof TemplateError) return error.message;
     throw error;

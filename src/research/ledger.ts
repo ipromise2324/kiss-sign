@@ -733,7 +733,7 @@ export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[
   const readOnly = readOnlyEntries(subject, inputs.registry, tracedAddresses(inputs.pastTxs.flatMap(({ run }) => run.traces)));
   const results = byEntry.flatMap(({ entry, results: own }) => withAddressResult(entry, own.map((r) => deployerCounts(r, confirmedElsewhere)), readOnly.get(entry.name)));
   const judged = fixtures.map(
-    (fixture): Result => ({ id: `fixture.${fixture.name}`, line: 'params', about: { kind: 'fixture', name: fixture.name, sender: 'safe' }, source: undefined, link: undefined, finding: fixtureFinding(fixture) }),
+    (fixture): Result => ({ id: `fixture.${fixture.name}`, line: 'params', about: { kind: 'fixture', name: fixture.name, sender: fixture.sender }, source: undefined, link: undefined, finding: fixtureFinding(fixture) }),
   );
   return { entries: checked.map(({ entry }) => entry), results: [...results, ...judged] };
 }
