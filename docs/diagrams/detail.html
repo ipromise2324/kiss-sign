@@ -115,7 +115,7 @@
         <li>Each official page as served, without scripts: the address next to its label; a GitHub page pinned to a commit on the default branch</li>
         <li>Other places that may hold the address: the protocol API's answer, the SDK on npm (with build provenance), CoinGecko's coin, Immunefi's bounty scope, the deployer proved on chain; the factory's answer (box 5) counts too</li>
         <li>Site listings (DefiLlama, CoinGecko, Immunefi, GitHub's verified domain) say which sites are the protocol's; they confirm a site, never an address</li>
-        <li><b>Each address needs 2 places</b>, counted by owner: one domain counts once</li>
+        <li><b>Each address the transaction touches needs 2 places</b>, a reference address (one <code>card new</code> only reads a number from) 1, counted by owner: one domain counts once</li>
       </ul>
       <div class="chips"><span class="chip">DefiLlama</span><span class="chip">CoinGecko</span><span class="chip">Immunefi</span><span class="chip">Public Suffix List</span><span class="chip">Source page</span><span class="chip">Protocol API</span><span class="chip">GitHub API</span><span class="chip">npm</span><span class="chip">Etherscan</span><span class="chip">Alchemy</span><span class="chip">drpc</span></div>
       <div class="why"><b>Decides nothing:</b> each PASS or FINDING goes into the report, and the signer judges it.</div></div>
@@ -180,7 +180,7 @@
         <li>The template, its test transactions and <code>perturb</code> recordings</li>
         <li>Registry entries and markets, with their code pins</li>
         <li><code>docs.json</code>, <code>notes.json</code>, the report and its recordings</li>
-        <li>One report per operation, or per operation and instance when the card picks one, a vault today (<code>instances/&lt;instance&gt;/</code>); no report, no signing</li>
+        <li>One report per operation, or per operation and instance when the card picks one, a vault or a lending market (<code>instances/&lt;instance&gt;/</code>); no report, no signing</li>
         <li>A program change it needs goes first, in a pull request of its own</li>
         <li>Never merges a template, registry or program gate pull request</li>
       </ul></div>
@@ -215,12 +215,12 @@
   <table class="src">
     <tr><th>Part</th><th>What it shows</th><th>Where it comes from</th></tr>
     <tr><td>Header</td><td>Title, summary, and a one-line verdict marked as advice</td><td><span class="tag ai">AI notes</span></td></tr>
-    <tr><td>Check strip</td><td>Transaction addresses · Reference addresses (when card new reads one) · Source verified · Code unchanged · Parameter checks · Call traces · Two providers, each with its count</td><td><span class="tag program">check-sources</span><span class="tag program">prove-abi</span><span class="tag program">pin-code</span><span class="tag program">mutation, perturb</span><span class="tag program">traces</span></td></tr>
-    <tr><td>Flow (流程)</td><td>Solid numbered arrows: the template's calls. One lifeline per contract a call or view targets. Up to 4 AI flow lines: solid and “confirmed” when the traces saw it in every one, and at least one, of the traced transactions that make its call; dashed otherwise, and a result to review when a traced transaction that makes its call missed it. Green arrows back to the Safe: what the effects say it gets. Per argument: who decides it (you type, you pick, the program computes, fixed, the app fills) and an example value.</td><td><span class="tag program">template</span><span class="tag program">traces</span><span class="tag program">perturb recording</span><span class="tag ai">AI flow lines, field meanings</span></td></tr>
+    <tr><td>Check strip</td><td>Transaction addresses · Reference addresses (when card new reads one) · Source verified · Code unchanged · Parameter checks · Call traces · Two providers, each with its count where it has one, in a grid</td><td><span class="tag program">check-sources</span><span class="tag program">prove-abi</span><span class="tag program">pin-code</span><span class="tag program">mutation, perturb</span><span class="tag program">traces</span></td></tr>
+    <tr><td>To review (待確認)</td><td>Every result you must look at, important (重要) before reference (參考), red before amber, each with the AI's review under it; then the AI's judgments</td><td><span class="tag program">results</span><span class="tag ai">AI reviews, judgments</span></td></tr>
+    <tr><td>Flow (流程)</td><td>Solid numbered arrows: the template's calls. One lifeline per contract a call or view targets. Up to 4 AI flow lines: solid and “confirmed” when the traces saw it in every one, and at least one, of the traced transactions that make its call; dashed otherwise, and a result to review when a traced transaction that makes its call missed it. Green arrows back to the Safe: what the effects say it gets. Per argument: who decides it (you type, you pick, computed, program reads, fixed, not checked here, up to a limit) and an example value.</td><td><span class="tag program">template</span><span class="tag program">traces</span><span class="tag program">perturb recording</span><span class="tag ai">AI flow lines, field meanings</span></td></tr>
     <tr><td>Protocol</td><td>TVL, listing date, whether the contract is a proxy, hacks with date and amount; what the protocol is, audits, each hack's cause</td><td><span class="tag program">DefiLlama</span><span class="tag program">code pin</span><span class="tag ai">AI intro, audits, causes</span></td></tr>
     <tr><td>Instance (實例)</td><td>The factory's answer, monthly <code>totalAssets()</code> as a bar chart, holder count, the top 10's share</td><td><span class="tag program">instance-evidence</span></td></tr>
-    <tr><td>To review (待確認)</td><td>Every result you must look at, important (重要) before reference (參考), red before amber, each with the AI's review under it; then the AI's judgments</td><td><span class="tag program">results</span><span class="tag ai">AI reviews, judgments</span></td></tr>
-    <tr><td>Wallet display</td><td>What the hardware wallet shows for one call, from its ERC-7730 descriptor; for a MultiSend, compare the safeTxHash</td><td><span class="tag program">erc7730</span></td></tr>
+    <tr><td>Wallet display</td><td>What the hardware wallet shows for one call, from its ERC-7730 descriptor; for a MultiSend, whose packed calls no descriptor decodes, compare the domain hash and the message hash</td><td><span class="tag program">erc7730</span></td></tr>
     <tr><td>Addresses (地址)</td><td>Per entry: its full address, each source with its result, how many places confirmed it, its confidence</td><td><span class="tag program">check-sources</span><span class="tag ai">AI role, sources checked by hand</span></td></tr>
     <tr><td>Past transactions</td><td>Whether the template's transaction worked before; the normal values of what the app fills; how the others differed; amounts against tolerances</td><td><span class="tag program">past-txs recordings</span><span class="tag ai">AI conclusion</span></td></tr>
     <tr><td>Next steps</td><td>The commands for approve, <code>book add</code>, <code>card new</code>, <code>verify</code>, <code>check.sh</code> and signing</td><td><span class="tag program">template</span></td></tr>
@@ -255,7 +255,7 @@
       <h3><i>13</i>Fill the card</h3>
       <ul>
         <li><code>card new</code> stops first unless <code>templates/</code> and <code>registry/</code> equal GitHub's main</li>
-        <li>Pick vaults, markets and recipients by number, each with its full address; only instances, vaults today, with a report are listed</li>
+        <li>Pick vaults, markets and recipients by number, each with its full address; only instances with a report, and only choices that keep the template's <code>same</code> fields on one address, are listed</li>
         <li>Amounts in whole tokens; <code>decimals()</code> read through both providers</li>
         <li>A computed field, such as the fewest shares, is read on chain with the template's slippage, not typed</li>
         <li>First use of a template or vault: a small amount first, as the report advises; nothing enforces it</li>
@@ -287,7 +287,7 @@
       <h3><i>17</i>Check the transaction</h3>
       <ol>
         <li>The template's hash is the one you approved</li>
-        <li>Floors: no <code>delegatecall</code> but to the official MultiSend; no unlimited approval but a registry standing allowance; no Safe setting change but a declared owner or threshold change; no MultiSend item sent to address zero; zero fee fields</li>
+        <li>Floors: no <code>delegatecall</code> but to the official MultiSend; no unlimited approval but one the template keeps for a registry standing allowance; no Safe setting change but a declared owner or threshold change; no MultiSend item sent to address zero; zero fee fields</li>
         <li>Fields: decode, re-encode byte for byte, every field against the template and the card; a signed message fetched by its digest must hash to it</li>
         <li>Each vault's <code>asset()</code> is its registry token</li>
         <li>Code: every registry contract the transaction or card names, or a card reference's attribute names, inside packed calls and signed messages too, with each message's <code>verifyingContract</code>, runs its pinned code</li>
@@ -300,7 +300,7 @@
       <h3><i>18</i>Simulate</h3>
       <ol class="from7">
         <li>Run it through the Safe's <code>execTransaction</code> with <code>eth_simulateV1</code>; an executed transaction's effects come from its receipt</li>
-        <li>Floors on the result: the Safe's settings end as they started or as declared; no allowance, Permit2's included, left unlimited but a standing one</li>
+        <li>Floors on the result: the Safe's settings end as they started or as declared; no allowance, Permit2's included, left unlimited but one the template keeps for a standing allowance</li>
         <li>Effects: every balance change is one the effects explain; no allowance ends higher than the card allows; views read before and after, through a <code>STATICCALL</code></li>
       </ol>
       <ul><li>Calls that move no asset of the Safe are listed, as information, not a check</li></ul>
