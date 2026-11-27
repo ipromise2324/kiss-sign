@@ -278,18 +278,15 @@ What it cost Claude Opus 5.5 to build each template and its report from zero, on
 | [morpho/vault-deposit (Steakhouse, new template)](https://claude.ai/artifact/9mi42v4ZwDKe97XLPhNvPX) | 25.90M | 26 | 133 | 99% |
 | [morpho/vault-deposit (Hyperithm, added vault)](https://claude.ai/artifact/WZxEhWeoaAyjuqFmgWowGb) | 13.67M | 30 | 98 | 98% |
 | [cow/swap](https://claude.ai/artifact/YRiJ2jTKSpD4nZGiNRN55h) | 28.55M | 51 | 148 | 98% |
-| [morpho/vault-v2-cap-submit (KPK)](https://claude.ai/artifact/UgvqrTXN5KfuruJ4FAfY1c) | 16.89M | 30 | 113 | 98% |
-| [morpho/vault-v2-cap-accept (Acuto)](https://claude.ai/artifact/XzHyngUk8GJmDQuvHB4nTr) | 10.79M | 17 | 78 | 98% |
-| [morpho/vault-v2-cap-decrease (Acuto)](https://claude.ai/artifact/C7QnVqx2ZTsBYktvoUbfDQ) | 11.71M | 20 | 88 | 98% |
-| [morpho/vault-v2-collateral-cap-revoke (Acuto)](https://claude.ai/artifact/RxhgdjkCCgRZQ2JYWBxnLP) | 17.27M | 35 | 115 | 98% |
-| [morpho/vault-v2-adapter-cap-submit (KPK)](https://claude.ai/artifact/8VDB1f7b9PSYJD74GJVCka) | 14.71M | 26 | 103 | 98% |
-| [morpho/vault-v2-collateral-cap-submit (KPK)](https://claude.ai/artifact/KrzERRAqbZA721E6rG2prJ) | 19.10M | 36 | 117 | 99% |
+| [morpho/vault-v2-cap-submit (Sentora RLUSD Main)](https://claude.ai/artifact/2MDjndgcsu43froGJzo5Qs) | 24.63M | 34 | 144 | 99% |
+| [morpho/vault-v2-cap-accept (Sentora RLUSD Main)](https://claude.ai/artifact/BUgSS7MoxSAaSwnpwZDtSr) | 10.64M | 21 | 86 | 98% |
 
-In all: 18 builds, 269.0M tokens, 440 minutes.
+In all: 14 builds, 213.8M tokens, 331 minutes.
 
 - **One build.** One AI agent, one build at a time, in a clone without that template, its report, its research or its test transactions.
 - **What a build does.** It researches every address, studies other Safes' past transactions, writes the template and its notes, records test transactions and renders the report. When the operation may need a step first, such as an approval, it reads the configured Safe's state to see whether the step is done.
 - **Added vault.** Such a row starts from the template the row above it built, so it covers only the new vault's report.
+- **cap-accept** starts from the cap-submit build, so the vault, its market and their sources were already in place.
 - **Review rounds.** The compound/supply and cow/swap rows include one: the report was read and a rule was sent back to tighten.
 - **Minutes** count active time.
 - **Cache reads** are 98% to 99% of the tokens, because the model reads its whole conversation again on every call.
