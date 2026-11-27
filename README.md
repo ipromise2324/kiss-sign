@@ -81,8 +81,8 @@ Fork this repository and clone your fork. Your fork's `main` is the program `ver
 git clone https://github.com/<you>/kiss-sign.git && cd kiss-sign
 pnpm install
 pnpm kiss-sign init --safe 0x… --language en   # or zh-TW for Traditional Chinese; see Language
-pnpm kiss-sign key add alchemy
-pnpm kiss-sign key add drpc
+pnpm kiss-sign key add alchemy   # paste the whole URL, such as https://eth-mainnet.g.alchemy.com/v2/AbC123
+pnpm kiss-sign key add drpc      # paste the whole URL, such as https://lb.drpc.live/ethereum/AbC123
 pnpm kiss-sign key add etherscan   # to build or review templates
 pnpm kiss-sign key add github      # optional: lets your AI search GitHub and raises its hourly limit
 ```

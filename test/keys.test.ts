@@ -115,3 +115,25 @@ test('an unknown command prints usage', async () => {
   assert.equal(result.code, 64);
   assert.match(result.stderr, /\n  pnpm kiss-sign key add <alchemy\|drpc\|etherscan\|github>\n/);
 });
+
+test('key add takes the whole Ethereum URL a provider dashboard shows, saves only the key, and never shows it', async () => {
+  const home = freshHome();
+  for (const [name, url, env] of [
+    ['drpc', `https://lb.drpc.live/ethereum/${KEY}`, 'DRPC_API_KEY'],
+    ['alchemy', ` https://eth-mainnet.g.alchemy.com/v2/${KEY} `, 'ALCHEMY_API_KEY'],
+  ] as const) {
+    const result = await run(['key', 'add', name], { KISS_SIGN_HOME: home }, url);
+    assert.equal(result.code, 0, result.all);
+    assert.ok(!result.all.includes(KEY), 'shows the key');
+    assert.match(readFileSync(join(home, '.env'), 'utf8'), new RegExp(`^${env}=${KEY}$`, 'm'));
+  }
+});
+
+test('key add refuses a URL for another network, says what to paste, and saves nothing', async () => {
+  const home = freshHome();
+  const result = await run(['key', 'add', 'drpc'], { KISS_SIGN_HOME: home }, `https://lb.drpc.live/base/${KEY}`);
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /What you pasted is a URL, but not one kiss-sign takes for drpc\. Paste the whole https:\/\/lb\.drpc\.live\/ethereum\/<key> URL, or the key alone\. No key saved\./);
+  assert.ok(!result.all.includes(KEY), 'shows the key');
+  assert.match((await run(['key', 'list'], { KISS_SIGN_HOME: home })).stdout, /DRPC_API_KEY: not set/);
+});

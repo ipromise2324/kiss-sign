@@ -155,7 +155,7 @@ Some research reads have one source, and none of them reaches a verdict:
 When the system resolver fails, kiss-sign resolves provider hosts over DNS over HTTPS.
 TLS certificate checks stay on, so a wrong address can only fail the connection.
 
-Keys enter through `kiss-sign key add alchemy|drpc|etherscan|github` in a hidden prompt, or the signer fills in the `$KISS_SIGN_HOME/.env` that `kiss-sign init` creates, with an empty line per key and mode 0600; never through the chat.
+Keys enter through `kiss-sign key add alchemy|drpc|etherscan|github` in a hidden prompt, which for alchemy and drpc also takes the whole Ethereum URL the provider's dashboard shows and saves only the key, or the signer fills in the `$KISS_SIGN_HOME/.env` that `kiss-sign init` creates, with an empty line per key and mode 0600; never through the chat.
 `init` never overwrites an existing `.env`.
 
 A command that reads the chain needs `ALCHEMY_API_KEY` and `DRPC_API_KEY`, and refuses before any chain read, naming the key that is not set and where to get it, or the one that is not shaped like a key, whose value it does not print; `replay`, the tests and every `--offline` and `--render` command read no chain and need neither.

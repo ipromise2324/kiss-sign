@@ -21,6 +21,7 @@ src/cli/card-view.ts
 src/cli/flags.ts
 src/cli/format.ts
 src/cli/io.ts
+src/cli/key-paste.ts
 src/cli/labels.ts
 src/cli/main.ts
 src/cli/prompt.ts
