@@ -22,6 +22,7 @@ The exact shape and every limit are in step 6 of [First time an operation is don
   A full address or 32-byte hash that stands alone, not inside an identifier, counts as one character, up to four per text, so show it whole.
 - Sources, statuses, names and URLs are written once.
 - Write a function or argument name between backticks, such as "Calls `erc20TransferFrom`, then `erc4626Deposit`" or "依序呼叫 `erc20TransferFrom` 和 `erc4626Deposit`"; only one identifier, with or without `()`, may stand between two backticks.
+- A text you write about an ERC-20 allowance names the token and the spender, such as "lets the fToken spend exactly the deposit amount of USDC" or "讓 fToken 動用剛好等於存入金額的 USDC", never "approves the fToken": a reader takes a lone token name for the token approved.
 
 ## The keys
 
