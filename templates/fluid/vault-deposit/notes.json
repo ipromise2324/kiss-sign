@@ -5,8 +5,8 @@
     "zh-TW": "把代幣存進 Fluid 出借代幣（fToken）"
   },
   "summary": {
-    "en": "The Safe approves the fToken for exactly the amount, then calls its plain `deposit`, and receives fToken shares. It needs an fToken with a report; it refuses any other spender, receiver or amount.",
-    "zh-TW": "Safe 先只核准 fToken 動用剛好的金額，再呼叫它的一般 `deposit`，換得 fToken 份額。需要一個有報告的 fToken；其他核准對象、收款人或金額都會被拒絕。"
+    "en": "The Safe lets the fToken spend exactly the amount of its asset, such as USDC, then calls the fToken's plain `deposit`, and receives fToken shares. It needs an fToken with a report; it refuses any other spender, receiver or amount.",
+    "zh-TW": "Safe 先核准 fToken 動用剛好金額的資產（例如 USDC），再呼叫 fToken 的一般 `deposit`，換得 fToken 份額。需要一個有報告的 fToken；其他核准對象、收款人或金額都會被拒絕。"
   },
   "protocols": {
     "fluid-lending": {

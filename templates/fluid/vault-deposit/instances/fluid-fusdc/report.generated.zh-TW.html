@@ -336,7 +336,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <figure class="request"><figcaption>你的要求（建立這個模板時，原文）</figcaption><blockquote>I want to deposit USDC into Fluid&#39;s fUSDC vault. build me the template and its report</blockquote></figure>
   <h1><span class="aiw" data-ai><span>把代幣存進 Fluid 出借代幣（fToken）</span><span class="byai">AI 研究</span></span></h1>
   <span class="opid">fluid/vault-deposit · fluid-fusdc</span>
-  <p class="sub"><span class="aiw" data-ai><span>Safe 先只核准 fToken 動用剛好的金額，再呼叫它的一般 <code>deposit</code>，換得 fToken 份額。需要一個有報告的 fToken；其他核准對象、收款人或金額都會被拒絕。</span><span class="byai">AI 研究</span></span></p>
+  <p class="sub"><span class="aiw" data-ai><span>Safe 先核准 fToken 動用剛好金額的資產（例如 USDC），再呼叫 fToken 的一般 <code>deposit</code>，換得 fToken 份額。需要一個有報告的 fToken；其他核准對象、收款人或金額都會被拒絕。</span><span class="byai">AI 研究</span></span></p>
   <ul class="checks">
     <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>交易地址 <span class="n num">4 / 4</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">4 個地址都至少在 2 個地方確認：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件或共用的部署者列出同一個地址。</span></span></li>
