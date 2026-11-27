@@ -27,6 +27,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-
 a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
 a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+[data-ai]{overflow-wrap:anywhere}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
 .addr.line{display:block;margin-top:4px}
@@ -65,7 +66,7 @@ h1 .byai{vertical-align:6px}
 h1 .aiw>:first-child{margin-right:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
 .sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
-:is(.sub,h3,.intro,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
+:is(.sub,h3,.intro,.ans,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
 .verdict .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:flex;align-items:flex-start;gap:8px;font-size:var(--t-row);position:relative}
@@ -134,7 +135,7 @@ svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
 svg .ah{fill:var(--fg)}
 svg .fn{fill:var(--fg);font:400 14px var(--mono)}
 svg .no{fill:var(--fg3);font:400 14px var(--mono)}
-svg .cap{display:flex;align-items:flex-start;gap:8px;padding-top:2px;color:var(--fg2);font:14px/20px var(--sans)}
+svg .cap{margin:0;display:flex;align-items:flex-start;gap:8px;padding-top:2px;color:var(--fg2);font:14px/20px var(--sans)}
 svg .cap code{font-size:13px;padding:2px 6px;white-space:nowrap}
 .mark{font-size:17px} .mark.ok{color:var(--ok)} .mark.bad{color:var(--bad)}
 svg .capg{fill:var(--ok);font:590 14px var(--sans)}
@@ -148,9 +149,19 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
 
-.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
-.key>span{display:inline-flex;gap:8px;align-items:center}
-.key .k0{color:var(--fg3);font-weight:590}
+.deciders{margin:36px 0 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}
+.deciders h3{margin:0 0 10px;font-size:var(--t-small);color:var(--fg2)}
+.deciders dl{margin:0;display:flex;flex-direction:column;gap:12px}
+.deciders .grp{display:grid;grid-template-columns:88px minmax(0,1fr);gap:0 16px;align-items:start}
+.deciders .gh{font-size:var(--t-small);line-height:24px;color:var(--fg);font-weight:590}
+.deciders .defs{margin:0;display:flex;flex-direction:column;gap:6px}
+.deciders .defs>div{display:grid;grid-template-columns:116px minmax(0,1fr);gap:0 14px;align-items:start;font-size:var(--t-small);line-height:24px;color:var(--fg2)}
+.deciders .who{justify-self:start}
+@media (max-width:560px){.deciders .grp{grid-template-columns:minmax(0,1fr)}}
+.mix{margin:10px 0 12px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 16px;align-items:start}
+.mix dt{justify-self:start}
+.mix dd{margin:0;display:flex;flex-wrap:wrap;gap:6px;line-height:24px}
+.mix code{font-size:var(--t-label)}
 .cb{margin-top:40px}
 .callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
 .callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
@@ -202,7 +213,7 @@ details.fixed[open]>summary .chev{transform:rotate(90deg)}
 }
 
 .rows{border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
@@ -249,14 +260,31 @@ details.fold[open]>summary .chev{transform:rotate(90deg)}
 details.fold .ad:last-child{border-bottom:0}
 
 .warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
-.pblock{border-top:1px solid var(--line);margin-top:16px}
-.ph{display:flex;flex-direction:column;gap:4px;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
-.ph .pt{font-weight:590}
-.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
-.pg .pc{color:var(--fg)}
-.pg .pcalls{margin-bottom:4px}
-.pg .pex{font-size:var(--t-small);margin-top:4px}
-.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+.ans{margin:0 0 10px;color:var(--fg2)}
+.ans b{color:var(--fg)}
+.cap{margin:8px 0 0;font-size:var(--t-small);color:var(--fg3)}
+.lm{color:var(--warn)}
+.sh{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-size:var(--t-small);color:var(--fg2);margin-top:18px}
+.sc{overflow-x:auto;margin:12px 0 8px}
+.pt2{border-collapse:collapse;width:100%;font-size:var(--t-small);font-variant-numeric:tabular-nums}
+.pt2 th{font-size:var(--t-label);font-weight:400;color:var(--fg3);text-align:left;padding:6px 16px 6px 0;border-bottom:1px solid var(--line2);white-space:nowrap}
+.pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
+.pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
+.pt2 .n{text-align:right}
+.pt2 th{vertical-align:bottom}
+.pt2 th.n{white-space:normal}
+.pt2 td.nw{white-space:nowrap}
+.pt2 td.v{color:var(--fg);font-weight:590}
+.pt2 .tx{min-width:104px}
+@media (max-width:760px){
+  .pt2,.pt2 tbody,.pt2 tr{display:block}
+  .pt2 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .pt2 tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .pt2 td,.pt2 td.n{display:grid;grid-template-columns:minmax(0,130px) minmax(0,1fr);gap:12px;padding:3px 0;border-bottom:0;text-align:left}
+  .pt2 td::before{content:attr(data-label);font-size:var(--t-label);font-weight:400;color:var(--fg3)}
+  .pt2 td.nw{white-space:normal}
+  .pt2 td.what{min-width:0}
+}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -271,13 +299,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
 .auto li{display:flex;gap:10px;align-items:baseline}
 .auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
-.usage{font-size:var(--t-small);color:var(--fg3);margin-bottom:28px}
-.usage h3{font-size:var(--t-row);color:var(--fg2);margin:0 0 6px}
-.usage p{margin:0}
-.usage table{border-collapse:collapse;margin:10px 0}
-.usage th,.usage td{padding:6px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left}
-.usage th+td,.usage th+th{padding-left:32px;text-align:right}
-.usage tfoot th,.usage tfoot td{color:var(--fg);border-bottom:0}
+.ut{border-collapse:collapse;width:100%;margin:16px 0 12px;font-size:var(--t-row)}
+.ut th,.ut td{padding:9px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left;color:var(--fg2)}
+.ut thead th{font-size:var(--t-label);color:var(--fg3);border-bottom-color:var(--line2)}
+.ut th+td,.ut th+th{text-align:right;font-variant-numeric:tabular-nums}
+.ut tfoot th,.ut tfoot td{color:var(--fg);font-weight:590;border-bottom:0}
 .foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
 .foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
@@ -298,7 +324,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">8</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">8</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
 </nav>
 
 <div class="main">
@@ -321,12 +347,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>訂單內容由雜湊鎖住，授權剛好是賣出數量；verify 依賴 CoW API。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">8</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">8</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
   </details>
 </header>
 
 <section id="review">
-  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></span></h2>
   <p class="lead">每一項 AI 都先查過，附上建議。</p>
   <div class="rows">
     <div class="row">
@@ -346,10 +372,18 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>這兩項 app 會自己填。</span><span class="byai">AI 研究</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>到期時間和 appData 這兩項 app 會自己填。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
           <div class="rec"><span class="aiw" data-ai><span>到期時間模板限制在區塊時間後 7 天內（app 設 30 分鐘）；appData 模板不限制（可能含 0.1% 的合作方手續費）。成交仍不會少於你填的最少數量，也只給 Safe。</span><span class="byai">AI 研究</span></span></div>
           <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受。訂單過期前不想要了，用 Safe 撤回。</span><span class="byai">AI 研究</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>2026 年 4 月 14 日 cow.fi 網域被劫持數小時，假的 app 讓訪客簽下惡意交易；CoW 的合約沒有被駭。</span><span class="byai">AI 研究</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
+          <div class="rec"><span class="aiw" data-ai><span>verify 只拿你給它的交易比對你的卡片。 <a class="aisrc" href="https://forum.cow.fi/t/cip-86-discretionary-grants-program-for-victims-of-the-cow-fi-domain-hijacking/3431">來源 1</a> <a class="aisrc" href="https://cow.fi/learn/cow-dao-monthly-recap-april-2026">來源 2</a></span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>從存好的書籤打開 CoW app，它提出的每筆交易都先跑 verify 再簽。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
     </div>
   </div>
@@ -376,13 +410,18 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </svg>
   </div>
   <div class="scrollhint">圖可以左右滑動，最右邊是 gpv2-settlement</div>
-  <div class="key">
-    <span class="k0">誰決定</span>
-    <span><span class="who you">你填</span>每次簽名填</span>
-    <span><span class="who you">你選</span>每次簽名選</span>
-    <span><span class="who">固定</span>改了就 MISMATCH</span>
-    <span><span class="who app">app 填，不限</span>訂單裡的值，由雜湊鎖住</span>
-    <span><span class="who app">app 填，有上限</span>超過上限就 MISMATCH</span>
+  <div class="deciders">
+    <h3>每個值由誰決定</h3>
+    <dl>
+      <div class="grp"><dt class="gh">你</dt><dd class="defs">
+        <div><span class="who you">你填</span><span>每次簽名你自己填。</span></div>
+        <div><span class="who you">你選</span><span>每次簽名你從清單裡選。</span></div></dd></div>
+      <div class="grp"><dt class="gh">kiss-sign</dt><dd class="defs">
+        <div><span class="who">固定</span><span>模板定的。改了就 MISMATCH。</span></div></dd></div>
+      <div class="grp"><dt class="gh">app</dt><dd class="defs">
+        <div><span class="who app">不限</span><span>訂單裡的值，由訂單的雜湊鎖住。</span></div>
+        <div><span class="who app">有上限</span><span>超過上限就 MISMATCH。</span></div></dd></div>
+    </dl>
   </div>
   <p class="lead keylead">下面逐一列出交易的每個呼叫。每個參數都寫出由誰決定、它的值或必須符合的規則，以及它的作用。</p>
   
@@ -404,8 +443,15 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="cb">
     <div class="callh"><span class="no">2</span><span class="fnn"><span class="ct">gpv2-settlement.</span>setPreSignature</span><span class="sel">0xec6cb13f</span></div><div class="cdoc"><div class="doc" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><span class="f3">文件：</span><a href="https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/src/contracts/mixins/GPv2Signing.sol">github.com/cowprotocol/contracts</a></span></div></div>
     <div class="arg" data-field="2.setPreSignature.orderUid">
-      <div class="nm"><span class="pn">orderUid</span><span class="who you">sellToken、buyToken 你選</span><span class="who">receiver、feeAmount、kind、partiallyFillable、sellTokenBalance、buyTokenBalance、owner 固定</span><span class="who you">sellAmount、buyAmount 你填</span><span class="who app">validTo 有上限</span><span class="who app">appData 不限</span></div>
+      <div class="nm"><span class="pn">orderUid</span></div>
       <div class="val"><div class="is">56 bytes，3 段接在一起</div>
+      <dl class="mix">
+        <dt><span class="who you">你選</span></dt><dd><code>sellToken</code> <code>buyToken</code> </dd>
+        <dt><span class="who you">你填</span></dt><dd><code>sellAmount</code> <code>buyAmount</code> </dd>
+        <dt><span class="who">固定</span></dt><dd><code>receiver</code> <code>feeAmount</code> <code>kind</code> <code>partiallyFillable</code> <code>sellTokenBalance</code> <code>buyTokenBalance</code> <code>owner</code> </dd>
+        <dt><span class="who app">有上限</span></dt><dd><code>validTo</code> </dd>
+        <dt><span class="who app">不限</span></dt><dd><code>appData</code> </dd>
+      </dl>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>訂單 uid，56 bytes：訂單雜湊、擁有者、到期時間接在一起。合約只把它記成「已預簽」，不檢查內容。</span></span></div></div>
       <div class="parts">
         <div class="part"><div class="pn">digest</div><div><div class="is"><code>Order</code> 的 EIP-712 雜湊 <span class="f3">verify 從 lookup 讀回原文，算出的雜湊要一樣</span></div>
@@ -419,8 +465,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要賣的數量，賣單整筆賣出。</span></span></div></div></div>
         <div class="part"><div class="pn">buyAmount</div><div><div class="is">至少你填的金額（min-buy） <span class="f3">比這個少就 MISMATCH</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>最少要買到的數量（限價）。結算合約保證成交不少於這個數。</span></span></div></div></div>
-        <div class="part"><div class="pn">validTo</div><div><div class="is">最多比區塊時間晚 604800 秒（約 7 天） <span class="f3">區塊時間：還沒執行的交易用 verify 讀到的最新區塊，已執行的用它所在的區塊；更晚就 MISMATCH</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>訂單到期時間（Unix 秒）。CoW Swap app 設為報價後 30 分鐘（DEFAULT_DEADLINE_FROM_NOW）。模板只允許判定交易所用區塊的時間之後最多 7 天（604,800 秒）；更晚就是 MISMATCH。在這之內，較晚的到期時間只會讓訂單開著更久：它仍然最多成交一次，數量不少於卡片上的最低值，而且付給 Safe；Safe 可以用 invalidateOrder 取消它。過去的訂單：pnpm past-txs（testdata/research/cow-swap-approve-presign.json）量了 19 個 Safe 在同一筆交易裡先授權再預簽的 19 筆批次，到期時間減去所在區塊時間：中位數 1,632 秒（約 27 分鐘），最大 5,353 秒（約 1.5 小時）；6 筆 EOA 單獨預簽的訂單最多 1,772 秒。為什麼是 7 天而不更短：較大的 cow/swap 紀錄（testdata/research/cow-swap-presign.json）看到一個 Safe 預簽的訂單在區塊後 604,767 秒到期，差一點 7 天。到期時間不限制時，訂單可以開好幾個月，簽名者早已不再注意，它仍能成交。</span></span></div></div></div>
+        <div class="part"><div class="pn">validTo</div><div><div class="is">最多比區塊時間晚 7 天</div><details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>怎麼算</summary><div class="meta">剛好 604800 秒。區塊時間：還沒執行的交易用 verify 讀到的最新區塊，已執行的用它所在的區塊；更晚就 MISMATCH。</div></details>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>訂單在這個時間到期（Unix 秒），app 設為報價後 30 分鐘。較晚到期只讓訂單開著更久：仍最多成交一次，不少於卡片的最低值，付給 Safe。可用 <code>invalidateOrder</code> 取消；過期就不能成交。有上限，是因為開著的訂單在你不再注意後很久仍能成交；7 天和 cow/swap 相同。</span></span></div></div></div>
         <div class="part"><div class="pn">appData</div><div><div class="is">每筆不同 <span class="f3">訂單裡的值，由雜湊鎖住；模板不限，也不換值測試</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>app 附在訂單上的 JSON 的雜湊（app 名稱、滑價、手續費、hooks）。結算合約不讀它。</span></span></div></div></div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>6 個固定的值；改了任何一個都是 MISMATCH</summary>
@@ -473,7 +519,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div><dt><span class="num">2023-02-07</span></dt><dd><span class="num">$180.00 K</span><span class="sub2"><span class="aiw" data-ai><span>Barter solver 的合約有任意呼叫漏洞，被拿走結算合約裡累積的手續費約 16.6 萬美元；使用者的錢沒有受影響。 <a class="aisrc" href="https://cow.fi/learn/cow-swap-solver-exploit-post-mortem">來源</a></span><span class="byai">AI 研究</span></span></span></dd></div>
       </dl></dd></div>
   </dl>
-  <p class="srcline">程式在 2026-11-18 讀 <a href="https://defillama.com/protocol/cowswap">DefiLlama</a>、<a href="https://defillama.com/hacks">DefiLlama hacks</a>和鏈上。標 AI 研究的是 AI 查的。</p>
+  <p class="srcline">程式在 2026-11-24 讀 <a href="https://defillama.com/protocol/cowswap">DefiLlama</a>、<a href="https://defillama.com/hacks">DefiLlama hacks</a>和鏈上。標 AI 研究的是 AI 查的。</p>
 </section>
 
 <section id="wallet">
@@ -508,8 +554,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 circle-usdc（<a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a> 對照）</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x95ba4cf87d6723ad9c0db21737d862be80e93911">部署者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911</a><span class="res">沒有已確認的合約同一個部署者</span></span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div>
-        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 1 處 · AI 判斷：沒問題</summary>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911 <a class="aisrc" href="https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 3 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Circle 的 USDC 合約地址頁在 Mainnet 的 Ethereum 那一列列出這個地址 <a class="aisrc" href="https://developers.circle.com/stablecoins/usdc-contract-addresses">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko 的 usd-coin 幣在 Ethereum 下列出這個地址 <a class="aisrc" href="https://www.coingecko.com/en/coins/usd-coin">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911，創建交易 0xe7e0fe390354509cd08c9a0168536938600ddc552b3f7cb96030ebef62e75895 <a class="aisrc" href="https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
         </details></div>
     </div>
     <div class="ad" id="a-usdt" data-state="ok">
@@ -518,8 +566,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0xdAC17F958D2ee523a2206206994597C13D831ec7</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://tether.to/en/supported-protocols/">tether.to/en/supported-protocols</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 tether（<a href="https://defillama.com/protocol/tether">DefiLlama</a> 對照）</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/tether">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x36928500bc1dcd7af6a2b4008875cc336b927d57">部署者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57</a><span class="res">沒有已確認的合約同一個部署者</span></span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div>
-        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 1 處 · AI 判斷：沒問題</summary>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57 <a class="aisrc" href="https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 3 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Tether 的 supported-protocols 頁把這個地址列為 Ethereum 上的 USD₮ 合約地址 <a class="aisrc" href="https://tether.to/en/supported-protocols/">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko 的 tether 幣在 Ethereum 下列出這個地址 <a class="aisrc" href="https://www.coingecko.com/en/coins/tether">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57，創建交易 0x2f1c5c2b44f771e942a8506148e256f94f1a464babc938ae0690c6e34cd79190 <a class="aisrc" href="https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
         </details></div>
     </div>
     <div class="ad" id="a-morpho" data-state="ok">
@@ -528,8 +578,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0x58D97B57BB95320F9a05dC918Aef65434969c2B2</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a> 對照）</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x937ce2d6c488b361825d2db5e8a70e26d48afed5">部署者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5</a><span class="res">沒有已確認的合約同一個部署者</span></span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div>
-        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 1 處 · AI 判斷：沒問題</summary>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 ERC1967Proxy，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5 <a class="aisrc" href="https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 3 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Morpho 的合約地址頁在 MORPHO Token 的 Ethereum 下把這個地址列為 MORPHO <a class="aisrc" href="https://docs.morpho.org/developers/contracts/addresses/">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko 的 morpho 幣在 Ethereum 下列出這個地址 <a class="aisrc" href="https://www.coingecko.com/en/coins/morpho">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 ERC1967Proxy，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5，創建交易 0x1a8de6a5ba99b4dcd91ff35424e2e3adf76b1de440f97e4a48b22bfe9a8f96e9 <a class="aisrc" href="https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
         </details></div>
     </div>
     <div class="ad" id="a-cbbtc" data-state="ok">
@@ -538,8 +590,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">github.com/coinbase/agentkit</a></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/coinbase">DefiLlama</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（main）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/coinbase-wrapped-btc">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>部署者<span class="res">證明不了是誰部署</span></span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div>
-        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 1 處 · AI 判斷：沒問題</summary>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 FiatTokenProxy，創建者 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05 <a class="aisrc" href="https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 3 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Coinbase 的 agentkit 代幣清單在 ethereum-mainnet 下把 CBBTC 對到這個地址（base-mainnet 下也是同一個地址） <a class="aisrc" href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko 的 coinbase-wrapped-btc 幣在 Ethereum 下列出這個地址 <a class="aisrc" href="https://www.coingecko.com/en/coins/coinbase-wrapped-btc">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 FiatTokenProxy，創建者 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05，創建交易 0x09001d384305288073faa8f5cf3051c6cc13d55b66114064be17e12f71469753 <a class="aisrc" href="https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
         </details></div>
     </div>
     <div class="ad" id="a-gpv2-settlement" data-state="ok">
@@ -548,35 +602,52 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0x9008D19f58AAbD9eD0D60971565AA8510560ab41</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json">github.com/cowprotocol/contracts</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 cowswap（<a href="https://immunefi.com/bug-bounty/cowprotocol/">Immunefi</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（main）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts">github.com/cowprotocol/cow-sdk</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 cowswap（<a href="https://immunefi.com/bug-bounty/cowprotocol/">Immunefi</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（main）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://immunefi.com/bug-bounty/cowprotocol/">Immunefi 漏洞賞金範圍</a></span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.npmjs.com/package/@cowprotocol/sdk-config/v/2.11.2">npm @cowprotocol/sdk-config@2.11.2</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 cowswap（<a href="https://immunefi.com/bug-bounty/cowprotocol/">Immunefi</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（npm 2.11.2）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://etherscan.io/address/0x7eabac82da8ea6ac980d619cb562a9924d1e3baa">部署者 0x7EAbac82dA8ea6Ac980d619Cb562a9924d1E3bAa，也部署了 gpv2-vault-relayer</a></span></span></div></div>
         <div class="confirmed">在 3 個地方確認：官方頁 + github.com/cowprotocol/cow-sdk + npm @cowprotocol/sdk-config@2.11.2 (github.com/cowprotocol)、Immunefi 漏洞賞金範圍、部署者</div>
-        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 2 處 · AI 判斷：沒問題</summary>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 GPv2Settlement，創建者 0x7eabac82dA8eA6AC980D619Cb562a9924D1e3bAa，創建交易就是 networks.json 記的部署交易 <a class="aisrc" href="https://etherscan.io/address/0x9008D19f58AAbD9eD0D60971565AA8510560ab41#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>docs.cow.fi 的核心合約頁列出這個地址，標示不可升級（頁面的地址在 GitHub 連結旁，程式對不上名稱） <a class="aisrc" href="https://docs.cow.fi/cow-protocol/reference/contracts/core">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 5 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoW 合約 repo 的 networks.json 在 chain 1 的 GPv2Settlement 下寫的就是這個地址 <a class="aisrc" href="https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoW SDK 的設定檔把 SETTLEMENT_CONTRACT 設為這個地址 <a class="aisrc" href="https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>docs.cow.fi 的核心合約頁列出 GPv2Settlement 在這個地址，不可升級 <a class="aisrc" href="https://docs.cow.fi/cow-protocol/reference/contracts/core">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoW Protocol 的 Immunefi 計畫把這個地址列在範圍內 <a class="aisrc" href="https://immunefi.com/bug-bounty/cowprotocol/scope/">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 GPv2Settlement，創建者 0x7EAbac82dA8ea6Ac980d619Cb562a9924d1E3bAa，創建交易 0xf49f90aa5a268c40001d1227b76bb4dd8247f18361fcad9fffd4a7a44f1320d3，經公開的 CREATE2 部署器送出 <a class="aisrc" href="https://etherscan.io/address/0x9008D19f58AAbD9eD0D60971565AA8510560ab41#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
         </details></div>
     </div>
     <div class="ad" id="a-gpv2-vault-relayer" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
-      <div><span class="nm">gpv2-vault-relayer</span><span class="role"><span class="aiw" data-ai><span>CoW 的 vault relayer：成交時只有結算合約能叫它從 Safe 拿走賣出的代幣</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div><span class="nm">gpv2-vault-relayer</span><span class="role"><span class="aiw" data-ai><span>CoW 的 vault relayer：結算合約只透過它，在授權額度內從 Safe 拉走要賣的代幣</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0xC92E8bdf79f0507f65a392b0ab4667716BFE0110</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json">github.com/cowprotocol/contracts</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 cowswap（<a href="https://immunefi.com/bug-bounty/cowprotocol/">Immunefi</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（main）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts">github.com/cowprotocol/cow-sdk</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 cowswap（<a href="https://immunefi.com/bug-bounty/cowprotocol/">Immunefi</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（main）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://immunefi.com/bug-bounty/cowprotocol/">Immunefi 漏洞賞金範圍</a></span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.npmjs.com/package/@cowprotocol/sdk-config/v/2.11.2">npm @cowprotocol/sdk-config@2.11.2</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 cowswap（<a href="https://immunefi.com/bug-bounty/cowprotocol/">Immunefi</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（npm 2.11.2）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://etherscan.io/address/0x7eabac82da8ea6ac980d619cb562a9924d1e3baa">部署者 0x7EAbac82dA8ea6Ac980d619Cb562a9924d1E3bAa，也部署了 gpv2-settlement</a></span></span></div></div>
         <div class="confirmed">在 3 個地方確認：官方頁 + github.com/cowprotocol/cow-sdk + npm @cowprotocol/sdk-config@2.11.2 (github.com/cowprotocol)、Immunefi 漏洞賞金範圍、部署者</div>
         <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。</div>
-        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 1 處 · AI 判斷：沒問題</summary>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：跟結算合約同一筆部署交易建立；結算合約的 vaultRelayer() 讀出來就是這個地址 <a class="aisrc" href="https://etherscan.io/address/0xC92E8bdf79f0507f65a392b0ab4667716BFE0110#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 5 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoW 合約 repo 的 networks.json 在 chain 1 的 GPv2VaultRelayer 下寫的就是這個地址 <a class="aisrc" href="https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoW SDK 的設定檔把 VAULT_RELAYER 設為這個地址 <a class="aisrc" href="https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>docs.cow.fi 的核心合約頁列出 GPv2VaultRelayer 在這個地址，不可升級 <a class="aisrc" href="https://docs.cow.fi/cow-protocol/reference/contracts/core">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoW Protocol 的 Immunefi 計畫把這個地址列在範圍內 <a class="aisrc" href="https://immunefi.com/bug-bounty/cowprotocol/scope/">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 GPv2VaultRelayer，創建者 0x7EAbac82dA8ea6Ac980d619Cb562a9924d1E3bAa；結算合約在同一筆交易 0xf49f90aa5a268c40001d1227b76bb4dd8247f18361fcad9fffd4a7a44f1320d3 裡建立它 <a class="aisrc" href="https://etherscan.io/address/0xC92E8bdf79f0507f65a392b0ab4667716BFE0110#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
         </details></div>
     </div>
     <div class="ad" id="a-usp" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
-      <div><span class="nm">usp</span><span class="role"><span class="conf">高信心</span></span></div>
+      <div><span class="nm">usp</span><span class="role"><span class="aiw" data-ai><span>可選的代幣：Piku 的生息穩定幣 USP</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts">docs.piku.co/piku/piku-platform</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 piku-finance（<a href="https://defillama.com/protocol/piku-finance">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/piku-utility-token">CoinGecko</a> 對照）</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/usp-yield-optimized-stablecoin">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0xb8eaa4f956c6324435f4088cae9cda974c358508">部署者 0xB8eaa4f956C6324435f4088cAe9cDa974C358508</a><span class="res">沒有已確認的合約同一個部署者</span></span></span></div></div>
-        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 3 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Piku 的 token and workflow contracts 頁在代號 USP 旁列出這個地址 <a class="aisrc" href="https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko 的 usp-yield-optimized-stablecoin 幣在 Ethereum 下列出這個地址 <a class="aisrc" href="https://www.coingecko.com/en/coins/usp-yield-optimized-stablecoin">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 TransparentUpgradeableProxy，創建者 0xB8eaa4f956C6324435f4088cAe9cDa974C358508，創建交易 0xe38f329a0426954fc83ec5bc5314f24dca2cfbcebefeb679cf43aebbbba70dda <a class="aisrc" href="https://etherscan.io/address/0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        </details></div>
     </div>
     <div class="ad" id="a-weeth" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
-      <div><span class="nm">weeth</span><span class="role"><span class="conf">高信心</span></span></div>
+      <div><span class="nm">weeth</span><span class="role"><span class="aiw" data-ai><span>可選的代幣：ether.fi 的包裝質押 ETH weETH</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol">github.com/etherfi-protocol/smart-contracts</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 ether.fi-stake（<a href="https://defillama.com/protocol/ether.fi-stake">DefiLlama</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（master）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/wrapped-eeth">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://immunefi.com/bug-bounty/etherfi/">Immunefi 漏洞賞金範圍</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0xf8a86ea1ac39ec529814c377bd484387d395421e">部署者 0xf8a86ea1Ac39EC529814c377Bd484387D395421e</a><span class="res">沒有已確認的合約同一個部署者</span></span></span></div></div>
-        <div class="confirmed">在 3 個地方確認：官方頁、CoinGecko、Immunefi 漏洞賞金範圍</div></div>
+        <div class="confirmed">在 3 個地方確認：官方頁、CoinGecko、Immunefi 漏洞賞金範圍</div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 3 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>ether.fi 的部署檔把常數 WEETH 設為這個地址 <a class="aisrc" href="https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko 的 wrapped-eeth 幣在 Ethereum 下列出這個地址 <a class="aisrc" href="https://www.coingecko.com/en/coins/wrapped-eeth">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 UUPSProxy，創建者 0xf8a86ea1Ac39EC529814c377Bd484387D395421e，創建交易 0xa034bdf7ec3b407125fcfbb786d908b0bcfd9976f2fbaf489776ba58b9db61ac <a class="aisrc" href="https://etherscan.io/address/0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        </details></div>
     </div>
     </details>
   </div>
@@ -584,72 +655,52 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>過去交易</h2>
-  <p class="lead">過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 <span class="num">2</span> 筆：Safe <span class="num">1</span> 筆（1 個 Safe）、EOA <span class="num">1</span> 筆（1 個地址，各自送模板的一個呼叫）。這些交易全部成功執行：它們是從 gpv2-settlement PreSignature時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 2 筆：<a href="https://etherscan.io/tx/0x11b767bc8faec1b76ad98a27c0f24788697e5819afc6a0618704a8203d49721a">0x11b767bc…</a>、<a href="https://etherscan.io/tx/0x4278c19eddf87fc4f404e117f6cc7b69d47c43ba70b737effb0e1a19b4cc5fc9">0x4278c19e…</a>。</p>
-  <p class="lead">模板留給 app 自由填的數字，在符合模板形狀的交易裡填了哪些值：最小、第 50、90、99 百分位和最大。模板宣告為時間的欄位，算的是它減掉交易所在區塊時間的秒數。這是證據，不是規則。</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt"><code>multiSend[1].setPreSignature.orderUid.digest.validTo</code></span><span>Safe: 減掉區塊時間後的秒數</span></div>
-    <div class="pg"><span class="pc num">19 筆</span><div><div class="pex">min <span class="num">1091 秒（約 18.2 分鐘）</span>、p50 <span class="num">1632 秒（約 27.2 分鐘）</span>、p90 <span class="num">1777 秒（約 29.6 分鐘）</span>、p99 <span class="num">5353 秒（約 1.5 小時）</span>、max <span class="num">5353 秒（約 1.5 小時）</span></div></div></div>
-  </div>
-  <div class="pblock">
-    <div class="ph"><span class="pt"><code>call.setPreSignature.orderUid.digest.validTo</code></span><span>EOA: 減掉區塊時間後的秒數</span></div>
-    <div class="pg"><span class="pc num">6 筆</span><div><div class="pex">min <span class="num">1198 秒（約 20.0 分鐘）</span>、p50 <span class="num">1766 秒（約 29.4 分鐘）</span>、p90 <span class="num">1772 秒（約 29.5 分鐘）</span>、p99 <span class="num">1772 秒（約 29.5 分鐘）</span>、max <span class="num">1772 秒（約 29.5 分鐘）</span></div></div></div>
-  </div>
-  <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 <span class="num">315</span> 筆跟你這筆不一樣：形狀一樣、但用的是 registry 外的地址的 <span class="num">23</span> 筆，形狀不同的 <span class="num">292</span> 筆</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>授權數量和賣出數量不同的 62 筆批次裡，55 筆授權無上限，7 筆多約 1% 到 1.7%。這樣組成的批次不符合這個模板，授權必須剛好是要賣的數量。</span><span class="byai">AI 研究</span></span></p>
-  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
-  <h3>搜尋 gpv2-settlement 的PreSignature，找到 1351 筆，研究 473 筆</h3>
-  <p class="lead">記錄在 <code>testdata/research/cow-swap-approve-presign.json</code>。只有 Etherscan 搜尋事件，找到 <span class="num">1351</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">310</span> 筆用了這個操作的呼叫（239 個 Safe），<span class="num">1</span> 筆跟模板一模一樣，<span class="num">18</span> 筆形狀一樣、但用的是 registry 外的地址。</span></div>
-    <div class="pg"><span class="pc num">7 筆</span><div><div>形狀一樣，但 <code>buyToken</code> 用的是 registry 外的地址<span class="f3">，來自 7 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x0f543d3658aea173ebfc5a8ac820deb9f26c0db7918cb53da7972c01a14c130a">0x0f543d36…</a>、<a href="https://etherscan.io/tx/0x3d8e282607892209ec6f53da8eac5ba8e326d2edada579192b2d7ed15c050655">0x3d8e2826…</a>、<a href="https://etherscan.io/tx/0x34cc6f8eeca131c067b697ea8579ab466e32849b6bfd88d728cb2b0bcb63dcd2">0x34cc6f8e…</a></div></div></div>
-    <div class="pg"><span class="pc num">6 筆</span><div><div>形狀一樣，但 <code>multiSend[0].to</code> 用的是 registry 外的地址、<code>sellToken</code> 用的是 registry 外的地址<span class="f3">，來自 6 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xc754cf72bb31eab3ac8d35992757c8557b086f696f803930d7bc91c612cddaf5">0xc754cf72…</a>、<a href="https://etherscan.io/tx/0x02db25634f04ed83dff802a0c16d7b9a4f47b5a72e31577f4e983c685a2e14ff">0x02db2563…</a>、<a href="https://etherscan.io/tx/0x5c20e84dada63784da303ef598225cc7f15de22fa8240be9237a947c2e7e09fa">0x5c20e84d…</a></div></div></div>
-    <div class="pg"><span class="pc num">5 筆</span><div><div>形狀一樣，但 <code>multiSend[0].to</code> 用的是 registry 外的地址、<code>sellToken</code> 用的是 registry 外的地址、<code>buyToken</code> 用的是 registry 外的地址<span class="f3">，來自 5 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xf91720aaaa0873ba335972adb052ce3626587d1eb748a8ba8641b1c00160517b">0xf91720aa…</a>、<a href="https://etherscan.io/tx/0x6f36dec3a9bb9cbe0dc35e813fa5575a98bb2c91defca4e81fb5961685e3e71d">0x6f36dec3…</a>、<a href="https://etherscan.io/tx/0x0a928badebdd989671da280c84ab83000fd43a23ef94f200fdb2f2d55afcf8a0">0x0a928bad…</a></div></div></div>
-    <div class="pg"><span class="pc num">191 筆</span><div><div class="pcalls"><code>gpv2-settlement.setPreSignature</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 145 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xb0a18c1c68f8663045cfa04ea7e613c2f4d7d3b6e2900d459bbac4745eb51ed4">0xb0a18c1c…</a>、<a href="https://etherscan.io/tx/0x707d37f835914089a800cc544a186966fa6802748f67132c538c328673e550b6">0x707d37f8…</a>、<a href="https://etherscan.io/tx/0xcbebcbb56f7400dc043c1bce8b66db03bdaba5638b09cf6c68d4525157d86249">0xcbebcbb5…</a></div></div></div>
-    <div class="pg"><span class="pc num">62 筆</span><div><div><code>multiSend[0].approve.value</code> 跟 <code>multiSend[1].setPreSignature.orderUid.digest.sellAmount</code> 的值不同，模板要兩個一樣<span class="f3">，來自 58 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x875fc944cbdf2e5da06a948e4f06da14ad4c7f36911e741a483caf1862109834">0x875fc944…</a>、<a href="https://etherscan.io/tx/0xe1e7b46c7d3a70ee38cc49f5407197de39197caa65c62cc0e27c3fa8710d4236">0xe1e7b46c…</a>、<a href="https://etherscan.io/tx/0xb9383af66868ffffbb9482f82093ba919e506e6c41db282f601053bd339451d0">0xb9383af6…</a></div></div></div>
-    <div class="pg"><span class="pc num">16 筆</span><div><div class="pcalls"><code>0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2.0xd0e30db0 → gpv2-settlement.setPreSignature</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 12 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x158bcdf184c9bb22a259d8995c6e60821d8478bc01f30ec6e14151f1e1dac96b">0x158bcdf1…</a>、<a href="https://etherscan.io/tx/0xd3bda8db15a38baec7f3b467726dbdcd832843701081c0f965be98b24145c4f9">0xd3bda8db…</a>、<a href="https://etherscan.io/tx/0x1759a5058082a76dcd47b843cbfdb34d17ce7eef0da029a0ec90a502f4292e33">0x1759a505…</a></div></div></div>
-    <div class="pg"><span class="pc num">10 筆</span><div><div class="pcalls"><code>0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2.0xd0e30db0 → 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2.approve → gpv2-settlement.setPreSignature</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 10 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x82ff24c62aba98cff4c108a2d6090262d31831be747b9ad46f7efc91e30e26ea">0x82ff24c6…</a>、<a href="https://etherscan.io/tx/0xaa9865c075fe9ec89744fd5a90b59fef110f352170d516b8a82c0577aba538b2">0xaa9865c0…</a>、<a href="https://etherscan.io/tx/0x4f91ffe26ae497fc22fd1bcaa765bf49f3486a0251331c0f0d5460abdf993f31">0x4f91ffe2…</a></div></div></div>
-    <div class="pg"><span class="pc num">2 筆</span><div><div class="pcalls"><code>gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x4e300874e5818b114464d35d0d85d62c6fb826c7c2cbb77a1b4ce311e69b7f18">0x4e300874…</a>、<a href="https://etherscan.io/tx/0x5b02f7b029f5af0394aa33518cac54f9ab7d5d09086f932e14bd72318cd6949d">0x5b02f7b0…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae.0x71ee95c0 → gpv2-settlement.setPreSignature</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xe3629d1963d7e74d4299e88fb0dc241f382cfb1d561a7efd5f5bf143ecad766d">0xe3629d19…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x30b28e7aaa1c7c8b793699e0942109554f6a14d182ef725ea4c20bc956ed5dff">0x30b28e7a…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>0x8292Bb45bf1Ee4d140127049757C2E0fF06317eD.approve → gpv2-settlement.setPreSignature → 0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B.approve</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x5deb6482a5a61284825e9584d9f654369aa0568af97393fecda8c25b96c41421">0x5deb6482…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div><code>spender</code> 是 gpv2-settlement，不是模板的 gpv2-vault-relayer<span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x6eebda5aeef8560e10de651e2dcb761771c453e17d1f9676c157132c5da16790">0x6eebda5a…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x69e3115738e9747a8087741daade2638e23584db41f4d4622eca6ab5365e4f67">0x69e31157…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>usdt.approve → usdt.approve → gpv2-settlement.setPreSignature</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x6f0d1b0ff381d6539461d6d050d9537b27692f008a7dc43be1eebbf858a0ff7a">0x6f0d1b0f…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>usdt.approve → usdt.approve → gpv2-settlement.setPreSignature → usdt.transfer</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x57c73855a80fece83a4b9675df2ee2a95e439804c19261d99c7cf9b97540ca7b">0x57c73855…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>0x93b4B9bd266fFA8AF68e39EDFa8cFe2A62011Ce0.0xef933df0 → gpv2-settlement.setPreSignature</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x011fd11a7106c6acd2b73f77d303c6518505eb6528ae597dd0b61bd97d9828ce">0x011fd11a…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>0x93b4B9bd266fFA8AF68e39EDFa8cFe2A62011Ce0.0xef933df0 → 0xD533a949740bb3306d119CC777fa900bA034cd52.approve → gpv2-settlement.setPreSignature</code></div><div>呼叫跟模板不同，模板是 <code>approve → setPreSignature</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x1abc0a1bf1257b6c78e473499b4f086d3205f53072f3f615a528b378fb1dbceb">0x1abc0a1b…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div><code>multiSend[1].setPreSignature.orderUid.digest.partiallyFillable</code> 的值跟模板不同：模板要 <span class="addr">false</span>，交易是 <span class="addr">true</span><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xdf277af41a7caa7c5c8bf113a21cb2bde80d8280656728c8e1f08d4a5ced5b7e">0xdf277af4…</a></div></div></div>
-  </div>
-  <div class="pblock">
-    <div class="ph"><span class="pt">EOA 直接呼叫 setPreSignature</span><span><span class="num">7</span> 筆用了這個操作的呼叫（7 個地址），<span class="num">1</span> 筆跟模板一模一樣，<span class="num">5</span> 筆形狀一樣、但用的是 registry 外的地址。</span></div>
-    <div class="pg"><span class="pc num">3 筆</span><div><div>形狀一樣，但 <code>sellToken</code> 用的是 registry 外的地址<span class="f3">，來自 3 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x0cfafb1053b776ea55336dfc35afea771c71912e23ca46287dca4ce387b45304">0x0cfafb10…</a>、<a href="https://etherscan.io/tx/0xc73660c892226e326e94697adad6ea144bc1104fd40e1da7cde18416225fec0d">0xc73660c8…</a>、<a href="https://etherscan.io/tx/0x7ecfab0c8ad398ebf1c1b115b6918ad1fe94ddc5716dc7e205b0342e989ed629">0x7ecfab0c…</a></div></div></div>
-    <div class="pg"><span class="pc num">2 筆</span><div><div>形狀一樣，但 <code>sellToken</code> 用的是 registry 外的地址、<code>buyToken</code> 用的是 registry 外的地址<span class="f3">，來自 2 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xbf3046886ca0dbf19719181a102f5868610d5d9bdc0e98dfe8f7de3ed4014290">0xbf304688…</a>、<a href="https://etherscan.io/tx/0x26fa08678d33fc0d6356a5ba2c3e1289100fae69c92fc357f5710572b0593143">0x26fa0867…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div><code>call.setPreSignature.orderUid.digest.receiver</code> 不是送出交易的 Safe 或地址<span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x6d83de81a3ae6b9ac20b8c2895546dd6d7377882f3bd9f150a4fde1969bc10bd">0x6d83de81…</a></div></div></div>
-  </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 148 筆是別的操作，不列入：<code>0xd52C765872067bf6bF487f5C8A559FcD38553A12.0x3f965e56</code> 21 筆、<code>multisend-call-only-1.3.0.0x8d80ff0a</code> 12 筆、<code>0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789.0x1fad948c</code> 10 筆、<code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 9 筆，還有別的。</span></div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 8 筆來自不是 Safe 的合約、執行失敗或讀不到，不列入。</span></div>
+  <h3>1. 這個模板的交易以前成功過嗎？</h3>
+  <p class="ans"><b>成功過，3 個 Safe 一共做過 3 次。</b> EOA：2 次，來自 2 個地址，各自送模板的一個呼叫。最近一次是 2026-11-17。全部成功執行。最近 3 筆：<a href="https://etherscan.io/tx/0x11b767bc8faec1b76ad98a27c0f24788697e5819afc6a0618704a8203d49721a">0x11b767bc…</a> <a href="https://etherscan.io/tx/0x9896526f4a6297b981ce209c393eabc4e99701bc4a89cb6a2eef7b294606516e">0x9896526f…</a> <a href="https://etherscan.io/tx/0xca5ea53a08955bfcf6499cee32ebe3bd91fd470d6a19baede57091857e804150">0xca5ea53a…</a></p>
+  <h3>2. app 填的值，一般是多少？</h3>
+  <div class="sh"><code>validTo</code><span>設在多久之後，從交易所在的區塊起算</span></div><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">交易</th><th scope="col" class="n">數量</th><th scope="col" class="nw v">最短</th><th scope="col" class="nw v">一半不超過</th><th scope="col" class="nw v">最長</th></tr></thead><tbody>
+    <tr><td class="what" data-label="交易"><span>Safe，符合模板</span></td><td class="n" data-label="數量"><span><span class="num">3</span></span></td><td class="nw v" data-label="最短"><span><span class="num">28 分鐘 55 秒</span></span></td><td class="nw v" data-label="一半不超過"><span><span class="num">29 分鐘 10 秒</span></span></td><td class="nw v" data-label="最長"><span><span class="num">2 小時 50 分鐘</span></span></td></tr>
+    <tr><td class="what" data-label="交易"><span>Safe，別的地方不同</span></td><td class="n" data-label="數量"><span><span class="num">26</span></span></td><td class="nw v" data-label="最短"><span><span class="num">11 分鐘 50 秒</span></span></td><td class="nw v" data-label="一半不超過"><span><span class="num">28 分鐘 34 秒</span></span></td><td class="nw v" data-label="最長"><span><span class="num">23 小時 59 分鐘</span></span></td></tr>
+    <tr><td class="what" data-label="交易"><span>EOA，呼叫符合模板</span></td><td class="n" data-label="數量"><span><span class="num">2</span></span></td><td class="nw v" data-label="最短"><span><span class="num">29 分鐘 25 秒</span></span></td><td class="nw v" data-label="一半不超過"><span><span class="num">29 分鐘 25 秒</span></span></td><td class="nw v" data-label="最長"><span><span class="num">29 分鐘 32 秒</span></span></td></tr>
+    <tr><td class="what" data-label="交易"><span>EOA，別的地方不同</span></td><td class="n" data-label="數量"><span><span class="num">12</span></span></td><td class="nw v" data-label="最短"><span><span class="num">9 分鐘 31 秒</span></span></td><td class="nw v" data-label="一半不超過"><span><span class="num">25 分鐘 53 秒</span></span></td><td class="nw v" data-label="最長"><span><span class="num">29 分鐘 31 秒</span></span></td></tr></tbody></table></div>
+  <p class="cap">模板上限：<b class="lm">7 天</b>。更久就 MISMATCH。</p>
+  <p class="cap">Safe，別的地方不同：另外 65 筆的區塊時間沒有記錄到，不在表裡。</p>
+  <p class="cap">EOA，別的地方不同：另外 1 筆的區塊時間沒有記錄到，不在表裡。</p>
+  <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>完整數字</summary><div class="meta"><code>setPreSignature.orderUid.digest.validTo</code>，單位是秒：Safe，符合模板: 1735 / 1750 / 10195; Safe，別的地方不同: 710 / 1714 / 86327; EOA，呼叫符合模板: 1765 / 1765 / 1772; EOA，別的地方不同: 571 / 1553 / 1771</div></details>
+  <div class="sh"><code>appData</code><span>填的值</span></div><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">交易</th><th scope="col" class="n">數量</th><th scope="col" class="n">不同的值</th><th scope="col" class="what">最常見</th></tr></thead><tbody>
+    <tr><td class="what" data-label="交易"><span>Safe，符合模板</span></td><td class="n" data-label="數量"><span><span class="num">3</span></span></td><td class="n" data-label="不同的值"><span><span class="num">3</span></span></td><td class="what" data-label="最常見"><span><span class="addr">0xa2674c9ec9404c70cd2ed79f84da30fa696366f89512c689e4458831636f8236</span>，1 筆</span></td></tr>
+    <tr><td class="what" data-label="交易"><span>Safe，別的地方不同</span></td><td class="n" data-label="數量"><span><span class="num">91</span></span></td><td class="n" data-label="不同的值"><span><span class="num">84</span></span></td><td class="what" data-label="最常見"><span><span class="addr">0x0000000000000000000000000000000000000000000000000000000000000000</span>，3 筆</span></td></tr>
+    <tr><td class="what" data-label="交易"><span>EOA，呼叫符合模板</span></td><td class="n" data-label="數量"><span><span class="num">2</span></span></td><td class="n" data-label="不同的值"><span><span class="num">2</span></span></td><td class="what" data-label="最常見"><span><span class="addr">0x1ff2771f83b5afa8e8ae48e52861db2d04c275cb1330157bced7ea9c8f38cb7f</span>，1 筆</span></td></tr>
+    <tr><td class="what" data-label="交易"><span>EOA，別的地方不同</span></td><td class="n" data-label="數量"><span><span class="num">13</span></span></td><td class="n" data-label="不同的值"><span><span class="num">12</span></span></td><td class="what" data-label="最常見"><span><span class="addr">0x0000000000000000000000000000000000000000000000000000000000000000</span>，2 筆</span></td></tr></tbody></table></div>
+  <h3>3. 其他交易哪裡不同？</h3>
+  <p class="ans">295 筆交易做了這個模板不允許的事。</p>
+  <p class="ans"><span class="aiw" data-ai><span>2026-06-15 到 2026-11-24 的抽樣裡（搜尋止於 50 頁上限，更早的沒查），39 個 Safe 的 39 筆批次授權和賣出數量不同：28 筆無上限，11 筆多於賣出數量。這些都不符合模板，授權必須剛好是要賣的數量。</span><span class="byai">AI 研究</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="tx">例子（最多 3 筆）</th></tr></thead><tbody>
+    <tr><td class="what" data-label="哪裡不同"><span>沒有 <code>approve</code>：只有 <code>gpv2-settlement.setPreSignature</code></span></td><td class="n" data-label="Safe"><span><span class="num">182</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26479455</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x8fd114cf9f41cc905a303c24e19ff191f3dd2614c405f72980b0f16c098fec61">0x8fd114cf…</a> <a href="https://etherscan.io/tx/0xe2dadd1919cac949c4c48f49292fcd144bb54d9012d8a6e4b109ac993e96bf5a">0xe2dadd19…</a> <a href="https://etherscan.io/tx/0x24770c6d1ea415e430ff78c2f5fdea9078182b9b32d928284f661ebc191bf394">0x24770c6d…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span><code>approve.value</code> 跟 <code>setPreSignature.orderUid.digest.sellAmount</code> 的值不同，模板要兩個一樣</span></td><td class="n" data-label="Safe"><span><span class="num">39</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26485226</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x56b2fc54d08a65dc8b2d9259424a09d784714c5e6fd59d2d32c81020284e2f35">0x56b2fc54…</a> <a href="https://etherscan.io/tx/0x1cf078986562a32d652939dd847794b3c30905ca33e50b636ff561ccee1ef48d">0x1cf07898…</a> <a href="https://etherscan.io/tx/0x834dbcba3815b8eb2594bff3917a7ec644e0290670471bc3498120b8313aacb5">0x834dbcba…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>呼叫了別的函式：<code>0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2.0xd0e30db0 → gpv2-settlement.setPreSignature</code></span></td><td class="n" data-label="Safe"><span><span class="num">19</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26462519</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x0222837f43c31570288468a512fb9c050ee4bad4d03b53067f532ff2ff8a5591">0x0222837f…</a> <a href="https://etherscan.io/tx/0x8347c67d5e980964d280c09972a20f894b7bf6287baa2cb82ecf3c1a687286dd">0x8347c67d…</a> <a href="https://etherscan.io/tx/0x57f4048870d37ce97b5b676662cec83a10642047447300bc2d9ba737ca684f94">0x57f40488…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>形狀一樣，但 <code>to</code> 用的是 registry 外的地址、<code>setPreSignature.orderUid.digest.sellToken</code> 用的是 registry 外的地址</span></td><td class="n" data-label="Safe"><span><span class="num">14</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-11-24</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x4e3f085ff070c15e35239fab9d968b2f05dedd78c2ad65860ddcbeaebde9c3c7">0x4e3f085f…</a> <a href="https://etherscan.io/tx/0xe0286cd5ff7baf8251ad084824c20c34b60a099a1f424e3134872e1a94d75bd8">0xe0286cd5…</a> <a href="https://etherscan.io/tx/0xf0451efb4c20564a4304896146ff7b6ea97eb5866ddac7f322d6c064a95729b1">0xf0451efb…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>形狀一樣，但 <code>to</code> 用的是 registry 外的地址、<code>setPreSignature.orderUid.digest.sellToken</code> 用的是 registry 外的地址、<code>setPreSignature.orderUid.digest.buyToken</code> 用的是 registry 外的地址</span></td><td class="n" data-label="Safe"><span><span class="num">8</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-09-19</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xe578b3b41984a5dbd76bdfe9c6703525ae82fa5bfc154881f23f8b4e9d62a4e2">0xe578b3b4…</a> <a href="https://etherscan.io/tx/0xac43b58294852e99f957cd256d11e9860586b5002ebb08200ba2940b59f638cd">0xac43b582…</a> <a href="https://etherscan.io/tx/0xf555b451b3a033bdb4cb798ab3a3ffd31827c063bbfde4a3d099ad9f039365ee">0xf555b451…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2.0xd0e30db0 → 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2.approve → gpv2-settlement.setPreSignature</code></span></td><td class="n" data-label="Safe"><span><span class="num">7</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26103544</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x05b4dac4086b598f398fae2810c5feac564967148bb1f54510ea1c6cd7477634">0x05b4dac4…</a> <a href="https://etherscan.io/tx/0x41d8089f48ea1a5edda374f8fb39241abefba89fb61cdab9791f494671364f2e">0x41d8089f…</a> <a href="https://etherscan.io/tx/0xcdb2fe3b4612307113a6e199ea47c27e47033e534444382ff4a9b4742cbb18d4">0xcdb2fe3b…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>形狀一樣，但 <code>setPreSignature.orderUid.digest.sellToken</code> 用的是 registry 外的地址</span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">6</span></span></td><td class="nw" data-label="最近"><span>2026-10-19</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x080e313087636b4873be613a14a8399ee31274e6322878d0bb3eb9bced85678f">0x080e3130…</a> <a href="https://etherscan.io/tx/0x79cf6fda7a7b62fc5901b3590d0b663bacee5c93a20cfd41a2ba3fcd2e2812d0">0x79cf6fda…</a> <a href="https://etherscan.io/tx/0x24fa07f6758bd4301772f5c7b88f55167b386c724808438c4dd7786e16b652fb">0x24fa07f6…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>形狀一樣，但 <code>setPreSignature.orderUid.digest.sellToken</code> 用的是 registry 外的地址、<code>setPreSignature.orderUid.digest.buyToken</code> 用的是 registry 外的地址</span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">6</span></span></td><td class="nw" data-label="最近"><span>2026-11-23</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x8b8c315a0ec8f200d689bb6dcd82ca2e5b4172da86ae3eefafcb5359b8750156">0x8b8c315a…</a> <a href="https://etherscan.io/tx/0xac7622e61bd69a3305c9758126f77b1aa673e2cfe1d10502e79ebf5d481ff329">0xac7622e6…</a> <a href="https://etherscan.io/tx/0x7997aedae0adc17349a30e337c44948a0b9c86d7e3fd24086b4911beb4aa0a7d">0x7997aeda…</a></span></td></tr></tbody></table></div>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 10 種，共 14 筆</span></summary><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="tx">例子（最多 3 筆）</th></tr></thead><tbody>
+    <tr><td class="what" data-label="哪裡不同"><span>形狀一樣，但 <code>setPreSignature.orderUid.digest.buyToken</code> 用的是 registry 外的地址</span></td><td class="n" data-label="Safe"><span><span class="num">4</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-11-02</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x6269504420a53ef18da52988d104bb4a3d37b668613b1756d5380d9c24d22738">0x62695044…</a> <a href="https://etherscan.io/tx/0x0c574a874730f0154bf7d785e119442ce7d8b7d9dd44b27c733f1a91f9671bc3">0x0c574a87…</a> <a href="https://etherscan.io/tx/0x5beca799066d63ce4c52bde8372851c9576a209f8f3031a4992afdc35de7d560">0x5beca799…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span><code>setPreSignature.orderUid.digest.partiallyFillable</code> 是 <span class="addr">true</span>，模板要 <span class="addr">false</span></span></td><td class="n" data-label="Safe"><span><span class="num">2</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26269708</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xcd53548d797d8d9d5286de15baa202bb320fd20e7fb6f742afeec515a6c0435f">0xcd53548d…</a> <a href="https://etherscan.io/tx/0xfc31ee8171cb06df846a6fda13c27c6f35bae48e4c65aa9c231579d8ac489f7a">0xfc31ee81…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>usdt.approve → usdt.approve → gpv2-settlement.setPreSignature → usdt.transfer</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 25574110</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x3482e96dc2e777603e63547acedea276d766a070f15c3c8d975134cf3aaf0f11">0x3482e96d…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>0x365AccFCa291e7D3914637ABf1F7635dB165Bb09.approve → 0x365AccFCa291e7D3914637ABf1F7635dB165Bb09.approve → gpv2-settlement.setPreSignature</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 25840788</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x8388a866e776f7269a67379782feb0928494d489a6a79ed7b6bdf46c0d5f2287">0x8388a866…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>呼叫了別的函式：<code>0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2.0xa415bcad → gpv2-settlement.setPreSignature</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 25930757</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xec6d0599917cbdb4c109c7028e6aad6b9a32003563f8f24fd92ee377c85d4692">0xec6d0599…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span><code>approve.spender</code> 是 gpv2-settlement，不是模板的 gpv2-vault-relayer</span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26304248</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xaaf7f39f8e2ca1ab96fabf50ff8c491ac6d71a5336f8d8bda79b535f5d3340c1">0xaaf7f39f…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>呼叫了別的函式：<code>gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26305006</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x634cf8cbc9c92fa3af417dec277e694035616f38f203f89c81f68b38728271c9">0x634cf8cb…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>呼叫了別的函式：<code>gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26342717</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x7dc004332d123b354d1ef72fd95c2ef2287ac6555f3c991dbccd2e11c529bda5">0x7dc00433…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span><code>setPreSignature.orderUid.digest.kind</code> 是 <span class="addr">&#34;buy&#34; (0x627579)</span>，模板要 <span class="addr">&#34;sell&#34; (0x73656c6c)</span></span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">1</span></span></td><td class="nw" data-label="最近"><span>區塊 26405029</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x9057c04eb617fea94e61335e039a199b4efd01af94378f61f00f34dab5f15f73">0x9057c04e…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>usdc.approve → gpv2-settlement.setPreSignature → gpv2-settlement.setPreSignature</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26453892</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xc6ede007c9b5e198742c192574063a155ea50718587e7e88746da73591b26db7">0xc6ede007…</a></span></td></tr></tbody></table></div>
+  </details>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>程式怎麼搜尋</span></summary>
+  <h3>搜尋 gpv2-settlement 的PreSignature，找到 20513 筆，研究 480 筆</h3>
+  <p class="cap">從最新的區塊往回，搜尋了區塊 25324737（2026-06-15）到區塊 26486320（2026-11-24）的每一筆交易，共 1161584 個區塊，約 161 天 22 小時，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。只有 Etherscan 搜尋事件，找到 <span class="num">20513</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
+  <p class="cap">這些交易是從事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。</p>
+  <p class="cap">另外 172 筆是別的操作，不列入：<code>0xd52C765872067bf6bF487f5C8A559FcD38553A12.0x3f965e56</code> 19 筆、<code>0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108.0x765e827f</code> 11 筆、<code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 8 筆、<code>multisend-call-only-1.4.1.0x8d80ff0a</code> 6 筆，還有別的。</p>
+  <p class="cap">另外 8 筆來自不是 Safe 的合約、執行失敗或讀不到，不列入。</p>
   </details>
 </section>
 
@@ -689,8 +740,15 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<aside class="usage"><h3>製作這份報告的 AI 用量</h3><p>未量測</p></aside>
-<footer class="foot">由 <code>pnpm report cow/swap-approve --record</code> 從 <code>templates/cow/swap-approve/template.json</code>、<code>templates/cow/swap-approve/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/cow-swap-approve.json</code>、<code>testdata/abi</code>、<code>testdata/research/cow-swap-approve-presign.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/cow/swap-approve/notes.json</code> 寫出，資料在 2026-11-18 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
+<section id="usage">
+  <h2>AI 用量</h2>
+  <p class="lead">Opus 5.5 用 28 次呼叫、12 分鐘做出這份報告。</p>
+  <table class="ut"><thead><tr><th scope="col">項目</th><th scope="col">token</th></tr></thead><tbody><tr><th scope="row">重複讀取（cache 讀取）</th><td class="num">1.6M</td></tr><tr><th scope="row">新讀入（input 與 cache 寫入）</th><td class="num">0.17M</td></tr><tr><th scope="row">output</th><td class="num">0.02M</td></tr></tbody><tfoot><tr><th scope="row">總共</th><td class="num">1.8M</td></tr></tfoot></table>
+  <p class="cap">這次只重跑過去交易的搜尋，用量只算這部分。</p>
+  <p class="cap">來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者。這些數字程式不檢查。</p>
+</section>
+
+<footer class="foot">由 <code>pnpm report cow/swap-approve --record</code> 從 <code>templates/cow/swap-approve/template.json</code>、<code>templates/cow/swap-approve/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/cow-swap-approve.json</code>、<code>testdata/abi</code>、<code>testdata/research/cow-swap-approve-presign.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/cow/swap-approve/notes.json</code>、<code>testdata/usage/cow-swap-approve.json</code> 寫出，資料在 2026-11-24 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。用量的數字程式也不檢查。</footer>
 
 </div>
 </div>

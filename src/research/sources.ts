@@ -303,8 +303,9 @@ export function recordingAsk(inner: Ask): { ask: Ask; exchanges: () => SourceExc
 }
 
 export function replayAsk(exchanges: readonly SourceExchange[]): Ask {
+  const recorded = new Map(exchanges.toReversed().map((exchange) => [JSON.stringify(exchange.request), exchange]));
   return async (req) => {
-    const found = exchanges.find((e) => JSON.stringify(e.request) === JSON.stringify(req));
+    const found = recorded.get(JSON.stringify(req));
     if (found === undefined) throw new ResearchError(`${req.source}: request not recorded`);
     return found.answer;
   };
@@ -336,8 +337,8 @@ export function liveAsk(env: Env, note: NoteUnread, transport: Transport = https
         throw new ResearchError('alchemy unreachable');
       }
       if (answer.status !== 200) throw new ResearchError(`alchemy answered HTTP ${answer.status}`);
-      const parsed = JSON.parse(answer.text) as { result?: unknown; error?: { message?: unknown } };
-      if (parsed.error !== undefined) throw new ResearchError(`alchemy refused: ${String(parsed.error.message).slice(0, 120)}`);
+      const parsed = JSON.parse(answer.text) as { result?: unknown; error?: { code?: unknown } };
+      if (parsed.error !== undefined) throw new ResearchError(`alchemy refused: ${typeof parsed.error.code === 'number' ? `error ${parsed.error.code}` : 'an error'}`);
       return parsed.result;
     }
     // The free Etherscan plan allows a few requests a second.

@@ -14,8 +14,10 @@ import { selectorOf } from '../src/decode/abi.ts';
 import { hashSafeTx } from '../src/safe/hash.ts';
 import type { Hex } from '../src/safe/types.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
+import { repoWithBundler3Deposit } from './bundler3-deposit.ts';
 
 const ROOT = join(import.meta.dirname, '..');
+const BUNDLER3 = repoWithBundler3Deposit();
 const readJson = (path: string) => JSON.parse(readFileSync(path, 'utf8'));
 const deposit: VerdictFile = readRecording(join(ROOT, 'testdata', 'verify', 'morpho-vault-deposit.json'));
 const records = (name: string) =>
@@ -23,7 +25,7 @@ const records = (name: string) =>
     .trim()
     .split('\n')
     .map((line) => JSON.parse(line) as Record<string, unknown>);
-const ENV = { ALCHEMY_API_KEY: 'test-key' };
+const ENV = { ALCHEMY_API_KEY: 'test-key', DRPC_API_KEY: 'test-key-drpc' };
 const DEPOSIT_CARD = { operations: [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount: '1800000000180', 'min-shares': '1741863305677219101283940' } }] };
 const MARKS = [
   { at: 'operations[0].values.amount', note: 'taken from the transaction' },
@@ -50,7 +52,7 @@ function setUp(name: string | Record<string, unknown>[], cards: Record<number, u
   git(base, 'init', '--quiet', '--bare', '--initial-branch=main', origin);
   git(base, 'clone', '--quiet', origin, repo);
   for (const path of ['templates/morpho/vault-deposit/template.json', 'registry/contracts.json', 'registry/attributes.json']) {
-    write(join(repo, path), readFileSync(join(ROOT, path), 'utf8'));
+    write(join(repo, path), readFileSync(join(BUNDLER3, path), 'utf8'));
   }
   git(repo, 'add', '-A');
   git(repo, 'commit', '--quiet', '-m', 'templates');

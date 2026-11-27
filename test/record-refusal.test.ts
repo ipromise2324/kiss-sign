@@ -1,58 +1,16 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join, relative } from 'node:path';
+import { join } from 'node:path';
 import { test } from 'node:test';
-import { pathToFileURL } from 'node:url';
 import { readRecording } from '../src/chain/bytecode.ts';
 import type { Exchange } from '../src/chain/recording.ts';
 import type { AbiCase } from '../src/contracts/abi-case.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
+import { withBlockTimes } from './block-times.ts';
+import { SUMMARY_FIXTURES, runOffline } from './run-offline.ts';
+import type { Http, Run } from './run-offline.ts';
 
 const ROOT = join(import.meta.dirname, '..');
-const HOOK = pathToFileURL(join(import.meta.dirname, 'offline-network.ts')).href;
 const REFUSAL = /^\d+ read\(s\) got no answer after every retry, so nothing is recorded; run the command again later:$/;
-
-type Http = Record<string, { status: number; text: string }>;
-type Network = { readonly exchanges: readonly Exchange[]; readonly http?: Http };
-type Run = { status: number | null; stdout: string; stderr: string; written: string[] };
-
-/**
- * Runs `script` from a copy of the program whose `testdata/<output>` holds only the `seed` files, every other folder of
- * `testdata/` the repository's own, with every network answer taken from `network` and `$KISS_SIGN_HOME/config.json`
- * holding `config` when given, and lists what it wrote there.
- */
-function runOffline(script: string, args: readonly string[], output: string, network: Network, seed: readonly string[] = [], config?: object): Run {
-  const sandbox = mkdtempSync(join(tmpdir(), 'kiss-sign-offline-'));
-  try {
-    if (config !== undefined) {
-      mkdirSync(join(sandbox, 'home'));
-      writeFileSync(join(sandbox, 'home', 'config.json'), JSON.stringify(config));
-    }
-    const copied = ['src', 'scripts', 'registry'];
-    for (const name of readdirSync(ROOT)) if (!['.git', '.cache', 'testdata', ...copied].includes(name)) symlinkSync(join(ROOT, name), join(sandbox, name));
-    for (const name of copied) cpSync(join(ROOT, name), join(sandbox, name), { recursive: true });
-    mkdirSync(join(sandbox, 'testdata'));
-    for (const name of readdirSync(join(ROOT, 'testdata'))) if (name !== output) symlinkSync(join(ROOT, 'testdata', name), join(sandbox, 'testdata', name));
-    const out = join(sandbox, 'testdata', output);
-    mkdirSync(out);
-    for (const file of seed) cpSync(join(ROOT, 'testdata', output, file), join(out, file));
-    const answers = join(sandbox, 'answers.json');
-    writeFileSync(answers, JSON.stringify({ exchanges: network.exchanges, http: network.http ?? {} }));
-    const run = spawnSync(process.execPath, ['--import', HOOK, join(sandbox, 'scripts', script), ...args], {
-      env: { PATH: process.env.PATH, KISS_SIGN_HOME: join(sandbox, 'home'), ALCHEMY_API_KEY: 'offline', ETHERSCAN_API_KEY: 'offline', OFFLINE_ANSWERS: answers },
-      cwd: sandbox,
-      encoding: 'utf8',
-      timeout: 300_000,
-    });
-    const files = readdirSync(out, { recursive: true, withFileTypes: true }).filter((entry) => entry.isFile());
-    const written = files.map((entry) => relative(out, join(entry.parentPath, entry.name))).filter((file) => !seed.includes(file));
-    return { status: run.status, stdout: run.stdout, stderr: run.stderr, written };
-  } finally {
-    rmSync(sandbox, { recursive: true, force: true });
-  }
-}
 
 /** The exchanges with every drpc answer to a request of `method` taken out, so drpc gives those reads no answer. */
 const withheld = (exchanges: readonly Exchange[], method: string): Exchange[] =>
@@ -106,9 +64,11 @@ test('past-txs --record writes the study when every read is answered, and nothin
   }
   const args = ['morpho/vault-deposit', '--token', 'steakhouse-prime-usdc-v2-0f51', '--anchor', 'mint', '--max-txs', '24', '--same-windows-as', name, '--record', 'offline'];
   const seed = [`${name}.json`];
-  assertRecorded(runOffline('past-txs.ts', args, 'research', { exchanges: [...recording.exchanges, ...transfers], http }, seed), 'offline.json');
-  const network = { exchanges: [...withheld(recording.exchanges, 'eth_getTransactionByHash'), ...transfers], http };
-  assertRefused(runOffline('past-txs.ts', args, 'research', network, seed), 'drpc eth_getTransactionByHash: unreachable');
+  assertRecorded(runOffline('past-txs.ts', args, 'research', { exchanges: [...withBlockTimes(recording.exchanges), ...transfers], http }, seed, undefined, SUMMARY_FIXTURES), 'offline.json');
+  const network = { exchanges: [...withheld(withBlockTimes(recording.exchanges), 'eth_getTransactionByHash'), ...transfers], http };
+  assertRefused(runOffline('past-txs.ts', args, 'research', network, seed, undefined, SUMMARY_FIXTURES), 'drpc eth_getTransactionByHash: unreachable');
+  const noBlocks = { exchanges: [...withheld(withBlockTimes(recording.exchanges), 'eth_getBlockByNumber'), ...transfers], http };
+  assertRefused(runOffline('past-txs.ts', args, 'research', noBlocks, seed, undefined, SUMMARY_FIXTURES), 'drpc eth_getBlockByNumber: unreachable');
 });
 
 test('past-txs --record of a template reported per vault refuses a search anchored on no registry entry before any read', () => {

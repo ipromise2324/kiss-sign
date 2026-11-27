@@ -47,7 +47,7 @@ async function recordInRepoCopy(id: string, transport: (served: Transport, drpc:
     const path = join(root, 'testdata', 'attacks', id, 'recording.json');
     const before = readFileSync(path, 'utf8');
     const { service, exchanges } = loadRecording(root, id);
-    const env = { ALCHEMY_API_KEY: 'test-key', KISS_SIGN_HOME: join(root, 'home') };
+    const env = { ALCHEMY_API_KEY: 'test-key', DRPC_API_KEY: 'test-key-drpc', KISS_SIGN_HOME: join(root, 'home') };
     const endpoints = mainnetEndpoints(env);
     const io: Io = {
       env,

@@ -60,6 +60,15 @@ test('a vault with a descriptor: its path, scope, hashes, functions and a valid 
   );
 });
 
+test('attestations checked at a given block ask for no latest block and find what the latest one gives there', async () => {
+  const chain = (recording.chain as Exchange[]).filter((e) => e.method !== 'eth_blockNumber' && e.method !== 'eth_getBlockByNumber');
+  const latest = await chainAt(replayReader(recording.chain as Exchange[]));
+  assert.ok('at' in latest);
+  const reports = await studyEntries([registry.entries.get('smokehouse-usdc-v1-f5bc')!], registry, snapshotWith(), () => chainAt(replayReader(chain), latest.at));
+  assert.equal(formatReports(snapshotWith(), reports), await report(['smokehouse-usdc-v1-f5bc']));
+  assert.ok('unavailable' in (await chainAt(replayReader(chain))));
+});
+
 test('a token without a descriptor says so, and that the index has no entry', async () => {
   const text = await report(['usdc']);
   assert.match(text, /usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 \(token\)\n {2}descriptor {3}none: no calldata descriptor lists this address on chain 1\n {2}index {8}index\.calldata\.json has no entry for this address/);

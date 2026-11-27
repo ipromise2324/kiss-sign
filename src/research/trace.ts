@@ -6,7 +6,7 @@ import type { Transport } from '../chain/rpc.ts';
 import type { Receipt, Transaction } from '../chain/types.ts';
 import type { Registry } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { callSites, targetNames } from '../template/template.ts';
+import { callSites, refNames, targetNames } from '../template/template.ts';
 import type { Template } from '../template/template.ts';
 import type { Sender } from './study.ts';
 
@@ -139,18 +139,18 @@ export type TraceSource = (hash: Hex) => Promise<TraceAnswer | undefined>;
 const asAnswer = (trace: RecordedTrace): TraceAnswer => ('calls' in trace ? { kind: 'calls', calls: trace.calls } : { kind: 'unreadable', why: trace.unreadable });
 
 /**
- * Traces from drpc alone, one transaction at a time, retried after a pause; a trace with no answer after every retry is
- * noted, so `--record` writes nothing, and read as not traced. `recorded` gives every trace read, by hash.
+ * Traces from drpc alone, retried after a pause; a trace with no answer after every retry is noted, so `--record`
+ * writes nothing, and read as not traced. `recorded` gives every trace read, in the order they were asked for.
  */
-export function drpcTraces(endpoint: Endpoint, transport: Transport, note: NoteUnread): { readonly source: TraceSource; readonly recorded: () => RecordedTrace[] } {
-  const traces = new Map<Hex, RecordedTrace>();
-  let queue = Promise.resolve();
-  const read = async (hash: Hex): Promise<TraceAnswer | undefined> => {
+export function drpcTraces(endpoint: Endpoint, transport: Transport, note: NoteUnread, pausesMs?: readonly number[]): { readonly source: TraceSource; readonly recorded: () => RecordedTrace[] } {
+  const traces = new Map<Hex, RecordedTrace | undefined>();
+  const source = async (hash: Hex): Promise<TraceAnswer | undefined> => {
+    traces.set(hash, undefined);
     const label = `${endpoint.provider} debug_traceTransaction ${hash}`;
     const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'debug_traceTransaction', params: [hash, { tracer: 'callTracer' }] });
     let answer: HttpAnswer;
     try {
-      answer = await retried(label, () => transport(endpoint.url, body, AbortSignal.timeout(60_000)), (a) => transientStatus(a) ?? traceProblem(a.text), note);
+      answer = await retried(label, () => transport(endpoint.url, body, AbortSignal.timeout(60_000)), (a) => transientStatus(a) ?? traceProblem(a.text), note, pausesMs);
     } catch (error) {
       note(`${label}: ${(error as Error).message}`);
       return undefined;
@@ -166,22 +166,14 @@ export function drpcTraces(endpoint: Endpoint, transport: Transport, note: NoteU
     traces.set(hash, trace);
     return asAnswer(trace);
   };
-  const source: TraceSource = (hash) => {
-    const next = queue.then(() => read(hash));
-    queue = next.then(
-      () => undefined,
-      () => undefined,
-    );
-    return next;
-  };
-  return { source, recorded: () => [...traces.values()] };
+  return { source, recorded: () => [...traces.values()].filter((trace) => trace !== undefined) };
 }
 
 const traceProblem = (text: string): string | undefined => {
   try {
     const answer = JSON.parse(text) as unknown;
     if (isRecord(answer) && isRecord(answer.result)) return undefined;
-    return isRecord(answer) && isRecord(answer.error) ? `error ${String(answer.error.message).slice(0, 80)}` : 'no trace in the answer';
+    return isRecord(answer) && isRecord(answer.error) ? typeof answer.error.code === 'number' ? `error ${answer.error.code}` : 'an error' : 'no trace in the answer';
   } catch {
     return 'not JSON';
   }
@@ -295,8 +287,11 @@ export async function checkTrace(hash: Hex, sender: Sender, answer: TraceAnswer,
   return disagrees === undefined ? { kind: 'traced', hash, sender, calls: kept } : { kind: 'unverifiable', hash, why: disagrees };
 }
 
-/** A `flow` line as the comparison reads it: after which call (from 1), between which registry entries, by which selector. */
-export type FlowLine = { readonly after: number; readonly from: string; readonly to: string; readonly selector: Hex | undefined };
+/** A `flow` line's `from` or `to`: a registry entry, or the token a card field of that name holds in each transaction. */
+export type FlowEnd = { readonly kind: 'entry'; readonly name: string } | { readonly kind: 'card'; readonly field: string };
+
+/** A `flow` line as the comparison reads it: after which call (from 1), between which ends, by which selector. */
+export type FlowLine = { readonly after: number; readonly from: FlowEnd; readonly to: FlowEnd; readonly selector: Hex | undefined };
 
 export type MoneyKind = TokenCall | 'eth';
 
@@ -312,14 +307,44 @@ const MONEY_PARTIES: Readonly<Record<MoneyKind, (call: TraceCall) => readonly (A
   eth: (call) => [call.from, call.to],
 };
 
+/** Who a money call takes money from and gives it to, `safe` for the sender. */
+export type Payment = { readonly from: Address | 'safe'; readonly to: Address | 'safe' };
+
+/** What a money call is to the sender: one it pays or approves, one that pays it, one between two others, or one whose addresses the trace did not keep. */
+export type Side = 'out' | 'in' | 'between' | 'unread';
+export const sideOf = (payment: Payment | undefined): Side => (payment === undefined ? 'unread' : payment.from === 'safe' ? 'out' : payment.to === 'safe' ? 'in' : 'between');
+
+/** The owner and the receiver, or for an approval the spender, of a money call; the caller is the owner of all but a `transferFrom`. */
+function paymentOf(kind: MoneyKind, call: TraceCall, sender: Address): Payment | undefined {
+  const [first, second] = call.args ?? [];
+  const from = kind === 'transferFrom' ? first : call.from;
+  const to = kind === 'eth' ? call.to : kind === 'transferFrom' ? second : first;
+  const name = (address: Address) => (address === sender ? 'safe' : address);
+  return from === undefined || to === undefined ? undefined : { from: name(from), to: name(to) };
+}
+
 /**
  * A money call no line covers, grouped: under which call (from 1), between whom, of which kind, in how many
  * transactions, and every address outside the registry among its parties and token arguments, so a review names them.
+ * `pays` holds each pair the calls move money between: who pays whom, or for an approval who lets whom spend; `sides`
+ * in how many of the transactions at least one call is on each side of the sender.
  */
-export type Uncovered = { readonly call: number; readonly from: string; readonly to: string; readonly kind: MoneyKind; readonly transactions: number; readonly others: readonly Address[] };
+export type Uncovered = { readonly call: number; readonly from: string; readonly to: string; readonly kind: MoneyKind; readonly pays: readonly Payment[]; readonly sides: Readonly<Partial<Record<Side, number>>>; readonly transactions: number; readonly others: readonly Address[] };
 
-/** Each line seen in `seen` of the `of` traced transactions that make its call, and the money calls no line covers. */
-export type FlowComparison = { readonly lines: readonly { readonly seen: number; readonly of: number }[]; readonly uncovered: readonly Uncovered[] };
+/** In how many of the `of` transactions that tested something it was `seen`. */
+export type Tally = { readonly seen: number; readonly of: number };
+
+/** One card field a line names, with a tally for each registry token the field can name, also one no transaction held. */
+export type FieldTally = { readonly field: string; readonly tokens: readonly (Tally & { readonly name: string })[] };
+
+/** A line seen in `seen` of the `of` traced transactions that test it, and the same per token of each card field it names. */
+export type LineTally = Tally & { readonly fields: readonly FieldTally[] };
+
+/** Each line's tally, and the money calls no line covers. */
+export type FlowComparison = { readonly lines: readonly LineTally[]; readonly uncovered: readonly Uncovered[] };
+
+/** Whether some token a line's card field can name was held by none of the transactions that tested the line. */
+export const tokenUntested = ({ fields }: LineTally): boolean => fields.some(({ tokens }) => tokens.some(({ of }) => of === 0));
 
 const delegates = (call: TraceCall): boolean => call.type === 'DELEGATECALL' || call.type === 'CALLCODE';
 
@@ -371,12 +396,27 @@ export const holdingTemplateCalls = (template: Template, registry: Registry, tx:
 /**
  * The AI's `flow` lines against the traced transactions: each line seen in N of M, and every money call (a token
  * `transfer`, `transferFrom` or `approve`, or a call sending ETH) that touches the sender, under a template call, that
- * is not a call the template binds, nor one a seen line names, nor one made directly by either.
+ * is not a call the template binds, nor one a seen line names, nor one made directly by either. `cards` holds, by
+ * transaction, the address of each card field its calls carry; a line that names a field is compared with the
+ * transaction's own, and a transaction that does not show it does not test the line.
  */
-export function compareFlow(template: Template, registry: Registry, lines: readonly FlowLine[], traced: readonly Extract<TracedTx, { kind: 'traced' }>[]): FlowComparison {
+export function compareFlow(
+  template: Template,
+  registry: Registry,
+  lines: readonly FlowLine[],
+  traced: readonly Extract<TracedTx, { kind: 'traced' }>[],
+  cards: ReadonlyMap<Hex, ReadonlyMap<string, Address>> = new Map(),
+): FlowComparison {
   const addressOf = (name: string): Address | undefined => registry.entries.get(name)?.address.toLowerCase() as Address | undefined;
   const nested = callSites(template, registry).filter((site) => site.nested);
-  const seen = lines.map(() => ({ seen: 0, of: 0 }));
+  const tallies = lines.map((line) => ({
+    seen: 0,
+    of: 0,
+    fields: [...new Set([line.from, line.to].flatMap((end) => (end.kind === 'card' ? [end.field] : [])))].map((field) => ({
+      field,
+      tokens: refNames({ field, attribute: undefined }, template, registry).map((name) => ({ name, seen: 0, of: 0 })),
+    })),
+  }));
   const uncovered = new Map<string, Uncovered>();
   for (const tx of traced) {
     const calls = templateCalls(template, registry, tx);
@@ -388,11 +428,17 @@ export function compareFlow(template: Template, registry: Registry, lines: reado
     lines.forEach((line, l) => {
       const top = calls.get(line.after - 1);
       if (top === undefined || line.selector === undefined) return;
-      const [from, to] = [addressOf(line.from), addressOf(line.to)];
+      const card = cards.get(tx.hash);
+      const held = (end: FlowEnd): Address | undefined => (end.kind === 'entry' ? addressOf(end.name) : card?.get(end.field));
+      const [from, to] = [held(line.from), held(line.to)];
+      if ([line.from, line.to].some((end) => end.kind === 'card' && held(end) === undefined)) return;
       const hits = under(top).filter((j) => j !== top && tx.calls[j]?.from === from && tx.calls[j]?.to === to && tx.calls[j]?.selector === line.selector?.toLowerCase());
-      const tally = seen[l] as { seen: number; of: number };
-      tally.of++;
-      if (hits.length > 0) tally.seen++;
+      const whole = tallies[l] as (typeof tallies)[number];
+      const tokens = whole.fields.flatMap(({ field, tokens }) => tokens.filter(({ name }) => addressOf(name) === card?.get(field)));
+      for (const tally of [whole, ...tokens]) {
+        tally.of++;
+        if (hits.length > 0) tally.seen++;
+      }
       for (const j of hits) named.add(j);
     });
     const label = (a: Address): string => (a === sender ? 'safe' : (registry.byAddress.get(a)?.name ?? 'other'));
@@ -409,10 +455,16 @@ export function compareFlow(template: Template, registry: Registry, lines: reado
         const before = uncovered.get(id);
         const outside = [call.from, call.to, ...(call.args ?? [])].filter((a) => label(a) === 'other');
         const others = [...new Set([...(before?.others ?? []), ...outside])];
-        uncovered.set(id, { ...group, transactions: (before?.transactions ?? 0) + (counted.has(id) ? 0 : 1), others });
-        counted.add(id);
+        const payment = paymentOf(kind, call, sender);
+        const seenPays = before?.pays ?? [];
+        const pays = payment === undefined || seenPays.some((p) => p.from === payment.from && p.to === payment.to) ? seenPays : [...seenPays, payment];
+        const side = sideOf(payment);
+        const first = (key: string): number => (counted.has(key) ? 0 : 1);
+        const sides = { ...before?.sides, [side]: (before?.sides[side] ?? 0) + first(`${id} ${side}`) };
+        uncovered.set(id, { ...group, pays, sides, transactions: (before?.transactions ?? 0) + first(id), others });
+        counted.add(id).add(`${id} ${side}`);
       }
     }
   }
-  return { lines: seen, uncovered: [...uncovered.values()] };
+  return { lines: tallies, uncovered: [...uncovered.values()] };
 }

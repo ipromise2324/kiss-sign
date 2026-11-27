@@ -42,7 +42,8 @@ Options:
                     no answer. <name> takes lowercase letters, digits and -.
 
 Writes: testdata/sources/<name>.json with --record, otherwise nothing.
-Keys: ALCHEMY_API_KEY and ETHERSCAN_API_KEY, optional, from the environment or $KISS_SIGN_HOME/.env;
+Keys: ALCHEMY_API_KEY, DRPC_API_KEY and ETHERSCAN_API_KEY, optional, from the environment or
+$KISS_SIGN_HOME/.env;
 without them the deployer check is skipped with a NOTE. GITHUB_TOKEN, optional, sent only to
 api.github.com; it raises GitHub's limit from 60 to 5,000 requests an hour and changes no answer.
 Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 2, Check

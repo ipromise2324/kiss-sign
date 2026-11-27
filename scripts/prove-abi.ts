@@ -25,7 +25,8 @@ or changed pinned solc is downloaded first, as pnpm fetch-solc does. NOT PROVABL
 exit 1.
 
 Writes: nothing, except vendor/solc/ when a pinned solc is missing or differs from its pin.
-Keys: ALCHEMY_API_KEY and ETHERSCAN_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Keys: ALCHEMY_API_KEY, DRPC_API_KEY and ETHERSCAN_API_KEY, from the environment or
+  $KISS_SIGN_HOME/.env.
 Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 3,
 Establish the ABI; step 2, Pin the routes and Declare the implementation read).`;
 

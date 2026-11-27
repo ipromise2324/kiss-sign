@@ -16,9 +16,9 @@ import { checkCommand, checkHints } from '../src/verify/check-command.ts';
 import { callTree } from '../src/verify/expected.ts';
 import { verdictPage } from '../src/verify/page.ts';
 import type { CheckName, CheckState } from '../src/verify/verdict.ts';
-import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
+import { repoWithBundler3Deposit } from './bundler3-deposit.ts';
 
-const ROOT = repoWithTestFixtures();
+const ROOT = repoWithBundler3Deposit();
 const registry = loadRegistry(ROOT);
 const PASSED: Record<CheckName, CheckState> = {
   'template-approval': 'passed',
@@ -62,12 +62,12 @@ const PINNED: readonly { readonly fixture: string; readonly card: Card; readonly
   { fixture: 'merkl-claim-two-tokens', card: { operations: [{ template: 'merkl/claim', values: { token: 'usdc' } }, { template: 'merkl/claim', values: { token: 'morpho' } }] } },
   { fixture: 'cow-swap-usdc', card: { operations: [{ template: 'cow/swap', values: { 'sell-token': 'usdc', 'buy-token': 'usdt', 'sell-amount': '100000000000', 'min-buy': '99084887371' } }] } },
   {
-    fixture: 'uniswap-swap-approve-usdt-usdc',
+    fixture: 'uniswap-swap-hook-approve-usdt-usdc',
     card: {
       operations: [
         { template: 'uniswap/approve-permit2', values: { token: 'usdt' } },
         { template: 'uniswap/allow-router', values: { token: 'usdt' } },
-        { template: 'uniswap/swap', values: { 'sell-token': 'usdt', 'buy-token': 'usdc', 'sell-amount': '4342485506', 'min-buy': '4334865289' } },
+        { template: 'uniswap/swap', values: { 'sell-token': 'usdt', 'buy-token': 'usdc', 'sell-amount': '2000000000', 'min-buy': '1987680455' } },
       ],
     },
   },
@@ -102,11 +102,11 @@ for (const { fixture, card, book } of PINNED) {
 }
 
 test('the check.sh command carries --hints only when a template reads bytes no ABI describes', () => {
-  const swap = PINNED.find((p) => p.fixture === 'uniswap-swap-approve-usdt-usdc');
+  const swap = PINNED.find((p) => p.fixture === 'uniswap-swap-hook-approve-usdt-usdc');
   const { tree: swapTree } = treeOf(swap?.card ?? CARD, swap?.fixture);
   assert.equal(
     checkCommand(swapTree),
-    "./check.sh 5 --hints 'v1 C4-a2.1=abi(bytes,bytes[]) C4-a2.1.2.1=abi((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128)) C4-a2.1.2.2=abi(address,uint256,bool) C4-a2.1.2.3=abi(address,address,uint256)'",
+    "./check.sh 1 --hints 'v1 C4-a2.1=abi(bytes,bytes[]) C4-a2.1.2.1=abi(address,uint256,bool) C4-a2.1.2.2=abi(((address,address,uint24,int24,address),bool,uint128,uint128,uint256,bytes)) C4-a2.1.2.3=abi(address,address,uint256) C4-a2.2=abi(address,address,uint256)'",
   );
   const { tree } = treeOf(CARD);
   assert.equal(checkCommand(tree), `./check.sh ${tree.nonce}`);

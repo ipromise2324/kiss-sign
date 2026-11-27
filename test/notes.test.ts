@@ -24,6 +24,7 @@ const SUPPLY = 'supply((address,address,address,address,uint256),uint256,uint256
 const SCOPE: NotesScope = {
   calls: 2,
   contracts: new Set(['usdc', 'blue-bundles-v1', 'morpho-blue']),
+  tokenFields: new Map([['loan-token', ['usdc', 'cbbtc']]]),
   nested: [],
   entries: new Set(['usdc', 'morpho-blue', 'cbbtc']),
   routed: new Set(),
@@ -200,6 +201,29 @@ test("a flow line's function must be a canonical signature, and a line may not n
   );
 });
 
+test('a flow line may name a card field that holds a token, and no other card field', () => {
+  const line = { ...VALID.flow[0], to: 'card.loan-token', function: 'transferFrom(address,address,uint256)' };
+  assert.deepEqual(parseNotes(edited(['flow', 0], line), SCOPE).flow[0]?.to, { kind: 'card', field: 'loan-token' });
+  for (const name of ['card.market', 'card.amount', 'card.loan-token.asset', 'card.']) {
+    refused(edited(['flow', 0], { ...line, to: name }), `notes.json.flow[0].to: "${name}" is not a card field that holds a token`);
+  }
+  const bound = { ...SCOPE, nested: [{ after: 2, from: ['blue-bundles-v1'], to: ['cbbtc'], selector: selectorOf('transferFrom(address,address,uint256)') }] };
+  assert.throws(() => parseNotes(edited(['flow', 0], line), bound), (e: unknown) => e instanceof NotesError && /names a call the template binds itself/.test(e.message));
+  const swap = loadTemplate(ROOT, 'uniswap/swap', registry);
+  const of = { subject: { kind: 'template', template: swap }, registry, facts: undefined } as unknown as ReportInputs;
+  const { tokenFields } = notesScope(of, { entries: [], results: [] }, swap, 'en');
+  assert.deepEqual([...tokenFields.keys()], ['sell-token', 'buy-token']);
+  assert.ok(tokenFields.get('sell-token')?.includes('usdt'));
+  const vaults = loadTemplate(ROOT, 'fluid/vault-deposit', registry);
+  assert.ok([...vaults.card.values()].some((field) => field.kind === 'contract'));
+  assert.equal(notesScope({ ...of, subject: { kind: 'template', template: vaults } } as unknown as ReportInputs, { entries: [], results: [] }, vaults, 'en').tokenFields.size, 0, 'a vault field holds no token');
+});
+
+test('a template flow line that names a card token is shared by every instance', () => {
+  const shared = { ...SHARED, flow: [{ ...VALID.flow[0], to: 'card.loan-token' }] };
+  assert.equal(mergeNotes(shared, undefined, VAULT_PATH, OWNED), shared);
+});
+
 test('more than four flow lines or judgments are refused', () => {
   refused(edited(['flow'], Array(5).fill(VALID.flow[0])), 'notes.json.flow: more than 4 items');
   refused(edited(['judgments'], Array(5).fill(VALID.judgments[0])), 'notes.json.judgments: more than 4 items');
@@ -242,10 +266,15 @@ test('English text that holds Chinese characters or full-width punctuation is re
   for (const en of ['供應 USDC', 'Supply USDC，then deposit', 'Supply（USDC）']) refused(edited(['summary'], { en, 'zh-TW': '供應 USDC' }), 'notes.json.summary.en: holds Chinese characters or full-width punctuation');
 });
 
-test('text over its limit is refused: 2,000, 300 for a review, 200 for a judgment, role, recommendation, intro or AI source, 100 for a title, flow line or verdict; English may be three times as long', () => {
+test('text over its limit is refused: 250 for a summary, 150 for a field, 2,000 for an audit text, 300 for a review, 200 for a judgment, role, recommendation, intro or AI source, 100 for a title, flow line or verdict; English may be three times as long', () => {
   const over = (n: number) => t('x'.repeat(n + 1));
-  refused(edited(['summary'], over(2000)), 'notes.json.summary.zh-TW: longer than 2000 characters');
-  refused(edited(['fields', '1.approve.spender'], over(2000)), 'notes.json.fields.1.approve.spender.zh-TW: longer than 2000 characters');
+  refused(edited(['summary'], over(250)), 'notes.json.summary.zh-TW: longer than 250 characters');
+  refused(edited(['fields', '1.approve.spender'], over(150)), 'notes.json.fields.1.approve.spender.zh-TW: longer than 150 characters');
+  assert.doesNotThrow(() => parseNotes(edited(['summary'], { en: 'x'.repeat(750), 'zh-TW': 'x'.repeat(250) }), SCOPE));
+  assert.doesNotThrow(() => parseNotes(edited(['fields', '1.approve.spender'], { en: 'x'.repeat(450), 'zh-TW': 'x'.repeat(150) }), SCOPE));
+  refused(edited(['summary'], { en: 'x'.repeat(751), 'zh-TW': 'x' }), 'notes.json.summary.en: longer than 750 characters');
+  refused(edited(['fields', '1.approve.spender'], { en: 'x'.repeat(451), 'zh-TW': 'x' }), 'notes.json.fields.1.approve.spender.en: longer than 450 characters');
+  refused(edited(['protocols', 'morpho-blue', 'audits', 'text'], over(2000)), 'notes.json.protocols.morpho-blue.audits.text.zh-TW: longer than 2000 characters');
   refused(edited(['reviews', 'morpho-oracle/source.page', 'text'], over(300)), 'notes.json.reviews.morpho-oracle/source.page.text.zh-TW: longer than 300 characters');
   refused(edited(['judgments', 0, 'text'], over(200)), 'notes.json.judgments[0].text.zh-TW: longer than 200 characters');
   refused(edited(['entries', 'usdc', 'role'], over(200)), 'notes.json.entries.usdc.role.zh-TW: longer than 200 characters');

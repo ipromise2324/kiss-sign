@@ -18,8 +18,10 @@ import { checkMutations } from '../../src/template/mutation.ts';
 import { TemplateError, parseTemplate } from '../../src/template/template.ts';
 import type { Template } from '../../src/template/template.ts';
 import { detailText } from '../../src/verify/detail-text.ts';
+import { repoWithTestFixtures } from '../repo-with-test-fixtures.ts';
 
 const ROOT = join(import.meta.dirname, '..', '..');
+const FIXTURES = repoWithTestFixtures();
 const load = (dir: string, name: string) => readRecording<any>(join(ROOT, 'testdata', dir, `${name}.json`));
 type Fixture = { executed: { number: string; hash: Hex }; parent: { number: string; hash: Hex }; exchanges: Exchange[] };
 
@@ -27,7 +29,7 @@ const recorded: Fixture = load('simulate', 'morpho-vault-deposit');
 const safeTxFixture = load('safe-tx', 'morpho-vault-deposit');
 const deposit = parseServiceTx(safeTxFixture.service, { chainId: 1n, version: safeTxFixture.chain.version });
 const registry = loadRegistry(ROOT);
-const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
+const raw = JSON.parse(readFileSync(join(FIXTURES, 'templates', 'morpho', 'vault-deposit-bundler3', 'template.json'), 'utf8'));
 
 const USDC = registry.entries.get('usdc')!.address;
 const USDT = registry.entries.get('usdt')!.address;

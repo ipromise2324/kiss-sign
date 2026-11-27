@@ -10,7 +10,11 @@ Never ask the signer about these before research.
 - **Route.** Whether the Safe calls the protocol directly or through its bundler or router follows from the contracts, the protocol's own app, and what real Safes do in `pnpm past-txs`.
 - **Card.** The card asks what the protocol's own app asks a user to enter for this operation, such as the market, the collateral amount and the borrow amount, and nothing the app does not ask, except what safety strictly needs, explained in the report.
   A value the app fills in by itself, such as a slippage floor, a share-price cap, a minimum amount out or a deadline, is never asked.
-  When it is a limit the transaction's bound must carry, declare its card field as computed (`"computed": { "read", "bound", "default", "margin"? }`, see [Intent card](../../../docs/design/data-shapes.md#intent-card)), with the protocol's own default slippage and a pinned link to where the protocol sets it; otherwise bind it or leave it free with a reason.
+  When it is a limit the transaction's bound must carry, or one only the simulated result can be held to, because the function called has no bound and the protocol offers no route with one, such as the fewest shares a plain `deposit` gives (an `atLeast` in the effects), declare its card field as computed (`"computed": { "read", "bound", "default", "margin"? }`, see [Intent card](../../../docs/design/data-shapes.md#intent-card)), with the protocol's own default slippage and a pinned link to where the protocol sets it; `card new` reads it only after every entry the read names, with each one's `dependsOn`, runs its pinned code; otherwise bind it or leave it free with a reason.
+  When a bounded route exists, build that one; only the owner may choose the second case instead, as for Fluid's deposit.
+  In the second case say in the report that it is a check of `verify` before signing, and that nothing holds it when the transaction runs.
+  A swap's minimum to receive is a `floor`, never a `computed` field: `"floor": { "sells": "<the card field of the amount sold>" }`, whose rule the program holds; give each token that has a feed its `price`, each feed its facts and the pair's pool its `twap` in the registry, with the publisher's own list as the source, and `minLiquidity` from measured depth in calm and stressed blocks ([Prices](../../../docs/design/data-shapes.md#prices)); each feed and pool is a registry entry of its own, researched as any other ([addresses.md](addresses.md#contracts-that-need-more)).
+  A token no feed prices gets none, and its floor is typed.
   Add a `margin` only when the default alone would make the app's own transaction `MISMATCH`, and say why in its `why`.
 - **Extra limits.** A protection the app lacks, such as a cap on loan-to-value after a borrow, is your card design; propose it in the report.
 - **Chain facts.** Read prices and other chain facts on chain, such as the market's oracle; never guess them.
@@ -83,13 +87,22 @@ To read again the blocks an earlier recording searched, such as to add what a re
    A difference beyond 10, or one that grows with the amount, such as a fee, is not rounding: stop and tell the signer.
 5. Read the spread `pnpm past-txs` prints for every `uint` or `int` the template leaves free or bounds with `withinSeconds`, over the transactions that fit, a value the signer does not choose, such as an order's `validTo` less the block's time, a deadline or a fee.
    Ask what the largest normal value is, and what a far larger one would let happen after the signer stops watching, such as an order or approval still valid in a year.
-   For a time, declare it `{"free": {"time": {"<language>": "<why>"}}}` first, so the spread counts from the block's time, then replace that with `{"withinSeconds": <seconds>}` ([Template](../../../docs/design/data-shapes.md#template)), a whole number from 1 to 31,536,000, at or above the largest value real Safes used (when that is above a year, stop and tell the signer), and cite the spread in the field's note in `notes.json`, such as "136 Safe orders: median 1,720 s, 99th percentile 10,478 s, largest 604,767 s; bound 7 days".
+   For a time, declare it `{"free": {"time": {"<language>": "<why>"}}}` first, so the spread counts from the block's time, then replace that with `{"withinSeconds": <seconds>}` ([Template](../../../docs/design/data-shapes.md#template)), a whole number from 1 to 31,536,000, at or above the largest value real Safes used (when that is above a year, stop and tell the signer).
+   The report's Past transactions section shows the spread beside the limit, so do not repeat it in `notes.json`.
    For another number, when the spread shows a bound is needed and no rule in the vocabulary can hold it, stop and propose a generic program change.
-   When no bound is needed, say why in that note.
-6. Record the runs the report studies with `--record <name>` before you generate the report.
+   When no bound is needed, say why in the field's text in `notes.json`.
+6. Run again with `--record <name>` each run the report studies, before you write a `flow` line or generate the report.
    It writes the full recording to `.cache/past-txs/<name>.json`, which git ignores and you never commit, and a summary of what the study found to `testdata/research/<name>.json`, which the report reads.
    The summary also keeps the call trace of each transaction exactly the template, which the report compares with your `flow` lines ([Notes and reviews](notes-and-reviews.md)).
-   When `pnpm test` says a summary changed since it was studied, run `pnpm past-txs --restudy <name>` where `.cache/past-txs/<name>.json` exists, or run the summary's printed command again.
+   Before any note, settle every address the run prints that moves the sender's money and whose code verify does not check:
+   - a fixed contract of the operation, such as a pool manager that holds every pool: register it and list it in the reaching entry's `dependsOn` ([addresses.md](addresses.md#contracts-that-need-more)), then `--restudy` the summary;
+   - one that differs per transaction or is no fixed part of the operation, such as an aggregator's pools: judge it `not-fixed`;
+   - one the program cannot express: judge it `known-limit`, and stop and propose the change ([Program changes](#program-changes)) when it affects what `verify` binds.
+   Write a judgement in `trace-addresses.json` beside the report's files, in the instance's folder for a per-instance report: `{ "<address in full>": { "judgement": "not-fixed" | "known-limit", "reason", "sources": ["https://..."] } }`, with `"needs": "<the program change>"` for a `known-limit`; `reason` and `needs` hold at most 600 characters each.
+   `pnpm report --record` refuses while one is neither, naming all of them, and refuses a judgement of an address no recorded trace names; so do `--render`, `--offline` and `pnpm test` for a report recorded on 2026-11-26 or later, or that has the file.
+   When the run says nothing was found over 0 traced, it shows nothing: look for a search that traces the operation, and only when there is none say why beside the judgements, as `"untraced": { "reason" }`, without which `--record` refuses a template that moves money.
+   When the run prints a token a swap's card can choose in none of the traces, such as one direction of the swap, look for a search that traces it, and say in `pastTxsConclusion` what no trace covers.
+   When `pnpm test` says a summary changed since it was studied, run `pnpm past-txs --restudy <name>` where `.cache/past-txs/<name>.json` exists, or run the summary's printed command again with `--same-windows-as <name>`; settle any new address it prints.
 
 ## Check the protocol's health
 
@@ -107,7 +120,7 @@ Cite a URL for every claim; it goes into `protocols` in `notes.json`.
 2. Run `pnpm report <protocol>/<operation> --record`, with `--instance-of <instance>` for the instance the signer named when the template is reported per instance.
    It reads everything live but the past transactions, which it prints from the `pnpm past-txs` summaries in `testdata/research/`, and records the answers in `testdata/report/` and any missing ABI case in `testdata/abi/`, and writes `report.generated.md`.
    Last it writes the HTML report from `notes.json`; that step refuses, naming the problem, until the notes review exactly the results the signer must look at.
-   At this step the refusal is expected and comes after the recordings and `report.generated.md` are written: write the reviews ([notes-and-reviews.md](notes-and-reviews.md)) and run `--render`.
+   At this step a refusal that names `notes.json` is expected and comes after the recordings and `report.generated.md` are written: write the reviews ([notes-and-reviews.md](notes-and-reviews.md)) and run `--render`.
    Never edit the generated file; `pnpm test` fails if it differs from what the recordings give.
 
 ## Add the tests
@@ -121,7 +134,7 @@ Cite a URL for every claim; it goes into `protocols` in `notes.json`.
 ## Open the pull request
 
 Run `pnpm test`, `pnpm typecheck` and `pnpm check-push origin/main..HEAD`; all must pass.
-Open the pull request to the signer's fork with the template, `docs.json`, `notes.json`, the generated reports (`report.generated.md` and each HTML file `--render` wrote), the recordings, the `pnpm past-txs` summaries in `testdata/research/` (never the full recordings in `.cache/past-txs/`), the registry entries, the tests, and any research-code change with its design change.
+Open the pull request to the signer's fork with the template, `docs.json`, `notes.json`, `trace-addresses.json` when there is one, the generated reports (`report.generated.md` and each HTML file `--render` wrote), the recordings, the `pnpm past-txs` summaries in `testdata/research/` (never the full recordings in `.cache/past-txs/`), the registry entries, the tests, and any research-code change with its design change.
 A verdict core change went in its own pull request first.
 Never paste generated output into the pull request description.
 
@@ -130,7 +143,7 @@ Write the description for them, in their language, in this order:
 
 1. One sentence: the operation, and that they need not read the diff.
 2. **Read the report**: the path of the report in their language on the branch.
-3. **Check before you merge**: one line per result the report lists under To review, in your own words, with each address in full, then one line per registry entry the branch adds or changes: open the sources the report lists for it and check that each page is the protocol's own and lists this address.
+3. **Check before you merge**: one line per result the report lists under To review, in your own words, with each address in full, then one line per registry entry the branch adds or changes: open the sources the report lists for it and check that each page is the protocol's own and lists this address; then one line per judgement in `trace-addresses.json`, which no page shows.
 4. **What the card will ask**: one line per card field.
 5. **The files**: how many files you wrote by hand (template, notes, `docs.json`, registry, tests) and how many the scripts recorded or generated, and why any other file changed, such as every past-transactions summary taking a new registry hash.
 6. **Merge when you are satisfied.**

@@ -59,6 +59,7 @@ export const WEIGHT_OF: { readonly [K in FindingKind]: Weight } = {
   'deployer-alone': 'neutral',
   'not-called': 'neutral',
   'routed-proxy': 'neutral',
+  'line-token-untested': 'neutral',
 };
 
 export const weightOf = (result: Result): Weight => WEIGHT_OF[result.finding.kind];

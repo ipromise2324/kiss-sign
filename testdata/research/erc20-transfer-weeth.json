@@ -1,0 +1,7213 @@
+{
+ "query": {
+  "template": "erc20/transfer",
+  "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+  "anchor": "any",
+  "head": "26486286",
+  "maxPages": 50,
+  "maxTxs": 240
+ },
+ "head": "26486286",
+ "studiedWith": {
+  "template": "0x73d152f3283d07ac245108b5462c02cedf55bbaf0f5c03fcddcf5cbe8574afc2",
+  "registry": "0xc56e9219ec3e0c7e76eed85837675c21c74c498f4f00ab6ea2fc586b8350754d",
+  "study": "0x92508a29cee7c49b83a1d4a9f9e4e04eac8df225cb741b31331cc10dacdd84ae"
+ },
+ "search": {
+  "coverage": {
+   "kind": "recent",
+   "range": {
+    "fromBlock": "26159459",
+    "toBlock": "26486222"
+   },
+   "pages": 50,
+   "time": {
+    "from": "1791604307",
+    "to": "1795537799"
+   }
+  },
+  "safesFirst": {
+   "check": {
+    "kind": "checked",
+    "noun": "the address the token moved out of",
+    "block": "26486222",
+    "parties": 3233,
+    "safes": 94,
+    "unreadable": 0
+   },
+   "selection": {
+    "safes": 255,
+    "safesChosen": 180,
+    "rest": 14667,
+    "restChosen": 60
+   }
+  },
+  "found": {
+   "total": 14922,
+   "only": {
+    "alchemy": [],
+    "etherscan": []
+   }
+  },
+  "otherEmitter": []
+ },
+ "studies": [
+  {
+   "kind": "not-studied",
+   "hash": "0x41c21e51751c17c1e237cc42710abf79453e2d9c5b7d3774a002863b3a6379b1",
+   "why": "calls no function the template calls",
+   "to": "0x0000000000001ff3684f28c67538d4d072c22734",
+   "selector": "0x2213bc0b"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x6bbbf7cd45db8b8ad71db8c8204aef300872606ff6256ac6388d93869b0e94fe",
+   "block": "26160036",
+   "sender": {
+    "kind": "safe",
+    "address": "0xce78eaeab32fbcd4f323b382bebfe5b1415d59dc"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
+      "selector": "0x617ba037"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa7c44351f6a26ab9369a9f872eeee965811938a782ead32d2943252185be2437",
+   "why": "calls no function the template calls",
+   "to": "0xa60ded4c899e7560dc4ca56b57fbab25c90addeb",
+   "selector": "0x9008d19f"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xdc4a0a4c6825e2f3674065e55e0fcf62ecf394e601926581a720ddf1136e04d0",
+   "block": "26168796",
+   "sender": {
+    "kind": "safe",
+    "address": "0x142a1690671db35337b3ed8007aa9c6e90b5f439"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xfe348c1664b9227fb42368f812e3d13a97fb876aa995114fdf5c58e4c2437fe4",
+   "block": "26169196",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x363bdf12f458ff2690b5da5b411a3d2adf8d7c8e",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0x94a0d29b6d942a509e78499823a49170c021869a",
+    "64247634655915332153"
+   ],
+   "outside": [],
+   "time": "1791721559"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xaf3c13d29552c33628c43de4c3d18b76958157db0b3ebd2d3a8c4f71ac5429e2",
+   "why": "calls no function the template calls",
+   "to": "0x23aff90ed3b3effcf78fb41ab001c525a6c32a01",
+   "selector": "0x5ff8a71f"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x31b6059afa7fb2638a54fab4fbd69551368d4e9426cab28226151bebc33670c4",
+   "block": "26175843",
+   "sender": {
+    "kind": "safe",
+    "address": "0x142a1690671db35337b3ed8007aa9c6e90b5f439"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xdfd2347852cfa6aa8333aeeaf4d0b4293252179428ba65f5bb976d6dcf6a30e9",
+   "block": "26175961",
+   "sender": {
+    "kind": "safe",
+    "address": "0x169a99b9958386a5d91e732ed08b344946a92391"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     },
+     {
+      "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+      "selector": "0xe7435fad"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3c0a1298fe0e8da957fd3004040e037639b708659057c9670252593255a86501",
+   "block": "26179965",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb504831934e0cc2097531f9640b5ebdac40e6566"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xfbfe6b9cee0e555bad7e2e7309effc75200cbe38",
+      "selector": "0xccc143b8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x7b8292ac0950edb9be850b6bd1656913fa419da5347f76fd616313c880372fdf",
+   "block": "26180196",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb504831934e0cc2097531f9640b5ebdac40e6566"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x94e7a5dcbe816e498b89ab752661904e2f56c485",
+      "selector": "0xac9650d8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8ab8695861b55670886430e16d24f7dd476b485f375d2ac0469c713734462fc0",
+   "why": "calls no function the template calls",
+   "to": "0x173272739bd7aa6e4e214714048a9fe699453059",
+   "selector": "0xcfc32570"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x0eccd834d12632e1a8a2aa7f4eaa12fd32e22bedd38861f7ca7fd33c2f7b6d1c",
+   "block": "26184814",
+   "sender": {
+    "kind": "safe",
+    "address": "0x519c5fd08e95d4b9528f4af3c0a923adb7e95e0f"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x60112a37e13b73391c3f3e528101de964605471a5ffac7c72b20cdd993ff15fc",
+   "why": "calls no function the template calls",
+   "to": "0x0b9857ae2d4a3dbe74ffe1d7df045bb7f96e4840",
+   "selector": "0x08635a95"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa03f62c0f0fea76a1cb195d16f9d11a389529618407c57db992311e1225e217c",
+   "block": "26190785",
+   "sender": {
+    "kind": "safe",
+    "address": "0x2148c27dff8389780dcc0ec362c27636a0fb1dd3"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd09d662eea9884905851d8a23e953a61ddbe12e6eff7a2b6480fd075365b789d",
+   "block": "26190792",
+   "sender": {
+    "kind": "safe",
+    "address": "0x2148c27dff8389780dcc0ec362c27636a0fb1dd3"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x196df1d2ceb61863019df8dd887db80c4fc2de97e83045bafc12799ff45f4973",
+   "block": "26192204",
+   "sender": {
+    "kind": "safe",
+    "address": "0x519c5fd08e95d4b9528f4af3c0a923adb7e95e0f"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x0ecf59e2ccd1bb697d53ce4510e3cfa9c84f428f1e52793bc6ddc9a8ea38a07e",
+   "block": "26195397",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1051d4d0d1f336075173b7a11afde596b8e1eaad"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f",
+    "40000000000000000000"
+   ],
+   "outside": [],
+   "time": "1792037003"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf58c420b7367be2b022a1d6b0bb9cddaaa95f2ab49a6f41f063c6738c6324c96",
+   "why": "calls no function the template calls",
+   "to": "0x52b335fd4d229c4b4ffa6190526e4b5fb8e3fb09",
+   "selector": "0x085c8c5e"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc899489284ed9c01bd03eff7c2bb1b86b79c230cc96dae668f499b33357eda69",
+   "block": "26196195",
+   "sender": {
+    "kind": "safe",
+    "address": "0x39a9c9f2cdfaa7b210a226f2a2bc31c3d05aa898"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x2cefc9bdb7b89178c5f26cf889fa542ab61235964cf9abd8bd327e82a0a07d41",
+   "block": "26196258",
+   "sender": {
+    "kind": "safe",
+    "address": "0x39a9c9f2cdfaa7b210a226f2a2bc31c3d05aa898"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xacdc4e56f9daeb4d1a4251fedcf5a5a57e6d22c3baff12f7a63de45e09ba8eb2",
+   "block": "26196314",
+   "sender": {
+    "kind": "safe",
+    "address": "0xacf6c5ca0e88fd2a49dcabcfdf2213cdb04fad30"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x35fa164735182de50811e8e2e824cfb9b6118ac2",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1a9c35e7239c94b6f81a064a38c92041eb514fbe553b78fa0b4408027e6d97ca",
+   "why": "calls no function the template calls",
+   "to": "0xde0e1b36f54940050d4b1b421f8e3e44e40f64e0",
+   "selector": "0xdc32736a"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xfe8da8dd7620cbbc8e1cf6ec158e4d2042e90d4d80cb6707f6fef0edf5f3a29e",
+   "why": "calls no function the template calls",
+   "to": "0x781388759eacb9892f60d77d9a99c9be2f7f4ada",
+   "selector": "0x710a9f68"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9e07480d0ca58bffd88f78d674fef81751e16f49b9ac05b80a281306d850666f",
+   "why": "calls no function the template calls",
+   "to": "0x6a000f20005980200259b80c5102003040001068",
+   "selector": "0xe3ead59e"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd96978c3cba1646a486feb47641122fe20f88883cd8ad5521b94f3aa2d6e1a9a",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0xb1268765"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x86d480a332996e244321607330ad1b050514c4681c346f23d9db54acb4d811ac",
+   "block": "26210954",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7231eaeea108e3ea05c993cbee21f23ddd7a44bf"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x44d73353b3dcf36d7af3e9f23082723cba43702c698f0bf8526e8d5a85780c34",
+   "block": "26210957",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7231eaeea108e3ea05c993cbee21f23ddd7a44bf"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8fe0c60fcfbbc61c601cd79aa008eb97253fb86f6927d8c057e5e7529272ee63",
+   "why": "calls no function the template calls",
+   "to": "0x89c6340b1a1f4b25d36cd8b063d49045caf3f818",
+   "selector": "0xd7a08473"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x10a45ad7856d175c3962aad0ea53ba9135c8f43a1d5d9eae1e58373648d0e3a2",
+   "block": "26218373",
+   "sender": {
+    "kind": "safe",
+    "address": "0xdf36fcd715da068b90921dc6059db4c90db92776"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xac3e018457b222d93114458476f3e3416abbe38f",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf77a6b8ad2f8d7e619e0b5acb562879bf45b553cbfd4ce9a7182c113760727f6",
+   "why": "calls no function the template calls",
+   "to": "0x950fd558f47e234a2fde23b7d61f7ccdbcb4a86f",
+   "selector": "0xdd225095"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x90ff44ab69576ed81be9e7609cf1280466d0ed33a6ed86d32214fda59bdba9e9",
+   "block": "26221058",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7231eaeea108e3ea05c993cbee21f23ddd7a44bf"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x945db877a01ecac87f76e33e3e52d0648633af6dfe6a8961e2b5a89f8f1ebfac",
+   "block": "26221070",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7231eaeea108e3ea05c993cbee21f23ddd7a44bf"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa6823965ec282eb672d7d3d028880bbb9d3c234a3cb62432d9f496c7418e5714",
+   "block": "26227098",
+   "sender": {
+    "kind": "safe",
+    "address": "0x58817eb46bf7075bdf00ad8bd6c2ac731e9b045f"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x23617e59a5925b2a4bf75d73ff6711cd0b29de85",
+      "selector": "0x3593564c"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8c594d7c6bce9ab39a421689f00e0b175f8615c2c6f52e17235482db3ab717e8",
+   "why": "calls no function the template calls",
+   "to": "0xf9f7969c357ce6dfd7973098ea0d57173592bcca",
+   "selector": "0x244b0f6a"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x0c29b28cda952db25d46be8aacde69533b43873d7bc4799eaf8f1d25f370ce13",
+   "block": "26227933",
+   "sender": {
+    "kind": "safe",
+    "address": "0xae9b88a94832c700fcc115111bd6fe0666e9be57"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1761e8a8b274e51843650699fce3c57b7a788e8886e84924a9fe376ebebba8f4",
+   "why": "calls no function the template calls",
+   "to": "0xcfc6d9bd7411962bfe7145451a7ef71a24b6a7a2",
+   "selector": "0xe5ce314c"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x41dd5864cd9c5d6e0f253adc21769e737742fb0f293937ef63bfc64a5668e887",
+   "block": "26236597",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd022d6bb8b6c1c357ec77d930dc6a0ad40ffc90b"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0x8b9441c69e8396848a471596d59fd797a626e1bc",
+    "111797906700000000"
+   ],
+   "outside": [],
+   "time": "1792533035"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xdfd3acdebae74f8daccbd50d9c72cbf8a0170b3f2d344da25a81a5d3e4b5228b",
+   "block": "26236603",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd022d6bb8b6c1c357ec77d930dc6a0ad40ffc90b"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0x052f5b7dba8eb1ae421109bcdd337a13a1af1f44",
+    "12182283000000000000"
+   ],
+   "outside": [],
+   "time": "1792533107"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x86e59227e07da0b31d37af52932d076b2640d178e88aa41c273c785b0b271ba0",
+   "block": "26236618",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd022d6bb8b6c1c357ec77d930dc6a0ad40ffc90b"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x201e983ba4bd4ad810128ba3c5c63912b5cffcc459fbb710570c54f8e1e95760",
+   "block": "26236694",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd022d6bb8b6c1c357ec77d930dc6a0ad40ffc90b"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0xc51828dd0e827e6d7e0f4176eef87160de7efb4b",
+    "262200000000000000"
+   ],
+   "outside": [],
+   "time": "1792534199"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x00936e61a7ce9fa78ee4144a78d43d39ae0739ceee808561b49ae8caf1cb8cc0",
+   "why": "calls no function the template calls",
+   "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+   "selector": "0xde0e9a3e"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf65cdd98c8eb660809f7c3cadf700b3780c2eb62d3a926a27d34953cba020456",
+   "why": "calls no function the template calls",
+   "to": "0x95480d3f27658e73b2785d30beb0c847d78294c7",
+   "selector": "0x13d79a0b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8c7e54cb02425880118dd5778678baf7751ad83d99e34ada6dbe81de967a572a",
+   "why": "calls no function the template calls",
+   "to": "0x6131b5fae19ea4f9d964eac0408e4408b66337b5",
+   "selector": "0xe21fd0e9"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x57b606b05715c53445477baddf184a01bd124f0c249f8c9f152bd6162486ddfc",
+   "block": "26250897",
+   "sender": {
+    "kind": "safe",
+    "address": "0xbc9d1be2a5609525efd9273cd254ef7c156ac33c"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x4aa21a053a95dcbdc5ef740f657b57722b1b63f2ec98740ae772b28c6a7db0fe",
+   "block": "26250930",
+   "sender": {
+    "kind": "safe",
+    "address": "0xbc9d1be2a5609525efd9273cd254ef7c156ac33c"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x886d262508a2ec4ffa934520b8d842153417cdab4423c859304a0735ef314770",
+   "block": "26250946",
+   "sender": {
+    "kind": "safe",
+    "address": "0xbc9d1be2a5609525efd9273cd254ef7c156ac33c"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa7eba06e380e83b6e46073014ec299a839b13844d0cd5f97adb82655383514e2",
+   "why": "calls no function the template calls",
+   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+   "selector": "0x13d79a0b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x382146e7d9e17df5de0e34db040f8aea221517b1847b399fca9df3267819b7fb",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0x827d6bd8"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x065a783f25f7f3f1b5124ef1ce6d56742eb0c312038f1507770b61d47f952947",
+   "block": "26256698",
+   "sender": {
+    "kind": "safe",
+    "address": "0x15f35282045cc84e8f863606ffdcf67ac2c35d4b"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0x216de41a789b445b2450a4dca12b2ee0238de354",
+    "4753853648280699516"
+   ],
+   "outside": [],
+   "time": "1792775039"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x30539e78dbb305845e3415553786e8f98bc570dbcac49060aee7d04518421e1f",
+   "block": "26257864",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7ee29373f075ee1d83b1b93b4fe94ae242df5178"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
+      "selector": "0x69328dec"
+     },
+     {
+      "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xcfc6d9bd7411962bfe7145451a7ef71a24b6a7a2",
+      "selector": "0xa0d43d8d"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
+      "selector": "0x617ba037"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x305e12733dc38c413c03f01b8ad06b73868217996a64621fc6f261cb0712aa95",
+   "why": "calls no function the template calls",
+   "to": "0xad3b67bca8935cb510c8d18bd45f0b94f54a968f",
+   "selector": "0x146ee74d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2cefb82fde5a92312b0a9672f13c78c2cb0e0d6dc4cd91c6396eb81363e1d3a0",
+   "why": "calls no function the template calls",
+   "to": "0xf4e147db314947fc1275a8cbb6cde48c510cd8cf",
+   "selector": "0x7b0eb57d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x05b6cd208602602e0bb6ab1bffe06ff1031af4a6b180fda84cca8a45769625a0",
+   "why": "calls no function the template calls",
+   "to": "0x6131b5fae19ea4f9d964eac0408e4408b66337b5",
+   "selector": "0xe21fd0e9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7d1c86086da2aab33f26c443e260db43659b87277162d58fcc5f23ad2d88f8af",
+   "why": "calls no function the template calls",
+   "to": "0x8278da54b4a47c0f6f4a0a4b00b6f31678f30181",
+   "selector": "0x78920554"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x6aaebf7d6f2a73e69dcfc810ee8cd9eeee45ee068d4a885a6fcc4c2aa040a97e",
+   "block": "26264399",
+   "sender": {
+    "kind": "safe",
+    "address": "0xbc9d1be2a5609525efd9273cd254ef7c156ac33c"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd015939bc3bb9b77a3472d47f6809d02f84b974a9078f53fa7503276b4c71c8f",
+   "block": "26264431",
+   "sender": {
+    "kind": "safe",
+    "address": "0xbc9d1be2a5609525efd9273cd254ef7c156ac33c"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xccdc88909eddee54af0070820615e8a99f726cc164d9f653d29cc33a0ae97894",
+   "block": "26266078",
+   "sender": {
+    "kind": "safe",
+    "address": "0x26c89330cbcea3b629dcde9977620584038846ef"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0x939f76c22f024b2d25d66a6eccbfd269dc1af7c9",
+    "456610620117277462"
+   ],
+   "outside": [],
+   "time": "1792887839"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4a8a9435816af579fa877579ef68eb9c3807c03284aace3211f43a459c14f38c",
+   "why": "calls no function the template calls",
+   "to": "0x663dc15d3c1ac63ff12e45ab68fea3f0a883c251",
+   "selector": "0x258c16ee"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x166a256665e37a446641429abb9449741fb1fe66d1fe84bc927b5b727f9a611e",
+   "block": "26267154",
+   "sender": {
+    "kind": "safe",
+    "address": "0xede6febeb30b7a68d2bf0d8c1d053699217be790"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x17f559f5f83ea85fd913a465f91f5b916975beb34af477b063c79f7c2effc2fc",
+   "block": "26267271",
+   "sender": {
+    "kind": "safe",
+    "address": "0xede6febeb30b7a68d2bf0d8c1d053699217be790"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2c5ecae19729ee8a8a7d88a3eaa16b698f82f9bfb58dedbbb7606dedd7386d38",
+   "why": "calls no function the template calls",
+   "to": "0x02e5be68d46dac0b524905bff209cf47ee6db2a9",
+   "selector": "0x2894adf9"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf410121f62fb7aaa283c5708c4ada3860648ab6fdf673dd5348af302b81c7a08",
+   "block": "26278791",
+   "sender": {
+    "kind": "safe",
+    "address": "0x86fbaeb3d6b5247f420590d303a6ffc9cd523790"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xfe0c30065b384f05761f15d0cc899d4f9f9cc0eb",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x1abaea1f7c830bd89acc67ec4af516284b1bc33c",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa5ec89d0453df8c5a6de4ddb60f374bf44fce34e6966b906db6aaf707f0ace8e",
+   "block": "26279586",
+   "sender": {
+    "kind": "safe",
+    "address": "0xede6febeb30b7a68d2bf0d8c1d053699217be790"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3b41817b59b4bc597fb669ff9d2275fc1bcec4cc88d58db64a2f9655041710a1",
+   "why": "calls no function the template calls",
+   "to": "0x173272739bd7aa6e4e214714048a9fe699453059",
+   "selector": "0xcfc32570"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb5b66e37b44afbcec7228377449ab88e365bd3e30e54cfb08099524f3e0f2e95",
+   "why": "calls no function the template calls",
+   "to": "0x888888888889758f76e7103c6cbf23abbf58f946",
+   "selector": "0x60fc8466"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xe49cab959dba2f8cdf91e5caa1479f0b142913ea6cd5718a3d44eb614b8792a4",
+   "block": "26287037",
+   "sender": {
+    "kind": "safe",
+    "address": "0x11ffe9ef471530394b781839e2370c0778c5cddb"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0x2b7211bb6a4fce9952368a1719d8614e271c7e09",
+    "100000000000000000"
+   ],
+   "outside": [],
+   "time": "1793140079"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x953e3346297b2dfe83c8c32df5843ff69e2db6f0bbbdcae4a6aa2efd98af547b",
+   "block": "26287052",
+   "sender": {
+    "kind": "safe",
+    "address": "0x11ffe9ef471530394b781839e2370c0778c5cddb"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0x2b7211bb6a4fce9952368a1719d8614e271c7e09",
+    "180256847328456753622"
+   ],
+   "outside": [],
+   "time": "1793140259"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb1c7b914b52f505a7e2a3f181f37fefdc57cdeda9885e5ef3c74cf9c35da523b",
+   "block": "26288687",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7d10facdc551fa4ed3f6ca9bbbd64364e56e8f0d"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+      "selector": "0xb1268765"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd4b5ac48d06290e96e4437fa7e3a536213cca8beef477bec00a04c63e1fa00f6",
+   "why": "calls no function the template calls",
+   "to": "0xacd147a5bbcb7166c5bb13a9354ad7a59b99fb4d",
+   "selector": "0xf756fa21"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb8f5c8822f09ba294942d54dbdab3055cf0db66a46a118f9eed08cc29c1493de",
+   "block": "26295528",
+   "sender": {
+    "kind": "safe",
+    "address": "0xf6bd950c66869a32170bf26a38c8b7c6d6eca863"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf8c1600b8618159282e1acf41fd67961ddf986ad59a619e91c41a1c8b38c661b",
+   "why": "calls no function the template calls",
+   "to": "0xad3b67bca8935cb510c8d18bd45f0b94f54a968f",
+   "selector": "0x146ee74d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x674bdf343d914dcccd0a66b8718fb17ad2ebafd21a3246696cea33adba80cbc5",
+   "why": "calls no function the template calls",
+   "to": "0x888888888889758f76e7103c6cbf23abbf58f946",
+   "selector": "0xa373cf1a"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd0e10e8091a194df8891c07e5580f3f2d5305462ee083971da02dd1d17e4021a",
+   "block": "26297973",
+   "sender": {
+    "kind": "safe",
+    "address": "0xede6febeb30b7a68d2bf0d8c1d053699217be790"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x1e5efd80406a0752d3f4de0ee7f47750de040f2ba09c669fc1a0d4b0802769f6",
+   "block": "26299152",
+   "sender": {
+    "kind": "safe",
+    "address": "0x266770abff68b28ad81326cfc5275e8a93fa76fe"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xea51d7853eefb32b6ee06b1c12e6dcca88be0ffe",
+      "selector": "0xc04a8a10"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xb4b1de03f229220edbbb31a224b2a004b3c3e47f",
+      "selector": "0xfbe2da69"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x8ada40ae257461c0631886426a59d51ccf089c296303414e6db3dcf5b862021d",
+   "block": "26300372",
+   "sender": {
+    "kind": "safe",
+    "address": "0xede6febeb30b7a68d2bf0d8c1d053699217be790"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1d51ca931fecaab01094d049c6d3b0c9762cdf9a790baf1ac40c173c94d19c2f",
+   "why": "calls no function the template calls",
+   "to": "0x6a000f20005980200259b80c5102003040001068",
+   "selector": "0xe3ead59e"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xb5a0faf26bb43838ad79269fe8cce0368643e82aec463a83f993183120a43348",
+   "block": "26301956",
+   "sender": {
+    "kind": "safe",
+    "address": "0x340529cb93dbb9025d0a39e6baf9b38ba2bdb8e5"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0xd5388291eabe96b56069440c97046791e2f72573",
+    "59511162997424264787"
+   ],
+   "outside": [],
+   "time": "1793319755"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x12f88108a709b3fbe09e4f5d4084b3d670583fdbf7ddaf81da2ef6ee41b3bfc4",
+   "block": "26303140",
+   "sender": {
+    "kind": "safe",
+    "address": "0x142a1690671db35337b3ed8007aa9c6e90b5f439"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3d0581466b2a297ad2d50713dba349bc38ea30c07e3c6151175cf03fa38f4004",
+   "block": "26303194",
+   "sender": {
+    "kind": "safe",
+    "address": "0x142a1690671db35337b3ed8007aa9c6e90b5f439"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x99f5a20b28a8fbf16451141cc84c107575f95893de42505c0e779058f68b437a",
+   "block": "26303380",
+   "sender": {
+    "kind": "safe",
+    "address": "0x142a1690671db35337b3ed8007aa9c6e90b5f439"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x70ead2a895643bae4674e93f7878f6dc28f177504b138352cd7e14908eaa322a",
+   "why": "calls no function the template calls",
+   "to": "0x8a321218956ee460eaff36171d85d1d0baae5575",
+   "selector": "0xa5000000"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa3b3f69d66e65e19f2346257467479cfd954aefee8235c4e70e689dbe609a30b",
+   "block": "26304076",
+   "sender": {
+    "kind": "safe",
+    "address": "0x142a1690671db35337b3ed8007aa9c6e90b5f439"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x93ff5f47b1523cd70badc4215502412838d2b15bc763d0fccdbfc95169afb1f4",
+   "block": "26305636",
+   "sender": {
+    "kind": "safe",
+    "address": "0x142a1690671db35337b3ed8007aa9c6e90b5f439"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc62bb47e64d0f3fd92b983074ae24e4dd89085239b51e902e5dab7fe0d15bf8b",
+   "block": "26305759",
+   "sender": {
+    "kind": "safe",
+    "address": "0x142a1690671db35337b3ed8007aa9c6e90b5f439"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xbeb02c71b2cdf0f2ce6575519fe97226c1dde95dc5ee650490af90113848ccc2",
+   "why": "calls no function the template calls",
+   "to": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
+   "selector": "0x69328dec"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x76704b49c16b68db38f0d10ccf69dc62c0ffac28c0c288b720ffd3d90987b0ca",
+   "block": "26306042",
+   "sender": {
+    "kind": "safe",
+    "address": "0xfcc83b338ba980f501e51110c7f51791a21d4a28"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x6c5d01d5c84d9970dca1a4fe54ecc742f059c7317f783a1f649775a4b029c3b7",
+   "block": "26306092",
+   "sender": {
+    "kind": "safe",
+    "address": "0x142a1690671db35337b3ed8007aa9c6e90b5f439"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x572e01a62919415b405e70c3a5b6162e3bce3941db944340016201e69a954b21",
+   "block": "26306102",
+   "sender": {
+    "kind": "safe",
+    "address": "0x142a1690671db35337b3ed8007aa9c6e90b5f439"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x22b6c21b9622a0df8c394a68172d1c753d001eed89fcabaf05dd6b4000a8b93d",
+   "block": "26306128",
+   "sender": {
+    "kind": "safe",
+    "address": "0x142a1690671db35337b3ed8007aa9c6e90b5f439"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xfb46cee85767b7ab43b6ec5432ebd97f6e215d43a3a0ee7bfd75789ab021fa69",
+   "block": "26306138",
+   "sender": {
+    "kind": "safe",
+    "address": "0x142a1690671db35337b3ed8007aa9c6e90b5f439"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x20d6f2a50e4e443328c88309f193517a944cf66d38c242544b52360ce14f6099",
+   "why": "calls no function the template calls",
+   "to": "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae",
+   "selector": "0x71ee95c0"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xbec8b38d575c26fd901e97448bfee0342bc9b40b19c57252c35a2ca80973fa04",
+   "block": "26306652",
+   "sender": {
+    "kind": "safe",
+    "address": "0xe83f596297dc4ebbd97e7e17843716103cddbdf6"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xfd4697b4c36b7e5950c636aef2cc40e376db0d8f5329b0d0b07c2c492a0dc387",
+   "block": "26306846",
+   "sender": {
+    "kind": "safe",
+    "address": "0xe83f596297dc4ebbd97e7e17843716103cddbdf6"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf3eca087d47779d07059a68b210c075ee01e623e65c1bd4e951a55c91c62ae3d",
+   "block": "26308465",
+   "sender": {
+    "kind": "safe",
+    "address": "0xbc9d1be2a5609525efd9273cd254ef7c156ac33c"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x0bd6aae27e063b94f61e086f21f668f926ff701c3e58d68acc517b13d74f4f53",
+   "block": "26308523",
+   "sender": {
+    "kind": "safe",
+    "address": "0xbc9d1be2a5609525efd9273cd254ef7c156ac33c"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x5ee1165cadcfb993a4fbfe20b4a4624284230eb157538904d01c5527416e70aa",
+   "block": "26311369",
+   "sender": {
+    "kind": "safe",
+    "address": "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0x1051d4d0d1f336075173b7a11afde596b8e1eaad",
+    "110000000000000000000"
+   ],
+   "outside": [],
+   "time": "1793433119"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc5d2324061753a3f288b1b4f6b6bb67b270f5aeb915eaa076c9a001d3ce55c51",
+   "why": "calls no function the template calls",
+   "to": "0x23617e59a5925b2a4bf75d73ff6711cd0b29de85",
+   "selector": "0x3593564c"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x1cff5fcbdedc25793fedd4794b3e2eb018783a3ba95c37d80e143e709ae1e76e",
+   "block": "26312941",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb504831934e0cc2097531f9640b5ebdac40e6566"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xfbfe6b9cee0e555bad7e2e7309effc75200cbe38",
+      "selector": "0xccc143b8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf8394e78b7e83a88bfb9de2330d6a5c9a150a984f32936cd275753c7b7b3e26f",
+   "block": "26313079",
+   "sender": {
+    "kind": "safe",
+    "address": "0x4b2877a94ead57e8a5e07b7b044eaeb59f605886"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x15371d7cc2f78a82d22ccd4465afff62cb56fc44cb356474801ac50676fbe48f",
+   "block": "26313203",
+   "sender": {
+    "kind": "safe",
+    "address": "0xbc9d1be2a5609525efd9273cd254ef7c156ac33c"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa96bdd31794ad56064848d8e133f343ea59c5cd75f458eab3ba9bb36937d85d5",
+   "block": "26313392",
+   "sender": {
+    "kind": "safe",
+    "address": "0x4b2877a94ead57e8a5e07b7b044eaeb59f605886"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x0745aac32cf2487317ccfd1ccb027228a7d2dad242f20dffedf36d91db7f25c6",
+   "block": "26313954",
+   "sender": {
+    "kind": "safe",
+    "address": "0xe83f596297dc4ebbd97e7e17843716103cddbdf6"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x7b3481ae736900ce553d7d7ff007f489ee4aa11b565a3d32424f4bcfb4df47b4",
+   "block": "26314174",
+   "sender": {
+    "kind": "safe",
+    "address": "0xbc9d1be2a5609525efd9273cd254ef7c156ac33c"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x6acda741dd390fb18f1ae822acc990fc10fde8e3b6dabf64cea8755453a94466",
+   "block": "26314273",
+   "sender": {
+    "kind": "safe",
+    "address": "0xbc9d1be2a5609525efd9273cd254ef7c156ac33c"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1b81f547dd87830cbc0fe8132a305e5a117edbd376efe1c92fd0ed1e8f080beb",
+   "why": "calls no function the template calls",
+   "to": "0x0000000000bbf5c5fd284e657f01bd000933c96d",
+   "selector": "0x49af9204"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xbfa8dff8a527e4d0325684d155b8f32c06fa4c86c692f42bffed43b06ac2812c",
+   "block": "26317813",
+   "sender": {
+    "kind": "safe",
+    "address": "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x1597b713b8216fdf37b77260ed44a1fafb246dc3"
+     },
+     {
+      "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x48f2598a763f0fd9e86a35b2036d00440aa90cb012c0c5aea3af35c7468a5ad6",
+   "block": "26317999",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1051d4d0d1f336075173b7a11afde596b8e1eaad"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xfbfe6b9cee0e555bad7e2e7309effc75200cbe38",
+      "selector": "0xccc143b8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3f6c23a49c27312ee73c3d9679f6275c89b81265b4fb507a1217f18d84f4ebf9",
+   "block": "26318772",
+   "sender": {
+    "kind": "safe",
+    "address": "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
+      "selector": "0x617ba037"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8ec2176b57891c9e049bc6fe005f9791ea1758c27b94d2a25f965e5c7e6aab36",
+   "why": "calls no function the template calls",
+   "to": "0xca11bde05977b3631167028862be2a173976ca11",
+   "selector": "0x82ad56cb"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xfae6bcaccceff2fa9e54873943a0f352f38ed6cffd87857a2549af9cc6a528a7",
+   "block": "26328520",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1051d4d0d1f336075173b7a11afde596b8e1eaad"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f",
+    "10000000000000000000"
+   ],
+   "outside": [],
+   "time": "1793639651"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xfd25d07f71437aef2f22d64c8be0c2cc328e955e9d7a4f0152532cfdfb3dfa7b",
+   "block": "26331137",
+   "sender": {
+    "kind": "safe",
+    "address": "0xfcc83b338ba980f501e51110c7f51791a21d4a28"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x8ec9d6052fe987f8324b9549778de75e898ea5fb1a3d4b077759d77c91f48f7f",
+   "block": "26331300",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7231eaeea108e3ea05c993cbee21f23ddd7a44bf"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x1eb220770b83781115379b3f21dd4999bcf37ba51535df34255eebe186908a05",
+   "block": "26332297",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1051d4d0d1f336075173b7a11afde596b8e1eaad"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xfbfe6b9cee0e555bad7e2e7309effc75200cbe38",
+      "selector": "0xccc143b8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xba59dbd32cfe544f5d49e764d18093ef3c1065229b3094681ffce7e864c3722c",
+   "why": "calls no function the template calls",
+   "to": "0xe366cca474968e33b777e13905829a3b800cfad3",
+   "selector": "0xcf92a0f2"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x498548d9e3f062d538f290403d834f8f89d40fd3f7dc9d79bb066cbe60da4754",
+   "block": "26333279",
+   "sender": {
+    "kind": "safe",
+    "address": "0x844aa7af4d07edaa145415742909792242ec3d07"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd8b7e1304a3709d78ba637643fcc2f9361751259017a00ad99df6028e95f08cd",
+   "block": "26333299",
+   "sender": {
+    "kind": "safe",
+    "address": "0x844aa7af4d07edaa145415742909792242ec3d07"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x9275a72df65c6844d60ba2e4afc06a061d8e82423e76f76ab587570d11c45f04",
+   "block": "26334749",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9ea30eb43eb0318a22159e7ab09e30733bf03b62"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x4b911f62fc67bb860ba40ea4cd92f78adafa75db558281439b9379038f0b30d4",
+   "block": "26335123",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7231eaeea108e3ea05c993cbee21f23ddd7a44bf"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf2bec4f1e94e60756c2c8876d6c2cba9007d11b4d036798ecef9cdaaf18be861",
+   "block": "26336175",
+   "sender": {
+    "kind": "safe",
+    "address": "0xeb47f4b24c2814fac3aeeebe1437123bb9a61807"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0x28b82dd1f1858135e92882fd0ae2a6935f37354b",
+    "3000000000000000000"
+   ],
+   "outside": [],
+   "time": "1793731775"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xdcb74dccc711a8520d25819641c675b29466a1845684fef14f519b277bdeeece",
+   "block": "26336194",
+   "sender": {
+    "kind": "safe",
+    "address": "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0x1051d4d0d1f336075173b7a11afde596b8e1eaad",
+    "20000000527436031656"
+   ],
+   "outside": [],
+   "time": "1793732003"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x158255d38ccc10e052f97b9dfd2d7e15dfb3f24a7a77480bbd0513ae1c2c4758",
+   "block": "26336195",
+   "sender": {
+    "kind": "safe",
+    "address": "0x28b82dd1f1858135e92882fd0ae2a6935f37354b"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x50c4e75a512f2a14a7b304787adf79c4531a5909",
+      "selector": "0x2213bc0b"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9a9161515086e5b6487127dfbd3b828d6010f6f1670d0c910bb7c524a36ffb33",
+   "why": "calls no function the template calls",
+   "to": "0xf4e147db314947fc1275a8cbb6cde48c510cd8cf",
+   "selector": "0x7b0eb57d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2d9894ca9999966e175fa4f8999c97648c8ba7ba749136370511d196f2847ff8",
+   "why": "calls no function the template calls",
+   "to": "0x3b4d794a66304f130a4db8f2551b0070dfcf5ca7",
+   "selector": "0x8a857083"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xfde16d04f6e4c5c8bcdad46800ecd661a512aa574935ef91a9cd1ce1169a9ab8",
+   "block": "26346615",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x012437b23bb065a70655bd1d4012a1e1a3cf6641",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.to",
+    "expected": [
+     "usdc",
+     "usdt",
+     "morpho",
+     "cbbtc",
+     "usp",
+     "weeth"
+    ],
+    "actual": "0x19316c722a137916e4526493d9095975dcc4723e"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2a3011a970d9ee6603537a464659c99b88748baa4c1b8370c2c72c08f054702d",
+   "why": "calls no function the template calls",
+   "to": "0x0000000000001ff3684f28c67538d4d072c22734",
+   "selector": "0x2213bc0b"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x03417145403869131fbede0f72e235400aa809a745e3c33381a76ea7a1d3ab03",
+   "block": "26352470",
+   "sender": {
+    "kind": "safe",
+    "address": "0x91550d160063aa7b225267924f6ef1f984ddbcd9"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xcefb7f89dc4cb1f8da7b23db69630dbbf91757931e4ca15b6647244d759ccbe7",
+   "block": "26352749",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x75e89d5979e4f6fba9f97c104c2f0afb3f1dcb88",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0xa79364afc29dca384997dd5e54583b21a41747eb",
+    "131250000000000000"
+   ],
+   "outside": [],
+   "time": "1793931263"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd80f930e313ae19b75135be6615e8dedf190f53683bdcfab30b3bc5fe4b8591c",
+   "block": "26355593",
+   "sender": {
+    "kind": "safe",
+    "address": "0xca83ca39b19ee3bd965dfafd8a8efc49e965f00b"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd7ec385de8744bca9c7d9cf49b4a17f21d926a3573851b2adf3cc3c5ade89e3d",
+   "why": "calls no function the template calls",
+   "to": "0x173272739bd7aa6e4e214714048a9fe699453059",
+   "selector": "0xcfc32570"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x13444c7284671e3938556fbfb760fae3ba630477a7067ffb2f88b0f74e9f39e0",
+   "block": "26358487",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7ee29373f075ee1d83b1b93b4fe94ae242df5178"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
+      "selector": "0x69328dec"
+     },
+     {
+      "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xcfc6d9bd7411962bfe7145451a7ef71a24b6a7a2",
+      "selector": "0xa0d43d8d"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xcd2eb13d6831d4602d80e5db9230a57596cdca63",
+      "selector": "0xc7c7f5b3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5e18cc0e465137aad197fde5538ca9959d2de90fc974bdf73c7821e573a3900f",
+   "why": "calls no function the template calls",
+   "to": "0x6131b5fae19ea4f9d964eac0408e4408b66337b5",
+   "selector": "0xe21fd0e9"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x6eb710950814d04e6d305c8d035233f4c9a5cd8c4f087183b8a1704399fad61b",
+   "block": "26369045",
+   "sender": {
+    "kind": "safe",
+    "address": "0xa006d33313b327d805530434f0354d86e22cb93f"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1a69ddf522522e98ba10d63658f174dfef825e3775207dc2b1b2080a4605b895",
+   "why": "calls no function the template calls",
+   "to": "0x81463b0f960f247f704377661ec81c1fd65b5128",
+   "selector": "0x062c9d20"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf46df14470cc73dedd2ddd61149660bfd87425ec00a8d3ff28948f84398c516c",
+   "why": "calls no function the template calls",
+   "to": "0xd1a557fe9d49d047a2318c05a13523e4b9e56e09",
+   "selector": "0x311b0198"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2ef88e5cc6cade012ce656517c74a3f0c287942dbb126ff93b1e2fe9202b9470",
+   "block": "26376512",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xed9ab5bc05a0152b9dc2f7902e8369af7bc18771",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0x4a77dc932be2ef7d5fce1ff40041b0c9090847b5",
+    "86959000000000000"
+   ],
+   "outside": [],
+   "time": "1794217415"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x70f698070e0268046497f1b47b042e0e10d39818b8e2a1dcbe9e05f87a979dc1",
+   "block": "26378793",
+   "sender": {
+    "kind": "safe",
+    "address": "0x76bc5a5cb78d0d48ffe1b880d967c192aa16e348"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x9078ee94f2946fedd0c946e6d74351899c2e4fefe75292b572dec9c56f9af5e4",
+   "block": "26378917",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7ee29373f075ee1d83b1b93b4fe94ae242df5178"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb",
+      "selector": "0x8720316d"
+     },
+     {
+      "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xcfc6d9bd7411962bfe7145451a7ef71a24b6a7a2",
+      "selector": "0xa0d43d8d"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xcd2eb13d6831d4602d80e5db9230a57596cdca63",
+      "selector": "0xc7c7f5b3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x020c9b3167ce96f63f271dbb927383d4513909d2f1a037a0694b16e8686bacc7",
+   "why": "calls no function the template calls",
+   "to": "0x39ff6d21204b919441d17bef61d19181870835a2",
+   "selector": "0xac9650d8"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x5024a6dbae9559a6e0474067151eea9eff6de8403a21a44df8b1f2301223a3d3",
+   "block": "26379270",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1cde180fd33935c744623d655696eb3a77e5d891"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x94e7a5dcbe816e498b89ab752661904e2f56c485",
+      "selector": "0xac9650d8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x8e3942e078c2399b8fcbd0233b9511c5121f659cda3d47115acb44812eb05618",
+   "block": "26379438",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1cde180fd33935c744623d655696eb3a77e5d891"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x94e7a5dcbe816e498b89ab752661904e2f56c485",
+      "selector": "0xac9650d8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb05dd1ce90ddc7fd6902b004b8409d29dcd265e6780412c8a2765b5225b3f5fc",
+   "block": "26379536",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1cde180fd33935c744623d655696eb3a77e5d891"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x94e7a5dcbe816e498b89ab752661904e2f56c485",
+      "selector": "0xac9650d8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf64256af9056ba711e14844c869ab825f6ca4d5380ae460d3f993c4506ba842e",
+   "why": "calls no function the template calls",
+   "to": "0x3fc91a3afd70395cd496c647d5a6cc9d4b2b7fad",
+   "selector": "0x24856bc3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf0bb30186e2da573f16cb929205f2267411de05076703947d81f25143a83c7f3",
+   "why": "calls no function the template calls",
+   "to": "0x3727c31d4d4c5270290ffb20c4c358c84c0792c9",
+   "selector": "0x78920554"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xc0fd8954cbe2d2e04f3469c70095c5a4f43382a5c4e7c5731708de68ab09687c",
+   "block": "26386232",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd98d954acf18c4d77c24deabcb6a9d56739d5a55",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0x5c0aeb8d28ff57aaec129ec10f32e309ebcaf03c",
+    "10000000000000000"
+   ],
+   "outside": [],
+   "time": "1794334403"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xc477bc4b5d50684e575c7c3cc36f28a68fb02b3a7213ae2bf234e3b2199c022e",
+   "block": "26391415",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x0d0707963952f2fba59dd06f2b425ace40b492fe",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0xd862cdcfeb856c32b3c4f7563f4811d8ddfd42e2",
+    "437557000000000000"
+   ],
+   "outside": [],
+   "time": "1794396911"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x13df80a524f3b70d57f58f8094e87aefead34f48593c557829b72fe77b44ed33",
+   "block": "26394731",
+   "sender": {
+    "kind": "safe",
+    "address": "0xf6bd950c66869a32170bf26a38c8b7c6d6eca863"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0xab2696221060e11f19b7564cc44fb8b0bfb68bfe",
+    "35000000000000000000"
+   ],
+   "outside": [],
+   "time": "1794436775"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe1e175123d90fab196b24891354b1501d70c71ece37e4c5f10decc19306d49c7",
+   "block": "26396024",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd022d6bb8b6c1c357ec77d930dc6a0ad40ffc90b"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x94045879985b9f2887cde8a355cc92051535b25b0ee2120481448c4f5bf9f47e",
+   "block": "26396044",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd022d6bb8b6c1c357ec77d930dc6a0ad40ffc90b"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x358745462618f358416c1b016881eccfb4c735f54b43ac71795736df57a2ee81",
+   "why": "calls no function the template calls",
+   "to": "0xd862cdcfeb856c32b3c4f7563f4811d8ddfd42e2",
+   "selector": "0x6082bbc7"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x853d8b5d0bee3d121cda6c80b28821c0e08a908f84418f68ed0b732834b797fa",
+   "block": "26397096",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb49e0ca065e4bb2fef4c3eb98dc658094d4b0492"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x5aadfdc4d3d28e121195b819e9496faa3f7daf4ceeec56fddfead77cd7938ffa",
+   "block": "26399675",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1cb7b5b2ef4a169108f39179c7f4f5733c5fa85a"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x933b1f0fe55299a9fed680935015ecc27070e1c3",
+      "selector": "0x6a761202"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1e2ad19064ea1ee8e3477c97d25470182cdca6403b4401d97947837094b42dc8",
+   "why": "calls no function the template calls",
+   "to": "0xf047ab4c75cebf0eb9ed34ae2c186f3611aeafa6",
+   "selector": "0xf3fef3a3"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb39dbe51b5d5ddec698c38ff5532f19f73f29ea11825208136c6a9fe9932d9d2",
+   "block": "26402852",
+   "sender": {
+    "kind": "safe",
+    "address": "0x25b85831da750c912ab7f0cf53b9d82f7894ed07"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x8236a87084f8b84306f72007f36f2618a5634494",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xee2064d74772127ae519f3c01f27866bcc622b5c868f3e7e47c6f7206115d6ca",
+   "why": "calls no function the template calls",
+   "to": "0x173272739bd7aa6e4e214714048a9fe699453059",
+   "selector": "0xcfc32570"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x968ea1e513d3fc423acee9c148f768912ed75cf75daffc0009988db706916ad3",
+   "block": "26406117",
+   "sender": {
+    "kind": "safe",
+    "address": "0xfd35cbcda1cd25c48bc9dfc032565f163dc43aab"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x94cac633fda284de2c3d810fded5ce03008149ae2d705f72fbb3278db91203ff",
+   "block": "26406119",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb49e0ca065e4bb2fef4c3eb98dc658094d4b0492"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x0fce01c76dd25a03fdd055cead164f67cb35e39bd4b1d8ab0456a495b49d0f00",
+   "block": "26406154",
+   "sender": {
+    "kind": "safe",
+    "address": "0x0f8f3f27a9626de852cff35c9ed1a261131b70fe"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xca9f6ff603c05a639ce906da026751e99115cc2094b8a592ebf53de1a4b438d1",
+   "block": "26406525",
+   "sender": {
+    "kind": "safe",
+    "address": "0x838fd3923d6461bcde22e3d4907db3ddef7a6032"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x8452d8db32db0b1b0f6ca7f15523a1602d1240bdb55fd3aafe1cd4eb51c1b3e6",
+   "block": "26406670",
+   "sender": {
+    "kind": "safe",
+    "address": "0x838fd3923d6461bcde22e3d4907db3ddef7a6032"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x5bad112dc4c101227519bce51fbd2289fc11051f53b1ce358d030e1e009912ff",
+   "block": "26407144",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb6a47cc54f4a9545a08e01a3a3a180b43728ffd7"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x6a2823426ec9dc3398b76682f8bd1d1e3ecc9c16dcea161ce83e8bc4fa46f889",
+   "block": "26407645",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1cb7b5b2ef4a169108f39179c7f4f5733c5fa85a"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x933b1f0fe55299a9fed680935015ecc27070e1c3",
+      "selector": "0x6a761202"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xbc9edfe5c69a84500245c63d7196482a4c75d6baff2c3b52b6baa446bdd86c86",
+   "block": "26407798",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb6a47cc54f4a9545a08e01a3a3a180b43728ffd7"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x5f3129a1b82e8048cd9d8142bbebc917297a04060a3c24653add28ae7f658181",
+   "block": "26407848",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1cb7b5b2ef4a169108f39179c7f4f5733c5fa85a"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x45312ea0eff7e09c83cbe249fa1d7598c4c8cd4e",
+      "selector": "0x5c9c18e2"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xfec933b30308eef5b70aae45e07f5c33a1c13c847f42d15142ebe3a0519c8012",
+   "block": "26407999",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb6a47cc54f4a9545a08e01a3a3a180b43728ffd7"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x8b0d2c02823acad3669e277d35a46d12bc11567eb67cfbb05c349f8ff6eb4657",
+   "block": "26408412",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb6a47cc54f4a9545a08e01a3a3a180b43728ffd7"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x23fb46341faea6223d2feb164265521767814578443bee96c11cd66cd9d15c24",
+   "why": "calls no function the template calls",
+   "to": "0x7b1d11818c42c0b37306e7d8bb8879fd323a81b1",
+   "selector": "0xdd9d4fa0"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x7468b9599bce8d4d4500dd34275457ba88b6e501579dc493ab6695a91755f7f5",
+   "block": "26409626",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb6a47cc54f4a9545a08e01a3a3a180b43728ffd7"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5aa743528d5188d9a10d44cf11f7d38fa20aea35accd33aa6b3a81fdc74ad67b",
+   "why": "calls no function the template calls",
+   "to": "0x3727c31d4d4c5270290ffb20c4c358c84c0792c9",
+   "selector": "0x78920554"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe3dc1950a9e04e743e5f6dc3cb6b5c0f84f1c7962be98cdc09cda9dbf4d7110a",
+   "block": "26412107",
+   "sender": {
+    "kind": "safe",
+    "address": "0x672ca9dd6a4143da22f410ae5fc1e6111066cdd8"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
+      "selector": "0x617ba037"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x23634647bf47c3f274ce81d429828dd1b53463d164a1c7687c91a155878d283f",
+   "why": "calls no function the template calls",
+   "to": "0x3727c31d4d4c5270290ffb20c4c358c84c0792c9",
+   "selector": "0x78920554"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3ead554f715c2b67b34dc32a1b3ff53bc032b1a0ca7eeef08a03ebf5bd5713b5",
+   "why": "calls no function the template calls",
+   "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+   "selector": "0xde0e9a3e"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xbe371b3d942bfede9e4d3b8942e32b8af146edde1d5c020f2e6d96b2a125e47a",
+   "block": "26415433",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1cb7b5b2ef4a169108f39179c7f4f5733c5fa85a"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x933b1f0fe55299a9fed680935015ecc27070e1c3",
+      "selector": "0x6a761202"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xaa3becd60ebcdd922a0c0a6a4859142ddff5188b3084c635432a51742a266405",
+   "block": "26415487",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1cb7b5b2ef4a169108f39179c7f4f5733c5fa85a"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x933b1f0fe55299a9fed680935015ecc27070e1c3",
+      "selector": "0x6a761202"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x07354db157d6a1cd4021e739eac83a4164120a5ef11889ff0d3dc84e275e0d51",
+   "block": "26415709",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb6a47cc54f4a9545a08e01a3a3a180b43728ffd7"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x82b4867484cc23a9e0548588b489f87f462be95b1cd63cfefb4fd80816b12418",
+   "why": "calls no function the template calls",
+   "to": "0xa243d7d2e2e7984511331dbbf2cf3acfe7dccc96",
+   "selector": "0xf7ba87d9"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd3dc83dd303214cb7680bec93f160157a865b412252b7734ffa7a24fe2c5b91f",
+   "why": "calls no function the template calls",
+   "to": "0xcfc6d9bd7411962bfe7145451a7ef71a24b6a7a2",
+   "selector": "0xc951ccf0"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x32b899dd6b650f940e30e1c3b0c5ec81a2c429f3f45d078c3e8b4a4e86851a6b",
+   "block": "26417783",
+   "sender": {
+    "kind": "safe",
+    "address": "0x71c6383f5d147db0232e3dc9563874d43f962ec1"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0x94e7a5dcbe816e498b89ab752661904e2f56c485",
+      "selector": "0xac9650d8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x8a7b57a0bdaa353ee67dcac74e7c424452e96c3a0b75965fb61940a1229d23e8",
+   "block": "26421814",
+   "sender": {
+    "kind": "safe",
+    "address": "0x443a1890fd67f2866dc1f0b2fbb73c5ad54dc23f"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xdd79504b307e113ada777b0e9942c48820e9fe59",
+      "selector": "0x6a761202"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc9b33b017507cfd5be5eb6e8ec5a1b7dc9a0467689dc7a894166a6c60b46f6fd",
+   "block": "26421877",
+   "sender": {
+    "kind": "safe",
+    "address": "0x443a1890fd67f2866dc1f0b2fbb73c5ad54dc23f"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xdd79504b307e113ada777b0e9942c48820e9fe59",
+      "selector": "0x6a761202"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xce91c796f148cb765fbf35282b6e1a4c2ac76a987a64ff6df521a9d5cdd93b3d",
+   "block": "26421980",
+   "sender": {
+    "kind": "safe",
+    "address": "0x03fc3295a0ede5fbf174379e07f925d5040328c3"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa9ae52ed883472cb1d39f43f0ee8e1858c6839ee",
+      "selector": "0x6a761202"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3c4390e14e0258115dd3d5ecff481479e7b6c11b1ca3c557f8acc0c96de7ff64",
+   "why": "calls no function the template calls",
+   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
+   "selector": "0x07ed2379"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3a2c21ca96732ebe478d1a185b57c6f406566b5abf874ed08d2aabc7f18d408a",
+   "block": "26425281",
+   "sender": {
+    "kind": "safe",
+    "address": "0xacf6c5ca0e88fd2a49dcabcfdf2213cdb04fad30"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x35fa164735182de50811e8e2e824cfb9b6118ac2",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe8b48554c82a1ec5aa64553586f22b79dc6174d06595065be8ebda1e468f94f9",
+   "why": "calls no function the template calls",
+   "to": "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+   "selector": "0xb1268765"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd7972bd7c22f955c6f0451702ba41a68bbc96aed104b3660ee30662081b26575",
+   "block": "26429404",
+   "sender": {
+    "kind": "safe",
+    "address": "0xa9ae52ed883472cb1d39f43f0ee8e1858c6839ee"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc6a09eb9861831ecd30d1b9981691e3c3a053b4fa979e39ea9d5abb4224eb647",
+   "why": "calls no function the template calls",
+   "to": "0xb222da0f9c22ad2addcb0b0d6b150f398e44157a",
+   "selector": "0xef4d7b75"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x2c563c599b165fa4b7c048b8dcb99ef35fd2503dcfa730c2cb8614a7087f65ee",
+   "block": "26437275",
+   "sender": {
+    "kind": "safe",
+    "address": "0xaf2dbc426c2fb6e2168d3687b0200b9047a25238"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
+      "selector": "0x617ba037"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1779c22ee7075f3b39421233f09072ac5a7c676b631690f25332ecc08c6f5734",
+   "why": "calls no function the template calls",
+   "to": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
+   "selector": "0x69328dec"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x15c57ac5c993912e2792b5e4147b93df452cba44b02ab9fd2d9aff0803177cb7",
+   "block": "26439992",
+   "sender": {
+    "kind": "safe",
+    "address": "0x065907a6da33e21ac20f22e78866d1a60517be9a"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x390e6f58f9ade545f2c78865a87fc15dbf0d070c959fa6330d41bb9145218f97",
+   "block": "26440055",
+   "sender": {
+    "kind": "safe",
+    "address": "0x5498c9e1b899daaaeb6732fad245bd865ee06557"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf4a34d4eb27322b6b1d78e4ffbf9d60cf5840ca89d6de0e7d06c98114f4a2a7f",
+   "block": "26441567",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8270400d528c34e1596ef367eedec99080a1b592"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xcbc72d92b2dc8187414f6734718563898740c0bc",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xaa68ca9c69a4ff22203ce189ce4448d7401875e8",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xac0047886a985071476a1186be89222659970d65",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x730a5e2acebccaa5e9095723b3cb862739da793c",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x22e12a50e3ca49fb183074235cb1db84fe4c716d",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x7786729eee8b9d30fe7d91fdff23a0f1d0c615d9",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x253008ba4ae2f3e6488dc998a5321d4eb1a0c905",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x4c9edd5852cd905f086c759e8383e09bff1e68b3",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x7a493be5c2ce014cd049bf178a1ac0db1b434744",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xd7df7e085214743530aff339afc420c7c720bfa7",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xd288755556c235afffb6316702719c32bd8706e8",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xb1b9150f2085f6a553b547099977181ca802752a",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xdc035d45d973e3ec169d2276ddab16f1e407384f",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xa36ecca8b7624d224f01cd6649c8afad3da12c3d",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xc9e9c85b33e87fde85c44dbf72b4b842a071551d",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xbe3d4ec488a0a042bb86f9176c24f8cd54018ba7",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xb2dbc10f4fa6113ac75eea254806f6a2aa4bf20b",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x378fa6c08c86d76f0c2511a8addd9464d3dfc723",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x9a68bba8074f78727a7b129e30175388e02a5b9d",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x13945b761b2ed3219a497a46d15a8923f418d2ab",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x7743e50f534a7f9f1791dde7dcd89f7783eefc39",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xa780d7f775b4eff6846a8c28981f086bc6a7d637",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xa0a2c8c94bf30227f84af6e054025945a51d0eff",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x77891c7f756d4f49d91e6aabae7df5c1169f2aaa",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xc01cde799245a25e6eabc550b36a47f6f83cc0f1",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x20b59becded839835a3ba58629430375dae02720",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xa47e357d68523ace098366888ad6b50e8d85f431",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x122b0b5d0c88840017896381816a8b03bec4806d",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x5086bf358635b81d8c47c66d1c8b9e567db70c72",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x62f338f22045cdac5dcc6b7b0bcaa21cf1c7b2d4",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xabf8165dd7a90ab75878161db15bf85f6f781d9b",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xe22deabf5b174437092ae9ac79761b03ef178ca8",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x27010ce8d14b4e73ef48af1cf9a5a91e8356d10f",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x457904b54f47dd7a91253f225237a5b02ca059d6",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xe1e22d55e23900f30599d8bee74a0801f09b4e58",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x8e5e017d6b3f567623b5d4a690a2a686bf7ba515",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xc87d2d5a2117a495e0f04ef9304da603a86b7ad5",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x9f30507c264cc6eb5be35b18ff9ad7b4539aa920",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xc69c87351bf66cab8e5676d6f2d4b63299ad0835",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x5271be3516a36316465ee50c4288ce91e58f7759",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x9aedb581076f0da719d05bc87e191b7f5cc2a246",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x056b269eb1f75477a8666ae8c7fe01b64dd55ecc",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x39fb0bb5d696ec6da2d827649cf3a3f00299d2dd",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x9487bd5a3b16ecb5f3184453e3ee75b800141648",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x47dfd0c8eee949748c1d5cb6b695a4aba5fe7379",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x4f6673346ab4813f1665327ab39087008cc7d76f",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xc9bfebc79a722c05dc34bd2a227ef2db19fd1b8e",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xbf98480425a29197e5d99d003017f63a1e595d02",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xea3bc608f32847b97965c5e1648bdfcd4c2c40d0",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xa73fb4f3a3f3889e41387973afc542fa06785981",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x4d654f255d54637112844bd8802b716170904fee",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x99cd4ec3f88a45940936f469e4bb72a2a701eeb9",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xf5145335540c4116956c0936b7db08d1a862a2d9",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x3aecaedfb92efbbac95e5c458c56e94070cb9179",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xdb8f1d15880b97dc38edfa46d8a5a7e5b506c45f",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x4f116ee5bcd227d1a1c4f57918d694a4abe7b3fc",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x98a878b1cd98131b271883b390f68d2c90674665",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x04f8dca7bccd8997ac57ca6fef7c705e17d6bcb6",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x7a7de491e1be5287874904e2b7c8488249a4d0a9",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x8917f8c7feb840b5837edc7e128123baa2f289f9",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xa99a50d95003e7687d7962f29aad6cdd3655d411",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x9d0fc59f88acb85520a8cfb74c7fe141d8563185",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x1c44f9be658bde68e7b4091e9bd349fc64724450",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x57badd19a4756d0190bfcd8f444ae6ebcdb38e86",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x77d2bc95ab51b75960ec3a01e112460ea7bafb20",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x0e012d6a77a7f6c91de7cb74c2732553876d1d61",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x3870cf5e2eab623a74d2af1007295963b1c5a12f",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x7e8a16e87fa6b0f2e657db47f3dbfe2e981ef211",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xa09482f2f6cb5f2177b05144bc276d06b8b818eb",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x9845bbb51d326fe4d5e7cbd47ce157a33d7936ef",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xdd0c9da25f8eb47116f3bed8a311899a5eb449b4",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x3aaaf43a1f8d327fdf24dc93654eb17e319883c5",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xa7606952845269dc7377cba3c7c7bda133dd97f7",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x3b184870f40ca026341593cedb37ab09e611e928",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcad69479358c1ef3560f29f278966df772abf42f",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xefc86eda0d06f6c608f75e4bc918d079c6779cec",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xd9a5a7ba8094daf3af47e8e4af4bd13f96fdc7ab",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x2b4715bc201375aea9f55866473aa99d8321b71a",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xe31b01ce6f29107cf8870599911703fa2aa36e1c",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xa6e23d9a6f7f4fb5ec305b50b29418dd119eb692",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x7ca334286e9519de99703ab49d4eff6e5559499f",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x31853542da976400fb66278be7a09636aad332fc",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x1593d2b64365bed60caf54ecb7448171214e33c1",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xdf96c9e167077cadab40ef01f35f4e1827b311d8",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x464ce6402a4553e100bdca2dae051f3bae6a6d30b4ba25514c8ff625bcb2f97e",
+   "block": "26442835",
+   "sender": {
+    "kind": "safe",
+    "address": "0x58817eb46bf7075bdf00ad8bd6c2ac731e9b045f"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
+      "selector": "0x617ba037"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd38890d7af35d10c016d008dcf6449533c603717543280bfdceb376b853e350c",
+   "block": "26442856",
+   "sender": {
+    "kind": "safe",
+    "address": "0x58817eb46bf7075bdf00ad8bd6c2ac731e9b045f"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
+      "selector": "0x617ba037"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x7167b288fafae78f8fdf9d3873d8d2e2c7d704bb165ef250fba433aea74db7b6",
+   "block": "26444616",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x0d0707963952f2fba59dd06f2b425ace40b492fe",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0xd862cdcfeb856c32b3c4f7563f4811d8ddfd42e2",
+    "759497000000000000"
+   ],
+   "outside": [],
+   "time": "1795036991"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x0dd9c5ebddb46b355224dcc8fdf2b9046332df6edc120c85d005743ccccdf60a",
+   "block": "26445651",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc3733108284f58e08973dd8c13b9434fc90f6491"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc4c6c5a626d2f20930a5f34c87abd3484d9a273e446c1ab6f37431fae38df379",
+   "block": "26445672",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc3733108284f58e08973dd8c13b9434fc90f6491"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x4d28701396f893556a4eb0bf8177416f37412a40cadb74fed015bfcb14be0052",
+   "block": "26450190",
+   "sender": {
+    "kind": "safe",
+    "address": "0x607d0c7e3578802eb46d388cb86cfba8ff657306"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xa24dd7b978fbe36125cc4817192f7b8aa18d213c",
+      "selector": "0x244b0f6a"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa6e47e7b2b74093740aff04ea7d1089ff2a8af686fd7c852a4fac726d020283f",
+   "block": "26450928",
+   "sender": {
+    "kind": "safe",
+    "address": "0xf6bd950c66869a32170bf26a38c8b7c6d6eca863"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xeb48f0de252dc98648a59c2223a350b118b673178b3d7efaeb2e601dcaefc311",
+   "block": "26452361",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb6a47cc54f4a9545a08e01a3a3a180b43728ffd7"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x76307e1f246a6602f91a156bb7c3dc0b2e670941b8ad56883ba1843f52f80ed4",
+   "block": "26453552",
+   "sender": {
+    "kind": "safe",
+    "address": "0x438e7709422a1359e3ee97bc1ce5fcd07ab43647"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xfbfe6b9cee0e555bad7e2e7309effc75200cbe38",
+      "selector": "0xccc143b8"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x4ecda4857137bc23b1ba3c6812d0329adeb2e5ee8adaea85568ba09145cc89e9",
+   "block": "26456492",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb6a47cc54f4a9545a08e01a3a3a180b43728ffd7"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8ee1c5b3f47121887f4c6fc566d2bd1039c408becb6a36f918496d2d3e3e1e8b",
+   "why": "calls no function the template calls",
+   "to": "0x3727c31d4d4c5270290ffb20c4c358c84c0792c9",
+   "selector": "0x78920554"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x073089d5f2fc935d50d8bf67a37e38ba0d24826e7d551edf1c54c83fee0d10a5",
+   "why": "calls no function the template calls",
+   "to": "0x3727c31d4d4c5270290ffb20c4c358c84c0792c9",
+   "selector": "0x78920554"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf7c601de2b8f6c679a293148f43a842216e1054efc366fd4e71f88701120abc3",
+   "why": "calls no function the template calls",
+   "to": "0x3727c31d4d4c5270290ffb20c4c358c84c0792c9",
+   "selector": "0x78920554"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8da0a00a89031350ba796e7d1634581914ca619d68dfcb1a8a17c1770a385913",
+   "why": "calls no function the template calls",
+   "to": "0x5ec72d014d76bed6da4900b0f5b94703c8952811",
+   "selector": "0x4f6b7df0"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf0df2a1591da0d2331b5723b10c9df54136f2297f0808ecb361fbe4103785c1f",
+   "block": "26458133",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc776571ee658f200711e67f6df4815635bdb917c"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x04aedbfe8e5a11e9102b7d5b18a83b63c08580a5da32f5ce0edce2c802970c1f",
+   "block": "26458157",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7ee29373f075ee1d83b1b93b4fe94ae242df5178"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
+      "selector": "0x69328dec"
+     },
+     {
+      "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xcfc6d9bd7411962bfe7145451a7ef71a24b6a7a2",
+      "selector": "0xa0d43d8d"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xcd2eb13d6831d4602d80e5db9230a57596cdca63",
+      "selector": "0xc7c7f5b3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa247cfc264647b2931ab33a5f3175443a8cd65eb3a445eb830eef16a699a3b77",
+   "block": "26458169",
+   "sender": {
+    "kind": "safe",
+    "address": "0xc776571ee658f200711e67f6df4815635bdb917c"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xaac727fda9699018f5c81746156c25bf2a79251b0daa2706fe8a02ba434016df",
+   "block": "26458378",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb6a47cc54f4a9545a08e01a3a3a180b43728ffd7"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x70adc6673dd5516342f59639b62d7128fc1ab3dd2f8bf49a6ff162fd77404eb4",
+   "why": "calls no function the template calls",
+   "to": "0x781388759eacb9892f60d77d9a99c9be2f7f4ada",
+   "selector": "0x710a9f68"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3e332ba3bf3df0e9874c6a8d862b3a9a9f778554cff99c0e7109a9e49c4fafd4",
+   "why": "calls no function the template calls",
+   "to": "0x7acc93938d4fb2f8bf7a8e4344f8160c81697f07",
+   "selector": "0xb61d27f6"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x0f58c9766419e2168c879eb5348dd830fe8ab753f62a1e4b29db84c68cc10bc9",
+   "block": "26459906",
+   "sender": {
+    "kind": "safe",
+    "address": "0xfd35cbcda1cd25c48bc9dfc032565f163dc43aab"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xbc60306b3ceb68b4fb06069fc2c4a8914ddb4abb3827bf28caf888ae6d30113b",
+   "block": "26459910",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7231eaeea108e3ea05c993cbee21f23ddd7a44bf"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa720c6edb1a92a447491fde1bbd2d228ac63a08c9f2060539ad25efe3d3b0620",
+   "block": "26459983",
+   "sender": {
+    "kind": "safe",
+    "address": "0xafbf278e06d2269aba2a4898afbab2ecb2584924"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x550b5c8362fba7db3bb5313331625b6e65d237a1f07b482d18f1e8b9cd990042",
+   "block": "26459986",
+   "sender": {
+    "kind": "safe",
+    "address": "0x0f8f3f27a9626de852cff35c9ed1a261131b70fe"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd9c0038c1b4013696929b71740bcb5de469d2b73ccfacaf84d14b7d406845407",
+   "why": "calls no function the template calls",
+   "to": "0x3727c31d4d4c5270290ffb20c4c358c84c0792c9",
+   "selector": "0x78920554"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x71a9536559091744218370f108b74cc0c0ba85fd6968c54bab5e675f551281d8",
+   "block": "26461018",
+   "sender": {
+    "kind": "safe",
+    "address": "0xad5e78cdf0414f8cb9a5e2ff4dfd27e1d220923d"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xad5e78cdf0414f8cb9a5e2ff4dfd27e1d220923d",
+      "selector": "0x610b5925"
+     },
+     {
+      "to": "0x6566194141eefa99af43bb5aa71460ca2dc90245",
+      "selector": "0x374f435d"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0x8aa5e86f96710a2282e7d3633dfb4717386db8cecaf31c8b96ac99da14ccebb6",
+   "block": "26461231",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1cde180fd33935c744623d655696eb3a77e5d891"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0x74a3dadfd3978bf9ef9f50685be808deaade8417",
+    "208437847626249154854"
+   ],
+   "outside": [],
+   "time": "1795237067"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x2c5d849bcb366d44be321a02aed9f8fb6ca5d1809736a8bc6268282ee4e2a3a6",
+   "block": "26461752",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1cde180fd33935c744623d655696eb3a77e5d891"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0x74a3dadfd3978bf9ef9f50685be808deaade8417",
+    "180000000000000000000"
+   ],
+   "outside": [],
+   "time": "1795243331"
+  },
+  {
+   "kind": "fit",
+   "hash": "0xc35556aead3b6789ca655258583e4a619ee530c67c5a8f457831c769c2571d3b",
+   "block": "26461798",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1cde180fd33935c744623d655696eb3a77e5d891"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0x74a3dadfd3978bf9ef9f50685be808deaade8417",
+    "67000000000000000000"
+   ],
+   "outside": [],
+   "time": "1795243883"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x162cf1b9d804c41a7121d02772450f324769a02488685c7b1b77803413507de0",
+   "why": "calls no function the template calls",
+   "to": "0x7acc93938d4fb2f8bf7a8e4344f8160c81697f07",
+   "selector": "0xb61d27f6"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3ae0621845dfa69efe07aac3ae9f428fa1c0f061ab328a755b68ffc6ee7d3b61",
+   "block": "26463633",
+   "sender": {
+    "kind": "safe",
+    "address": "0xef59f0ad1be369189e7dd30fb474263a87400c73"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x98c23e9d8f34fefb1b7bd6a91b7ff122f4e16f5c",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x140713bbd82113e104c3a45661134f9764807922"
+     },
+     {
+      "to": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x6f40d4a6237c257fff2db00fa0510deeecd303eb",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x6b175474e89094c44da98b954eedeac495271d0f",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x643c4e15d7d62ad0abec4a9bd4b001aa3ef52d66",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x940a2db1b7008b6c776d4faaca729d6d4a4aa551",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x5f98805a4e8be255a32880fdec7f6728c6568ba0",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0xa0d69e286b938e21cbf7e51d71f6a4c8918f482f",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x57e114b691db790c35207b2e685d4a43181e6061",
+      "selector": "0xa9059cbb"
+     },
+     {
+      "to": "0x44108f0223a3c3028f5fe7aec7f9bb2e66bef82f",
+      "selector": "0xa9059cbb"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xfd84b04ccf79c8837e3d869ab76301fa9178a81bf63f364e40f612a4d2d73a57",
+   "block": "26466008",
+   "sender": {
+    "kind": "safe",
+    "address": "0x0f8f3f27a9626de852cff35c9ed1a261131b70fe"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc6bbdc6ba8f05e73c85e660303dfb1d552f566152108340c9537368a25ceea66",
+   "why": "calls no function the template calls",
+   "to": "0x052216161d0a3c7a450b39fc69e5180fa76b7339",
+   "selector": "0xe1d04178"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x40f18c9ca8597875980424b703e3dabd4ea3c29a108858814bc6270153a4bf72",
+   "why": "calls no function the template calls",
+   "to": "0xf9f7969c357ce6dfd7973098ea0d57173592bcca",
+   "selector": "0x244b0f6a"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x43bcd4132222886075fb5e5de80e86433b00980c4e636d029ddf4934ffef1d94",
+   "why": "calls no function the template calls",
+   "to": "0x448cc254819520bf086bcf01245982fab75c3f66",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x5e5a9da49a69dfb9661fbb409e350c7fedbd74b36ca54f9f094338f274bb47f8",
+   "block": "26474762",
+   "sender": {
+    "kind": "safe",
+    "address": "0x818bbe45b55c1a933f55dc9eb36b2a899586367e"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0x318d9d9200e4049e0c439eb361486d70e0124237",
+    "14615965305676345689"
+   ],
+   "outside": [],
+   "time": "1795399919"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3983d16c54a211e88a084f71478bb06bcb7eedf677247e44521119dc40bca651",
+   "block": "26476874",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7058d698d021b3e55c214a91080629a7fd67bb56"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x46f2adf2561fcde37056e9084bade4c61118c189def781c8cfd953223351f65d",
+   "block": "26476942",
+   "sender": {
+    "kind": "safe",
+    "address": "0x280cbdd8d93fcae710bc1d90d7e549e084695663"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x8017e76717a9bacb5db3d920ba73ac892a9576282e36ac88682cc447ebcd7c75",
+   "block": "26476949",
+   "sender": {
+    "kind": "safe",
+    "address": "0x280cbdd8d93fcae710bc1d90d7e549e084695663"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf2d298b8a7884466263719e6b17b7842fedc3f8fee5de60f320b087178ec0b6a",
+   "block": "26477034",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1909413182ee42ed3235c58b12e56c869b7f980b"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x4d93ade249bc71787f7ec9eb831d68aa4c8d57c2f4764edfe43cbe5f3c326825",
+   "block": "26477128",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9966ba851e67454cb0ba6124a56af355bead23ec"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xdb07dce88027835fa847c1da3d2ecd25b34c9060e4bd46e0acf1abd7b4edefc8",
+   "block": "26477140",
+   "sender": {
+    "kind": "safe",
+    "address": "0x9966ba851e67454cb0ba6124a56af355bead23ec"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa774f1d9505547a69e82ec270ae8c082b22473a77670f304262afc6c65a61857",
+   "block": "26479237",
+   "sender": {
+    "kind": "safe",
+    "address": "0x24e4f8311e86b9260951b15fdcd74a0d3668252e"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x5b634679ad691af4b330f5230406758edd444bda76fb0004d0148ced8c34cbb9",
+   "block": "26479300",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb6a47cc54f4a9545a08e01a3a3a180b43728ffd7"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xd01dbf9c4b7ecb330bdfeba251ecea1ed78d8d5462e9317196c7bdf482058cca",
+   "block": "26479734",
+   "sender": {
+    "kind": "safe",
+    "address": "0x7ee29373f075ee1d83b1b93b4fe94ae242df5178"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
+      "selector": "0x69328dec"
+     },
+     {
+      "to": "0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb",
+      "selector": "0x8720316d"
+     },
+     {
+      "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xcfc6d9bd7411962bfe7145451a7ef71a24b6a7a2",
+      "selector": "0xa0d43d8d"
+     },
+     {
+      "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "selector": "0x095ea7b3"
+     },
+     {
+      "to": "0xcd2eb13d6831d4602d80e5db9230a57596cdca63",
+      "selector": "0xc7c7f5b3"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xed17be3168241428be9c5b4479b71e777e576b942225f354c0d736507b8ed9fd",
+   "why": "calls no function the template calls",
+   "to": "0x23aff90ed3b3effcf78fb41ab001c525a6c32a01",
+   "selector": "0x5ff8a71f"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x15b81e5478db8c439b2cb3695da95d4c53fb4a2b759b7f2da7c4543431073c9c",
+   "block": "26481112",
+   "sender": {
+    "kind": "safe",
+    "address": "0xb6a47cc54f4a9545a08e01a3a3a180b43728ffd7"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xa7f71f5db9d88f6f14d111d7d4b0913df4be5ba61e3892d858a61402cd4ee3f1",
+   "block": "26483609",
+   "sender": {
+    "kind": "safe",
+    "address": "0xacf6c5ca0e88fd2a49dcabcfdf2213cdb04fad30"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0x5c5251ca9019f1e4af49c2f96eeffe931713a2c0",
+    "11974453888263719428"
+   ],
+   "outside": [],
+   "time": "1795506371"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x1d7da552eb8d3bdfa45b2634624c8a58d55e99937ae70ee365057f6d66ac66d9",
+   "block": "26484136",
+   "sender": {
+    "kind": "safe",
+    "address": "0x27dadc328085b507222ed26adba483ef8f43741f"
+   },
+   "reason": {
+    "kind": "foreign-delegatecall"
+   },
+   "free": []
+  },
+  {
+   "kind": "fit",
+   "hash": "0xf820c7256279c43022eabc9f433f3b7b777a86968ea88095638135cc07fa1765",
+   "block": "26484399",
+   "sender": {
+    "kind": "safe",
+    "address": "0x86def26a77d33719717f94fffa3754c9af611487"
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.transfer.to",
+    "call.transfer.value"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "uint256"
+   ],
+   "values": [
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "0",
+    "0xf9f7fc9d416a75331c1589e5b1c685db5047e5d2",
+    "700000000000000000"
+   ],
+   "outside": [],
+   "time": "1795515863"
+  }
+ ],
+ "measurements": [
+  {
+   "hash": "0xfe348c1664b9227fb42368f812e3d13a97fb876aa995114fdf5c58e4c2437fe4",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x0ecf59e2ccd1bb697d53ce4510e3cfa9c84f428f1e52793bc6ddc9a8ea38a07e",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x41dd5864cd9c5d6e0f253adc21769e737742fb0f293937ef63bfc64a5668e887",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xdfd3acdebae74f8daccbd50d9c72cbf8a0170b3f2d344da25a81a5d3e4b5228b",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x201e983ba4bd4ad810128ba3c5c63912b5cffcc459fbb710570c54f8e1e95760",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x065a783f25f7f3f1b5124ef1ce6d56742eb0c312038f1507770b61d47f952947",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xccdc88909eddee54af0070820615e8a99f726cc164d9f653d29cc33a0ae97894",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xe49cab959dba2f8cdf91e5caa1479f0b142913ea6cd5718a3d44eb614b8792a4",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x953e3346297b2dfe83c8c32df5843ff69e2db6f0bbbdcae4a6aa2efd98af547b",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xb5a0faf26bb43838ad79269fe8cce0368643e82aec463a83f993183120a43348",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x5ee1165cadcfb993a4fbfe20b4a4624284230eb157538904d01c5527416e70aa",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xfae6bcaccceff2fa9e54873943a0f352f38ed6cffd87857a2549af9cc6a528a7",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xf2bec4f1e94e60756c2c8876d6c2cba9007d11b4d036798ecef9cdaaf18be861",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xdcb74dccc711a8520d25819641c675b29466a1845684fef14f519b277bdeeece",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xcefb7f89dc4cb1f8da7b23db69630dbbf91757931e4ca15b6647244d759ccbe7",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x2ef88e5cc6cade012ce656517c74a3f0c287942dbb126ff93b1e2fe9202b9470",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xc0fd8954cbe2d2e04f3469c70095c5a4f43382a5c4e7c5731708de68ab09687c",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xc477bc4b5d50684e575c7c3cc36f28a68fb02b3a7213ae2bf234e3b2199c022e",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x13df80a524f3b70d57f58f8094e87aefead34f48593c557829b72fe77b44ed33",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x7167b288fafae78f8fdf9d3873d8d2e2c7d704bb165ef250fba433aea74db7b6",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x8aa5e86f96710a2282e7d3633dfb4717386db8cecaf31c8b96ac99da14ccebb6",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x2c5d849bcb366d44be321a02aed9f8fb6ca5d1809736a8bc6268282ee4e2a3a6",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xc35556aead3b6789ca655258583e4a619ee530c67c5a8f457831c769c2571d3b",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0x5e5a9da49a69dfb9661fbb409e350c7fedbd74b36ca54f9f094338f274bb47f8",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xa7f71f5db9d88f6f14d111d7d4b0913df4be5ba61e3892d858a61402cd4ee3f1",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  },
+  {
+   "hash": "0xf820c7256279c43022eabc9f433f3b7b777a86968ea88095638135cc07fa1765",
+   "kind": "measured",
+   "differences": [
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "sender",
+     "by": "0"
+    },
+    {
+     "effect": 0,
+     "token": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "party": "receiver",
+     "by": "0"
+    }
+   ]
+  }
+ ],
+ "traces": [
+  {
+   "kind": "traced",
+   "hash": "0xfe348c1664b9227fb42368f812e3d13a97fb876aa995114fdf5c58e4c2437fe4",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x363bdf12f458ff2690b5da5b411a3d2adf8d7c8e",
+    "call": 0
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x363bdf12f458ff2690b5da5b411a3d2adf8d7c8e",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x94a0d29b6d942a509e78499823a49170c021869a"
+     ]
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x94a0d29b6d942a509e78499823a49170c021869a"
+     ]
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x0ecf59e2ccd1bb697d53ce4510e3cfa9c84f428f1e52793bc6ddc9a8ea38a07e",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1051d4d0d1f336075173b7a11afde596b8e1eaad"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x7ecece644647667095669e29184ea6a773808f84",
+     "to": "0x1051d4d0d1f336075173b7a11afde596b8e1eaad",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x1051d4d0d1f336075173b7a11afde596b8e1eaad",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x1051d4d0d1f336075173b7a11afde596b8e1eaad",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x4e9da07a"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x1051d4d0d1f336075173b7a11afde596b8e1eaad",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x4e9da07a"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x1051d4d0d1f336075173b7a11afde596b8e1eaad",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x4e9da07a"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x1051d4d0d1f336075173b7a11afde596b8e1eaad",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x41dd5864cd9c5d6e0f253adc21769e737742fb0f293937ef63bfc64a5668e887",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd022d6bb8b6c1c357ec77d930dc6a0ad40ffc90b"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x9eac7114d1a1eabc4732a886795cfd9e6e35843f",
+     "to": "0xd022d6bb8b6c1c357ec77d930dc6a0ad40ffc90b",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xd022d6bb8b6c1c357ec77d930dc6a0ad40ffc90b",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xd022d6bb8b6c1c357ec77d930dc6a0ad40ffc90b",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x8b9441c69e8396848a471596d59fd797a626e1bc"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x8b9441c69e8396848a471596d59fd797a626e1bc"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xdfd3acdebae74f8daccbd50d9c72cbf8a0170b3f2d344da25a81a5d3e4b5228b",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd022d6bb8b6c1c357ec77d930dc6a0ad40ffc90b"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x9eac7114d1a1eabc4732a886795cfd9e6e35843f",
+     "to": "0xd022d6bb8b6c1c357ec77d930dc6a0ad40ffc90b",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xd022d6bb8b6c1c357ec77d930dc6a0ad40ffc90b",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xd022d6bb8b6c1c357ec77d930dc6a0ad40ffc90b",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x052f5b7dba8eb1ae421109bcdd337a13a1af1f44"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x052f5b7dba8eb1ae421109bcdd337a13a1af1f44"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x201e983ba4bd4ad810128ba3c5c63912b5cffcc459fbb710570c54f8e1e95760",
+   "sender": {
+    "kind": "safe",
+    "address": "0xd022d6bb8b6c1c357ec77d930dc6a0ad40ffc90b"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x9eac7114d1a1eabc4732a886795cfd9e6e35843f",
+     "to": "0xd022d6bb8b6c1c357ec77d930dc6a0ad40ffc90b",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xd022d6bb8b6c1c357ec77d930dc6a0ad40ffc90b",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xd022d6bb8b6c1c357ec77d930dc6a0ad40ffc90b",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0xc51828dd0e827e6d7e0f4176eef87160de7efb4b"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0xc51828dd0e827e6d7e0f4176eef87160de7efb4b"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x065a783f25f7f3f1b5124ef1ce6d56742eb0c312038f1507770b61d47f952947",
+   "sender": {
+    "kind": "safe",
+    "address": "0x15f35282045cc84e8f863606ffdcf67ac2c35d4b"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xf45a22716ab7e637125bad37e440d86a2f3f16e3",
+     "to": "0x15f35282045cc84e8f863606ffdcf67ac2c35d4b",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x15f35282045cc84e8f863606ffdcf67ac2c35d4b",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x15f35282045cc84e8f863606ffdcf67ac2c35d4b",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x3fe388a7"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x15f35282045cc84e8f863606ffdcf67ac2c35d4b",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x3fe388a7"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x15f35282045cc84e8f863606ffdcf67ac2c35d4b",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x216de41a789b445b2450a4dca12b2ee0238de354"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x216de41a789b445b2450a4dca12b2ee0238de354"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xccdc88909eddee54af0070820615e8a99f726cc164d9f653d29cc33a0ae97894",
+   "sender": {
+    "kind": "safe",
+    "address": "0x26c89330cbcea3b629dcde9977620584038846ef"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x9e8680dbbca1127add812abe209a10e621b385df",
+     "to": "0x26c89330cbcea3b629dcde9977620584038846ef",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x26c89330cbcea3b629dcde9977620584038846ef",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x26c89330cbcea3b629dcde9977620584038846ef",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x92efbfda"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x26c89330cbcea3b629dcde9977620584038846ef",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x939f76c22f024b2d25d66a6eccbfd269dc1af7c9"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x939f76c22f024b2d25d66a6eccbfd269dc1af7c9"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xe49cab959dba2f8cdf91e5caa1479f0b142913ea6cd5718a3d44eb614b8792a4",
+   "sender": {
+    "kind": "safe",
+    "address": "0x11ffe9ef471530394b781839e2370c0778c5cddb"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x11655d77f6570f42a28107126e6d61f0abd98bdc",
+     "to": "0x11ffe9ef471530394b781839e2370c0778c5cddb",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x11ffe9ef471530394b781839e2370c0778c5cddb",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x11ffe9ef471530394b781839e2370c0778c5cddb",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xf8b777ae"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x11ffe9ef471530394b781839e2370c0778c5cddb",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xf8b777ae"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x11ffe9ef471530394b781839e2370c0778c5cddb",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x2b7211bb6a4fce9952368a1719d8614e271c7e09"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x2b7211bb6a4fce9952368a1719d8614e271c7e09"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x953e3346297b2dfe83c8c32df5843ff69e2db6f0bbbdcae4a6aa2efd98af547b",
+   "sender": {
+    "kind": "safe",
+    "address": "0x11ffe9ef471530394b781839e2370c0778c5cddb"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x11655d77f6570f42a28107126e6d61f0abd98bdc",
+     "to": "0x11ffe9ef471530394b781839e2370c0778c5cddb",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x11ffe9ef471530394b781839e2370c0778c5cddb",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x11ffe9ef471530394b781839e2370c0778c5cddb",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xb91677b3"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x11ffe9ef471530394b781839e2370c0778c5cddb",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xb91677b3"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x11ffe9ef471530394b781839e2370c0778c5cddb",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x2b7211bb6a4fce9952368a1719d8614e271c7e09"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x2b7211bb6a4fce9952368a1719d8614e271c7e09"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xb5a0faf26bb43838ad79269fe8cce0368643e82aec463a83f993183120a43348",
+   "sender": {
+    "kind": "safe",
+    "address": "0x340529cb93dbb9025d0a39e6baf9b38ba2bdb8e5"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xd5388291eabe96b56069440c97046791e2f72573",
+     "to": "0x340529cb93dbb9025d0a39e6baf9b38ba2bdb8e5",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x340529cb93dbb9025d0a39e6baf9b38ba2bdb8e5",
+     "to": "0xd9db270c1b5e3bd161e8c8503c55ceabee709552",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x340529cb93dbb9025d0a39e6baf9b38ba2bdb8e5",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xa3a95793"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x340529cb93dbb9025d0a39e6baf9b38ba2bdb8e5",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0xd5388291eabe96b56069440c97046791e2f72573"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0xd5388291eabe96b56069440c97046791e2f72573"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x5ee1165cadcfb993a4fbfe20b4a4624284230eb157538904d01c5527416e70aa",
+   "sender": {
+    "kind": "safe",
+    "address": "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x1597b713b8216fdf37b77260ed44a1fafb246dc3",
+     "to": "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xe67382a6"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xe67382a6"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x1051d4d0d1f336075173b7a11afde596b8e1eaad"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x1051d4d0d1f336075173b7a11afde596b8e1eaad"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xfae6bcaccceff2fa9e54873943a0f352f38ed6cffd87857a2549af9cc6a528a7",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1051d4d0d1f336075173b7a11afde596b8e1eaad"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x7ecece644647667095669e29184ea6a773808f84",
+     "to": "0x1051d4d0d1f336075173b7a11afde596b8e1eaad",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x1051d4d0d1f336075173b7a11afde596b8e1eaad",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x1051d4d0d1f336075173b7a11afde596b8e1eaad",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x837e0329"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x1051d4d0d1f336075173b7a11afde596b8e1eaad",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x837e0329"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x1051d4d0d1f336075173b7a11afde596b8e1eaad",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xf2bec4f1e94e60756c2c8876d6c2cba9007d11b4d036798ecef9cdaaf18be861",
+   "sender": {
+    "kind": "safe",
+    "address": "0xeb47f4b24c2814fac3aeeebe1437123bb9a61807"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x12c624c8bb9eab191055f8f11fb3c02c04c52c07",
+     "to": "0xeb47f4b24c2814fac3aeeebe1437123bb9a61807",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xeb47f4b24c2814fac3aeeebe1437123bb9a61807",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xeb47f4b24c2814fac3aeeebe1437123bb9a61807",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x56b14ce0"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xeb47f4b24c2814fac3aeeebe1437123bb9a61807",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x28b82dd1f1858135e92882fd0ae2a6935f37354b"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x28b82dd1f1858135e92882fd0ae2a6935f37354b"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xdcb74dccc711a8520d25819641c675b29466a1845684fef14f519b277bdeeece",
+   "sender": {
+    "kind": "safe",
+    "address": "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x1597b713b8216fdf37b77260ed44a1fafb246dc3",
+     "to": "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x68579fc4"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x68579fc4"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x56aaf77b3a68953c08f99ec29e62d649c9fbc92f",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x1051d4d0d1f336075173b7a11afde596b8e1eaad"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x1051d4d0d1f336075173b7a11afde596b8e1eaad"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xcefb7f89dc4cb1f8da7b23db69630dbbf91757931e4ca15b6647244d759ccbe7",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x75e89d5979e4f6fba9f97c104c2f0afb3f1dcb88",
+    "call": 0
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x75e89d5979e4f6fba9f97c104c2f0afb3f1dcb88",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0xa79364afc29dca384997dd5e54583b21a41747eb"
+     ]
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0xa79364afc29dca384997dd5e54583b21a41747eb"
+     ]
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x2ef88e5cc6cade012ce656517c74a3f0c287942dbb126ff93b1e2fe9202b9470",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xed9ab5bc05a0152b9dc2f7902e8369af7bc18771",
+    "call": 0
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xed9ab5bc05a0152b9dc2f7902e8369af7bc18771",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x4a77dc932be2ef7d5fce1ff40041b0c9090847b5"
+     ]
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x4a77dc932be2ef7d5fce1ff40041b0c9090847b5"
+     ]
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xc0fd8954cbe2d2e04f3469c70095c5a4f43382a5c4e7c5731708de68ab09687c",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd98d954acf18c4d77c24deabcb6a9d56739d5a55",
+    "call": 0
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xd98d954acf18c4d77c24deabcb6a9d56739d5a55",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x5c0aeb8d28ff57aaec129ec10f32e309ebcaf03c"
+     ]
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x5c0aeb8d28ff57aaec129ec10f32e309ebcaf03c"
+     ]
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xc477bc4b5d50684e575c7c3cc36f28a68fb02b3a7213ae2bf234e3b2199c022e",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x0d0707963952f2fba59dd06f2b425ace40b492fe",
+    "call": 0
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x0d0707963952f2fba59dd06f2b425ace40b492fe",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0xd862cdcfeb856c32b3c4f7563f4811d8ddfd42e2"
+     ]
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0xd862cdcfeb856c32b3c4f7563f4811d8ddfd42e2"
+     ]
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x13df80a524f3b70d57f58f8094e87aefead34f48593c557829b72fe77b44ed33",
+   "sender": {
+    "kind": "safe",
+    "address": "0xf6bd950c66869a32170bf26a38c8b7c6d6eca863"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x5c8c76f2e990f194462dc5f8a8c76ba16966ed42",
+     "to": "0xf6bd950c66869a32170bf26a38c8b7c6d6eca863",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xf6bd950c66869a32170bf26a38c8b7c6d6eca863",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xf6bd950c66869a32170bf26a38c8b7c6d6eca863",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x503893e8"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xf6bd950c66869a32170bf26a38c8b7c6d6eca863",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0xab2696221060e11f19b7564cc44fb8b0bfb68bfe"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0xab2696221060e11f19b7564cc44fb8b0bfb68bfe"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x7167b288fafae78f8fdf9d3873d8d2e2c7d704bb165ef250fba433aea74db7b6",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x0d0707963952f2fba59dd06f2b425ace40b492fe",
+    "call": 0
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x0d0707963952f2fba59dd06f2b425ace40b492fe",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0xd862cdcfeb856c32b3c4f7563f4811d8ddfd42e2"
+     ]
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0xd862cdcfeb856c32b3c4f7563f4811d8ddfd42e2"
+     ]
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x8aa5e86f96710a2282e7d3633dfb4717386db8cecaf31c8b96ac99da14ccebb6",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1cde180fd33935c744623d655696eb3a77e5d891"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xc58a05c29a90a8b9a22d254fc8d694e61e3518b3",
+     "to": "0x1cde180fd33935c744623d655696eb3a77e5d891",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x1cde180fd33935c744623d655696eb3a77e5d891",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x1cde180fd33935c744623d655696eb3a77e5d891",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x1be695ed"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x1cde180fd33935c744623d655696eb3a77e5d891",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x1be695ed"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x1cde180fd33935c744623d655696eb3a77e5d891",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x74a3dadfd3978bf9ef9f50685be808deaade8417"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x74a3dadfd3978bf9ef9f50685be808deaade8417"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x2c5d849bcb366d44be321a02aed9f8fb6ca5d1809736a8bc6268282ee4e2a3a6",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1cde180fd33935c744623d655696eb3a77e5d891"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xc58a05c29a90a8b9a22d254fc8d694e61e3518b3",
+     "to": "0x1cde180fd33935c744623d655696eb3a77e5d891",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x1cde180fd33935c744623d655696eb3a77e5d891",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x1cde180fd33935c744623d655696eb3a77e5d891",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xf944ac47"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x1cde180fd33935c744623d655696eb3a77e5d891",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xf944ac47"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x1cde180fd33935c744623d655696eb3a77e5d891",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x74a3dadfd3978bf9ef9f50685be808deaade8417"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x74a3dadfd3978bf9ef9f50685be808deaade8417"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xc35556aead3b6789ca655258583e4a619ee530c67c5a8f457831c769c2571d3b",
+   "sender": {
+    "kind": "safe",
+    "address": "0x1cde180fd33935c744623d655696eb3a77e5d891"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xc58a05c29a90a8b9a22d254fc8d694e61e3518b3",
+     "to": "0x1cde180fd33935c744623d655696eb3a77e5d891",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x1cde180fd33935c744623d655696eb3a77e5d891",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x1cde180fd33935c744623d655696eb3a77e5d891",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x7f9be435"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x1cde180fd33935c744623d655696eb3a77e5d891",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x7f9be435"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x1cde180fd33935c744623d655696eb3a77e5d891",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x74a3dadfd3978bf9ef9f50685be808deaade8417"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x74a3dadfd3978bf9ef9f50685be808deaade8417"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0x5e5a9da49a69dfb9661fbb409e350c7fedbd74b36ca54f9f094338f274bb47f8",
+   "sender": {
+    "kind": "safe",
+    "address": "0x818bbe45b55c1a933f55dc9eb36b2a899586367e"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x40308a7c7eaa37288348df387169dc974f6b63ec",
+     "to": "0x818bbe45b55c1a933f55dc9eb36b2a899586367e",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x818bbe45b55c1a933f55dc9eb36b2a899586367e",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x818bbe45b55c1a933f55dc9eb36b2a899586367e",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x93282c22"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x818bbe45b55c1a933f55dc9eb36b2a899586367e",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0x93282c22"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x818bbe45b55c1a933f55dc9eb36b2a899586367e",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x318d9d9200e4049e0c439eb361486d70e0124237"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x318d9d9200e4049e0c439eb361486d70e0124237"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xa7f71f5db9d88f6f14d111d7d4b0913df4be5ba61e3892d858a61402cd4ee3f1",
+   "sender": {
+    "kind": "safe",
+    "address": "0xacf6c5ca0e88fd2a49dcabcfdf2213cdb04fad30"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x049ccc3b56003924b95f7712047c7a22f5631d4e",
+     "to": "0xacf6c5ca0e88fd2a49dcabcfdf2213cdb04fad30",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0xacf6c5ca0e88fd2a49dcabcfdf2213cdb04fad30",
+     "to": "0xff51a5898e281db6dfc7855790607438df2ca44b",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xacf6c5ca0e88fd2a49dcabcfdf2213cdb04fad30",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xfde7bf85"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0xacf6c5ca0e88fd2a49dcabcfdf2213cdb04fad30",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xfde7bf85"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0xacf6c5ca0e88fd2a49dcabcfdf2213cdb04fad30",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x5c5251ca9019f1e4af49c2f96eeffe931713a2c0"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0x5c5251ca9019f1e4af49c2f96eeffe931713a2c0"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  },
+  {
+   "kind": "traced",
+   "hash": "0xf820c7256279c43022eabc9f433f3b7b777a86968ea88095638135cc07fa1765",
+   "sender": {
+    "kind": "safe",
+    "address": "0x86def26a77d33719717f94fffa3754c9af611487"
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0xcf1476224129b8b5daf9910f538367e8394c4355",
+     "to": "0x86def26a77d33719717f94fffa3754c9af611487",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 1,
+     "type": "DELEGATECALL",
+     "from": "0x86def26a77d33719717f94fffa3754c9af611487",
+     "to": "0x41675c099f32341bf84bfc5382af534df5c7461a",
+     "selector": "0x6a761202"
+    },
+    {
+     "depth": 2,
+     "type": "STATICCALL",
+     "from": "0x86def26a77d33719717f94fffa3754c9af611487",
+     "to": "0x0000000000000000000000000000000000000001",
+     "selector": "0xd5159e19"
+    },
+    {
+     "depth": 2,
+     "type": "CALL",
+     "from": "0x86def26a77d33719717f94fffa3754c9af611487",
+     "to": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0xf9f7fc9d416a75331c1589e5b1c685db5047e5d2"
+     ]
+    },
+    {
+     "depth": 3,
+     "type": "DELEGATECALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0xa6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+     "selector": "0xa9059cbb",
+     "args": [
+      "0xf9f7fc9d416a75331c1589e5b1c685db5047e5d2"
+     ]
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 4,
+     "type": "STATICCALL",
+     "from": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+     "to": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "selector": "0x15cf9a7e"
+    },
+    {
+     "depth": 5,
+     "type": "DELEGATECALL",
+     "from": "0x5585996e7cfe95f2d99e61168b8b35c66ff99b18",
+     "to": "0xbc870c47c6eb10009a0720e76f166f104c124ecf",
+     "selector": "0x15cf9a7e"
+    }
+   ]
+  }
+ ]
+}

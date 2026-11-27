@@ -33,7 +33,7 @@ Options:
                     got no answer. <name> takes lowercase letters, digits and -.
 
 Writes: testdata/instance/<name>.json with --record, otherwise nothing.
-Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Keys: ALCHEMY_API_KEY and DRPC_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
 Rules: docs/design/data-shapes.md, "Registry attributes and instance checks".`;
 
 exitOnHelp(HELP);

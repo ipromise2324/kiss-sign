@@ -1,4 +1,4 @@
-import { hexToBytes } from '@noble/hashes/utils.js';
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 import { existsSync } from 'node:fs';
 import { say } from '../language.ts';
 import type { Language } from '../language.ts';
@@ -9,18 +9,20 @@ import { CardError, isZeroFloor, parseUint256, resolveRef, resolveValue } from '
 import type { CardOperation, ResolvedValue } from '../card.ts';
 import { groupedTokens, readDecimals } from '../chain/decimals.ts';
 import { canonicalType } from '../decode/abi.ts';
-import { decodeValues } from '../decode/codec.ts';
+import { decodeValues, encodeCall } from '../decode/codec.ts';
 import type { AbiValue } from '../decode/codec.ts';
 import { openMainnetReader } from '../chain/reader.ts';
 import type { Reader } from '../chain/reader.ts';
-import type { BlockRef } from '../chain/types.ts';
+import type { BlockHeader } from '../chain/types.ts';
 import { kissSignHome } from '../keys.ts';
-import { isMarketEntryPart, loadRegistry } from '../registry.ts';
+import { MARKET_ENTRY_PARTS, isMarketEntryPart, loadRegistry } from '../registry.ts';
 import type { Market, Registry, RegistryEntry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { TEMPLATES_DIR, loadTemplate, scopeEntries, slippageBps, WAD } from '../template/template.ts';
-import type { CardField, CardRef, Computed, ComputedRead, Rule, Template, TokenRef } from '../template/template.ts';
+import { FLOOR_RULE, FeedError, floorOf, moreThan, pairFacts, readReference, valueOf } from '../price/reference.ts';
+import type { Doubt, PairFacts, PriceReads, Reference, ViewFunction } from '../price/reference.ts';
+import { TEMPLATES_DIR, callRules, cardRefs, loadTemplate, rulesUnder, scopeEntries, slippageBps, WAD } from '../template/template.ts';
+import type { CardField, CardRef, Computed, ComputedRead, Floor, Rule, Template, TokenRef } from '../template/template.ts';
 import { gatesInstances, isInstanceOf, reportUnit, reportedInstancesIn, severalInstances } from '../template/vault-reports.ts';
 import type { ReportedInstances } from '../template/vault-reports.ts';
 import { marketHead, marketTable } from './card-view.ts';
@@ -31,6 +33,7 @@ import type { Labels } from './labels.ts';
 import type { Io, Terminal } from './io.ts';
 import { stopUnlessDataIsMain, requireConfig, seal } from './setup.ts';
 import { bindView } from '../simulate/effects.ts';
+import { checkCode } from '../verify/code.ts';
 
 /** A name a field may hold; a registry entry carries the factory that created it, so two vaults of one display name stay apart. */
 type Choice = { readonly name: string; readonly address: Address; readonly from: 'registry' | 'address-book' | 'safe'; readonly factory?: RegistryEntry };
@@ -124,31 +127,65 @@ function unitOf(of: TokenRef, values: Readonly<Record<string, string>>, registry
 
 const UINT256_LIMIT = 1n << 256n;
 
+/**
+ * A card is read at the lower of the two heads, so one provider that lags or lies could choose an old block, at which an
+ * old feed answer looks fresh.
+ */
+const MAX_BLOCK_DRIFT_SECONDS = 300n;
+const MAX_READ_AGE_SECONDS = 1800n;
+const SLOT_SECONDS = 12n;
+const MAX_HEAD_GAP = MAX_BLOCK_DRIFT_SECONDS / SLOT_SECONDS;
+
 /** Every chain read of one card, through both providers at the one block they agree on. */
 type Chain = {
   readonly decimals: (entry: RegistryEntry) => Promise<number>;
+  /** The time of the block every read is made at. */
+  readonly time: () => Promise<bigint>;
+  readonly refuseOld: () => void;
+  /** Refuses the card unless `entry`, and each entry it depends on, runs the code its registry pin names. */
+  readonly pinned: (entry: RegistryEntry) => Promise<void>;
   /** What a view answers. */
   readonly call: (to: RegistryEntry, data: Hex, call: string) => Promise<Hex>;
+  /** What a view answers, or that it reverted at both providers. */
+  readonly callOrRevert: (to: RegistryEntry, data: Hex, call: string) => Promise<Hex | 'reverted'>;
   /** Each token's decimals read so far. */
   readonly known: ReadonlyMap<Address, number>;
   /** The block every read was made at and the providers that agreed, once anything was read. */
   readonly provenance: () => string | undefined;
 };
 
-function openChain(reader: Reader | undefined, L: CardWords): Chain {
-  let at: BlockRef | undefined;
-  const agreedBlock = async (refuse: (why: string) => never): Promise<{ readonly reader: Reader; readonly at: BlockRef }> => {
+function openChain(reader: Reader | undefined, registry: Registry, now: () => number, L: CardWords): Chain {
+  let at: BlockHeader | undefined;
+  const behindClock = (block: BlockHeader): bigint => BigInt(Math.floor(now() / 1000)) - block.time;
+  const noTime = (why: string): never => {
+    throw new CardError(L.noBlockTime(why));
+  };
+  const agreedBlock = async (refuse: (why: string) => never): Promise<{ readonly reader: Reader; readonly at: BlockHeader }> => {
     if (reader === undefined) throw new Error('no chain reader');
     if (at === undefined) {
       const latest = await reader.block('latest');
-      at = latest.kind === 'agreed' ? latest.value : refuse(latest.reason);
+      const header = await reader.header(latest.kind === 'agreed' ? latest.value : refuse(latest.reason));
+      const block = header.kind === 'agreed' ? header.value : noTime(header.reason);
+      const behind = behindClock(block);
+      if (behind > MAX_BLOCK_DRIFT_SECONDS || -behind > MAX_BLOCK_DRIFT_SECONDS) throw new CardError(L.notFresh(block.number, behind, MAX_BLOCK_DRIFT_SECONDS));
+      at = block;
     }
     return { reader, at };
   };
   const known = new Map<Address, number>();
+  const pinned = new Set<string>();
+  const callOrRevert: Chain['callOrRevert'] = async (to, data, call) => {
+    const refuse = (why: string): never => {
+      throw new CardError(L.noRead(call, to.name, checksumAddress(to.address), why));
+    };
+    const { reader: r, at: ref } = await agreedBlock(refuse);
+    const read = await r.call({ to: to.address, data }, ref);
+    if (read.kind === 'unverifiable') return refuse(read.reason);
+    return read.value.kind === 'reverted' ? 'reverted' : read.value.data;
+  };
   return {
     known,
-    provenance: () => (at === undefined || reader === undefined ? undefined : L.chainReads(at.number, reader.providers)),
+    provenance: () => (at === undefined || reader === undefined ? undefined : L.chainReads(at.number, utc(at.time), reader.providers)),
     decimals: async (entry) => {
       const cached = known.get(entry.address);
       if (cached !== undefined) return cached;
@@ -161,18 +198,33 @@ function openChain(reader: Reader | undefined, L: CardWords): Chain {
       known.set(entry.address, decimals);
       return decimals;
     },
-    call: async (to, data, call) => {
+    refuseOld: () => {
+      if (at === undefined) return;
+      const behind = behindClock(at);
+      if (behind > MAX_READ_AGE_SECONDS) throw new CardError(L.leftOpen(at.number, behind, MAX_READ_AGE_SECONDS));
+    },
+    pinned: async (entry) => {
       const refuse = (why: string): never => {
-        throw new CardError(L.noRead(call, to.name, checksumAddress(to.address), why));
+        throw new CardError(L.codeNotPinned(entry.name, checksumAddress(entry.address), why));
       };
       const { reader: r, at: ref } = await agreedBlock(refuse);
-      const read = await r.call({ to: to.address, data }, ref);
-      if (read.kind === 'unverifiable') return refuse(read.reason);
-      if (read.value.kind === 'reverted') return refuse(L.reverted);
-      return read.value.data;
+      const entries = [entry, ...(entry.dependsOn ?? []).map((name) => registry.entries.get(name) as RegistryEntry)].filter(({ name }) => !pinned.has(name));
+      const check = await checkCode(r, entries, ref, 'pending');
+      if (check.kind === 'mismatch') refuse(check.findings.join('; '));
+      if (check.kind === 'unverifiable') refuse(check.reasons.join('; '));
+      for (const { name } of entries) pinned.add(name);
+    },
+    time: async () => (await agreedBlock(noTime)).at.time,
+    callOrRevert,
+    call: async (to, data, call) => {
+      const answer = await callOrRevert(to, data, call);
+      if (answer === 'reverted') throw new CardError(L.noRead(call, to.name, checksumAddress(to.address), L.reverted));
+      return answer;
     },
   };
 }
+
+const utc = (seconds: bigint): string => new Date(Number(seconds) * 1000).toISOString().replace('T', ' ').replace('.000Z', ' UTC');
 
 /** Whole tokens in plain digits, or with commas between groups of exactly three digits before the point. */
 const AMOUNT = /^(0|[1-9][0-9]*|[1-9][0-9]{0,2}(?:,[0-9]{3})+)(?:\.([0-9]+))?$/;
@@ -249,6 +301,19 @@ function entryAt(ref: CardRef, values: Readonly<Record<string, string>>, sources
   return entry;
 }
 
+/** Every registry entry a read names in its target or its arguments: a card field's and its attribute's, and every part of a market. */
+function namedEntries(read: ComputedRead, values: Readonly<Record<string, string>>, registry: Registry): RegistryEntry[] {
+  const rules = read.args.flatMap((arg) => (arg.kind === 'bound' ? rulesUnder(arg.rule) : []));
+  const refs = [...(read.to.kind === 'card' ? [read.to.ref] : []), ...rules.flatMap((rule) => (rule.kind === 'card' ? [rule.ref] : []))];
+  const ofRef = ({ field, attribute }: CardRef): (RegistryEntry | undefined)[] => {
+    const chosen = values[field] as string;
+    const market = registry.markets.get(chosen);
+    return market === undefined ? [registry.entries.get(chosen), entryOf(chosen, attribute, registry)] : MARKET_ENTRY_PARTS.map((part) => market[part]);
+  };
+  const fixed = rules.map((rule) => (rule.kind === 'contract' ? registry.entries.get(rule.name) : undefined));
+  return [...refs.flatMap(ofRef), ...fixed].filter((entry) => entry !== undefined);
+}
+
 /** One view call `card new` made: what it called, on which contract, and its answer. */
 type Step = { readonly call: string; readonly on: RegistryEntry; readonly value: bigint };
 
@@ -264,6 +329,7 @@ async function readValue(read: ComputedRead, values: Readonly<Record<string, str
   };
   const bound = bindView({ ...read, args }, { safe, values: resolved, registry });
   if ('problem' in bound) return refuse(bound.problem);
+  for (const entry of new Set([to, ...namedEntries(read, values, registry)])) await ctx.chain.pinned(entry);
   const answer = decodeValues(read.returns.map((param) => param.type), hexToBytes((await ctx.chain.call(to, bound.call.data, call)).slice(2)));
   if (answer === undefined) return refuse(ctx.L.notReturns(`(${read.returns.map((param) => canonicalType(param.type)).join(',')})`));
   const [first, ...rest] = read.output;
@@ -344,6 +410,156 @@ async function computedValue(name: string, field: TypedField & { readonly kind: 
   return value.toString();
 }
 
+/** The price reads of one card: from contracts that run their pinned code, at the card's one block. */
+function priceReads({ chain, L }: Context): PriceReads {
+  const viewOrRevert = async (on: RegistryEntry, { fn, returns }: ViewFunction, args: Parameters<PriceReads['view']>[2]) => {
+    await chain.pinned(on);
+    const answer = await chain.callOrRevert(on, `0x${bytesToHex(encodeCall({ fn, args, trailer: undefined }))}` as Hex, fn.signature);
+    if (answer === 'reverted') return answer;
+    const values = decodeValues(returns.map((param) => param.type), hexToBytes(answer.slice(2)));
+    if (values === undefined) throw new CardError(L.noRead(fn.signature, on.name, checksumAddress(on.address), L.notReturns(`(${returns.map((param) => canonicalType(param.type)).join(',')})`)));
+    return values;
+  };
+  return {
+    time: chain.time,
+    decimals: async (token) => {
+      await chain.pinned(token);
+      return chain.decimals(token);
+    },
+    viewOrRevert,
+    view: async (on, view, args) => {
+      const values = await viewOrRevert(on, view, args);
+      if (values === 'reverted') throw new CardError(L.noRead(view.fn.signature, on.name, checksumAddress(on.address), L.reverted));
+      return values;
+    },
+  };
+}
+
+async function referenceOf(facts: Extract<PairFacts, { kind: 'feeds' }>, sell: RegistryEntry, buy: RegistryEntry, ctx: Context): Promise<Reference> {
+  try {
+    return await readReference(facts, sell, buy, priceReads(ctx));
+  } catch (error) {
+    if (!(error instanceof FeedError)) throw error;
+    const { entry, why, answered } = error;
+    throw new CardError(ctx.L.feedRefused(entry.name, checksumAddress(entry.address), ctx.L.feedWhy[why](answered, entry.feed as NonNullable<RegistryEntry['feed']>)));
+  }
+}
+
+const tenths = (seconds: bigint): string => (Number(seconds) / 3600).toFixed(1);
+const hundredths = (gap: bigint): string => `${(Number(gap) / 10_000).toFixed(4)}%`;
+
+function doubtText(doubt: Doubt, sell: RegistryEntry, buy: RegistryEntry, L: CardWords): string {
+  switch (doubt.kind) {
+    case 'stale':
+      return L.doubt.stale(doubt.read.entry.name, tenths(doubt.read.age), tenths(doubt.read.limit));
+    case 'off-peg':
+      return L.doubt.offPeg((doubt.side === 'sell' ? sell : buy).name, groupedTokens((doubt.price.num * 100_000_000n) / doubt.price.den, 8), percent(FLOOR_RULE.bandBps));
+    case 'sources-differ':
+      return L.doubt.sourcesDiffer(hundredths(doubt.gap), percent(doubt.limitBps));
+    case 'pool-unusable':
+      return doubt.why === 'thin' ? L.doubt.thin(doubt.pool.name, `${doubt.window / 60n}`, `${doubt.liquidity}`, `${doubt.pool.twap?.minLiquidity}`) : L.doubt.poolReverted(doubt.pool.name, `${doubt.window / 60n}`);
+  }
+}
+
+/** A percent of at most `maxSlippageBps` with at most two decimals, in basis points; an empty answer is the rule's own. */
+function typedSlippage(name: string, typed: string, L: CardWords): number {
+  if (typed === '') return FLOOR_RULE.slippageBps;
+  const match = /^(0|[1-9][0-9]{0,2})(?:\.([0-9]{1,2}))?$/.exec(typed);
+  const shown = JSON.stringify(typed.slice(0, 80));
+  if (match === null) throw new CardError(L.notSlippage(name, shown));
+  const bps = Number(match[1]) * 100 + Number((match[2] ?? '').padEnd(2, '0'));
+  if (bps > FLOOR_RULE.maxSlippageBps) throw new CardError(L.overSlippage(name, shown, percent(FLOOR_RULE.maxSlippageBps)));
+  return bps;
+}
+
+/** A pool the swap may trade through is no independent price; one a router finds from two tokens and a fee is not seen. */
+function tradedNames(template: Template, values: Readonly<Record<string, string>>, registry: Registry): ReadonlySet<string> {
+  const ruled = callRules(template).flatMap((rule) => (rule.kind === 'contract' ? [rule.name] : []));
+  const picks = cardRefs(template).map(({ field, attribute }) => entryOf(values[field] ?? '', attribute, registry)?.name);
+  return new Set([...ruled, ...picks].filter((name) => name !== undefined));
+}
+
+type Filled = { readonly value: string; readonly by: 'computed' | 'typed' };
+
+/**
+ * The least to receive, by the rule of the token pair picked: computed from the price of a pair that shares a peg, or
+ * typed and compared with the price, typed again when far below it or when the price is in doubt, or typed with no price.
+ */
+async function floorValue(name: string, field: TypedField & { readonly kind: 'amount' }, { sells }: Floor, values: Readonly<Record<string, string>>, ctx: Context): Promise<Filled> {
+  const { io, p, L } = ctx;
+  const { registry } = ctx.sources;
+  const tokenOf = (of: TokenRef): RegistryEntry => {
+    const unit = unitOf(of, values, registry);
+    if (unit.kind !== 'registry') throw new Error(`${name}: a floor counts a registry token`);
+    return unit.entry;
+  };
+  const sell = tokenOf((ctx.template.card.get(sells) as Extract<CardField, { kind: 'amount' }>).of);
+  const buy = tokenOf(field.of);
+  if (sell.address === buy.address) throw new CardError(L.sameToken(name, sell.name));
+  const facts = pairFacts(sell, buy, registry, tradedNames(ctx.template, values, registry));
+  if (facts.kind === 'no-feed') {
+    io.stdout(text(rows([['', L.noIndependentPrice(facts.tokens.map((token) => token.name)), p.warn]], 2)));
+    return { value: await typedValue(name, field, values, ctx), by: 'typed' };
+  }
+  ctx.chain.refuseOld();
+  const reference = await referenceOf(facts, sell, buy, ctx);
+  const [sellDecimals, decimals] = [await ctx.chain.decimals(sell), await ctx.chain.decimals(buy)];
+  const amount = BigInt(values[sells] as string);
+  const shown = (value: bigint): string => `${groupedTokens(value, decimals)} ${buy.name}`;
+  const expected = valueOf(amount, reference.strict);
+  const computes = facts.pegged !== undefined && reference.doubts.length === 0;
+  io.stdout(
+    text([
+      ...section(p, name, computes ? L.floorComputed : L.floorTyped),
+      ...rows([
+        ...reference.feeds.map(
+          (read): Row => [
+            L.read,
+            [`latestRoundData() = ${groupedTokens(read.answer, read.entry.feed.decimals)}  ${read.entry.feed.description}`, `${L.on} ${read.entry.name}  ${checksumAddress(read.entry.address)}`, L.updated(tenths(read.age), tenths(read.limit))],
+          ],
+        ),
+        ...reference.pools.map((read): Row => [L.read, [L.poolMean(`${reference.window / 60n}`, `${read.liquidity}`), `${L.on} ${read.entry.name}  ${checksumAddress(read.entry.address)}`]]),
+        [L.selling, `${groupedTokens(amount, sellDecimals)} ${sell.name}`],
+        [L.feedValue, shown(valueOf(amount, reference.chain)), p.computed],
+        ...reference.twaps.map((ratio): Row => [L.poolValue, shown(valueOf(amount, ratio)), p.computed]),
+        ...(facts.alone === undefined ? [] : [[L.sources, L.alone[facts.alone], p.dim] as const]),
+        ...reference.doubts.map((doubt): Row => [L.doubtful, doubtText(doubt, sell, buy, L), p.warn]),
+      ], 4),
+    ]),
+  );
+  if (expected === 0n) throw new CardError(L.priceComesToZero(name));
+  if (computes) {
+    const typed = typedSlippage(name, await answer(ctx.ask, L.askSlippage(name, percent(FLOOR_RULE.slippageBps), percent(FLOOR_RULE.maxSlippageBps))), L);
+    ctx.chain.refuseOld();
+    const total = typed + FLOOR_RULE.marginBps;
+    const value = floorOf(amount, reference.strict, total);
+    const stricter = reference.twaps.some((ratio) => moreThan(ratio, reference.chain)) ? L.poolValue : L.feedValue;
+    io.stdout(
+      text(
+        rows([
+          ...(reference.twaps.length === 0 ? [] : [[L.stricter, stricter] as const]),
+          [L.slippage, L.floorSlippage(percent(total), percent(typed), percent(FLOOR_RULE.marginBps))],
+          [L.result, shown(value), p.computed],
+          [L.compare, L.compareFloor, p.dim],
+        ], 4),
+      ),
+    );
+    if (value === 0n) throw new CardError(L.comesToZero(name));
+    if (value >= UINT256_LIMIT) throw new CardError(L.comesTooLarge(name));
+    return { value: value.toString(), by: 'computed' };
+  }
+  if (reference.doubts.length > 0) io.stdout(text(rows([['', L.doubtThenType(name), p.warn]], 2)));
+  for (;;) {
+    const value = BigInt(await typedValue(name, field, values, ctx));
+    const below = value >= expected ? 0n : ((expected - value) * 1_000_000n) / expected;
+    const far = below > BigInt(FLOOR_RULE.retypeBps) * 100n;
+    io.stdout(text(rows([['', value > expected ? L.abovePrice(shown(expected)) : L.belowPrice(shown(expected), hundredths(below)), far || value > expected ? p.warn : p.computed]], 4)));
+    if (!far && reference.doubts.length === 0) return { value: `${value}`, by: 'typed' };
+    if (baseUnits(name, await answer(ctx.ask, L.askAgain(name, buy.name)), decimals, buy.name, L) === value) return { value: `${value}`, by: 'typed' };
+    io.stdout(text(rows([['', L.notTheSame(name), p.warn]], 2)));
+  }
+}
+
 type Context = {
   readonly template: Template;
   readonly sources: Sources;
@@ -363,9 +579,10 @@ const isChosen = (entry: [string, CardField]): entry is [string, ChosenField] =>
 
 /**
  * Every choice comes before every typed number, so the token an amount counts is known when it is asked, and every typed
- * number before every computed one, in card order, so a computed field may read any value but a later computed one.
+ * number before every floor and every computed one, in card order, so a floor knows what it is for and a computed field
+ * may read any value but a later computed one.
  */
-async function fill(template: Template, shared: Omit<Context, 'template'>): Promise<CardOperation> {
+async function fill(template: Template, shared: Omit<Context, 'template'>): Promise<{ readonly operation: CardOperation; readonly computed: readonly string[] }> {
   const ctx: Context = { ...shared, template };
   const { L } = ctx;
   const values: Record<string, string> = {};
@@ -391,12 +608,26 @@ async function fill(template: Template, shared: Omit<Context, 'template'>): Prom
     if (others.length > 0) throw new CardError(L.severalListed(name, shown, range));
     values[name] = choice.name;
   }
-  for (const [name, field] of fields.filter(isTyped)) if (!isComputed(field)) values[name] = await typedValue(name, field, values, ctx);
-  for (const [name, field] of fields.filter(isTyped)) if (isComputed(field)) values[name] = await computedValue(name, field, field.computed, values, ctx);
-  return { template: template.id, values: Object.fromEntries(fields.map(([name]) => [name, values[name] as string])) };
+  const computed: string[] = [];
+  const typed = fields.filter(isTyped);
+  for (const [name, field] of typed) if (!isComputed(field) && !hasFloor(field)) values[name] = await typedValue(name, field, values, ctx);
+  for (const [name, field] of typed) {
+    if (!hasFloor(field)) continue;
+    const filled = await floorValue(name, field, field.floor, values, ctx);
+    values[name] = filled.value;
+    if (filled.by === 'computed') computed.push(name);
+  }
+  for (const [name, field] of typed) {
+    if (!isComputed(field)) continue;
+    values[name] = await computedValue(name, field, field.computed, values, ctx);
+    computed.push(name);
+  }
+  return { operation: { template: template.id, values: Object.fromEntries(fields.map(([name]) => [name, values[name] as string])) }, computed };
 }
 
 const isComputed = (field: CardField): field is Extract<CardField, { kind: 'amount' }> & { readonly computed: Computed } => field.kind === 'amount' && field.computed !== undefined;
+
+const hasFloor = (field: CardField): field is Extract<CardField, { kind: 'amount' }> & { readonly floor: Floor } => field.kind === 'amount' && field.floor !== undefined;
 
 const readsChain = (template: Template): boolean => [...template.card.values()].some((f) => f.kind === 'amount' && (f.of !== 'eth' || f.computed !== undefined));
 
@@ -411,15 +642,23 @@ export async function cardNew(args: readonly string[], io: Io, w: Labels): Promi
     if (!existsSync(join(io.repoRoot, TEMPLATES_DIR, id, 'template.json'))) throw new CardError(L.noTemplate(id, TEMPLATES_DIR));
     return loadTemplate(io.repoRoot, id, sources.registry);
   });
-  const reader = templates.some(readsChain) ? openMainnetReader(io.env, io.transport) : undefined;
-  const chain = openChain(reader, L);
+  const reader = templates.some(readsChain) ? openMainnetReader(io.env, io.transport, { maxHeadGap: MAX_HEAD_GAP }) : undefined;
+  const chain = openChain(reader, sources.registry, io.now ?? Date.now, L);
   const ctx = { sources, io, ask, chain, p: paint(io.color === true), L, language: w.language, reported: (id: string) => reportedInstancesIn(io.repoRoot, id) };
   const operations: CardOperation[] = [];
+  const computed = new Set<string>();
   for (const [i, template] of templates.entries()) {
     io.stdout(text(['', ctx.p.heading(L.operation(template.id, i + 1, templates.length))]));
-    operations.push(await fill(template, ctx));
+    const filled = await fill(template, ctx);
+    operations.push(filled.operation);
+    for (const name of filled.computed) computed.add(`${i}:${name}`);
   }
   io.stdout('\n');
-  const computed = new Set(templates.flatMap((template, i) => [...template.card].filter(([, field]) => isComputed(field)).map(([name]) => `${i}:${name}`)));
-  return seal({ operations }, io, w, confirm, { decimals: chain.known, provenance: chain.provenance(), computed });
+  chain.refuseOld();
+  const confirmFresh: Terminal['confirm'] = async (question) => {
+    const yes = await confirm(question);
+    if (yes) chain.refuseOld();
+    return yes;
+  };
+  return seal({ operations }, io, w, confirmFresh, { decimals: chain.known, provenance: chain.provenance(), computed });
 }

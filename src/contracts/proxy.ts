@@ -23,7 +23,7 @@ export type SafeProxyName = 'Proxy 1.0.0' | 'Proxy 1.1.1' | 'GnosisSafeProxy 1.3
  * (`testdata/safe-proxy/`). The proxy keeps its singleton in slot 0 and delegates every call to it, except
  * `masterCopy()` from 1.1.1 on.
  */
-const SAFE_PROXY_CODE: ReadonlyMap<string, SafeProxyName> = new Map([
+export const SAFE_PROXY_CODE: ReadonlyMap<string, SafeProxyName> = new Map([
   [
     '0x608060405273ffffffffffffffffffffffffffffffffffffffff600054163660008037600080366000845af43d6000803e6000811415603d573d6000fd5b3d6000f3fea165627a7a723058201e7d648b83cfac072cbccefc2ffc62a6999d4a050ee87a721942de1da9670db80029',
     'Proxy 1.0.0',

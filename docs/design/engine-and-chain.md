@@ -14,7 +14,7 @@ The evidence behind each template goes with it.
 
 - Each operation has a folder, for example `templates/morpho/vault-deposit/`, holding `template.json`, `notes.json` and `docs.json`, and, for a template reported once, `report.generated.md` and the HTML report in each language its notes hold; a template reported per instance keeps its reports in `instances/<instance>/`, each with that instance's `notes.json` and, when a function's page names the instance or its asset, its `docs.json`, while the template's `docs.json` holds the rest, `{}` when no page is shared.
   Its tests are in `test/` and `testdata/`.
-- This repository ships twenty-two templates: `eth/transfer`, `erc20/transfer`, `morpho/vault-deposit`, `fluid/vault-deposit`, `cow/swap` (a CoW order pre-signed alone, its sell token already approved), `cow/swap-approve` (the same with its approval, through MultiSend), `uniswap/swap` (one Uniswap swap, its Permit2 allowances already open), `uniswap/swap-permit` (the same swap with a `PERMIT2_PERMIT` command first, a Permit2 allowance to the router the Safe's owners signed as a Safe message), `uniswap/approve-permit2` `uniswap/allow-router` (the two allowances a first swap needs, each on its own or before `uniswap/swap` in one MultiSend) and the Vault V2 admin templates `morpho/vault-v2-cap-submit`, `morpho/vault-v2-cap-accept`, `morpho/vault-v2-cap-decrease`, `morpho/vault-v2-revoke`, `morpho/vault-v2-reallocate`, `morpho/vault-v2-adapter-cap-submit`, `morpho/vault-v2-adapter-cap-accept` and `morpho/vault-v2-collateral-cap-submit`, and the Safe settings templates `safe/add-owner`, `safe/remove-owner`, `safe/swap-owner` and `safe/change-threshold`.
+- This repository ships twenty-two templates: `eth/transfer`, `erc20/transfer`, `morpho/vault-deposit`, `fluid/vault-deposit`, `compound/supply`, `cow/swap` (a CoW order pre-signed alone, its sell token already approved), `cow/swap-approve` (the same with its approval, through MultiSend), `uniswap/swap` (one USDC/USDT swap in Uniswap's StablePair hook pool, its Permit2 allowances already open), `uniswap/swap-no-hook` (the same in a pool with no hook), `uniswap/approve-permit2` and `uniswap/allow-router` (the two allowances a first swap needs, each on its own or before `uniswap/swap` in one MultiSend) and the Vault V2 admin templates `morpho/vault-v2-cap-submit`, `morpho/vault-v2-cap-accept`, `morpho/vault-v2-cap-decrease`, `morpho/vault-v2-revoke`, `morpho/vault-v2-adapter-cap-submit`, `morpho/vault-v2-adapter-cap-accept` and `morpho/vault-v2-collateral-cap-submit`, and the Safe settings templates `safe/add-owner`, `safe/remove-owner`, `safe/swap-owner` and `safe/change-threshold`.
   Other operations of the table in [Intent card](data-shapes.md#intent-card) whose checks no shipped template reaches, such as a Merkle claim's proof field, a market field or a withdrawal of all, keep a `template.json` under `test/fixtures/templates/`, with the registry entries and markets only they name under `test/fixtures/registry/`, or, for entries only one test file names, under a folder of their own that the file adds, such as `test/fixtures/vault-v2/registry/` for the Vault V2 vault whose curator's transactions only test the templates.
   Only tests read them, through a temporary copy of the repository with them added (`test/repo-with-test-fixtures.ts`); `card new`, `card seal`, `verify` and `pnpm report` never see them.
 - The tests are real past transactions of the operation, each with the card values it implies.
@@ -45,7 +45,7 @@ These are protocol-free and change rarely.
 - The Safe transaction hashes, computed locally.
 - Decode, then re-encode byte for byte, so nothing hides in the encoding.
   - One exception, declared per call in the template: a trailer of at most a stated number of bytes after the arguments, with a written reason.
-    The Morpho app appends 8 bytes to `multicall` (a timestamp and an origin tag) that the contract never reads, and up to 12 to `vaultBundlesV1Deposit`.
+    The Morpho app appends up to 12 bytes to `vaultBundlesV1Deposit` (a timestamp and one or two origin tags) that the contract never reads.
     A template may allow at most 19 bytes, so a whole 20-byte address never fits in a trailer.
     A contract that reads its caller from the last 20 bytes of calldata (ERC-2771) would still take the last argument byte plus a 19-byte trailer as an address, so a template for such a contract declares no trailer.
     A call to a registry contract whose entry declares `ignoresTrailer`, with the reason its code never reads calldata past a call's arguments, may allow up to 64 bytes: the Uniswap app appends a tag of up to 46 bytes to `execute`, and the Universal Router's verified source reads neither `msg.data` nor `calldatasize`.
@@ -131,7 +131,7 @@ Some research reads have one source, and none of them reaches a verdict:
 
 | Role | Providers |
 |---|---|
-| State, code, receipts | Alchemy (free key) and drpc |
+| State, code, receipts | Alchemy (free key) and drpc (free key) |
 | Token decimals, during `card new` | Alchemy and drpc |
 | Contract code, proxy implementation, and factory instance, during research | Alchemy and drpc |
 | Simulation, latest and past blocks | Alchemy and drpc, `eth_simulateV1` |
@@ -142,8 +142,14 @@ Some research reads have one source, and none of them reaches a verdict:
 When the system resolver fails, kiss-sign resolves provider hosts over DNS over HTTPS.
 TLS certificate checks stay on, so a wrong address can only fail the connection.
 
-Keys enter through `kiss-sign key add alchemy|etherscan|github` in a hidden prompt, or the signer fills in the `$KISS_SIGN_HOME/.env` that `kiss-sign init` creates, with an empty line per key and mode 0600; never through the chat.
+Keys enter through `kiss-sign key add alchemy|drpc|etherscan|github` in a hidden prompt, or the signer fills in the `$KISS_SIGN_HOME/.env` that `kiss-sign init` creates, with an empty line per key and mode 0600; never through the chat.
 `init` never overwrites an existing `.env`.
+
+A command that reads the chain needs `ALCHEMY_API_KEY` and `DRPC_API_KEY`, and refuses before any chain read, naming the key that is not set and where to get it, or the one that is not shaped like a key, whose value it does not print; `replay`, the tests and every `--offline` and `--render` command read no chain and need neither.
+`pnpm check-sources` and `pnpm erc7730` still run when one of the two is not set, and say so: the first skips the deployer check with a `NOTE`, the second prints each attestation as `UNVERIFIABLE` with the key's name.
+Both are free: an Alchemy app's key from [dashboard.alchemy.com](https://dashboard.alchemy.com/), and a drpc key from a free account at [drpc.org](https://drpc.org/login), made in its dashboard.
+drpc's public endpoint, which needs no key, refuses most of a burst of reads, so a search of past transactions there spends most of its time waiting; kiss-sign reads drpc only with a key.
+Each provider's URL holds its key, so an error names the provider and a closed cause, never the provider's text or a URL, and a recording that keeps a provider's answer takes the key out of it.
 
 `GITHUB_TOKEN` is optional and for building templates only.
 It is read like the other keys, from the command's environment or `$KISS_SIGN_HOME/.env`, and only by the research commands that ask GitHub's API: `pnpm check-sources`, `pnpm report`, `pnpm pin-solc` and `pnpm fetch-erc7730`, with `pnpm erc7730`, which fetches the ERC-7730 archive on demand.

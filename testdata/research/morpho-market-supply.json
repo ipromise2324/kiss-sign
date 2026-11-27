@@ -10,7 +10,7 @@
  "studiedWith": {
   "template": "0x57bcd5a18ce6b7cd7d83048a366998c9820bcd4bc7fb40e74db3767f43bd7296",
   "registry": "0xeffbaefc896f26d5fb7a5d0085aeb1110595041caf0a860177bedcc997762243",
-  "study": "0x94bfaaffbfc8c7dbc5b3874bc31cfe270d787964a427798536f92503545477bb"
+  "study": "0x92508a29cee7c49b83a1d4a9f9e4e04eac8df225cb741b31331cc10dacdd84ae"
  },
  "search": {
   "windows": [
@@ -173,6 +173,7 @@
   {
    "kind": "misfit",
    "hash": "0x2d876d7ca936f5ee43512ebf5b0b4bcfd6bd799fe0851ba605c29f0705b5f700",
+   "block": "26161801",
    "sender": {
     "kind": "safe",
     "address": "0x16d9ba632757914c3a1ba9291f23fa075f24c3bc"
@@ -185,7 +186,8 @@
       "selector": "0xc0229fe8"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -300,6 +302,7 @@
   {
    "kind": "misfit",
    "hash": "0xd129fe67f1685edbfbf458f9b98ca5f609c843d0ccd58363344147766c1d5088",
+   "block": "26164304",
    "sender": {
     "kind": "eoa",
     "address": "0xe29b7303937fac8f7f24670c7cc08005ac14ebe9",
@@ -310,7 +313,19 @@
     "at": "call.blueBundlesV1Supply.loanTokenPermit.kind",
     "expected": "0",
     "actual": "2"
-   }
+   },
+   "free": [
+    {
+     "field": 13,
+     "type": "bytes",
+     "value": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006acaa0ff00000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000041544c1d70da0406d11309aaa37939181915eee8858c9533cf42656d8a20d37fea24ed85b84271a403f34003c9e4fdc00dbe1027242a442944fe5b2882316ef4161c00000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+     "field": 16,
+     "type": "uint256",
+     "value": "1791664383"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -350,6 +365,7 @@
   {
    "kind": "misfit",
    "hash": "0x2c75272313863be5b128d1866487e9839a9a2ed125e0e56e93302ffd8101df4a",
+   "block": "26166944",
    "sender": {
     "kind": "eoa",
     "address": "0x40534e513df8277870b81e97b5107b3f39de4f15",
@@ -360,11 +376,24 @@
     "at": "call.blueBundlesV1Supply.loanTokenPermit.kind",
     "expected": "0",
     "actual": "2"
-   }
+   },
+   "free": [
+    {
+     "field": 13,
+     "type": "bytes",
+     "value": "0x0000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000006acb1d39000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000419afa734167a3145fb93eab20cabbe2104d3331a5807e8d69d31205aee5ba981c042fbe904c264e72d96ac3b217bafb854db80c22c95313bba02af7aa11314fc01b00000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+     "field": 16,
+     "type": "uint256",
+     "value": "1791696185"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x147a0f4fcff7bfa31515a84bc1657149aa9ba2c047b6754ea08f894fd7de6fd9",
+   "block": "26167411",
    "sender": {
     "kind": "safe",
     "address": "0x5435b8b0843206fa8fc99453a3112713e6f0fd46"
@@ -377,7 +406,8 @@
       "selector": "0x827d6bd8"
      }
     ]
-   }
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
@@ -438,6 +468,7 @@
   {
    "kind": "misfit",
    "hash": "0x11df8733266bbaa53fe7d6b6dcfa67d54dd962be294616a420cee6ab18ccfbab",
+   "block": "26383723",
    "sender": {
     "kind": "eoa",
     "address": "0x815f5bb257e88b67216a344c7c83a3ea4ee74748",
@@ -448,7 +479,19 @@
     "at": "call.blueBundlesV1Supply.loanTokenPermit.kind",
     "expected": "0",
     "actual": "2"
-   }
+   },
+   "free": [
+    {
+     "field": 13,
+     "type": "bytes",
+     "value": "0x0000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000006af2ef420000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000004162c9811b64e61deda69407e97664af5a23f6a2ef4fec98007e9f7f5ab0a21e7f07930f57f3b56b353a17b8c4ac7cc00be095b2c784cc5b94cc11309bf325b44a1c00000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+     "field": 16,
+     "type": "uint256",
+     "value": "1794305858"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -502,6 +545,7 @@
   {
    "kind": "misfit",
    "hash": "0xe0f9e7dfda5351d8a799f41d93ba5e8f0ce8bf36efcb2449a360d175fec80d79",
+   "block": "26385695",
    "sender": {
     "kind": "eoa",
     "address": "0xb61f900042a0fcc5d99713d952f4e60b20a920ff",
@@ -512,11 +556,24 @@
     "at": "call.blueBundlesV1Supply.loanTokenPermit.kind",
     "expected": "0",
     "actual": "1"
-   }
+   },
+   "free": [
+    {
+     "field": 13,
+     "type": "bytes",
+     "value": "0x000000000000000000000000000000000000000000000000000000006af34bed000000000000000000000000000000000000000000000000000000000000001c27c8b310ce39ca3234b7a89877867072e2deb83874bedf69c6c53a9c697116946a3d71712214586497039321d8a77ca65e80f67272b85d64079b404e546c20aa"
+    },
+    {
+     "field": 16,
+     "type": "uint256",
+     "value": "1794329581"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x368e54bdb221041b55ea5583c7bde64bca7489a57bd28a71e812d742d3894aaf",
+   "block": "26385946",
    "sender": {
     "kind": "eoa",
     "address": "0x2ee7a685bedf18bb2667e4cd7848595e92d68587",
@@ -527,11 +584,24 @@
     "at": "call.blueBundlesV1Supply.loanTokenPermit.kind",
     "expected": "0",
     "actual": "1"
-   }
+   },
+   "free": [
+    {
+     "field": 13,
+     "type": "bytes",
+     "value": "0x000000000000000000000000000000000000000000000000000000006af3581c000000000000000000000000000000000000000000000000000000000000001c1fd583af86d1e8e89e191bd3dfe2a73ac3ef0f5ae63e0ed3e3159d1ac8a770c81ce4661d0343cf003629f19a7205c767c2f87a7c516c9f1c28cb2b4b9f989f00"
+    },
+    {
+     "field": 16,
+     "type": "uint256",
+     "value": "1794332700"
+    }
+   ]
   },
   {
    "kind": "misfit",
    "hash": "0x42dd33654c862fee8663cf40e57594eeef6ad1ed0916331a6bf18b036618ced7",
+   "block": "26386121",
    "sender": {
     "kind": "eoa",
     "address": "0x61f3734fb5177fe61e1d0692c7519c1917b691d4",
@@ -542,7 +612,19 @@
     "at": "call.blueBundlesV1Supply.loanTokenPermit.kind",
     "expected": "0",
     "actual": "1"
-   }
+   },
+   "free": [
+    {
+     "field": 13,
+     "type": "bytes",
+     "value": "0x000000000000000000000000000000000000000000000000000000006af3607b000000000000000000000000000000000000000000000000000000000000001c96fd362e84d345412926c53f1bc59145a26f11eab2476d1b75f361400337e901092f7199d655cc5c9b8f26367c956125649f029a40a488544df86cac56bc0de8"
+    },
+    {
+     "field": 16,
+     "type": "uint256",
+     "value": "1794334843"
+    }
+   ]
   },
   {
    "kind": "not-studied",
@@ -561,6 +643,7 @@
   {
    "kind": "misfit",
    "hash": "0x6adc75b9a6e900fc741b705a9fe9ff5ea95929607f5ed169c07cf28d9b553932",
+   "block": "26387237",
    "sender": {
     "kind": "eoa",
     "address": "0x7488837cd413b719c267413e3c445a558587664e",
@@ -571,7 +654,19 @@
     "at": "call.blueBundlesV1Supply.loanTokenPermit.kind",
     "expected": "0",
     "actual": "1"
-   }
+   },
+   "free": [
+    {
+     "field": 13,
+     "type": "bytes",
+     "value": "0x000000000000000000000000000000000000000000000000000000006af394e9000000000000000000000000000000000000000000000000000000000000001c7d2eb2386b2dfeb2fa72e035e2569e78f87a90666d81e835524881035e536abe324a447b8a8e2cd3f6896e229a3e1d112963a071b69e6e6f251bf1fe66784c07"
+    },
+    {
+     "field": 16,
+     "type": "uint256",
+     "value": "1794348265"
+    }
+   ]
   },
   {
    "kind": "not-studied",

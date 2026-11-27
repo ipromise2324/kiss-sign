@@ -24,17 +24,17 @@ prints only structured facts: path, file sha256, ERC-8176 descriptorHash, includ
 the selector, per EIP-712 message its primary type and type hash, each field's path, format and
 visibility, and each ERC-8176 attestation as VALID, REVOKED, EXPIRED, INVALID or
 UNVERIFIABLE, with its signer recovered and its revocation read through both providers. It never
-prints descriptor text. Without ALCHEMY_API_KEY the attestations print as UNVERIFIABLE. It
-downloads a missing or changed archive first, as pnpm fetch-erc7730 does.
+prints descriptor text. Without ALCHEMY_API_KEY and DRPC_API_KEY the attestations print as
+UNVERIFIABLE. It downloads a missing or changed archive first, as pnpm fetch-erc7730 does.
 
 Options:
   --record <name>   Write testdata/erc7730/<name>.json; refused when a chain read got no answer.
                     <name> takes lowercase letters, digits and -.
 
 Writes: testdata/erc7730/<name>.json with --record, otherwise nothing.
-Keys: ALCHEMY_API_KEY, optional, from the environment or $KISS_SIGN_HOME/.env. GITHUB_TOKEN,
-optional, sent only to api.github.com when the archive is fetched; it raises GitHub's limit from 60
-to 5,000 requests an hour and changes no answer.
+Keys: ALCHEMY_API_KEY and DRPC_API_KEY, optional, from the environment or $KISS_SIGN_HOME/.env.
+GITHUB_TOKEN, optional, sent only to api.github.com when the archive is fetched; it raises GitHub's
+limit from 60 to 5,000 requests an hour and changes no answer.
 Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 2,
 ERC-7730); docs/design/engine-and-chain.md, "Research services".`;
 
@@ -64,7 +64,7 @@ async function openChain(): Promise<ChainAccess> {
   try {
     endpoints = mainnetEndpoints(process.env);
   } catch (error) {
-    if (error instanceof MissingKeyError) return { unavailable: 'ALCHEMY_API_KEY is not set, so the chain was not read' };
+    if (error instanceof MissingKeyError) return { unavailable: `${error.env} is not set, so the chain was not read` };
     throw error;
   }
   const recording = recordingTransport(httpsTransport(), endpoints);

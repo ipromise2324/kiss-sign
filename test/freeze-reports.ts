@@ -2,7 +2,7 @@
  * Writes test/fixtures/frozen/, the copy of each report in FROZEN_REPORTS that the page tests read.
  *
  *   node test/freeze-reports.ts            copies each report's template folder (its own instance only, no generated report),
- *                                           the registry, its report recording and its past-txs summaries as committed,
+ *                                           the registry, its report recording, its template's perturbation recordings and its past-txs summaries as committed,
  *                                           and each full recording a summary was studied from, from .cache/past-txs/
  *                                           to .cache/past-txs/frozen/; refused unless studying that recording again
  *                                           gives the committed summary
@@ -16,6 +16,7 @@ import { loadRegistry } from '../src/registry.ts';
 import { RECORDINGS_DIR, SUMMARIES_DIR, studyRecording, summaryFile } from '../src/research/past-txs-summary.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { loadReport, pastTxsRecordings, pastTxsRegistry, reportRecordingPath } from '../src/research/report.ts';
+import { PERTURB_DIR } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { INSTANCE_FOLDER } from '../src/template/vault-reports.ts';
 import { FROZEN_DIR, FROZEN_RECORDINGS_DIR, FROZEN_REPORTS, repoWithFrozenReports } from './frozen-reports.ts';
@@ -45,6 +46,11 @@ if (!restudy) {
       filter: (path) => !basename(path).startsWith('report.generated') && (dirname(path) !== instances || basename(path) === target.instance),
     });
     copy(join(REPO, reportRecordingPath(target)), join(FROZEN_DIR, reportRecordingPath(target)));
+    for (const name of readdirSync(join(REPO, PERTURB_DIR))) {
+      const file = join(PERTURB_DIR, name);
+      const recorded = readRecording<{ card: { operations: { template: string }[] }; template?: unknown }>(join(REPO, file));
+      if (recorded.template === undefined && recorded.card.operations.every((op) => op.template === target.template)) copy(join(REPO, file), join(FROZEN_DIR, file));
+    }
     for (const { file } of pastTxsRecordings(REPO, loadReport(REPO, registry, target).subject)) {
       copy(join(REPO, file), join(FROZEN_DIR, file));
       copy(join(REPO, RECORDINGS_DIR, basename(file)), join(REPO, FROZEN_RECORDINGS_DIR, basename(file)));

@@ -19,7 +19,9 @@ import { DEFAULT_SAMPLING, MAX_PAGES, samplingFields, samplingOf, scrubRecording
 import { RECORDINGS_DIR, SUMMARIES_DIR, parseSummary, studyRecording, summaryFile } from '../src/research/past-txs-summary.ts';
 import type { PastTxsSummary } from '../src/research/past-txs-summary.ts';
 import { ReportError, pastTxsRegistry } from '../src/research/report.ts';
+import { progress } from '../src/research/progress.ts';
 import { drpcTraces } from '../src/research/trace.ts';
+import { traceAddressesText } from '../src/research/trace-addresses.ts';
 import type { PastTxsRecording, Sampling } from '../src/research/recording.ts';
 import { parseAddress } from '../src/safe/types.ts';
 import type { Address } from '../src/safe/types.ts';
@@ -65,6 +67,7 @@ an event with no --token. It studies every transaction with a Safe party, leavin
 Math.ceil(--max-txs / 4) places, and fills the remaining places from the rest, each taken evenly
 in block order. When an adapter or bundler moves the token, the party checked is that contract,
 so no Safe is found and the choice is the even sample.
+It writes a line on stderr every 10 seconds: how many pages, answers and traces it has read.
 --same-windows-as places the search by the head block the summary testdata/research/<name>.json
 keeps instead of today's, and searches as that run did, so a run again reads the same blocks; a
 summary recorded before this search replays its year and 12 windows. --from-block and --to-block
@@ -93,10 +96,18 @@ grouped by reason. For each fitting transaction it runs the transaction alone on
 and compares each stated amount with the balances, printing FINDING for a sender's difference
 beyond the effect's tolerance in a registry token, or a tolerance no difference supports.
 For each transaction exactly the template it reads the call trace from drpc alone
-(debug_traceTransaction with callTracer, one at a time), and checks the trace's token transfers and
+(debug_traceTransaction with callTracer), and checks the trace's token transfers and
 approvals against the receipt both providers agree on; --record keeps each trace cut down to each
 call's depth, type, from, to, selector, value, whether it reverted, and the address arguments of a
 transfer, transferFrom, approve or permit.
+Then it prints every address the traces show moving the sender's money whose code verify does not
+check for the transaction's card, outside the registry or registered but not reached through
+dependsOn: per template call, which token moved which way, in how many transactions and one's hash.
+It always says over how many traces, and how many transactions have none that counts. Register each
+fixed contract and list it in dependsOn, or judge it in the trace-addresses.json beside the report;
+pnpm report --record refuses while one is neither. Where the card chooses among several tokens both
+given and got, it prints in how many traced transactions each moved, so a sample of one direction
+shows; --restudy prints both too.
 
 Options:
   --token <name | address>       The anchor token, or the contract that logs --event; left out for
@@ -116,7 +127,8 @@ Options:
 
 Writes: .cache/past-txs/<name>.json and testdata/research/<name>.json with --record;
 testdata/research/<name>.json with --restudy; otherwise nothing.
-Keys: ALCHEMY_API_KEY and ETHERSCAN_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Keys: ALCHEMY_API_KEY, DRPC_API_KEY and ETHERSCAN_API_KEY, from the environment or
+  $KISS_SIGN_HOME/.env.
 Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 4,
   Study past transactions, Call traces).`;
 
@@ -174,8 +186,10 @@ if (flags.restudy === true) {
       process.exit(64);
     }
     const recording = readRecording(path) as PastTxsRecording;
-    const summary = await studyRecording(ROOT, recording, pastTxsRegistry(ROOT, registry, recording.query));
+    const studied = pastTxsRegistry(ROOT, registry, recording.query);
+    const summary = await studyRecording(ROOT, recording, studied);
     console.log(`wrote ${writeSummary(checkedSummary(name, summary, safe))}`);
+    process.stdout.write(traceAddressesText(loadTemplate(ROOT, recording.query.template, studied), studied, summary));
   }
   process.exit(0);
 }
@@ -254,12 +268,14 @@ function studyRegistry(): Registry {
 }
 
 const endpoints = mainnetEndpoints(process.env);
-const chain = recordingTransport(httpsTransport(), endpoints);
+const shown = progress((line) => void process.stderr.write(line));
+const chain = recordingTransport(shown.transport(httpsTransport()), endpoints);
 const unread: string[] = [];
 const note = (read: string) => void unread.push(read);
-const sources = recordingAsk(liveAsk(process.env, note));
+const sources = recordingAsk(shown.ask(liveAsk(process.env, note)));
 const messages = recordingMessages(liveMessages(httpsMessage, note));
 const reader = createReader(endpoints, chain.transport, { note });
+const batches = createReader(endpoints, chain.transport);
 const traces = drpcTraces(endpoints[1], httpsTransport(), note);
 const query = {
   template,
@@ -269,13 +285,16 @@ const query = {
 const run = await pastTxs(query, {
   ask: sources.ask,
   reader,
+  batches,
   registry,
   readMessage: messages.read,
   exclude,
   maxTxs,
-  traces: traces.source,
+  traces: shown.traces(traces.source),
 });
+shown.stop();
 process.stdout.write(renderPastTxs(run, registry));
+process.stdout.write(traceAddressesText(template, registry, run));
 
 if (flags.record !== undefined) {
   const refusal = unreadRefusal(unread);

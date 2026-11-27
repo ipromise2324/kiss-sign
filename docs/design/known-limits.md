@@ -7,6 +7,9 @@ Part of [the kiss-sign design](../design.md).
   The receipt check counts movements, not where they sit: a `Transfer` of a token outside the registry, a registry token's mint or burn, from or to the zero address, and an `Approval` of a token outside the registry need no matching call, and a registry token's call that a hand-edited trace moves under another call, one already covered, still matches its log, and no program traces a recorded transaction again, so such an edit is not caught.
   A trace only confirms a `flow` line in the report or asks the AI for a review; it never changes a verdict.
   A trace also shows one path: a contract may branch on state, so a line seen in every past transaction may not hold for the transaction to sign, and the effects check at signing is what protects the signer.
+  The addresses `pnpm past-txs` names from the traces are those the traced transactions met: an address only an untraced case reaches, such as the other direction of a swap, is not named, nor is one that acts in another transaction, such as the solver that settles an order a Safe signs on chain, nor one that is only a party of a money call a bound call makes directly, such as a pool the template's router pays itself.
+  Only a `CALL` of `transfer`, `transferFrom` or `approve`, or one that sends ETH, is a money call: a mint or burn by an unregistered minter, which makes no such call, the code a `DELEGATECALL` runs, ETH a `CREATE` or `CREATE2` sends with the new contract, and ETH a `SELFDESTRUCT` sends name no address.
+  Which entries a traced transaction's card would name is read from the addresses its decoded calls hold, not from a card: a field no call carries counts as any entry it could name, so an entry the card did not choose can pass as checked, and a field sharing its entries with another can be read as that one's, which only names an address more.
 - Etherscan name tags (labels such as "Morpho: Bundler3") are not used.
   Etherscan offers no free API for them.
   The verified contract name and the creator, read from the contract's Etherscan page, are used instead.
@@ -165,6 +168,9 @@ Part of [the kiss-sign design](../design.md).
   A contract the transaction reaches without being one is not: the Morpho Blue markets, oracles and interest rate models behind a vault, the adapters of a Morpho Vault V2 that no card reference names, and the Safe's own singleton, fallback handler and guard.
   For the Safe's settings the floor rules check only that the transaction does not change them.
   A contract reached only from inside a registry contract, such as Fluid's Liquidity layer behind each fToken, is checked when that entry names it in `dependsOn`.
+- A value `card new` computes is read from pinned code only as far as the registry goes: the contract the read calls, the entries its target and arguments name, and their `dependsOn`.
+  What these call behind that is not checked, such as the adapters, markets, oracles and interest rate models behind a vault's `previewDeposit`, so a change there can move the computed limit; its inputs, such as a vault's reported assets, are not pinned either.
+  `decimals()` is read with no code check, for a typed amount and a computed one alike, except the two tokens of a swap's floor priced by feeds, whose code is checked first: a token that changed could scale what is typed; the base units in the seal question show it, and `verify`'s code check refuses the token.
 - A proxy that routes each selector to its own implementation has no view that lists its implementations, so its pin covers the implementations its seeds reach and the selectors those list.
   Seeds that miss an implementation leave it unchecked: the pin does not hold it, neither `verify` nor the report reads it, and a call to one of its selectors runs code nothing pinned.
   Only the AI's notes on the entry, from the proxy's implementation history, say that a seed reaches every implementation still set, and no program checks them.
@@ -239,6 +245,9 @@ Listed so the path is clear.
 - **Clear signing on the wallet (ERC-7730).**
   Export templates as display descriptors so the device shows the decoded call.
   Wait until wallets decode Safe MultiSend batches and the descriptors stop hiding the nonce; until then, hash comparison stays.
+- **A floor's feeds trust their publisher.** The registry pins the code of a feed's proxy, not the aggregator behind it, which the publisher's owner can change, and a stablecoin feed may stop following a price above a cap. The second source, a pool's mean price, catches that only for a pair it covers, and an attacker who pays to move or thin the pool can force a pair to the typed path, where the signer types the minimum twice; it can never lower a computed floor.
+- **A token's `unit` is taken on the registry's word.** Load refuses a `price` whose feed prices another name than the entry's, unless the entry says that `unit`, and refuses a `unit` that is another entry's name. Nothing reads whether the token is worth one of the unit: with no entry named `eth`, any token may say `"unit": "ETH"`, a staked one worth more or an unrelated one, and an entry's own name is chosen in the registry too. A floor of such a token can be too low or too high, the pool's mean shows it only for a pair that has a pool, and the review compares each `unit` with the token's contract.
+- **Only `card new` reads the floor.** A card sealed from a file holds whatever minimum the file says, and `verify` compares the transaction with that. A transaction that meets the floor can still be a worse trade than the market, by up to the slippage and the margin (0.75%, 1.25% at the most).
 
 ## Out of scope
 

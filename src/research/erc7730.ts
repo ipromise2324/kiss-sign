@@ -458,13 +458,18 @@ function staticFailure(a: Attestation, descriptorHash: Hex): string | undefined 
 export type Chain = { readonly reader: Reader; readonly at: BlockRef; readonly time: bigint };
 export type ChainAccess = Chain | { readonly unavailable: string };
 
-/** The latest block both providers agree on, and its time, for the expiration check. */
-export async function chainAt(reader: Reader): Promise<ChainAccess> {
+/** The block `at`, or the latest both providers agree on, and its time, for the expiration check. */
+export async function chainAt(reader: Reader, at?: BlockRef): Promise<ChainAccess> {
+  const block = at ?? (await latestBlock(reader));
+  if ('unavailable' in block) return block;
+  const header = await reader.header(block);
+  if (header.kind === 'unverifiable') return { unavailable: `block ${block.number} header: ${header.reason}` };
+  return { reader, at: block, time: header.value.time };
+}
+
+async function latestBlock(reader: Reader): Promise<BlockRef | { readonly unavailable: string }> {
   const block = await reader.block('latest');
-  if (block.kind === 'unverifiable') return { unavailable: `latest block: ${block.reason}` };
-  const header = await reader.header(block.value);
-  if (header.kind === 'unverifiable') return { unavailable: `block ${block.value.number} header: ${header.reason}` };
-  return { reader, at: block.value, time: header.value.time };
+  return block.kind === 'agreed' ? block.value : { unavailable: `latest block: ${block.reason}` };
 }
 
 const both = (read: Read<unknown>) => (read.kind === 'agreed' ? undefined : read.reason);

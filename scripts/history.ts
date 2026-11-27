@@ -35,7 +35,7 @@ Options:
   --refresh         Read every chain answer again, ignoring history/cache/.
 
 Writes: history/txs.jsonl (fetch); history/cache/<nonce>.json; <file.md> with --out.
-Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env, for a nonce not cached; fetch
+Keys: ALCHEMY_API_KEY and DRPC_API_KEY, from the environment or $KISS_SIGN_HOME/.env, for a nonce not cached; fetch
   needs none. It never reads GITHUB_TOKEN.
 Rules: docs/design/known-limits.md, "Known limits".`;
 

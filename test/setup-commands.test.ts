@@ -5,7 +5,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { main } from '../src/cli/main.ts';
+import { keccakCode } from '../src/contracts/code.ts';
 import { parseFunctionSignature } from '../src/decode/abi.ts';
+import type { Hex } from '../src/safe/types.ts';
 import type { Transport } from '../src/chain/rpc.ts';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -17,7 +19,9 @@ const RECIPIENT = '0x1111111111111111111111111111111111111111';
 type Answer = string | ((stdout: string) => string);
 
 /** `repoRoot` is published as main before the command runs, unless it is a clone of its own or `unpublished` is set. */
-type Chain = { readonly transport: Transport; readonly env?: Record<string, string>; readonly repoRoot?: string; readonly unpublished?: boolean };
+const NOW = 1_800_000_000;
+
+type Chain = { readonly transport: Transport; readonly env?: Record<string, string>; readonly repoRoot?: string; readonly unpublished?: boolean; readonly clock?: number };
 
 const noChain: Chain = { transport: async () => assert.fail('setup commands read no chain'), env: {} };
 
@@ -49,6 +53,19 @@ function publish(dir: string): string {
 function dataClone(): string {
   const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
   for (const sub of ['registry', 'templates']) cpSync(join(ROOT, sub), join(dir, sub), { recursive: true });
+  repinned(dir, 'steakhouse-prime-usdc-v2-0f51', { hash: keccakCode(VAULT_CODE), from: 0 });
+  return dir;
+}
+
+/** The stub runtime code the tests' providers answer for the vault, which its entry is pinned to; it holds no DELEGATECALL. */
+const VAULT_CODE: Hex = '0x00' as Hex;
+
+/** Writes `code` as the code pin of entry `name` in `dir`'s registry; undefined removes its pin. */
+function repinned(dir: string, name: string, code: unknown): string {
+  const path = join(dir, 'registry', 'contracts.json');
+  const registry = JSON.parse(readFileSync(path, 'utf8'));
+  registry[name].code = code;
+  writeFileSync(path, JSON.stringify(registry, null, 2));
   return dir;
 }
 
@@ -72,7 +89,7 @@ async function run(argv: string[], home: string, answers?: readonly Answer[], ch
   const asked: string[] = [];
   const queue = [...(answers ?? [])];
   const code = await main(argv, {
-    env: { KISS_SIGN_HOME: home, ...(chain.env ?? { ALCHEMY_API_KEY: 'test-key' }) },
+    env: { KISS_SIGN_HOME: home, ...(chain.env ?? { ALCHEMY_API_KEY: 'test-key', DRPC_API_KEY: 'test-key-drpc' }) },
     stdout: (text) => void (stdout += text),
     stderr: (text) => void (stderr += text),
     platform,
@@ -88,6 +105,7 @@ async function run(argv: string[], home: string, answers?: readonly Answer[], ch
     repoRoot: chain.repoRoot === undefined ? signerClone() : chain.unpublished === true ? chain.repoRoot : published(chain.repoRoot),
     transport: chain.transport,
     fetchJson: async () => assert.fail('setup commands fetch nothing'),
+    now: () => (chain.clock ?? NOW) * 1000,
     readMessage: async () => ({ why: 'this test reads no signed message' }),
   });
   return { code, stdout, stderr, asked };
@@ -206,10 +224,10 @@ test('init creates a key file readable by its owner only, with an empty line per
   assert.match(first.stdout, /ALCHEMY_API_KEY +get it at https:\/\/dashboard\.alchemy\.com\/\n +needed by pnpm kiss-sign verify, pnpm kiss-sign card new/);
   assert.match(first.stdout, /ETHERSCAN_API_KEY +get it at https:\/\/etherscan\.io\/myapikey\n +needed by pnpm past-txs, pnpm check-sources and pnpm report/);
   assert.match(first.stdout, new RegExp(`\\n {7}\\$\\{EDITOR:-nano\\} ${keyFile}\\n`));
-  assert.match(first.stdout, /\n {5}Or enter each key with the command below; what you type is not shown on screen:\n {7}pnpm kiss-sign key add alchemy\n {7}pnpm kiss-sign key add etherscan\n {7}pnpm kiss-sign key add github\n/);
+  assert.match(first.stdout, /\n {5}Or enter each key with the command below; what you type is not shown on screen:\n {7}pnpm kiss-sign key add alchemy\n {7}pnpm kiss-sign key add drpc\n {7}pnpm kiss-sign key add etherscan\n {7}pnpm kiss-sign key add github\n/);
   assert.equal(statSync(keyFile).mode & 0o777, 0o600);
   const lines = readFileSync(keyFile, 'utf8').split('\n').filter((line) => !line.startsWith('#') && line !== '');
-  assert.deepEqual(lines, ['ALCHEMY_API_KEY=', 'ETHERSCAN_API_KEY=', 'GITHUB_TOKEN=']);
+  assert.deepEqual(lines, ['ALCHEMY_API_KEY=', 'DRPC_API_KEY=', 'ETHERSCAN_API_KEY=', 'GITHUB_TOKEN=']);
   assert.match(
     readFileSync(keyFile, 'utf8'),
     /# GitHub, optional, a fine-grained token with access to public repositories only, read-only from \S+, for pnpm check-sources, pnpm report, pnpm pin-solc and pnpm fetch-erc7730, only to raise the GitHub API rate limit\.\nGITHUB_TOKEN=\n/,
@@ -330,18 +348,20 @@ const steakhouseViews: Views = (_provider, to, selector, arg) => {
 };
 
 /** Two providers that answer decimals() per token address and the views `views` answers; `drpc` overrides what drpc answers for decimals(). */
-function decimalsChain(alchemy: Record<string, number | 'revert'>, drpc: Record<string, number | 'revert'> = {}, views: Views = steakhouseViews): Chain & { calls: string[] } {
+function decimalsChain(alchemy: Record<string, number | 'revert'>, drpc: Record<string, number | 'revert'> = {}, views: Views = steakhouseViews, code = (_provider: string): Hex => VAULT_CODE): Chain & { calls: string[] } {
   const calls: string[] = [];
   const transport: Transport = async (url, body) => {
     const { method, params } = JSON.parse(body) as { method: string; params: unknown[] };
     const reply = (result: unknown) => ({ status: 200, text: JSON.stringify({ jsonrpc: '2.0', id: 1, result }) });
     const reverted = { status: 200, text: JSON.stringify({ jsonrpc: '2.0', id: 1, error: { code: 3, message: 'execution reverted' } }) };
     if (method === 'eth_blockNumber') return reply(`0x${HEAD.toString(16)}`);
-    if (method === 'eth_getBlockByNumber') return reply({ number: `0x${HEAD.toString(16)}`, hash: HEAD_HASH });
+    if (method === 'eth_getBlockByNumber' || method === 'eth_getBlockByHash') return reply({ number: `0x${HEAD.toString(16)}`, hash: HEAD_HASH, timestamp: `0x${NOW.toString(16)}`, gasLimit: '0x1', mixHash: HEAD_HASH });
+    const provider = url.includes('drpc') ? 'drpc' : 'alchemy';
+    if (method === 'eth_getCode') return reply(code(provider));
+    if (method === 'eth_getStorageAt') return reply(`0x${'0'.repeat(64)}`);
     assert.equal(method, 'eth_call');
     const [{ to, data }, at] = params as [{ to: string; data: string }, { blockHash: string }];
     assert.equal(at.blockHash, HEAD_HASH);
-    const provider = url.includes('drpc') ? 'drpc' : 'alchemy';
     if (data !== '0x313ce567') {
       const answer = views(provider, to, data.slice(0, 10), BigInt(`0x${data.slice(10) || '0'}`));
       assert.ok(answer !== undefined, `${data.slice(0, 10)} on ${to} is not stubbed`);
@@ -375,6 +395,17 @@ async function sealedFile(values: Record<string, string>) {
   return /Sealed card (0x[0-9a-f]{64})/.exec(sealed.stdout)?.[1];
 }
 
+test('card new computes nothing from a block more than five minutes from the clock', async () => {
+  for (const [clock, said] of [[NOW + 301, /301 s behind/], [NOW - 301, /301 s after/]] as const) {
+    const home = freshHome();
+    configure(home);
+    const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'y'], { ...mainnet(), clock });
+    assert.equal(made.code, 1, made.stdout);
+    assert.match(made.stderr, said);
+    assert.ok(!existsSync(join(home, 'cards')));
+  }
+});
+
 test('card new lists a vault with the factory that created it, takes amounts in whole tokens, computes min-shares, and seals base units as card seal would', async () => {
   const home = freshHome();
   configure(home);
@@ -389,7 +420,7 @@ test('card new lists a vault with the factory that created it, takes amounts in 
   assert.match(made.stdout, /\n    expected +4\.9 steakhouse-prime-usdc-v2-0f51\n    slippage +0\.10% less than expected: the protocol's default 0\.03% plus a margin of 0\.07%\n    value +4\.8951 steakhouse-prime-usdc-v2-0f51\n    default from +https:\/\/github\.com\/morpho-org\/sdks\/blob\/[0-9a-f]{40}\/packages\/blue-sdk\/src\/constants\.ts#L24\n/);
   assert.match(
     made.stdout,
-    new RegExp(`│   vault +steakhouse-prime-usdc-v2-0f51  ${STEAKHOUSE}\\n│   amount +5 usdc\\n│ +5000000 base units\\n│   min-shares +4\\.8951 steakhouse-prime-usdc-v2-0f51\\n│ +4895100000000000000 base units\\n│\\n│ chain reads at block ${HEAD}, where alchemy and drpc agree\\n`),
+    new RegExp(`│   vault +steakhouse-prime-usdc-v2-0f51  ${STEAKHOUSE}\\n│   amount +5 usdc\\n│ +5000000 base units\\n│   min-shares +4\\.8951 steakhouse-prime-usdc-v2-0f51\\n│ +4895100000000000000 base units\\n│\\n│ chain reads at block ${HEAD} of 2027-01-15 08:00:00 UTC, where alchemy and drpc agree\\n`),
   );
   assert.match(made.stdout, /\n    margin +The Morpho app prices the deposit again when it builds the transaction/);
   assert.equal(made.stdout.match(/5000000 base units/g)?.length, 1, 'the amount is shown in base units once, in the card');
@@ -419,7 +450,10 @@ function reasonsClone(reason: (both: Record<string, string>) => unknown): string
   const template = JSON.parse(readFileSync(path, 'utf8'));
   const margin = template.card['min-shares'].computed.margin;
   margin.why = reason(margin.why);
-  for (const call of template.calls) call.trailer.why = reason(call.trailer.why);
+  const [, deposit] = template.calls;
+  deposit.trailer.why = reason(deposit.trailer.why);
+  const { free } = deposit.args.assetPermit.fields.data;
+  free.unread = reason(free.unread);
   writeFileSync(path, JSON.stringify(template, null, 2));
   return publish(dir);
 }
@@ -512,6 +546,64 @@ for (const [what, views, message] of [
     assert.equal(result.code, 1);
     assert.match(result.stderr, message);
     assert.ok(!result.asked.includes('Is this what you mean to do? [y/N] '));
+    assert.equal(existsSync(join(home, 'cards')), false);
+  });
+}
+
+for (const [what, code, pin, message] of [
+  ['runs code its pin does not name', () => '0x01' as Hex, undefined, /steakhouse-prime-usdc-v2-0f51 0xbeef\S+, which a value is read from, is not shown to run the code the registry pins: steakhouse-prime-usdc-v2-0f51 0xbeef\S+ has code hash 0x[0-9a-f]{64} at block 21000000, the registry pins 0x[0-9a-f]{64}/],
+  ['runs code the providers disagree on', (provider: string) => (provider === 'drpc' ? '0x01' : VAULT_CODE) as Hex, undefined, /not shown to run the code the registry pins: eth_getCode: alchemy and drpc disagree/],
+  ['has no code pin', () => VAULT_CODE, 'none', /not shown to run the code the registry pins: .* has no code pin in the registry/],
+  ['delegates, though its pin names no implementation', () => `0x363d3d373d3d3d363d73${'11'.repeat(20)}5af43d82803e903d91602b57fd5bf3` as Hex, 'clone', /not shown to run the code the registry pins: .* delegates to 0x1{40} at block 21000000, the registry pins no implementation/],
+] as const) {
+  test(`card new refuses to compute a value from a contract that ${what}, calls nothing on it, and seals nothing`, async () => {
+    const home = freshHome();
+    configure(home);
+    const served = code as (provider: string) => Hex;
+    const repoRoot = repinned(dataClone(), 'steakhouse-prime-usdc-v2-0f51', pin === 'none' ? undefined : { hash: keccakCode(pin === 'clone' ? served('alchemy') : VAULT_CODE), from: 0 });
+    const views: Views = (_provider, _to, selector) => assert.fail(`${selector} was called`);
+    const result = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'y'], { ...decimalsChain({ [USDC]: 6, [STEAKHOUSE]: 18 }, {}, views, served), repoRoot });
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, message);
+    assert.equal(existsSync(join(home, 'cards')), false);
+  });
+}
+
+test('card new refuses to compute a value from a contract one of whose dependsOn entries runs other code than its pin names', async () => {
+  const home = freshHome();
+  configure(home);
+  const repoRoot = dataClone();
+  const path = join(repoRoot, 'registry', 'contracts.json');
+  const registry = JSON.parse(readFileSync(path, 'utf8'));
+  const [dependency] = Object.entries<{ kind: string; code?: object; dependsOn?: string[] }>(registry).find(([, entry]) => entry.kind === 'router' && entry.code !== undefined && entry.dependsOn === undefined)!;
+  registry['steakhouse-prime-usdc-v2-0f51'].dependsOn = [dependency];
+  writeFileSync(path, JSON.stringify(registry, null, 2));
+  const result = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'y'], { ...mainnet(), repoRoot });
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /not shown to run the code the registry pins: .* has code hash 0x[0-9a-f]{64} at block 21000000/);
+});
+
+const MARKET_PARTS = ['morpho-blue', 'usdc', 'cbbtc', 'morpho-oracle-cbbtc-usdc-86', 'adaptive-curve-irm'];
+for (const [what, changed, read] of [
+  ['the token a card field\'s attribute names', 'usdc', { to: { card: 'vault' }, function: 'quote(address asset) returns (uint256 shares)', args: { asset: { card: 'vault.asset' } } }],
+  ['a registry contract an argument names', 'usdc', { to: { card: 'vault' }, function: 'quote(address asset) returns (uint256 shares)', args: { asset: { contract: 'usdc' } } }],
+  ['the oracle of a market it reads', 'morpho-oracle-cbbtc-usdc-86', { to: { card: 'market.lending' }, function: 'position(bytes32 id, address user) returns (uint256 shares)', args: { id: { card: 'market.id' }, user: { safe: true } } }],
+  ['the rate model of a market an argument names', 'adaptive-curve-irm', { to: { card: 'vault' }, function: 'quote(bytes32 id) returns (uint256 shares)', args: { id: { card: 'market.id' } } }],
+] as const) {
+  test(`card new refuses to compute a value when ${what} runs other code than its pin names`, async () => {
+    const home = freshHome();
+    configure(home);
+    const dir = dataClone();
+    for (const name of MARKET_PARTS) if (name !== changed) repinned(dir, name, { hash: keccakCode(VAULT_CODE), from: 0 });
+    const path = join(dir, 'templates', 'morpho', 'vault-deposit', 'template.json');
+    const template = JSON.parse(readFileSync(path, 'utf8'));
+    const reading = JSON.stringify(read).includes('market.');
+    if (reading) template.card.market = { kind: 'market' };
+    template.card['min-shares'].computed.read = read;
+    writeFileSync(path, JSON.stringify(template, null, 2));
+    const result = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), ...(reading ? ['usdc-cbbtc-86'] : []), '5', 'y'], { ...mainnet(() => 5_000_000_000_000_000_000n), repoRoot: publish(dir) });
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, new RegExp(`not shown to run the code the registry pins: ${changed} 0x\\S+ has code hash`));
     assert.equal(existsSync(join(home, 'cards')), false);
   });
 }

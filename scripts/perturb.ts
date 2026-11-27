@@ -36,7 +36,7 @@ Options:
                                checking its blocks; nothing is written when a read got no answer.
 
 Writes: testdata/perturb/<name>.json with --record; otherwise nothing.
-Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Keys: ALCHEMY_API_KEY and DRPC_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
 Rules: docs/design/engine-and-chain.md, "Engine checks that every template gets" (the
   perturbation test).`;
 const ROOT = join(import.meta.dirname, '..');

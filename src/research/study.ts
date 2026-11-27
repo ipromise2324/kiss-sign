@@ -117,17 +117,23 @@ export type Outside = { readonly at: string; readonly kind: OutsideKind };
  */
 export type Sender = { readonly kind: 'safe'; readonly address: Address } | { readonly kind: 'eoa'; readonly address: Address; readonly call: number };
 
+/** A value at a place the template leaves to the app: `field` is the place's number among the leaf rules of the whole template. */
+export type FreeValue = { readonly field: number; readonly type: AbiType; readonly value: string };
+
 export type TxStudy =
   | { readonly kind: 'excluded' }
   | { readonly kind: 'unreadable'; readonly hash: Hex; readonly reason: string }
   /** `to` is the contract the transaction called, absent for a contract creation. */
   | { readonly kind: 'not-studied'; readonly hash: Hex; readonly why: NotStudiedReason; readonly to: Address | undefined; readonly selector: string }
   | { readonly kind: 'unproven'; readonly hash: Hex; readonly contract: Address; readonly why: UnprovenReason }
-  | { readonly kind: 'misfit'; readonly hash: Hex; readonly sender: Sender; readonly reason: MisfitReason }
+  /**
+   * `free` holds what its calls to the template's functions set at each place the template leaves to the app. `block` is
+   * undefined only in a summary recorded before it was kept. `time` as for a fit.
+   */
+  | { readonly kind: 'misfit'; readonly hash: Hex; readonly block: bigint | undefined; readonly sender: Sender; readonly reason: MisfitReason; readonly free: readonly FreeValue[]; readonly time: bigint | undefined }
   /**
    * The template's calls and arguments: exactly the template when `outside` is empty. `values` pairs with the rules of
-   * the sender's `Shape`; `paths` names each leaf. `time` is its block's time, read only for a template that declares a
-   * time, and undefined when it could not be.
+   * the sender's `Shape`; `paths` names each leaf. `time` is its block's time, undefined when it could not be read.
    */
   | {
       readonly kind: 'fit';
@@ -341,6 +347,21 @@ export function shapesOf(template: Template): { readonly whole: Shape; readonly 
   return { whole: shape(template), calls: template.calls.map((call) => shape({ ...template, calls: [call] })) };
 }
 
+/**
+ * The address each card field holds in a transaction that fits the template, by field: what its calls hold where the
+ * template binds the field itself. A field none of its calls carries is absent.
+ */
+export function cardAddresses(fit: Extract<TxStudy, { kind: 'fit' }>, shapes: ReturnType<typeof shapesOf>): ReadonlyMap<string, Address> {
+  const shape = fit.sender.kind === 'safe' ? shapes.whole : shapes.calls[fit.sender.call];
+  return new Map(
+    (shape?.loosened.rules ?? []).flatMap((leaf, i): [string, Address][] => {
+      const rule = leaf.kind === 'address-word' ? leaf.rule : leaf;
+      const value = fit.values[i];
+      return rule.kind === 'card' && rule.ref.attribute === undefined && value !== undefined && /^0x[0-9a-f]{40}$/.test(value) ? [[rule.ref.field, value as Address]] : [];
+    }),
+  );
+}
+
 export type StudyContext = {
   readonly shapes: ReturnType<typeof shapesOf>;
   readonly readMessage: ReadMessage;
@@ -364,7 +385,7 @@ async function proveSafe(reader: Reader, address: Address, blockNumber: bigint):
   return officialSingleton(slot.value) ? { kind: 'proven' } : { kind: 'unproven', why: 'its singleton is not an official Safe singleton' };
 }
 
-const officialSingleton = (slot0: Hex): boolean => OFFICIAL_SAFE_SINGLETONS.some((s) => slot0 === `0x${'00'.repeat(12)}${s.address.slice(2)}`);
+export const officialSingleton = (slot0: Hex): boolean => OFFICIAL_SAFE_SINGLETONS.some((s) => slot0 === `0x${'00'.repeat(12)}${s.address.slice(2)}`);
 
 export type PartyProof = { readonly kind: 'safe' } | { readonly kind: 'not-safe' } | { readonly kind: 'unreadable'; readonly reason: string };
 
@@ -410,19 +431,60 @@ function late(rules: readonly LeafRule[], paths: readonly string[], values: read
   return rule?.kind === 'within-seconds' ? { kind: 'late', at: paths[i] as string, seconds: rule.seconds } : undefined;
 }
 
+/** Whether the template leaves a leaf to the app, at any value or up to a time limit. */
+export const appFills = (rule: LeafRule): boolean => rule.kind === 'free' || rule.kind === 'within-seconds';
+
+/**
+ * The values `tx` sets at the places the template leaves to the app, from each of its calls that uses a function of the
+ * template, so a transaction that differs elsewhere still shows them. A call that does not decode, or whose signed
+ * message was not read, gives none.
+ */
+async function freeValues(tx: SafeTx, sender: Sender, context: StudyContext): Promise<FreeValue[]> {
+  const unwrapped = unwrapSafeTx(tx);
+  if (unwrapped.kind !== 'direct' && unwrapped.kind !== 'multisend') return [];
+  const found: FreeValue[] = [];
+  let offset = 0;
+  for (const [i, shape] of context.shapes.calls.entries()) {
+    const { rules } = shape.loosened;
+    const { to, data } = shape.template.calls[0] as TemplateCall;
+    const target = to.kind === 'contract' ? context.registry.entries.get(to.name)?.address : undefined;
+    const uses = (call: InnerCall): boolean =>
+      data !== 'empty' && (target === undefined || call.to === target) && selectorOf(call.data.root.subarray(call.data.start, call.data.end)) === data.fn.selector;
+    const mine = rules.some(appFills) && (sender.kind === 'safe' || sender.call === i) ? unwrapped.calls.filter(uses) : [];
+    for (const call of mine) {
+      const alone: SafeTx = { ...EMPTY_SAFE_TX, safe: sender.address, to: call.to, value: call.value, data: `0x${bytesToHex(call.data.root.subarray(call.data.start, call.data.end))}` as Hex };
+      const { candidates } = await readMessages(alone, sender, shape, context);
+      const { check, leaves } = inspectLoose(alone, sender, shape.template.id, shape.loosened.anyTrailer, context, candidates);
+      if (check.kind !== 'match' || leaves.length !== rules.length) continue;
+      leaves.forEach((leaf, j) => {
+        if (appFills(rules[j] as LeafRule)) found.push({ field: offset + j, type: leaf.type, value: leafValue(leaf, alone) });
+      });
+    }
+    offset += rules.length;
+  }
+  return found;
+}
+
+const inspectLoose = (tx: SafeTx, sender: Sender, id: string, shape: Template, context: StudyContext, candidates: readonly string[]) =>
+  inspectTemplateFields(tx, { safe: sender.address, operations: [{ template: id, values: new Map() }] }, new Map([[id, shape]]), context.registry, candidates);
+
 async function judge(reader: Reader, at: { readonly hash: Hex; readonly block: bigint }, tx: SafeTx, sender: Sender, shape: Shape, context: StudyContext): Promise<TxStudy> {
   const { hash } = at;
   const { template, loosened } = shape;
   const { registry } = context;
   const { candidates, unread } = await readMessages(tx, sender, shape, context);
-  const check = (t: Template) =>
-    inspectTemplateFields(tx, { safe: sender.address, operations: [{ template: template.id, values: new Map() }] }, new Map([[template.id, t]]), registry, candidates);
+  const check = (t: Template) => inspectLoose(tx, sender, template.id, t, context, candidates);
+  const misfit = async (reason: MisfitReason): Promise<TxStudy> => {
+    const study = { kind: 'misfit' as const, hash, block: at.block, sender, reason, free: [], time: undefined };
+    if (isOtherOperation(study, template)) return study;
+    return { ...study, free: await freeValues(tx, sender, context), time: await blockTime(reader, at.block) };
+  };
   const inspection = check(loosened.shape);
   if (inspection.check.kind === 'unverifiable' && inspection.lookups.length > 0) {
     return { kind: 'unreadable', hash, reason: unread[0] ?? `no ${inspection.lookups[0]?.message.struct.name} read hashes to its digest` };
   }
   if (inspection.check.kind !== 'match' || inspection.leaves.length !== loosened.rules.length) {
-    return { kind: 'misfit', hash, sender, reason: misfitReason(tx, loosened, template, context, check) };
+    return misfit(misfitReason(tx, loosened, template, context, check));
   }
   const paths = inspection.leaves.map((leaf) => `${leaf.callPath}.${leaf.arg}`);
   const values = inspection.leaves.map((leaf, i) => {
@@ -432,13 +494,13 @@ async function judge(reader: Reader, at: { readonly hash: Hex; readonly block: b
   const bound = boundEntries(paths, values, loosened.rules, template, context);
   const wrongTarget = bound.kind === 'misfit' && bound.reason.kind === 'entry' && bound.reason.at.endsWith('.to');
   const broken = wrongTarget ? undefined : loosened.rules.map((rule, i) => brokenRule(rule, i, loosened.rules, paths, values, sender)).find((reason) => reason !== undefined);
-  if (broken !== undefined) return { kind: 'misfit', hash, sender, reason: broken };
-  if (bound.kind === 'misfit') return { kind: 'misfit', hash, sender, reason: bound.reason };
-  const time = loosened.rules.some(isTime) ? await blockTime(reader, at.block) : undefined;
+  if (broken !== undefined) return misfit(broken);
+  if (bound.kind === 'misfit') return misfit(bound.reason);
+  const time = await blockTime(reader, at.block);
   if (loosened.rules.some((rule) => rule.kind === 'within-seconds')) {
     if (time === undefined) return { kind: 'unreadable', hash, reason: `the time of block ${at.block}, which a withinSeconds rule counts from, was not read` };
     const tooLate = late(loosened.rules, paths, values, time);
-    if (tooLate !== undefined) return { kind: 'misfit', hash, sender, reason: tooLate };
+    if (tooLate !== undefined) return misfit(tooLate);
   }
   return { kind: 'fit', hash, block: at.block, sender, paths, types: inspection.leaves.map((leaf) => leaf.type), values, outside: bound.outside, time };
 }

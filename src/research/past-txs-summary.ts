@@ -17,8 +17,8 @@ import { MAX_PAGES, MIN_PAGES, YEAR_PAGES, anchorOf, replayPastTxs, samplingOf }
 import type { PastTxsRecording } from './recording.ts';
 import { ANCHOR_KINDS, SOURCES, anchorEvent } from './sources.ts';
 import type { SourceName } from './sources.ts';
-import { shapesOf } from './study.ts';
-import type { CallName, MisfitReason, NotStudiedReason, Outside, OutsideKind, Sender, UnprovenReason } from './study.ts';
+import { appFills, shapesOf } from './study.ts';
+import type { CallName, FreeValue, MisfitReason, NotStudiedReason, Outside, OutsideKind, Sender, UnprovenReason } from './study.ts';
 import { parseRecordedTrace } from './trace.ts';
 import type { TracedTx } from './trace.ts';
 
@@ -82,7 +82,10 @@ export const STUDY_FILES: readonly string[] = [
   'src/research/github-token.ts',
   'src/research/messages.ts',
   'src/research/past-txs.ts',
+  'src/research/pool.ts',
   'src/research/recording.ts',
+  'src/research/safe-parties.ts',
+  'src/research/shared-reads.ts',
   'src/research/source-page.ts',
   'src/research/sources.ts',
   'src/research/study.ts',
@@ -226,10 +229,21 @@ function studyJson(study: Kept): unknown {
       const values = study.values.map((value, i) => (study.types[i]?.kind === 'string' ? chainTextJson(value) : value));
       return { ...study, block: block(study.block), types: study.types.map(canonicalType), values, time: study.time === undefined ? undefined : block(study.time) };
     }
-    case 'misfit':
-      if (study.reason.kind === 'late') return { ...study, reason: { ...study.reason, seconds: block(study.reason.seconds) } };
-      if (study.reason.kind === 'field') return { ...study, reason: { ...study.reason, expected: chainTextJson(study.reason.expected), actual: chainTextJson(study.reason.actual) } };
-      return study;
+    case 'misfit': {
+      const { reason } = study;
+      return {
+        ...study,
+        block: study.block === undefined ? undefined : block(study.block),
+        reason:
+          reason.kind === 'late'
+            ? { ...reason, seconds: block(reason.seconds) }
+            : reason.kind === 'field'
+              ? { ...reason, expected: chainTextJson(reason.expected), actual: chainTextJson(reason.actual) }
+              : reason,
+        free: study.free.map(({ field, type, value }) => ({ field, type: canonicalType(type), value: type.kind === 'string' ? chainTextJson(value) : value })),
+        time: study.time === undefined ? undefined : block(study.time),
+      };
+    }
     default:
       return study;
   }
@@ -415,8 +429,20 @@ function parseStudy(p: Parser, at: string, raw: unknown): Kept {
       return { kind, hash: p.hash(`${at}.hash`, o.hash), contract: p.address(`${at}.contract`, o.contract), why: p.oneOf(UNPROVEN)(`${at}.why`, o.why) };
     }
     case 'misfit': {
-      const o = p.object(at, raw, ['kind', 'hash', 'sender', 'reason']);
-      return { kind, hash: p.hash(`${at}.hash`, o.hash), sender: parseSender(p, `${at}.sender`, o.sender), reason: parseReason(p, `${at}.reason`, o.reason) };
+      const o = p.object(at, raw, ['kind', 'hash', 'sender', 'reason', 'free'], ['block', 'time']);
+      return {
+        kind,
+        hash: p.hash(`${at}.hash`, o.hash),
+        block: p.optional(`${at}.block`, o.block, p.decimal),
+        sender: parseSender(p, `${at}.sender`, o.sender),
+        reason: parseReason(p, `${at}.reason`, o.reason),
+        free: p.list(`${at}.free`, o.free, (a, x): FreeValue => {
+          const f = p.object(a, x, ['field', 'type', 'value']);
+          const type = parseType(p, `${a}.type`, f.type);
+          return { field: p.count(`${a}.field`, f.field), type, value: checkValue(p, `${a}.value`, f.value, type) };
+        }),
+        time: p.optional(`${at}.time`, o.time, p.decimal),
+      };
     }
     case 'fit': {
       const o = p.object(at, raw, ['kind', 'hash', 'block', 'sender', 'paths', 'types', 'values', 'outside'], ['time']);
@@ -653,6 +679,12 @@ export function runOf(summary: PastTxsSummary, template: Template): PastTxs {
     const beyond = m.kind === 'measured' ? m.differences.find((d) => d.effect >= effects.length) : undefined;
     if (beyond !== undefined) throw new SummaryError(`the measurement of ${hash} names effect ${beyond.effect}, and the template states ${effects.length}`);
   }
+  const shapes = shapesOf(template);
+  for (const study of summary.studies) {
+    if (study.kind !== 'misfit') continue;
+    const other = study.free.find(({ field }) => !appFills(shapes.whole.loosened.rules[field] ?? { kind: 'safe' }));
+    if (other !== undefined) throw new SummaryError(`the misfit ${study.hash} holds a value at field ${other.field}, which the template does not leave to the app`);
+  }
   return {
     query: {
       template,
@@ -664,7 +696,7 @@ export function runOf(summary: PastTxsSummary, template: Template): PastTxs {
     found: summary.search.found,
     otherEmitter: summary.search.otherEmitter,
     studies: summary.studies,
-    shapes: shapesOf(template),
+    shapes,
     excluded: { found: new Set(), sampled: new Set() },
     effects,
     measurements: summary.measurements,

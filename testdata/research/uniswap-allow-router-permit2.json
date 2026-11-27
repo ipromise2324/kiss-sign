@@ -4,177 +4,43 @@
   "token": "0x000000000022d473030f116ddee9f6b43ac78ba3",
   "anchor": "event",
   "event": "Approval(address,address,address,uint160,uint48)",
-  "head": "26447464",
-  "wholeYear": true,
+  "head": "26484965",
+  "maxPages": 50,
   "maxTxs": 240
  },
- "head": "26447464",
+ "head": "26484965",
  "studiedWith": {
   "template": "0x0b886ff2efe4eff8c89f9efe9966c29bfbeb83ec18c006ce22509c906d8f5575",
   "registry": "0x208938729f44b8459fc752c1c4cebe5837da6c62dfe54125be6a012edae3b405",
-  "study": "0x94bfaaffbfc8c7dbc5b3874bc31cfe270d787964a427798536f92503545477bb"
+  "study": "0x92508a29cee7c49b83a1d4a9f9e4e04eac8df225cb741b31331cc10dacdd84ae"
  },
  "search": {
-  "year": {
-   "kind": "overflow",
+  "coverage": {
+   "kind": "recent",
    "range": {
-    "fromBlock": "23817601",
-    "toBlock": "26445600"
+    "fromBlock": "26444052",
+    "toBlock": "26484901"
    },
-   "pages": 1,
-   "sources": [
-    "etherscan"
-   ]
-  },
-  "windows": [
-   {
-    "asked": {
-     "fromBlock": "24029401",
-     "toBlock": "24036600"
-    },
-    "range": {
-     "fromBlock": "24035701",
-     "toBlock": "24036600"
-    },
-    "found": 465,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "24248401",
-     "toBlock": "24255600"
-    },
-    "range": {
-     "fromBlock": "24254701",
-     "toBlock": "24255600"
-    },
-    "found": 581,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "24467401",
-     "toBlock": "24474600"
-    },
-    "range": {
-     "fromBlock": "24472801",
-     "toBlock": "24474600"
-    },
-    "found": 666,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "24686401",
-     "toBlock": "24693600"
-    },
-    "range": {
-     "fromBlock": "24692701",
-     "toBlock": "24693600"
-    },
-    "found": 678,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "24905401",
-     "toBlock": "24912600"
-    },
-    "range": {
-     "fromBlock": "24912151",
-     "toBlock": "24912600"
-    },
-    "found": 479,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "25124401",
-     "toBlock": "25131600"
-    },
-    "range": {
-     "fromBlock": "25130701",
-     "toBlock": "25131600"
-    },
-    "found": 864,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "25343401",
-     "toBlock": "25350600"
-    },
-    "range": {
-     "fromBlock": "25350151",
-     "toBlock": "25350600"
-    },
-    "found": 451,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "25562401",
-     "toBlock": "25569600"
-    },
-    "range": {
-     "fromBlock": "25568701",
-     "toBlock": "25569600"
-    },
-    "found": 418,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "25781401",
-     "toBlock": "25788600"
-    },
-    "range": {
-     "fromBlock": "25787701",
-     "toBlock": "25788600"
-    },
-    "found": 549,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "26000401",
-     "toBlock": "26007600"
-    },
-    "range": {
-     "fromBlock": "26006701",
-     "toBlock": "26007600"
-    },
-    "found": 529,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "26219401",
-     "toBlock": "26226600"
-    },
-    "range": {
-     "fromBlock": "26225701",
-     "toBlock": "26226600"
-    },
-    "found": 449,
-    "studied": 20
-   },
-   {
-    "asked": {
-     "fromBlock": "26438401",
-     "toBlock": "26445600"
-    },
-    "range": {
-     "fromBlock": "26444701",
-     "toBlock": "26445600"
-    },
-    "found": 562,
-    "studied": 20
+   "pages": 50,
+   "time": {
+    "from": "1795030199",
+    "to": "1795521887"
    }
-  ],
-  "perWindow": 20,
+  },
+  "safesFirst": {
+   "check": {
+    "kind": "not-checked",
+    "why": "a named contract's event has no party of fixed meaning"
+   },
+   "selection": {
+    "safes": 0,
+    "safesChosen": 0,
+    "rest": 25655,
+    "restChosen": 240
+   }
+  },
   "found": {
-   "total": 6691,
+   "total": 25655,
    "only": {
     "alchemy": [],
     "etherscan": []
@@ -185,237 +51,25 @@
  "studies": [
   {
    "kind": "not-studied",
-   "hash": "0x641cb226fec4fc24c67103ed6d4f791cfafcf7fe163c6cac58a0521836491a3d",
-   "why": "calls no function the template calls",
-   "to": "0x6131b5fae19ea4f9d964eac0408e4408b66337b5",
-   "selector": "0xe21fd0e9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa19324b2098e1d1668806fe4151c27a40209837069be3ba7cf254660081ec61d",
-   "why": "calls no function the template calls",
-   "to": "0x6131b5fae19ea4f9d964eac0408e4408b66337b5",
-   "selector": "0xe21fd0e9"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9ec3f1e9ca9936a9f7bf9bc702b0a8032460bc72ae10da37b353875496af0cae",
-   "why": "calls no function the template calls",
-   "to": "0x6eb8be66130ea2252dc8bcb9b964742e8fa4ae24",
-   "selector": "0x99e1d016"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x959b33397479634a425bb57e736d9d3541fd39ad7a4a4a5875476a0ac8334eb1",
-   "why": "calls no function the template calls",
-   "to": "0x12aaebc3cebce3fcaf69ad0aa1f4d9ac7d53f1ed",
-   "selector": "0x99e1d016"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xed2ee7f259af1ef3f79b9f02a1e4c2be840868410aa689c1f8c038921bfdb361",
-   "why": "calls no function the template calls",
-   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-   "selector": "0x13d79a0b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x963219ad47cc7ae0537d64bf2148f908d2a58c1a85f9c95c7986f033e4b23b4b",
-   "why": "calls no function the template calls",
-   "to": "0x0d04973db083794347a76b1c6ce832ae9e0f6156",
-   "selector": "0x0d484c28"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc6e879ec575ba0c4ceaaed764eb59373665f3ae8931eead08173ae53a6cc1d8f",
-   "why": "calls no function the template calls",
-   "to": "0x663dc15d3c1ac63ff12e45ab68fea3f0a883c251",
-   "selector": "0xc7a76969"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x57174e4c562e19a9e511b4a72fdbcb62b47bfc176936545e6f1681de4ecef1c7",
-   "why": "calls no function the template calls",
-   "to": "0x06cff7088619c7178f5e14f0b119458d08d2f5ef",
-   "selector": "0x99999999"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x353e9a7e339c3c368f1dd5dd68659c6218884821555d4ab15fd3113b35773964",
+   "hash": "0xc994912c9a62a3982b5102ade679166118a4304694a4b6423af4c7c446a8e4a6",
    "why": "calls no function the template calls",
    "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
    "selector": "0x5f575529"
   },
   {
    "kind": "not-studied",
-   "hash": "0x57947036a5aedc267b9e46f8d5d19b218d09527b40f15537e18b5878910ff27e",
+   "hash": "0x084a80eb13e602656385af18c89bfa78e5bccf462dc9dfb2e990419df2a8374f",
    "why": "calls no function the template calls",
-   "to": "0x2fa42a7c4e6193d157506eef18bebe701ff72afa",
-   "selector": "0x2622d513"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x31f096466a0eb5f211dbd93a19a70d63b3cb155181b63d84263a8e27e3d6b11b",
-   "why": "calls no function the template calls",
-   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+   "to": "0xa9d635ef85bc37eb9ff9d6165481ea230ed32392",
    "selector": "0x13d79a0b"
   },
   {
-   "kind": "not-studied",
-   "hash": "0xc4a2a6313304425ab0e5403d4a9cc6e02a56ed06be11c9faaee11ebbed485d44",
-   "why": "calls no function the template calls",
-   "to": "0xd226997439ecfbeff8e110c8c78c8a7eefd19f89",
-   "selector": "0x99999999"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9f736b861f2aa25f84340fbb573aad651e9c28a847cbe5027789959375bd03d7",
-   "why": "calls no function the template calls",
-   "to": "0x4d5d6e1e57fdc60def11939df7afb6ea48271d4a",
-   "selector": "0x99e1d016"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x01413e26e2f312821ace63e42a8b8fbbfaba877a3b8ffc208c39229a0dd3d42d",
-   "why": "calls no function the template calls",
-   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-   "selector": "0x13d79a0b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x19dfa1b8b176c5752f183a17f044a25e24502427357b1c1be8fcb06dae3181ea",
-   "why": "calls no function the template calls",
-   "to": "0x04ce218ead72401702dd5f3e56cedb7d2d477777",
-   "selector": "0x295f0582"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xae1818eeb3c225d9ae5ca56d0d9409dc51ccec41956b91f4003b7b6b73678fca",
-   "why": "calls no function the template calls",
-   "to": "0x06cff7088619c7178f5e14f0b119458d08d2f5ef",
-   "selector": "0x99999999"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xaf1da979d233b966e0c313217925d0ebe3b064323c70abcf9617d56fde6d8494",
-   "why": "calls no function the template calls",
-   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x920e7613a68c6d3d3483d6519d6a1068842b3592fc52453377fd0ba879a8a8ca",
-   "why": "calls no function the template calls",
-   "to": "0xd226997439ecfbeff8e110c8c78c8a7eefd19f89",
-   "selector": "0x99999999"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5a006e688d1ad9e7551ca6f37e5d5f19eac824c714ab7a17d30b06aee98a3a80",
-   "why": "calls no function the template calls",
-   "to": "0x838046a3ee6321b5ceca2231185706e5a73d3152",
-   "selector": "0xe9ae5c53"
-  },
-  {
    "kind": "misfit",
-   "hash": "0xf94204c23d9b8646750522afb7d70073d317ac5a96a2f6b7c8b8f6966185008d",
+   "hash": "0xd815c5cb3699b850c9097244b88dbe4a159f1f73f748d8ed9096e97b82ff0c7a",
+   "block": "26444300",
    "sender": {
     "kind": "eoa",
-    "address": "0x3688055b0c9ade5ae1b4145f6c746e6193067a6e",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x35147b7c6d2d94702643f101e3e62de009020aed"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xcc8096f9882c525d05e68ca1b526f9755596b42fb256130fb0eb3757c8702132",
-   "why": "calls no function the template calls",
-   "to": "0x2d2d676de7f6f14f310f97e134030517a4976d42",
-   "selector": "0x99e1d016"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x60786c0da3ef1edae31085b44bec3bbb2d18cfb2251ba010a72d7a9fcfbc269d",
-   "why": "calls no function the template calls",
-   "to": "0x89c6340b1a1f4b25d36cd8b063d49045caf3f818",
-   "selector": "0xd7a08473"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xcdb7d2f5ec4e848e3b7d2edbd9bc8435ea1b0b621dcd39f05a2de7696b58a4b5",
-   "why": "calls no function the template calls",
-   "to": "0x00c21ca82d94dade0d5d1ed420a4728f58427d21",
-   "selector": "0xc8512104"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x90dc0d1a44b394746e5b097603195dc4e1816ec8ebe68aa355f57f18bbf9db4d",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa5b2e535f9d8a92e38734eea3426f94a8e710a4f8c9a7df92b4245dacfc0896e",
-   "why": "calls no function the template calls",
-   "to": "0xb57431c7acba1a5276b9f84df583390148bc8e50",
-   "selector": "0x99e1d016"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xee1d9d4341e370b1643cd7c273062147ffbb2d8a4de11ea0879a67ee44a48356",
-   "why": "calls no function the template calls",
-   "to": "0xd226997439ecfbeff8e110c8c78c8a7eefd19f89",
-   "selector": "0x01040103"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3cd11ba21cb37e2458f930ce6f37fb65c597338c530b591470c14536d82a3b5e",
-   "why": "calls no function the template calls",
-   "to": "0xbee3211ab312a8d065c4fef0247448e17a8da000",
-   "selector": "0x4cf3fe9c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xedd5ad7cd9334dad34c9bcc85770757cea108ce4ad0060f1159af02b7cb0da57",
-   "why": "calls no function the template calls",
-   "to": "0x0439e60f02a8900a951603950d8d4527f400c3f1",
-   "selector": "0x3ce33bff"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd176705e2651cdebbe5054d014d16b508b83bd5207c8d18ba970837e08fb0292",
-   "why": "calls no function the template calls",
-   "to": "0x00c21ca82d94dade0d5d1ed420a4728f58427d21",
-   "selector": "0xc8512104"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x63adcf8ef5b4a518a6f6ec1999fb54fe72fa76239eb2a94f7c30d91eaa047a9e",
-   "why": "calls no function the template calls",
-   "to": "0x1db60c5620aa8d791c4cc6de6faaf33a3a2c7ae9",
-   "selector": "0x99e1d016"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x471db9834c6840c02b7e4a31ff5fafee1e4493bb8755e4d2e823ae7b23b56297",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xdec8e2f7e279cd9b5d4e6721e3959136fcf99c3fdcf3a61961b8eed9d593a5f2",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x0ab7e0a67c91a09013798de1db20ad284de8971e",
+    "address": "0xa5f2806fc38994b14cf6605a2c9f3fbee4d7fe1c",
     "call": 0
    },
    "reason": {
@@ -425,405 +79,119 @@
      "universal-router-2.1.2"
     ],
     "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf1a136e2c13a12612a35e32c28ae89952e5c2d1fa674e3b6cee0e7756c860398",
+   "block": "26444454",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x8b224834e4690bed31d316bcd131662f6a33d2d3",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
   },
   {
    "kind": "not-studied",
-   "hash": "0xa57093275638ebe182def5aad8d4cae1261304e8fe5cbcc5fbac51492ea194c3",
-   "why": "calls no function the template calls",
-   "to": "0x06cff7088619c7178f5e14f0b119458d08d2f5ef",
-   "selector": "0x99999999"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x949751c0ecce1758b36813a7a3fc32df4ed9cb5a0de6e19a5adaf52aab222aff",
-   "why": "calls no function the template calls",
-   "to": "0xd226997439ecfbeff8e110c8c78c8a7eefd19f89",
-   "selector": "0x99999999"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xca31c02428b8c82a841f04ba7f9c57fc70d85e2713026095d2b90c5c7cb8d4b5",
-   "why": "calls no function the template calls",
-   "to": "0x00000000008d5f1200332af8a6813cb8377b5bfd",
-   "selector": "0xf497df75"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x70b33a66f420fe5421f4e6a227f0dd1324fb3501a541d94bc64c93c838176022",
-   "why": "calls no function the template calls",
-   "to": "0xd226997439ecfbeff8e110c8c78c8a7eefd19f89",
-   "selector": "0x01040204"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe89bd020a1b8ec2c411238d4dd615f8ce2170c55909f292ed477af4820e9b0cc",
-   "why": "calls no function the template calls",
-   "to": "0x69460570c93f9de5e2edbc3052bf10125f0ca22d",
-   "selector": "0xe6c806ff"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x86353ec4d26e564d215fc1a7494c2d6dc8b59395d5b6764dd1e989e0a712e669",
-   "why": "calls no function the template calls",
-   "to": "0x04ce218ead72401702dd5f3e56cedb7d2d477777",
-   "selector": "0x295f0582"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xca58910b038646f158a99ed1becad9c44ffd55b217be0ddb9bb9bd24ccbae4c5",
-   "why": "calls no function the template calls",
-   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-   "selector": "0x13d79a0b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x13a00e229dd7497fa6bf0d6676315eacde40dbbb9aec14c8c1af454d77be19c0",
+   "hash": "0xfbf715bf5b99cda48f03de7f9409b612b2d44af650a2670abc9b2d3651e56570",
    "why": "calls no function the template calls",
    "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
    "selector": "0x5f575529"
   },
   {
    "kind": "not-studied",
-   "hash": "0xe5fa8f13c4ce71262549462155b44f62dda2f0629c07f9d443cae647225a6bdb",
+   "hash": "0xa097876f35eef2b5fcb801425c4f997a4bcb0fb89943d8836ac861d0dc3546d9",
    "why": "calls no function the template calls",
-   "to": "0x00c21ca82d94dade0d5d1ed420a4728f58427d21",
-   "selector": "0xc8512104"
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdeebab2efc0acdc85bb51c1ccf3e1c42ba80e120bc671e6969f8b866a239eff7",
+   "why": "calls no function the template calls",
+   "to": "0xfd962d6309d25ddab30bb3d2b12a86eba6adeaaa",
+   "selector": "0x99e1d016"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc9ef58720fd45a2f434794390d054b1135ca86077d142771ec554191f91e2afb",
+   "why": "calls no function the template calls",
+   "to": "0xdcf4c5a0988254469be8e3b3be423fdad3098d23",
+   "selector": "0x99e1d016"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe4d50eeb42c2e9ec85f39a45d34ed2addf165c9a7024866406b9d75a93fd4958",
+   "why": "calls no function the template calls",
+   "to": "0xbee162fa5ae892be74f3f3e01c23da89adbccccc",
+   "selector": "0x6d7b7040"
   },
   {
    "kind": "misfit",
-   "hash": "0x18637bbbb0f09b1cb99d3ede43e3c8c57de3b1563651dad310e2d6de882cfff3",
+   "hash": "0x5abf5f87c7f89f88f4a195bbeaa465272117b6f008e401d56f588093b2b7a9a6",
+   "block": "26445423",
    "sender": {
     "kind": "eoa",
-    "address": "0xafe990e2f82ded5f323781fd09a1232ef9be234c",
+    "address": "0xe38f8dd897fade0532ea9a176abf788b7c67b327",
     "call": 0
    },
    "reason": {
     "kind": "field",
     "at": "call.approve.amount",
     "expected": "1461501637330902918203684832716283019655932542975",
-    "actual": "13377796975"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9b4080adabc5dd95b88c4e7689f9e0cfd1c4d042686d552957dd03122678d761",
-   "why": "calls no function the template calls",
-   "to": "0x1111111254eeb25477b68fb85ed929f73a960582",
-   "selector": "0x12aa3caf"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x95595abd3953bcb49b36abac312013c2f97a785afff50a3859c126b920e5cc2c",
-   "why": "calls no function the template calls",
-   "to": "0x12f154418a9b24c136e2d4c4295c177e1ce39718",
-   "selector": "0x2a8f4922"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x7f7e403b5745ff8aa18d11bfe891b1cb016686a852296ff208a3a5f8c00908c1",
-   "why": "calls no function the template calls",
-   "to": "0x00c21ca82d94dade0d5d1ed420a4728f58427d21",
-   "selector": "0xc8512104"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x0117f21953188013eb48c6dce5da19163ab678e0454a52a66a80c3245d53fe59",
-   "why": "calls no function the template calls",
-   "to": "0x309469d0502da47ed2b34a20c8e898390592e755",
-   "selector": "0xd677736b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc6ea11442c62f0c490886d61eb2997778e741ffe7b475f56950127713b8835da",
-   "why": "calls no function the template calls",
-   "to": "0xa6e941eab67569ca4522f70d343714ff51d571c4",
-   "selector": "0x73fc4457"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x654c0fbf806809c98b78eee16389f806e3667df0fa9c6d9a5202393f1360186e",
-   "why": "calls no function the template calls",
-   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-   "selector": "0x13d79a0b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x309314b78c3404fd21095804d6057b11f43040fe93ea7cd1a352465c482f42ba",
-   "why": "calls no function the template calls",
-   "to": "0x8f16c8882db47967a1d8eea3216d64cbd3fa9ead",
-   "selector": "0x99e1d016"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x935936602553ae42af7f38920ff8e5d9210385892f89e8c9c7f54a76ba39a7b7",
-   "why": "calls no function the template calls",
-   "to": "0x8f16c8882db47967a1d8eea3216d64cbd3fa9ead",
-   "selector": "0x99e1d016"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x879fd1737b06a5398997f0a154f2f0dd688ae6d22cdd1a552f6dff752ca0cf04",
-   "why": "calls no function the template calls",
-   "to": "0x1d64b4531f398e2a78fa49001ba25c17d33e829d",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x9272fc7f32ad1d91ae556a47e8f835873af01f93db5f3ea6134763c5defb6c1d",
-   "why": "calls no function the template calls",
-   "to": "0x3057fe9ce0785055d546e974befa47b5e9f0cccc",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf20c8a9ec1baee747f4a9cfa1a9b20a834f4bbb4221e13bea96524cf857d13cd",
-   "why": "calls no function the template calls",
-   "to": "0x1111111254eeb25477b68fb85ed929f73a960582",
-   "selector": "0x12aa3caf"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xee27ac1f5949efc8e6b311146676e4bc37baecde11557b289d0f2c4d0ab5aa03",
-   "why": "calls no function the template calls",
-   "to": "0xeb0277a145eeab977c65bea10b8a5f49f1f6152b",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3ecfe28158353726f3b697366144ef605b0fd66ca97fdac89f823ea77eca2204",
-   "why": "calls no function the template calls",
-   "to": "0x2a9e426fcfb9ca41ca95341bbbc9dd7161ac078a",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x771bdc674511817fed6442bb00d693a0a463e7852ecc6f2f31b0da0da66f5b48",
-   "why": "calls no function the template calls",
-   "to": "0x3057fe9ce0785055d546e974befa47b5e9f0cccc",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x17cb8458d743c1dacafe6b07d8a7731bf5437500b619a8347bb6d6773767f8ae",
-   "why": "calls no function the template calls",
-   "to": "0x2d83ff1cb1c79c68fe530d35f439a92a645faded",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf4dfc532d86d326998324c24e11a408ed9b8ecd64f9a1c6933a2ec4ee55684f0",
-   "why": "calls no function the template calls",
-   "to": "0x5f4dafcc53697fcfd9ff573c1679159aa7246174",
-   "selector": "0x99e1d016"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x684c5eeab8b8d3eb76fff96ecb25d52e9a44800fac2fcbfe72aeb4c34a72bf51",
-   "why": "calls no function the template calls",
-   "to": "0xae470236e8b4860b020c32b760fd8fb7193d83db",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xeefeca14374447632ba75c9c7127e3f06f4b7662576deb7723a5b38c38b3ad9e",
-   "why": "calls no function the template calls",
-   "to": "0x9c333696a78305cad94b628b0bc81063991426c6",
-   "selector": "0x8bf21bad"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb5367cc7e7d5ecf6eca35a2eb82c7a25926058620094af3e37dc9e50866927ea",
-   "why": "calls no function the template calls",
-   "to": "0xbc33cbb0a12ed91a549a2e78940b1843d924bc05",
-   "selector": "0x99e1d016"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd8000cca1a5688b4790e8067215deca5bec7ba36450f13216c42a96c28b2da81",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x30bb2e8a3187b82e587491b259ac579dad458ac0459bbbf2217cefe6dac4b137",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe58b730aa086c9d202f1024993a8f9a6e89041bada1f4e0157acd5b1dccce55e",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x420893d4a4d2d6974f0bb8392f469471b00bc54f4e09c57e03e25a2f994aeb7c",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x864a8720ff0932a22aa8c7a24f8b78d99086793ac79758e5c167d4513042d2d2",
-   "why": "calls no function the template calls",
-   "to": "0x940acd9375b46ec2fa7c0e8aad9d7241fb01e205",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbb6b5b0f8249ea72df030c946f6f8c1c24aea06d077b2cd3f45f5ca29d54f014",
-   "why": "calls no function the template calls",
-   "to": "0x3ff4caa9fb6d6f5611a7c6bedd742c16a1ed6c9f",
-   "selector": "0x99e1d016"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x54c41b0bd142ca72ad5ada7191bceead974236510eb3757480e05adbfb0b21aa",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xffcc7ff18a135e17e61c9a541d46f2c0daa4be8e7f4e1c16047c258c0c8b2d44",
-   "why": "calls no function the template calls",
-   "to": "0x0c1ca3fcfe7b7c4179af62add13d9d95914a5abd",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xef6f1c4d288dde3a43ef12ad4b6f96a0f1f3ebb0849ea293ecf027df654b8e21",
-   "why": "calls no function the template calls",
-   "to": "0x02a8dd40d0f33de59d4b49c7d0f3049be44432c8",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc4ca418782148110a581ad5dde0f36d4e0a8880f4f4aa77f7123b3dc0f158724",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x061853d6766016a58fdc79b9af21e617568987a19fe0c8d84dd9565fca4a531b",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3a34ea12da2f4686e0b0034c70f214b6d25ac641a4ccc03659644b2d856da374",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x45f0d4d8e37ba5ec9d4053bcf674c01dc9ed55bee98430b3abbbe420fa71b7d8",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x68c871342928050aeabd9de76a3daa5e9526088a975d9b5f9c012a9da13dd232",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x5082572da3ff4e9f4ff7353a47a212674a6336a7138324726f73d16fc7d46b06",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x0a6144fa659526949998e9e861984d9868a0f6ab",
-    "call": 0
+    "actual": "20000000000"
    },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x4d890868d6523db7b1ff2fbb62f01ded3c95305002de923b6f4fb922af52f0cf",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x111117c5c0a3a28efe871fea13dc093909d11111",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e"
-   }
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "1810598682"
+    }
+   ]
   },
   {
    "kind": "not-studied",
-   "hash": "0xbf942003c179218358c5919bb0998ccc0ef0742d264c5faf099fa0031cd502ef",
+   "hash": "0xcb65abf834c72719472b45576b0c2eb225a5cdcb7bb7e8e400a43493d4146549",
    "why": "calls no function the template calls",
-   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x24e7b08a5f1643fdb1fe1f69704b369dfad7f7b229eba86cb7a3fe1c7eca31b2",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x111117c5c0a3a28efe871fea13dc093909d11111",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xc029338f0c5646f7eb7928ee295d5f08675ba6c3415ef6f8e6116712ce8601b8",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x111117c5c0a3a28efe871fea13dc093909d11111",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e"
-   }
+   "to": "0x09fc9b7545020f6a51d113e495e0a451597969d3",
+   "selector": "0x708909ad"
   },
   {
    "kind": "not-studied",
-   "hash": "0x5bc60d73bcc1d0f303fc6aaf08cd8e691862e709d686ea87483870d8c5911aba",
+   "hash": "0x7279a833eb840bc1539e7531598273034b8a0816d19ac1ceb3b2ff80bbedbb56",
    "why": "calls no function the template calls",
-   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
-   "selector": "0x1fad948c"
+   "to": "0xc46bd3ddfd4b25a19f9799206651d12eda23cd79",
+   "selector": "0x99e1d016"
   },
   {
    "kind": "misfit",
-   "hash": "0xca80617045fcbf9d7674be26f0e925053d579702d6f2a35ec3fe473952b70caa",
+   "hash": "0xe2c69a38aa3bbd6e0bacad7ec1d7e5185eb2f16a807ee0dfbcd0aefaa27e8e02",
+   "block": "26446113",
    "sender": {
     "kind": "eoa",
-    "address": "0xb3914da094c2636911c08c3918f8f8fea36c0fba",
+    "address": "0xc847ef9a2346332495a2ccb8b41c5a3b992615a2",
     "call": 0
    },
    "reason": {
@@ -833,56 +201,68 @@
      "universal-router-2.1.2"
     ],
     "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
   },
   {
    "kind": "not-studied",
-   "hash": "0x508a8f4f14b6417c5fcd0c58cd5a21092f191f11305c902ba9919dffea46ac91",
+   "hash": "0x2429e2b14f23e6b749fd76988067894b5fcca79b7b4d2f943d7c426e19f9c944",
    "why": "calls no function the template calls",
-   "to": "0xcd76bbea89ff2b219a5b547534f200421cc8eadd",
-   "selector": "0x9e5b4b4f"
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
   },
   {
    "kind": "not-studied",
-   "hash": "0xb01dec5c2e8ea636c12cfcb0c46e4e462927bf7bf82ac9d75aaf58e978e598ff",
+   "hash": "0x3bc19474262d8a3ac02ba0b3f23bac7ae52d22c5183ef3788fe3c95e3e9e3340",
    "why": "calls no function the template calls",
-   "to": "0x699fb53111fdc9a7b696e53c283d7b23fe02d8af",
-   "selector": "0x99e1d016"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x0e170bb9acc63706b200d0cad4dd8427de819cfbd3a584899b255caeb44d17d6",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbee26fb3631d45cc94894d53febaf27af6887cb3283d32d608a88c777bf7228f",
-   "why": "calls no function the template calls",
-   "to": "0x1932b98c6107895c9d6884560c45cad0d143ef16",
-   "selector": "0x908ef54b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x12f50febff71410f6bff2cad9812cb80c5a4e112f731bcff5bcc8a097377e48d",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x60361d7c90ae79b718b6099e92df5c201ef5400f661fd78ffa66b16d6555fd2d",
-   "why": "calls no function the template calls",
-   "to": "0x781b4575a7d853b0aabddf98da84abcc7c98d273",
-   "selector": "0xe9ae5c53"
+   "to": "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae",
+   "selector": "0x736eac0b"
   },
   {
    "kind": "misfit",
-   "hash": "0x204807fcedeb9ff15afb06f2ddbd1757ee871ab6ec13ec681f136afb05ecac43",
+   "hash": "0xc9a0a371d6b046418d02ad7979133013291834131cd592fdd002088a6caa48cb",
+   "block": "26446905",
    "sender": {
     "kind": "eoa",
-    "address": "0xd8b83a8760d92ad5a942d2115ee90a4bba1c88e9",
+    "address": "0xfcd4eb978b97613aedefe40afa8ca2b05da5711c",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4a7fa5a16462c7d9d3fabfa40c1bbbb512d94acf722765d0c9e4c4452547a7e0",
+   "why": "calls no function the template calls",
+   "to": "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae",
+   "selector": "0x5fd9ae2e"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb34fbaa9539c80ddd864577cc11a9164f2967f28c7b6554bfaf7b88168cb8105",
+   "block": "26447379",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x7010ca4348e167e97140fdcd0208c71df3c7c358",
     "call": 0
    },
    "reason": {
@@ -890,303 +270,98 @@
     "at": "call.approve.amount",
     "expected": "1461501637330902918203684832716283019655932542975",
     "actual": "0"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3a36f3a277ba0cc7643a08736fc32e939f8f69ab9023e8f9a769febd3e8e83c3",
-   "why": "calls no function the template calls",
-   "to": "0x6352a56caadc4f1e25cd6c75970fa768a3304e64",
-   "selector": "0x90411a32"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc4a1e5fcfa5d31a1a966330fdbcf2c24d377ce4d905eee00727e823b4b98bf85",
-   "why": "calls no function the template calls",
-   "to": "0x2d83ff1cb1c79c68fe530d35f439a92a645faded",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x1c6530278df67faaf53c3d0c8e42210a6a788babc9f171f70b33f185c0190e21",
-   "why": "calls no function the template calls",
-   "to": "0x663dc15d3c1ac63ff12e45ab68fea3f0a883c251",
-   "selector": "0x4d8160ba"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x784307ede2633e182c13e69cf0a500644f228793be2b183b20e5c140339e096b",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5b500c4fb3cb4ac1d7090a194e365fdab0c362d2a5615bcef56ac72aecd9a5c7",
-   "why": "calls no function the template calls",
-   "to": "0x00c21ca82d94dade0d5d1ed420a4728f58427d21",
-   "selector": "0xc8512104"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x089f905792a1b0f59a89c26021a99ad9fed5894bd809ffdcd1cae653a5bf7d84",
-   "why": "calls no function the template calls",
-   "to": "0xe9d60dd085ad99a90bb7824c7b2b41d0bdd8a96c",
-   "selector": "0x09062716"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x907a1fc1ac005493cb49b5d7199eb8271d749b4bbcd4ea7a66a706b0bca5d6df",
-   "why": "calls no function the template calls",
-   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
-   "selector": "0x1fad948c"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x432f6e25a393d0a97294aba4dae71024046935cc214629b05d2d0ba7bef74035",
-   "why": "calls no function the template calls",
-   "to": "0xbee162fa5ae892be74f3f3e01c23da89adbccccc",
-   "selector": "0x6d7b7040"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf3e40fd936e05e9133acd99ab9a93dca4dd1f9c4b60aee49e865048ddaa0bb4d",
-   "why": "calls no function the template calls",
-   "to": "0x26e96499edd9a074a3bff430eaba3d403b157c13",
-   "selector": "0x99e1d016"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xcdf267ca489ef3249a2e48b314ace00cf4789330e242531918562d08a64531b4",
-   "why": "calls no function the template calls",
-   "to": "0x991c56469f9c6e42296c9514089884bc2b90d672",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xfe173055ee93376ebccb104c747ad0f77722d273a67393fb7a3c21590a65fb1e",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbc68f8e6b835aafd8f0df9975e8b27f2098b49bb87fb03272065edb03e1d1dc5",
-   "why": "calls no function the template calls",
-   "to": "0x64a8e2b0305c7bad580cded32519ce02b4ad0885",
-   "selector": "0x99e1d016"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5b0ed1856cd2b469f0e4376a895d9fcd68f150e4a9f74823e74f66433326e837",
-   "why": "calls no function the template calls",
-   "to": "0xa9d635ef85bc37eb9ff9d6165481ea230ed32392",
-   "selector": "0x13d79a0b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc003bc1b0865ec89276834962d121f21481b27fe453e65871e1957ad86f87cd9",
-   "why": "calls no function the template calls",
-   "to": "0xd4af58d10a3340eb998c94b0253fbadaf5a24535",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x93ce5fbdd49074f0c2015913a6ce42344b28a2b66ac9fff012d033f1181cdec3",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf6394cbb62255f404e10f0ff0b74807b27313df9b7b06c19fd6c29a4dbfc851d",
-   "why": "calls no function the template calls",
-   "to": "0x10966922db2f76101debc9be6d2e9f8c2102ba0f",
-   "selector": "0xe186c591"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf8764bdd18b27bbb2c10f4e876f9d472fed2a6a51224750a0e094eab0d7177b8",
-   "why": "calls no function the template calls",
-   "to": "0x08185d0a9805bcaf4c03bd372e13ab23e3158c6c",
-   "selector": "0x99e1d016"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x45c1166350aa6f85fb8f4bb6ab6f3f52e86ca4dbefa74d1179e61fb9f06c94f7",
-   "why": "calls no function the template calls",
-   "to": "0x89c6340b1a1f4b25d36cd8b063d49045caf3f818",
-   "selector": "0x0193b9fc"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xbc696538c09897b8663075ff8bf520b38453c70c3a73c82bdd5dce171483b74f",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xde2e42e2908656bb799ce8d31701cbb372bfe6bc",
-    "call": 0
    },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x5b78cfb4f2d1804bebb9941f55b8568b0f650e114e577838ef219868f6bfd004",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xc11a1425e8a254d2f0d0da46d4b6e998ef24723e",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "1797433008"
+    }
+   ]
   },
   {
    "kind": "not-studied",
-   "hash": "0x6873ae4ec22f4d4b72b6e143bf9db7267c6614e9257894da7eb34519c3d5c588",
+   "hash": "0x793bbeefab7b0d7176ca4ae59178dce91441ca922bee22ac2e6013b39af40aad",
    "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xdd0a71e036954e9b9d45ced7681bc78b12b4482ed44ba32029b923e8e30b7278",
-   "why": "calls no function the template calls",
-   "to": "0x62275ae9d51f72cec7502b9f839835c3c01057ec",
-   "selector": "0x99e1d016"
+   "to": "0x09fc9b7545020f6a51d113e495e0a451597969d3",
+   "selector": "0x708909ad"
   },
   {
    "kind": "misfit",
-   "hash": "0x5c1341a001a23eb0c9602409ef5e2b1bc0fb8d54cfaf6e707c6c90d2f3304e64",
+   "hash": "0x1513f66501b7f31a960886a6cd88ec8428fd9705ed6344e6024d0c93879a0335",
+   "block": "26447793",
    "sender": {
     "kind": "eoa",
-    "address": "0xa2aec0da95a867014706e91cbe8a868c5cc0d277",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x18b2c15cc4813867b3670df4f67f32e07f86fe0676347654bdaf72a39d621787",
-   "why": "calls no function the template calls",
-   "to": "0x2ee2622f68925cd3c1845b0ca3b0806fc44015df",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x3236e81af18ecc2e93e7eec493f4523c245758d55dce270ce5285504cd9136b6",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xd12625e39357e0d7b6160c795d09eefe22889828",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x1ac03a4e51b93c508948aa85c028647ea59936af8103eefeb0529d79cd455ed5",
-   "why": "calls no function the template calls",
-   "to": "0x1c7700bbb93f3df14f5df1e417926457eb947950",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x867b63ef28866a7fac28c361dcbfab3b5842ac519075dcb43de615f24205932b",
-   "why": "calls no function the template calls",
-   "to": "0x1921e0ff550c09066edd4df05d304151c45e77de",
-   "selector": "0x13d79a0b"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x7b04e355e6c24fcdbf3c893f4b750bc518af84485d4b2e3b9a0b528a0f0710b5",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x42b4a6a5f422b1095a38aff4c237c1195e9143f4",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x30f8213dd1475c4a71e4007c7a21d9265f4997a558d3f8fc04a0c9a6c1dd504e",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xa731f8a721e12b49424ae503dbdcb1f1de69168f",
+    "address": "0xaad17e5d60eb330a538e09c34d253e13aba06a55",
     "call": 0
    },
    "reason": {
     "kind": "field",
     "at": "call.approve.amount",
     "expected": "1461501637330902918203684832716283019655932542975",
-    "actual": "340282366920938463463374607431768211455"
-   }
+    "actual": "100340204"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "1795077026"
+    }
+   ]
   },
   {
    "kind": "not-studied",
-   "hash": "0x7f8b6c7246a95a9983a3c56dadb8c30447e1e6ec81493170b98f4beb6d212b8c",
+   "hash": "0xc0d3b2e23149c14fead205e87d0b524952136dd9bbca2deae68355e4c30bc04c",
    "why": "calls no function the template calls",
-   "to": "0x2bf4f59afd49e86b04f50e33a769e3619d28ff1e",
-   "selector": "0x99e1d016"
+   "to": "0x5704f967aec66e9f680fd88ac2681f678906f9b8",
+   "selector": "0x97bf3431"
   },
   {
    "kind": "not-studied",
-   "hash": "0x6dd72d713776cd9b4af87c5c3ef99ed2d50779f6b7f35f8bbb138560f2d1203a",
-   "why": "calls no function the template calls",
-   "to": "0x921117539bccb65fc70892a2f80990eaa52c80b0",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x81ea20d55ccc5662b38ffedad59bcbd0a148ed48d1a38bde859354ff92df9c3a",
+   "hash": "0x3d169e63829d5892ff0099bd059e0d3962cc30f643d431c3d4f456ffc75d84fa",
    "why": "calls no function the template calls",
    "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
    "selector": "0x5f575529"
   },
   {
+   "kind": "misfit",
+   "hash": "0x49c869db3bd1883c985d75d6c93b532ff2bb6475d39f34f2a9ac813c84d14d52",
+   "block": "26448474",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x89ddcb3729927c1bea39665a08cc71c1f31d79b0",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
    "kind": "not-studied",
-   "hash": "0xb480e5cf5862d7b226d272f8534f7976d7ae1deeb2e6bfae7eb896c3ef1db117",
+   "hash": "0xc4cd58ebb485cdadb991397896ca1b39043036d68c5f002322a2fb58697f4a1c",
    "why": "calls no function the template calls",
-   "to": "0xbaf4278585ca7f8a80428ebdb00a53cb6cf21a7f",
-   "selector": "0xe9ae5c53"
+   "to": "0x0fb6e8ecd8ca55c79122f4e114fb46afe1924089",
+   "selector": "0x9d83fd7f"
   },
   {
    "kind": "misfit",
-   "hash": "0x54ed22b5fc8174ccc6a6a51356ba2300660f8a60d3990a18d58b1fabb0dba325",
+   "hash": "0x3a9103c2074f9653ae932e57675fead1d158bb7ca88fb1f54b2810cfdbae4932",
+   "block": "26448811",
    "sender": {
     "kind": "eoa",
-    "address": "0x7e929f0df63bf6a63e46ec9e868b52e26cc605eb",
+    "address": "0xd8af4629ee3da6bd32c60fcf4c6b370d67a24c65",
     "call": 0
    },
    "reason": {
@@ -1195,313 +370,72 @@
     "expected": [
      "universal-router-2.1.2"
     ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
+    "actual": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "1797679390"
+    }
+   ]
+  },
+  {
+   "kind": "fit",
+   "hash": "0x0b6cbcd7944599142b8560bf83ec58102c4e4a9b36a36c153a714e67bbebe626",
+   "block": "26448993",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x12de70e807f33d3d1940decfd7d3ed9b003997b9",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.approve.token",
+    "call.approve.spender",
+    "call.approve.amount",
+    "call.approve.expiration"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "uint160",
+    "uint48"
+   ],
+   "values": [
+    "0x000000000022d473030f116ddee9f6b43ac78ba3",
+    "0",
+    "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "0x23617e59a5925b2a4bf75d73ff6711cd0b29de85",
+    "1461501637330902918203684832716283019655932542975",
+    "1797681644"
+   ],
+   "outside": []
   },
   {
    "kind": "not-studied",
-   "hash": "0xd14aa333ef3e8aafee5643012bc16b0eb87b8daaa5384316dccff770b6431a42",
+   "hash": "0x0178059a82a419205688741ba9c401f50facd33a24c096f81360e6cee1e531a1",
    "why": "calls no function the template calls",
-   "to": "0xa9d635ef85bc37eb9ff9d6165481ea230ed32392",
-   "selector": "0x13d79a0b"
+   "to": "0xec2c96e75b09e29b66bf2ee5c37fa749ef9aa7c7",
+   "selector": "0xdb5c7e88"
   },
   {
    "kind": "not-studied",
-   "hash": "0x7b87eca761fcc03cecccf129c9b4fce54deb691da0e6cad8ca6bc18ccfa33e1b",
-   "why": "calls no function the template calls",
-   "to": "0x0285953bbb4b0fd9a9d91a979047351a87204c0c",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x4a61c3924f6056a04dd807215102006d78b1e86dc2b344f0849955029c1d5fec",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xa2aec0da95a867014706e91cbe8a868c5cc0d277",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x42d873bdb3a54ae6ca29b7bee40967895ddfea7f364ab6e843adcabcd33d22d3",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x5a2449620583526dce51a27d717c0569d9ba0e76",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xdcc759809867ccd04e9debef2f8665cc23ee841ac741b96a228b300957168795",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xf709313dc96a6664fc6bc9e415dea266b980e201",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xb657958cf8105c7a896574315237a76674d8cf8a3a4c908697187bf369b93770",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xe1af86de0e7f660cb6858c144ccc61ef0e1b0fc7",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x48636033b6199daefa7aae467ae79c05f2604a863582a919dc76a0bcaab9b3e3",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x29d5dba746c311891729dcc67c9a6233f5263a7f",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x75984afe00dc0b192e3dcc6cecc1ede447126595e5b661a5afca98115423159b",
-   "sender": {
-    "kind": "safe",
-    "address": "0x8a25a24ede9482c4fc0738f99611be58f1c839ab"
-   },
-   "reason": {
-    "kind": "calls",
-    "calls": [
-     {
-      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
-      "selector": "0x439e2e45"
-     },
-     {
-      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
-      "selector": "0xde34d3dd"
-     },
-     {
-      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
-      "selector": "0x90893cbe"
-     },
-     {
-      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
-      "selector": "0x96122b62"
-     }
-    ]
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xb778826f48e9acf8e1d5ca12090a088e6777f8fcfe08ca6875676801e503284d",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x74074059b670f21a6d817f89fef6d07071af2ef2",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x5b71dfefd6b5c7d9de1ede2670721e09ea6c1a70c909f1a545580043d76bbee4",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xfec4e38cda4d3c47806aff20a4fbb10229dd2d33",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xacc7fe46a664a9be164e334e103eec43090e708fff90a1e49469ae514097a3bf",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xd814daa43efa94d5efb417cf191d7f6538309416",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf4cfc970403926aa374cccdc29c723bac6d99286a51b9a7816d54f677d26a7a2",
-   "why": "calls no function the template calls",
-   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x058e603137e0d189297989843d8a66c9babe167bc9743c20da9bc35897302dac",
-   "why": "calls no function the template calls",
-   "to": "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae",
-   "selector": "0x5fd9ae2e"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xcaeabc68854024c12aa06d1c2f109d5ae3519e3db92a73cde624b4ff8a22f12a",
-   "sender": {
-    "kind": "safe",
-    "address": "0x8a25a24ede9482c4fc0738f99611be58f1c839ab"
-   },
-   "reason": {
-    "kind": "calls",
-    "calls": [
-     {
-      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
-      "selector": "0xde34d3dd"
-     },
-     {
-      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
-      "selector": "0x96122b62"
-     }
-    ]
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x42f5a94b35facc76ff51b3ecfa46726a0caaacb626020a62d04bf9fcc362c9f5",
-   "why": "calls no function the template calls",
-   "to": "0x60943cb06b76a24431659165c81a03c16f1c325c",
-   "selector": "0x27772d13"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xbb04455ab7d74f575b6535337696cf7beee853dfbc70422c814337a67a51e6af",
-   "sender": {
-    "kind": "safe",
-    "address": "0x8a25a24ede9482c4fc0738f99611be58f1c839ab"
-   },
-   "reason": {
-    "kind": "calls",
-    "calls": [
-     {
-      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
-      "selector": "0xde34d3dd"
-     },
-     {
-      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
-      "selector": "0x96122b62"
-     }
-    ]
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x0aa77f8b4d685ed27c81a877355317228fb0ddea6f6b388f24e139a56177036b",
-   "why": "calls no function the template calls",
-   "to": "0x1921e0ff550c09066edd4df05d304151c45e77de",
-   "selector": "0x13d79a0b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe445cacb0cba40323739be300f51f01ac60c2572de8bbafbd56ee1dc238e90f3",
-   "why": "calls no function the template calls",
-   "to": "0xb300000b72deaeb607a12d5f54773d1c19c7028d",
-   "selector": "0x810c705b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x40435538c35238ea8b4dbd275b509f11b262c9a25c2c7be35d0aa177e4c8d1a9",
+   "hash": "0x558a3ad5ce7ad8b2761b937b3533f5dfb21b0656f31963b47d914490bb283ee8",
    "why": "calls no function the template calls",
    "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
    "selector": "0x5f575529"
   },
   {
-   "kind": "not-studied",
-   "hash": "0x376bf45e9bee0179e247e6585b073c9a58b4d016177f07f6be1dc24ff727e068",
-   "why": "calls no function the template calls",
-   "to": "0x3057fe9ce0785055d546e974befa47b5e9f0cccc",
-   "selector": "0x83800a8e"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xaa592200b0949c0a9d29f4f37c76a730707ede9efe6c220bcc44afcf83763e76",
-   "why": "calls no function the template calls",
-   "to": "0x96b11d86c8cb4c427499a915f6188f487b2b9ce8",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x814b200d37c2bcfadf7aee85bb2cb1f01b4d7bf9323cb1765a4314cecbe012b8",
-   "why": "calls no function the template calls",
-   "to": "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae",
-   "selector": "0x5fd9ae2e"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x1a305de51d5b7ef0a0f46ea55d90ebee6cccf3d11a6e12528086ef764fd7cd88",
-   "why": "calls no function the template calls",
-   "to": "0x3f3126f770608669f5bac8e0c8c43e32ca10034c",
-   "selector": "0x07914b70"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf805e42d4b0aa596b7d9d05036ca4d5e9ac965938803239dd7a31bfa6b0750e0",
-   "why": "calls no function the template calls",
-   "to": "0x0197f85a0c20611ff52c0622655952b4ec4a2f55",
-   "selector": "0xe9ae5c53"
-  },
-  {
    "kind": "misfit",
-   "hash": "0xa8baf15ee25a5d2c845c01c15a1e016eeed18099d87c38596f2539821431cd9a",
+   "hash": "0x02da269e362f3cbab83ca6e49d23bfc2f932ff7350f49ba163c00ec01f76937b",
+   "block": "26449446",
    "sender": {
     "kind": "eoa",
-    "address": "0xe22ad155d4cca93f4987f9da04f24a290c3d4e15",
+    "address": "0x019211f714755fe64dd947c1938aedc019038788",
     "call": 0
    },
    "reason": {
@@ -1510,360 +444,696 @@
     "expected": [
      "universal-router-2.1.2"
     ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe8f29620b5157c27c40d2ef041faebd4321e713692e3b67f4ad430ad87e59c55",
-   "why": "calls no function the template calls",
-   "to": "0xc716bfbba86c9ddf49506f9894cb4d53f68770a5",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe2000ac0b8cc23509c0b485eb71a39301117ebb02c5ec943a15af58f0370a65c",
-   "why": "calls no function the template calls",
-   "to": "0x6cf53357955698ec1ec5bd2410388dc0e29f4d20",
-   "selector": "0x938a6e97"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf27d92538915b5ce965e2604d7957fb369f6b43c11a24d1bff4c04926c051654",
-   "why": "calls no function the template calls",
-   "to": "0x5af5194b4b0909eb978e3cf1e25333852277f07d",
-   "selector": "0x9aefaff8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x70337f0018ac07c795a920308d153201eadb6991981b74d1779a525d4c125115",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x89170774765efb61f02c0c0c58a94db6d760c58e9519964dd08b2b037a04f503",
-   "why": "calls no function the template calls",
-   "to": "0x509014aa89064d9335de5dab3250829b74c58032",
-   "selector": "0x34fcd5be"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x761cd4e24d2c456619ed55cac34cb6dafba82744ba3444ffd10043c082b59ed0",
-   "why": "calls no function the template calls",
-   "to": "0x0d07033f478f3b585397b854df4a7163cbe8986f",
-   "selector": "0xda64f0f7"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xd62f458897e6457261b9935985f79bd26f1500130c76ef2d720019ffec016acb",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x890d7cd53766f91695dd230b875efec129810f3b",
-    "call": 0
+    "actual": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e"
    },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "1797687136"
+    }
+   ]
   },
   {
    "kind": "not-studied",
-   "hash": "0xbb2906f4d49f47b417e8e9cd42bf3849e51bcaa6d4212f240acca650bc5322b6",
+   "hash": "0x98c5e859a8bfd87f6678c62e20bee4c71ea60460986e293feb73c27118477f05",
+   "why": "calls no function the template calls",
+   "to": "0xe88540dddecfb40d04d23d91be36c25bf817d12e",
+   "selector": "0x95f91e96"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe6ff4e6e31c5e7e4f5a81692d1bac6f6cab988a8742af66e24f9e80cc1529f37",
    "why": "calls no function the template calls",
    "to": "0x97caca78ac2a94c67643d07843f85afaa44a3ea5",
    "selector": "0xc02409ba"
   },
   {
-   "kind": "not-studied",
-   "hash": "0x62c5c9cec73b2cf0f98aecb1a659b277f74bd241b559c280c0629d0826628520",
-   "why": "calls no function the template calls",
-   "to": "0x5af5194b4b0909eb978e3cf1e25333852277f07d",
-   "selector": "0x9aefaff8"
+   "kind": "misfit",
+   "hash": "0xb8f3aa2eb9548d1c78e35acb3c8e003f87efddf491a235996b6bb9995049d370",
+   "block": "26449905",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb46d9ed2ffa1870c87aa4dd76fa3eb886874b84b",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
   },
   {
    "kind": "not-studied",
-   "hash": "0x4f593154130136f5f73e28adb24e246d075dde0bd6f7f85d45069ad926f7658b",
+   "hash": "0xee25142ebd616089ccbedc8112f77e96e80bd78f4cadc22e9169c12242da7b62",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x23f8c080a323ce273bdf7677a1373cbd3fe9cc2efb36b3d9a335a40a49bf6c13",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x449a3b7c48437bec3ba6a5e31aee491a11a8f32afc54de900847af0b6c2f1771",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xbb2378933e90a5563add781d52ba1ec2a7a61187adf9e6be56b6ab6dce8aa393",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa1860315018ca63fa8c1a8b1fd313b87a740ab8717e67c0bce34c8f607baefe4",
    "why": "calls no function the template calls",
    "to": "0x20f6ee51340adeed01a59b0e65cb3703f3dc860c",
    "selector": "0x46ec278a"
   },
   {
    "kind": "not-studied",
-   "hash": "0x42917d5727c0ca6e0820a416514807a2032936d1e1819ccb53086e2be78f7613",
+   "hash": "0x61b97ca21d1bca83caed1a7e217d7ec9999bc3d7519922e0aa8a92d8527a5ebf",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x75e06ee61b13f3ac9cf48b178bdad463ee2d7c5e3c4e0dffdd65e47c15a4b291",
+   "block": "26451056",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x997b6194fe495789fe8f4b59973cb329f5e9651e",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "1795114599"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1bee501ed91d30115df2d180a238440145b4f5e2ee0a5f7dc4e29c2640016ae2",
+   "why": "calls no function the template calls",
+   "to": "0x5af5194b4b0909eb978e3cf1e25333852277f07d",
+   "selector": "0x9aefaff8"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x161a560920cd21af5d3ecfd7cb242139f3453a89715213b3ee26b579b58acb01",
+   "block": "26451348",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8a25a24ede9482c4fc0738f99611be58f1c839ab"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
+      "selector": "0x7891c043"
+     },
+     {
+      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
+      "selector": "0xde34d3dd"
+     },
+     {
+      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
+      "selector": "0x115c48d5"
+     },
+     {
+      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
+      "selector": "0x96122b62"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9483a7330d7e3397ee64ccf831865845bab6057b4a5b4505ea429b3f435fe9b4",
    "why": "calls no function the template calls",
    "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
    "selector": "0x5f575529"
   },
   {
    "kind": "not-studied",
-   "hash": "0x90d46fa26d911c4ba7faf4218e1bb7130282e86751e4d2ab1f31de360fcc1e67",
-   "why": "calls no function the template calls",
-   "to": "0xe04c0b4aa53172045b02576170e8b1cb368960f3",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x161db141360a9a27be0441ea22c2da5cf16b56bcdcccef677f4cb7dd224683aa",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xfb60a87c5ddc288be00843c5b785d7418d888888",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.approve.amount",
-    "expected": "1461501637330902918203684832716283019655932542975",
-    "actual": "575685574552253678551233"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x570cb980c1ffb4cd22a3ddf1900af5b0b238fba13774c60d45d071de65cb32a4",
-   "why": "calls no function the template calls",
-   "to": "0x4337084d9e255ff0702461cf8895ce9e3b5ff108",
-   "selector": "0x765e827f"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xf77e13c0924a7647271931f7d10f45098790c6483c03dc2c2e7c8d07eda6aa0a",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xfb60a87c5ddc288be00843c5b785d7418d888888",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.approve.amount",
-    "expected": "1461501637330902918203684832716283019655932542975",
-    "actual": "500000000000000000000000"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xb38c42daa1b47738090211db40876982b35704b56eed8b8781dbcf1247b0264b",
-   "why": "calls no function the template calls",
-   "to": "0xfcd6beb821ac5f381f6f72a6d2a8b2dc128e7638",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x0ca116da6e9ca7cc95caee8982d64e77b007d4307918e5001334730c7b603b93",
+   "hash": "0x913de6fd40e84900e4f7ae6fd8ebbc975e4adf766ac37ec0412fce7522df7a83",
    "why": "calls no function the template calls",
    "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
    "selector": "0x5f575529"
   },
   {
    "kind": "not-studied",
-   "hash": "0xf38a02653f5136dae874617b67cce0247230013a21539fc833662c4c8d0bd893",
-   "why": "calls no function the template calls",
-   "to": "0x11ef9b0fdc84b4ec04ebca83f0503909e975d5b0",
-   "selector": "0xc7ee4028"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x91e5d097c26018fc428df27bf5ab561b757cc1525cd278d471865142de07ebe6",
-   "why": "calls no function the template calls",
-   "to": "0x06cff7088619c7178f5e14f0b119458d08d2f5ef",
-   "selector": "0x99999999"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x90318836c0a60e477cdf2f366bd164967687d26ffd1853e30608ecc6d0543b1a",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xebf0a363f637ebea9dc1d1c4aa6070e0ea1529cd",
-    "call": 0
-   },
-   "reason": {
-    "kind": "field",
-    "at": "call.approve.amount",
-    "expected": "1461501637330902918203684832716283019655932542975",
-    "actual": "10496468161239311875676626"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x22bad634d5d51bf1f3c426f54ca244713583b71740d8a6501ef058edb9e8548e",
-   "why": "calls no function the template calls",
-   "to": "0xfd04139c63183a0d587241b1558915857f08215a",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xe9dbcc7efe27457dae39bf8e90316eaac58a4539547b85fff43aef18a5fd06fb",
+   "hash": "0xd42494932569c25d9018ee7786cc7fe7fd0b08b3fd26df2d4273592e32fc1bb2",
    "why": "calls no function the template calls",
    "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
    "selector": "0x5f575529"
   },
   {
    "kind": "not-studied",
-   "hash": "0xaf2a79b7eb25825ca531ef9d4ac4e6a0f72d515425a7650145655a6461d24454",
+   "hash": "0x6ee6aab40c1153c295288e83c38738591a81ff981b46bd748b7b977c394b811e",
    "why": "calls no function the template calls",
-   "to": "0xb300000b72deaeb607a12d5f54773d1c19c7028d",
-   "selector": "0x810c705b"
+   "to": "0x1f2f10d1c40777ae1da742455c65828ff36df387",
+   "selector": "0x2bad1c04"
   },
   {
    "kind": "not-studied",
-   "hash": "0xbb94918e49d923bd5d8da38aa6b875e396503e3226b30bf966c0c3a74b73b2cd",
+   "hash": "0x96aea15cb6c20b5fa81cd00ba97d70f5db197e811d3db633a7830abe770df287",
    "why": "calls no function the template calls",
-   "to": "0x590f1fcd846eb55b4618b6f8308f55b73ce7d531",
+   "to": "0xf46f57626a985ddfdc729763a1566481c8fa0644",
    "selector": "0xe9ae5c53"
   },
   {
-   "kind": "not-studied",
-   "hash": "0x686e8cb33538d9fd5a3a517f5f8eb35bac02c03c3e5aad3662ea394e1994a5e1",
-   "why": "calls no function the template calls",
-   "to": "0x0960831aefaa044818974307999248d6ed1af3a2",
-   "selector": "0x99e1d016"
-  },
-  {
    "kind": "misfit",
-   "hash": "0xd58d8bc4b1d8597ba1919eaf75d4689e5cc45afbe97763ea3e98d7c73f4893b7",
+   "hash": "0x8f8204b526fe7e8796772045b5d759abe1d52afab7de66723068c6a248f088d9",
+   "block": "26452183",
    "sender": {
     "kind": "eoa",
-    "address": "0xebf0a363f637ebea9dc1d1c4aa6070e0ea1529cd",
+    "address": "0x4398685999485296fb82d382e27ac73f4f739a7c",
     "call": 0
    },
    "reason": {
-    "kind": "field",
-    "at": "call.approve.amount",
-    "expected": "1461501637330902918203684832716283019655932542975",
-    "actual": "10496468161239311875676626"
-   }
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
   },
   {
    "kind": "misfit",
-   "hash": "0x9b1bf3ea7c631df3d1671d2fb1f4c171f8681510c790048bb950d831ba5fda42",
+   "hash": "0x20933a1e55cca4e69392f1f46e0bc760d83fc1a95e0db384ac4b17c7de748b4c",
+   "block": "26452317",
    "sender": {
-    "kind": "eoa",
-    "address": "0x440207dbed41cb300f404dd55c50e14f51e16a22",
-    "call": 0
+    "kind": "safe",
+    "address": "0x8a25a24ede9482c4fc0738f99611be58f1c839ab"
    },
    "reason": {
-    "kind": "field",
-    "at": "call.approve.amount",
-    "expected": "1461501637330902918203684832716283019655932542975",
-    "actual": "433911042102851816743664"
-   }
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
+      "selector": "0xde34d3dd"
+     },
+     {
+      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
+      "selector": "0x96122b62"
+     }
+    ]
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
-   "hash": "0x5534e6b1f2796846dc57f8dbd8c78c49b22bc6645f160c5b42476dd7daa45215",
+   "hash": "0x7f9025026c144a96df89be92f8282b50fa4e67d6652e8c7f028c9a81205d3628",
    "why": "calls no function the template calls",
-   "to": "0x1b66ba474b729bcbbf52a7003ad3f3f8db74d2b0",
-   "selector": "0xd53ecf46"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x8fff1e3480ded2c5cd363eb5c09a8da102f5e1d2a5d87df9a7f9556ae5aebfdc",
-   "why": "calls no function the template calls",
-   "to": "0x111111125421ca6dc452d289314280a0f8842a65",
-   "selector": "0x07ed2379"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa00ce33fd8078e79c3344673ed47b48b3f4dc8f2b0583cfd2526582d902516e5",
-   "why": "calls no function the template calls",
-   "to": "0x5cd4af7ce41b6b59dd70accc70f22558a5cc2a8d",
+   "to": "0xacb29fe1c4a17103ecfe0c2002a339ad1c195a9f",
    "selector": "0x99e1d016"
   },
   {
    "kind": "not-studied",
-   "hash": "0x3162607d06251327dbdbbd72ac846b154b3fbcda11f20bf973c72630d8b692a0",
+   "hash": "0xbcf5901a49bb570974007a2c980dbb3567fa5dce822f5b332ae03805de70d07a",
    "why": "calls no function the template calls",
    "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
    "selector": "0x5f575529"
   },
   {
    "kind": "not-studied",
-   "hash": "0xd8063359064fecc8ff914e4d829b6f11b6b8a0d4c01a897b9dcdecf9f3ad38b0",
+   "hash": "0x9153473b3fa540f8860c8563ccc78ce2d9ba6d47babb5696e70e78555ee321a6",
    "why": "calls no function the template calls",
-   "to": "0x77edae6a5f332605720688c7fda7476476e8f83f",
-   "selector": "0x27772d13"
+   "to": "0x52672ce307970086cdcc2bf0ae6e155788b6d2b2",
+   "selector": "0xcff9e241"
   },
   {
    "kind": "not-studied",
-   "hash": "0x9e991feea45ffd1698a539e7219e74afc8e66370e26502c4bfbcf7b71d3da67b",
+   "hash": "0x6cbbc6d1e9ecee334ebb30162d833b2f97de981dcc6e414edf1ad7841ff2137d",
+   "why": "calls no function the template calls",
+   "to": "0xaa7ca0c0ca1f8508ee2611ed0a9b8c86e80046d5",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6c5b16979a4870c9bbc1d888bd3c4f54f607579893057714d88ce1801992c843",
    "why": "calls no function the template calls",
    "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
    "selector": "0x5f575529"
   },
   {
    "kind": "not-studied",
-   "hash": "0xaef9955329850aded14b4840e949c8cf1f234806ebc97ce187d6f36e453d0949",
+   "hash": "0x0c725e55ddc029f023b2e2ed4dfbefaa8f7cc3c67d1891e50f1076293972ba96",
    "why": "calls no function the template calls",
-   "to": "0x046bfb2d359990067911455df4f7c7121bc9cdcf",
+   "to": "0x419a6d0d2ae7cb63bae29fc845836ccbedfab9ce",
+   "selector": "0x4c7b62b7"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x11033b714a14ca617bf095e37e327dbf8aec1950d6f38b6e74cc2d0bb8b25778",
+   "block": "26453438",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd59b5f61d22535dbcd792710496ffac6b6ebefac",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb9dad0eaaca0cf908e116386b099d0cf09aa02fb01049e694ef7f0abcafb71de",
+   "why": "calls no function the template calls",
+   "to": "0x927dab96496c4795c05fb1844b8b7d82123ab81e",
+   "selector": "0x6f0c0f78"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x94f871c49297579996e8b1468de76058a8b2e6f7dccb42bc1c18b8a5d5a04899",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf0f9e06fc1dc728a8a28998a04c1173d218461ad0e05f3252cd5e75fa72ebee5",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x33e74f44ec24b5aa8a5add4ef95e31767cda8752aa61700e66189f6e4d66d1e3",
+   "block": "26454205",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd9eae81121a02144fe71e5f7ddb7f9afc6373eee",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe58cd23866724c73309d33435f99c3f6d601db41032253bd6fded3c4651b6043",
+   "why": "calls no function the template calls",
+   "to": "0x09fc9b7545020f6a51d113e495e0a451597969d3",
+   "selector": "0x708909ad"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7597b3077ae5a35b4a9eb6d47bfeed9868808cd34209e0c9a2ec5e5cfa627544",
+   "why": "calls no function the template calls",
+   "to": "0x09fc9b7545020f6a51d113e495e0a451597969d3",
+   "selector": "0x708909ad"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6bb942902527e84c36d07eb9d8bdbbcc025de292ab4648555c05a149a2e55b7b",
+   "why": "calls no function the template calls",
+   "to": "0xff69705b0c5a68017fe910d8eea68f3c52b0b330",
    "selector": "0x99e1d016"
   },
   {
+   "kind": "misfit",
+   "hash": "0x31b82cb38a28de6909e751f59fa7473cbcc43fecf34fd971b57a38a3ec205dec",
+   "block": "26454963",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x51d559f2d5a0b7ac4573338035227803751a6cd1",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
    "kind": "not-studied",
-   "hash": "0x4bac8d26527497e94f045e6228244ad2d9457c4d8b33541b05da2514767f4fda",
+   "hash": "0x7d7ff707315132d2dc38a4ee7310e672a7cde23f5817d69dfeb60fae9ffc3ed4",
    "why": "calls no function the template calls",
-   "to": "0xa9d635ef85bc37eb9ff9d6165481ea230ed32392",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x450e754bdf3237c8cb9f5b4ef66c24284acb5a88909c173bddb9020d93592188",
+   "why": "calls no function the template calls",
+   "to": "0x56c1d1a6dfa2eae30efa15f4975d91a5ce69ee86",
+   "selector": "0x34fcd5be"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa2e29d0492d90506d44503672bfed44c6ec9068275fad6fd9a3f4404a4d763c4",
+   "why": "calls no function the template calls",
+   "to": "0x6aba0315493b7e6989041c91181337b662fb1b90",
+   "selector": "0x4de165c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xbea4ba659e09b8c5ec0fee9afbb4b1decd09d3468f6cde1c4c5cd569e482eb33",
+   "why": "calls no function the template calls",
+   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
+   "selector": "0xb88d4fde"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa48366db81a95018af2af965e6b575ef0d2b5503e23b6fb3bae460c5be191d20",
+   "why": "calls no function the template calls",
+   "to": "0x6aba0315493b7e6989041c91181337b662fb1b90",
+   "selector": "0x4de165c3"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd795b2d716542695c013303ffbc38478c4de38c9de339892f52ebc38a7abf3e1",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4abd870f98edc41e3002076068ed7f29ed6bfe9094caad1303cf412493f8a13d",
+   "why": "calls no function the template calls",
+   "to": "0x97caca78ac2a94c67643d07843f85afaa44a3ea5",
+   "selector": "0xc02409ba"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x58ec9d79d1ca1c86170f23c9cc3ad438e4fe6a66c8b99c13a852f846de6326a2",
+   "why": "calls no function the template calls",
+   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
    "selector": "0x13d79a0b"
   },
   {
    "kind": "not-studied",
-   "hash": "0x3198dbec1e97992357f611b8f237977ff9f950b12358ca9e6fce1d9857fe3332",
+   "hash": "0xb4bdda484d30a362ba8cf655fae72d7993ec08175ff47e46e9e7bd764d20beb3",
    "why": "calls no function the template calls",
-   "to": "0xdb9b1e94b5b69df7e401ddbede43491141047db3",
-   "selector": "0xcef6d209"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x66378fcec2565e667609978b421d158b768aea681c64d351984c39e8ed2d2116",
-   "why": "calls no function the template calls",
-   "to": "0x1921e0ff550c09066edd4df05d304151c45e77de",
-   "selector": "0x13d79a0b"
+   "to": "0xde104690fc7c0992ea5c9b9447ab2f4c168c836b",
+   "selector": "0xc690908a"
   },
   {
    "kind": "misfit",
-   "hash": "0x49ee92f21c64064037ccd57fe0b83da6e8ae01219313ceb98874f32348c81b2d",
+   "hash": "0xdd2020ef1262bf2d0817394c1ba5c747e31020f5900e7a424f4891fa8509f7a7",
+   "block": "26456257",
    "sender": {
-    "kind": "eoa",
-    "address": "0xb2a0d70fb425af939c5a2e92d0669c231e0dd77e",
-    "call": 0
+    "kind": "safe",
+    "address": "0x8a25a24ede9482c4fc0738f99611be58f1c839ab"
    },
    "reason": {
-    "kind": "field",
-    "at": "call.approve.amount",
-    "expected": "1461501637330902918203684832716283019655932542975",
-    "actual": "100011212671"
-   }
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0xe5c6318456a7cb6f74f93b4eee4616db5fcef699",
+      "selector": "0x3aada4d2"
+     },
+     {
+      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
+      "selector": "0x7891c043"
+     },
+     {
+      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
+      "selector": "0xde34d3dd"
+     },
+     {
+      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
+      "selector": "0x96122b62"
+     }
+    ]
+   },
+   "free": []
   },
   {
    "kind": "not-studied",
-   "hash": "0xb70373f6faba3b9b4adc09a263a58524e3e74238ed78e7262e1276d3ab59de7a",
+   "hash": "0x3a78012608cdb093207b33f25d774f6430d1d6c64642723c4e33bbfb36976ea5",
+   "why": "calls no function the template calls",
+   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+   "selector": "0x13d79a0b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xacb073cef7fb4571645e97b6b757380f9cce7d4a92b3e6a9cb2b84cc73e4c3a8",
+   "why": "calls no function the template calls",
+   "to": "0x389015505ca9e2d1d9a87368b274ccaa80d9bfe6",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x6bc92e963facea7dcbed486ceb2a00a6a79eacdf21d866278bb45c12b501bdd5",
+   "why": "calls no function the template calls",
+   "to": "0xf5e45649a83d95ad223ec1eb964c97546c122e56",
+   "selector": "0x99e1d016"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1da80c23ee54ed02041bc170207ccba8fbcdb16e042e357e82eb1b861a695374",
    "why": "calls no function the template calls",
    "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
    "selector": "0x5f575529"
   },
   {
    "kind": "not-studied",
-   "hash": "0x69a21105d15b69c7ed33b95294ebe091775f593b846727785b687536cec492cc",
+   "hash": "0xe47bc7d008e5ac2cc99812e42c8f7ae208622ee49290cf2e33ebccc2061c7821",
    "why": "calls no function the template calls",
-   "to": "0x0e643041a2edd94d8c2a3ca5c957b8a41bf4cd05",
-   "selector": "0x0cbdc57c"
+   "to": "0x74504dd2386133cbda47fc8f24f3319a2cfdcfe8",
+   "selector": "0xe9ae5c53"
   },
   {
    "kind": "not-studied",
-   "hash": "0xe1ed40d1c58e2b2d13e3f29b07fe627cd7a20470060fbf29d5ff04bd783a15d7",
+   "hash": "0xfac22317449c1bf14c15a8b1cd1b9ec01c4367ce90a8a36605274fceef64afec",
    "why": "calls no function the template calls",
-   "to": "0xfba59db67e905f2919e3a0084da1db32c88f54b1",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3a6433915a21426b86f8ed27dd82d8f3f5821de84dd6386a176ea1c3a37351c7",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x32f85df6ed0d6d932b80e642808fabfa41dc7de1381a49ddb4ac136cfae9828e",
+   "why": "calls no function the template calls",
+   "to": "0x5523985926aa12ba58dc5ad00ddca99678d7227e",
+   "selector": "0x84d61c97"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe0c81dd463744c355979f114b031edac0cf3836e7c9b2713bd242ffdf626a413",
+   "why": "calls no function the template calls",
+   "to": "0x3c3baa596066f6ec0c266d4d6c1f3d842aa58ce3",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5b7acc30441466f40edaba1e2f7102bf61d0cc965c91e41607a2314e82d40cfb",
+   "why": "calls no function the template calls",
+   "to": "0xbee162fa5ae892be74f3f3e01c23da89adbccccc",
+   "selector": "0x6d7b7040"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4c9ee3273c5d78336f2977ce475389d9d060018015961f21469d09b5ae8f5df0",
+   "why": "calls no function the template calls",
+   "to": "0x7e475d1387c1756f08a4d7e4cf54feaa212f4306",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd4a9eca0e3b98b161754e0cbd18037d9dc80d3e28230e9be2f7a4082e660456d",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3de451bb44f3d2e2905802255803e9504d052ea10e1710f5b5ff7cfcc0cfa64f",
+   "why": "calls no function the template calls",
+   "to": "0x2452e136265e4b2ce559534e9eb18e9907f45973",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf4bf6bbcc1ac629c78983d71ab2387a076cf1d0e06c302e9927feb2097357939",
+   "why": "calls no function the template calls",
+   "to": "0x41d2a18e1ddacdabfddadb62e9aee67c63070b76",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0718372e5b5429b59eef8b135705ad23cb1621122378555de1bfb398950b7ea5",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xbeae84ca5ba39657c5462938d148cfe25a63e85f5e7c0dece2d230951161ee4e",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x53753abaacb3dd362600ab398ab3c7f8445bee09013dc39c7d8217841c7d86f1",
+   "why": "calls no function the template calls",
+   "to": "0x3b6908c278a94c2005552404ef6512f50b4d23b9",
+   "selector": "0xdb9dda19"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdca178342c65a85564b3cc8cec1fb1ac964e5004754ffc16c19de25d10af0790",
+   "why": "calls no function the template calls",
+   "to": "0x442be06bb5d13711a22ccd3fa382b72a874c5135",
+   "selector": "0xf7b5c341"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd9088b63d63ed6d95943f42fd02b1194ac0ec29a62d57d2d39619fab601a517d",
+   "why": "calls no function the template calls",
+   "to": "0xbee162fa5ae892be74f3f3e01c23da89adbccccc",
+   "selector": "0x6d7b7040"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xfb47e4db9734c66411f946ad462d4814a54011e78d3bb4111851e19ef8024678",
+   "why": "calls no function the template calls",
+   "to": "0x6aba0315493b7e6989041c91181337b662fb1b90",
+   "selector": "0x25356bc7"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x19445a42d5e05ffe09c9d99e3ac1b9f342c507b56d22ec67a982895add8b48ef",
+   "why": "calls no function the template calls",
+   "to": "0x8a3e4ba1482aa049e8046ee484da8f5320acf53f",
    "selector": "0x99e1d016"
   },
   {
+   "kind": "not-studied",
+   "hash": "0xd7e252666db2e3e98612b3ac5532e3b3a5f992f23259b567c3cea1621f61dff0",
+   "why": "calls no function the template calls",
+   "to": "0x09fc9b7545020f6a51d113e495e0a451597969d3",
+   "selector": "0x708909ad"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc1793a7a9a27eaaf77a1fdd72bf837884ee829747f52fde1bbd6d5c0025c7665",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf2ad92752cd2a26cfcc33b0d7e75034ebe37ee9e548e5f21581dde822fb0b5f2",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
    "kind": "misfit",
-   "hash": "0xb65a48a3bf8f64153285b9f85d09392028c84e666d009ad5baf070af9bdf178f",
+   "hash": "0xd967e458734819dba093a04d3f13d1f359d2168358f2ded5b7914c89afc6ebbb",
+   "block": "26459176",
    "sender": {
     "kind": "eoa",
-    "address": "0xf4dd254bad17667aac651e11c720a38778d9d61f",
+    "address": "0x23fb7e756081dde287ff46f1c677fb1fcafefb67",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "2110572311"
+    }
+   ]
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x09b186a594a9e9fc437b8e09e6b000024b21473e7be25b533a6e1a21db954ca3",
+   "block": "26459323",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x3129ea303ad6dc05ac10c6aaf72c19e289079667",
     "call": 0
    },
    "reason": {
@@ -1871,428 +1141,434 @@
     "at": "call.approve.amount",
     "expected": "1461501637330902918203684832716283019655932542975",
     "actual": "0"
-   }
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "1796958580"
+    }
+   ]
   },
   {
    "kind": "not-studied",
-   "hash": "0x6353c2a4b2ff67a5cb897f006588078749760ae576faa09ab0039c460c2afa13",
+   "hash": "0x3dad4daa467f2489b8f5993ebe2ec3793534e0e7069fb68344ec81f660262307",
    "why": "calls no function the template calls",
-   "to": "0xf9280799c85d376e0425f6fb38e4a674e8bedb56",
-   "selector": "0x39ecce49"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xff0fda51aa1a1a8edfac9ed3d104a39653b4d96bd9f5ebb4fa9ba23cc1718b76",
-   "why": "calls no function the template calls",
-   "to": "0x85c15c997aeef1d1429578483b18b82e07f6d355",
+   "to": "0x2786ed4ce17214579e359064827715ad2acb1477",
    "selector": "0xe9ae5c53"
   },
   {
    "kind": "not-studied",
-   "hash": "0x0aa93bb25ad3f00beebd781f4ddfb49cdd26fe14a6741bfbfcc1f9a91b480931",
+   "hash": "0x927c5e025be479d9379f745fdcc0ef2939da3d9a8547df5292e6b4a725585729",
    "why": "calls no function the template calls",
-   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-   "selector": "0x13d79a0b"
+   "to": "0xe242b434c8584798e5b240db571c7117b499a37a",
+   "selector": "0x99e1d016"
   },
   {
    "kind": "misfit",
-   "hash": "0x1026f634f0b46a54a5f23ef45d35a5248f24c7d1ce2fefdbbc9c1f2cdbb4ed3b",
+   "hash": "0xa90794aaeb1932980c370c70cce4d5a8e8e64d89360d9b6c0bb6fd5e3d1eb0ee",
+   "block": "26459785",
    "sender": {
     "kind": "eoa",
-    "address": "0x718539a8a1e072705ab584d128425aad9f40116c",
+    "address": "0x47d635b637f873050ca4383a2e444f0d80436219",
     "call": 0
    },
    "reason": {
     "kind": "field",
     "at": "call.approve.amount",
     "expected": "1461501637330902918203684832716283019655932542975",
-    "actual": "555000000000000000000000"
-   }
+    "actual": "0"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "1797811167"
+    }
+   ]
   },
   {
    "kind": "not-studied",
-   "hash": "0x37580c8199c34e0da3151ed35e08e533c096d30cdb5b496aa5acf960513587d2",
+   "hash": "0x1c268a8f8cfdf604e9affac6490c8664c31a513dff2ac3f6322128acab1de120",
    "why": "calls no function the template calls",
-   "to": "0x735ac178a8fb7573129579c8239a04cc0d76bd21",
+   "to": "0xa1090524ed8bd7da5753d10195de43e395793370",
    "selector": "0x99e1d016"
   },
   {
    "kind": "not-studied",
-   "hash": "0x348992be46c8706593a5b308b38511a498715ebdf4b16c67f714c0b7e54d9fbf",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x689c3c4e328e0efc572e830939c33ab8c5c7ffd02d2cee21ae0c2954fe7931ef",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4518c00896ec67acdcdde587420fa26f9ebf5b5110a7534035db7fc29291a74e",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf3ac33e5d03b5c9b41309a4290b3d9759397aa103f3acde213e99be2ebe3892a",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x2724123643954634d47ba45296233730dc90433c8e5db3082626a743e7579c67",
-   "why": "calls no function the template calls",
-   "to": "0xcb0151ac9479a6a0261622baa63ae843c9793d45",
-   "selector": "0x64cd187f"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x5fed5ca17758d2a1dcac214d564f46b503ba474d3321690ca71a7993a158f67a",
-   "why": "calls no function the template calls",
-   "to": "0x5704f967aec66e9f680fd88ac2681f678906f9b8",
-   "selector": "0x24676434"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3c303b1999f6ecd2617a95d30825e66ddc674bff892ee9c41fc275fa7215699b",
-   "why": "calls no function the template calls",
-   "to": "0x927dab96496c4795c05fb1844b8b7d82123ab81e",
-   "selector": "0x6f0c0f78"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x334561fabfe3c6e3b7214538dd4daa8200776d211c1107f155e48da08be97988",
-   "why": "calls no function the template calls",
-   "to": "0x09fc9b7545020f6a51d113e495e0a451597969d3",
-   "selector": "0x708909ad"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x213f444027cdd1a9c6a5352a37ca2682929a4b3d30c0ab498b4cddc73bb9d03a",
-   "why": "calls no function the template calls",
-   "to": "0xcb6821c154de244ab3c0b093717d75e0c701b9b3",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x77d48a15328a21cea3506044cec16d40dd59a2448728812527d9a83a3c650a07",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xd00c6f3942cb944c8689cc2b8d27c578308dd9809bfcd6d538cc852d24777eaf",
-   "sender": {
-    "kind": "eoa",
-    "address": "0xe7bd8d4007ce6da80d50998d54cc095758a0dd72",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x934b8229ba6789176c3fcc0517aa7e909adbb5285fafe65ff0561938b35864da",
-   "why": "calls no function the template calls",
-   "to": "0x3bc84773edab70f0075bfa7146eb76eefb6d104b",
-   "selector": "0x99e1d016"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xa4ba92507fbbb85e3ef52a00a565ea54078e509ba3270953c39f8c9af33db1cc",
-   "why": "calls no function the template calls",
-   "to": "0x09fc9b7545020f6a51d113e495e0a451597969d3",
-   "selector": "0x708909ad"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf613c70c6a6776c9cf8e9d4a4be62565aed3025f1b336e4e546c65a6c8f59347",
-   "why": "calls no function the template calls",
-   "to": "0x09fc9b7545020f6a51d113e495e0a451597969d3",
-   "selector": "0x708909ad"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xd476d3c0ed611a01bce21ed574e9596ed201278ca5184e6d32623f7701e873a6",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x93ae4d9632e252ec8c0c1309d715dcc06118b149",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xc8cc36cde226fdfa27567986b1bc298e04f2ec99af866050fa43ba4deb2f8252",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x8364ab1c4a81a19f2eaa74d5df76b0ef2cfa729d",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0xc0af4c558620eb2f6970b9baff86417d6cc2a535"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xcf4123cfde2508f83dff095503dab6335dfd65a06daa2cdad57e78aeac29a9dd",
-   "why": "calls no function the template calls",
-   "to": "0x97caca78ac2a94c67643d07843f85afaa44a3ea5",
-   "selector": "0xc02409ba"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xd40cba38e7f947f56558eb0a3917f97e532dd22d3f2d2413b05d52a70b20af4e",
-   "why": "calls no function the template calls",
-   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
-   "selector": "0x5f575529"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xdec16dcc86ae5db552a19f3a304a3d8cec12f57caffa774409370683953561a5",
-   "why": "calls no function the template calls",
-   "to": "0x1c288c0e94b3ac6f939c24b1cb69b24fe4100876",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3e11d609c3c2e9fcb5093e00e2887067f08dab5268a84074b85d07635d9839bb",
-   "why": "calls no function the template calls",
-   "to": "0x6352a56caadc4f1e25cd6c75970fa768a3304e64",
-   "selector": "0x90411a32"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x49d5e8f86bd2fd23ad8e91f9119656656adb485654b023b8e17e718a7edb6d5a",
-   "why": "calls no function the template calls",
-   "to": "0xa9d635ef85bc37eb9ff9d6165481ea230ed32392",
-   "selector": "0x13d79a0b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4acb97b0441fc4a8bb38e51a8a9172c93d58f7d1c4250ae8b009d39f8f433ab3",
-   "why": "calls no function the template calls",
-   "to": "0x5704f967aec66e9f680fd88ac2681f678906f9b8",
-   "selector": "0x9b5c1ee5"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x56fd0367a726ebc933860cd47b6faff152b99559c3c3595a09d57d90ebf18800",
-   "why": "calls no function the template calls",
-   "to": "0x8e6ddf7a5111c9fd6126bbd38a3e369e9c5a2ea2",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xea7094e4b02848400ab2c4283ddef9ece0235db9de10346fdc2f52740ade374b",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x9b65fe0ef7633fd8193ba84f33cbeb836742ee4d",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbc6a72fe3b6835242abc20c5eedc6a1ae7f3bb53d6428eed8a3745c315e193d2",
-   "why": "calls no function the template calls",
-   "to": "0x09fc9b7545020f6a51d113e495e0a451597969d3",
-   "selector": "0x708909ad"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4e3c1224b9db3f276f0b8d4fdde213f2245acaf208885ee04c3c78bd23b5275a",
-   "why": "calls no function the template calls",
-   "to": "0xcb5d815b3cf0bcdcbfe401eea336bd6034a6126e",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf6cfadb7ac9acb9853d07d51f91a8868a7e8e60bc61f27e42b21bc6ff84b6364",
-   "why": "calls no function the template calls",
-   "to": "0x8e961ed0d00e2180f94c05bba9715a884963ad7f",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xc7db99560bf5527efcd22f7fbe4d869ecf8fa916e25a5a8d5aa666d37768578d",
-   "why": "calls no function the template calls",
-   "to": "0x97caca78ac2a94c67643d07843f85afaa44a3ea5",
-   "selector": "0xc02409ba"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbc830289da0cbfdf53506213f2620222df5be5b505fec2cf7d096f807ae6cbe5",
-   "why": "calls no function the template calls",
-   "to": "0x27fe8fe25de96f070bd896e1427e7ac6ab592566",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x66a6470ae68310922bcea04215b701b205ba8fd556483d34bf334f11447dbb25",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x1bda73981facbb37b7618a2e2a69524e9bf9b093",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
-  },
-  {
-   "kind": "misfit",
-   "hash": "0x8b85cc3385ac480c5a64686beb5bb605572298bf3e54cfbc3d9b572d525338a1",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x9cb2b90604421c33b968995695c11d96a46ad5da",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x6dce8640760e0b1e7b0e92af6aff75db21be1151f7154b0610be4381477d6a2b",
-   "why": "calls no function the template calls",
-   "to": "0x5ed864e8f37dcb4f79c5172a815d1b3a9147eaab",
-   "selector": "0x9008d19f"
-  },
-  {
-   "kind": "misfit",
-   "hash": "0xfaff183ceb50ad2d3957e6b3d4c52b94ca7d1de58b0ce2d1ec40b66826e954d0",
-   "sender": {
-    "kind": "eoa",
-    "address": "0x5c2e1d0e0ec5d6a7449e02c99af294d3d4eeed51",
-    "call": 0
-   },
-   "reason": {
-    "kind": "entry",
-    "at": "call.approve.spender",
-    "expected": [
-     "universal-router-2.1.2"
-    ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xbc3edb19b609a38d8cf87cd3b2000ccd55edf12320c8b65b2bb54f0995c593c6",
-   "why": "calls no function the template calls",
-   "to": "0xe4b50918adad7a9062eb7d49fc000235fca9b46c",
-   "selector": "0x99e1d016"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x4efb2584b75353548e701ab3a0deb4afc146927a8d17205bc0d2d8a580e33f35",
-   "why": "calls no function the template calls",
-   "to": "0xa9d635ef85bc37eb9ff9d6165481ea230ed32392",
-   "selector": "0x13d79a0b"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xee4029bb144a49db4ffccfc338fc75b04671675130bd1f8fc034b8868fcd4ddd",
-   "why": "calls no function the template calls",
-   "to": "0x789116091368da921d66d20734f046a13cc6e673",
-   "selector": "0xe9ae5c53"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0xf6c57d1916c94cec42a352d20e4b18875864e42f009e8cd80923b610a97d552c",
-   "why": "calls no function the template calls",
-   "to": "0x1f2f10d1c40777ae1da742455c65828ff36df387",
-   "selector": "0x2bd0a0b8"
-  },
-  {
-   "kind": "not-studied",
-   "hash": "0x3b6e2e15fa3077a58e4ac5a0546e256f521f24c75cd8da441ac2d43e183d921f",
+   "hash": "0x63636adcf6a19aa1a02535e01d2c8705d2dc70334b7139f1b18b9c4e4914358c",
    "why": "calls no function the template calls",
    "to": "0xbee162fa5ae892be74f3f3e01c23da89adbccccc",
    "selector": "0x6d7b7040"
   },
   {
    "kind": "not-studied",
-   "hash": "0x62691ee267b64393f8df7e4ff8164c987a77ba16fdca2edb858a87fd0d7cb805",
+   "hash": "0xa73a9aa4f31b834a5bb858515363c458dc61135edc017df99e19c48342555796",
+   "why": "calls no function the template calls",
+   "to": "0xa9d635ef85bc37eb9ff9d6165481ea230ed32392",
+   "selector": "0x13d79a0b"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa556861dc5b7b7f7e711be27ed0a8275ffd56a5af7de3322458b304c4eb22d2f",
+   "block": "26460458",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8a25a24ede9482c4fc0738f99611be58f1c839ab"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
+      "selector": "0xde34d3dd"
+     },
+     {
+      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
+      "selector": "0x96122b62"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xcfb690a236115da996de212a7473411eed24b9eb55eef338938f3fad30221038",
+   "block": "26460658",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x5cb8c0f650f7bc8b65f1d69e34356167cb892a64",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.approve.amount",
+    "expected": "1461501637330902918203684832716283019655932542975",
+    "actual": "1000000"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "1795233735"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x94fca85f59bbc3c354d8bbe8c18f9aa6470f0cd9ca207f77ab5242da7ebe0c93",
+   "why": "calls no function the template calls",
+   "to": "0xbee162fa5ae892be74f3f3e01c23da89adbccccc",
+   "selector": "0x6d7b7040"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4ad37138e9b3314c822cb0ac2111c6a33fc40f92d7ecfd764c63268a02dd4099",
+   "why": "calls no function the template calls",
+   "to": "0xb8d3e67defd34a4b36f1dcdfd94974d73dd7d9d7",
+   "selector": "0x99e1d016"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x368bd2a0a1d357f34422414a50dc2fe5e7ce2bfd0bf9d9ce22b570d8290b26eb",
+   "block": "26461133",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8a25a24ede9482c4fc0738f99611be58f1c839ab"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
+      "selector": "0xde34d3dd"
+     },
+     {
+      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
+      "selector": "0xde34d3dd"
+     },
+     {
+      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
+      "selector": "0x96122b62"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xbb87cfb29e1dc47a23f57531eb67d455486e9d705bbdd0d8c88bdc7fe6abc5a5",
+   "why": "calls no function the template calls",
+   "to": "0x28157455c87170f86e53cc4f3dba6bd0d9910975",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xfa8b4751faab857062c727e6ffd38b1abfbd659a5ddbeb950b0f65dc51948bce",
+   "block": "26461452",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x711d67c60e306f28bf8aa1fb4158a4301727a506",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xc75cf1360f55a74fc30679a4be0eb55a121c4eeac0d3903306ce265b97a75c54",
+   "why": "calls no function the template calls",
+   "to": "0x663dc15d3c1ac63ff12e45ab68fea3f0a883c251",
+   "selector": "0xc7a76969"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf790d39e6aa31dbe3967eac92dba708a0bf0eea18fc00991de9f3e9daa2ab972",
+   "why": "calls no function the template calls",
+   "to": "0x96da7872537965c81bffa982f426ce31b034de8c",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf48cd9ac3f172de689552a2659b56c81cfee9718a26f7a9b02302cf9208b6527",
+   "why": "calls no function the template calls",
+   "to": "0x7cfe9750ea1302873c42b3b9d7f8c40f0095d005",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x76bb7dacdf758aa078cb141ead696c426eb0ecd77d81e3bc66c9ce1d7248f930",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8c740c629adcf16dfa23a77abe2549bbf2d3be7cbf5cb408217b23ff0eb82aa5",
    "why": "calls no function the template calls",
    "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
    "selector": "0x5f575529"
   },
   {
    "kind": "not-studied",
-   "hash": "0x40307e4fde0033121f7b0e21b3febf935eab6b5517f47c388d9a3338a3290966",
+   "hash": "0xc4aade942d3f197d247211bf961e1bbbd684eeabe86cde37245a0c9abab7a872",
+   "why": "calls no function the template calls",
+   "to": "0xbee162fa5ae892be74f3f3e01c23da89adbccccc",
+   "selector": "0x6d7b7040"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x3e18e18d700f275dc6393ee13841d44ec11c6112e2bbd8f4fd338208ccf87a68",
+   "block": "26462548",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x736f247417393d75288fba73781349adff72e0ef",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xfa905a93620fb089a566e466b36e04ea7e7020d2f337911c4683dff5ebca5e40",
+   "why": "calls no function the template calls",
+   "to": "0x28418ebf4ecda57f4d2cb1bf16b7d1adca8255eb",
+   "selector": "0x34fcd5be"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdae3e3b5b12dfff0b1063681563b8ea01188e0f8a50cec3510491fe37645e551",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "fit",
+   "hash": "0x5be84810cb59fd3bf184c3e76e5420de12df5d3f1937ad2825c6a3fe42277be9",
+   "block": "26463050",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x52a46f3cbbfd7888747f4d2d078f4ee077b0aabf",
+    "call": 0
+   },
+   "paths": [
+    "call.to",
+    "call.value",
+    "call.approve.token",
+    "call.approve.spender",
+    "call.approve.amount",
+    "call.approve.expiration"
+   ],
+   "types": [
+    "address",
+    "uint256",
+    "address",
+    "address",
+    "uint160",
+    "uint48"
+   ],
+   "values": [
+    "0x000000000022d473030f116ddee9f6b43ac78ba3",
+    "0",
+    "0xc214a0b73ce4c30594b4173219e885691254801b",
+    "0x23617e59a5925b2a4bf75d73ff6711cd0b29de85",
+    "1461501637330902918203684832716283019655932542975",
+    "1797850913"
+   ],
+   "outside": [
+    {
+     "at": "call.approve.token",
+     "kind": "address"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7307506b259e090a9b21804c89f0555ee1e0e444c1c4eb4871f8f6ffc728a950",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x40de0703d16bfa1d7c83e038bb6b1a81583c2b7827419defa453ca697141bb94",
+   "why": "calls no function the template calls",
+   "to": "0xbee162fa5ae892be74f3f3e01c23da89adbccccc",
+   "selector": "0x6d7b7040"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0f00fd64853cef19b412da757e728d5ca83655048e58ae0157716ad43626aa9c",
    "why": "calls no function the template calls",
    "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
    "selector": "0x13d79a0b"
   },
   {
    "kind": "not-studied",
-   "hash": "0xf5beb93f1e3aa01245b227bb4c0fbec65e208dc5646b42b593c3c5b96510dbcf",
+   "hash": "0xb92575af732f6c4863583988a01dad029f74b789c09736bc66dc9eaa9cac9696",
    "why": "calls no function the template calls",
    "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
    "selector": "0x5f575529"
   },
   {
    "kind": "not-studied",
-   "hash": "0x19a6d0938ce8670654bb6d35898f1c1d63056132669e225c4ff10fa0eb59d7cf",
+   "hash": "0x083cb62c32497d9d407c1291a8b3b8a45df9c3b92680136d43b0f9525580db9d",
+   "why": "calls no function the template calls",
+   "to": "0xa243d7d2e2e7984511331dbbf2cf3acfe7dccc96",
+   "selector": "0xda64f0f7"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x305166911bb2a53f2829ce946201a52b439102d5ced4e486c6b988fb58ce76e6",
    "why": "calls no function the template calls",
    "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
    "selector": "0x5f575529"
   },
   {
    "kind": "not-studied",
-   "hash": "0x9b571a9b94691220ae38e719c54827b05b91b43b7d22423b3d827e79d41592ce",
+   "hash": "0x306492bd728ca86382ef08e7096b3086ca5521eb48e22c4d05898ec6e9129f75",
    "why": "calls no function the template calls",
    "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
    "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa27d6d2f914f00a46b7f34b2a94bcf2f96f9a4e6efe229b7914f6a5b3926cf56",
+   "why": "calls no function the template calls",
+   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
+   "selector": "0xb88d4fde"
   },
   {
    "kind": "misfit",
-   "hash": "0x56eb5080944c2bbe75bed3d74774c7ea049c5d4fedcdc2bceaeccac3e50f6a0e",
+   "hash": "0xa3153c71fa418795aab4ba9dacbfef9e5a325a2d2d616949fe8fc00e4b543743",
+   "block": "26464409",
    "sender": {
     "kind": "eoa",
-    "address": "0x66c38dfd686fcc650ddc6fb5ebcf220549e9d2cf",
+    "address": "0x447cbefedf21636a831731d8b82cfabf687fdb4b",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.approve.amount",
+    "expected": "1461501637330902918203684832716283019655932542975",
+    "actual": "170213853653928070459040"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "1795278928"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0f98980a878331695e2c89e11eb1411e04633f7cb2a707b70455727b206b3a06",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd32a3b94e0a8dc930eb868b85329192abf9cab36609a2832043b6b74139b2a8f",
+   "why": "calls no function the template calls",
+   "to": "0x09fc9b7545020f6a51d113e495e0a451597969d3",
+   "selector": "0x708909ad"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2c9cda6f26c2f6883d18d67026d915c8ee262dfa996354608a41c2bbb36cc6f1",
+   "why": "calls no function the template calls",
+   "to": "0xf46a58cada29ff34cf62f72357d2b37815506feb",
+   "selector": "0x3fdeb399"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x621fcdef041760a2eb25284c8cca71fed0de5ded119d3b3d5fe17c10ff12f8ad",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x789a71ed8eafab06f871dd6852e0d1812c6cce7efdada53b35414c5465720b16",
+   "why": "calls no function the template calls",
+   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+   "selector": "0x13d79a0b"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xec5087d74b432bc0bdc08233cbfdaea5d0fba3091a492c61449d4589dc3c512a",
+   "block": "26465109",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xeb5dae400c4080dfffbd5252645d8586fc905d18",
     "call": 0
    },
    "reason": {
@@ -2302,14 +1578,127 @@
      "universal-router-2.1.2"
     ],
     "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "1797875752"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xbc7ff5a16ff3c508b8fcc8d9f5644d0ef973efbabc43442f2f84cc3bafae0678",
+   "why": "calls no function the template calls",
+   "to": "0xcfd7519e2b4f0450c023db5288d0e3af6963a42f",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x172b9c4122b12a16f9cad427352272c4acfdc5ef06fb1c16d4c7ac2a06525f68",
+   "why": "calls no function the template calls",
+   "to": "0xb96102814a92d0c243c01fba4e6a4d08f3e6ab39",
+   "selector": "0x99e1d016"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5d458a59f97998b1d084033300565d980e66591a7d28e3778c0eb5bd51591499",
+   "why": "calls no function the template calls",
+   "to": "0x2bd35bc438fbcf4dbf6d67f512dc06a97fd159b8",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3a215be2ce322b6ef91c0f69dcb4eaf3895f58dcd6445d8225e8e70d83b962dd",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x920400850716632a46e1cabd1b58b56b567b44b99d4ed8cb5b0d13497015abe0",
+   "why": "calls no function the template calls",
+   "to": "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+   "selector": "0x1fad948c"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x225dcf1c81011695436904a4ddcc874b3689b12e6f4c7b725b1764a28fa8f9b4",
+   "why": "calls no function the template calls",
+   "to": "0x442be06bb5d13711a22ccd3fa382b72a874c5135",
+   "selector": "0xf7b5c341"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x14c8f7f4c050a992313d3e82ae8f4bd2c3f9e21bdab166801047745ff8aa4653",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0358390464c3c87e9e2b260e044adeaf61306378d63cb002ee23a01793dc72cf",
+   "why": "calls no function the template calls",
+   "to": "0x5af5194b4b0909eb978e3cf1e25333852277f07d",
+   "selector": "0x9aefaff8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xbebdba8b52f132a92d1cb01c43d03e95dab5d8947c79d40f1b2c77fdfc4d1439",
+   "why": "calls no function the template calls",
+   "to": "0xd13532b6d7efa8d70f3b2793bd127f26ef8afbed",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1456b4b799abb96f6e149bf482efd1d3110443a6fcca8eeea5eb7f4a04c084ce",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1d9c382f36988b3aef9c07bf838167ecab4fb0ad5dde0496d7301acd13666ead",
+   "why": "calls no function the template calls",
+   "to": "0xbee162fa5ae892be74f3f3e01c23da89adbccccc",
+   "selector": "0x6d7b7040"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8d56cf4ef64914c34a027c1555f611ec5da9d25bc3bc41a35f714ca2c14a37b5",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb2e1ff5db0d8eef092f865307ba1679d6b14f08918d01f3d6c2c4e6a04dd08bd",
+   "why": "calls no function the template calls",
+   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+   "selector": "0x13d79a0b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x08f6907eae9c0e64406760927ae3a5a9a078a4fd47fc8d2046195568847afb01",
+   "why": "calls no function the template calls",
+   "to": "0xaf735f866a639bed6bd018c2040435baadf1265a",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x411ee6fe8567180568fa53431a0ea5ca7232c5bf8b6a62084e57ddfa9fa15ed4",
+   "why": "calls no function the template calls",
+   "to": "0x65dd9ca6501e01eb286fe43178ac3a8382e45854",
+   "selector": "0xe9ae5c53"
   },
   {
    "kind": "misfit",
-   "hash": "0x2f781394cde2723ba0992a8f48714f02c650bfdf43b23b09f752563f35210fce",
+   "hash": "0x44741d649e266d7734676ad03f1bc41f48c7e6441c2fcb8a75618a9afafb9d38",
+   "block": "26468117",
    "sender": {
     "kind": "eoa",
-    "address": "0xc2b5591e5b8bc0582c3692586d811a09cc84f5ad",
+    "address": "0x1458a887d336675f744348c11a3a50132e885162",
     "call": 0
    },
    "reason": {
@@ -2319,9 +1708,1010 @@
      "universal-router-2.1.2"
     ],
     "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
-   }
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x055cbd2de35784bbedf1b965d93957c21e380547a1e5815a4a8fea194ac78434",
+   "block": "26468367",
+   "sender": {
+    "kind": "safe",
+    "address": "0x8a25a24ede9482c4fc0738f99611be58f1c839ab"
+   },
+   "reason": {
+    "kind": "calls",
+    "calls": [
+     {
+      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
+      "selector": "0xde34d3dd"
+     },
+     {
+      "to": "0x5c46fc65855c0c7465a1ea85eea0b24b601502d3",
+      "selector": "0x96122b62"
+     }
+    ]
+   },
+   "free": []
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9f001a3bdf0205c17c0ff7f22556ac28eb0ed82eaaf6dde3f20349824b8d13a7",
+   "why": "calls no function the template calls",
+   "to": "0xd60d04cf2bade4e661b939aa79f34776ea546da9",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xdc4ef4c9ae13e8d5d5c167ee351b094dfccd12bab76b6ed770c80cd8ec067866",
+   "why": "calls no function the template calls",
+   "to": "0x672061b75f770331b0c7c2a566a9ac0a9ba331d2",
+   "selector": "0x63708fd1"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xfcf21d6c5432df87b21d1c17d17b4efe87f9eef3cce42f6b8617261a550088b0",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9814f7a2e4c42aa5e8b79377fdfe4295b72cc86599063941273e4abefc0eb105",
+   "why": "calls no function the template calls",
+   "to": "0x88649f4743a758171077b98ee2003f1989b1615a",
+   "selector": "0x3271ba8d"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf4b01bffb39e282cce788dd8e20a88da3806ca59aa53c30727b2fcabcaa5b767",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x1feb0a66f555e5f82da1626ae7a7383b5b7758aff94309b8798ecedc97b5f349",
+   "block": "26469746",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf2d6bae7a9a7d83057577ff00a2311e0254c7e09",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "1826875550"
+    }
+   ]
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x771df7901164aba7bc45b19f00fecae7943e8c6ef41281ab2fa30b415bfa3fde",
+   "block": "26469815",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xbf2d4b91477989350d4db181067b1c81cfe31985",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2c10e0b7e8781780a0342d0e698b232e0608106935cbdaceef4034870a5d4bf5",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x199187abcafb64ee3911f3c2f23e41e85f461a3ddb62ef4e08a1dfd1c9259e99",
+   "why": "calls no function the template calls",
+   "to": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e",
+   "selector": "0xb88d4fde"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe34a7cfc01d84a1517e9dbabda2518d492a5b697f948c371fd0b3cb76354489a",
+   "why": "calls no function the template calls",
+   "to": "0xe7b5df1ee3928b44df511a96eeeb4dad5388621c",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa367d61bd6eca3a3450f0a94d3a0880b150b6f83c0388ba9bf96942a3deff511",
+   "block": "26470102",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x019211f714755fe64dd947c1938aedc019038788",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "1797935831"
+    }
+   ]
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb1f8dc363b9a1a241d9dfd4587a282ceca8adc3fb4213be439f394a6a4b45f13",
+   "block": "26470167",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x019211f714755fe64dd947c1938aedc019038788",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "1797936599"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x491889603aa399ea9be61ec6f4c988d57ea10cf9f5a90a08c1a93c4be10e53c7",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x0067387cf308ea740312c14c7866e514aa550bc18aca191b3a37470f27c5bfd7",
+   "block": "26470331",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x019211f714755fe64dd947c1938aedc019038788",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "1797938565"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf329eb1627d6b2ea630a15628e307d79200daac85f8820610852fe1bafdebd54",
+   "why": "calls no function the template calls",
+   "to": "0xbee162fa5ae892be74f3f3e01c23da89adbccccc",
+   "selector": "0x6d7b7040"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x532123525604471f62a88bd24225be9fe19d6a9286b8d8b52e46d61558869873",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1f39c12edd3190bd05f9d36fd9308bb9b3651f99a8e9a1fb68105b45d981590a",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x08c71aeca41bee6b3cc209049ad440e23a6a760be0124b939164eb09061ddd7a",
+   "why": "calls no function the template calls",
+   "to": "0xcf2cef1f8d184aa97a47129c04c8426bf1098679",
+   "selector": "0xd42a2182"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3907869589a1f0358ec17e85a5ea9734419cc35d7259713d1ed1719373c6e249",
+   "why": "calls no function the template calls",
+   "to": "0xa1df4290dc14ef339077fed4c2ba41bb0590aa14",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x81e5d0a9fbc416b2755b4dae864dbf0248eae25867d2ddc4b0eebbeee1055b98",
+   "why": "calls no function the template calls",
+   "to": "0x5af5194b4b0909eb978e3cf1e25333852277f07d",
+   "selector": "0x9aefaff8"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x0ca14c2b110cf66d2d0a333fde9ec845d9c2e18bed34e70faa3628e7d92ce329",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7cce7c02e5102256a1cb884267d146d5e44aa78749c205f2ca7e00caa8a567b1",
+   "why": "calls no function the template calls",
+   "to": "0x4de09a75b5521da980e00957a3a89bd8e7b0557d",
+   "selector": "0x99e1d016"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9de951bdd78d90e399049d7cf7223562705c13e5be911c6f9984f055738ebe4d",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x79a91cb59f7a56e8811d0f23f67f5daeed830f75ad7ec6069fa51fe383269bbd",
+   "why": "calls no function the template calls",
+   "to": "0x263b62154e5dc2ac1e35beb50d67f3699f4f36ea",
+   "selector": "0x99e1d016"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf095dd382834e275419f5e30c1b157537a210920201af0a5be5c18e155cee23b",
+   "why": "calls no function the template calls",
+   "to": "0x0000000000bbf5c5fd284e657f01bd000933c96d",
+   "selector": "0x49af9204"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x059cf70cdedd3f08ece2cbabf348c3176ff019ee06b1b43c90086a14ec136434",
+   "block": "26472452",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x42d857125d355f1c04886a0382ece64175e4e27a",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.approve.amount",
+    "expected": "1461501637330902918203684832716283019655932542975",
+    "actual": "5735639070"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "1795373905"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7520000a0a91b148967910de18af458a5e2f88c71e82bccef3d255de26a3d962",
+   "why": "calls no function the template calls",
+   "to": "0xc19a12d19066826f05c3a6c5567e451d1caeeb7f",
+   "selector": "0xef34950a"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd26573b82d3f3d08338330fe7f2882b5cab7a3b51976f0b0827a3d395820a919",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd2871cc73a7d5aebcaf370ce75192ea663c25c00c86e33eab7f4c9dfdf16f495",
+   "why": "calls no function the template calls",
+   "to": "0xbee162fa5ae892be74f3f3e01c23da89adbccccc",
+   "selector": "0x6d7b7040"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x83609d58231493ca003aec789963589f67b66326856e7bb5b90cb63f497b8ebc",
+   "block": "26473334",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xbbf7663bd27ed908c03e17a32a127b4b7c997f84",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.approve.amount",
+    "expected": "1461501637330902918203684832716283019655932542975",
+    "actual": "0"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "1797974194"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd818d4bb60a9e177972a794408e1b9cec2b30cd4645ca712e47e6a1f22b6db29",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7cb0b8c0d1199701d1bd1b7ff862420bd7c31ec10446e31db26f09213985fc8c",
+   "why": "calls no function the template calls",
+   "to": "0xbee162fa5ae892be74f3f3e01c23da89adbccccc",
+   "selector": "0x6d7b7040"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1451874cb521b56bdeb32439dde352177434f718a59429a9a2997ebaac5d507d",
+   "why": "calls no function the template calls",
+   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+   "selector": "0x13d79a0b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xfcd273c809549bbe22a84469a1f303d3496308d92d7cc9c9a935c5e8b544b759",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x247ef1411e583b02759b309313fa6244de7102f19e9bd4f96f33875f4548e9f6",
+   "why": "calls no function the template calls",
+   "to": "0x637d3ee70a952d4d8b77695bbcc7d8c34d42d748",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x488b29d0b78b2cf5a3611a97e0d372f1e287aae9cd26f5e30d840f245bd62554",
+   "why": "calls no function the template calls",
+   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+   "selector": "0x13d79a0b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xea511853c2f21e40f3d7488474b668624e9e033251e1838bb73db38175d9b703",
+   "why": "calls no function the template calls",
+   "to": "0xa883710b6dbf008a1cc25722c54583e35884a209",
+   "selector": "0x9008d19f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x25043f40171d54b8c5854d74ea10e4e08271aa11289c243c0a578dacf1388599",
+   "why": "calls no function the template calls",
+   "to": "0x2756e01782458e0a133a7fb31d9f235b453bda20",
+   "selector": "0x99e1d016"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x6caef863e1fcbca340c5726f824281d61f74a9a9989457cd48c2bee17649e3ee",
+   "block": "26475425",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x97e0e33d66877c5b85809e4fc48d754d68044961",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.approve.amount",
+    "expected": "1461501637330902918203684832716283019655932542975",
+    "actual": "0"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "1797365167"
+    }
+   ]
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x7ab833e2bf96f208412c9459af0d40e63331471688d027e26f3497896baac0b6",
+   "block": "26475715",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xf3a1040e9ea0513b5766837dc11a55c164215ccc",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb7b87c11472d91100b1854cf22a735fb8b09b6495f52e53fa214c881bf4d562d",
+   "why": "calls no function the template calls",
+   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+   "selector": "0x13d79a0b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x354ede98a273be71f182209951271f18d6d39f97b39ec957903c305638a91200",
+   "why": "calls no function the template calls",
+   "to": "0xa243d7d2e2e7984511331dbbf2cf3acfe7dccc96",
+   "selector": "0xda64f0f7"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc8b636369b390064d568675838a89eae9df967bcda82bfc33e9a6f4a1f0039e9",
+   "block": "26476293",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x5f19bf008b9b11820750d1cb324d169bb3c7b904",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x953c9619eedb57124d873747de1deddb94c637bbacdc447b79d302c7c5bf8deb",
+   "why": "calls no function the template calls",
+   "to": "0x97caca78ac2a94c67643d07843f85afaa44a3ea5",
+   "selector": "0xc02409ba"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe278720dba6780bc0ba76a363802cc9082604001519071e4a0e9da2459882582",
+   "block": "26476549",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x2738d982497bcaede68fc3fad49f7736ff70f213",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x26e31139ca875476dbdc34cf21d194130f46fb5dbae3d369e9bbdf7ae288fd48",
+   "why": "calls no function the template calls",
+   "to": "0x97caca78ac2a94c67643d07843f85afaa44a3ea5",
+   "selector": "0xc02409ba"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x280a576e9bc13cc0a72146820244e1abf0e4458940c08432a95bca58c1bd1635",
+   "block": "26476945",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xc8c90407a84ed314a8d5c2add0c0ffdd6b5f9a77",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
+   "kind": "misfit",
+   "hash": "0x6322ec9ad6c77d597f3ae6d62b2e89f31f39a838465ad5ac2ef05d0c1df79f4b",
+   "block": "26477129",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd62fe064181b228e4a44a5f7a4bf1d789f621825",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.approve.amount",
+    "expected": "1461501637330902918203684832716283019655932542975",
+    "actual": "3709696000000000000"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "1796033196"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9c308b3d1fe48b15f9cbf9d39251cb836e10c2c7c88a9d7a78734196b3ce5353",
+   "why": "calls no function the template calls",
+   "to": "0x07964f135f276412b3182a3b2407b8dd45000000",
+   "selector": "0xd808d889"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x28c898aa0cacfda2cffd7fec8af284b86c1f935cba7bf38d05ac15376fb9f8d6",
+   "why": "calls no function the template calls",
+   "to": "0x09fc9b7545020f6a51d113e495e0a451597969d3",
+   "selector": "0x708909ad"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x3c9f22f49293d5f2e4ead2914152f21913a7141603170f1d33424af555a81c14",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xb95e7818a3b8407f6196a4be3357bac2f0243d72918d121d533154dad6dd031b",
+   "block": "26477859",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x41280482eb77e5887ebaf2b327732a929e3964f2",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xc558fbb81ab9632c4bf9204b2f01f3d6ec854b6208283a31c982a06a59835026",
+   "block": "26478036",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x89566cf85c0402eb9ced31c8b5cdeaf56ddce93c",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x22f087bb7a8b832f4c6ec0de50ac2803c598e6131cb04b84f3b8fbeca4fa86ff",
+   "why": "calls no function the template calls",
+   "to": "0x09fc9b7545020f6a51d113e495e0a451597969d3",
+   "selector": "0x708909ad"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe3e2c63a8ae160d179d556d6ac01230f317464f302758eb82bbb18a385b42496",
+   "why": "calls no function the template calls",
+   "to": "0x9da8b48441583a2b93e2ef8213aad0ec0b392c69",
+   "selector": "0xe7c438c9"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xf1be46ccf09a5da9ea54d933c35610a6fab17c17fe741d114dd6c83211624442",
+   "block": "26478559",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xb634422ddfb9254194e9223760eeaef28b648aa5",
+    "call": 0
+   },
+   "reason": {
+    "kind": "field",
+    "at": "call.approve.amount",
+    "expected": "1461501637330902918203684832716283019655932542975",
+    "actual": "1000000000000000000000000000"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7b5d395c8ba8d2e8aa1065d45e1f923e3860ac903db8c954e013698af0f65b59",
+   "why": "calls no function the template calls",
+   "to": "0xf5b8769f01fec8578b52042dd849a6d8dd405e13",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xe71e6bc1b02db3402ffd3e0a8b28dcb7b8b10a3bcd63905f5c9989e27b8e1611",
+   "block": "26478823",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x07dcfcb0ca7f2a7de1b0924f96e3d95477818402",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2eea7808681f8830b67ce7503565449b65c9ed591bcaafc28c8125270fa881c6",
+   "why": "calls no function the template calls",
+   "to": "0x8090da2c4f09b9e6f5bf5df7805138f0607e7569",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x43c5a9398d60697f818323d9aa3860ade24a132d80dd1865039c03ec5bc4c875",
+   "why": "calls no function the template calls",
+   "to": "0x888c63a315056ae73e0ad8140c8388dad29d4292",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xe430da9d6ed4a88233dcc3a549adc828089b4450f53a242ff5486b0f520c98ee",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xa273608b0bdca04db927020d5f7aed2bc068ff896f93654a60f29a405509990f",
+   "why": "calls no function the template calls",
+   "to": "0x1f516d067b3329874a2546dcee42f2d19e8adb3a",
+   "selector": "0x99e1d016"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x554ccd1a533031c21d96073f8ee1a7653a603da5ce38e2cb9e32493f2595043b",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2fbc7f33a08fa28dd6e347027f34d304e1e1b799a878123108a11958cdfab9a5",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb1f3140a1f8d5121b7572d2bb239b513f7ee12c960aecd86ad73174486074418",
+   "why": "calls no function the template calls",
+   "to": "0xa243d7d2e2e7984511331dbbf2cf3acfe7dccc96",
+   "selector": "0xda64f0f7"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xb87686772f650020fb24d8aad37492ffc4e47b146e56cd513db6c2393327f5e9",
+   "why": "calls no function the template calls",
+   "to": "0x4337084d9e255ff0702461cf8895ce9e3b5ff108",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x9135d629b6a8e9341918938049383ad8a074d290313ed8c37189b3290fcaca6b",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x886d0e07e7bcb74e3b97428d3138d865123c411c16f185a4832d285e482f19f7",
+   "why": "calls no function the template calls",
+   "to": "0xc6b2cfc8cf242be856de634921e12fd52f05b3e1",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x31a23e4967317d3fdaed413cfcd974c95926e496d97406ef283362e9858b5746",
+   "why": "calls no function the template calls",
+   "to": "0x0000000071727de22e5e9d8baf0edac6f37da032",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x1e3debf1d08fa166e2607eb1c40801fe7c9367dbde968554f62daf6cb54879ec",
+   "why": "calls no function the template calls",
+   "to": "0x5ed864e8f37dcb4f79c5172a815d1b3a9147eaab",
+   "selector": "0x9008d19f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x17c3f81076e900a866e2a159a87cc2817d538c6ed221c6afa3b60990877633a3",
+   "why": "calls no function the template calls",
+   "to": "0x76c51eeea08a44c6291bff2d08dd790e7bc471af",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xd7c070f41ac6bc3963a1606ab1ff9979772e1a65dbe0a4263e0ce73d6e49f44d",
+   "why": "calls no function the template calls",
+   "to": "0xcf2cef1f8d184aa97a47129c04c8426bf1098679",
+   "selector": "0xf4138923"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xfadaba48eb5d377133ee13c2e133168c2ee8f075e0a71f9c7af3df14f581c4c6",
+   "block": "26481419",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x0c0eb78ba9f0debb5be74601cd5ae5237e854f66",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xbf90f8a2e7691fc81ccd353358e88763a1a39db118440c3a5cd31969876eac42",
+   "block": "26481757",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x484d4f0ccf47eceb1607be477b02a29bae5f45b6",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x083cb17823044f98e44a479db390def11414a370506d718fe6b8a7598ac73617",
+   "why": "calls no function the template calls",
+   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+   "selector": "0x13d79a0b"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x59bb348882df0f72165d01f96080857359844934ca0f2bd07cd9ecd14ba5c35b",
+   "why": "calls no function the template calls",
+   "to": "0x881d40237659c251811cec9c364ef91dc08d300c",
+   "selector": "0x5f575529"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2a57b9bde6d4ef4b0d05177b8b4e6b05dc9ac259c72bf2b9b589b28cfafe3659",
+   "why": "calls no function the template calls",
+   "to": "0x4337084d9e255ff0702461cf8895ce9e3b5ff108",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x4eae672f9e93c39060bef81481ed3cf155f2eb74234b2f5f11fa73f8f4951988",
+   "why": "calls no function the template calls",
+   "to": "0x4337084d9e255ff0702461cf8895ce9e3b5ff108",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x87dafc15114b01aba164818bbf2657b8368bbb3f17f16abafb67cf366acf5015",
+   "why": "calls no function the template calls",
+   "to": "0xa243d7d2e2e7984511331dbbf2cf3acfe7dccc96",
+   "selector": "0xda64f0f7"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x8630762863f897cf8c760ef31b24837870ece1a8197a94e952dfc3169a671bd8",
+   "why": "calls no function the template calls",
+   "to": "0x4337084d9e255ff0702461cf8895ce9e3b5ff108",
+   "selector": "0x765e827f"
+  },
+  {
+   "kind": "misfit",
+   "hash": "0xa36425d1a33ed645db61c1c6bba6e507486533c237e66680ebec002a41bc8fde",
+   "block": "26483579",
+   "sender": {
+    "kind": "eoa",
+    "address": "0xd9cf453f39900a9e1924e74aff94a609ee8c3241",
+    "call": 0
+   },
+   "reason": {
+    "kind": "entry",
+    "at": "call.approve.spender",
+    "expected": [
+     "universal-router-2.1.2"
+    ],
+    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+   },
+   "free": [
+    {
+     "field": 5,
+     "type": "uint48",
+     "value": "281474976710655"
+    }
+   ]
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x5b651fdcbf81f71d6de6b4706179cca2a4f087a9ca1ce56f6896f84ae0111d6b",
+   "why": "calls no function the template calls",
+   "to": "0xcf2cef1f8d184aa97a47129c04c8426bf1098679",
+   "selector": "0xd42a2182"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xf53de96745c4cd6df8801698e5d31d01138bf245882703157431144e26f5093b",
+   "why": "calls no function the template calls",
+   "to": "0x5704f967aec66e9f680fd88ac2681f678906f9b8",
+   "selector": "0x24676434"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x7fb02a890a2a73318fe9b15437b381ff5550dc825f6a3d37115b32251aa99a6d",
+   "why": "calls no function the template calls",
+   "to": "0x97caca78ac2a94c67643d07843f85afaa44a3ea5",
+   "selector": "0xc02409ba"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0xcf756565d1bb3084662b326f0be5b13ab8fdb44c8ff5ec52642ae79954f78f67",
+   "why": "calls no function the template calls",
+   "to": "0x816fb4b2f34adbf499e460c712f053a96c3bceb2",
+   "selector": "0xe9ae5c53"
+  },
+  {
+   "kind": "not-studied",
+   "hash": "0x2e4489e554e99524df425e396a63d60960ca1adc0b6ef805133e1fb039c5f556",
+   "why": "calls no function the template calls",
+   "to": "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
+   "selector": "0x13d79a0b"
   }
  ],
  "measurements": [],
- "traces": []
+ "traces": [
+  {
+   "kind": "traced",
+   "hash": "0x0b6cbcd7944599142b8560bf83ec58102c4e4a9b36a36c153a714e67bbebe626",
+   "sender": {
+    "kind": "eoa",
+    "address": "0x12de70e807f33d3d1940decfd7d3ed9b003997b9",
+    "call": 0
+   },
+   "calls": [
+    {
+     "depth": 0,
+     "type": "CALL",
+     "from": "0x12de70e807f33d3d1940decfd7d3ed9b003997b9",
+     "to": "0x000000000022d473030f116ddee9f6b43ac78ba3",
+     "selector": "0x87517c45"
+    }
+   ]
+  }
+ ]
 }

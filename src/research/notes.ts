@@ -13,6 +13,7 @@ import { factsScope } from './protocol-facts.ts';
 import type { Ledger, ResultId } from './ledger.ts';
 import { instanceReportDir } from './report.ts';
 import type { ReportInputs } from './report.ts';
+import type { FlowEnd } from './trace.ts';
 
 export const NOTES_FILE = 'notes.json';
 
@@ -130,8 +131,10 @@ export function readNotes(repoRoot: string, template: string, vault?: RegistryEn
 export type NotesScope = {
   /** How many calls the template makes: a `flow` line's `after` is one of 1..calls. */
   readonly calls: number;
-  /** The registry names a call or an effects' view targets, the entries those depend on, and the tokens the effects move: a `flow` line's `from` and `to`. */
+  /** The registry names a call or an effects' view targets, the entries those depend on, and the tokens the effects move: what a `flow` line's `from` and `to` may name. */
   readonly contracts: ReadonlySet<string>;
+  /** The card fields that hold a token, each with the registry names it can hold, which a `flow` line's `from` and `to` may name as `card.<field>`. */
+  readonly tokenFields: ReadonlyMap<string, readonly string[]>;
   /**
    * Each call nested in a template call, such as a Bundler3 bundle item: the call number, the names the top-level call's
    * target and the nested call's target can be, and its selector. The template binds it, so no `flow` line may name it.
@@ -229,6 +232,7 @@ export function notesScope(inputs: ReportInputs, ledger: Ledger, template: Templ
       ...[...template.effects.gives, ...template.effects.gets].flatMap((effect) => effectTokenNames(effect.token, template, registry)),
       ...template.effects.touches.map((touch) => touch.token),
     ]),
+    tokenFields: new Map([...template.card].flatMap(([name, field]) => (field.kind === 'contract' && field.scope.registryKind === 'token' ? [[name, refNames({ field: name, attribute: undefined }, template, registry)] as const] : []))),
     nested: nestedCalls(template, registry),
     entries: new Set(ledger.entries.map((entry) => entry.name)),
     routed: new Set(ledger.entries.filter((entry) => entry.routes !== undefined).map((entry) => entry.name)),
@@ -250,7 +254,7 @@ const own = (record: Record<string, unknown>, key: string): unknown => (Object.h
 const refuse = (path: string, rule: string): never => {
   throw new NotesError(`${path}: ${rule}`);
 };
-const shown = (key: string): string => JSON.stringify(key.slice(0, 80));
+export const shown = (key: string): string => JSON.stringify(key.slice(0, 80));
 
 /** What may stand between two backticks: one identifier, such as a function or argument name, with or without `()`. */
 const CODE_SPAN = /^[A-Za-z_][A-Za-z0-9_]*(\(\))?$/;
@@ -264,16 +268,20 @@ export function codeSpans(text: string): readonly string[] | undefined {
   return parts.length % 2 === 1 && parts.every((part, i) => i % 2 === 0 || CODE_SPAN.test(part)) ? parts : undefined;
 }
 
+/** AI text in one language of at most `max` characters, its backticks not counted. Throws NotesError. */
+export function plainText(path: string, raw: unknown, max: number): string {
+  if (typeof raw !== 'string' || raw.trim() === '') return refuse(path, 'not a non-empty string');
+  if (CONTROL.test(raw)) return refuse(path, 'holds a control or bidirectional character');
+  const parts = codeSpans(raw);
+  if (parts === undefined) return refuse(path, 'holds a backtick that does not open or close a code span around one identifier, such as `erc4626Deposit`');
+  if (parts.join('').length > max) return refuse(path, `longer than ${max} characters`);
+  return raw;
+}
+
 const str =
   (max: number): P<string> =>
-  (path, raw) => {
-    if (typeof raw !== 'string' || raw.trim() === '') return refuse(path, 'not a non-empty string');
-    if (CONTROL.test(raw)) return refuse(path, 'holds a control or bidirectional character');
-    const parts = codeSpans(raw);
-    if (parts === undefined) return refuse(path, 'holds a backtick that does not open or close a code span around one identifier, such as `erc4626Deposit`');
-    if (parts.join('').length > max) return refuse(path, `longer than ${max} characters`);
-    return raw;
-  };
+  (path, raw) =>
+    plainText(path, raw, max);
 
 /** How many characters a language may use for what Traditional Chinese says in `max`. */
 const LENGTH: Readonly<Record<Language, number>> = { 'zh-TW': 1, en: 3 };
@@ -309,7 +317,14 @@ const oneOf =
   (path, raw) =>
     values.includes(raw as string) ? (raw as T[number]) : refuse(path, `not one of ${values.join(', ')}`);
 
-const url: P<HttpsUrl> = (path, raw) => parseHttpsUrl(raw) ?? refuse(path, 'not an https URL in RFC 3986 characters');
+/** An https URL the AI cites, without a user name or password, which would show one domain and open another. Throws NotesError. */
+export function citedUrl(path: string, raw: unknown): HttpsUrl {
+  const parsed = parseHttpsUrl(raw) ?? refuse(path, 'not an https URL in RFC 3986 characters');
+  const { username, password } = new URL(parsed);
+  return username === '' && password === '' ? parsed : refuse(path, 'a URL with a user name or password');
+}
+
+const url: P<HttpsUrl> = citedUrl;
 
 const callNumber: P<number> = (path, raw, scope) =>
   typeof raw === 'number' && Number.isSafeInteger(raw) && raw >= 1 && raw <= scope.calls ? raw : refuse(path, `not one of the template's ${scope.calls} calls`);
@@ -327,9 +342,15 @@ const signature: P<{ readonly signature: string; readonly selector: string }> = 
   return canonical === written ? { signature: written, selector } : refuse(path, 'not a canonical function signature, such as `approve(address,uint256)`');
 };
 
-const contract: P<string> = (path, raw, scope) => {
+const CARD = 'card.';
+
+const flowEnd: P<FlowEnd> = (path, raw, scope) => {
   const name = str(80)(path, raw, scope);
-  return scope.contracts.has(name) ? name : refuse(path, `${shown(name)} is not a contract the calls or the effects' views target, an entry one of those depends on, nor a token the effects move`);
+  if (name.startsWith(CARD)) {
+    const field = name.slice(CARD.length);
+    return scope.tokenFields.has(field) ? { kind: 'card', field } : refuse(path, `${shown(name)} is not a card field that holds a token`);
+  }
+  return scope.contracts.has(name) ? { kind: 'entry', name } : refuse(path, `${shown(name)} is not a contract the calls or the effects' views target, an entry one of those depends on, nor a token the effects move`);
 };
 
 const list =
@@ -388,9 +409,11 @@ const protocolNotes = (slug: string) =>
     return hacks === 'unread' || protocol.incidents.length === hacks ? undefined : `incidents lists ${protocol.incidents.length}; DefiLlama lists ${hacks} hacks`;
   });
 
+const endNames = (end: FlowEnd, scope: Scope): readonly string[] => (end.kind === 'entry' ? [end.name] : (scope.tokenFields.get(end.field) ?? []));
+
 const FLOW = optList(
-  where(obj({ after: callNumber, from: contract, to: contract, function: signature, text: text(100), sources: where(list(url), (sources) => (sources.length === 0 ? 'names no source: the contract source read and a past transaction checked' : undefined)) }), (line, scope) =>
-    scope.nested.some((n) => n.after === line.after && n.selector === line.function.selector && n.from.includes(line.from) && (n.to === undefined || n.to.includes(line.to)))
+  where(obj({ after: callNumber, from: flowEnd, to: flowEnd, function: signature, text: text(100), sources: where(list(url), (sources) => (sources.length === 0 ? 'names no source: the contract source read and a past transaction checked' : undefined)) }), (line, scope) =>
+    scope.nested.some((n) => n.after === line.after && n.selector === line.function.selector && endNames(line.from, scope).some((name) => n.from.includes(name)) && (n.to === undefined || endNames(line.to, scope).some((name) => n.to?.includes(name))))
       ? 'names a call the template binds itself, which the diagram draws from the template'
       : undefined,
   ),
@@ -399,7 +422,7 @@ const FLOW = optList(
 
 const NOTES_FIELDS = obj({
   title: text(100),
-  summary: text(2000),
+  summary: text(250),
   verdict: obj({ status: oneOf('safe', 'caution'), text: text(100) }),
   flow: FLOW,
   protocols: keyed((scope) => [...scope.protocols.keys()], 'a protocol the protocol facts cover', true, protocolNotes),
@@ -412,7 +435,8 @@ const NOTES_FIELDS = obj({
       obj({ role: opt(text(200)), sources: optList(obj({ text: text(200), url, result: oneOf('pass', 'attention', 'fail') })) }),
     ),
   ),
-  fields: keyed((scope) => scope.fields, 'an argument of the template', true, () => text(2000)),
+  fields: keyed((scope) => scope.fields, 'an argument of the template', true, () => text(150)),
+  times: optList(where(str(400), (key, scope) => (scope.fields.includes(key) ? undefined : `${shown(key)} is not an argument of the template`))),
   pastTxsConclusion: opt(text(200)),
   context: optList(obj({ title: text(40), text: text(400), sources: where(list(url), (sources) => (sources.length === 0 ? 'names no source' : undefined)) }), 4),
 });

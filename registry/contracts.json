@@ -221,6 +221,12 @@
     "kind": "router",
     "source": "https://docs.morpho.org/developers/contracts/addresses/",
     "sourceLabel": "VaultBundlesV1",
+    "moreSources": [
+      {
+        "url": "https://github.com/morpho-org/sdks/blob/166277bc26a12235256bdf9162da012b80781a1e/packages/morpho-ts/src/addresses.ts",
+        "label": "vaultBundlesV1"
+      }
+    ],
     "defillama": "morpho-blue",
     "code": {
       "hash": "0xa8ec5960bb20a33ed52e8248aed85ee3148135b185bba8bb74eb572a987fd4a5",
@@ -2392,6 +2398,29 @@
           }
         }
       ]
+    }
+  },
+  "uniswap-stable-pair-hook": {
+    "address": "0x0000113dCf4ADd69999Fad8F20F2b63F979bfcC0",
+    "kind": "pool",
+    "source": "https://developers.uniswap.org/llms.mdx/docs/protocols/uniswap-labs-hooks/stable-pair/deployments",
+    "sourceLabel": "StablePairHook (hook)",
+    "sourceHeading": "Ethereum: 1",
+    "moreSources": [
+      {
+        "url": "https://github.com/Uniswap/v4-hooks-public/blob/e354058156f8f4f1aff1594a932513e7064956c7/README.md",
+        "label": "Ethereum",
+        "heading": "StablePairHook"
+      }
+    ],
+    "defillama": "uniswap-v4",
+    "code": {
+      "hash": "0xa5659fa6440c9830926d098ec347a558447bfd8e483643e0d02398dc4cff1685",
+      "implementation": {
+        "address": "0x5f216d21b1C81346938EDDc1Df7e0111A0F64000",
+        "hash": "0x3d1bc5ca01e9acbf8b04adec8354b9c3a36df23d58f87050767ceff7bf43ae98"
+      },
+      "from": 25626560
     }
   }
 }

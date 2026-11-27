@@ -4,8 +4,8 @@
     "zh-TW": "存入 Morpho vault"
   },
   "summary": {
-    "en": "The Safe first gives GeneralAdapter1 an allowance of exactly the amount you type, then calls `multicall` on Bundler3: GeneralAdapter1 pulls these tokens from the Safe and deposits them into the vault you pick, with the shares going straight to the Safe. You do not type the minimum shares: when you build the card, the program computes them from the vault's own preview of your deposit, less a small slippage. The price per share cannot be higher than the price those minimum shares imply, or the whole transaction fails.",
-    "zh-TW": "Safe 先授權 GeneralAdapter1 剛好你填的金額，再呼叫 Bundler3 的 `multicall`：GeneralAdapter1 從 Safe 拉走這筆代幣，存進你選的 vault，股份直接給 Safe。最少股份不用你填：建卡片時，程式依 vault 自己對這筆存款的預覽算出，再扣一點滑價。每股價格不能高過這個最少股份換算出的價格，否則整筆失敗。"
+    "en": "The Safe first approves VaultBundlesV1 for exactly the amount you type, then calls `vaultBundlesV1Deposit` on it: VaultBundlesV1 pulls the tokens from the Safe and deposits them into the vault you pick, and the vault mints the shares straight to the Safe. You do not type the minimum shares: the program computes them from the vault's own preview when you build the card, less a small slippage; a higher price per share makes the transaction fail. The old route through Bundler3 is refused: verify returns MISMATCH.",
+    "zh-TW": "Safe 先授權 VaultBundlesV1 剛好你填的金額，再呼叫它的 `vaultBundlesV1Deposit`：VaultBundlesV1 從 Safe 拉走這筆代幣，存進你選的 vault，vault 把份額直接鑄給 Safe。最少份額不用你填：建卡片時，程式依 vault 自己的預覽算出，再扣一點滑價；每股價格更高時，交易會失敗。走 Bundler3 的舊路線不接受，verify 判 MISMATCH。"
   },
   "protocols": {
     "morpho-blue": {
@@ -15,11 +15,11 @@
       },
       "audits": {
         "text": {
-          "en": "Bundler3's GitHub lists 3 audits (two by Spearbit, one by OpenZeppelin). Vault V2's GitHub lists 10 (Spearbit, Zellic, Blackthorn, ChainSecurity, Certora and one contest). MetaMorpho's GitHub lists audits by Cantina and OpenZeppelin.",
-          "zh-TW": "Bundler3 的 GitHub 列了 3 份稽核（Spearbit 兩份、OpenZeppelin 一份）。Vault V2 的 GitHub 列了 10 份（Spearbit、Zellic、Blackthorn、ChainSecurity、Certora 和一場競賽）。MetaMorpho 的 GitHub 列了 Cantina 和 OpenZeppelin 的稽核。"
+          "en": "VaultBundlesV1 has one audit, which AI read: Blackthorn, 14 to 21 July 2026, 0 high, 0 medium, 7 low or info. The two about this contract are marked resolved: one on deposit-gated vaults, one saying anyone could take tokens left in the contract, which it does not hold between transactions (resolved only by documenting it). AI compared the audit's final commit with the source on GitHub main: in VaultBundlesV1.sol and TokenLib.sol only comments, the licence and the compiler line differ. Vault V2's and MetaMorpho's own audits are in their repositories; AI did not read those.",
+          "zh-TW": "VaultBundlesV1 有一份稽核，AI 讀過：Blackthorn，2026-07-14 到 07-21，高 0、中 0、低或資訊 7。與這個合約有關的兩項都標為已解決：一項關於限制存款人的 vault，一項說留在合約裡的代幣誰都能拿走，而合約在交易之間不留代幣（只用文件說明解決，沒改程式邏輯）。AI 把稽核的最終 commit 和 GitHub main 的原始碼比對，VaultBundlesV1.sol 和 TokenLib.sol 只差註解、授權條款和編譯器版本行。Vault V2 和 MetaMorpho 各自的稽核在它們的 repo，AI 沒有讀。"
         },
         "sources": [
-          "https://github.com/morpho-org/bundler3/tree/main/audits",
+          "https://github.com/morpho-org/bundles/blob/main/audits/2026-08-07-blue-vaults-bundles-blackthorn.pdf",
           "https://github.com/morpho-org/vault-v2/tree/main/audits",
           "https://github.com/morpho-org/metamorpho/tree/main/audits"
         ]
@@ -30,25 +30,33 @@
   "judgments": [
     {
       "text": {
-        "en": "The Morpho app sometimes adds two more steps at the end of the bundle that send the tokens and shares left in the adapter back to you. This template accepts only the two-step version; with the two extra steps, verify returns MISMATCH.",
-        "zh-TW": "Morpho app 有時在 bundle 最後多加兩步，把 adapter 剩下的代幣和股份轉回給你。這個模板只接受兩步的版本，多兩步時 verify 會判 MISMATCH。"
+        "en": "The Morpho app now asks for an unlimited approval by default, and this template accepts only an approval equal to the deposit. Example: you deposit 10,000 USDC; the app builds an approval of 2^256-1 (unlimited), the card wants exactly 10,000 USDC, so an unedited app transaction gets MISMATCH. The newest app transactions AI read (2026-11-20 and 11-21) were all unlimited; some older ones were exact, and how they came to be is unknown.",
+        "zh-TW": "Morpho app 現在預設要求無限授權，這個模板只接受授權額等於存款額。例：存 10,000 USDC，app 組的授權是 2^256−1（無限），卡片要的是剛好 10,000 USDC，沒改就判 MISMATCH。AI 看到最新的 app 交易（2026-11-20、11-21）都是無限；較早有幾筆剛好等額，怎麼來的不知道。"
       },
+      "sources": [
+        "https://github.com/morpho-org/sdks/blob/166277bc26a12235256bdf9162da012b80781a1e/packages/morpho-sdk/src/helpers/tokenApproval.ts",
+        "https://github.com/morpho-org/sdks/commit/804fb8f2",
+        "https://github.com/safe-global/safe-wallet-monorepo/blob/9141f5da93d31470004bbb5464d026e9c1078626/apps/web/src/components/tx/ApprovalEditor/index.tsx",
+        "https://github.com/safe-global/safe-wallet-monorepo/blob/9141f5da93d31470004bbb5464d026e9c1078626/packages/utils/src/components/tx/ApprovalEditor/utils/approvals.ts#L55-L92"
+      ],
       "recommendation": {
-        "en": "On MISMATCH, do not sign. Report it, then decide whether to add a template.",
-        "zh-TW": "遇到 MISMATCH 不要簽；回報後再決定是否新增模板。"
+        "en": "Before proposing, while nobody has signed, set the approval to the deposit amount (here 10,000) in Safe{Wallet} and press Save. AI read the web wallet's source: the review screen has this editor, also for an approval in a batch; AI did not try it live. If it does not appear, do not sign.",
+        "zh-TW": "送出提案前、還沒人簽名時，在 Safe{Wallet} 把授權額改成存款額（這裡是 10,000）再按 Save。AI 讀過網頁版原始碼：確認畫面有這個編輯欄，批次裡的授權也能改；沒有實際操作過。看不到編輯欄就不要簽。"
       }
     },
     {
       "text": {
-        "en": "On 2026-09-25 Morpho's SDK removed the Bundler3 address and listed VaultBundlesV1 (0x02912516d49dE997db75B9D7858faAE59209650B) instead; docs.morpho.org lists both. In the recorded transactions, most deposits after the end of 2026-09 go through VaultBundlesV1, so the Morpho app may no longer take this template's route.",
-        "zh-TW": "Morpho 的 SDK 在 2026-09-25 拿掉 Bundler3 的地址，改列 VaultBundlesV1（0x02912516d49dE997db75B9D7858faAE59209650B）；docs.morpho.org 兩個都列。記錄裡 2026-09 底之後的存款多半經 VaultBundlesV1，Morpho app 現在可能不再走這個模板的路線。"
+        "en": "If the Safe already gave VaultBundlesV1 a large enough allowance, the app sends a deposit with no approval: MISMATCH. Others cannot spend that leftover: the contract pulls only from its own caller (AI read the source). But any later VaultBundlesV1 deposit the Safe signs can use it with no new approval, even into a fake vault or with a referral fee to someone else.",
+        "zh-TW": "Safe 若已給 VaultBundlesV1 夠大的授權，app 只組存款、不再授權，判 MISMATCH。剩下的授權別人用不了：合約只從呼叫者自己拉代幣（AI 讀原始碼）。但 Safe 之後簽的任何一筆 VaultBundlesV1 存款都能直接動用，不用再授權，包括存進假 vault，或付推薦費給別人。"
       },
       "sources": [
-        "https://github.com/morpho-org/sdks/commit/9ac0ea55b93225a62ddeabb1c625064319be728d"
+        "https://github.com/morpho-org/bundles/blob/9726ac4250303893451664ba75f393360e17d6ca/src/vault/VaultBundlesV1.sol#L31-L56",
+        "https://github.com/morpho-org/bundles/blob/9726ac4250303893451664ba75f393360e17d6ca/src/libraries/TokenLib.sol#L60-L83",
+        "https://github.com/morpho-org/sdks/blob/166277bc26a12235256bdf9162da012b80781a1e/packages/morpho-sdk/src/helpers/tokenApproval.ts"
       ],
       "recommendation": {
-        "en": "Before signing, check whether the Safe transaction calls Bundler3 or VaultBundlesV1. One that goes through VaultBundlesV1 needs the morpho/vault-bundles-deposit template; with this template, verify returns MISMATCH.",
-        "zh-TW": "簽之前看 Safe 交易呼叫的是 Bundler3 還是 VaultBundlesV1；經 VaultBundlesV1 的要用 morpho/vault-bundles-deposit 模板，用這個模板 verify 會判 MISMATCH。"
+        "en": "First set the allowance back to 0 in a separate transaction, which this template does not cover; the app then builds approval and deposit again. Until then, check the vault, amount and referral fee of every VaultBundlesV1 transaction.",
+        "zh-TW": "先用另一筆交易把授權改回 0（這個模板不管那筆），app 才會重新組出授權加存款。改回之前，每筆 VaultBundlesV1 交易都要看清楚 vault、金額和推薦費。"
       }
     }
   ],
@@ -60,107 +68,91 @@
         "zh-TW": "存進 USDC vault 的代幣"
       }
     },
-    "bundler3": {
+    "vault-bundles-v1": {
       "role": {
-        "en": "Morpho's bundling contract. It runs each step of the bundle in order and records that the Safe started it",
-        "zh-TW": "Morpho 的打包合約，依序執行 bundle 裡的每一步，並記住發起人是 Safe"
-      }
-    },
-    "general-adapter-1": {
-      "role": {
-        "en": "Receives the allowance, pulls the tokens for the Safe and deposits them into the vault",
-        "zh-TW": "接收授權，替 Safe 拉代幣並存進 vault"
-      }
+        "en": "Morpho's vault bundle contract. It receives the allowance, pulls the tokens from the Safe, deposits them into the vault and has the vault mint the shares to the Safe, its caller",
+        "zh-TW": "Morpho 的 vault bundle 合約：收下授權、從 Safe 拉代幣、存進 vault，並讓 vault 把份額直接發給呼叫它的 Safe"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Morpho's contract address page lists VaultBundlesV1 at 0x02912516d49dE997db75B9D7858faAE59209650B for Ethereum",
+            "zh-TW": "Morpho 的合約地址頁在 Ethereum 列 VaultBundlesV1 為 0x02912516d49dE997db75B9D7858faAE59209650B"
+          },
+          "url": "https://docs.morpho.org/developers/contracts/addresses/",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "The SDK's address file in Morpho's GitHub organization, main at 2026-11-23, sets bundles.vaultBundlesV1 for Ethereum mainnet to this address",
+            "zh-TW": "Morpho GitHub 組織的 SDK 地址檔（main，2026-11-23）把 Ethereum 主網的 bundles.vaultBundlesV1 設為這個地址"
+          },
+          "url": "https://github.com/morpho-org/sdks/blob/166277bc26a12235256bdf9162da012b80781a1e/packages/morpho-ts/src/addresses.ts",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: verified source VaultBundlesV1, created by contract 0x19f57e4080fc40812f806054fa79052e6050b9b6, deployed in the same transaction 0xf026c771c62ada6173df2a20cc46bcfa86b60a4b7a75dc9174dfed59c67188fd; no Morpho page read names that creator",
+            "zh-TW": "Etherscan：原始碼 VaultBundlesV1，由合約 0x19f57e4080fc40812f806054fa79052e6050b9b6 建立，交易 0xf026c771c62ada6173df2a20cc46bcfa86b60a4b7a75dc9174dfed59c67188fd；Morpho 頁面沒列這個建立者"
+          },
+          "url": "https://etherscan.io/address/0x02912516d49dE997db75B9D7858faAE59209650B",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "No Immunefi program's public data holds this address on 2026-11-25",
+            "zh-TW": "2026-11-25 的 Immunefi 公開資料沒有任何計畫列出這個地址"
+          },
+          "url": "https://immunefi.com/public-api/bounties.json",
+          "result": "attention"
+        }
+      ]
     }
   },
   "fields": {
     "1.approve.spender": {
-      "en": "The contract allowed to pull tokens from the Safe. Here it is Morpho's GeneralAdapter1, which pulls these funds with `transferFrom` in call 2.",
-      "zh-TW": "被授權從 Safe 拉代幣的合約。這裡是 Morpho 的 GeneralAdapter1，呼叫 2 裡它用 `transferFrom` 拉走這筆錢。"
+      "en": "The contract allowed to pull tokens from the Safe: VaultBundlesV1, which pulls this amount with `transferFrom` in call 2.",
+      "zh-TW": "被授權從 Safe 拉代幣的合約：VaultBundlesV1，呼叫 2 裡它用 `transferFrom` 拉走這筆錢。"
     },
     "1.approve.value": {
-      "en": "The allowance limit, equal to the deposit amount. Call 2 pulls all of it, so the allowance is back to 0 after the transaction.",
-      "zh-TW": "授權的上限，等於存款金額。呼叫 2 會整筆拉走，交易後授權回到 0。"
+      "en": "The allowance, exactly the deposit amount, so call 2 uses all of it and none is left. The app asks for unlimited by default; that is MISMATCH.",
+      "zh-TW": "授權額，剛好等於存款金額，呼叫 2 會全部用完、不留剩餘。app 預設要求無限，那會判 MISMATCH。"
     },
-    "2.multicall.bundle": {
-      "en": "The list of steps Bundler3 runs in order, fixed at two here: first pull the tokens, then deposit them into the vault. If any step fails, the whole transaction fails.",
-      "zh-TW": "Bundler3 依序執行的步驟清單，這裡固定兩步：先拉代幣，再存進 vault。任何一步失敗，整筆交易失敗。"
+    "2.vaultBundlesV1Deposit.vault": {
+      "en": "The vault that receives the deposit.",
+      "zh-TW": "收下存款的 vault。"
     },
-    "2.multicall.bundle[0]": {
-      "en": "Step 1: pull the tokens from the Safe into GeneralAdapter1.",
-      "zh-TW": "第一步：把代幣從 Safe 拉進 GeneralAdapter1。"
+    "2.vaultBundlesV1Deposit.assets": {
+      "en": "The amount pulled from the Safe. A referral fee would come out of it; the fee is bound to 0, so all of it is deposited.",
+      "zh-TW": "從 Safe 拉走的金額。推薦費會從裡面扣；推薦費綁定為 0，所以全部存入。"
     },
-    "2.multicall.bundle[0].to": {
-      "en": "The contract this step calls, fixed to GeneralAdapter1.",
-      "zh-TW": "這一步呼叫的合約，固定是 GeneralAdapter1。"
+    "2.vaultBundlesV1Deposit.maxSharePriceE27": {
+      "en": "The highest price per share (assets ÷ shares, times 1e27). If the actual price is higher, the whole transaction fails. The program requires it to be no higher than \"amount ÷ minimum shares\", so you get at least the minimum shares by the count the vault itself reports.",
+      "zh-TW": "每股最高價格（資產 ÷ 份額，乘以 1e27）。實際價格更高，整筆失敗。程式要求它不高於「金額 ÷ 最少份額」，所以依 vault 自己回報的份額數，你至少拿到最少份額。"
     },
-    "2.multicall.bundle[0].data": {
-      "en": "The function and arguments this step runs, listed item by item below.",
-      "zh-TW": "這一步要執行的函式和參數，下面逐項列出。"
+    "2.vaultBundlesV1Deposit.assetPermit": {
+      "en": "A signature that would replace the approval. A Safe uses the approval in call 1 instead, so this is empty.",
+      "zh-TW": "用簽名代替授權的資料。Safe 用呼叫 1 的授權，所以這裡是空的。"
     },
-    "2.multicall.bundle[0].data.erc20TransferFrom.token": {
-      "en": "The token to pull, equal to the asset of the vault you pick.",
-      "zh-TW": "要拉的代幣，等於你選的 vault 的資產。"
+    "2.vaultBundlesV1Deposit.assetPermit.kind": {
+      "en": "0 means no permit: the tokens are pulled with the approval. 1 is ERC-2612 and 2 is Permit2, both refused.",
+      "zh-TW": "0 表示不用 permit，靠授權拉代幣。1 是 ERC-2612、2 是 Permit2，都不接受。"
     },
-    "2.multicall.bundle[0].data.erc20TransferFrom.receiver": {
-      "en": "The tokens go to GeneralAdapter1 itself first; in the next step it deposits them into the vault.",
-      "zh-TW": "代幣先轉到 GeneralAdapter1 自己，下一步再由它存進 vault。"
+    "2.vaultBundlesV1Deposit.assetPermit.data": {
+      "en": "The permit's data. With kind 0 the contract does not read it. It was empty in all 31 past transactions that fit the template.",
+      "zh-TW": "permit 的資料。kind 是 0 時合約不讀它。過去符合模板的 31 筆都是空的。"
     },
-    "2.multicall.bundle[0].data.erc20TransferFrom.amount": {
-      "en": "The amount pulled from the Safe, equal to the deposit amount. Bundler3 records the Safe as the one that started the bundle, so only the Safe's funds can be pulled.",
-      "zh-TW": "從 Safe 拉的數量，等於存款金額。Bundler3 記錄發起人是 Safe，所以只能拉 Safe 的錢。"
+    "2.vaultBundlesV1Deposit.referralFeePct": {
+      "en": "The share of the deposit paid to a referrer. Bound to 0: nothing is taken.",
+      "zh-TW": "從存款抽給推薦人的比例。綁定為 0，不抽。"
     },
-    "2.multicall.bundle[0].value": {
-      "en": "ETH sent along, fixed at 0.",
-      "zh-TW": "附帶的 ETH，固定為 0。"
+    "2.vaultBundlesV1Deposit.referralFeeRecipient": {
+      "en": "Who would receive the referral fee. Bound to the zero address.",
+      "zh-TW": "收推薦費的人。綁定為零地址。"
     },
-    "2.multicall.bundle[0].skipRevert": {
-      "en": "Whether to skip this step if it fails. Fixed at false: if it fails, the whole transaction fails.",
-      "zh-TW": "這一步失敗時是否略過。固定為 false：失敗就整筆失敗。"
-    },
-    "2.multicall.bundle[0].callbackHash": {
-      "en": "Used only by steps that need a callback; fixed at 0.",
-      "zh-TW": "只有需要回呼的步驟才用，固定為 0。"
-    },
-    "2.multicall.bundle[1]": {
-      "en": "Step 2: GeneralAdapter1 deposits the tokens into the vault, with the shares going to the Safe.",
-      "zh-TW": "第二步：GeneralAdapter1 把代幣存進 vault，股份給 Safe。"
-    },
-    "2.multicall.bundle[1].to": {
-      "en": "The contract this step calls, fixed to GeneralAdapter1.",
-      "zh-TW": "這一步呼叫的合約，固定是 GeneralAdapter1。"
-    },
-    "2.multicall.bundle[1].data": {
-      "en": "The function and arguments this step runs, listed item by item below.",
-      "zh-TW": "這一步要執行的函式和參數，下面逐項列出。"
-    },
-    "2.multicall.bundle[1].data.erc4626Deposit.vault": {
-      "en": "Which vault to deposit into. This is the vault you pick on the card.",
-      "zh-TW": "存進哪一個 vault。這就是你在卡片上選的 vault。"
-    },
-    "2.multicall.bundle[1].data.erc4626Deposit.assets": {
-      "en": "The amount of tokens deposited into the vault, equal to the deposit amount.",
-      "zh-TW": "存進 vault 的代幣數量，等於存款金額。"
-    },
-    "2.multicall.bundle[1].data.erc4626Deposit.maxSharePriceE27": {
-      "en": "The highest price per share (assets ÷ shares, times 1e27). If the actual price is higher, the whole transaction fails. The program requires it to be no higher than \"amount ÷ minimum shares\", so by the share count the vault itself reports, you get at least the minimum shares. You do not type the minimum shares: the program computes them when you build the card.",
-      "zh-TW": "每股最高價格（資產 ÷ 股份，乘以 1e27）。實際價格高於它，整筆失敗。程式要求它不高於「金額 ÷ 最少股份」，依 vault 自己回報的股份數，你至少拿到最少股份。最少股份不用你填，建卡片時由程式算出。"
-    },
-    "2.multicall.bundle[1].data.erc4626Deposit.receiver": {
-      "en": "The address that receives the shares, fixed to the Safe.",
-      "zh-TW": "收股份的地址，固定是 Safe。"
-    },
-    "2.multicall.bundle[1].value": {
-      "en": "ETH sent along, fixed at 0.",
-      "zh-TW": "附帶的 ETH，固定為 0。"
-    },
-    "2.multicall.bundle[1].skipRevert": {
-      "en": "Whether to skip this step if it fails. Fixed at false: if it fails, the whole transaction fails.",
-      "zh-TW": "這一步失敗時是否略過。固定為 false：失敗就整筆失敗。"
-    },
-    "2.multicall.bundle[1].callbackHash": {
-      "en": "Used only by steps that need a callback; fixed at 0.",
-      "zh-TW": "只有需要回呼的步驟才用，固定為 0。"
+    "2.vaultBundlesV1Deposit.deadline": {
+      "en": "After this time the transaction fails. The app sets two hours from when it builds it, so a Safe that executes later must rebuild it. Of the 31 past transactions that fit, one ran 496,672 seconds (about 5.7 days) before its deadline, so the limit is 7 days; half ran less than 7,051 seconds before.",
+      "zh-TW": "過了這個時間交易就失敗。app 設在組交易後兩小時，Safe 較晚執行就要重新組。過去符合的 31 筆裡，最久的一筆在期限前 496,672 秒（約 5.7 天）執行，所以上限是 7 天；一半在期限前 7,051 秒以內執行。"
     }
   }
 }

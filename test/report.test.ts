@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -50,6 +50,8 @@ import { readRecording } from '../src/chain/bytecode.ts';
 import { NO_SITE_LISTINGS } from '../src/research/site-listings.ts';
 import { studyRecording } from '../src/research/past-txs-summary.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
+import { repoWithBundler3Deposit } from './bundler3-deposit.ts';
+import { FROZEN_REPORTS, repoWithFrozenReports } from './frozen-reports.ts';
 import { parseRegistryAt } from './registry-at.ts';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -57,8 +59,14 @@ const registry = loadRegistry(ROOT);
 const suffixes = loadPublicSuffixList();
 const ID = 'morpho/vault-deposit';
 const TARGET = { template: ID, instance: 'steakhouse-prime-usdc-v2-0f51' };
-const scoped = loadReport(ROOT, registry, TARGET);
-const recording = readRecording(join(ROOT, reportRecordingPath(TARGET))) as ReportRecording;
+const committed = loadReport(ROOT, registry, TARGET);
+const committedRecording = readRecording(join(ROOT, reportRecordingPath(TARGET))) as ReportRecording;
+
+/** The frozen deposit report, whose template nests calls in a Bundler3 bundle. */
+const FROZEN = repoWithFrozenReports();
+const FROZEN_TARGET = FROZEN_REPORTS[0];
+const scoped = loadReport(FROZEN, registry, FROZEN_TARGET);
+const recording = readRecording(join(FROZEN, reportRecordingPath(FROZEN_TARGET))) as ReportRecording;
 
 /** The report with no ABI proofs, vault evidence or past transactions, which the replay test covers. */
 function quick(
@@ -100,13 +108,23 @@ test('morpho/vault-deposit: rules name registry entries with full addresses, and
   assert.match(text, /\| `multicall\.bundle\[1\]\.data → erc4626Deposit\.receiver` \| the Safe \|/);
   assert.match(text, /\| `multicall\.bundle\[1\]\.data → erc4626Deposit\.maxSharePriceE27` \| at most assets × 1e27 \/ shares, with assets the card's `amount` and shares the card's `min-shares`/);
   assert.match(text, /\| `multicall` \| calls `multicall\(\(address,bytes,uint256,bool,bytes32\)\[\]\)`, selector `0x374f435d`; at most 12 bytes after the arguments/);
-  assert.match(text, /\| `steakhouse-prime-usdc-v2-0f51` \| `0xbeef088055857739C12CD3765F20b7679Def0f51` \| asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `vault-v2-factory`/);
+  assert.match(text, /\| `hyperithm-usdc-apex-v2-9e2f` \| `0x093272C07700d3cA5301C3Bf9B3A392624179E2F` \| asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `vault-v2-factory`/);
   assert.match(text, /\| `multicall\(\(address,bytes,uint256,bool,bytes32\)\[\]\)` \| `bundler3` \| <https:\/\/github\.com\/morpho-org\/bundler3\/blob\/[0-9a-f]{40}\/src\/Bundler3\.sol> \| FINDING \| PASS \| PASS \|/);
   assert.match(text, /\| `erc4626Deposit\(address,uint256,uint256,address\)` \| `general-adapter-1` \| <https:\/\/github\.com\/morpho-org\/bundler3\/blob\/[0-9a-f]{40}\/src\/adapters\/GeneralAdapter1\.sol> \| FINDING \| PASS \| PASS \|/);
 });
 
+test('morpho/vault-deposit: the committed template approves VaultBundlesV1 the amount and deposits through it, with no permit, no fee and a price bound', () => {
+  const text = quick(committedRecording.pages, new Map(), committed.subject, undefined, undefined, undefined, committed.registry, committedRecording.commits);
+  assert.match(text, /\| `approve\.spender` \| registry `vault-bundles-v1` `0x02912516d49dE997db75B9D7858faAE59209650B` \|/);
+  assert.match(text, /\| `approve\.value` \| the card's `amount`/);
+  assert.match(text, /\| `vaultBundlesV1Deposit\.vault` \| the card's `vault`/);
+  assert.match(text, /\| `vaultBundlesV1Deposit\.maxSharePriceE27` \| at most assets × 1e27 \/ shares, with assets the card's `amount` and shares the card's `min-shares`/);
+  assert.match(text, /\| `vaultBundlesV1Deposit\.assetPermit\.kind` \| constant `0`/);
+  assert.match(text, /\| `vaultBundlesV1Deposit\.referralFeePct` \| constant `0`/);
+});
+
 test('the report says what a computed field reads: the registry contract it calls, each argument, and the number it picks', () => {
-  const raw = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'template.json'), 'utf8'));
+  const raw = JSON.parse(readFileSync(join(FROZEN, TEMPLATES_DIR, ID, 'template.json'), 'utf8'));
   raw.card['min-shares'].computed.read = {
     to: { contract: 'fluid-fusdc' },
     function: 'quote(int128 i, uint256 dx, address who) returns (uint256 low, (uint256 shares, uint128 fee) best)',
@@ -152,17 +170,17 @@ test('a per-vault report joins its vault\'s docs.json with the template\'s, and 
 });
 
 test('morpho/vault-deposit: the ERC-7730 section is computed again from the recorded descriptors and attestation reads', async () => {
-  const snapshot = { commit: recording.erc7730.commit, files: new Map(Object.entries(recording.erc7730.files)) };
-  const entries = entriesOf(scoped.subject, scoped.registry);
-  const { text } = await erc7730Text(entries, scoped.registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain)));
+  const snapshot = { commit: committedRecording.erc7730.commit, files: new Map(Object.entries(committedRecording.erc7730.files)) };
+  const entries = entriesOf(committed.subject, committed.registry);
+  const { text } = await erc7730Text(entries, committed.registry, snapshot, () => chainAt(replayReader(committedRecording.erc7730.chain)));
   assert.match(text, /^ERC-7730 registry github\.com\/ethereum\/clear-signing-erc7730-registry at commit [0-9a-f]{40}$/m);
-  assert.match(text, /general-adapter-1 0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0 \(adapter\)\n {2}descriptor {3}none/);
+  assert.match(text, /vault-bundles-v1 0x02912516d49dE997db75B9D7858faAE59209650B \(router\)\n {2}descriptor {3}registry\/morpho\/calldata-VaultBundlesV1\.json\n {2}applies {6}by exact address/);
   assert.match(
     text,
     /steakhouse-prime-usdc-v2-0f51 0xbeef088055857739C12CD3765F20b7679Def0f51 \(vault\)\n {2}descriptor {3}registry\/morpho\/calldata-steakhouse_financial-steakUSDC-v2-1\.json\n {2}applies {6}by exact address/,
   );
-  const committed = readFileSync(join(ROOT, generatedPath(ROOT, TARGET)), 'utf8');
-  assert.ok(committed.includes(text), 'report.generated.md holds the section as computed');
+  const written = readFileSync(join(ROOT, generatedPath(ROOT, TARGET)), 'utf8');
+  assert.ok(written.includes(text), 'report.generated.md holds the section as computed');
 });
 
 test("each entry's code pin prints with its implementation, and a proof of other code than the pin is a FINDING", async () => {
@@ -172,7 +190,7 @@ test("each entry's code pin prints with its implementation, and a proof of other
   const reg = parseRegistryAt(ROOT, raw);
   const usdc = reg.entries.get('usdc')!;
   const spans = await checkSpans(replayReader([]), [usdc]);
-  const unranged = loadReport(ROOT, reg, TARGET);
+  const unranged = loadReport(FROZEN, reg, FROZEN_TARGET);
   assert.match(quick(recording.pages, new Map(), unranged.subject, undefined, undefined, spans, unranged.registry), new RegExp(`^\\| \`usdc\` \\| 0 \\| \`${usdc.code!.current.pin.hash}\` \\| \`0x43506849D7C04F9138D1A2050bbF3A0c054402dd\` \`${usdc.code!.current.pin.implementation!.hash}\` \\| pinned before ranges, not read \\|$`, 'm'));
   const bundle = { name: 'bundle', type: 'tuple[]', components: ['address to', 'bytes data', 'uint256 value', 'bool skipRevert', 'bytes32 callbackHash'].map((p) => ({ type: p.split(' ')[0], name: p.split(' ')[1] })) };
   const multicall = { type: 'function', name: 'multicall', inputs: [bundle] };
@@ -201,7 +219,7 @@ test('the report prints every code span, and an earlier span whose code the chai
   const raw = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8'));
   raw['bundler3'].code = { hash: keccakCode('0x6002' as Hex), from: 250, earlier: [{ from: 100, hash: forged }] };
   const reg = parseRegistryAt(ROOT, raw);
-  const { subject, registry: seen } = loadReport(ROOT, reg, TARGET);
+  const { subject, registry: seen } = loadReport(FROZEN, reg, FROZEN_TARGET);
   const bundler3 = [reg.entries.get('bundler3')!];
   const report = async (early: Hex) => quick(recording.pages, new Map(), subject, undefined, undefined, await checkSpans(chainReader(early), bundler3), seen);
   const committed = await report('0x6066' as Hex);
@@ -241,7 +259,7 @@ const serving =
   };
 
 test("the report reads at its latest block the code of an entry no ABI proof covers, from its recording too, and code the chain no longer runs is a key finding", async () => {
-  const { subject, registry: seen } = loadReport(ROOT, withDependency(), TARGET);
+  const { subject, registry: seen } = loadReport(FROZEN, withDependency(), FROZEN_TARGET);
   const block: BlockRef = { number: 300n, hash: `0x${'30'.repeat(32)}` as Hex };
   const recorded = recordingTransport(serving('0x6002' as Hex), REPLAY_ENDPOINTS);
   const live = await readToday(createReader(REPLAY_ENDPOINTS, recorded.transport, { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [] }), subject, seen, block);
@@ -294,7 +312,7 @@ test('a selector-routed proxy a call targets is not provable, and the report rea
     routes: { implementationOf: 'getSigsImplementation(bytes4)', selectorsOf: 'getImplementationSigs(address)', seeds: ['0x00000001'] },
     code: { hash: raw['bundler3'].code.hash, routes: [{ address: implementation, hash: `0x${'0a'.repeat(32)}`, selectors: ['0x00000001'] }], from: 100 },
   };
-  const { subject, registry: seen } = loadReport(ROOT, parseRegistryAt(ROOT, raw), TARGET);
+  const { subject, registry: seen } = loadReport(FROZEN, parseRegistryAt(ROOT, raw), FROZEN_TARGET);
   const text = quick(recording.pages, new Map(), subject, undefined, undefined, undefined, seen);
   assert.match(text, /^\| `bundler3` \| `0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245` \| not provable: a selector-routed proxy, whose calls run in the implementations its routes reach; its routes are pinned above \|/m);
   assert.match(text, /^\| `bundler3` \| not read \| {2}\|$/m);
@@ -352,8 +370,8 @@ test('the report prints no text from a page or a listing', () => {
 });
 
 test('docs.json names exactly the template\'s functions, each with a registry contract and an https URL, and nothing else', () => {
-  const template = loadTemplate(ROOT, ID, registry);
-  const valid = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'docs.json'), 'utf8')) as Record<string, { contract: string; url: string }>;
+  const template = loadTemplate(FROZEN, ID, registry);
+  const valid = JSON.parse(readFileSync(join(FROZEN, TEMPLATES_DIR, ID, 'docs.json'), 'utf8')) as Record<string, { contract: string; url: string }>;
   const refused = (raw: unknown) => assert.throws(() => parseDocs(raw, template, registry), ReportError);
   const without = Object.fromEntries(Object.entries(valid).slice(1));
   assert.throws(() => parseDocs(without, template, registry), /no page for approve\(address,uint256\)/);
@@ -370,8 +388,8 @@ const EVIL_URL = 'https://evil.example/approve>|PASS|n/a|PASS|<https://x';
 const cellsOf = (row: string): string[] => row.split(/(?<!\\)\|/).slice(1, -1);
 
 test('a docs.json or registry URL holding a character outside RFC 3986, or one Markdown reads, is refused', () => {
-  const template = loadTemplate(ROOT, ID, registry);
-  const valid = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'docs.json'), 'utf8')) as Record<string, { contract: string; url: string }>;
+  const template = loadTemplate(FROZEN, ID, registry);
+  const valid = JSON.parse(readFileSync(join(FROZEN, TEMPLATES_DIR, ID, 'docs.json'), 'utf8')) as Record<string, { contract: string; url: string }>;
   const approve = valid['approve(address,uint256)']!;
   for (const url of [EVIL_URL, 'https://docs.example/`code`', 'https://docs.example/a b', 'https://docs.example/[x](https://y)', 'https://docs.example/a\\b']) {
     assert.throws(() => parseDocs({ ...valid, 'approve(address,uint256)': { ...approve, url } }, template, registry), /approve\(address,uint256\)\.url is not an https URL/, url);
@@ -382,10 +400,10 @@ test('a docs.json or registry URL holding a character outside RFC 3986, or one M
 });
 
 test('text the AI wrote in the template prints escaped and labelled as written by the AI in the template', () => {
-  const raw = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'template.json'), 'utf8')) as { calls: { trailer: { why: Record<string, string> } }[] };
+  const raw = JSON.parse(readFileSync(join(FROZEN, TEMPLATES_DIR, ID, 'template.json'), 'utf8')) as { calls: { trailer: { why: Record<string, string> } }[] };
   raw.calls[0]!.trailer.why = { en: 'harmless | PASS | `x` | *bold* _em_ [link](https://y) <b>', 'zh-TW': '無害' };
   const template = parseTemplate(raw, registry);
-  const docs = parseDocs(JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'docs.json'), 'utf8')), template, registry);
+  const docs = parseDocs(JSON.parse(readFileSync(join(FROZEN, TEMPLATES_DIR, ID, 'docs.json'), 'utf8')), template, registry);
   const text = quick(recording.pages, new Map(), { kind: 'template', template, docs, vault: undefined, dir: join(TEMPLATES_DIR, template.id) });
   const row = text.split('\n').find((l) => l.startsWith('| `approve` |'))!;
   assert.equal(cellsOf(row).length, 2, row);
@@ -401,7 +419,7 @@ test('text the AI wrote in the template prints escaped and labelled as written b
 });
 
 test('stored vault evidence holding a backtick or a character pnpm instance-evidence never prints is refused, and its section says it is stored', () => {
-  const vault = 'steakhouse-prime-usdc-v2-0f51';
+  const vault = FROZEN_TARGET.instance;
   const stored = recording.vaults[vault]!;
   assert.throws(() => quick(recording.pages, new Map(), undefined, new Map([[vault, `${stored}\n\`\`\`\n# Approved by the auditors`]])), ReportError);
   assert.throws(() => quick(recording.pages, new Map(), undefined, new Map([[vault, `${stored}\n<img src=x>`]])), ReportError);
@@ -438,10 +456,10 @@ test('every template folder holds report.generated.md, or design.md lists it amo
 });
 
 test('a test transaction the template no longer matches is a key row of the Findings', async () => {
-  const raw = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'template.json'), 'utf8'));
+  const raw = JSON.parse(readFileSync(join(FROZEN, TEMPLATES_DIR, ID, 'template.json'), 'utf8'));
   raw.calls[0].args.value = { const: '1' };
   const subject = { ...scoped.subject, template: parseTemplate(raw, registry) } as Subject;
-  const fixtures = await reportFixtures(ROOT, subject, registry);
+  const fixtures = await reportFixtures(FROZEN, subject, registry);
   const text = quick(recording.pages, new Map(), subject, new Map(), [], new Map(), scoped.registry, recording.commits, undefined, undefined, fixtures);
   const rows = text.split('\n').filter((line) => line.startsWith('| `fixture.'));
   assert.ok(fixtures.length > 0, 'the template has recorded test transactions');
@@ -456,8 +474,8 @@ test('a function its official page no longer shows is a key finding', () => {
 });
 
 test("docs.json's contract must be the call's target when the template binds the target", () => {
-  const template = loadTemplate(ROOT, ID, registry);
-  const valid = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'docs.json'), 'utf8')) as Record<string, { contract: string; url: string }>;
+  const template = loadTemplate(FROZEN, ID, registry);
+  const valid = JSON.parse(readFileSync(join(FROZEN, TEMPLATES_DIR, ID, 'docs.json'), 'utf8')) as Record<string, { contract: string; url: string }>;
   const swap = (sig: string, contract: string) => ({ ...valid, [sig]: { ...valid[sig]!, contract } });
   assert.throws(() => parseDocs(swap('erc4626Deposit(address,uint256,uint256,address)', 'bundler3'), template, registry), /erc4626Deposit\(address,uint256,uint256,address\)\.contract is bundler3, but the template calls it on general-adapter-1/);
   assert.throws(() => parseDocs(swap('multicall((address,bytes,uint256,bool,bytes32)[])', 'general-adapter-1'), template, registry), /calls it on bundler3/);
@@ -467,8 +485,8 @@ test("docs.json's contract must be the call's target when the template binds the
 });
 
 test('docs.json may name the ERC-20 standard for a function it defines on a token, and the report names the standard page', () => {
-  const template = loadTemplate(ROOT, ID, registry);
-  const valid = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'docs.json'), 'utf8')) as Record<string, unknown>;
+  const template = loadTemplate(FROZEN, ID, registry);
+  const valid = JSON.parse(readFileSync(join(FROZEN, TEMPLATES_DIR, ID, 'docs.json'), 'utf8')) as Record<string, unknown>;
   const standard = (sig: string, value: object) => parseDocs({ ...valid, [sig]: value }, template, registry);
   const docs = standard('approve(address,uint256)', { contract: 'usdt', standard: 'erc-20' });
   const approve = docs.find((d) => d.fn.signature === 'approve(address,uint256)')!;
@@ -537,24 +555,26 @@ test('docs.json may name ERC-4626 for a vault function, and WETH9 only for WETH 
 });
 
 test('a recorded trace drpc gave no readable answer for counts the transaction as not checked', async () => {
+  const BUNDLER3 = repoWithBundler3Deposit();
   const file = 'testdata/research/morpho-vault-deposit.json';
   const past = readRecording<PastTxsRecording>(join(ROOT, 'testdata', 'past-txs', 'morpho-vault-deposit.json'));
-  const plain = summarizePastTxs(ROOT, registry, file, await studyRecording(ROOT, past, registry));
+  const plain = summarizePastTxs(BUNDLER3, registry, file, await studyRecording(BUNDLER3, past, registry));
   const exact = plain.run.studies.find((s) => s.kind === 'fit' && s.outside.length === 0) ?? assert.fail('a transaction exactly the template');
   const traced = { ...past, traces: [{ hash: exact.hash, unreadable: 'recorded' }] };
-  const recorded = summarizePastTxs(ROOT, registry, file, await studyRecording(ROOT, traced, registry));
+  const recorded = summarizePastTxs(BUNDLER3, registry, file, await studyRecording(BUNDLER3, traced, registry));
   assert.match(recorded.text, /call traces, from drpc, of the transactions exactly the template: 1 transaction, 0 checked/);
 });
 
 test('a recording that keeps its head block is studied again from it, and the command the report prints searches its windows again with --same-windows-as', async () => {
+  const BUNDLER3 = repoWithBundler3Deposit();
   const { subject } = scoped;
   const file = 'testdata/research/morpho-vault-deposit-windows.json';
   const past = readRecording<PastTxsRecording>(join(ROOT, 'testdata', 'past-txs', 'morpho-vault-deposit-windows.json'));
   const head = await replayReader(past.exchanges).blockNumber();
   assert.equal(head.kind, 'agreed');
   const kept = { ...past, query: { ...past.query, head: String(head.kind === 'agreed' ? head.value : '') }, exchanges: past.exchanges.filter((e) => e.method !== 'eth_blockNumber') };
-  const before = summarizePastTxs(ROOT, registry, file, await studyRecording(ROOT, past, registry));
-  const after = summarizePastTxs(ROOT, registry, file, await studyRecording(ROOT, kept, registry));
+  const before = summarizePastTxs(BUNDLER3, registry, file, await studyRecording(BUNDLER3, past, registry));
+  const after = summarizePastTxs(BUNDLER3, registry, file, await studyRecording(BUNDLER3, kept, registry));
   assert.equal(after.text, before.text);
   const command = (text: string) => text.split('\n').find((line) => line.includes(`--record ${file.replace(/^.*\//, '').replace(/\.json$/, '')}`));
   const name = file.replace(/^.*\//, '').replace(/\.json$/, '');
@@ -647,7 +667,7 @@ test('--instance-of writes a new instance\'s report to instances/, and its notes
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
-  const text = quick(recording.pages, new Map(), scoped.subject, new Map([[TARGET.instance, recording.vaults[TARGET.instance]!]]));
+  const text = quick(committedRecording.pages, new Map(), committed.subject, new Map([[TARGET.instance, committedRecording.vaults[TARGET.instance]!]]));
   assert.match(text, /stored as `pnpm instance-evidence` printed it/);
   assert.match(text, /the stored output of `pnpm instance-evidence`/);
 });
@@ -668,7 +688,7 @@ test('an instance whose committed report is in instances/ is found there, with i
     rmSync(root, { recursive: true, force: true });
   }
   assert.equal(generatedPath(ROOT, TARGET), join(TEMPLATES_DIR, ID, 'instances', TARGET.instance, GENERATED_FILE));
-  assert.equal(scoped.subject.dir, join(TEMPLATES_DIR, ID, 'instances', TARGET.instance));
+  assert.equal(committed.subject.dir, join(TEMPLATES_DIR, ID, 'instances', TARGET.instance));
 });
 
 test('pnpm report refuses --vault-of and --vault, naming --instance-of', () => {
@@ -679,9 +699,39 @@ test('pnpm report refuses --vault-of and --vault, naming --instance-of', () => {
   }
 });
 
+test('pnpm report --render and --offline print why a report is refused, not a stack trace', () => {
+  const sandbox = mkdtempSync(join(tmpdir(), 'kiss-sign-refused-'));
+  try {
+    const copied = ['src', 'scripts', 'registry', 'templates'];
+    for (const name of readdirSync(ROOT)) if (!['.git', '.cache', 'testdata', ...copied].includes(name)) symlinkSync(join(ROOT, name), join(sandbox, name));
+    for (const name of copied) cpSync(join(ROOT, name), join(sandbox, name), { recursive: true });
+    cpSync(join(ROOT, 'testdata', 'report', 'eth-transfer.json'), join(sandbox, 'testdata', 'report', 'eth-transfer.json'));
+    for (const name of readdirSync(join(ROOT, 'testdata'))) if (name !== 'report') symlinkSync(join(ROOT, 'testdata', name), join(sandbox, 'testdata', name));
+    const folder = join(sandbox, TEMPLATES_DIR, 'eth', 'transfer');
+    rmSync(join(folder, 'trace-addresses.json'), { force: true });
+    const rewrite = (path: string, change: object) => writeFileSync(path, JSON.stringify({ ...JSON.parse(readFileSync(path, 'utf8')), ...change }));
+    const report = (mode: string) => spawnSync(process.execPath, [join(sandbox, 'scripts', 'report.ts'), 'eth/transfer', mode], { cwd: sandbox, encoding: 'utf8' });
+
+    const recording = join(sandbox, 'testdata', 'report', 'eth-transfer.json');
+    rewrite(recording, { fetched: '2026-11-25' });
+    rewrite(join(folder, 'notes.json'), { summary: undefined });
+    const notes = report('--render');
+    assert.deepEqual([notes.status, notes.stderr.trim()], [2, 'REFUSED  notes.json: summary is missing']);
+
+    rewrite(recording, { fetched: '2026-11-26' });
+    for (const mode of ['--render', '--offline']) {
+      const traces = report(mode);
+      assert.equal(traces.status, 2, traces.stderr);
+      assert.match(traces.stderr, /^REFUSED  no call trace counts \(0 traced[^\n]*\n$/);
+    }
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+});
+
 test('a per-vault report refuses a registry whose kept entry depends on another vault the field accepts', () => {
   const raw = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8'));
-  raw['bundler3'] = { ...raw['bundler3'], dependsOn: ['hyperithm-usdc-apex-v2-9e2f'] };
+  raw['vault-bundles-v1'] = { ...raw['vault-bundles-v1'], dependsOn: ['hyperithm-usdc-apex-v2-9e2f'] };
   assert.throws(
     () => loadReport(ROOT, parseRegistryAt(ROOT, raw), TARGET),
     (e: unknown) => e instanceof ReportError && e.message === 'hyperithm-usdc-apex-v2-9e2f is another vault the field accepts, but a registry entry the report keeps names it',
@@ -695,9 +745,9 @@ test("a per-vault report shows that vault alone: no other vault, no asset or fac
     assert.ok(!text.includes(`\`${entry.name}\``) && !text.toLowerCase().includes(entry.address), `${entry.name} appears in the report`);
   }
   assert.match(text, /^\| `vault` \| a registry `vault` of the DefiLlama protocol `morpho-blue`, picked by number from the list below \|$/m);
-  assert.deepEqual(entriesOf(scoped.subject, scoped.registry).map((e) => e.name), ['usdc', 'bundler3', 'steakhouse-prime-usdc-v2-0f51', 'vault-v2-factory', 'general-adapter-1']);
-  const anchored = pastTxsRecordings(ROOT, scoped.subject).map((r) => r.file);
-  assert.deepEqual(anchored, ['testdata/research/morpho-vault-deposit-windows.json', 'testdata/research/morpho-vault-deposit.json']);
+  assert.deepEqual(entriesOf(committed.subject, committed.registry).map((e) => e.name), ['usdc', 'steakhouse-prime-usdc-v2-0f51', 'vault-v2-factory', 'vault-bundles-v1']);
+  const anchored = pastTxsRecordings(ROOT, committed.subject).map((r) => r.file);
+  assert.deepEqual(anchored, ['testdata/research/morpho-vault-deposit-steakhouse-prime-usdc-v2-0f51.json']);
   assert.match(text, /^Written by `pnpm report morpho\/vault-deposit --instance-of steakhouse-prime-usdc-v2-0f51 --record` /m);
 });
 

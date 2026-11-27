@@ -1,4 +1,4 @@
-import { lstatSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, readdirSync } from 'node:fs';
 import { LANGUAGES, LANGUAGE_NAMES } from '../language.ts';
 import type { Prose } from '../language.ts';
 import { join } from 'node:path';
@@ -16,14 +16,15 @@ import type { Compilers } from '../contracts/solc.ts';
 import { AbiSignatureError, canonicalType, namedSignatureOfAbiEntry, paramName, parseFunctionSignature } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam } from '../decode/abi.ts';
 import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, pageUrlsOf, parseHttpsUrl, sizeOf } from '../registry.ts';
-import type { CodePin, HttpsUrl, PinnedCode, Registry, RegistryEntry, Route, SelectorRouting } from '../registry.ts';
+import type { CodePin, HttpsUrl, Market, PinnedCode, Registry, RegistryEntry, Route, SelectorRouting } from '../registry.ts';
 import { wholeTokens } from '../chain/decimals.ts';
+import { FEED_VIEWS, FLOOR_RULE, POOL_VIEWS, pairFacts } from '../price/reference.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, computedOutput, effectTokenNames, inScope, isNamedToken, loadTemplate, namedEffectTokens, refNames, ruleLeaves, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
+import { TEMPLATES_DIR, WAD, callRules, callTargetEntries, callTargets, cardRefs, computedOutput, effectTokenNames, inScope, isNamedToken, loadTemplate, namedEffectTokens, refNames, ruleLeaves, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
 import type { MemberSource } from '../template/eip712.ts';
 import { GENERATED_FILE, INSTANCE_FOLDER, reportUnit, reportedInstancesIn, severalInstances } from '../template/vault-reports.ts';
-import type { CallNode, CardRef, Computed, ComputedRead, Effect, EffectToken, Quantity, Rule, Template, Tolerance, TokenRef, ViewEffect } from '../template/template.ts';
+import type { CallNode, CardField, CardRef, Computed, ComputedRead, Effect, EffectToken, Floor, Quantity, Rule, Template, TokenRef, Tolerance, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording, SiteOwner } from './listings.ts';
 import { checkSources, githubLine, listingsFor, recordedListingReads, sourcePagesOf, sourceSiteLine, trimForRecording, trimSourcePage } from './listings.ts';
 import { renderPastTxs } from './past-txs-render.ts';
@@ -45,6 +46,7 @@ import type { SourcePages } from './source-page.ts';
 import { chainAt, formatReports, studyEntries } from './erc7730.ts';
 import type { ChainAccess, EntryReport, Snapshot } from './erc7730.ts';
 import { constText } from './study.ts';
+import { TRACE_ADDRESSES_FILE, requireJudged } from './trace-addresses.ts';
 import { STANDARDS } from './standards.ts';
 import type { Standard } from './standards.ts';
 import { readRecording } from '../chain/bytecode.ts';
@@ -61,8 +63,8 @@ export type DocLink = { readonly fn: AbiFunction; readonly contract: RegistryEnt
 /** What a report is of: a template by id, with `instance` for one reported per instance. */
 export type TemplateTarget = { readonly template: string; readonly instance?: string | undefined };
 
-/** The ERC-7730 files the section read, cut as `pnpm erc7730 --record` cuts them, and the attestation reads. */
-export type Erc7730Section = { readonly commit: string; readonly files: Readonly<Record<string, string>>; readonly chain: readonly Exchange[] };
+/** The ERC-7730 files the section read, cut as `pnpm erc7730 --record` cuts them, and the attestation reads, made at `block`; older recordings hold no `block` and read the latest. */
+export type Erc7730Section = { readonly commit: string; readonly files: Readonly<Record<string, string>>; readonly block?: { readonly number: string; readonly hash: Hex }; readonly chain: readonly Exchange[] };
 
 /** A program-made recording of the live answers a template's report used, beside the ABI and past-transaction ones. */
 export type ReportRecording = ListingsRecording & {
@@ -185,6 +187,7 @@ export function functionsOn(subject: Subject, registry: Registry): Map<string, A
     for (const arg of r.args) if (arg.kind === 'read') read(arg.read);
   };
   for (const field of template.card.values()) if (field.kind === 'amount' && field.computed !== undefined) read(field.computed.read);
+  for (const entry of priceEntries(template, registry)) for (const { fn } of Object.values(entry.feed === undefined ? POOL_VIEWS : FEED_VIEWS)) add([entry.name], fn);
   return new Map([...on].map(([name, fns]) => [name, [...fns.values()]]));
 }
 
@@ -350,6 +353,27 @@ function namedInReads(template: Template): string[] {
   return [...template.card.values()].flatMap((field) => (field.kind === 'amount' && field.computed !== undefined ? read(field.computed.read) : []));
 }
 
+/** The feeds and pools `card new` can read a floor's price from, for every pair of tokens its card fields can name. */
+function priceEntries(template: Template, registry: Registry): RegistryEntry[] {
+  const found = new Set<RegistryEntry>();
+  const named = new Set(callRules(template).flatMap((rule) => (rule.kind === 'contract' ? [rule.name] : [])));
+  const candidates = (of: TokenRef): RegistryEntry[] => {
+    const field = of === 'eth' ? undefined : template.card.get(of.field);
+    return field?.kind === 'contract' ? scopeEntries(field.scope, registry) : [];
+  };
+  for (const field of template.card.values()) {
+    if (field.kind !== 'amount' || field.floor === undefined) continue;
+    const sold = template.card.get(field.floor.sells) as Extract<CardField, { kind: 'amount' }>;
+    for (const sell of candidates(sold.of)) {
+      for (const buy of candidates(field.of)) {
+        const facts = sell === buy ? undefined : pairFacts(sell, buy, registry, named);
+        if (facts?.kind === 'feeds') [...facts.sell, ...facts.buy, ...facts.routes.flat().map((pool) => pool.entry)].forEach((entry) => found.add(entry));
+      }
+    }
+  }
+  return [...found];
+}
+
 export const hasMarket = (template: Template): boolean => [...template.card.values()].some((field) => field.kind === 'market');
 
 /** Every registry entry a card field can name: a contract of the field's kind, or a part of any market. */
@@ -365,7 +389,7 @@ export const evidenceEntries = (subject: Subject): RegistryEntry[] => (subject.v
 
 function directlyTouched(subject: Subject, registry: Registry): Set<string> {
   const names = new Set<string>();
-  const roots = [...[...namedInRules(subject.template), ...namedInReads(subject.template)].map((n) => registry.entries.get(n) as RegistryEntry), ...cardCandidates(subject.template, registry)];
+  const roots = [...[...namedInRules(subject.template), ...namedInReads(subject.template)].map((n) => registry.entries.get(n) as RegistryEntry), ...cardCandidates(subject.template, registry), ...priceEntries(subject.template, registry)];
   const named = (entry: RegistryEntry): void => {
     if (names.has(entry.name)) return;
     names.add(entry.name);
@@ -400,17 +424,28 @@ export function entriesOf(subject: Subject, registry: Registry): RegistryEntry[]
 /**
  * The entries `verify` compares with their code pin at each signing, as `codeClaims` names them: each contract a rule
  * or a view names, each entry a card field can name, each a card reference's attribute names, and each these depend on.
- * An attribute no card reference reads, such as a vault's factory, is checked only by the report.
+ * An attribute no card reference reads, such as a vault's factory, is checked only by the report. With `called`, the
+ * addresses one transaction's calls hold, a card field names only those of its entries, or of its markets every part of
+ * which is among them, and any it could when none is: a field no call carries shows no choice.
  */
-export function signedEntryNames(template: Template, registry: Registry): Set<string> {
+export function signedEntryNames(template: Template, registry: Registry, called?: ReadonlySet<string>): Set<string> {
+  const nameable = (field: CardField): readonly RegistryEntry[] => {
+    if (field.kind === 'contract') return narrowed(scopeEntries(field.scope, registry), (entry) => called?.has(entry.address) === true);
+    if (field.kind !== 'market') return [];
+    const parts = (market: Market): RegistryEntry[] => MARKET_ENTRY_PARTS.map((part) => market[part]);
+    return narrowed([...registry.markets.values()], (market) => parts(market).every((part) => called?.has(part.address) === true)).flatMap(parts);
+  };
+  const fields = new Map([...template.card].map(([name, field]) => [name, nameable(field)] as const));
   const names = new Set([
     ...namedInRules(template),
-    ...cardCandidates(template, registry).map((entry) => entry.name),
-    ...cardRefs(template).flatMap((ref) => (ref.attribute === undefined ? [] : refNames(ref, template, registry))),
+    ...[...fields.values()].flat().map((entry) => entry.name),
+    ...cardRefs(template).flatMap(({ field, attribute }) => (attribute === undefined ? [] : (fields.get(field) ?? []).flatMap((entry) => entry.attributes[attribute] ?? []))),
   ]);
   for (const name of [...names]) for (const target of registry.entries.get(name)?.dependsOn ?? []) names.add(target);
   return names;
 }
+
+const narrowed = <T>(items: readonly T[], passes: (item: T) => boolean): readonly T[] => (items.some(passes) ? items.filter(passes) : items);
 
 /**
  * The entries whose ABI the program uses: each contract a call targets, a nested call's included, each a function's
@@ -435,6 +470,7 @@ function abiUsed(subject: Subject, registry: Registry): Set<string> {
     ...[...template.effects.gives, ...template.effects.gets].flatMap((effect) => effectTokenNames(effect.token, template, registry)),
     ...template.effects.touches.map((touch) => touch.token),
     ...[...template.card.values()].flatMap((field) => (field.kind === 'amount' ? [...token(field.of), ...(field.computed === undefined ? [] : read(field.computed.read))] : [])),
+    ...priceEntries(template, registry).map((entry) => entry.name),
   ].forEach((name) => names.add(name));
   return names;
 }
@@ -680,6 +716,11 @@ function readText(read: ComputedRead, template: Template, registry: Registry): s
   return `${code(read.fn.signature)} on ${to}${args.length === 0 ? '' : ` of ${args.join(', ')}`}${output}`;
 }
 
+function floorText({ sells }: Floor, token: string): string {
+  const rule = FLOOR_RULE;
+  return `the least of ${token} to receive for ${code(sells)}, in its base units. When both tokens picked have a price feed and share a peg, ${code('card new')} asks the slippage (${rule.slippageBps} bps when empty, at most ${rule.maxSlippageBps}) and computes it from the higher of the feeds' and the pool's price, less that and a margin of ${rule.marginBps} bps, rounded down; otherwise the signer types it and ${code('card new')} compares it with that price, or with nothing when a token has no feed. A price in doubt is never computed from`;
+}
+
 function computedText(computed: Computed, template: Template, registry: Registry): string {
   const margin = computed.margin === undefined ? '' : `, plus a margin of ${computed.margin.bps} bps, ${byAi(computed.margin.why)}`;
   return `${readText(computed.read, template, registry)}, ${computed.bound === 'floor' ? 'less' : 'plus'} ${slippageBps(computed)} bps and rounded ${computed.bound === 'floor' ? 'down' : 'up'}: the protocol's default of ${computed.default.bps} bps, from ${computed.default.source}${margin}`;
@@ -851,7 +892,9 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
       field.kind === 'contract'
         ? `a registry ${code(field.scope.registryKind)}${field.scope.protocol === undefined ? '' : ` of the DefiLlama protocol ${code(field.scope.protocol)}`}${field.scope.marketPart === undefined ? '' : ` that is the ${code(field.scope.marketPart)} of a market in ${code(MARKETS_PATH)}`}, picked by number from the list below`
         : field.kind === 'amount'
-          ? field.computed === undefined
+          ? field.floor !== undefined
+            ? floorText(field.floor, refText(field.of as CardRef))
+            : field.computed === undefined
             ? `an integer in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}${field.max === undefined ? '' : `, or ${code('max')}, ${field.max.value}: ${byAi(field.max.why)}`}`
             : `nothing: computed by ${code('card new')} in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}, ${computedText(field.computed, template, registry)}`
           : field.kind === 'percent'
@@ -1452,7 +1495,14 @@ export async function reportFixtures(repoRoot: string, subject: Subject, full: R
   return judgeFixtures(repoRoot, subject.template, full);
 }
 
-/** Every input a generated report renders, from the repository and its recordings alone. */
+/** Every recording fetched from this day on was refused by `--record` while a trace's address was unjudged. */
+const JUDGED_SINCE = '2026-11-26';
+
+/**
+ * Every input a generated report renders, from the repository and its recordings alone. Refuses, as `--record` does, a
+ * report whose traces show an address its `trace-addresses.json` does not settle, such as after its summaries were studied
+ * again; a report with no such file recorded before `JUDGED_SINCE` is left until it is recorded again.
+ */
 export async function replayInputs(
   repoRoot: string,
   full: Registry,
@@ -1467,6 +1517,10 @@ export async function replayInputs(
   const docUrls = subject.docs.map((d) => d.url);
   const pages = sourcePagesOf(recording);
   const pastRecordings = pastTxsRecordings(repoRoot, subject);
+  const pastTxs = pastRecordings.map(({ file, recording: r }) => summarizePastTxs(repoRoot, registry, file, r));
+  if (recording.fetched >= JUDGED_SINCE || existsSync(join(repoRoot, subject.dir, TRACE_ADDRESSES_FILE))) requireJudged(repoRoot, subject, registry, pastTxs);
+  const erc7730Block = recording.erc7730.block;
+  const erc7730At = erc7730Block === undefined ? undefined : { number: BigInt(erc7730Block.number), hash: erc7730Block.hash };
   const snapshot: Snapshot = { commit: recording.erc7730.commit, files: new Map(Object.entries(recording.erc7730.files)) };
   const inputs: ReportInputs = {
     subject,
@@ -1476,12 +1530,12 @@ export async function replayInputs(
     fetched: recording.fetched,
     abi: await replayAbiProofs(provedEntries(subject, registry), loadAbiCases(repoRoot), compilers),
     vaults: new Map(Object.entries(recording.vaults)),
-    pastTxs: pastRecordings.map(({ file, recording: r }) => summarizePastTxs(repoRoot, registry, file, r)),
+    pastTxs,
     spans: await checkSpans(replayReader(recording.code), entries),
     today: recording.today === undefined ? undefined : await readToday(replayReader(recording.code), subject, registry, { number: BigInt(recording.today.number), hash: recording.today.hash }),
     instances:
       recording.instances === undefined ? undefined : await readInstances(replayReader(recording.code), subject, registry, { number: BigInt(recording.instances.number), hash: recording.instances.hash }),
-    erc7730: await erc7730Text(entries, registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain))),
+    erc7730: await erc7730Text(entries, registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain), erc7730At)),
     facts: await replayFacts(subject.template, registry, entries, recording.facts),
     fixtures: await reportFixtures(repoRoot, subject, full),
     usage: readUsage(repoRoot, target),

@@ -27,6 +27,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-
 a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
 a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+[data-ai]{overflow-wrap:anywhere}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
 .addr.line{display:block;margin-top:4px}
@@ -65,7 +66,7 @@ h1 .byai{vertical-align:6px}
 h1 .aiw>:first-child{margin-right:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
 .sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
-:is(.sub,h3,.intro,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
+:is(.sub,h3,.intro,.ans,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
 .verdict .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:flex;align-items:flex-start;gap:8px;font-size:var(--t-row);position:relative}
@@ -134,7 +135,7 @@ svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
 svg .ah{fill:var(--fg)}
 svg .fn{fill:var(--fg);font:400 14px var(--mono)}
 svg .no{fill:var(--fg3);font:400 14px var(--mono)}
-svg .cap{display:flex;align-items:flex-start;gap:8px;padding-top:2px;color:var(--fg2);font:14px/20px var(--sans)}
+svg .cap{margin:0;display:flex;align-items:flex-start;gap:8px;padding-top:2px;color:var(--fg2);font:14px/20px var(--sans)}
 svg .cap code{font-size:13px;padding:2px 6px;white-space:nowrap}
 .mark{font-size:17px} .mark.ok{color:var(--ok)} .mark.bad{color:var(--bad)}
 svg .capg{fill:var(--ok);font:590 14px var(--sans)}
@@ -148,9 +149,19 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
 
-.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
-.key>span{display:inline-flex;gap:8px;align-items:center}
-.key .k0{color:var(--fg3);font-weight:590}
+.deciders{margin:36px 0 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}
+.deciders h3{margin:0 0 10px;font-size:var(--t-small);color:var(--fg2)}
+.deciders dl{margin:0;display:flex;flex-direction:column;gap:12px}
+.deciders .grp{display:grid;grid-template-columns:88px minmax(0,1fr);gap:0 16px;align-items:start}
+.deciders .gh{font-size:var(--t-small);line-height:24px;color:var(--fg);font-weight:590}
+.deciders .defs{margin:0;display:flex;flex-direction:column;gap:6px}
+.deciders .defs>div{display:grid;grid-template-columns:116px minmax(0,1fr);gap:0 14px;align-items:start;font-size:var(--t-small);line-height:24px;color:var(--fg2)}
+.deciders .who{justify-self:start}
+@media (max-width:560px){.deciders .grp{grid-template-columns:minmax(0,1fr)}}
+.mix{margin:10px 0 12px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 16px;align-items:start}
+.mix dt{justify-self:start}
+.mix dd{margin:0;display:flex;flex-wrap:wrap;gap:6px;line-height:24px}
+.mix code{font-size:var(--t-label)}
 .cb{margin-top:40px}
 .callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
 .callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
@@ -202,7 +213,7 @@ details.fixed[open]>summary .chev{transform:rotate(90deg)}
 }
 
 .rows{border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
@@ -249,14 +260,31 @@ details.fold[open]>summary .chev{transform:rotate(90deg)}
 details.fold .ad:last-child{border-bottom:0}
 
 .warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
-.pblock{border-top:1px solid var(--line);margin-top:16px}
-.ph{display:flex;flex-direction:column;gap:4px;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
-.ph .pt{font-weight:590}
-.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
-.pg .pc{color:var(--fg)}
-.pg .pcalls{margin-bottom:4px}
-.pg .pex{font-size:var(--t-small);margin-top:4px}
-.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+.ans{margin:0 0 10px;color:var(--fg2)}
+.ans b{color:var(--fg)}
+.cap{margin:8px 0 0;font-size:var(--t-small);color:var(--fg3)}
+.lm{color:var(--warn)}
+.sh{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-size:var(--t-small);color:var(--fg2);margin-top:18px}
+.sc{overflow-x:auto;margin:12px 0 8px}
+.pt2{border-collapse:collapse;width:100%;font-size:var(--t-small);font-variant-numeric:tabular-nums}
+.pt2 th{font-size:var(--t-label);font-weight:400;color:var(--fg3);text-align:left;padding:6px 16px 6px 0;border-bottom:1px solid var(--line2);white-space:nowrap}
+.pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
+.pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
+.pt2 .n{text-align:right}
+.pt2 th{vertical-align:bottom}
+.pt2 th.n{white-space:normal}
+.pt2 td.nw{white-space:nowrap}
+.pt2 td.v{color:var(--fg);font-weight:590}
+.pt2 .tx{min-width:104px}
+@media (max-width:760px){
+  .pt2,.pt2 tbody,.pt2 tr{display:block}
+  .pt2 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .pt2 tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .pt2 td,.pt2 td.n{display:grid;grid-template-columns:minmax(0,130px) minmax(0,1fr);gap:12px;padding:3px 0;border-bottom:0;text-align:left}
+  .pt2 td::before{content:attr(data-label);font-size:var(--t-label);font-weight:400;color:var(--fg3)}
+  .pt2 td.nw{white-space:normal}
+  .pt2 td.what{min-width:0}
+}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -271,13 +299,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
 .auto li{display:flex;gap:10px;align-items:baseline}
 .auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
-.usage{font-size:var(--t-small);color:var(--fg3);margin-bottom:28px}
-.usage h3{font-size:var(--t-row);color:var(--fg2);margin:0 0 6px}
-.usage p{margin:0}
-.usage table{border-collapse:collapse;margin:10px 0}
-.usage th,.usage td{padding:6px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left}
-.usage th+td,.usage th+th{padding-left:32px;text-align:right}
-.usage tfoot th,.usage tfoot td{color:var(--fg);border-bottom:0}
+.ut{border-collapse:collapse;width:100%;margin:16px 0 12px;font-size:var(--t-row)}
+.ut th,.ut td{padding:9px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left;color:var(--fg2)}
+.ut thead th{font-size:var(--t-label);color:var(--fg3);border-bottom-color:var(--line2)}
+.ut th+td,.ut th+th{text-align:right;font-variant-numeric:tabular-nums}
+.ut tfoot th,.ut tfoot td{color:var(--fg);font-weight:590;border-bottom:0}
 .foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
 .foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
@@ -298,7 +324,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="Contents">
   <h2>Contents</h2>
-  <ol><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">Flow <span class="cnt">2 calls</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">Instance</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">5</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  <ol><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">Flow <span class="cnt">2 calls</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">Instance</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">4</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li><li><a href="#usage">AI usage</a></li></ol>
 </nav>
 
 <div class="main">
@@ -306,29 +332,27 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <header>
   <h1><span class="aiw" data-ai><span>Deposit into a Morpho vault</span><span class="byai">AI research</span></span></h1>
   <span class="opid">morpho/vault-deposit · hyperithm-usdc-apex-v2-9e2f</span>
-  <p class="sub"><span class="aiw" data-ai><span>The Safe first gives GeneralAdapter1 an allowance of exactly the amount you type, then calls <code>multicall</code> on Bundler3: GeneralAdapter1 pulls these tokens from the Safe and deposits them into the vault you pick, with the shares going straight to the Safe. You do not type the minimum shares: when you build the card, the program computes them from the vault&#39;s own preview of your deposit, less a small slippage. The price per share cannot be higher than the price those minimum shares imply, or the whole transaction fails.</span><span class="byai">AI research</span></span></p>
+  <p class="sub"><span class="aiw" data-ai><span>The Safe first approves VaultBundlesV1 for exactly the amount you type, then calls <code>vaultBundlesV1Deposit</code> on it: VaultBundlesV1 pulls the tokens from the Safe and deposits them into the vault you pick, and the vault mints the shares straight to the Safe. You do not type the minimum shares: the program computes them from the vault&#39;s own preview when you build the card, less a small slippage; a higher price per share makes the transaction fail. The old route through Bundler3 is refused: verify returns MISMATCH.</span><span class="byai">AI research</span></span></p>
   <ul class="checks">
-    <li data-state="warn" data-line="sources"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>Address sources <span class="n num">4 / 5</span>
-      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">1 address has results for you to review; see &#34;To review&#34;. The other 4 are all confirmed in at least 2 places.</span></span></li>
-    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Source verified <span class="n num">4 / 4</span>
+    <li data-state="warn" data-line="sources"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>Address sources <span class="n num">3 / 4</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">1 address has results for you to review; see &#34;To review&#34;. The other 3 are all confirmed in at least 2 places.</span></span></li>
+    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Source verified <span class="n num">3 / 3</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">The source verified on Etherscan, compiled again with a pinned compiler, gives exactly the code on chain, so the function definitions used to decode the transaction belong to these contracts.</span></span></li>
-    <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Code unchanged <span class="n num">5 / 5</span>
+    <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Code unchanged <span class="n num">4 / 4</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">At each signing, the program checks that every contract the card uses still runs the code it was researched with. An upgrade or a replacement is stopped. Signing does not touch vault-v2-factory; only the report compares its code.</span></span></li>
-    <li data-state="ok" data-line="params"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Parameter checks <span class="n num">1 / 1</span>
-      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">The program changed every bound argument of 1 test transaction one by one, and each must become a MISMATCH; an argument that takes any value must give the same result with another value.</span></span></li>
-    <li data-state="ok" data-line="trace"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Call traces <span class="n num">2 / 2</span>
-      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">The program looks for each of the AI&#39;s flow lines in the call traces of past transactions, and checks that the template or a flow line explains every call inside that moves money; 2 of 2 passed. The traces come from drpc alone; their token transfers and approvals are checked against the receipt both providers agree on.</span></span></li>
+    <li data-state="ok" data-line="params"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Parameter checks <span class="n num">2 / 2</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">The program changed every bound argument of 2 test transactions one by one, and each must become a MISMATCH; an argument that takes any value must give the same result with another value.</span></span></li>
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Two providers
-      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Every chain read asks two providers; when they disagree, there is no result. Three research reads have one source, and none of them reaches a verdict: past transactions&#39; call traces (drpc), the search for past transactions (a transaction either Alchemy or Etherscan finds counts; only Etherscan searches for an event), and the addresses that ever received a vault&#39;s shares (Alchemy; each one&#39;s balance is still read through both).</span></span></li>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">Every chain read asks two providers; when they disagree, there is no result. Three research reads have one source, and none of them reaches a verdict: past transactions&#39; call traces (drpc), the search for past transactions (a transaction either Alchemy or Etherscan finds counts; only Etherscan searches for an event), and the addresses that ever received a vault&#39;s shares (Alchemy; each one&#39;s balance is still read through both).</span></span></li>
   </ul>
   <div class="verdict" data-state="warn"><span class="lbl">Advice</span><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg><span class="aiw" data-ai><span>Usable with care: only the factory confirms this vault&#39;s address and no Hyperithm page lists it. Read To review first and send a small amount first.</span><span class="byai">AI research: be careful</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
-    <ol><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">Flow <span class="cnt">2 calls</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">Instance</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">5</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+    <ol><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#flow">Flow <span class="cnt">2 calls</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">Instance</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">4</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li><li><a href="#usage">AI usage</a></li></ol>
   </details>
 </header>
 
 <section id="review">
-  <h2>To review <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></span></h2>
+  <h2>To review <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></span></h2>
   <p class="lead">The AI checked each item first and gives its advice.</p>
   <div class="rows">
     <div class="row" data-state="warn" data-grade="key" data-result="hyperithm-usdc-apex-v2-9e2f/address">
@@ -336,26 +360,33 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div><div class="t"><span class="grade"><span class="vh">Grade: </span>key</span>Address confirmed in too few places · hyperithm-usdc-apex-v2-9e2f</div>
         <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>The program&#39;s only place is the factory: VaultV2Factory answers <code>isVaultV2</code> = true.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="meta">Confirmed in only 1 place: factory</div>
-          <div class="meta">At least 2 places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-hyperithm-usdc-apex-v2-9e2f">see source</a></div>
+          <div class="meta">Found only in factory: <span class="addr">0x093272C07700d3cA5301C3Bf9B3A392624179E2F</span>; at least 2 places are needed.<a href="#a-hyperithm-usdc-apex-v2-9e2f">see source</a></div>
           <div class="rec"><span class="aiw" data-ai><span>Etherscan shows the contract VaultV2 at 0x093272C07700d3cA5301C3Bf9B3A392624179E2F, made by the factory 0xA1D94F746dEfa1928926b84fB2596c06926C0405. AI found no Hyperithm or Morpho page that lists it without the address in the URL.</span><span class="byai">AI research</span></span></div>
           <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Open the vault from the Morpho app&#39;s vault list yourself and compare the full address. Send a small amount the first time.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>The Morpho app sometimes adds two more steps at the end of the bundle that send the tokens and shares left in the adapter back to you.</span><span class="byai">AI research</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>The Morpho app now asks for an unlimited approval by default, and this template accepts only an approval equal to the deposit.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>This template accepts only the two-step version; with the two extra steps, verify returns MISMATCH.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>On MISMATCH, do not sign. Report it, then decide whether to add a template.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>Example: you deposit 10,000 USDC; the app builds an approval of 2^256-1 (unlimited), the card wants exactly 10,000 USDC, so an unedited app transaction gets MISMATCH. The newest app transactions AI read (2026-11-20 and 11-21) were all unlimited; some older ones were exact, and how they came to be is unknown. <a class="aisrc" href="https://github.com/morpho-org/sdks/blob/166277bc26a12235256bdf9162da012b80781a1e/packages/morpho-sdk/src/helpers/tokenApproval.ts">source 1</a> <a class="aisrc" href="https://github.com/morpho-org/sdks/commit/804fb8f2">source 2</a> <a class="aisrc" href="https://github.com/safe-global/safe-wallet-monorepo/blob/9141f5da93d31470004bbb5464d026e9c1078626/apps/web/src/components/tx/ApprovalEditor/index.tsx">source 3</a> <a class="aisrc" href="https://github.com/safe-global/safe-wallet-monorepo/blob/9141f5da93d31470004bbb5464d026e9c1078626/packages/utils/src/components/tx/ApprovalEditor/utils/approvals.ts#L55-L92">source 4</a></span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Before proposing, while nobody has signed, set the approval to the deposit amount (here 10,000) in Safe{Wallet} and press Save. AI read the web wallet&#39;s source: the review screen has this editor, also for an approval in a batch; AI did not try it live. If it does not appear, do not sign.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>On 2026-09-25 Morpho&#39;s SDK removed the Bundler3 address and listed VaultBundlesV1 (0x02912516d49dE997db75B9D7858faAE59209650B) instead; docs.morpho.org lists both.</span><span class="byai">AI research</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>If the Safe already gave VaultBundlesV1 a large enough allowance, the app sends a deposit with no approval: MISMATCH.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>In the recorded transactions, most deposits after the end of 2026-09 go through VaultBundlesV1, so the Morpho app may no longer take this template&#39;s route. <a class="aisrc" href="https://github.com/morpho-org/sdks/commit/9ac0ea55b93225a62ddeabb1c625064319be728d">source</a></span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Before signing, check whether the Safe transaction calls Bundler3 or VaultBundlesV1. One that goes through VaultBundlesV1 needs the morpho/vault-bundles-deposit template; with this template, verify returns MISMATCH.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>Others cannot spend that leftover: the contract pulls only from its own caller (AI read the source). But any later VaultBundlesV1 deposit the Safe signs can use it with no new approval, even into a fake vault or with a referral fee to someone else. <a class="aisrc" href="https://github.com/morpho-org/bundles/blob/9726ac4250303893451664ba75f393360e17d6ca/src/vault/VaultBundlesV1.sol#L31-L56">source 1</a> <a class="aisrc" href="https://github.com/morpho-org/bundles/blob/9726ac4250303893451664ba75f393360e17d6ca/src/libraries/TokenLib.sol#L60-L83">source 2</a> <a class="aisrc" href="https://github.com/morpho-org/sdks/blob/166277bc26a12235256bdf9162da012b80781a1e/packages/morpho-sdk/src/helpers/tokenApproval.ts">source 3</a></span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>First set the allowance back to 0 in a separate transaction, which this template does not cover; the app then builds approval and deposit again. Until then, check the vault, amount and referral fee of every VaultBundlesV1 transaction.</span><span class="byai">AI research</span></span></div>
+        </details></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>In the sample, 0 Safes and 1 EOA used the new route on this vault, so no past transaction shows it working for a Safe here.</span><span class="byai">AI research</span></span></div>
+        <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
+          <div class="rec"><span class="aiw" data-ai><span>The evidence rests on the template&#39;s test transactions, Safe deposits into another Morpho V2 vault through the same VaultBundlesV1. Both vaults answered <code>isVaultV2</code> from the same factory. <a class="aisrc" href="https://etherscan.io/tx/0x03652285a11a34dd743131fa10047dc5baf4073986a7d27e523e9d3899707e32">source</a></span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Send a small amount first and check that the shares reach the Safe before you send the rest.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row">
@@ -373,47 +404,44 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>Flow <span class="c">2 calls</span></h2>
   <p class="lead">Solid lines are the Safe&#39;s calls, the calls the template binds inside them, and flow lines the program saw in past transactions; dashed lines are AI research not checked; green lines are what you get.</p>
   <div class="diagram">
-  <svg viewBox="0 0 1031 372" role="img" aria-labelledby="dt dd">
+  <svg viewBox="0 0 841 340" role="img" aria-labelledby="dt dd">
     <title id="dt">Transaction flow</title>
-    <desc id="dd">Call 1: the Safe calls approve on usdc. Call 2: the Safe calls multicall on bundler3. Result: you get hyperithm-usdc-apex-v2-9e2f.</desc>
+    <desc id="dd">Call 1: the Safe calls approve on usdc. Call 2: the Safe calls vaultBundlesV1Deposit on vault-bundles-v1. Result: you get hyperithm-usdc-apex-v2-9e2f.</desc>
     <defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>
-    <line class="life" x1="90" y1="58" x2="90" y2="364"/>
+    <line class="life" x1="90" y1="58" x2="90" y2="332"/>
     <rect class="node" x="24" y="14" width="132" height="44" rx="6"/><text class="nodet" x="90" y="34" text-anchor="middle">your Safe</text><text class="nodes" x="90" y="50" text-anchor="middle">sender</text>
-    <line class="life" x1="280" y1="58" x2="280" y2="364"/>
+    <line class="life" x1="280" y1="58" x2="280" y2="332"/>
     <rect class="node" x="214" y="14" width="132" height="44" rx="6"/><text class="nodet" x="280" y="34" text-anchor="middle">usdc</text><text class="nodes" x="280" y="50" text-anchor="middle">token</text>
-    <line class="life" x1="470" y1="58" x2="470" y2="364"/>
-    <rect class="node" x="404" y="14" width="132" height="44" rx="6"/><text class="nodet" x="470" y="34" text-anchor="middle">bundler3</text><text class="nodes" x="470" y="50" text-anchor="middle">router</text>
-    <line class="life" x1="660" y1="58" x2="660" y2="364"/>
-    <rect class="node" x="574.5" y="14" width="171" height="44" rx="6"/><text class="nodet" x="660" y="34" text-anchor="middle">general-adapter-1</text><text class="nodes" x="660" y="50" text-anchor="middle">adapter</text>
-    <line class="life" x1="891" y1="58" x2="891" y2="364"/>
-    <rect class="node" x="763.5" y="14" width="255" height="44" rx="6"/><text class="nodet" x="891" y="34" text-anchor="middle">hyperithm-usdc-apex-v2-9e2f</text><text class="nodes" x="891" y="50" text-anchor="middle">vault</text>
+    <line class="life" x1="470" y1="58" x2="470" y2="332"/>
+    <rect class="node" x="388.5" y="14" width="163" height="44" rx="6"/><text class="nodet" x="470" y="34" text-anchor="middle">vault-bundles-v1</text><text class="nodes" x="470" y="50" text-anchor="middle">router</text>
+    <line class="life" x1="701" y1="58" x2="701" y2="332"/>
+    <rect class="node" x="573.5" y="14" width="255" height="44" rx="6"/><text class="nodet" x="701" y="34" text-anchor="middle">hyperithm-usdc-apex-v2-9e2f</text><text class="nodes" x="701" y="50" text-anchor="middle">vault</text>
     <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">approve</text>
     <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#head)"/>
-    <text class="no" x="102" y="142">2</text><text class="fn" x="120" y="142">multicall</text>
+    <text class="no" x="102" y="142">2</text><text class="fn" x="120" y="142">vaultBundlesV1Deposit</text>
     <line class="call" x1="90" y1="156" x2="467" y2="156" marker-end="url(#head)"/>
-    <text class="fn" x="482" y="194">erc20TransferFrom</text>
-    <line class="nested" x1="470" y1="204" x2="657" y2="204" marker-end="url(#head)"/>
-    <text class="fn" x="482" y="230">erc4626Deposit</text>
-    <line class="nested" x1="470" y1="240" x2="657" y2="240" marker-end="url(#head)"/>
-    <foreignObject x="292" y="249" width="739" height="24"><div class="cap" data-ai><span class="mark ok">①</span><span>Pulls the amount you type of the asset token from the Safe with <code>transferFrom</code></span></div></foreignObject>
-    <line class="inner seen" x1="660" y1="276" x2="283" y2="276" marker-end="url(#head)"/>
-    <foreignObject x="301" y="285" width="730" height="24"><div class="cap" data-ai><span class="mark ok">②</span><span>Deposits the pulled USDC into this vault with <code>deposit</code>, which mints the shares to the Safe</span></div></foreignObject>
-    <line class="inner seen" x1="660" y1="312" x2="888" y2="312" marker-end="url(#head)"/>
-    <text class="capg" x="104" y="338">you get hyperithm-usdc-apex-v2-9e2f</text>
-    <line class="gain" x1="891" y1="348" x2="93" y2="348" marker-end="url(#head)"/>
+    <foreignObject x="102" y="177" width="739" height="44"><div class="cap" data-ai><span class="byai">AI research</span><span>Pulls the amount you type of USDC from the Safe with <code>transferFrom</code> (read in the source)</span></div></foreignObject>
+    <line class="inner" x1="470" y1="224" x2="283" y2="224" marker-end="url(#head)"/>
+    <foreignObject x="102" y="233" width="739" height="44"><div class="cap" data-ai><span class="byai">AI research</span><span>Deposits the pulled USDC into this vault with <code>deposit</code>, which mints the shares to the Safe</span></div></foreignObject>
+    <line class="inner" x1="470" y1="280" x2="698" y2="280" marker-end="url(#head)"/>
+    <text class="capg" x="104" y="306">you get hyperithm-usdc-apex-v2-9e2f</text>
+    <line class="gain" x1="701" y1="316" x2="93" y2="316" marker-end="url(#head)"/>
   </svg>
   </div>
   <div class="scrollhint">Scroll the diagram sideways; hyperithm-usdc-apex-v2-9e2f is at the far right</div>
-  <ul class="legend">
-    <li data-state="ok">Confirmed two ways: the program saw the line in the call traces of past transactions (<a href="https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol#L381">①</a> 8 of 8, <a href="https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol#L89">②</a> 8 of 8), and the AI read the contract&#39;s source; the words beside each line are the AI&#39;s.</li>
-  </ul>
-  <p class="lead">A call trace shows only the path past transactions took; a contract may take another path on other state, and what protects you at signing is the effects check.</p>
-  <div class="key">
-    <span class="k0">Who decides</span>
-    <span><span class="who you">you type</span>typed at each signing</span>
-    <span><span class="who you">you pick</span>picked at each signing</span>
-    <span><span class="who">computed</span>read from the chain by card new at each signing; you check it</span>
-    <span><span class="who">fixed</span>any change is a MISMATCH</span>
+  <div class="deciders">
+    <h3>Who decides each value</h3>
+    <dl>
+      <div class="grp"><dt class="gh">You</dt><dd class="defs">
+        <div><span class="who you">you type</span><span>You type it at each signing.</span></div>
+        <div><span class="who you">you pick</span><span>You pick it from a list at each signing.</span></div></dd></div>
+      <div class="grp"><dt class="gh">kiss-sign</dt><dd class="defs">
+        <div><span class="who">computed</span><span>card new reads it from the chain at each signing. You check it.</span></div>
+        <div><span class="who">fixed</span><span>The template sets it. Any change is a MISMATCH.</span></div></dd></div>
+      <div class="grp"><dt class="gh">The app</dt><dd class="defs">
+        <div><span class="who app">any value</span><span>The contract does not read it, so another value gives the same result.</span></div>
+        <div><span class="who app">up to a limit</span><span>Past the limit is a MISMATCH.</span></div></dd></div>
+    </dl>
   </div>
   <p class="lead keylead">The transaction&#39;s calls, one by one. Each argument shows who decides it, its value or the rule it must follow, and what it does.</p>
   
@@ -422,85 +450,73 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="arg" data-field="1.approve.value">
       <div class="nm"><span class="pn">value</span><span class="who you">you type: amount</span></div>
       <div class="val"><div class="is">the amount you type</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The allowance limit, equal to the deposit amount. Call 2 pulls all of it, so the allowance is back to 0 after the transaction.</span></span></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The allowance, exactly the deposit amount, so call 2 uses all of it and none is left. The app asks for unlimited by default; that is MISMATCH.</span></span></div></div>
     </div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 fixed value; any change is a MISMATCH</summary>
     <div class="arg" data-field="1.approve.spender">
       <div class="nm"><span class="pn">spender</span><span class="who">fixed</span></div>
-      <div class="val"><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The contract allowed to pull tokens from the Safe. Here it is Morpho&#39;s GeneralAdapter1, which pulls these funds with <code>transferFrom</code> in call 2.</span></span></div></div>
+      <div class="val"><div class="raw">0x02912516d49dE997db75B9D7858faAE59209650B</div><div class="is"><a href="#a-vault-bundles-v1">vault-bundles-v1</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The contract allowed to pull tokens from the Safe: VaultBundlesV1, which pulls this amount with <code>transferFrom</code> in call 2.</span></span></div></div>
     </div>
       </details>
   </div>
   <div class="cb">
-    <div class="callh"><span class="no">2</span><span class="fnn"><span class="ct">bundler3.</span>multicall</span><span class="sel">0x374f435d</span></div><div class="cdoc"><div class="doc" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><span class="f3">Docs: </span><a href="https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/Bundler3.sol">github.com/morpho-org/bundler3/…/Bundler3.sol</a></span></div></div>
-    <div class="arg" data-field="2.multicall.bundle">
-      <div class="nm"><span class="pn">bundle</span><span class="who">fixed</span></div>
-      <div class="val"><div class="is">2 items</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The list of steps Bundler3 runs in order, fixed at two here: first pull the tokens, then deposit them into the vault. If any step fails, the whole transaction fails.</span></span></div></div>
+    <div class="callh"><span class="no">2</span><span class="fnn"><span class="ct">vault-bundles-v1.</span>vaultBundlesV1Deposit</span><span class="sel">0x6bbba4e0</span></div><div class="cdoc"><div class="doc" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><span class="f3">Docs: </span><a href="https://docs.morpho.org/developers/contracts/bundles/">docs.morpho.org/developers/contracts/bundles</a></span></div></div>
+    <div class="arg" data-field="2.vaultBundlesV1Deposit.vault">
+      <div class="nm"><span class="pn">vault</span><span class="who you">you pick: vault</span></div>
+      <div class="val"><div class="raw">0x093272C07700d3cA5301C3Bf9B3A392624179E2F</div><div class="is"><a href="#a-hyperithm-usdc-apex-v2-9e2f">hyperithm-usdc-apex-v2-9e2f</a> <span class="f3">the vault you pick</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The vault that receives the deposit.</span></span></div></div>
+    </div>
+    <div class="arg" data-field="2.vaultBundlesV1Deposit.assets">
+      <div class="nm"><span class="pn">assets</span><span class="who you">you type: amount</span></div>
+      <div class="val"><div class="is">the amount you type</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The amount pulled from the Safe. A referral fee would come out of it; the fee is bound to 0, so all of it is deposited.</span></span></div></div>
+    </div>
+    <div class="arg" data-field="2.vaultBundlesV1Deposit.maxSharePriceE27">
+      <div class="nm"><span class="pn">maxSharePriceE27</span><span class="who">computed: minimum to receive</span></div>
+      <div class="val"><div class="is">price ceiling <span class="f3">computed from the card&#39;s amount and shares; the transaction&#39;s must be as strict or stricter</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The highest price per share (assets ÷ shares, times 1e27). If the actual price is higher, the whole transaction fails. The program requires it to be no higher than &#34;amount ÷ minimum shares&#34;, so you get at least the minimum shares by the count the vault itself reports.</span></span></div></div>
+    </div>
+    <div class="arg" data-field="2.vaultBundlesV1Deposit.assetPermit">
+      <div class="nm"><span class="pn">assetPermit</span></div>
+      <div class="val"><div class="is">2 parts</div>
+      <dl class="mix">
+        <dt><span class="who">fixed</span></dt><dd><code>kind</code> </dd>
+        <dt><span class="who app">any value</span></dt><dd><code>data</code> </dd>
+      </dl>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>A signature that would replace the approval. A Safe uses the approval in call 1 instead, so this is empty.</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">[0]</div><div><div class="is">5 parts</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Step 1: pull the tokens from the Safe into GeneralAdapter1.</span></span></div></div>
-      <div class="parts">
-        <div class="part"><div class="pn">data</div><div><div class="is"><code>erc20TransferFrom</code> (<span class="addr">0xd96ca0b9</span>)</div><div class="doc" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><span class="f3">Docs: </span><a href="https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol">github.com/morpho-org/bundler3/…/GeneralAdapter1.sol</a></span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The function and arguments this step runs, listed item by item below.</span></span></div></div>
-      <div class="parts">
-        <div class="part"><div class="pn">token<div class="pchips"><span class="who you">you pick: vault</span></div></div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</div><div class="is"><a href="#a-usdc">usdc</a> <span class="f3">the asset of the vault you pick</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The token to pull, equal to the asset of the vault you pick.</span></span></div></div></div>
-        <div class="part"><div class="pn">amount<div class="pchips"><span class="who you">you type: amount</span></div></div><div><div class="is">the amount you type</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The amount pulled from the Safe, equal to the deposit amount. Bundler3 records the Safe as the one that started the bundle, so only the Safe&#39;s funds can be pulled.</span></span></div></div></div>
+        <div class="part"><div class="pn">data</div><div><div class="is">differs each time <span class="f3">the contract does not read it; another value gives the same result</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The permit&#39;s data. With kind 0 the contract does not read it. It was empty in all 31 past transactions that fit the template.</span></span></div></div></div>
       <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 fixed value; any change is a MISMATCH</summary>
-        <div class="part"><div class="pn">receiver<div class="pchips"><span class="who">fixed</span></div></div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The tokens go to GeneralAdapter1 itself first; in the next step it deposits them into the vault.</span></span></div></div></div>
+        <div class="part"><div class="pn">kind</div><div><div class="raw">0</div><div class="is">fixed to 0</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>0 means no permit: the tokens are pulled with the approval. 1 is ERC-2612 and 2 is Permit2, both refused.</span></span></div></div></div>
       </details>
-      </div></div>
-      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>4 fixed values; any change is a MISMATCH</summary>
-        <div class="part"><div class="pn">to</div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The contract this step calls, fixed to GeneralAdapter1.</span></span></div></div></div>
-        <div class="part"><div class="pn">value</div><div><div class="raw">0</div><div class="is">fixed to 0</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>ETH sent along, fixed at 0.</span></span></div></div></div>
-        <div class="part"><div class="pn">skipRevert</div><div><div class="raw">false</div><div class="is">fixed to false</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Whether to skip this step if it fails. Fixed at false: if it fails, the whole transaction fails.</span></span></div></div></div>
-        <div class="part"><div class="pn">callbackHash</div><div><div class="raw">0x0000000000000000000000000000000000000000000000000000000000000000</div><div class="is">a fixed value</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Used only by steps that need a callback; fixed at 0.</span></span></div></div></div>
-      </details>
-      </div></div>
-        <div class="part"><div class="pn">[1]</div><div><div class="is">5 parts</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Step 2: GeneralAdapter1 deposits the tokens into the vault, with the shares going to the Safe.</span></span></div></div>
-      <div class="parts">
-        <div class="part"><div class="pn">data</div><div><div class="is"><code>erc4626Deposit</code> (<span class="addr">0x6ef5eeae</span>)</div><div class="doc" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><span class="f3">Docs: </span><a href="https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol">github.com/morpho-org/bundler3/…/GeneralAdapter1.sol</a></span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The function and arguments this step runs, listed item by item below.</span></span></div></div>
-      <div class="parts">
-        <div class="part"><div class="pn">vault<div class="pchips"><span class="who you">you pick: vault</span></div></div><div><div class="raw">0x093272C07700d3cA5301C3Bf9B3A392624179E2F</div><div class="is"><a href="#a-hyperithm-usdc-apex-v2-9e2f">hyperithm-usdc-apex-v2-9e2f</a> <span class="f3">the vault you pick</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Which vault to deposit into. This is the vault you pick on the card.</span></span></div></div></div>
-        <div class="part"><div class="pn">assets<div class="pchips"><span class="who you">you type: amount</span></div></div><div><div class="is">the amount you type</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The amount of tokens deposited into the vault, equal to the deposit amount.</span></span></div></div></div>
-        <div class="part"><div class="pn">maxSharePriceE27<div class="pchips"><span class="who">computed: minimum to receive</span></div></div><div><div class="is">price ceiling <span class="f3">computed from the card&#39;s amount and shares; the transaction&#39;s must be as strict or stricter</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The highest price per share (assets ÷ shares, times 1e27). If the actual price is higher, the whole transaction fails. The program requires it to be no higher than &#34;amount ÷ minimum shares&#34;, so by the share count the vault itself reports, you get at least the minimum shares. You do not type the minimum shares: the program computes them when you build the card.</span></span></div></div></div>
-      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>1 fixed value; any change is a MISMATCH</summary>
-        <div class="part"><div class="pn">receiver<div class="pchips"><span class="who">fixed</span></div></div><div><div class="is">your Safe</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The address that receives the shares, fixed to the Safe.</span></span></div></div></div>
-      </details>
-      </div></div>
-      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>4 fixed values; any change is a MISMATCH</summary>
-        <div class="part"><div class="pn">to</div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The contract this step calls, fixed to GeneralAdapter1.</span></span></div></div></div>
-        <div class="part"><div class="pn">value</div><div><div class="raw">0</div><div class="is">fixed to 0</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>ETH sent along, fixed at 0.</span></span></div></div></div>
-        <div class="part"><div class="pn">skipRevert</div><div><div class="raw">false</div><div class="is">fixed to false</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Whether to skip this step if it fails. Fixed at false: if it fails, the whole transaction fails.</span></span></div></div></div>
-        <div class="part"><div class="pn">callbackHash</div><div><div class="raw">0x0000000000000000000000000000000000000000000000000000000000000000</div><div class="is">a fixed value</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Used only by steps that need a callback; fixed at 0.</span></span></div></div></div>
-      </details>
-      </div></div>
       </div>
     </div>
+    <div class="arg" data-field="2.vaultBundlesV1Deposit.deadline">
+      <div class="nm"><span class="pn">deadline</span><span class="who app">up to a limit</span></div>
+      <div class="val"><div class="is">at most 7 days after the block&#39;s time</div><details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>How it is counted</summary><div class="meta">Exactly 604800 seconds. The block&#39;s time: for a transaction not yet executed, the latest block verify reads; for an executed one, the block it ran in. Later is a MISMATCH.</div></details>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>After this time the transaction fails. The app sets two hours from when it builds it, so a Safe that executes later must rebuild it. Of the 31 past transactions that fit, one ran 496,672 seconds (about 5.7 days) before its deadline, so the limit is 7 days; half ran less than 7,051 seconds before.</span></span></div></div>
+    </div>
+      <details class="fixed"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>2 fixed values; any change is a MISMATCH</summary>
+    <div class="arg" data-field="2.vaultBundlesV1Deposit.referralFeePct">
+      <div class="nm"><span class="pn">referralFeePct</span><span class="who">fixed</span></div>
+      <div class="val"><div class="raw">0</div><div class="is">fixed to 0</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The share of the deposit paid to a referrer. Bound to 0: nothing is taken.</span></span></div></div>
+    </div>
+    <div class="arg" data-field="2.vaultBundlesV1Deposit.referralFeeRecipient">
+      <div class="nm"><span class="pn">referralFeeRecipient</span><span class="who">fixed</span></div>
+      <div class="val"><div class="raw">0x0000000000000000000000000000000000000000</div><div class="is">none (zero address)</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Who would receive the referral fee. Bound to the zero address.</span></span></div></div>
+    </div>
+      </details>
   </div>
   <h3>After the transaction</h3>
   <dl class="props">
     <div><dt>Safe&#39;s usdc</dt><dd class="">the amount you type</dd><dd class="src">exactly the amount you type</dd></div>
     <div><dt>Safe&#39;s hyperithm-usdc-apex-v2-9e2f</dt><dd class="pos">receives more than 0</dd><dd class="src">the program checks only the direction, not the amount</dd></div>
-    <div><dt>usdc allowance for <a href="#a-general-adapter-1">general-adapter-1</a></dt><dd class=""><span class="num">0</span></dd><dd class="src">used up within the transaction; may not end higher than before</dd></div>
+    <div><dt>usdc allowance for <a href="#a-vault-bundles-v1">vault-bundles-v1</a></dt><dd class=""><span class="num">0</span></dd><dd class="src">used up within the transaction; may not end higher than before</dd></div>
   </dl>
 </section>
 
@@ -508,76 +524,72 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>morpho-blue</h2>
   <p class="intro"><span class="aiw" data-ai><span>A Morpho vault spreads deposits across several Morpho Blue markets to lend them out. Vaults are managed by curators, and Morpho&#39;s factory contracts create them.</span><span class="byai">AI research</span></span></p>
   <dl class="props two">
-    <div><dt>TVL</dt><dd><span><span class="num">$9.66 B</span></span><span class="sub2">on Ethereum <span class="num">$4.40 B</span></span></dd></div>
+    <div><dt>TVL</dt><dd><span><span class="num">$9.28 B</span></span><span class="sub2">on Ethereum <span class="num">$4.20 B</span></span></dd></div>
     <div><dt>Listed</dt><dd><span><span class="num">2024-01-14</span></span><span class="sub2">the date DefiLlama first listed it</span></dd></div>
-    <div><dt>proxy</dt><dd><span>2 contracts</span><span class="sub2">read from the code pin</span>
-      <dl class="nest">
-        <div><dt><a href="#a-bundler3">bundler3</a></dt><dd>not a proxy</dd></div>
-        <div><dt><a href="#a-general-adapter-1">general-adapter-1</a></dt><dd>not a proxy</dd></div>
-      </dl></dd></div>
-    <div><dt>Audits</dt><dd><span class="aiw" data-ai><span>Bundler3&#39;s GitHub lists 3 audits (two by Spearbit, one by OpenZeppelin). Vault V2&#39;s GitHub lists 10 (Spearbit, Zellic, Blackthorn, ChainSecurity, Certora and one contest). MetaMorpho&#39;s GitHub lists audits by Cantina and OpenZeppelin. <a class="aisrc" href="https://github.com/morpho-org/bundler3/tree/main/audits">source 1</a> <a class="aisrc" href="https://github.com/morpho-org/vault-v2/tree/main/audits">source 2</a> <a class="aisrc" href="https://github.com/morpho-org/metamorpho/tree/main/audits">source 3</a></span><span class="byai">AI research</span></span></dd></div>
+    <div><dt>proxy</dt><dd><span>not a proxy</span><span class="sub2"><a href="#a-vault-bundles-v1">vault-bundles-v1</a>, read from the code pin</span></dd></div>
+    <div><dt>Audits</dt><dd><span class="aiw" data-ai><span>VaultBundlesV1 has one audit, which AI read: Blackthorn, 14 to 21 July 2026, 0 high, 0 medium, 7 low or info. The two about this contract are marked resolved: one on deposit-gated vaults, one saying anyone could take tokens left in the contract, which it does not hold between transactions (resolved only by documenting it). AI compared the audit&#39;s final commit with the source on GitHub main: in VaultBundlesV1.sol and TokenLib.sol only comments, the licence and the compiler line differ. Vault V2&#39;s and MetaMorpho&#39;s own audits are in their repositories; AI did not read those. <a class="aisrc" href="https://github.com/morpho-org/bundles/blob/main/audits/2026-08-07-blue-vaults-bundles-blackthorn.pdf">source 1</a> <a class="aisrc" href="https://github.com/morpho-org/vault-v2/tree/main/audits">source 2</a> <a class="aisrc" href="https://github.com/morpho-org/metamorpho/tree/main/audits">source 3</a></span><span class="byai">AI research</span></span></dd></div>
     <div><dt>Incidents</dt><dd><span>0</span><span class="sub2">DefiLlama hacks listed under this protocol or its parent</span></dd></div>
   </dl>
-  <p class="srcline">On 2026-11-20 the program read <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://defillama.com/hacks">DefiLlama hacks</a> and the chain. What is tagged AI research, the AI looked up.</p>
+  <p class="srcline">On 2026-11-25 the program read <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://defillama.com/hacks">DefiLlama hacks</a> and the chain. What is tagged AI research, the AI looked up.</p>
 </section>
 
 <section id="vault-hyperithm-usdc-apex-v2-9e2f">
   <h2>Instance</h2>
   <p class="lead"><a href="#a-hyperithm-usdc-apex-v2-9e2f">hyperithm-usdc-apex-v2-9e2f</a>: the recorded output of <code>pnpm instance-evidence</code>. Every number was asked of two providers; only the list of addresses that ever received shares comes from Alchemy alone. No conversion to US dollars here.</p>
   <dl class="props">
-    <div><dt>Factory</dt><dd>vault-v2-factory answers <code>isVaultV2(address)</code> = true</dd><dd class="src">block 26455716</dd></div>
-    <div><dt>totalAssets now</dt><dd><span class="num">6,603,958.14 usdc</span></dd><dd class="src">2026-11-20, block 26455716</dd></div>
-    <div><dt>Holders</dt><dd><span class="num">169</span> addresses hold shares, of <span class="num">357</span> that ever received them</dd><dd class="src"></dd></div>
-    <div><dt>Largest holder</dt><dd><span class="num">58.88%</span></dd><dd class="src">of all shares</dd></div>
-    <div><dt>Top 10</dt><dd><span class="num">89.19%</span></dd><dd class="src">of all shares</dd></div>
+    <div><dt>Factory</dt><dd>vault-v2-factory answers <code>isVaultV2(address)</code> = true</dd><dd class="src">block 26490359</dd></div>
+    <div><dt>totalAssets now</dt><dd><span class="num">7,212,146.08 usdc</span></dd><dd class="src">2026-11-25, block 26490359</dd></div>
+    <div><dt>Holders</dt><dd><span class="num">167</span> addresses hold shares, of <span class="num">358</span> that ever received them</dd><dd class="src"></dd></div>
+    <div><dt>Largest holder</dt><dd><span class="num">53.96%</span></dd><dd class="src">of all shares</dd></div>
+    <div><dt>Top 10</dt><dd><span class="num">86.41%</span></dd><dd class="src">of all shares</dd></div>
   </dl>
   <h3>Monthly totalAssets</h3>
   <div class="diagram chart">
   <svg viewBox="0 0 660 198" role="img" aria-labelledby="vt vd">
     <title id="vt">Monthly totalAssets</title>
-    <desc id="vd">13 months, 2025-11-23 to 2026-11-20, highest 26,979,046.48 usdc</desc>
-    <text class="tick" x="16" y="18">highest 26,979,046.48 usdc</text>
+    <desc id="vd">13 months, 2025-11-28 to 2026-11-25, highest 28,459,688.02 usdc</desc>
+    <text class="tick" x="16" y="18">highest 28,459,688.02 usdc</text>
     <line class="axis" x1="16" y1="150" x2="644" y2="150"/>
-    <rect class="bar" x="25.7" y="149" width="29.0" height="1"><title>2025-11-23: 3,339.76 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">Nov</text><text class="tick" x="40.2" y="188" text-anchor="middle">2025</text>
-    <rect class="bar" x="74.0" y="149" width="29.0" height="1"><title>2025-12-24: 159,542.41 usdc</title></rect><text class="tick thin" x="88.5" y="168" text-anchor="middle">Dec</text>
-    <rect class="bar" x="122.3" y="34" width="29.0" height="116"><title>2026-01-23: 26,979,046.48 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">Jan</text><text class="tick" x="136.8" y="188" text-anchor="middle">2026</text>
-    <rect class="bar" x="170.6" y="102" width="29.0" height="48"><title>2026-02-22: 11,217,342.64 usdc</title></rect><text class="tick thin" x="185.1" y="168" text-anchor="middle">Feb</text>
-    <rect class="bar" x="218.9" y="103" width="29.0" height="47"><title>2026-03-24: 11,004,647.09 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">Mar</text>
-    <rect class="bar" x="267.2" y="128" width="29.0" height="22"><title>2026-04-23: 5,146,967.75 usdc</title></rect><text class="tick thin" x="281.7" y="168" text-anchor="middle">Apr</text>
-    <rect class="bar" x="315.5" y="136" width="29.0" height="14"><title>2026-05-23: 3,259,449.18 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">May</text>
-    <rect class="bar" x="363.8" y="125" width="29.0" height="25"><title>2026-06-22: 5,725,543.86 usdc</title></rect><text class="tick thin" x="378.3" y="168" text-anchor="middle">Jun</text>
-    <rect class="bar" x="412.1" y="100" width="29.0" height="50"><title>2026-07-23: 11,543,334.54 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">Jul</text>
-    <rect class="bar" x="460.4" y="129" width="29.0" height="21"><title>2026-08-22: 4,846,399.77 usdc</title></rect><text class="tick thin" x="474.9" y="168" text-anchor="middle">Aug</text>
-    <rect class="bar" x="508.7" y="118" width="29.0" height="32"><title>2026-09-21: 7,414,813.62 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">Sep</text>
-    <rect class="bar" x="557.0" y="105" width="29.0" height="45"><title>2026-10-21: 10,456,433.82 usdc</title></rect><text class="tick thin" x="571.5" y="168" text-anchor="middle">Oct</text>
-    <rect class="bar last" x="605.4" y="122" width="29.0" height="28"><title>2026-11-20: 6,603,958.14 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">Nov</text>
+    <rect class="bar" x="25.7" y="149" width="29.0" height="1"><title>2025-11-28: 159,693.8 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">Nov</text><text class="tick" x="40.2" y="188" text-anchor="middle">2025</text>
+    <rect class="bar" x="74.0" y="149" width="29.0" height="1"><title>2025-12-28: 159,656.9 usdc</title></rect><text class="tick thin" x="88.5" y="168" text-anchor="middle">Dec</text>
+    <rect class="bar" x="122.3" y="34" width="29.0" height="116"><title>2026-01-28: 28,459,688.02 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">Jan</text><text class="tick" x="136.8" y="188" text-anchor="middle">2026</text>
+    <rect class="bar" x="170.6" y="135" width="29.0" height="15"><title>2026-02-27: 3,775,813.17 usdc</title></rect><text class="tick thin" x="185.1" y="168" text-anchor="middle">Feb</text>
+    <rect class="bar" x="218.9" y="97" width="29.0" height="53"><title>2026-03-29: 13,108,953.56 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">Mar</text>
+    <rect class="bar" x="267.2" y="126" width="29.0" height="24"><title>2026-04-28: 6,002,453.24 usdc</title></rect><text class="tick thin" x="281.7" y="168" text-anchor="middle">Apr</text>
+    <rect class="bar" x="315.5" y="126" width="29.0" height="24"><title>2026-05-28: 5,994,581.26 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">May</text>
+    <rect class="bar" x="363.8" y="122" width="29.0" height="28"><title>2026-06-27: 6,932,008.8 usdc</title></rect><text class="tick thin" x="378.3" y="168" text-anchor="middle">Jun</text>
+    <rect class="bar" x="412.1" y="107" width="29.0" height="43"><title>2026-07-27: 10,610,545.03 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">Jul</text>
+    <rect class="bar" x="460.4" y="131" width="29.0" height="19"><title>2026-08-26: 4,754,977.5 usdc</title></rect><text class="tick thin" x="474.9" y="168" text-anchor="middle">Aug</text>
+    <rect class="bar" x="508.7" y="110" width="29.0" height="40"><title>2026-09-26: 9,771,662.87 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">Sep</text>
+    <rect class="bar" x="557.0" y="109" width="29.0" height="41"><title>2026-10-26: 9,977,777.79 usdc</title></rect><text class="tick thin" x="571.5" y="168" text-anchor="middle">Oct</text>
+    <rect class="bar last" x="605.4" y="121" width="29.0" height="29"><title>2026-11-25: 7,212,146.08 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">Nov</text>
   </svg>
   </div>
   <details class="fold">
     <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Figures for 13 months</summary>
     <dl class="props">
-      <div><dt class="num">2025-11-23</dt><dd class="num">3,339.76 usdc</dd></div>
-      <div><dt class="num">2025-12-24</dt><dd class="num">159,542.41 usdc</dd></div>
-      <div><dt class="num">2026-01-23</dt><dd class="num">26,979,046.48 usdc</dd></div>
-      <div><dt class="num">2026-02-22</dt><dd class="num">11,217,342.64 usdc</dd></div>
-      <div><dt class="num">2026-03-24</dt><dd class="num">11,004,647.09 usdc</dd></div>
-      <div><dt class="num">2026-04-23</dt><dd class="num">5,146,967.75 usdc</dd></div>
-      <div><dt class="num">2026-05-23</dt><dd class="num">3,259,449.18 usdc</dd></div>
-      <div><dt class="num">2026-06-22</dt><dd class="num">5,725,543.86 usdc</dd></div>
-      <div><dt class="num">2026-07-23</dt><dd class="num">11,543,334.54 usdc</dd></div>
-      <div><dt class="num">2026-08-22</dt><dd class="num">4,846,399.77 usdc</dd></div>
-      <div><dt class="num">2026-09-21</dt><dd class="num">7,414,813.62 usdc</dd></div>
-      <div><dt class="num">2026-10-21</dt><dd class="num">10,456,433.82 usdc</dd></div>
-      <div><dt class="num">2026-11-20</dt><dd class="num">6,603,958.14 usdc</dd></div>
+      <div><dt class="num">2025-11-28</dt><dd class="num">159,693.8 usdc</dd></div>
+      <div><dt class="num">2025-12-28</dt><dd class="num">159,656.9 usdc</dd></div>
+      <div><dt class="num">2026-01-28</dt><dd class="num">28,459,688.02 usdc</dd></div>
+      <div><dt class="num">2026-02-27</dt><dd class="num">3,775,813.17 usdc</dd></div>
+      <div><dt class="num">2026-03-29</dt><dd class="num">13,108,953.56 usdc</dd></div>
+      <div><dt class="num">2026-04-28</dt><dd class="num">6,002,453.24 usdc</dd></div>
+      <div><dt class="num">2026-05-28</dt><dd class="num">5,994,581.26 usdc</dd></div>
+      <div><dt class="num">2026-06-27</dt><dd class="num">6,932,008.8 usdc</dd></div>
+      <div><dt class="num">2026-07-27</dt><dd class="num">10,610,545.03 usdc</dd></div>
+      <div><dt class="num">2026-08-26</dt><dd class="num">4,754,977.5 usdc</dd></div>
+      <div><dt class="num">2026-09-26</dt><dd class="num">9,771,662.87 usdc</dd></div>
+      <div><dt class="num">2026-10-26</dt><dd class="num">9,977,777.79 usdc</dd></div>
+      <div><dt class="num">2026-11-25</dt><dd class="num">7,212,146.08 usdc</dd></div>
     </dl>
   </details>
   <div data-ai>
   <h3><span class="aiw" data-ai><span>Where deposits go</span><span class="byai">AI research</span></span></h3>
-  <p class="intro"><span class="aiw" data-ai><span>Your USDC stays idle in the vault after you deposit: no liquidity adapter is set (<code>liquidityAdapter()</code> is the zero address at block 26,455,691), so nothing moves it on in the same transaction. An allocator lends it out later with <code>allocate</code>. One was set until 2026-05-14, so older deposits moved on at once. <a class="aisrc" href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L764-L774">source 1</a> <a class="aisrc" href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L615-L621">source 2</a> <a class="aisrc" href="https://etherscan.io/tx/0xdf15d37677c950c85fe5d3cc7ce31503ee80cbed4c07aad9c1affe97c51680aa">source 3</a> <a class="aisrc" href="https://etherscan.io/tx/0x40f2adbf810b179f5ced5aed0500246ffdeae1c7c4462f4b47dccf6fa5bfa855">source 4</a> <a class="aisrc" href="https://etherscan.io/tx/0xca0b9bb9beae1ac4be8b5d45ba647eb3f587e50e0aae70a0d1566bc5b250b825">source 5</a></span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>Your USDC stays idle in the vault after you deposit: no liquidity adapter is set (<code>liquidityAdapter()</code> is the zero address at block 26,490,392), so nothing moves it on in the same transaction. An allocator lends it out later with <code>allocate</code>. <a class="aisrc" href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L764-L774">source 1</a> <a class="aisrc" href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L615-L621">source 2</a> <a class="aisrc" href="https://etherscan.io/address/0x093272C07700d3cA5301C3Bf9B3A392624179E2F#readContract">source 3</a></span></span></p>
   </div>
   <div data-ai>
   <h3><span class="aiw" data-ai><span>Which markets it lends to</span><span class="byai">AI research</span></span></h3>
-  <p class="intro"><span class="aiw" data-ai><span>Allocators lend it to Morpho Blue USDC markets through the vault&#39;s one adapter, within caps the curator sets per adapter, collateral and market. Morpho&#39;s API shows most of it now in markets with PT-USDat-14JAN2027 and mHyperBTC as collateral; this changes whenever an allocator reallocates. <a class="aisrc" href="https://github.com/morpho-org/vault-v2/blob/3aedc886637fe6edee27dbe2042baf12d8117be3/src/adapters/MorphoMarketV1AdapterV2.sol#L176-L199">source 1</a> <a class="aisrc" href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L569-L589">source 2</a> <a class="aisrc" href="https://etherscan.io/address/0x92872B97d89B54646D036E3aFd2BcCb84d8e3CA1#code">source 3</a> <a class="aisrc" href="https://api.morpho.org/graphql">source 4</a></span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>Allocators lend it to Morpho Blue USDC markets through the vault&#39;s one adapter, within caps the curator sets. Morpho&#39;s API on 2026-11-25 shows most of it with PT-reUSD-10DEC2026, mHyperBTC and PT-USDat-14JAN2027 as collateral; this changes whenever an allocator reallocates. <a class="aisrc" href="https://github.com/morpho-org/vault-v2/blob/3aedc886637fe6edee27dbe2042baf12d8117be3/src/adapters/MorphoMarketV1AdapterV2.sol#L176-L199">source 1</a> <a class="aisrc" href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L569-L589">source 2</a> <a class="aisrc" href="https://etherscan.io/address/0x92872B97d89B54646D036E3aFd2BcCb84d8e3CA1#code">source 3</a> <a class="aisrc" href="https://api.morpho.org/graphql">source 4</a></span></span></p>
   </div>
   <div data-ai>
   <h3><span class="aiw" data-ai><span>Who can change it</span><span class="byai">AI research</span></span></h3>
@@ -585,7 +597,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
   <div data-ai>
   <h3><span class="aiw" data-ai><span>Getting the USDC back</span><span class="byai">AI research</span></span></h3>
-  <p class="intro"><span class="aiw" data-ai><span>Only about 1.55 USDC sits idle (block 26,455,723). A larger withdrawal fails until an allocator moves USDC back, or someone calls <code>forceDeallocate</code>, which charges a penalty (0 now; the curator can raise it to 2% at once). A market can return only what its borrowers have not borrowed. <a class="aisrc" href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L793-L811">source 1</a> <a class="aisrc" href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L813-L833">source 2</a> <a class="aisrc" href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/libraries/ConstantsLib.sol#L12">source 3</a></span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>About 300,001 of the vault&#39;s 7.21 million USDC sits idle (block 26,490,392). A larger withdrawal fails until an allocator moves USDC back, or someone calls <code>forceDeallocate</code>, which charges a penalty (0 now; the curator can raise it to 2% at once). A market can return only what its borrowers have not borrowed. <a class="aisrc" href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L793-L811">source 1</a> <a class="aisrc" href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L813-L833">source 2</a> <a class="aisrc" href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/libraries/ConstantsLib.sol#L12">source 3</a></span></span></p>
   </div>
 </section>
 
@@ -611,8 +623,21 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="addresses">
-  <h2>Addresses <span class="c">5</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t7"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t7" role="tooltip">Each address must be confirmed in at least two places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
+  <h2>Addresses <span class="c">4</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Each address must be confirmed in at least two places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
   <div class="rows">
+    <div class="ad" id="a-vault-bundles-v1" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">vault-bundles-v1</span><span class="role"><span class="aiw" data-ai><span>Morpho&#39;s vault bundle contract. It receives the allowance, pulls the tokens from the Safe, deposits them into the vault and has the vault mint the shares to the Safe, its caller</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0x02912516d49dE997db75B9D7858faAE59209650B</span>
+        <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>)</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://github.com/morpho-org/sdks/blob/166277bc26a12235256bdf9162da012b80781a1e/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>, <a href="https://github.com/morpho-org">GitHub verified domains</a>)</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>newest version (main) lists it too</span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>Immunefi bug bounty scope<span class="res">address not listed</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>deployer<span class="res">not proven</span></span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, github.com/morpho-org/sdks</div>
+        <details class="aisrcs" open><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 4 places · AI judgment: needs attention</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Morpho&#39;s contract address page lists VaultBundlesV1 at 0x02912516d49dE997db75B9D7858faAE59209650B for Ethereum <a class="aisrc" href="https://docs.morpho.org/developers/contracts/addresses/">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>The SDK&#39;s address file in Morpho&#39;s GitHub organization, main at 2026-11-23, sets bundles.vaultBundlesV1 for Ethereum mainnet to this address <a class="aisrc" href="https://github.com/morpho-org/sdks/blob/166277bc26a12235256bdf9162da012b80781a1e/packages/morpho-ts/src/addresses.ts">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: verified source VaultBundlesV1, created by contract 0x19f57e4080fc40812f806054fa79052e6050b9b6, deployed in the same transaction 0xf026c771c62ada6173df2a20cc46bcfa86b60a4b7a75dc9174dfed59c67188fd; no Morpho page read names that creator <a class="aisrc" href="https://etherscan.io/address/0x02912516d49dE997db75B9D7858faAE59209650B">source</a></span></span><span class="aires">AI judgment: needs attention</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>No Immunefi program&#39;s public data holds this address on 2026-11-25 <a class="aisrc" href="https://immunefi.com/public-api/bounties.json">source</a></span></span><span class="aires">AI judgment: needs attention</span></div>
+        </details></div>
+    </div>
     <div class="ad" id="a-hyperithm-usdc-apex-v2-9e2f" data-state="warn">
       <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
       <div><span class="nm">hyperithm-usdc-apex-v2-9e2f</span><span class="role"><span class="aiw" data-ai><span>USDC vault (V2) named Hyperithm USDC Apex</span><span class="byai">AI research</span></span><span class="conf">low confidence</span><span class="reviewed">AI has concerns</span></span></div>
@@ -626,20 +651,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         </details></div>
     </div>
     <details class="fold">
-      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>4 more addresses have no result for you to review</summary>
+      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>2 more addresses have no result for you to review</summary>
     <div class="ad" id="a-usdc" data-state="ok">
       <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
       <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>The token deposited into a USDC vault</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
       <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to circle-usdc (compared with <a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a>)</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>Immunefi bug bounty scope<span class="res">address not listed</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x95ba4cf87d6723ad9c0db21737d862be80e93911">deployer 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911</a><span class="res">no confirmed contract shares it</span></span></span></div></div>
         <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div></div>
-    </div>
-    <div class="ad" id="a-bundler3" data-state="ok">
-      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
-      <div><span class="nm">bundler3</span><span class="role"><span class="aiw" data-ai><span>Morpho&#39;s bundling contract. It runs each step of the bundle in order and records that the Safe started it</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
-      <div class="body"><span class="addr">0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245</span>
-        <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>)</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://github.com/morpho-org/sdks/blob/8d702da09b69baa272ad00b77e55cd197191321d/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>, <a href="https://github.com/morpho-org">GitHub verified domains</a>)</span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>newest version (main): address not listed</span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>Immunefi bug bounty scope<span class="res">address not listed</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>deployer<span class="res">not proven</span></span></span></div></div>
-        <div class="confirmed">Confirmed in 2 places: official page, github.com/morpho-org/sdks</div></div>
     </div>
     <div class="ad" id="a-vault-v2-factory" data-state="ok">
       <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
@@ -648,39 +666,30 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>)</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>, <a href="https://github.com/morpho-org">GitHub verified domains</a>)</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>newest version (main) lists it too</span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>Immunefi bug bounty scope<span class="res">address not listed</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>deployer<span class="res">not proven</span></span></span></div></div>
         <div class="confirmed">Confirmed in 2 places: official page, github.com/morpho-org/sdks</div></div>
     </div>
-    <div class="ad" id="a-general-adapter-1" data-state="ok">
-      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
-      <div><span class="nm">general-adapter-1</span><span class="role"><span class="aiw" data-ai><span>Receives the allowance, pulls the tokens for the Safe and deposits them into the vault</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
-      <div class="body"><span class="addr">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</span>
-        <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>)</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://github.com/morpho-org/sdks/blob/8d702da09b69baa272ad00b77e55cd197191321d/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>, <a href="https://github.com/morpho-org">GitHub verified domains</a>)</span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>newest version (main): address not listed</span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>Immunefi bug bounty scope<span class="res">address not listed</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>deployer<span class="res">not proven</span></span></span></div></div>
-        <div class="confirmed">Confirmed in 2 places: official page, github.com/morpho-org/sdks</div></div>
-    </div>
     </details>
   </div>
 </section>
 
 <section id="past">
   <h2>Past transactions</h2>
-  <p class="lead">In past records, <span class="num">8</span> transactions match the template exactly, made the way yours is: Safe <span class="num">6</span> (2 Safes), EOA <span class="num">2</span> (2 addresses, each sending one call of the template). All of them succeeded: they were found through the event logs of hyperithm-usdc-apex-v2-9e2f mint (deposit), and a failed transaction leaves no such log. The latest 3 exact matches: <a href="https://etherscan.io/tx/0x18fe76a5514052197b663bbcc8af770bcf9b53721cabbacf81298da2b0c6dc66">0x18fe76a5…</a>, <a href="https://etherscan.io/tx/0xbbcae7b746b4e3e6c9cb56ed15301e39a7f32b4eb5ea55dcda4c1f7a6de17704">0xbbcae7b7…</a>, <a href="https://etherscan.io/tx/0x8243b00308694a896022c9dc2147c751d06cbf4f26e85beba27fcde5af46bad0">0x8243b003…</a>.</p>
-  <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span><span class="num">34</span> more differ from yours: <span class="num">0</span> have the same shape but with an address outside the registry, <span class="num">34</span> have another shape</span></summary>
-  <p class="intro"><span class="aiw" data-ai><span>The other Safes that deposited differently called only <code>multicall</code>, with no <code>approve</code> in the same transaction, so they used an allowance given earlier. Most EOAs put a USDC <code>permit</code> into the bundle instead of a separate <code>approve</code>.</span><span class="byai">AI research</span></span></p>
-  <p class="lead">Only transactions that used this operation&#39;s calls count. An exact match has the template&#39;s calls and argument positions, meets every rule the transaction itself can show (such as where the sender goes, or a fixed value), and uses a contract the template allows wherever the template binds a registry contract. Same shape but a market, token, vault or address outside the registry means the calls, argument positions and those rules are the same, but an address or market is not in the registry; the kind is named when the record shows it, otherwise only address. The rest are grouped by reason, each with up to 3 examples.</p>
-  <h3>Search of hyperithm-usdc-apex-v2-9e2f mint (deposit): 7016 found, 240 studied, all 17 with a proven Safe party</h3>
-  <p class="lead">Recorded in <code>testdata/research/morpho-vault-deposit-v2.json</code>. Alchemy and Etherscan found exactly the same (<span class="num">7016 = 7016</span>).</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">12</span> transactions used this operation&#39;s calls (8 Safes); <span class="num">6</span> match the template exactly.</span></div>
-    <div class="pg"><span class="pc num">6</span><div><div class="pcalls"><code>bundler3.multicall</code></div><div>The calls differ from the template, which is <code>approve → multicall</code><span class="f3">, from 6 addresses</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x54579efd411964b4bab3c16a18d15928e688e18647f0167e1fde4b8fc0956541">0x54579efd…</a>, <a href="https://etherscan.io/tx/0x18fb9bc20f2db2c0310a029301e01ad3e1564e4ec88c5b2469bf7e70c8388b5b">0x18fb9bc2…</a>, <a href="https://etherscan.io/tx/0xac9058632b750b6804d85b5c8c0a7e14d15e0b25df30c2572808e09383d0dbf2">0xac905863…</a></div></div></div>
-  </div>
-  <div class="pblock">
-    <div class="ph"><span class="pt">EOA calls multicall directly</span><span><span class="num">30</span> transactions used this operation&#39;s calls (21 addresses); <span class="num">2</span> match the template exactly.</span></div>
-    <div class="pg"><span class="pc num">27</span><div><div class="pcalls"><code>usdc.permit → general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit</code></div><div><code>bundle</code> has 3 items; the template has 2<span class="f3">, from 18 addresses</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xbc15c4f4d2a14780a802a50fa6cdc42c66e980927ba490d84c72867bf9a64b6a">0xbc15c4f4…</a>, <a href="https://etherscan.io/tx/0x0fde9bac7eac3568c1283b699a90bca469ed149f6abfccd68bcb6616404e15ad">0x0fde9bac…</a>, <a href="https://etherscan.io/tx/0xe3554a16e165ba3574d4f1c06454e027a45c5c3e7c27ccebdce9378b08a16c28">0xe3554a16…</a></div></div></div>
-    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>usdc.permit → general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit → general-adapter-1.erc20Transfer → general-adapter-1.erc20Transfer</code></div><div><code>bundle</code> has 5 items; the template has 2<span class="f3">, from 1 address</span></div>
-      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xe8256e38c735e24627ebab929771ac5ad1a8938facf6bd4fda9c5b32a92385d7">0xe8256e38…</a></div></div></div>
-  </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>198 more are other operations, not counted: <code>hyperithm-usdc-apex-v2-9e2f.multicall</code> 177, <code>0x48b415841165304f7EfaA7D5dD5FC65cc7B4bd8e.0x26f3525e</code> 5, <code>0x7583D7f36635E5642713ACCBdEd717ca59fdad07.0x0af210a1</code> 3, <code>hyperithm-usdc-apex-v2-9e2f.forceDeallocate</code> 3, and others.</span></div>
+  <h3>1. Has this template&#39;s transaction worked before?</h3>
+  <p class="ans"><b>Not by a Safe, in what was studied.</b> EOA: 0.</p>
+  <h3>2. What values are normal in what the app fills?</h3>
+  <div class="sh"><code>data</code><span>the value that was set</span></div><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">Transactions</th><th scope="col" class="n">Count</th><th scope="col" class="n">Different values</th><th scope="col" class="what">Most common</th></tr></thead><tbody>
+    <tr><td class="what" data-label="Transactions"><span>EOA, differs elsewhere</span></td><td class="n" data-label="Count"><span><span class="num">1</span></span></td><td class="n" data-label="Different values"><span><span class="num">1</span></span></td><td class="what" data-label="Most common"><span><span class="addr">0x0000000000000000…(128 bytes)</span>, in 1</span></td></tr></tbody></table></div>
+  <div class="sh"><code>deadline</code><span>how far ahead it was set, counted from the block the transaction ran in</span></div><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">Transactions</th><th scope="col" class="n">Count</th><th scope="col" class="nw v">Shortest</th><th scope="col" class="nw v">Half at or under</th><th scope="col" class="nw v">Longest</th></tr></thead><tbody>
+    <tr><td class="what" data-label="Transactions"><span>Safe, matches the template</span></td><td class="n" data-label="Count"><span><span class="num">0</span></span></td><td class="nw v" data-label="Shortest"><span>none</span></td><td class="nw v" data-label="Half at or under"><span>none</span></td><td class="nw v" data-label="Longest"><span>none</span></td></tr>
+    <tr><td class="what" data-label="Transactions"><span>EOA, differs elsewhere</span></td><td class="n" data-label="Count"><span><span class="num">1</span></span></td><td class="nw v" data-label="Shortest"><span>not recorded</span></td><td class="nw v" data-label="Half at or under"><span>not recorded</span></td><td class="nw v" data-label="Longest"><span>not recorded</span></td></tr></tbody></table></div>
+  <p class="cap">Template limit: <b class="lm">7 days</b>. Longer is a MISMATCH.</p>
+  <h3>3. How did the others differ?</h3>
+  <p class="ans">7 transactions did something this template refuses.</p>
+  <p class="ans"><span class="aiw" data-ai><span>No Safe has used the template&#39;s route on this vault: every Safe that deposited went through Bundler3, refused now. The one use of the new route is an EOA with a USDC <code>permit</code> in place of an approval.</span><span class="byai">AI research</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="tx">Examples (up to 3)</th></tr></thead><tbody>
+    <tr><td class="what" data-label="What was different"><span>Called other functions: <code>usdc.approve → bundler3.0x374f435d</code></span></td><td class="n" data-label="Safe"><span><span class="num">6</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>block 24922291</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xbbcae7b746b4e3e6c9cb56ed15301e39a7f32b4eb5ea55dcda4c1f7a6de17704">0xbbcae7b7…</a> <a href="https://etherscan.io/tx/0x8243b00308694a896022c9dc2147c751d06cbf4f26e85beba27fcde5af46bad0">0x8243b003…</a> <a href="https://etherscan.io/tx/0xd95f848f0c3cb89a0eabc88c15fbb06abaddf534c74fe7fcd879b3f15ad7b350">0xd95f848f…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span><code>vaultBundlesV1Deposit.assetPermit.kind</code> was <span class="addr">1</span>, the template wants <span class="addr">0</span></span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">1</span></span></td><td class="nw" data-label="Newest"><span>block 26319532</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x03652285a11a34dd743131fa10047dc5baf4073986a7d27e523e9d3899707e32">0x03652285…</a></span></td></tr></tbody></table></div>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>How the program searched</span></summary>
+  <h3>Search of hyperithm-usdc-apex-v2-9e2f mint (deposit): 7038 found, 240 studied, all 17 with a proven Safe party</h3>
+  <p class="cap">Every transaction of the last year was searched, from block 23862266 (2025-11-23) to block 26490265 (2026-11-25), with no gap. Alchemy and Etherscan found exactly the same (<span class="num">7038 = 7038</span>).</p>
+  <p class="cap">233 more are other operations, not counted: <code>hyperithm-usdc-apex-v2-9e2f.multicall</code> 180, <code>bundler3.0x374f435d</code> 30, <code>0x48b415841165304f7EfaA7D5dD5FC65cc7B4bd8e.0x26f3525e</code> 5, <code>hyperithm-usdc-apex-v2-9e2f.deposit</code> 4, and others.</p>
   </details>
 </section>
 
@@ -722,8 +731,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<aside class="usage"><h3>AI usage to make this report</h3><p>Not measured</p></aside>
-<footer class="foot">Written by <code>pnpm report morpho/vault-deposit --instance-of hyperithm-usdc-apex-v2-9e2f --record</code> from <code>templates/morpho/vault-deposit/template.json</code>, <code>templates/morpho/vault-deposit/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/morpho-vault-deposit/hyperithm-usdc-apex-v2-9e2f.json</code>, <code>testdata/abi</code>, <code>testdata/research/morpho-vault-deposit-v2.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/morpho/vault-deposit/notes.json</code>, <code>templates/morpho/vault-deposit/instances/hyperithm-usdc-apex-v2-9e2f/notes.json</code>; the data was read on 2026-11-20. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
+<section id="usage">
+  <h2>AI usage</h2>
+  <p class="lead">The AI usage of this report was not measured.</p>
+</section>
+
+<footer class="foot">Written by <code>pnpm report morpho/vault-deposit --instance-of hyperithm-usdc-apex-v2-9e2f --record</code> from <code>templates/morpho/vault-deposit/template.json</code>, <code>templates/morpho/vault-deposit/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/morpho-vault-deposit/hyperithm-usdc-apex-v2-9e2f.json</code>, <code>testdata/abi</code>, <code>testdata/research/morpho-vault-deposit-v2.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/morpho/vault-deposit/notes.json</code>, <code>templates/morpho/vault-deposit/instances/hyperithm-usdc-apex-v2-9e2f/notes.json</code>; the data was read on 2026-11-25. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
 
 </div>
 </div>

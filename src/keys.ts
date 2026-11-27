@@ -11,6 +11,13 @@ export const KEYS = [
     signup: 'https://dashboard.alchemy.com/',
     usedBy: 'pnpm kiss-sign verify, pnpm kiss-sign card new, and the pnpm research scripts',
   },
+  {
+    name: 'drpc',
+    label: 'drpc',
+    env: 'DRPC_API_KEY',
+    signup: 'https://drpc.org/login',
+    usedBy: 'every command that needs the Alchemy key to read the chain',
+  },
   { name: 'etherscan', label: 'Etherscan', env: 'ETHERSCAN_API_KEY', signup: 'https://etherscan.io/myapikey', usedBy: 'pnpm past-txs, pnpm check-sources, pnpm prove-abi, pnpm record-abi-case and pnpm report' },
   {
     name: 'github',
@@ -28,6 +35,7 @@ export type Env = Readonly<Record<string, string | undefined>>;
 export type FoundKey = { readonly value: string; readonly from: 'environment' | 'file' };
 
 const KEY_SHAPE = /^[A-Za-z0-9_.-]{8,256}$/;
+const KEY_SHAPE_WORDS = "8 to 256 letters, digits, '.', '-' or '_'";
 
 export class KeyError extends Error {
   override name = 'KeyError';
@@ -72,6 +80,12 @@ export function findKey(spec: KeySpec, env: Env): FoundKey | undefined {
   return fromFile === undefined ? undefined : { value: fromFile, from: 'file' };
 }
 
+/** Throws `KeyError`, without the value, when a key that goes into a URL is not shaped like one. */
+export function requireKeyShape(spec: KeySpec, value: string): void {
+  if (KEY_SHAPE.test(value)) return;
+  throw new KeyError(`${spec.env} is set, but a ${spec.label} key is ${KEY_SHAPE_WORDS}, and it is not. Correct it where it is set: your environment, or $KISS_SIGN_HOME/.env.`);
+}
+
 function writeAtomically(home: string, lines: readonly string[]): void {
   mkdirSync(home, { recursive: true, mode: 0o700 });
   const path = keyFilePath(home);
@@ -113,7 +127,7 @@ export function createKeyFile(home: string): boolean {
 
 export function saveKey(home: string, spec: KeySpec, value: string): void {
   if (!KEY_SHAPE.test(value)) {
-    throw new KeyError(`The ${spec.label} key is 8 to 256 letters, digits, '.', '-' or '_', and what you typed is not. No key saved.`);
+    throw new KeyError(`The ${spec.label} key is ${KEY_SHAPE_WORDS}, and what you typed is not. No key saved.`);
   }
   const lines = readLines(keyFilePath(home));
   const line = `${spec.env}=${value}`;

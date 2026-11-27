@@ -1,0 +1,11 @@
+import type { Read, Reader } from '../chain/reader.ts';
+import type { BlockRef } from '../chain/types.ts';
+
+/** How far behind the head a long run reads, by the block's hash. A deeper reorganization is unlikely, and leaves the run's later reads unread. */
+export const SETTLED_DEPTH = 8n;
+
+/** The block `SETTLED_DEPTH` behind the head both providers are at. */
+export async function settledBlock(reader: Reader): Promise<Read<BlockRef>> {
+  const head = await reader.blockNumber();
+  return head.kind === 'unverifiable' ? head : reader.block(head.value - SETTLED_DEPTH);
+}

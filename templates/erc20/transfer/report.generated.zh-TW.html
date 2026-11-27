@@ -27,6 +27,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-
 a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
 a:hover{text-decoration-color:var(--fg2)}
 :focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+[data-ai]{overflow-wrap:anywhere}
 code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 4px;overflow-wrap:anywhere}
 .addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
 .addr.line{display:block;margin-top:4px}
@@ -65,7 +66,7 @@ h1 .byai{vertical-align:6px}
 h1 .aiw>:first-child{margin-right:12px}
 .opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
 .sub{color:var(--fg2);margin:14px 0 0;font-size:17px}
-:is(.sub,h3,.intro,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
+:is(.sub,h3,.intro,.ans,.rec,.row .t,.role,.props dd) .aiw>:first-child{margin-right:8px}
 .verdict .byai{margin-left:8px}
 .checks{list-style:none;margin:28px 0 0;padding:14px 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .checks li{display:flex;align-items:flex-start;gap:8px;font-size:var(--t-row);position:relative}
@@ -134,7 +135,7 @@ svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
 svg .ah{fill:var(--fg)}
 svg .fn{fill:var(--fg);font:400 14px var(--mono)}
 svg .no{fill:var(--fg3);font:400 14px var(--mono)}
-svg .cap{display:flex;align-items:flex-start;gap:8px;padding-top:2px;color:var(--fg2);font:14px/20px var(--sans)}
+svg .cap{margin:0;display:flex;align-items:flex-start;gap:8px;padding-top:2px;color:var(--fg2);font:14px/20px var(--sans)}
 svg .cap code{font-size:13px;padding:2px 6px;white-space:nowrap}
 .mark{font-size:17px} .mark.ok{color:var(--ok)} .mark.bad{color:var(--bad)}
 svg .capg{fill:var(--ok);font:590 14px var(--sans)}
@@ -148,9 +149,19 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
 
-.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
-.key>span{display:inline-flex;gap:8px;align-items:center}
-.key .k0{color:var(--fg3);font-weight:590}
+.deciders{margin:36px 0 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}
+.deciders h3{margin:0 0 10px;font-size:var(--t-small);color:var(--fg2)}
+.deciders dl{margin:0;display:flex;flex-direction:column;gap:12px}
+.deciders .grp{display:grid;grid-template-columns:88px minmax(0,1fr);gap:0 16px;align-items:start}
+.deciders .gh{font-size:var(--t-small);line-height:24px;color:var(--fg);font-weight:590}
+.deciders .defs{margin:0;display:flex;flex-direction:column;gap:6px}
+.deciders .defs>div{display:grid;grid-template-columns:116px minmax(0,1fr);gap:0 14px;align-items:start;font-size:var(--t-small);line-height:24px;color:var(--fg2)}
+.deciders .who{justify-self:start}
+@media (max-width:560px){.deciders .grp{grid-template-columns:minmax(0,1fr)}}
+.mix{margin:10px 0 12px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 16px;align-items:start}
+.mix dt{justify-self:start}
+.mix dd{margin:0;display:flex;flex-wrap:wrap;gap:6px;line-height:24px}
+.mix code{font-size:var(--t-label)}
 .cb{margin-top:40px}
 .callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
 .callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
@@ -202,7 +213,7 @@ details.fixed[open]>summary .chev{transform:rotate(90deg)}
 }
 
 .rows{border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .row:hover,.ad:hover{background:var(--hover)}
 .row .i{margin-top:4px}
 .row .t{font-weight:590;font-size:var(--t-body)}
@@ -249,14 +260,31 @@ details.fold[open]>summary .chev{transform:rotate(90deg)}
 details.fold .ad:last-child{border-bottom:0}
 
 .warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
-.pblock{border-top:1px solid var(--line);margin-top:16px}
-.ph{display:flex;flex-direction:column;gap:4px;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
-.ph .pt{font-weight:590}
-.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
-.pg .pc{color:var(--fg)}
-.pg .pcalls{margin-bottom:4px}
-.pg .pex{font-size:var(--t-small);margin-top:4px}
-.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+.ans{margin:0 0 10px;color:var(--fg2)}
+.ans b{color:var(--fg)}
+.cap{margin:8px 0 0;font-size:var(--t-small);color:var(--fg3)}
+.lm{color:var(--warn)}
+.sh{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-size:var(--t-small);color:var(--fg2);margin-top:18px}
+.sc{overflow-x:auto;margin:12px 0 8px}
+.pt2{border-collapse:collapse;width:100%;font-size:var(--t-small);font-variant-numeric:tabular-nums}
+.pt2 th{font-size:var(--t-label);font-weight:400;color:var(--fg3);text-align:left;padding:6px 16px 6px 0;border-bottom:1px solid var(--line2);white-space:nowrap}
+.pt2 td{padding:10px 16px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg2)}
+.pt2 td.what{min-width:200px;color:var(--fg);overflow-wrap:anywhere}
+.pt2 .n{text-align:right}
+.pt2 th{vertical-align:bottom}
+.pt2 th.n{white-space:normal}
+.pt2 td.nw{white-space:nowrap}
+.pt2 td.v{color:var(--fg);font-weight:590}
+.pt2 .tx{min-width:104px}
+@media (max-width:760px){
+  .pt2,.pt2 tbody,.pt2 tr{display:block}
+  .pt2 thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .pt2 tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .pt2 td,.pt2 td.n{display:grid;grid-template-columns:minmax(0,130px) minmax(0,1fr);gap:12px;padding:3px 0;border-bottom:0;text-align:left}
+  .pt2 td::before{content:attr(data-label);font-size:var(--t-label);font-weight:400;color:var(--fg3)}
+  .pt2 td.nw{white-space:normal}
+  .pt2 td.what{min-width:0}
+}
 @media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
@@ -271,13 +299,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
 .auto li{display:flex;gap:10px;align-items:baseline}
 .auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
-.usage{font-size:var(--t-small);color:var(--fg3);margin-bottom:28px}
-.usage h3{font-size:var(--t-row);color:var(--fg2);margin:0 0 6px}
-.usage p{margin:0}
-.usage table{border-collapse:collapse;margin:10px 0}
-.usage th,.usage td{padding:6px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left}
-.usage th+td,.usage th+th{padding-left:32px;text-align:right}
-.usage tfoot th,.usage tfoot td{color:var(--fg);border-bottom:0}
+.ut{border-collapse:collapse;width:100%;margin:16px 0 12px;font-size:var(--t-row)}
+.ut th,.ut td{padding:9px 0;border-bottom:1px solid var(--line);font-weight:400;text-align:left;color:var(--fg2)}
+.ut thead th{font-size:var(--t-label);color:var(--fg3);border-bottom-color:var(--line2)}
+.ut th+td,.ut th+th{text-align:right;font-variant-numeric:tabular-nums}
+.ut tfoot th,.ut tfoot td{color:var(--fg);font-weight:590;border-bottom:0}
 .foot{font-size:var(--t-small);color:var(--fg3);border-top:1px solid var(--line);padding-top:16px}
 .foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
@@ -298,7 +324,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#review">待確認 <span class="cnt" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>0</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">6</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#review">待確認 <span class="cnt" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>0</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">6</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
 </nav>
 
 <div class="main">
@@ -321,7 +347,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>單純的代幣轉帳：Safe 直接呼叫代幣合約的 transfer，不留下授權。</span><span class="byai">AI 研究：可以用</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#review">待確認 <span class="cnt" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>0</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">6</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#review">待確認 <span class="cnt" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>0</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">6</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
   </details>
 </header>
 
@@ -349,10 +375,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </svg>
   </div>
   <div class="scrollhint">圖可以左右滑動，最右邊是 代幣</div>
-  <div class="key">
-    <span class="k0">誰決定</span>
-    <span><span class="who you">你填</span>每次簽名填</span>
-    <span><span class="who you">你選</span>每次簽名選</span>
+  <div class="deciders">
+    <h3>每個值由誰決定</h3>
+    <dl>
+      <div class="grp"><dt class="gh">你</dt><dd class="defs">
+        <div><span class="who you">你填</span><span>每次簽名你自己填。</span></div>
+        <div><span class="who you">你選</span><span>每次簽名你從清單裡選。</span></div></dd></div>
+    </dl>
   </div>
   <p class="lead keylead">下面逐一列出交易的每個呼叫。每個參數都寫出由誰決定、它的值或必須符合的規則，以及它的作用。</p>
   
@@ -414,8 +443,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 circle-usdc（<a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a> 對照）</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x95ba4cf87d6723ad9c0db21737d862be80e93911">部署者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911</a><span class="res">沒有已確認的合約同一個部署者</span></span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div>
-        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 1 處 · AI 判斷：沒問題</summary>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911 <a class="aisrc" href="https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 3 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Circle 的 USDC 合約地址頁在 Mainnet 的 Ethereum 那一列列出這個地址 <a class="aisrc" href="https://developers.circle.com/stablecoins/usdc-contract-addresses">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko 的 usd-coin 幣在 Ethereum 下列出這個地址 <a class="aisrc" href="https://www.coingecko.com/en/coins/usd-coin">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911，創建交易 0xe7e0fe390354509cd08c9a0168536938600ddc552b3f7cb96030ebef62e75895 <a class="aisrc" href="https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
         </details></div>
     </div>
     <div class="ad" id="a-usdt" data-state="ok">
@@ -424,8 +455,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0xdAC17F958D2ee523a2206206994597C13D831ec7</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://tether.to/en/supported-protocols/">tether.to/en/supported-protocols</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 tether（<a href="https://defillama.com/protocol/tether">DefiLlama</a> 對照）</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/tether">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x36928500bc1dcd7af6a2b4008875cc336b927d57">部署者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57</a><span class="res">沒有已確認的合約同一個部署者</span></span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div>
-        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 1 處 · AI 判斷：沒問題</summary>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57 <a class="aisrc" href="https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 3 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Tether 的 supported-protocols 頁把這個地址列為 Ethereum 上的 USD₮ 合約地址 <a class="aisrc" href="https://tether.to/en/supported-protocols/">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko 的 tether 幣在 Ethereum 下列出這個地址 <a class="aisrc" href="https://www.coingecko.com/en/coins/tether">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57，創建交易 0x2f1c5c2b44f771e942a8506148e256f94f1a464babc938ae0690c6e34cd79190 <a class="aisrc" href="https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
         </details></div>
     </div>
     <div class="ad" id="a-morpho" data-state="ok">
@@ -434,8 +467,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0x58D97B57BB95320F9a05dC918Aef65434969c2B2</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a> 對照）</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x937ce2d6c488b361825d2db5e8a70e26d48afed5">部署者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5</a><span class="res">沒有已確認的合約同一個部署者</span></span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div>
-        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 1 處 · AI 判斷：沒問題</summary>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 ERC1967Proxy，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5 <a class="aisrc" href="https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 3 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Morpho 的合約地址頁在 MORPHO Token 的 Ethereum 下把這個地址列為 MORPHO <a class="aisrc" href="https://docs.morpho.org/developers/contracts/addresses/">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko 的 morpho 幣在 Ethereum 下列出這個地址 <a class="aisrc" href="https://www.coingecko.com/en/coins/morpho">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 ERC1967Proxy，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5，創建交易 0x1a8de6a5ba99b4dcd91ff35424e2e3adf76b1de440f97e4a48b22bfe9a8f96e9 <a class="aisrc" href="https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
         </details></div>
     </div>
     <div class="ad" id="a-cbbtc" data-state="ok">
@@ -444,23 +479,35 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">github.com/coinbase/agentkit</a></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/coinbase">DefiLlama</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（main）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/coinbase-wrapped-btc">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>部署者<span class="res">證明不了是誰部署</span></span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div>
-        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 1 處 · AI 判斷：沒問題</summary>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 FiatTokenProxy，創建者 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05 <a class="aisrc" href="https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 3 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Coinbase 的 agentkit 代幣清單在 ethereum-mainnet 下把 CBBTC 對到這個地址（base-mainnet 下也是同一個地址） <a class="aisrc" href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko 的 coinbase-wrapped-btc 幣在 Ethereum 下列出這個地址 <a class="aisrc" href="https://www.coingecko.com/en/coins/coinbase-wrapped-btc">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 FiatTokenProxy，創建者 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05，創建交易 0x09001d384305288073faa8f5cf3051c6cc13d55b66114064be17e12f71469753 <a class="aisrc" href="https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
         </details></div>
     </div>
     <div class="ad" id="a-usp" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
-      <div><span class="nm">usp</span><span class="role"><span class="conf">高信心</span></span></div>
+      <div><span class="nm">usp</span><span class="role"><span class="aiw" data-ai><span>可選的代幣：Piku 的生息穩定幣 USP</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts">docs.piku.co/piku/piku-platform</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 piku-finance（<a href="https://defillama.com/protocol/piku-finance">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/piku-utility-token">CoinGecko</a> 對照）</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/usp-yield-optimized-stablecoin">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>Immunefi 漏洞賞金範圍<span class="res">沒列出這個地址</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0xb8eaa4f956c6324435f4088cae9cda974c358508">部署者 0xB8eaa4f956C6324435f4088cAe9cDa974C358508</a><span class="res">沒有已確認的合約同一個部署者</span></span></span></div></div>
-        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 3 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Piku 的 token and workflow contracts 頁在代號 USP 旁列出這個地址 <a class="aisrc" href="https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko 的 usp-yield-optimized-stablecoin 幣在 Ethereum 下列出這個地址 <a class="aisrc" href="https://www.coingecko.com/en/coins/usp-yield-optimized-stablecoin">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 TransparentUpgradeableProxy，創建者 0xB8eaa4f956C6324435f4088cAe9cDa974C358508，創建交易 0xe38f329a0426954fc83ec5bc5314f24dca2cfbcebefeb679cf43aebbbba70dda <a class="aisrc" href="https://etherscan.io/address/0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        </details></div>
     </div>
     <div class="ad" id="a-weeth" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
-      <div><span class="nm">weeth</span><span class="role"><span class="conf">高信心</span></span></div>
+      <div><span class="nm">weeth</span><span class="role"><span class="aiw" data-ai><span>可選的代幣：ether.fi 的包裝質押 ETH weETH</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol">github.com/etherfi-protocol/smart-contracts</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 ether.fi-stake（<a href="https://defillama.com/protocol/ether.fi-stake">DefiLlama</a> 對照）</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>最新版（master）也列這個地址</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/wrapped-eeth">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span><a href="https://immunefi.com/bug-bounty/etherfi/">Immunefi 漏洞賞金範圍</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0xf8a86ea1ac39ec529814c377bd484387d395421e">部署者 0xf8a86ea1Ac39EC529814c377Bd484387D395421e</a><span class="res">沒有已確認的合約同一個部署者</span></span></span></div></div>
-        <div class="confirmed">在 3 個地方確認：官方頁、CoinGecko、Immunefi 漏洞賞金範圍</div></div>
+        <div class="confirmed">在 3 個地方確認：官方頁、CoinGecko、Immunefi 漏洞賞金範圍</div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI 補查 3 處 · AI 判斷：沒問題</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>ether.fi 的部署檔把常數 WEETH 設為這個地址 <a class="aisrc" href="https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko 的 wrapped-eeth 幣在 Ethereum 下列出這個地址 <a class="aisrc" href="https://www.coingecko.com/en/coins/wrapped-eeth">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 UUPSProxy，創建者 0xf8a86ea1Ac39EC529814c377Bd484387D395421e，創建交易 0xa034bdf7ec3b407125fcfbb786d908b0bcfd9976f2fbaf489776ba58b9db61ac <a class="aisrc" href="https://etherscan.io/address/0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></div>
+        </details></div>
     </div>
     </details>
   </div>
@@ -468,77 +515,71 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>過去交易</h2>
-  <p class="lead">過去的記錄裡，跟模板一模一樣、也就是跟你這筆做法相同的有 <span class="num">270</span> 筆：Safe <span class="num">0</span> 筆、EOA <span class="num">270</span> 筆（243 個地址，各自送模板的一個呼叫）。這些交易全部成功執行：它們是從 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84 轉帳時、usdc 轉帳時、usdt 轉帳時、0x5aFE3855358E112B5647B952709E6165e1c1eEEe 轉帳時的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0x8189fd305ea3495b19403d6bff067b0901a06b897c4bf422df62d84a27e87d56">0x8189fd30…</a>、<a href="https://etherscan.io/tx/0x82073d9ac7dbd108455451200cd77f2c875ebe1b869123d3db4e263e1bd3f77b">0x82073d9a…</a>、<a href="https://etherscan.io/tx/0xb5df09915ecaa79b782593b73780789e4c4ccf901a2d989316080b646d61df4a">0xb5df0991…</a>。</p>
-  <p class="lead">每筆符合模板形狀的交易，都在它的上一個區塊上單獨重跑一次，讀它前後寄出方和收款方的餘額，跟交易寫的金額比較。只列出有宣告誤差，或餘額沒有剛好照金額變動的效果。</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt"><code>gives card.amount of card.token to card.recipient</code></span><span>模板沒有宣告誤差，所以容許 0</span></div>
-    <div class="pg"><span class="pc num">28 筆</span><div><div>0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84（Safe 0 筆、EOA 28 筆）：這個代幣不在 registry 裡，卡片不能選它，所以不算待確認</div>
-      <div class="pex">寄出方：<span class="num">剛好</span> 7 筆、<span class="num">多 1 個最小單位</span> 21 筆</div>
-      <div class="pex">收款方：<span class="num">少 2 個最小單位</span> 1 筆、<span class="num">少 1 個最小單位</span> 19 筆、<span class="num">剛好</span> 8 筆</div></div></div>
-  </div>
-  <details class="fold">
-  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 <span class="num">102</span> 筆跟你這筆不一樣：形狀一樣、但用的是 registry 外的代幣的 <span class="num">55</span> 筆，形狀不同的 <span class="num">47</span> 筆</span></summary>
-  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
-  <h3>搜尋 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84 的轉帳，找到 5224 筆，研究 240 筆</h3>
-  <p class="lead">記錄在 <code>testdata/research/erc20-transfer-steth.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">5224 = 5224</span>）。</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">0</span> 筆用了這個操作的呼叫（0 個 Safe），<span class="num">0</span> 筆跟模板一模一樣。</span></div>
-  </div>
-  <div class="pblock">
-    <div class="ph"><span class="pt">EOA 直接呼叫 transfer</span><span><span class="num">66</span> 筆用了這個操作的呼叫（39 個地址），<span class="num">0</span> 筆跟模板一模一樣，<span class="num">28</span> 筆形狀一樣、但用的是 registry 外的代幣。</span></div>
-    <div class="pg"><span class="pc num">28 筆</span><div><div>形狀一樣，但 <code>call.to</code> 用的是 registry 外的代幣<span class="f3">，來自 27 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x7419d343f8884bddfb5e2a6629faabf04e8cb317be1a59a7eb111ee4c3c4b319">0x7419d343…</a>、<a href="https://etherscan.io/tx/0x7052f4f3d450e8122da2226a332b5b13fb9e33c197ba79a0d9896cafd781ce0e">0x7052f4f3…</a>、<a href="https://etherscan.io/tx/0x0e95082bceaac3291825ae49351f1f27122b752235580f6516591186bc882161">0x0e95082b…</a></div></div></div>
-    <div class="pg"><span class="pc num">38 筆</span><div><div><code>call.encoding</code> 的值跟模板不同：模板要 <span class="addr">canonical transfer(address,uint256)</span>，交易是 <span class="addr">differs at byte 68</span><span class="f3">，來自 12 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x4b5994e40921cb5dece3f80a0e6f5ef0ac137fd3637c2e9730aa8d44bf647051">0x4b5994e4…</a>、<a href="https://etherscan.io/tx/0x49acd5da6ff4061a730087b52672babc318ceaf3477f872d0f268435eabbd1d9">0x49acd5da…</a>、<a href="https://etherscan.io/tx/0x18293035479a1aafd2a8062f2c765c2e340e45691487ee7412d797764aec8813">0x18293035…</a></div></div></div>
-  </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 174 筆是別的操作，不列入：<code>0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84.0xa1903eab</code> 42 筆、<code>0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1.0xacf41e4d</code> 9 筆、<code>0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0.wrap</code> 7 筆、<code>0xEc6FC9be2d5e505b40A2DF8B0622cD25333823db.0xc94ba2ba</code> 5 筆，還有別的。</span></div>
-  <h3>搜尋 usdc 的轉帳，找到 4505 筆，研究 240 筆</h3>
-  <p class="lead">記錄在 <code>testdata/research/erc20-transfer-usdc.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">4505 = 4505</span>）。</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">0</span> 筆用了這個操作的呼叫（0 個 Safe），<span class="num">0</span> 筆跟模板一模一樣。</span></div>
-  </div>
-  <div class="pblock">
-    <div class="ph"><span class="pt">EOA 直接呼叫 transfer</span><span><span class="num">116</span> 筆用了這個操作的呼叫（113 個地址），<span class="num">109</span> 筆跟模板一模一樣。</span></div>
-    <div class="pg"><span class="pc num">2 筆</span><div><div>呼叫的合約是 <span class="addr">0x7eC8A30A34b86927dC77b302603d1D53E640bEF7</span>，不是模板允許的 usdc、usdt、morpho、cbbtc、usp 或 weeth<span class="f3">，來自 2 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xe1820b4e192b3a41d8866ca2ce487e2de7da7ab042fdf76646c526855a658ec6">0xe1820b4e…</a>、<a href="https://etherscan.io/tx/0xdba92da9b2fd05486c9474859a409771e4a94befe1a97b0a553c430dfdd55587">0xdba92da9…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div>呼叫的合約是 <span class="addr">0x297E5E83Dba6304030F291ABb1DDd9546e984549</span>，不是模板允許的 usdc、usdt、morpho、cbbtc、usp 或 weeth<span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x81c8abe5f2615339fd652ffd61e54f0c34776807d14d6ab8b00baec76dac3502">0x81c8abe5…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div>呼叫的合約是 <span class="addr">0xF81a32548CbD14c12FA3F9e57b533bB1480FCcb9</span>，不是模板允許的 usdc、usdt、morpho、cbbtc、usp 或 weeth<span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x5f529f420be5d71b576d89a88f6e00b2a3bce184da093871aa2995afc519731e">0x5f529f42…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div>呼叫的合約是 <span class="addr">0xbBBBB048b1a85CA221058c45525095B6A68BBBbb</span>，不是模板允許的 usdc、usdt、morpho、cbbtc、usp 或 weeth<span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x540a25927f14919a91f3814c2eb0677c5e5ceaafa8838f69cb07d9e030dca952">0x540a2592…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div>參數後面多了模板不允許的位元組，在 <code>call</code><span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x2c3b0b789da054813fe9abb08c29873cb9b52d04fc284b4e70c0a6ac99afdea2">0x2c3b0b78…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div>呼叫的合約是 <span class="addr">0xEbbaBfc2019A312E3615196e9aC517C6bEe2a5F6</span>，不是模板允許的 usdc、usdt、morpho、cbbtc、usp 或 weeth<span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x861a1a2692dd7eaf54ac70421d7666bb407b895b07ecdf6a79240c0e48b7f631">0x861a1a26…</a></div></div></div>
-  </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 124 筆是別的操作，不列入：<code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 6 筆、<code>usdc.transferFrom</code> 5 筆、<code>0x0000000aa232009084Bd71A5797d089AA4Edfad4.0x09c5eabe</code> 4 筆、<code>0xEe7aE85f2Fe2239E27D9c1E23fFFe168D63b4055.0xb61d27f6</code> 3 筆，還有別的。</span></div>
-  <h3>搜尋 usdt 的轉帳，找到 4638 筆，研究 240 筆</h3>
-  <p class="lead">記錄在 <code>testdata/research/erc20-transfer-usdt.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">4638 = 4638</span>）。</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">0</span> 筆用了這個操作的呼叫（0 個 Safe），<span class="num">0</span> 筆跟模板一模一樣。</span></div>
-  </div>
-  <div class="pblock">
-    <div class="ph"><span class="pt">EOA 直接呼叫 transfer</span><span><span class="num">163</span> 筆用了這個操作的呼叫（143 個地址），<span class="num">161</span> 筆跟模板一模一樣。</span></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div>呼叫的合約是 <span class="addr">0x7eC8A30A34b86927dC77b302603d1D53E640bEF7</span>，不是模板允許的 usdc、usdt、morpho、cbbtc、usp 或 weeth<span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x0e7c627413457a438c88c7e53aad39d1c8760f0dd5683235871d5405a51c339d">0x0e7c6274…</a></div></div></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div>呼叫的合約是 <span class="addr">0x19917386eeaE67b6fF7DDF07dE4019fca40aA4EC</span>，不是模板允許的 usdc、usdt、morpho、cbbtc、usp 或 weeth<span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xc68bfa6adadd82ef7284846af4381e0df23133effa707526ac8fc7b299968457">0xc68bfa6a…</a></div></div></div>
-  </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 77 筆是別的操作，不列入：<code>0x0000000aa232009084Bd71A5797d089AA4Edfad4.0x09c5eabe</code> 6 筆、<code>0x00Fe78205F5F0E63B8aD2b2AE5337f538a610E04.0x34fcd5be</code> 6 筆、<code>0x51C72848c68a965f66FA7a88855F9f7784502a7F.0x771d503f</code> 4 筆、<code>usdt.transferFrom</code> 3 筆，還有別的。</span></div>
-  <h3>搜尋 0x5aFE3855358E112B5647B952709E6165e1c1eEEe 的轉帳，找到 321 筆，研究 80 筆</h3>
-  <p class="lead">記錄在 <code>testdata/research/erc20-transfer.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">321 = 321</span>）。</p>
-  <div class="pblock">
-    <div class="ph"><span class="pt">Safe</span><span><span class="num">1</span> 筆用了這個操作的呼叫（1 個 Safe），<span class="num">0</span> 筆跟模板一模一樣，<span class="num">1</span> 筆形狀一樣、但用的是 registry 外的代幣。</span></div>
-    <div class="pg"><span class="pc num">1 筆</span><div><div>形狀一樣，但 <code>call.to</code> 用的是 registry 外的代幣<span class="f3">，來自 1 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0x32fa2c8158e8b5072bdf0ee5564f2b26a17f42389ea92ecf7ae72deced951b89">0x32fa2c81…</a></div></div></div>
-  </div>
-  <div class="pblock">
-    <div class="ph"><span class="pt">EOA 直接呼叫 transfer</span><span><span class="num">26</span> 筆用了這個操作的呼叫（14 個地址），<span class="num">0</span> 筆跟模板一模一樣，<span class="num">26</span> 筆形狀一樣、但用的是 registry 外的代幣。</span></div>
-    <div class="pg"><span class="pc num">26 筆</span><div><div>形狀一樣，但 <code>call.to</code> 用的是 registry 外的代幣<span class="f3">，來自 14 個地址</span></div>
-      <div class="pex">例：<a href="https://etherscan.io/tx/0xe44956639c0aa1c9fd8b4e54d58c691e6454e376120acf252cdb26bb4a5a56c3">0xe4495663…</a>、<a href="https://etherscan.io/tx/0xbb76c73b684e676c2545d09e1786ae8c42219f4d47ce4b21638d2d207521dc90">0xbb76c73b…</a>、<a href="https://etherscan.io/tx/0x6ea9c6e5d116e7981b63d56a774e3e757838233fd4a5c230822ef0cbcb1a21bd">0x6ea9c6e5…</a></div></div></div>
-  </div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 53 筆是別的操作，不列入：<code>0x278d858f05b94576C1E6f73285886876ff6eF8D2.0x42e3dcf3</code> 21 筆、<code>0xBdb3ba9ffe392549E1f8658DD2630c141fDF47B6.0x000000c3</code> 13 筆、<code>0xfbEedCFe378866DaB6abbaFd8B2986F5C1768737.0x00000002</code> 3 筆、<code>0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45.0x04e45aaf</code> 2 筆，還有別的。</span></div>
+  <h3>1. 這個模板的交易以前成功過嗎？</h3>
+  <p class="ans"><b>成功過，71 個 Safe 一共做過 108 次。</b> EOA：195 次，來自 167 個地址。最近一次是 2026-11-24。全部成功執行。最近 3 筆：<a href="https://etherscan.io/tx/0xc8956028606502ae0af0742261daec0238d48b3969402de4206ed3f291dc3d92">0xc8956028…</a> <a href="https://etherscan.io/tx/0xd6c659c90221e2d03c40de84cd081270ddf75c9ea015154c354e1aadc3b1886e">0xd6c659c9…</a> <a href="https://etherscan.io/tx/0x50c69690d4126fdf531e30f024c6ac067e85bc9ab9ac942ac83ef7a1f7c16836">0x50c69690…</a></p>
+  <h3>2. app 填的值，一般是多少？</h3>
+  <p class="ans">這個模板沒有留任何值給 app 填。</p>
+  <h3>3. 其他交易哪裡不同？</h3>
+  <p class="ans">210 筆交易做了這個模板不允許的事。</p>
+  <p class="ans"><span class="aiw" data-ai><span>只有 USP 搜滿一年；USDC、USDT 約一小時，其他 3 到 46 天，更早的沒搜。卡片能選的每個代幣，量過的轉帳都剛好轉出所寫的數量。最多的不符合是 113 筆 Safe delegatecall 到 DeFi Saver GitHub 地址檔列出的合約，每筆做什麼沒讀。其餘是批次，或 EOA 呼叫未驗證的合約、資料不標準。verify 全部拒絕。</span><span class="byai">AI 研究</span></span></p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="tx">例子（最多 3 筆）</th></tr></thead><tbody>
+    <tr><td class="what" data-label="哪裡不同"><span>delegatecall 到不是官方 MultiSend 的合約</span></td><td class="n" data-label="Safe"><span><span class="num">113</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26485014</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xc3c3e5c0914b3cac909f31be509f35347ba35f7e771d44f293ccc876fae70104">0xc3c3e5c0…</a> <a href="https://etherscan.io/tx/0x1d7da552eb8d3bdfa45b2634624c8a58d55e99937ae70ee365057f6d66ac66d9">0x1d7da552…</a> <a href="https://etherscan.io/tx/0x15b81e5478db8c439b2cb3695da95d4c53fb4a2b759b7f2da7c4543431073c9c">0x15b81e54…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>形狀一樣，但 <code>to</code> 用的是 registry 外的代幣</span></td><td class="n" data-label="Safe"><span><span class="num">34</span></span></td><td class="n" data-label="EOA"><span><span class="num">17</span></span></td><td class="nw" data-label="最近"><span>2026-11-24</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x9e91d1e1efb24f52a0d1f04f8323b18116db32c37badcb57b2a98e7e32043fc4">0x9e91d1e1…</a> <a href="https://etherscan.io/tx/0x22306e8598b1d9be7537529cfcb28248c6bbbf5ec34a612d480e14556c8ab78d">0x22306e85…</a> <a href="https://etherscan.io/tx/0x63acde594f464649972c60e06151c30907e0abb91702ac692dc41ac8e8c53773">0x63acde59…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span><code>to</code> 是 5 個別的地址，不是模板允許的 usdc、usdt、morpho、cbbtc、usp 或 weeth</span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">14</span></span></td><td class="nw" data-label="最近"><span>區塊 26485581</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x905a6c089922235e238efdf5481079aaa4a1c179b42986ea81e9d4409afa84d5">0x905a6c08…</a> <a href="https://etherscan.io/tx/0x3e99bc62d37268d09fb62de3b80332336f7ff580759d83948791eb7a5ff6d320">0x3e99bc62…</a> <a href="https://etherscan.io/tx/0x5995dd42c73b657c33f3b6ededbd444ffeb9b1a8b212f7f882055d90934834c7">0x5995dd42…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>一次超過 4 個呼叫的批次</span></td><td class="n" data-label="Safe"><span><span class="num">7</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26463633</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x3ae0621845dfa69efe07aac3ae9f428fa1c0f061ab328a755b68ffc6ee7d3b61">0x3ae06218…</a> <a href="https://etherscan.io/tx/0xf4a34d4eb27322b6b1d78e4ffbf9d60cf5840ca89d6de0e7d06c98114f4a2a7f">0xf4a34d4e…</a> <a href="https://etherscan.io/tx/0xba134a701c3976ef811ab42330a0bef65caa5931dd0e8442d8030c4c4340a5c9">0xba134a70…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>資料不是 <code>transfer(address,uint256)</code> 的標準編碼</span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">5</span></span></td><td class="nw" data-label="最近"><span>區塊 26483323</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x3e768638a9638cb7982d045b9ef793f1242a0207756a29d05a40c2cc8f245f30">0x3e768638…</a> <a href="https://etherscan.io/tx/0x5824d3984a93e22b02286d6f2d9339e78ae949f2f0e2b429e22b203ed18c0dc9">0x5824d398…</a> <a href="https://etherscan.io/tx/0xd9b07853eea1c441f595824ea51fed53f0241511daa712bc0d3f5407350f1d43">0xd9b07853…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>weeth.transfer → weeth.transfer → weeth.transfer → weeth.transfer</code></span></td><td class="n" data-label="Safe"><span><span class="num">4</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26396044</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x94045879985b9f2887cde8a355cc92051535b25b0ee2120481448c4f5bf9f47e">0x94045879…</a> <a href="https://etherscan.io/tx/0xe1e175123d90fab196b24891354b1501d70c71ece37e4c5f10decc19306d49c7">0xe1e17512…</a> <a href="https://etherscan.io/tx/0x86e59227e07da0b31d37af52932d076b2640d178e88aa41c273c785b0b271ba0">0x86e59227…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>0xFe0c30065B384F05761f15d0CC899D4F9F9Cc0eB.transfer → 0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9.transfer → morpho.transfer</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26457041</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x119c494ac2cd9e9e8678c53d215dd8e410b0955b9d4c14f3e9eb8fa5df1767ca">0x119c494a…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>morpho.transfer → 0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2.0x617ba037 → cbbtc.approve</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26469079</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x14eb8b1d0bf9c997a311bc80341608340d55119647a260f7b365ce30aa1e560b">0x14eb8b1d…</a></span></td></tr></tbody></table></div>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>另外 14 種，共 14 筆</span></summary><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="tx">例子（最多 3 筆）</th></tr></thead><tbody>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84.approve → 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0.wrap → 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0.transfer</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26407309</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x58cf60104a219851e602804c374de8187164630c211ef72b15f9eb167829e883">0x58cf6010…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84.transfer → 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0.transfer</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26416904</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xa32d5a6760962742f2049a2de1ee38c8ac335aba6a52f2d21209473f0550d221">0xa32d5a67…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84.transfer → 0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32.transfer</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26428300</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x1c4e99311083605e8791dfdef40002a97f34c8764c64ff91e199d38f2b9c3f5a">0x1c4e9931…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84.transfer → 0xf951E335afb289353dc249e82926178EaC7DEd78.transfer</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26436973</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x571e585c55de0c41873f12f5f842a40ce112d1aad94f358fbd3fa173b6896f68">0x571e585c…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>參數後面多了模板不允許的位元組，在 <code>call</code></span></td><td class="n" data-label="Safe"><span><span class="num">0</span></span></td><td class="n" data-label="EOA"><span><span class="num">1</span></span></td><td class="nw" data-label="最近"><span>區塊 26485450</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xcb775d01bc8e9d2a943aa4b04d6ccdca2ee3f81f8783119ae146a70cb831001d">0xcb775d01…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2.0x69328dec → usdt.transfer</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-11-24</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xd11965d6b475254bd5d6063f62ac2969324998c5ea546e33194869f451399d20">0xd11965d6…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>usdt.transfer → usdc.transfer</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26485581</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x415befddbbdeeea59cabdbfe9f29bf620dbd3b864e2c0f44eb7c532d35482ffc">0x415befdd…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>0x35fA164735182de50811E8e2E824cFb9B6118ac2.approve → weeth.approve → weeth.transfer</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26196314</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xacdc4e56f9daeb4d1a4251fedcf5a5a57e6d22c3baff12f7a63de45e09ba8eb2">0xacdc4e56…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>0xac3E018457B222d93114458476f3E3416Abbe38F.transfer → weeth.transfer</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26218373</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x10a45ad7856d175c3962aad0ea53ba9135c8f43a1d5d9eae1e58373648d0e3a2">0x10a45ad7…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2.transfer → weeth.transfer → usdc.transfer → usdc.transfer</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26295528</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xb8f5c8822f09ba294942d54dbdab3055cf0db66a46a118f9eed08cc29c1493de">0xb8f5c882…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>weeth.transfer → 0x1597b713B8216fDf37b77260eD44A1FaFb246DC3（沒有資料） → usdt.transfer</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26317813</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xbfa8dff8a527e4d0325684d155b8f32c06fa4c86c692f42bffed43b06ac2812c">0xbfa8dff8…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>0x8236a87084f8B84306f72007F36F2618A5634494.transfer → weeth.transfer → 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599.transfer</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26402852</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xb39dbe51b5d5ddec698c38ff5532f19f73f29ea11825208136c6a9fe9932d9d2">0xb39dbe51…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>0x35fA164735182de50811E8e2E824cFb9B6118ac2.approve → weeth.transfer</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26425281</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x3a2c21ca96732ebe478d1a185b57c6f406566b5abf874ed08d2aabc7f18d408a">0x3a2c21ca…</a></span></td></tr>
+    <tr><td class="what" data-label="哪裡不同"><span>除了模板的呼叫，還有別的：<code>0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2.transfer → weeth.transfer</code></span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>區塊 26450928</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0xa6e47e7b2b74093740aff04ea7d1089ff2a8af686fd7c852a4fac726d020283f">0xa6e47e7b…</a></span></td></tr></tbody></table></div>
+  </details>
+  <h3>餘額有沒有剛好照金額變動？</h3>
+  <p class="cap">每筆符合的交易都在它的上一個區塊上單獨重跑一次，比較它前後的餘額跟交易寫的金額。</p>
+  <div class="sh"><code>gives card.amount of card.token to card.recipient</code><span>模板沒有宣告誤差，所以容許 0</span></div>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>1 個不在 registry 裡的代幣；卡片不能選它們，所以不用確認</span></summary>
+    <p class="cap">0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84：51 筆（Safe 34 筆、EOA 17 筆）</p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">餘額最後</th><th scope="col" class="n">寄出方</th><th scope="col" class="n">收款方</th></tr></thead><tbody>
+    <tr><td class="what" data-label="餘額最後"><span>少 2 個最小單位</span></td><td class="n" data-label="寄出方"><span><span class="num">0</span></span></td><td class="n" data-label="收款方"><span><span class="num">5</span></span></td></tr>
+    <tr><td class="what" data-label="餘額最後"><span>少 1 個最小單位</span></td><td class="n" data-label="寄出方"><span><span class="num">0</span></span></td><td class="n" data-label="收款方"><span><span class="num">38</span></span></td></tr>
+    <tr><td class="what" data-label="餘額最後"><span>剛好</span></td><td class="n" data-label="寄出方"><span><span class="num">15</span></span></td><td class="n" data-label="收款方"><span><span class="num">8</span></span></td></tr>
+    <tr><td class="what" data-label="餘額最後"><span>多 1 個最小單位</span></td><td class="n" data-label="寄出方"><span><span class="num">36</span></span></td><td class="n" data-label="收款方"><span><span class="num">0</span></span></td></tr></tbody></table></div>
+  </details>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>程式怎麼搜尋</span></summary>
+  <h3>搜尋 cbbtc 的轉帳，找到 9723 筆，研究 240 筆，含證實為 Safe 的參與方的 461 筆中研究 180 筆</h3>
+  <p class="cap">從最新的區塊往回，搜尋了區塊 26464179（2026-11-21）到區塊 26485441（2026-11-24）的每一筆交易，共 21263 個區塊，約 2 天 23 小時，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">9723 = 9723</span>）。</p>
+  <p class="cap">這些交易是從事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。</p>
+  <p class="cap">另外 231 筆是別的操作，不列入：<code>0xbEe162fa5ae892BE74f3f3E01c23dA89ADbcCCcc.0x6d7b7040</code> 21 筆、<code>0xe0243B811A6DB6e91a59D64F20b523596d60F738.0x5da0781f</code> 12 筆、<code>0x130Be747A0b7bbDAB273AcB675881aAdb4e64B39.0xc6fe8747</code> 11 筆、<code>0x00000000094b270d06174A1F1c1AA52CA6563710.0xd41faa36</code> 9 筆，還有別的。</p>
+  <h3>搜尋 morpho 的轉帳，找到 19463 筆，研究 240 筆，含證實為 Safe 的參與方的 102 筆全數研究</h3>
+  <p class="cap">從最新的區塊往回，搜尋了區塊 26345875（2026-11-05）到區塊 26485464（2026-11-24）的每一筆交易，共 139590 個區塊，約 19 天 10 小時，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。Alchemy 和 Etherscan 找到的不一樣（<span class="num">19463 ≠ 19461</span>）。</p>
+  <p class="cap">另外 160 筆是別的操作，不列入：<code>0x8bcc3380eA18912605Cd4E0C024596e6d0aD5178.0x6a760b80</code> 28 筆、<code>0x02201E6f13c41506c7Bb635d7543F98826229aB7.0x865f5093</code> 24 筆、<code>0x8F5835e9D756C9bd934Bce527157A4b0Ef3c5cB7.0x4a7cf362</code> 13 筆、<code>0x278d858f05b94576C1E6f73285886876ff6eF8D2.0x70521ae9</code> 7 筆，還有別的。</p>
+  <h3>搜尋 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84 的轉帳，找到 17253 筆，研究 240 筆，含證實為 Safe 的參與方的 124 筆全數研究</h3>
+  <p class="cap">從最新的區塊往回，搜尋了區塊 26392864（2026-11-11）到區塊 26485810（2026-11-24）的每一筆交易，共 92947 個區塊，約 12 天 22 小時，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">17253 = 17253</span>）。</p>
+  <p class="cap">另外 177 筆是別的操作，不列入：<code>0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84.0xa1903eab</code> 21 筆、<code>0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84.approve</code> 21 筆、<code>0x47B90F0b412B522eE99E33692b41746fc8017268.0xbb69be61</code> 13 筆、<code>gpv2-settlement.0x13d79a0b</code> 13 筆，還有別的。</p>
+  <h3>搜尋 usdc 的轉帳，找到 19010 筆，研究 240 筆，含證實為 Safe 的參與方的 229 筆中研究 180 筆</h3>
+  <p class="cap">從最新的區塊往回，搜尋了區塊 26485738（2026-11-24）到區塊 26486061（2026-11-24）的每一筆交易，共 324 個區塊，約 1 小時 4 分鐘，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">19010 = 19010</span>）。</p>
+  <p class="cap">另外 185 筆是別的操作，不列入：<code>0x3DB107E2B67aa7c86403C3F4DB4a49Cb98aaDDC4.0x15000000</code> 17 筆、<code>0x2c158BC456e027b2AfFCCadF1BDBD9f5fC4c5C8c.0x6eefea49</code> 16 筆、<code>0xe1961b838BFA29Ea341F68212a9b11178DC74d86.0x00000000</code> 9 筆、<code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 8 筆，還有別的。</p>
+  <p class="cap">另外 1 筆來自不是 Safe 的合約、執行失敗或讀不到，不列入。</p>
+  <h3>搜尋 usdt 的轉帳，找到 19822 筆，研究 240 筆，含證實為 Safe 的參與方的 90 筆全數研究</h3>
+  <p class="cap">從最新的區塊往回，搜尋了區塊 26485368（2026-11-24）到區塊 26485614（2026-11-24）的每一筆交易，共 247 個區塊，約 49.6 分鐘，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">19822 = 19822</span>）。</p>
+  <p class="cap">另外 85 筆是別的操作，不列入：<code>0xe1961b838BFA29Ea341F68212a9b11178DC74d86.0x01000000</code> 25 筆、<code>0xE4416D74fbB25E0a48c3FbE8df711aE8aE8C0a38.0x01000000</code> 4 筆、<code>gpv2-settlement.0x13d79a0b</code> 3 筆、<code>0x0000000aa232009084Bd71A5797d089AA4Edfad4.0x09c5eabe</code> 3 筆，還有別的。</p>
+  <h3>搜尋 usp 的轉帳，找到 5197 筆，研究 240 筆，含證實為 Safe 的參與方的 25 筆全數研究</h3>
+  <p class="cap">Alchemy 和 Etherscan 找到的完全一樣（<span class="num">5197 = 5197</span>）。</p>
+  <p class="cap">另外 217 筆是別的操作，不列入：<code>0x7e0305B212dF3FB56366251C054c07748Bf9a797.0xd6febde8</code> 25 筆、<code>0x7e0305B212dF3FB56366251C054c07748Bf9a797.0xd79875eb</code> 16 筆、<code>0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af.0x3593564c</code> 14 筆、<code>0xbD216513d74C8cf14cf4747E6AaA6420FF64ee9e.0xdd46508f</code> 12 筆，還有別的。</p>
+  <h3>搜尋 weeth 的轉帳，找到 14922 筆，研究 240 筆，含證實為 Safe 的參與方的 255 筆中研究 180 筆</h3>
+  <p class="cap">從最新的區塊往回，搜尋了區塊 26159459（2026-10-10）到區塊 26486222（2026-11-24）的每一筆交易，共 326764 個區塊，約 45.5 天，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">14922 = 14922</span>）。</p>
+  <p class="cap">另外 109 筆是別的操作，不列入：<code>0x3727C31D4D4c5270290FFb20C4C358C84c0792C9.0x78920554</code> 7 筆、<code>0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2.0x69328dec</code> 6 筆、<code>0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2.0x617ba037</code> 6 筆、<code>weeth.approve</code> 6 筆，還有別的。</p>
   </details>
 </section>
 
@@ -578,8 +619,15 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<aside class="usage"><h3>製作這份報告的 AI 用量</h3><p>未量測</p></aside>
-<footer class="foot">由 <code>pnpm report erc20/transfer --record</code> 從 <code>templates/erc20/transfer/template.json</code>、<code>templates/erc20/transfer/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/erc20-transfer.json</code>、<code>testdata/abi</code>、<code>testdata/research/erc20-transfer-steth.json</code>、<code>testdata/research/erc20-transfer-usdc.json</code>、<code>testdata/research/erc20-transfer-usdt.json</code>、<code>testdata/research/erc20-transfer.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/erc20/transfer/notes.json</code> 寫出，資料在 2026-11-18 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
+<section id="usage">
+  <h2>AI 用量</h2>
+  <p class="lead">Opus 5.5 用 69 次呼叫、175 分鐘做出這份報告。</p>
+  <table class="ut"><thead><tr><th scope="col">項目</th><th scope="col">token</th></tr></thead><tbody><tr><th scope="row">重複讀取（cache 讀取）</th><td class="num">5.4M</td></tr><tr><th scope="row">新讀入（input 與 cache 寫入）</th><td class="num">0.21M</td></tr><tr><th scope="row">output</th><td class="num">0.03M</td></tr></tbody><tfoot><tr><th scope="row">總共</th><td class="num">5.6M</td></tr></tfoot></table>
+  <p class="cap">這次只重跑過去交易的搜尋，用量只算這部分。</p>
+  <p class="cap">來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者。這些數字程式不檢查。</p>
+</section>
+
+<footer class="foot">由 <code>pnpm report erc20/transfer --record</code> 從 <code>templates/erc20/transfer/template.json</code>、<code>templates/erc20/transfer/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/erc20-transfer.json</code>、<code>testdata/abi</code>、<code>testdata/research/erc20-transfer-cbbtc.json</code>、<code>testdata/research/erc20-transfer-morpho.json</code>、<code>testdata/research/erc20-transfer-steth.json</code>、<code>testdata/research/erc20-transfer-usdc.json</code>、<code>testdata/research/erc20-transfer-usdt.json</code>、<code>testdata/research/erc20-transfer-usp.json</code>、<code>testdata/research/erc20-transfer-weeth.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/erc20/transfer/notes.json</code>、<code>testdata/usage/erc20-transfer.json</code> 寫出，資料在 2026-11-24 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。用量的數字程式也不檢查。</footer>
 
 </div>
 </div>

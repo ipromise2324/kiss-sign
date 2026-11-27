@@ -56,9 +56,10 @@ export type CardField =
   | { readonly kind: 'contract'; readonly scope: EntryScope }
   /**
    * A base-unit integer of the token `of` names; `computed` when the protocol's app fills it in, so `card new` reads it
-   * instead of asking; `max` a number the signer may choose by typing `max`, such as a cap of no limit.
+   * instead of asking; `max` a number the signer may choose by typing `max`, such as a cap of no limit; `floor` when it is
+   * the least of its token to receive for another amount, so `card new` reads the price of the two tokens picked.
    */
-  | { readonly kind: 'amount'; readonly of: TokenRef; readonly computed: Computed | undefined; readonly max: AmountMax | undefined }
+  | { readonly kind: 'amount'; readonly of: TokenRef; readonly computed: Computed | undefined; readonly max: AmountMax | undefined; readonly floor?: Floor }
   /** A percent, held in WAD base units: 100% is 10^18. */
   | { readonly kind: 'percent' }
   /** A registry name, an address-book name, or `safe`. */
@@ -120,6 +121,9 @@ export type Computed = {
   readonly default: { readonly bps: number; readonly source: HttpsUrl };
   readonly margin: { readonly bps: number; readonly why: Prose } | undefined;
 };
+
+/** The card amount this field is the least to receive for: what the Safe sells. */
+export type Floor = { readonly sells: string };
 
 /** A number the signer may type as `max`, with the reason the template gives for it. */
 export type AmountMax = { readonly value: bigint; readonly why: Prose };
@@ -919,10 +923,11 @@ function cardField(path: string, raw: unknown, registry: Registry): (fields: Car
       return () => ({ kind: 'contract', scope });
     }
     case 'amount': {
-      exactKeys(path, value, ['kind', 'of'], ['computed', 'max']);
+      exactKeys(path, value, ['kind', 'of'], ['computed', 'max', 'floor']);
       const of = text(`${path}.of`, value.of);
       if (value.computed !== undefined && value.max !== undefined) throw new TemplateError(`${path}.max`, 'a computed field is never typed, so it has no max');
       const max = value.max === undefined ? undefined : amountMax(`${path}.max`, value.max);
+      for (const key of ['computed', 'max']) if (value.floor !== undefined && value[key] !== undefined) throw new TemplateError(`${path}.floor`, `beside ${key}; a floor is computed or typed by the rule of its token pair`);
       return (fields) => ({ kind: 'amount', of: of === 'eth' ? 'eth' : cardToken(`${path}.of`, of, fields, registry), computed: undefined, max });
     }
     case 'percent':
@@ -1080,6 +1085,23 @@ function computed(path: string, raw: unknown, name: string, scope: Scope, order:
     margin = { bps: bps(`${path}.margin.bps`, m.bps), why: prose(`${path}.margin.why`, m.why) };
   }
   return { read, bound: value.bound, default: { bps: bps(`${path}.default.bps`, fallback.bps), source }, margin };
+}
+
+/** An amount field's `floor`: what it sells is another typed amount, and both count a token a card field picks from the registry. */
+function floor(path: string, raw: unknown, name: string, fields: CardFields, floors: ReadonlyMap<string, unknown>): Floor {
+  const value = object(path, raw);
+  exactKeys(path, value, ['sells']);
+  const sells = text(`${path}.sells`, value.sells);
+  const [sold, own] = [fields.get(sells), fields.get(name)];
+  if (sells === name || sold?.kind !== 'amount' || sold.computed !== undefined || floors.has(sells)) throw new TemplateError(`${path}.sells`, `${JSON.stringify(sells)} is not another amount field the signer types`);
+  const picked = (field: CardField | undefined): boolean => {
+    if (field?.kind !== 'amount' || field.of === 'eth' || field.of.attribute !== undefined) return false;
+    const token = fields.get(field.of.field);
+    return token?.kind === 'contract' && (token.scope.registryKind === 'token' || token.scope.registryKind === 'vault');
+  };
+  if (!picked(own)) throw new TemplateError(path, 'the amount does not count a token a card field picks');
+  if (!picked(sold)) throw new TemplateError(`${path}.sells`, `${sells} does not count a token a card field picks`);
+  return { sells };
 }
 
 /** `card.<field>` with the prefix removed, or undefined when `raw` lacks it. */
@@ -1421,6 +1443,11 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
     const field = fields.get(name);
     if (isComputed && field?.kind === 'amount') fields.set(name, { ...field, computed: computed(`card.${name}.computed`, object(`card.${name}`, rawCard[name]).computed, name, scope, order) });
   }
+  const floors = new Map(pending.map(([name]) => [name, object(`card.${name}`, rawCard[name]).floor] as const).filter(([, raw]) => raw !== undefined));
+  for (const [name, raw] of floors) {
+    const field = fields.get(name);
+    if (field?.kind === 'amount') fields.set(name, { ...field, floor: floor(`card.${name}.floor`, raw, name, fields, floors) });
+  }
   const nonce = value.nonce === undefined ? undefined : rule('nonce', value.nonce, { kind: 'uint', bits: 256 }, scope);
   const same = value.same === undefined ? [] : array('same', value.same).map((ref, i) => cardToken(`same[${i}]`, text(`same[${i}]`, ref), fields, registry));
   if (value.same !== undefined && same.length < 2) throw new TemplateError('same', 'names fewer than two card references');
@@ -1453,6 +1480,7 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
     facts: [],
     instanceField: value.instanceField === undefined ? undefined : instanceField(text('instanceField', value.instanceField), fields),
   };
+  for (const [name, field] of fields) if (field.kind === 'amount' && field.floor !== undefined) requireBindingFloor(template, name, field.floor);
   const unbounded = [...template.effects.gives, ...template.effects.gets].some((effect) => effect.amount.kind === 'positive' || effect.amount.kind === 'any');
   if (unbounded && routes(template)) throw new TemplateError('effects', 'a template with a route claim must bound each token the Safe gives or gets by a card amount, atLeast, atMost or all, since a route may change the price');
   const protocols = calledProtocols(template, registry);
@@ -1546,6 +1574,95 @@ export function floorFields(template: Template): ReadonlySet<string> {
     ...template.effects.gets.flatMap(({ amount }) => (amount.kind === 'at-least' ? [amount.field] : [])),
   ]);
 }
+
+/** Values that sit side by side: the arguments of one call, the members of one struct or message, the parts of packed bytes. */
+type Siblings = { readonly of: 'arguments' | 'message'; readonly members: readonly { readonly type: AbiType; readonly rule: Rule }[] };
+
+function siblingsIn(of: Siblings['of'], types: readonly AbiType[], rules: readonly Rule[]): Siblings[] {
+  const members = rules.map((rule, i) => ({ type: types[i] as AbiType, rule }));
+  return [{ of, members }, ...members.flatMap(({ type, rule }) => siblingsUnder(type, rule))];
+}
+
+const typesOf = (params: readonly AbiParam[]): AbiType[] => params.map(({ type }) => type);
+
+function siblingsUnder(type: AbiType, rule: Rule): Siblings[] {
+  switch (rule.kind) {
+    case 'call':
+      return siblingsIn('arguments', typesOf(rule.call.fn.params), rule.call.args);
+    case 'fields':
+      return type.kind === 'tuple' ? siblingsIn('arguments', typesOf(type.components), rule.fields) : [];
+    case 'items':
+      return type.kind === 'array' || type.kind === 'fixed-array' ? rule.items.flatMap((item) => siblingsUnder(type.item, item)) : [];
+    case 'packed':
+      return siblingsIn('arguments', rule.parts.map((part) => part.type), rule.parts.map((part) => part.rule));
+    case 'eip712':
+      return siblingsIn('message', typesOf(rule.message.struct.members), rule.message.fields);
+    default:
+      return [];
+  }
+}
+
+const isSale = (rule: Rule, sells: string): boolean => (rule.kind === 'card' && rule.ref.field === sells) || (rule.kind === 'at-most' && rule.field === sells);
+
+/**
+ * Why no `atLeast` of `name` in the group bounds what is received for `sells`, or undefined when one does. Anything else
+ * of its type there could be the real minimum, leaving the floor on a deadline. A deadline may stay free where swapping it
+ * with the minimum shows: Uniswap's v2 and v3 routers put an exact amount sold before its minimum, and an amount received
+ * before its most sold, with no deadline between.
+ */
+function unboundFloor({ members }: Siblings, name: string, sells: string): string | undefined {
+  const isLeast = (rule: Rule): boolean => rule.kind === 'at-least' && rule.field === name;
+  const isTime = (rule: Rule): boolean => rule.kind === 'free' && rule.time === true;
+  const types = new Set(members.flatMap(({ type, rule }) => (isLeast(rule) ? [canonicalType(type)] : [])));
+  const problems = [...types].map((type): string | undefined => {
+    const rules = members.flatMap((member) => (canonicalType(member.type) === type ? [member.rule] : []));
+    const sold = rules.findIndex((rule) => isSale(rule, sells));
+    if (sold === -1) return `no atLeast of it sits beside ${sells} with the same type`;
+    const other = rules.find((rule, i) => i !== sold && !isLeast(rule) && !isTime(rule) && rule.kind !== 'const' && rule.kind !== 'within-seconds');
+    if (other?.kind === 'free') return `a free ${type} sits beside it and could be the real minimum; a deadline must be declared a time, {"free": {"time": "<why>"}}`;
+    if (other !== undefined) return `another ${type} beside it is neither a const, a time nor one of the two amounts, so it could be the real minimum`;
+    const times = rules.flatMap((rule, i) => (isTime(rule) ? [i] : []));
+    if (times.length > 1) return `${times.length} free times of type ${type} sit beside it, so one could be the real minimum`;
+    const [time] = times;
+    if (time === undefined) return undefined;
+    const exact = rules[sold]?.kind === 'card';
+    const least = exact ? rules.findIndex((rule, i) => i > sold && isLeast(rule)) : rules.findLastIndex((rule, i) => i < sold && isLeast(rule));
+    if (least !== -1 && (time < Math.min(sold, least) || time > Math.max(sold, least))) return undefined;
+    return `beside a free time it must come ${exact ? 'after' : 'before'} ${sells}, with the time not between them, or the time could be the real minimum`;
+  });
+  return problems.includes(undefined) ? undefined : (problems[0] ?? `no atLeast of it sits beside ${sells} with the same type`);
+}
+
+/**
+ * A floor must bound what the Safe receives, for exactly what it sells. A transaction that moves no token signs an order,
+ * so each message must bind it.
+ */
+function requireBindingFloor(template: Template, name: string, { sells }: Floor): void {
+  const path = `card.${name}.floor`;
+  const { gives, gets } = template.effects;
+  const tokenOf = (field: string): string => refKey((template.card.get(field) as Extract<CardField, { kind: 'amount' }>).of);
+  const groups = template.calls.flatMap(({ data }) => (data === 'empty' ? [] : siblingsIn('arguments', typesOf(data.fn.params), data.args)));
+  const selling = (group: Siblings): boolean => group.members.some(({ rule }) => isSale(rule, sells));
+  if (!groups.some(selling)) throw new TemplateError(`${path}.sells`, `no call sells exactly, or at most, ${sells}`);
+  const problems = groups.map((group) => unboundFloor(group, name, sells));
+  if (!problems.includes(undefined)) {
+    const beside = groups.findIndex((group) => selling(group) && group.members.some(({ rule }) => rule.kind === 'at-least' && rule.field === name));
+    throw new TemplateError(path, `it does not bound what is received: ${problems[Math.max(beside, 0)]}`);
+  }
+  if (gives.length === 0 && gets.length === 0) {
+    const names = ({ members }: Siblings, token: string): boolean => members.some(({ rule }) => rule.kind === 'card' && refKey(rule.ref) === token);
+    const messages = groups.filter(({ of }) => of === 'message');
+    const whole = messages.every((message) => unboundFloor(message, name, sells) === undefined && names(message, tokenOf(sells)) && names(message, tokenOf(name)));
+    if (messages.length === 0 || !whole) throw new TemplateError(path, `the transaction moves no token, and a message it signs does not hold both tokens, ${sells} and an atLeast of ${name}`);
+    return;
+  }
+  const moves = (effects: readonly Effect[], field: string, kinds: readonly EffectAmount['kind'][]): boolean =>
+    effects.some(({ token, amount }) => !isNamedToken(token) && refKey(token) === tokenOf(field) && 'field' in amount && amount.field === field && kinds.includes(amount.kind));
+  if (!moves(gives, sells, ['card', 'at-most'])) throw new TemplateError(`${path}.sells`, `effects.gives does not give exactly, or at most, ${sells}`);
+  if (!moves(gets, name, ['at-least'])) throw new TemplateError(path, 'effects.gets has no atLeast of it in its own token, so it does not bound what is received');
+}
+
+const refKey = (ref: TokenRef): string => (ref === 'eth' ? 'eth' : `${ref.field}${ref.attribute === undefined ? '' : `.${ref.attribute}`}`);
 
 /** Every card reference the template makes. */
 export function cardRefs(template: Template): CardRef[] {

@@ -23,7 +23,8 @@ seeds routes nowhere. For an entry with no pin, a pin with no from, or a changed
 searches the blocks back to the deployment for each change of that code, writes the first block of
 today's code as from and each older pin with its from under earlier, prints each span, and prints
 FINDING for a recorded pin it did not find again. With no names it pins every entry. Any REFUSED
-entry makes it exit 1 after it writes the rest. verify requires every registry contract a
+entry makes it exit 1 after it writes the rest, and so does a file that, as written, the registry
+refuses, such as a feed or pool that still has no pin. verify requires every registry contract a
 transaction touches, and each entry it names in dependsOn, to run its current pin, and an executed
 transaction the pin whose span holds its block.
 
@@ -31,7 +32,7 @@ Options:
   --history   Pin the local entries of $KISS_SIGN_HOME/history/registry.json instead.
 
 Writes: registry/contracts.json, or $KISS_SIGN_HOME/history/registry.json with --history.
-Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Keys: ALCHEMY_API_KEY and DRPC_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
 Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 2, Pin
 the code and Pin the routes); docs/design/engine-and-chain.md, "Engine checks that every template
 gets".`;
@@ -49,8 +50,10 @@ if (unknown.length > 0) {
   process.exit(1);
 }
 const attributes = attributesText(root);
-const parse = () => registryFromTexts(flags.history ? mergeRegistry(readFileSync(repoPath, 'utf8'), file, attributes) : JSON.stringify(file), undefined, attributes);
-const recorded = parse();
+/** A feed or pool without a pin does not load, and this script writes the first one. */
+const withoutPrices = () => Object.fromEntries(Object.entries(file).map(([name, { feed, price, twap, ...rest }]) => [name, rest]));
+const parse = (entries: Record<string, Record<string, unknown>>) => registryFromTexts(flags.history ? mergeRegistry(readFileSync(repoPath, 'utf8'), entries, attributes) : JSON.stringify(entries), undefined, attributes);
+const recorded = parse(withoutPrices());
 
 const routeJson = ({ address, hash, selectors }: Route) => ({ address: checksumAddress(address), hash, selectors });
 const pinnedJson = ({ address, hash }: PinnedCode) => ({ address: checksumAddress(address), hash });
@@ -124,8 +127,14 @@ for (const name of names.length > 0 ? names : Object.keys(file)) {
   entry.code = codeJson(pins);
 }
 
-parse();
+parse(withoutPrices());
 writeFileSync(`${path}.tmp`, `${JSON.stringify(file, null, 2)}\n`, { mode: flags.history ? 0o600 : 0o644 });
 renameSync(`${path}.tmp`, path);
 console.log(`\nWrote ${path}`);
+try {
+  parse(file);
+} catch (error) {
+  console.log(`REFUSED ${path} as written does not load, so no command that reads it runs: ${error instanceof Error ? error.message : String(error)}`);
+  refused = true;
+}
 if (refused) process.exit(1);
