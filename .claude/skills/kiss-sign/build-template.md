@@ -91,7 +91,7 @@ When `prove-abi` refuses because the compiler is not pinned, run `pnpm pin-solc 
 
 Write `templates/<protocol>/<operation>/template.json`.
 Start from an existing template of a similar shape in `templates/`.
-For example, take `erc20/transfer` for a token transfer, `morpho/vault-deposit` or `fluid/vault-deposit` for an ERC-4626 deposit, `cow/swap` for a signed order, one under `safe/` for an owner or threshold change, and `morpho/vault-v2-cap-submit` and its siblings for a curator's vault setting.
+For example, take `erc20/transfer` for a token transfer, `morpho/vault-deposit` or `fluid/vault-deposit` for an ERC-4626 deposit, `cow/swap` for a signed order, one under `safe/` for an owner or threshold change, and `morpho/vault-v2-cap-submit` or `morpho/vault-v2-cap-accept` for a curator's vault setting.
 When none of these is there, take the nearest one that is.
 Then follow [Data shapes](../../../docs/design/data-shapes.md#data-shapes); template load refuses anything else.
 Run `pnpm template check <protocol>/<operation>` after each edit: it parses the draft as `verify` does and names the path and problem of anything refused, so import no program file in a script of your own to check it.
