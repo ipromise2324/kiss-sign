@@ -9,9 +9,6 @@
 
 <p align="center"><b><i>Keep it simple, stupid, and sign.</i></b></p>
 
-> [!WARNING]
-> kiss-sign is still under development and is not ready for real use. Do not rely on it to sign transactions yet.
-
 Signing tools today show you a transaction and ask whether it looks right. Your intent is checked last, by you, at the moment you are most likely to click through. kiss-sign turns that around: you say what you want first, your AI researches the operation once and writes a report you review, and every Safe transaction is checked against what you said before you sign on a hardware wallet.
 
 <picture>
