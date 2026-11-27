@@ -22,6 +22,7 @@ The exact shape and every limit are in step 6 of [First time an operation is don
   A full address or 32-byte hash that stands alone, not inside an identifier, counts as one character, up to four per text, so show it whole.
 - Sources, statuses, names and URLs are written once.
 - Write a function or argument name between backticks, such as "Calls `erc20TransferFrom`, then `erc4626Deposit`" or "依序呼叫 `erc20TransferFrom` 和 `erc4626Deposit`"; only one identifier, with or without `()`, may stand between two backticks.
+- A text you write about an ERC-20 allowance names the token and the spender, such as "lets the fToken spend exactly the deposit amount of USDC" or "讓 fToken 動用剛好等於存入金額的 USDC", never "approves the fToken": a reader takes a lone token name for the token approved.
 
 ## The keys
 
@@ -32,7 +33,6 @@ The exact shape and every limit are in step 6 of [First time an operation is don
   An instance's own later request goes in its `notes.json` as `instanceRequest`, the same way.
 - `title`, at most 100 characters, and `summary`, at most 250.
   The summary leads with what the transaction does, then what it needs first and what it refuses; leave counts and evidence to the sections that show them.
-  In the summary and every other text, a sentence about an approval names both the token approved and the spender, such as "approves exactly the amount of USDC to the fToken", never "approves the fToken": a reader takes the one token named for the token approved.
 - `verdict`: `{ "status": "safe" | "caution", "text" }`, one line of at most 100: your research advice on the operation's risk, despite the key's name.
   It is not a transaction's verdict, which only `verify` gives, and it never moves a program result; the Advice (建議) line's icon is the program's worst result, not your status.
 - `flow`: at most four lines of what happens inside a call, each `{ "after": <call number>, "from": <registry name>, "to": <registry name>, "function": <canonical signature>, "text", "sources" }`, between two contracts the calls or the effects' views target or an argument binds, such as a pool's hook, the entries those name in `dependsOn`, the tokens the effects move or touch, or the token a card field holds, as `card.<field>`; `text` is at most 100 characters.
