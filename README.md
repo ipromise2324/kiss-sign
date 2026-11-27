@@ -32,6 +32,7 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
   - [4. Verify on your computer, and check on a second one](#4-verify-on-your-computer-and-check-on-a-second-one)
   - [5. Sign](#5-sign)
 - [Threat model](#threat-model)
+- [Token cost](#token-cost)
 - [Scope](#scope)
 - [Contributing](#contributing)
 - [Disclaimer](#disclaimer)
@@ -82,13 +83,17 @@ pnpm install
 pnpm kiss-sign init --safe 0x… --language en   # or zh-TW for Traditional Chinese; see Language
 pnpm kiss-sign key add alchemy
 pnpm kiss-sign key add etherscan   # to build or review templates
-pnpm kiss-sign key add github      # optional: raises GitHub's hourly limit to build or review templates
+pnpm kiss-sign key add github      # optional: lets your AI search GitHub and raises its hourly limit
 ```
 
 You need:
 
 - Node 22.21 or later and pnpm.
-- Free [Alchemy](https://dashboard.alchemy.com/) and [Etherscan](https://etherscan.io/myapikey) keys. A GitHub token is optional: a fine-grained, read-only one for public repositories raises GitHub's hourly limit when you build or review templates.
+- Free [Alchemy](https://dashboard.alchemy.com/) and [Etherscan](https://etherscan.io/myapikey) keys.
+- Optionally, a [GitHub token](https://github.com/settings/personal-access-tokens/new), for building or reviewing templates. It changes no verdict.
+  - With it, your AI can search a protocol's GitHub organization for every file that lists an address, which can add a source to a report.
+  - GitHub then allows 5,000 requests an hour instead of 60. Without it, every command on your computer shares the 60, and a build can wait for the limit to reset.
+  - Make it a fine-grained token with repository access "Public repositories" and no permissions added. kiss-sign sends it only to `api.github.com`.
 - A hardware wallet that shows a Safe transaction's domain hash and message hash, or its safeTxHash.
 
 **Language.** English (`en`, the default) or Traditional Chinese (`zh-TW`); change it with `pnpm kiss-sign init --language zh-TW`. It changes only the text you read, never a verdict. Give `./check.sh init` on the second computer the same language, so the comparison rows match.
@@ -254,6 +259,31 @@ You choose the protocol; kiss-sign checks its state, its app's transactions and 
 ### You
 
 kiss-sign checks a transaction against the card you sealed and the reports you merged, so it cannot catch your own mistake in them. A card with the wrong vault or an extra zero in the amount gets `MATCH`. Nothing catches a signature you give without comparing the hashes on your wallet, or a flagged address you merge without reading the report.
+
+## Token cost
+
+What it cost Claude Opus 5.5 to build each template and its report from zero, on 2026-11-27. Each report quotes, at its top, the request its build was given.
+
+| Report | Tokens | Minutes | Model calls |
+|---|---:|---:|---:|
+| [erc20/transfer](https://claude.ai/artifact/BS37S6HgPtWWfA8Shr4bXF) | 7.80M | 10 | 72 |
+| [eth/transfer](https://claude.ai/artifact/F3sTYhhcrorgfcrX9JVhr3) | 9.43M | 12 | 74 |
+| [safe/add-owner](https://claude.ai/artifact/4KtdZ2AgNtGqZb9pWf7rj1) | 10.44M | 14 | 82 |
+| [safe/remove-owner](https://claude.ai/artifact/WvgLR34g9ZFziSRv81Jryk) | 10.50M | 15 | 84 |
+| [safe/swap-owner](https://claude.ai/artifact/Fnz7QXP1FhQMzq1XTXpPgc) | 13.63M | 16 | 91 |
+| [safe/change-threshold](https://claude.ai/artifact/45J6jVfCkVN62LVdz7JbSQ) | 10.49M | 10 | 84 |
+| [fluid/vault-deposit (fUSDC, new template)](https://claude.ai/artifact/Nj8pmT3cxujg7nAZkpucVY) | 18.53M | 32 | 114 |
+| [fluid/vault-deposit (fUSDT, added vault)](https://claude.ai/artifact/HCXqnLBHMJP9WQ726KfXhe) | 8.82M | 14 | 76 |
+| [compound/supply (cUSDCv3)](https://claude.ai/artifact/B42hzCNW84QVhvhACSQmU3) | 20.79M | 46 | 129 |
+| [morpho/vault-deposit (Steakhouse, new template)](https://claude.ai/artifact/9mi42v4ZwDKe97XLPhNvPX) | 25.90M | 26 | 133 |
+| [morpho/vault-deposit (Hyperithm, added vault)](https://claude.ai/artifact/WZxEhWeoaAyjuqFmgWowGb) | 13.67M | 30 | 98 |
+| [cow/swap](https://claude.ai/artifact/YRiJ2jTKSpD4nZGiNRN55h) | 28.55M | 51 | 148 |
+| [morpho/vault-v2-cap-submit (Sentora RLUSD Main)](https://claude.ai/artifact/2MDjndgcsu43froGJzo5Qs) | 24.63M | 34 | 144 |
+| [morpho/vault-v2-cap-accept (Sentora RLUSD Main)](https://claude.ai/artifact/BUgSS7MoxSAaSwnpwZDtSr) | 10.64M | 21 | 86 |
+
+In all: 14 builds, 213.8M tokens, 331 minutes.
+
+The builds run from simple to hard: a plain transfer took about 8M tokens and 10 minutes; a swap with a price floor took about 29M tokens and 51 minutes. Each build is one AI agent starting from a clone without that template or its research. Almost all of these tokens are cache reads, which the API bills at a fraction of the normal input price.
 
 ## Scope
 
