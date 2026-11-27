@@ -9,6 +9,10 @@ updates:
     cooldown:
       default-days: 7
     open-pull-requests-limit: 5
+    # @types/node follows the oldest Node that package.json's engines allows; raise both together by hand.
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
