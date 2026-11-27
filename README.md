@@ -9,7 +9,15 @@
 
 <p align="center"><b><i>Keep it simple, stupid, and sign.</i></b></p>
 
-Signing tools today show you a transaction and ask whether it looks right. Your intent is checked last, by you, at the moment you are most likely to click through. kiss-sign turns that around: you say what you want first, your AI researches the operation once and writes a report you review, and every Safe transaction is checked against what you said before you sign on a hardware wallet.
+Signing tools today show you a transaction and ask whether it looks right. Your intent is checked last, by you, at the moment you are most likely to click through. Two losses show where that breaks:
+
+- **Bybit, February 2025, about $1.5 billion.** The attacker [masked the signing interface](https://announcements.bybit.com/en/article/incident-update---eth-cold-wallet-incident-blt292c0454d26e9140/) of a Safe transaction the signers approved. What was missing: an independent check of the transaction.
+- **Drift, April 2026, about $280 million.** Two signers gave approvals Drift later called ["misrepresented"](https://x.com/DriftProtocol/status/2039564437795836039). What was missing: a check of what the transaction was meant to do.
+
+kiss-sign does both:
+
+- **You say what you want first.** Your AI researches the operation once and writes a report you review, and every Safe transaction is checked against what you said.
+- **The check does not trust one screen.** You compare the hashes on your hardware wallet, and in the hardened tier a second, clean computer decodes the transaction on its own.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/readme/overview-dark.png">
