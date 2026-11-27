@@ -104,7 +104,7 @@ To install it, follow the [kiss-sign-check README](https://github.com/ipromise23
 
 ## How it works
 
-The pictures below come from real reports kiss-sign generated from other senders' transactions.
+The pictures below come from real reports kiss-sign generated from other senders' transactions. To read a whole report, open any of the 14 linked under [Token cost](#token-cost).
 
 ### 1. Tell your AI what you want
 
