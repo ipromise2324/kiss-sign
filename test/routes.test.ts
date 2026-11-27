@@ -23,7 +23,7 @@ import { evaluate } from '../src/verify/verify.ts';
 import type { VerdictFile } from '../src/verify/verify.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
 import { parseRegistryAt } from './registry-at.ts';
-import { BASE_DIR } from './fixture-base.ts';
+import { BASE_DIR } from './repo-with-test-fixtures.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const REGISTRY = JSON.parse(readFileSync(join(BASE_DIR, 'registry', 'contracts.json'), 'utf8')) as Record<string, Record<string, unknown>>;

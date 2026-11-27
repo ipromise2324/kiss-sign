@@ -87,7 +87,8 @@
                       "minSharePriceE27": {
                         "minSharePrice": {
                           "assets": "card.amount",
-                          "shares": "card.max-shares"
+                          "shares": "card.max-shares",
+                          "scale": 27
                         }
                       },
                       "receiver": {

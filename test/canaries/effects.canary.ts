@@ -39,7 +39,7 @@ const WHY = { en: 'rounding, as the protocol documents', 'zh-TW': '協定文件�
 
 /** The deposit template with its effects, or one call argument, replaced. */
 const variant = (effects: object, approveValue: object = { card: 'amount' }): Template =>
-  parseTemplate({ ...raw, effects, calls: [{ ...raw.calls[0], args: { ...raw.calls[0].args, value: approveValue } }, ...raw.calls.slice(1)] }, registry);
+  parseTemplate({ ...raw, effects, calls: [{ ...raw.calls[0], args: { ...raw.calls[0].args, value: approveValue } }, ...raw.calls.slice(1)] }, registry, 'committed');
 
 const gives = (extra: object) => ({ gives: [{ token: 'card.vault.asset', amount: 'card.amount', ...extra }], gets: [{ token: 'card.vault', amount: 'positive' }] });
 
@@ -159,14 +159,14 @@ test('a touched token that an effect reaches through a card field cannot widen i
   assert.deepEqual(judge(noShares, touched, AMOUNT), { kind: 'unverifiable', reasons: [`the card touches ${vault} and names it in an effect too`] });
   const atMost = variant({ gives: [{ token: 'card.vault.asset', amount: { atMost: 'card.amount' } }], gets: [{ token: 'card.vault', amount: 'positive' }] });
   const both = new Map([[atMost.id, atMost]]);
-  const usdcTouch = parseTemplate({ ...raw, id: 'test/touch', effects: { gives: [], gets: [], touches: [{ token: 'usdc', tolerance: { more: 1, why: WHY } }] } }, registry);
+  const usdcTouch = parseTemplate({ ...raw, id: 'test/touch', effects: { gives: [], gets: [], touches: [{ token: 'usdc', tolerance: { more: 1, why: WHY } }] } }, registry, 'committed');
   const templates = new Map([...both, [usdcTouch.id, usdcTouch]]);
   const values = { vault: 'steakhouse-prime-usdc-v2-0f51', amount: `${AMOUNT}`, 'min-shares': '1741863305677219101283940' };
   const result = resolveCard({ operations: [{ template: atMost.id, values }, { template: usdcTouch.id, values }] }, { templates, registry, addressBook: new Map(), safe: deposit.safe });
   assert.equal(result.kind, 'resolved');
   const twoOps = (result as Extract<typeof result, { kind: 'resolved' }>).card;
   assert.deepEqual(judgeEffects(executed, twoOps, templates, registry), { kind: 'unverifiable', reasons: [`the card touches ${USDC} and names it in an effect too`] });
-  const exact = parseTemplate({ ...raw, id: 'test/exact', effects: { gives: [{ token: 'usdc', amount: 'card.amount', tolerance: { less: 1, why: WHY } }], gets: [] } }, registry);
+  const exact = parseTemplate({ ...raw, id: 'test/exact', effects: { gives: [{ token: 'usdc', amount: 'card.amount', tolerance: { less: 1, why: WHY } }], gets: [] } }, registry, 'committed');
   const withExact = new Map([...both, [exact.id, exact]]);
   const mixed = resolveCard({ operations: [{ template: exact.id, values }, { template: atMost.id, values }] }, { templates: withExact, registry, addressBook: new Map(), safe: deposit.safe });
   assert.equal(mixed.kind, 'resolved');
@@ -176,7 +176,7 @@ test('a touched token that an effect reaches through a card field cannot widen i
 
 test('tolerances add up over the card\'s operations, each within its cap', async () => {
   const executed = (await simulated()) as Extract<Observed, { kind: 'executed' }>;
-  const touch = parseTemplate({ ...raw, id: 'test/touch', effects: { gives: [], gets: [], touches: [{ token: 'usdt', tolerance: { more: 10, why: WHY } }] } }, registry);
+  const touch = parseTemplate({ ...raw, id: 'test/touch', effects: { gives: [], gets: [], touches: [{ token: 'usdt', tolerance: { more: 10, why: WHY } }] } }, registry, 'committed');
   const templates = new Map([[touch.id, touch]]);
   const values = { vault: 'steakhouse-prime-usdc-v2-0f51', amount: `${AMOUNT}`, 'min-shares': '1' };
   const result = resolveCard({ operations: [{ template: touch.id, values }, { template: touch.id, values }] }, { templates, registry, addressBook: new Map(), safe: deposit.safe });
@@ -191,7 +191,7 @@ test("an atMost bound on a call's ETH value is mutated to the largest value, whi
   const fixture = load('safe-tx', 'eth-transfer-null-data');
   const tx = parseServiceTx(fixture.service, { chainId: 1n, version: fixture.chain.version });
   const rawEth = JSON.parse(readFileSync(join(ROOT, 'templates', 'eth', 'transfer', 'template.json'), 'utf8'));
-  const template = parseTemplate({ ...rawEth, calls: [{ ...rawEth.calls[0], value: { atMost: 'card.amount' } }] }, registry);
+  const template = parseTemplate({ ...rawEth, calls: [{ ...rawEth.calls[0], value: { atMost: 'card.amount' } }] }, registry, 'committed');
   const templates = new Map([[template.id, template]]);
   const payee = String(fixture.service.to).toLowerCase();
   const resolve = (amount: bigint): ResolvedCard => {

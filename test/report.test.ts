@@ -52,7 +52,7 @@ import { studyRecording } from '../src/research/past-txs-summary.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { repoWithBundler3Deposit } from './bundler3-deposit.ts';
 import { FROZEN_REPORTS, repoWithFrozenReports } from './frozen-reports.ts';
-import { BASE_DIR } from './fixture-base.ts';
+import { BASE_DIR } from './repo-with-test-fixtures.ts';
 import { parseRegistryAt } from './registry-at.ts';
 
 const ROOT = join(import.meta.dirname, '..');

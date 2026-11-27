@@ -1,6 +1,5 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { parseArgs } from 'node:util';
 import type { ResolvedCard } from '../card.ts';
 import { canonicalJson } from '../canonical.ts';
 import { mainnetEndpoints } from '../chain/providers.ts';
@@ -8,6 +7,7 @@ import { unreadRefusal } from '../chain/https.ts';
 import { createReader } from '../chain/reader.ts';
 import type { Reader } from '../chain/reader.ts';
 import { recordingTransport, replayReader } from '../chain/recording.ts';
+import { parseFlags } from '../cli/flags.ts';
 import { OK, UsageError } from '../cli/io.ts';
 import type { Io } from '../cli/io.ts';
 import { REGISTRY_PATH, attributesText, loadRegistry, marketsText } from '../registry.ts';
@@ -178,7 +178,7 @@ export async function replayCases(repoRoot: string): Promise<CaseResult[]> {
 
 /** `attacks`, or `attacks --record <case>`. */
 export async function attacks(args: readonly string[], io: Io): Promise<number> {
-  const { values, positionals } = parseArgs({ args: [...args], options: { record: { type: 'string' } }, strict: true, allowPositionals: true });
+  const { values, positionals } = parseFlags({ args: [...args], options: { record: { type: 'string' } }, strict: true, allowPositionals: true });
   if (positionals.length > 0) throw new UsageError('usage: pnpm attacks [--record <case>]');
   const results = values.record === undefined ? await replayCases(io.repoRoot) : [await record(io, values.record)];
   io.stdout(results.map(renderCase).join('\n'));

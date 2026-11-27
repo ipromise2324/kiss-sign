@@ -31,14 +31,23 @@ function setUp(card: Card, tx: SafeTx): { templates: Map<string, Template>; reso
 }
 
 const replayed = (name: string): Promise<PerturbationReport> => replayPerturbRecording(ROOT, name, registry);
+const REPO = join(import.meta.dirname, '..', '..');
+const repoRegistry = loadRegistry(REPO);
 
 const summary = (report: PerturbationReport) =>
   report.kind === 'not-run' ? report.reason : report.runs.map((r) => `${r.leaf.callPath} ${r.leaf.arg} = ${r.value}: ${r.outcome}`);
 
-const recorded = readdirSync(join(ROOT, PERTURB_DIR)).map((f) => f.replace(/\.json$/, ''));
+const names = (root: string): string[] => readdirSync(join(root, PERTURB_DIR)).map((f) => f.replace(/\.json$/, ''));
 
-for (const name of recorded.filter((n) => n !== 'morpho-deposit-free-assets')) {
+for (const name of names(REPO)) {
   test(`${name}: every free field, changed, reverts, is refused, or changes nothing its claim forbids`, async () => {
+    const report = await replayPerturbRecording(REPO, name, repoRegistry);
+    assert.equal(report.kind, 'pass', JSON.stringify(summary(report)));
+  });
+}
+
+for (const name of names(ROOT).filter((n) => n !== 'morpho-deposit-free-assets' && n !== 'morpho-withdraw-apex')) {
+  test(`test-only ${name}: every free field, changed, reverts, is refused, or changes nothing its claim forbids`, async () => {
     const report = await replayed(name);
     assert.equal(report.kind, 'pass', JSON.stringify(summary(report)));
   });
@@ -56,6 +65,13 @@ test('a deposit whose assets were left free fails, naming the field and the valu
     report.kind === 'fail' ? report.failed.map((r) => [r.leaf.callPath, r.leaf.arg, r.value, r.outcome, r.detail]) : [],
     [['multiSend[1].multicall.bundle[1].data.erc4626Deposit', 'assets', '1800000000179', 'changed', 'the logs differ']],
   );
+});
+
+test("a withdraw whose original, simulated on its parent block, leaves an approval open is not run, since every copy would be refused for the original's effects", async () => {
+  const report = await replayed('morpho-withdraw-apex');
+  assert.equal(report.kind, 'not-run');
+  assert.equal(report.kind === 'not-run' && report.cause, 'baseline');
+  assert.match(report.kind === 'not-run' ? report.reason : '', /^the original's effects give MISMATCH: approval raised and not spent in the same transaction/);
 });
 
 const APPROVE_HASH = topic('ApproveHash(bytes32,address)');

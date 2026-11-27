@@ -196,3 +196,11 @@ test('a receipt that executed two Safe transactions cannot judge either, and say
   assert.equal(executionOf([log(1), log(2)], safe, hash(1)), 'several-safe-executions-in-one-transaction');
   assert.equal(executionOf([], safe, hash(1)), 'no-execution-event');
 });
+
+test('simulate without --card prints the simulated floor as findings checked with no card, never as a verdict', () => {
+  const recording = readRecording<{ safeTx: string; exchanges: Exchange[] }>(join(import.meta.dirname, '..', 'testdata', 'simulate', 'safe-add-owner-1-3-0.json'));
+  const run = runOffline('simulate.ts', [recording.safeTx], 'simulate', recording);
+  assert.equal(run.status, 0, run.stderr + run.stdout);
+  assert.doesNotMatch(run.stdout, /REFUSED|PASS|verdict MATCH|MISMATCH/);
+  assert.match(run.stdout, /^ {2}simulated floor, checked with no card, so it allows no approval or Safe setting change: \d+ finding\(s\)\. This is no verdict of verify, which checks the floor against the card's operations\.\n {4}\S+: /m);
+});

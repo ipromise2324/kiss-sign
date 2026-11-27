@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
-import { join } from 'node:path';
 import { test } from 'node:test';
 import { replayCases } from '../../src/attacks/attacks.ts';
 import type { CaseResult } from '../../src/attacks/attacks.ts';
+import { join } from 'node:path';
+import { repoWithTestFixtures } from '../repo-with-test-fixtures.ts';
 
-const ROOT = join(import.meta.dirname, '..', '..');
+const ROOT = repoWithTestFixtures();
+const SHIPPED = join(import.meta.dirname, '..', '..');
 
 /** Each run's catching checks, a floor check named with its rule, as the verdict gives them, or why verify gave none. */
 const CAUGHT_BY: Record<string, Record<string, readonly string[] | string>> = {
@@ -35,6 +37,7 @@ const catching = (result: CaseResult): Record<string, string[] | string> =>
   );
 
 const results = await replayCases(ROOT);
+const shipped = await replayCases(SHIPPED);
 
 test('every recorded attack has its expected catching checks listed here', () => {
   assert.deepEqual(results.map((r) => r.attack.id).sort(), Object.keys(CAUGHT_BY).sort());
@@ -46,3 +49,8 @@ for (const result of results) {
     assert.deepEqual(catching(result), CAUGHT_BY[result.attack.id]);
   });
 }
+
+test('no recorded attack is MATCH under the shipped templates and registry', () => {
+  const matched = shipped.flatMap((r) => r.judgements.filter(({ outcome }) => outcome.kind !== 'refused' && outcome.verdict.kind === 'MATCH').map(({ label }) => `${r.attack.id}: ${label}`));
+  assert.deepEqual(matched, [], 'a template or registry entry of this checkout lets a recorded attack pass; pnpm attacks prints each verdict');
+});

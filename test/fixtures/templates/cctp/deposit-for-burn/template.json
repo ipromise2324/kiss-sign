@@ -1,7 +1,7 @@
 {
   "id": "cctp/deposit-for-burn",
   "card": {
-    "token": { "kind": "contract", "registryKind": "token" },
+    "token": { "kind": "contract", "registryKind": "token", "names": ["usdc"] },
     "amount": { "kind": "amount", "of": "token" },
     "recipient": { "kind": "recipient" }
   },

@@ -18,9 +18,9 @@ import { repoWithTestFixtures } from '../repo-with-test-fixtures.ts';
 
 const ROOT = join(import.meta.dirname, '..', '..');
 const FIXTURES = repoWithTestFixtures();
-const fixture = JSON.parse(readFileSync(join(ROOT, 'testdata', 'safe-tx', 'morpho-vault-deposit.json'), 'utf8'));
+const fixture = JSON.parse(readFileSync(join(FIXTURES, 'testdata', 'safe-tx', 'morpho-vault-deposit.json'), 'utf8'));
 const deposit = parseServiceTx(fixture.service, { chainId: 1n, version: fixture.chain.version });
-const registry = loadRegistry(ROOT);
+const registry = loadRegistry(FIXTURES);
 const template = loadTemplate(FIXTURES, 'morpho/vault-deposit-bundler3', registry);
 const templates = new Map([[template.id, template]]);
 const rawTemplate = JSON.parse(readFileSync(join(FIXTURES, 'templates', 'morpho', 'vault-deposit-bundler3', 'template.json'), 'utf8'));
@@ -136,11 +136,11 @@ test('an address anywhere in the type tree is never free, and a constant address
   for (const [edit, path, problem] of cases) {
     const broken = structuredClone(rawTemplate);
     edit(broken);
-    assert.throws(() => parseTemplate(broken, registry), (error: unknown) => error instanceof TemplateError && error.path === path && problem.test(error.message), path);
+    assert.throws(() => parseTemplate(broken, registry, 'committed'), (error: unknown) => error instanceof TemplateError && error.path === path && problem.test(error.message), path);
   }
   const zero = structuredClone(rawTemplate);
   deposit(zero).receiver = { const: '0x0000000000000000000000000000000000000000' };
-  assert.doesNotThrow(() => parseTemplate(zero, registry));
+  assert.doesNotThrow(() => parseTemplate(zero, registry, 'committed'));
 });
 
 test('bytes, a string or an array is free only with a proof or unread claim, and constant bytes hold at most 19 bytes', () => {
@@ -158,19 +158,19 @@ test('bytes, a string or an array is free only with a proof or unread claim, and
   for (const [edit, path, problem] of cases) {
     const broken = structuredClone(fluid);
     edit(broken);
-    assert.throws(() => parseTemplate(broken, registry), (error: unknown) => error instanceof TemplateError && error.path === path && problem.test(error.message), path);
+    assert.throws(() => parseTemplate(broken, registry, 'committed'), (error: unknown) => error instanceof TemplateError && error.path === path && problem.test(error.message), path);
   }
   const scalar = structuredClone(fluid);
   claim(scalar).cumulativeAmount_ = { free: { proof: 'the leaf amount' } };
   claim(scalar).metadata_ = { const: `0x${'0a'.repeat(19)}` };
-  assert.equal(parseTemplate(scalar, registry).id, 'fluid/rewards-claim');
+  assert.equal(parseTemplate(scalar, registry, 'committed').id, 'fluid/rewards-claim');
 });
 
 test('a trailer allowance is at most 19 bytes, so a whole address never fits', () => {
   const at = (maxBytes: number) => {
     const raw = structuredClone(rawTemplate);
     raw.calls[1].trailer.maxBytes = maxBytes;
-    return () => parseTemplate(raw, registry);
+    return () => parseTemplate(raw, registry, 'committed');
   };
   assert.doesNotThrow(at(19));
   assert.throws(at(20), (error: unknown) => error instanceof TemplateError && error.path === 'calls[1].trailer.maxBytes' && /from 1 to 19/.test(error.message));

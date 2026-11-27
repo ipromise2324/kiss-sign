@@ -34,7 +34,12 @@ const REWARD_TOKENS_OUTSIDE_REGISTRY = {
 };
 const registry = parseRegistryAt(ROOT, { ...JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8')), ...REWARD_TOKENS_OUTSIDE_REGISTRY });
 const IDS = ['fluid/rewards-claim', 'fluid/vault-withdraw', 'merkl/claim', 'cctp/receive'];
-const templates = new Map<string, Template>(IDS.map((id) => [id, loadTemplate(ROOT, id, registry)]));
+const listingRewardTokens = (id: string): Template => {
+  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', id, 'template.json'), 'utf8'));
+  raw.card.token.names.push(...Object.keys(REWARD_TOKENS_OUTSIDE_REGISTRY));
+  return parseTemplate(raw, registry, 'committed');
+};
+const templates = new Map<string, Template>(IDS.map((id) => [id, id === 'merkl/claim' ? listingRewardTokens(id) : loadTemplate(ROOT, id, registry)]));
 const OTHER = '0x1111111111111111111111111111111111111111' as Address;
 const addressOf = (name: string): Address => registry.entries.get(name)!.address;
 
@@ -137,7 +142,7 @@ test('a merged call takes every argument as items, with as many items in each, o
   const loose = structuredClone(raw);
   loose.calls[0].args.amounts = { free: { proof: 'x' } };
   for (const broken of [unequal, loose]) {
-    assert.throws(() => parseTemplate(broken, registry), (error: unknown) => error instanceof TemplateError && error.path === 'calls[0].merge');
+    assert.throws(() => parseTemplate(broken, registry, 'committed'), (error: unknown) => error instanceof TemplateError && error.path === 'calls[0].merge');
   }
 });
 

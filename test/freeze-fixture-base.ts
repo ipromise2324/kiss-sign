@@ -11,7 +11,7 @@ import { cpSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative } from 'node:path';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { GENERATED_FILE, INSTANCE_FOLDER } from '../src/template/vault-reports.ts';
-import { BASE_DIR, REPORTED_FILE } from './fixture-base.ts';
+import { BASE_DIR, REPORTED_FILE } from './repo-with-test-fixtures.ts';
 
 const REPO = join(import.meta.dirname, '..');
 const KEPT = new Set(['template.json', 'docs.json']);

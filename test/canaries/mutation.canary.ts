@@ -17,9 +17,9 @@ import { repoWithTestFixtures } from '../repo-with-test-fixtures.ts';
 
 const ROOT = join(import.meta.dirname, '..', '..');
 const FIXTURES = repoWithTestFixtures();
-const fixture = JSON.parse(readFileSync(join(ROOT, 'testdata', 'safe-tx', 'morpho-vault-deposit.json'), 'utf8'));
+const fixture = JSON.parse(readFileSync(join(FIXTURES, 'testdata', 'safe-tx', 'morpho-vault-deposit.json'), 'utf8'));
 const deposit = parseServiceTx(fixture.service, { chainId: 1n, version: fixture.chain.version });
-const registry = loadRegistry(ROOT);
+const registry = loadRegistry(FIXTURES);
 const template = loadTemplate(FIXTURES, 'morpho/vault-deposit-bundler3', registry);
 const rawTemplate = JSON.parse(readFileSync(join(FIXTURES, 'templates', 'morpho', 'vault-deposit-bundler3', 'template.json'), 'utf8'));
 const DEPOSIT_PATH = 'multiSend[1].multicall.bundle[1].data.erc4626Deposit';
@@ -50,19 +50,20 @@ test('every bound field of the shipped Morpho deposit, changed alone, gives a mi
   const { service, chain } = JSON.parse(readFileSync(join(ROOT, 'testdata', 'safe-tx', 'morpho-vault-bundles-deposit.json'), 'utf8'));
   const tx = parseServiceTx(service, { chainId: 1n, version: chain.version });
   const id = 'morpho/vault-deposit';
-  const templates = templatesOf(loadTemplate(ROOT, id, registry));
+  const shipped = loadRegistry(ROOT);
+  const templates = templatesOf(loadTemplate(ROOT, id, shipped));
   const operations = [{ template: id, values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount: '10000000000', 'min-shares': '9609712613964437589511' } }];
-  const result = resolveCard({ operations }, { templates, registry, addressBook: new Map(), safe: tx.safe });
+  const result = resolveCard({ operations }, { templates, registry: shipped, addressBook: new Map(), safe: tx.safe });
   assert.equal(result.kind, 'resolved');
   const { card } = result as Extract<typeof result, { kind: 'resolved' }>;
   const blockTime = { kind: 'read', number: BigInt(service.blockNumber), time: BigInt(Date.parse(service.executionDate) / 1000) } as const;
-  assert.deepEqual(checkMutations(tx, card, templates, registry, [], { blockTime }), { kind: 'pass', bound: 13, free: 1 });
+  assert.deepEqual(checkMutations(tx, card, templates, shipped, [], { blockTime }), { kind: 'pass', bound: 13, free: 1 }, `templates/${id}/template.json binds other fields than this canary pins; pnpm template implied-card ${id} morpho-vault-bundles-deposit shows its card`);
 });
 
 test('a template that frees the deposited assets still passes, with one more free field and one fewer bound', () => {
   const weakened = structuredClone(rawTemplate);
   weakened.calls[1].args.bundle.items[1].fields.data.call.args.assets = { free: { en: 'test: assets left free', 'zh-TW': '測試：資產數量不受限制' } };
-  assert.deepEqual(mutations(parseTemplate(weakened, registry)), { kind: 'pass', bound: 20, free: 1 });
+  assert.deepEqual(mutations(parseTemplate(weakened, registry, 'committed')), { kind: 'pass', bound: 20, free: 1 });
 });
 
 test('a checker that ignores the receiver makes the template weak, naming the receiver', () => {

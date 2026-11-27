@@ -7,17 +7,22 @@
 canary test/canaries/attacks.canary.ts
 guards Real blind-signing attacks on Safes (Bybit, WazirX, Radiant), replayed from their recordings, are never MATCH, and the same checks catch them: the fee fields and delegatecall floors, the field check and the effects, or a card refused before any check.
 reads testdata/attacks/
+reads test/fixtures/base/
+reads test/fixtures/registry/
+reads test/fixtures/templates/
 
 canary test/canaries/mutation.canary.ts
 guards Every bound field of the shipped Morpho vault deposit, and of the Bundler3 fixture, changed alone, gives MISMATCH; a checker that ignores the receiver is reported weak, naming it.
 reads testdata/safe-tx/morpho-vault-bundles-deposit.json
 reads testdata/safe-tx/morpho-vault-deposit.json
+reads test/fixtures/base/
 reads test/fixtures/registry/
 reads test/fixtures/templates/
 
 canary test/canaries/template.canary.ts
 guards The field check: a changed receiver, another chain, another amount, a MultiSend call added or missing, calls out of card order, another function, a delegatecall to anything but the official MultiSend, and a non-canonical encoding are MISMATCH; a template with a free address, tuple or array holding one, a constant address other than zero, free bytes without a proof or unread claim, or a trailer over 19 bytes fails to load.
 reads testdata/safe-tx/morpho-vault-deposit.json
+reads test/fixtures/base/
 reads test/fixtures/registry/
 reads test/fixtures/templates/
 
@@ -27,12 +32,16 @@ reads testdata/safe-tx/morpho-vault-deposit.json
 
 canary test/canaries/card-floor.canary.ts
 guards A card's declared Safe changes and approvals pass only as declared; an owner change or enableModule a card does not declare is refused by both floors; a card holding 0 as the fewest a swap may give is refused.
+reads test/fixtures/base/
+reads test/fixtures/registry/
+reads test/fixtures/templates/
 
 canary test/canaries/effects.canary.ts
 guards The effects check: a balance change the card does not explain is MISMATCH; a tolerance holds only in its declared direction and up to its cap; a token no template names may not change; an atMost bound is caught by its mutation.
 reads testdata/safe-tx/eth-transfer-null-data.json
 reads testdata/safe-tx/morpho-vault-deposit.json
 reads testdata/simulate/morpho-vault-deposit.json
+reads test/fixtures/base/
 reads test/fixtures/registry/
 reads test/fixtures/templates/
 
@@ -53,7 +62,7 @@ reads testdata/simulate/permit2-unlimited-approval.json
 reads testdata/simulate/uniswap-v4-add-liquidity-permit2.json
 
 canary test/canaries/perturb.canary.ts
-guards Every free field of each recorded transaction, changed, reverts, is refused, or changes nothing its claim forbids; a deposit whose assets were left free, a free field that adds an approveHash, and a proof field whose change still executes fail.
+guards Every free field of each recorded transaction, changed, reverts, is refused, or changes nothing its claim forbids; a deposit whose assets were left free, a free field that adds an approveHash, and a proof field whose change still executes fail; a withdraw whose original fails the effects check in simulation is not run.
 reads testdata/perturb/
 reads testdata/safe-tx/fluid-claim.json
 reads testdata/safe-tx/fluid-deposit-usdc.json
@@ -75,13 +84,16 @@ reads testdata/safe-tx/uniswap-swap-hook-usdc-usdt.json
 reads testdata/safe-tx/uniswap-swap-no-hook-usdc-usdt.json
 reads testdata/safe-tx/uniswap-swap-permit-usdc-usdt.json
 reads testdata/safe-tx/uniswap-swap-usdc-usdt.json
+reads test/fixtures/base/
 reads test/fixtures/registry/
 reads test/fixtures/templates/
+reads test/fixtures/testdata/perturb/
 
 canary test/canaries/code-pin.canary.ts
 guards Every registry contract a transaction touches runs its pinned code: changed code, a proxy delegating to another implementation, an implementation whose code changed, a pin with no implementation for a contract that now delegates, code that hands a call to an address in its storage, and, for a past transaction, code outside the span its block falls in are MISMATCH; code the providers disagree on and an unpinned entry are UNVERIFIABLE.
 reads testdata/abi/fluid-token.json
 reads testdata/verify/morpho-vault-deposit.json
+reads test/fixtures/base/registry/
 
 canary test/canaries/verdict.canary.ts
 guards How checks become a verdict: a failed check is MISMATCH and an unfinished one UNVERIFIABLE, never MATCH, even when it gives no detail; a mismatch beside an unverifiable check stays MISMATCH.

@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { GENERATED_FILE } from '../src/template/vault-reports.ts';
-import { REPORTED_FILE } from './fixture-base.ts';
+import { REPORTED_FILE } from './repo-with-test-fixtures.ts';
 
 /**
  * The shipped templates as this checkout holds them, not the frozen test/fixtures/base/ the program's tests read: a

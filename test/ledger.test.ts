@@ -228,6 +228,7 @@ const withAbi = (signatures: readonly string[]): AbiProof =>
 const refused = (refusal: object): AbiRefusal => ({ kind: 'refused', refusal }) as unknown as AbiRefusal;
 const judged = (mutations: object, perturbation: PerturbationReport): FixtureJudgement => ({
   name: 'safe-tx-1',
+  sender: 'safe',
   outcome: { kind: 'judged', mutations: mutations as never, perturbation },
 });
 const MUTATIONS_PASS = { kind: 'pass', bound: 3, free: 1 };
@@ -353,7 +354,7 @@ const ROWS: readonly Row[] = [
   { what: 'an adapter that answered no address for its parent', change: adapterAsked('yes', 'yes', 'other-answer'), id: 'vault/factory.2.parentVault.adapted', kind: 'check-other-answer', state: 'bad' },
   { what: 'an adapter whose factory has no instanceCheck to ask', change: { entry: ADAPTER, factory: TRUE_FACTORY, instances: { kind: 'unasked', why: 'vault-factory has no instanceCheck' } }, id: 'vault/factory.admitted', kind: 'factory-unread', state: 'warn' },
   { what: 'an adapter in a recording that predates the answers', change: { entry: ADAPTER }, id: 'vault/factory.admitted', kind: 'factory-unread', state: 'warn' },
-  { what: 'a card the template now refuses', change: { fixtures: [{ name: 'safe-tx-1', outcome: { kind: 'card-refused', why: 'wrong-kind' } }] }, id: 'fixture.safe-tx-1', kind: 'judged-otherwise', state: 'bad' },
+  { what: 'a card the template now refuses', change: { fixtures: [{ name: 'safe-tx-1', sender: 'safe', outcome: { kind: 'card-refused', why: 'wrong-kind' } }] }, id: 'fixture.safe-tx-1', kind: 'judged-otherwise', state: 'bad' },
   { what: 'fields that no longer match', change: { fixtures: [judged({ kind: 'not-run', check: { kind: 'mismatch' } }, PERTURB_PASS)] }, id: 'fixture.safe-tx-1', kind: 'judged-otherwise', state: 'bad' },
   { what: 'fields the template or registry leaves UNVERIFIABLE', change: { fixtures: [judged({ kind: 'not-run', check: { kind: 'unverifiable', reasons: ['the registry has no usdc'] } }, PERTURB_PASS)] }, id: 'fixture.safe-tx-1', kind: 'judged-otherwise', state: 'bad' },
   { what: 'a bound field changed and not caught', change: { fixtures: [judged({ kind: 'weak-template', bound: 3, free: 1, uncaught: [{}] }, PERTURB_PASS)] }, id: 'fixture.safe-tx-1', kind: 'judged-otherwise', state: 'bad' },
