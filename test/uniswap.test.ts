@@ -174,19 +174,6 @@ for (const c of HOOK_CASES) {
     assert.equal(at.length, 1);
     assert.match(at[0]!, /\.V4_SWAP\.params\[1\]\.SWAP_EXACT_IN_SINGLE\.params\.poolKey\.hooks$/);
   });
-
-  test(`${c.name}: a card that swaps another token, or the two tokens the other way, is a mismatch at each field that names the token`, () => {
-    const swapping = (sell: string, buy: string): Card => ({
-      operations: c.card.operations.map((op) => (op.template === 'uniswap/swap' ? { ...op, values: { ...op.values, 'sell-token': sell, 'buy-token': buy } } : op)),
-    });
-    const { 'sell-token': sell, 'buy-token': buy } = c.card.operations.at(-1)!.values as Record<string, string>;
-    const swapAt = c === BATCHED ? 'multiSend[2]' : 'call';
-    const sold = [`${swapAt}.execute.inputs[0].V4_SWAP.params[0].SETTLE.currency`];
-    const bought = [`${swapAt}.execute.inputs[0].V4_SWAP.params[2].TAKE.currency`, `${swapAt}.execute.inputs[1].SWEEP.token`];
-    assert.deepEqual(mismatchAt(check(tx, swapping('morpho', buy!))), sold);
-    assert.deepEqual(mismatchAt(check(tx, swapping(sell!, 'morpho'))), bought);
-    assert.deepEqual(mismatchAt(check(tx, swapping(buy!, sell!))), [...sold, ...bought]);
-  });
 }
 
 for (const { name, card } of UNHOOKED) {

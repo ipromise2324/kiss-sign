@@ -57,8 +57,8 @@
     },
     {
       "text": {
-        "en": "The card lists every token in the registry (such as MORPHO and weETH), but the pool is fixed to USDC and USDT, so a card with any other token can never match.",
-        "zh-TW": "卡片會列出登記表裡的所有代幣（像 MORPHO、weETH），但池子固定是 USDC 和 USDT，選了別的代幣，卡片永遠不會 MATCH。"
+        "en": "The card offers only USDC and USDT, the two tokens of the fixed pool; a card naming any other token is refused before you sign.",
+        "zh-TW": "卡片只讓你選 USDC 和 USDT，也就是這個固定池子的兩個代幣；寫了別的代幣的卡片，在你簽之前就會被拒絕。"
       },
       "recommendation": {
         "en": "Pick USDC and USDT, one to sell and one to buy.",
@@ -272,70 +272,6 @@
         }
       ]
     },
-    "morpho": {
-      "role": {
-        "en": "In the card's list, but the swap cannot use it: Morpho's governance token",
-        "zh-TW": "卡片會列出，但這筆兌換用不到：Morpho 的治理代幣"
-      },
-      "sources": [
-        {
-          "text": {
-            "en": "Morpho's contract addresses page lists this address next to MORPHO under MORPHO Token",
-            "zh-TW": "Morpho 的合約地址頁在 MORPHO Token 下的 MORPHO 旁列出這個地址"
-          },
-          "url": "https://docs.morpho.org/developers/contracts/addresses/",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "CoinGecko's coin morpho lists this address on Ethereum",
-            "zh-TW": "CoinGecko 的 morpho 在 Ethereum 列出這個地址"
-          },
-          "url": "https://www.coingecko.com/en/coins/morpho",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "Etherscan: verified contract ERC1967Proxy, creator Morpho: Deployer 2 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5, creation transaction 0x1a8de6a5ba99b4dcd91ff35424e2e3adf76b1de440f97e4a48b22bfe9a8f96e9",
-            "zh-TW": "Etherscan：已驗證合約 ERC1967Proxy，建立者 Morpho: Deployer 2 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5，建立交易 0x1a8de6a5ba99b4dcd91ff35424e2e3adf76b1de440f97e4a48b22bfe9a8f96e9"
-          },
-          "url": "https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code",
-          "result": "pass"
-        }
-      ]
-    },
-    "cbbtc": {
-      "role": {
-        "en": "In the card's list, but the swap cannot use it: cbBTC, issued by Coinbase",
-        "zh-TW": "卡片會列出，但這筆兌換用不到：Coinbase 發行的 cbBTC"
-      },
-      "sources": [
-        {
-          "text": {
-            "en": "A file of Coinbase's agentkit repository lists this address next to CBBTC. Coinbase's GitHub organization is not tied to Coinbase by a listing, so its site is not compared",
-            "zh-TW": "Coinbase 的 agentkit repo 有個檔案在 CBBTC 旁列出這個地址。沒有任何列表把這個 GitHub 組織連到 Coinbase，所以網站沒有比對"
-          },
-          "url": "https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts",
-          "result": "attention"
-        },
-        {
-          "text": {
-            "en": "CoinGecko's coin coinbase-wrapped-btc lists this address on Ethereum",
-            "zh-TW": "CoinGecko 的 coinbase-wrapped-btc 在 Ethereum 列出這個地址"
-          },
-          "url": "https://www.coingecko.com/en/coins/coinbase-wrapped-btc",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "Etherscan: verified contract FiatTokenProxy, creator Coinbase: Deployer 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05, creation transaction 0x09001d384305288073faa8f5cf3051c6cc13d55b66114064be17e12f71469753",
-            "zh-TW": "Etherscan：已驗證合約 FiatTokenProxy，建立者 Coinbase: Deployer 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05，建立交易 0x09001d384305288073faa8f5cf3051c6cc13d55b66114064be17e12f71469753"
-          },
-          "url": "https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code",
-          "result": "pass"
-        }
-      ]
-    },
     "universal-router-2.1.2": {
       "role": {
         "en": "Uniswap's Universal Router 2.1.2: it runs swaps from a list of commands, and pulls tokens through Permit2 only from the address that calls it",
@@ -380,78 +316,6 @@
             "zh-TW": "已驗證原始碼：所有 Permit2 轉帳都用 msgSender()（呼叫 execute 的地址）當付款人，沒有 owner 和 proxy"
           },
           "url": "https://sourcify.dev/server/v2/contract/1/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85",
-          "result": "pass"
-        }
-      ]
-    },
-    "usp": {
-      "role": {
-        "en": "In the card's list, but the swap cannot use it: USP, Piku's yield-optimized stablecoin",
-        "zh-TW": "卡片會列出，但這筆兌換用不到：Piku 的收益型穩定幣 USP"
-      },
-      "sources": [
-        {
-          "text": {
-            "en": "Piku's token and workflow contracts page lists this address next to USP",
-            "zh-TW": "Piku 的代幣與流程合約頁在 USP 旁列出這個地址"
-          },
-          "url": "https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "CoinGecko's coin usp-yield-optimized-stablecoin lists this address on Ethereum",
-            "zh-TW": "CoinGecko 的 usp-yield-optimized-stablecoin 在 Ethereum 列出這個地址"
-          },
-          "url": "https://www.coingecko.com/en/coins/usp-yield-optimized-stablecoin",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "Etherscan: verified contract TransparentUpgradeableProxy, creator Piku: Deployer 0xB8eaa4f956C6324435f4088cAe9cDa974C358508, creation transaction 0xe38f329a0426954fc83ec5bc5314f24dca2cfbcebefeb679cf43aebbbba70dda",
-            "zh-TW": "Etherscan：已驗證合約 TransparentUpgradeableProxy，建立者 Piku: Deployer 0xB8eaa4f956C6324435f4088cAe9cDa974C358508，建立交易 0xe38f329a0426954fc83ec5bc5314f24dca2cfbcebefeb679cf43aebbbba70dda"
-          },
-          "url": "https://etherscan.io/address/0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6#code",
-          "result": "pass"
-        }
-      ]
-    },
-    "weeth": {
-      "role": {
-        "en": "In the card's list, but the swap cannot use it: weETH, ether.fi's wrapped staked ETH",
-        "zh-TW": "卡片會列出，但這筆兌換用不到：ether.fi 的包裝質押 ETH weETH"
-      },
-      "sources": [
-        {
-          "text": {
-            "en": "ether.fi's deployments file (Deployed.s.sol) lists this address next to WEETH",
-            "zh-TW": "ether.fi 的部署檔（Deployed.s.sol）在 WEETH 旁列出這個地址"
-          },
-          "url": "https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "CoinGecko's coin wrapped-eeth lists this address on Ethereum",
-            "zh-TW": "CoinGecko 的 wrapped-eeth 在 Ethereum 列出這個地址"
-          },
-          "url": "https://www.coingecko.com/en/coins/wrapped-eeth",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "ether.fi's Immunefi program has this address in scope",
-            "zh-TW": "ether.fi 的 Immunefi 計畫把這個地址列在範圍內"
-          },
-          "url": "https://immunefi.com/bug-bounty/etherfi/",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "Etherscan: verified contract UUPSProxy, creator ether.fi: Deployer 0xf8a86ea1Ac39EC529814c377Bd484387D395421e, creation transaction 0xa034bdf7ec3b407125fcfbb786d908b0bcfd9976f2fbaf489776ba58b9db61ac",
-            "zh-TW": "Etherscan：已驗證合約 UUPSProxy，建立者 ether.fi: Deployer 0xf8a86ea1Ac39EC529814c377Bd484387D395421e，建立交易 0xa034bdf7ec3b407125fcfbb786d908b0bcfd9976f2fbaf489776ba58b9db61ac"
-          },
-          "url": "https://etherscan.io/address/0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee#code",
           "result": "pass"
         }
       ]

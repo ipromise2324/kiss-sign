@@ -55,12 +55,6 @@
         "en": "The vault's Morpho Blue market adapter; the cap id uses its address",
         "zh-TW": "vault 的 Morpho Blue 市場轉接合約，上限的 id 用它的地址"
       }
-    },
-    "vault-v2-factory": {
-      "role": {
-        "en": "The Morpho Vault V2 factory. It answers `isVaultV2` = true: it created this vault",
-        "zh-TW": "Morpho Vault V2 工廠，它回答 `isVaultV2` = true，這個 vault 是它建立的"
-      }
     }
   }
 }
