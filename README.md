@@ -90,9 +90,9 @@ pnpm kiss-sign key add github      # optional: lets your AI search GitHub and ra
 You need:
 
 - Node 22.21 or later and pnpm.
-- Free [Alchemy](https://dashboard.alchemy.com/), [drpc](https://drpc.org/login) and [Etherscan](https://etherscan.io/myapikey) keys. Every chain read asks both Alchemy and drpc, so a command that reads the chain refuses to run without either key.
+- Free [Alchemy](https://dashboard.alchemy.com/), [drpc](https://drpc.org/login) and [Etherscan](https://etherscan.io/myapikey) keys. Commands that read the chain ask both Alchemy and drpc, and refuse to run without either key.
 - Optionally, a [GitHub token](https://github.com/settings/personal-access-tokens/new), for building or reviewing templates. It changes no verdict.
-  - With it, your AI can search a protocol's GitHub organization for files that list an address, up to 20 per address, which can add a source to a report.
+  - With it, your AI can search a protocol's GitHub organization for files that list an address, reading up to 20 code-search hits per address, which can add a source to a report.
   - GitHub then allows 5,000 requests an hour instead of 60. Without it, every command on your computer shares the 60, and a build can wait for the limit to reset.
   - Make it a fine-grained token with repository access "Public repositories" and no permissions added. kiss-sign sends it only to `api.github.com`.
 - A hardware wallet that shows a Safe transaction's domain hash and message hash, or its safeTxHash.
@@ -147,7 +147,7 @@ Weak evidence is shown, not hidden. Here the Hyperithm vault is confirmed only b
 
 ![The Hyperithm vault confirmed only by its factory, flagged with low confidence](docs/readme/report-address-flagged.png)
 
-**Past transactions.** Other senders' executed transactions of this operation: here no Safe sent this deposit through VaultBundlesV1 in the year studied, and 2 EOAs made the same call, both of which succeeded.
+**Past transactions.** Other senders' executed transactions of this operation: here no Safe among the transactions studied sent this deposit through VaultBundlesV1, and 2 EOAs made the same call, both of which succeeded.
 
 You review an operation once. After that you review only what is new or changed: a report for another contract the template can call, a registry pull request, or a changed template. Merging is your confirmation. Then approve the template on your own computer, which records its hash so `verify` refuses any other version:
 
@@ -160,7 +160,7 @@ A changed template has a new hash, so `verify` refuses it until you approve it a
 
 ### 3. Fill a card
 
-In your own terminal, answer what the template asks: pick each contract, such as a token, a recipient or a vault, from a list with full addresses, and type each amount. You never type a value the protocol's app fills in by itself, such as a vault deposit's minimum shares: the program computes it from an on-chain read, the app's default slippage and a small margin the template states. A swap's minimum to receive is the exception: you type the slippage or the minimum, and the program compares it with an independent price.
+In your own terminal, answer what the template asks: pick each contract, such as a token, a recipient or a vault, from a list with full addresses, and type each amount. You never type a value the protocol's app fills in by itself, such as a vault deposit's minimum shares: the program computes it from an on-chain read, the app's default slippage and a small margin the template states. A swap's minimum to receive is the exception: you type the slippage or the minimum, and the program compares it with an independent price when a price feed covers both tokens.
 
 ![pnpm kiss-sign card new morpho/vault-deposit: the vault picked by number from a list with full addresses, the amount typed in whole tokens, and the minimum shares computed from previewDeposit with the protocol's default slippage and the template's margin](docs/readme/card-fill.png)
 
@@ -253,7 +253,7 @@ You choose the protocol; kiss-sign checks its state, its app's transactions and 
 | Attack | Stopped by |
 |---|---|
 | The protocol or vault you pick is unsafe right now, such as one just hacked, or a vault made yesterday with no holders | The report shows the protocol's TVL and hacks from DefiLlama, and the vault's size over 12 months and its holders, found through Alchemy and their balances read through both providers, for you to judge before you merge |
-| The protocol's app is compromised and sets a field you do not fill to a value no real user sends, such as a CoW order valid for a year | The 17 CoW orders other Safes pre-signed that fit the template were all valid for under 30 minutes, about what the app sets, so the template allows 12 hours at most: later is `MISMATCH`. Drift was exploited in April 2026 through pre-signed transactions that durable nonces kept valid |
+| The protocol's app is compromised and sets a field you do not fill to a value no real user sends, such as a CoW order valid for a year | Of 90 CoW orders other Safes pre-signed in the template's shape, half were valid for 29 minutes or less and the longest for about 11 hours, so the template allows 12 hours at most: later is `MISMATCH`. Drift was exploited in April 2026 through pre-signed transactions that durable nonces kept valid |
 | A contract is upgraded or reconfigured to act maliciously | The simulation: a balance or allowance change the card does not explain, `MISMATCH`. The recorded code: a registry contract whose code changed since your review, `MISMATCH`. Settings an admin can change, such as a vault's curator, fees or caps, and contracts that are not registry entries, such as the markets and oracles behind a vault, are not checked |
 | The protocol is hacked while your funds are in it | Nothing: kiss-sign checks only the transactions you sign |
 

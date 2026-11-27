@@ -224,8 +224,9 @@ Part of [the kiss-sign design](../design.md).
 - A signed message is read only from an API that serves it by its digest to one GET with no key, as one struct whose members are atomic, `string` or `bytes`.
   As of November 2026, CoW's order API fits with no `answer`, Velora's Delta API (`/delta/orders/hash/{hash}`) serves its order under `order` but signs a nested `Bridge` struct, 1inch's Fusion and orderbook APIs answer only with an API key, UniswapX's order API answers the order ABI-encoded inside a Permit2 witness of nested structs and arrays, and Bebop's order status is read by quote id, not by digest.
   None of those is read.
-- An approval `effects.approves` leaves open, which no shipped template declares today, can be spent by any order the spender's protocol accepts from the Safe, not only the order of this transaction: for CoW, any of the Safe's orders still valid, such as an earlier pre-signed one or a conditional order the Safe's fallback handler signs.
-  The approval is the card's sell amount, so no order can take more than that.
+- An allowance from the Safe can be spent by any order the spender's protocol accepts from the Safe, not only the order of this transaction: for CoW, any of the Safe's orders still valid, such as an earlier pre-signed one or a conditional order the Safe's fallback handler signs.
+  `cow/swap` approves nothing: it pre-signs an order against an allowance the Safe already gave CoW's vault relayer, which may be unlimited and stays open after the order fills, and `verify` does not judge an allowance the transaction does not change.
+  An approval a template's `effects.approves` leaves open is at most the card's sell amount, so no order can take more than that; no shipped template declares one today.
 - A CoW order is pre-signed for as long as its `validTo` allows.
   The `cow/swap` template binds `validTo` to at most 43200 seconds (12 hours) after the time of the block the transaction is judged on (`withinSeconds`), so a signed order can stay open for up to 12 hours; the card has no expiry of its own.
   The order fills at most once, at no less than the card's minimum, and the Safe can cancel it.

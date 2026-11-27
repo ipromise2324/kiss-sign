@@ -117,7 +117,7 @@ A contract is never written as an address: a rule names it from the contract reg
 - `effects.approves`.
   Optional: allowances from the Safe the transaction may leave open, each `{ "token": "card.<field>", "spender": <registry name>, "amount", "via"? }`.
   `via` is `erc20` (an ERC-20 `approve`, the default) or `permit2` (an allowance inside Permit2, `allowance(Safe, token, spender)`).
-  With `amount` a card amount, which must count that token, the allowance may end higher than it started, but at no more than that amount, summed over the card's operations that leave the same approval open, such as the approval a CoW order needs, which a solver spends after the Safe transaction (no shipped template declares one: `cow/swap` pre-signs an order whose sell token the Safe has already approved).
+  With `amount` a card amount, which must count that token, the allowance may end higher than it started, but at no more than that amount, summed over the card's operations that leave the same approval open, such as the approval a CoW order needs, which a solver spends after the Safe transaction (no shipped template declares one: `cow/swap` approves nothing, and pre-signs an order only for a sell token the Safe has already approved).
   With `amount` `unlimited` it may end at any amount, unlimited included, and template load requires the spender's registry entry to declare a standing allowance through the same `via` (see [Standing allowances](#standing-allowances)).
   Every other allowance still may not rise.
 - `effects.views`.
@@ -338,19 +338,19 @@ An instance field of a template reported per instance narrows further, to the in
 
 Card values per operation, covering the operations in the Safe's history.
 The rows are the shapes the design covers; the twelve shipped templates are listed in [What goes on GitHub](engine-and-chain.md#what-goes-on-github), and the other rows have a template only among the test fixtures, or none.
-Of the Vault V2 rows, the shipped templates cover only the submission and acceptance of an increase of a market's absolute cap:
+Of the Vault V2 rows, the shipped templates cover only the submission and acceptance of an increase of a market's absolute cap.
 
 | Operation | Card values | Bound by the template |
 |---|---|---|
 | Transfer ETH or a token | token, amount, recipient | none |
-| Deposit into a vault (Morpho, Fluid) | vault, amount; the fewest shares to receive, computed | the asset is the vault's asset; receiver is the Safe; the approval is exact and goes to the vault; the call's own bound guarantees at least the card's shares when the app's function has one, such as Morpho's price bound, and otherwise an `atLeast` effect checks them, such as Fluid's plain `deposit` |
+| Deposit into a vault (Morpho, Fluid) | vault, amount; the fewest shares to receive, computed | the asset is the vault's asset; receiver is the Safe; the approval is exact and goes to the contract that pulls it, the vault or Morpho's VaultBundlesV1; the call's own bound guarantees at least the card's shares when the app's function has one, such as Morpho's price bound, and otherwise an `atLeast` effect checks them, such as Fluid's plain `deposit` |
 | Withdraw or redeem from a vault | vault, amount or `all` (two templates); the most shares to burn, or for `all` the fewest assets to receive, computed | receiver and owner are the Safe; the call's own bound guarantees the card's limit when the app's function has one, such as Morpho's price bound, and otherwise an effect checks it |
 | Move all of one Morpho vault into another | both vaults; the fewest assets to redeem and the fewest new shares to receive, computed | the two vaults share one asset; each price bound guarantees its card limit |
 | Supply to a Morpho market | market, amount | the market's params are the registry market's; the Safe gives exactly the amount; its supply shares in the market increase and its debt and collateral do not change, read before and after |
 | Claim rewards (Fluid, Merkl) | reward token | recipient is the Safe; amount and proof are free; the Safe gives nothing and receives only the reward token |
 | Receive USDC through CCTP | token, amount | the target is Circle's MessageTransmitter; the message and attestation are free; the Safe gives nothing and receives exactly the amount of the token |
 | Swap through a router (Uniswap, Odos) | sell token, buy token, sell amount, minimum buy amount | recipient is the Safe; the router is a named contract; the Safe gives exactly the sell amount and gets at least the minimum |
-| Let Uniswap use a token | token | an unlimited ERC-20 approval to Permit2, or a Permit2 allowance of 2^160-1 to the Universal Router, each kept open only when its registry entry declares a standing allowance (see [Standing allowances](#standing-allowances); none does today); the app sends them before a first swap; a swap's template holds the ones the Safe has not done as its own first steps (see [Flow](flow.md#first-time-an-operation-is-done-build-its-template), step 1) |
+| Let Uniswap use a token | token | an unlimited ERC-20 approval to Permit2, or a Permit2 allowance of 2^160-1 to the Universal Router, each kept open only when its registry entry declares a standing allowance (see [Standing allowances](#standing-allowances); none does today); the app sends them before a first swap; a swap's template holds exact-amount versions of the ones the Safe has not done as its own first steps (see [Flow](flow.md#first-time-an-operation-is-done-build-its-template), step 1) |
 | Place a CoW Swap order from a Safe | sell token, buy token, sell amount, minimum buy amount | the transaction pre-signs one order, read by its digest (see [Signed messages](#signed-messages)): a sell order of exactly the sell amount, for at least the minimum, to the Safe, filled once, with ERC-20 balances and no fee; with an approval, it is exactly the sell amount to CoW's vault relayer, left open until an order spends it |
 | Cancel a queued transaction | the nonce to replace | 0 ETH to the Safe itself, no data |
 | Add an owner (Safe settings) | owner, threshold | the Safe calls itself, 0 ETH, `addOwnerWithThreshold`; its owners gain exactly the card's owner and its threshold ends at the card's |

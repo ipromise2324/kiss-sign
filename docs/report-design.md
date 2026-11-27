@@ -224,7 +224,7 @@ One radius, a gentle 6px, on everything that has a corner: tags, who-decides chi
 Every state icon carries `role="img"` and an `aria-label` in the page's language; info and chevron are `aria-hidden`.
 
 ### Check Strip
-The first-viewport summary: a grid of short named results between two hairlines, as many columns of at least 250px as fit and one column under 600px, each an icon, a name, an optional Ink 2 count in tabular figures, and an info tooltip. The verdict line below pairs an Ink 3 "建議" label, a state icon, one sentence and the AI tag.
+The first-viewport summary: a grid of short named results between two hairlines, as many columns of at least 250px as fit and one column at 600px and below, each an icon, a name, an optional Ink 2 count in tabular figures, and an info tooltip. The verdict line below pairs an Ink 3 "建議" label, a state icon, one sentence and the AI tag.
 
 ### Tooltip (CSS only)
 A focusable `span` (tabindex 0) holding the info icon and a `role="tooltip"` bubble tied with `aria-describedby`. Bubble: Popover Graphite, Strong Hairline border, 6px radius, 9px 12px padding, 14px Ink, max 320px. Hover reveals after a 250ms delay with a 120ms fade; keyboard focus reveals instantly. The bubble anchors to its trigger's left; in the check strip it stays within its cell, and on narrow screens it anchors to the row's left edge.
