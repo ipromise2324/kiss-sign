@@ -15,7 +15,7 @@ import { parseTemplate } from '../src/template/template.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
-const NAME = 'uniswap-swap-hook-usdc-usdt';
+const NAME = 'uniswap-swap-usdc-usdt';
 const recording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'perturb', `${NAME}.json`), 'utf8'));
 
 type Raw = { calls: { args: { deadline: unknown } }[] };

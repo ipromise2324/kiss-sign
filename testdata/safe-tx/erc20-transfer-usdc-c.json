@@ -1,0 +1,72 @@
+{
+  "chainId": 1,
+  "safe": "0xd07606650ad74b0251990de32269634ca28bbd09",
+  "block": 26501402,
+  "providers": [
+    "alchemy",
+    "drpc"
+  ],
+  "chain": {
+    "version": "1.4.1",
+    "domainSeparator": "0xe4cf4d988780f409b68692013db2552eb99035f2e8287254263de8175fa75145",
+    "transactionHash": "0xb1166cc8bcde9617671d2df7e18915bb1bb965d92635867f5e8ca89dd599e8bb"
+  },
+  "service": {
+    "safe": "0xd07606650ad74b0251990de32269634CA28bBD09",
+    "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "value": "0",
+    "data": "0xa9059cbb00000000000000000000000072eed2364f952a73d0db55d0f58adf3a963c754c00000000000000000000000000000000000000000000000000000005d21dba00",
+    "operation": 0,
+    "gasToken": "0x0000000000000000000000000000000000000000",
+    "safeTxGas": "0",
+    "baseGas": "0",
+    "gasPrice": "0",
+    "refundReceiver": "0x0000000000000000000000000000000000000000",
+    "nonce": "134",
+    "executionDate": "2026-11-26T19:16:23Z",
+    "submissionDate": "2026-11-26T19:16:10.331266Z",
+    "modified": "2026-11-26T19:16:29.864074Z",
+    "blockNumber": 26501402,
+    "transactionHash": "0xae878d787c376f5eb080865b09560be1fcb6bfde64aaa2a695f12839e8a9d676",
+    "safeTxHash": "0xb1166cc8bcde9617671d2df7e18915bb1bb965d92635867f5e8ca89dd599e8bb",
+    "proposer": "0x2f5926896BC7f9432392099bBc66526cEa300077",
+    "proposedByDelegate": null,
+    "executor": "0x2f5926896BC7f9432392099bBc66526cEa300077",
+    "isExecuted": true,
+    "isSuccessful": true,
+    "ethGasPrice": "237847615",
+    "maxFeePerGas": "275079903",
+    "maxPriorityFeePerGas": "150000000",
+    "gasUsed": 71521,
+    "fee": "17011099272415",
+    "payment": "0",
+    "origin": "{\"url\": \"https://app.safe.global\"}",
+    "dataDecoded": {
+      "method": "transfer",
+      "parameters": [
+        {
+          "name": "to",
+          "type": "address",
+          "value": "0x72eed2364f952A73d0Db55d0f58Adf3a963C754c"
+        },
+        {
+          "name": "value",
+          "type": "uint256",
+          "value": "25000000000"
+        }
+      ]
+    },
+    "confirmationsRequired": 1,
+    "confirmations": [
+      {
+        "owner": "0x2f5926896BC7f9432392099bBc66526cEa300077",
+        "submissionDate": "2026-11-26T19:16:10.331266Z",
+        "transactionHash": null,
+        "signature": "0x0322259e117a1fb7dac90b66cac25c23d244404fe9994dd50525629e7a8532dc51d8fd6cf876df02c4a2724bea5fc4c7d2f19cc8987d209ff2597c49af76416c1c",
+        "signatureType": "EOA"
+      }
+    ],
+    "trusted": true,
+    "signatures": "0x0322259e117a1fb7dac90b66cac25c23d244404fe9994dd50525629e7a8532dc51d8fd6cf876df02c4a2724bea5fc4c7d2f19cc8987d209ff2597c49af76416c1c"
+  }
+}

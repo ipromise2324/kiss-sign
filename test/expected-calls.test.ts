@@ -53,7 +53,7 @@ const selectors = (text: string) => [...text.matchAll(/-fn \S+ (0x[0-9a-f]{8}) /
 const targets = (text: string) => [...text.matchAll(/-to (0x[0-9a-fA-F]{40})/g)].map((m) => m[1]!.toLowerCase());
 
 test('a MultiSend of two calls is numbered #1 for the MultiSend, then #2 and #3, as check.sh numbers it', () => {
-  const { tree, text } = shown('fluid-deposit-usdt-other-safe', { operations: [{ template: 'fluid/vault-deposit', values: { vault: 'fluid-fusdt', amount: '150003888850' } }] });
+  const { tree, text } = shown('fluid-deposit-usdt-other-safe-base', { operations: [{ template: 'fluid/vault-deposit', values: { vault: 'fluid-fusdt', amount: '150003888850' } }] });
   assert.equal(tree.count, 3);
   assert.deepEqual(numbers(text), [1, 2, 3]);
   assert.deepEqual(selectors(text), ['0x8d80ff0a', '0x095ea7b3', '0x6e553f65']);

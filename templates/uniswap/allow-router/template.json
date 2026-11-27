@@ -3,7 +3,8 @@
   "card": {
     "token": {
       "kind": "contract",
-      "registryKind": "token"
+      "registryKind": "token",
+      "names": ["usdt"]
     }
   },
   "calls": [

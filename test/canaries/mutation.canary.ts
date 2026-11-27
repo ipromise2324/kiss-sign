@@ -57,7 +57,7 @@ test('every bound field of the shipped Morpho deposit, changed alone, gives a mi
   assert.equal(result.kind, 'resolved');
   const { card } = result as Extract<typeof result, { kind: 'resolved' }>;
   const blockTime = { kind: 'read', number: BigInt(service.blockNumber), time: BigInt(Date.parse(service.executionDate) / 1000) } as const;
-  assert.deepEqual(checkMutations(tx, card, templates, shipped, [], { blockTime }), { kind: 'pass', bound: 13, free: 1 }, `templates/${id}/template.json binds other fields than this canary pins; pnpm template implied-card ${id} morpho-vault-bundles-deposit shows its card`);
+  assert.deepEqual(checkMutations(tx, card, templates, shipped, [], { blockTime }), { kind: 'pass', bound: 13, free: 0 }, `templates/${id}/template.json binds other fields than this canary pins; pnpm template implied-card ${id} morpho-vault-bundles-deposit shows its card`);
 });
 
 test('a template that frees the deposited assets still passes, with one more free field and one fewer bound', () => {

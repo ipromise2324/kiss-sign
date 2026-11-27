@@ -72,7 +72,7 @@ for (const c of CASES) {
 
   test(`${c.name}: every bound field, changed alone, gives a mismatch`, () => {
     const tx = safeTx(c.name);
-    assert.deepEqual(checkMutations(tx, resolved(tx, cardOf(c)), templates, registry, [], ranIn(c.name)), { kind: 'pass', bound: 13, free: 1 });
+    assert.deepEqual(checkMutations(tx, resolved(tx, cardOf(c)), templates, registry, [], ranIn(c.name)), { kind: 'pass', bound: 13, free: 0 });
   });
 
   test(`${c.name}: a card with another amount is a mismatch at the approval and the deposit`, () => {

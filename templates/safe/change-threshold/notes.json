@@ -1,39 +1,66 @@
 {
+  "request": "I want to change my Safe's threshold. build me the template and its report",
   "title": {
-    "en": "Change the Safe's threshold",
+    "en": "Change a Safe's threshold",
     "zh-TW": "更改 Safe 的門檻"
   },
   "summary": {
-    "en": "The Safe calls its own `changeThreshold`, setting how many signers must sign before a transaction can run to the number you type. The list of signers does not change.",
-    "zh-TW": "Safe 呼叫自己的 `changeThreshold`，把需要幾個簽署人簽才能執行改成你填的數字。簽署人名單不變。"
+    "en": "The Safe calls its own `changeThreshold`, setting how many signers must sign each transaction to the number you type. The signers stay the same. The card asks only for the new threshold, the same as the Safe web app asks.",
+    "zh-TW": "Safe 呼叫自己的 `changeThreshold`，把每筆交易需要幾個簽署人簽名設成你填的數字，簽署人不變。卡片只問新門檻，跟 Safe web app 問的一樣。"
   },
   "verdict": {
     "status": "caution",
     "text": {
-      "en": "Moves no asset, but the threshold decides how many keys can control this Safe.",
-      "zh-TW": "不動任何資產，但門檻決定幾把鑰匙就能動這個 Safe。"
+      "en": "Moves no asset, but changes how many keys can move everything in this Safe: pick the number with care.",
+      "zh-TW": "不動任何資產，但改的是要幾把鑰匙才能動這個 Safe 的全部資產：數字要想清楚再選。"
     }
   },
   "pastTxsConclusion": {
-    "en": "All four misfits also change the owners, two with `enableModule` calls. kiss-sign refuses such a batch: each change is its own transaction.",
-    "zh-TW": "四筆不合的都同時改了簽署人，其中兩筆還呼叫 `enableModule`。kiss-sign 不接受這種批次，每個變更要各自一筆交易。"
+    "en": "Every misfit puts `changeThreshold` in one MultiSend with other changes: owner additions or swaps, `enableModule`, or another contract's calls. A card holds one change, so verify refuses such a batch; send each its own transaction.",
+    "zh-TW": "不合的全是在一個 MultiSend 裡把 `changeThreshold` 和別的變更綁在一起：新增或替換 owner、`enableModule`，或別的合約的呼叫。一張卡片只放一項變更，verify 會拒絕這種批次，每項要各自一筆交易。"
   },
   "flow": [],
-  "protocols": {},
   "judgments": [
     {
       "text": {
-        "en": "At a threshold of 1 any one signer alone can move all the assets; at a threshold equal to the number of signers, losing one key means the signers can never sign a transaction again. Then only a module already enabled could still act; it needs no signatures.",
-        "zh-TW": "門檻 1 表示任何一個簽署人就能動全部資產；門檻等於人數時，少一把鑰匙，簽署人就再也簽不出交易。那時只有事先啟用的 module 還能動，因為它不需要簽名。"
-      },
-      "recommendation": {
-        "en": "With three or more signers, set the threshold between the two, for example 2 of 3.",
-        "zh-TW": "有三個以上簽署人時，門檻介於兩者之間，例如 3 人設 2。"
+        "en": "A lower threshold lets fewer keys move every asset; 1 means any single signer can. A threshold equal to the number of signers means one lost key locks the Safe for good, unless a module already enabled can still act.",
+        "zh-TW": "門檻越低，越少把鑰匙就能動全部資產；設 1 代表任何一個簽署人都能。門檻等於簽署人數時，丟一把鑰匙 Safe 就永遠簽不出交易，除非事先啟用的 module 還能動。"
       },
       "sources": [
-        "https://github.com/safe-global/safe-smart-account/blob/186a21a74b327f17fc41217a927dea7064f74604/contracts/base/ModuleManager.sol#L61-L73",
-        "https://github.com/safe-global/safe-smart-account/blob/bf943f80fec5ac647159d26161446ac5d716a294/contracts/base/ModuleManager.sol#L81-L93"
-      ]
+        "https://github.com/safe-global/safe-smart-account/blob/bf943f80fec5ac647159d26161446ac5d716a294/contracts/base/OwnerManager.sol#L115-L126"
+      ],
+      "recommendation": {
+        "en": "Keep at least 2 signatures and one spare key: for example 2 of 3. verify checks only that the threshold ends at your number.",
+        "zh-TW": "至少要 2 個簽名，並留一把備用鑰匙：例如 3 人中 2 人。verify 只檢查門檻最後是你填的數字。"
+      }
+    },
+    {
+      "text": {
+        "en": "`changeThreshold` moves no asset: it only rewrites how many signatures each later transaction needs and logs `ChangedThreshold`. That number decides who can move the Safe's assets from then on.",
+        "zh-TW": "`changeThreshold` 不動任何資產：只改之後每筆交易需要的簽名數，並記下 `ChangedThreshold`。從此以後誰能動 Safe 的資產，就由這個數字決定。"
+      },
+      "sources": [
+        "https://docs.safe.global/reference-smart-account/owners/changeThreshold"
+      ],
+      "recommendation": {
+        "en": "Treat it as a change of control, not a housekeeping step: tell the other signers before you sign.",
+        "zh-TW": "把它當成控制權的變更，不是例行設定：簽之前先告訴其他簽署人。"
+      }
+    },
+    {
+      "text": {
+        "en": "Health: DefiLlama lists no Safe hack; the 1.3.0 and 1.4.x contracts were audited (G0 Group, Ackee). In Feb 2025 the Safe web app was altered to show Bybit's signers a false transaction; the contracts were not at fault.",
+        "zh-TW": "健康狀況：DefiLlama 沒有列 Safe 的駭客事件；1.3.0 和 1.4.x 合約有審計（G0 Group、Ackee）。2025 年 2 月 Safe web app 被竄改，讓 Bybit 的簽署人看到假交易；合約本身沒有問題。"
+      },
+      "sources": [
+        "https://github.com/safe-global/safe-smart-account/blob/186a21a74b327f17fc41217a927dea7064f74604/docs/audit_1_3_0.md",
+        "https://github.com/safe-global/safe-smart-account/blob/bf943f80fec5ac647159d26161446ac5d716a294/docs/audit_1_4_0.md",
+        "https://safe.global/blog/safe-ecosystem-foundation-statement"
+      ],
+      "recommendation": {
+        "en": "Trust the app's screen less than verify's output and the hashes on your hardware wallet.",
+        "zh-TW": "相信 verify 的輸出和硬體錢包上的雜湊，勝過 app 畫面。"
+      }
     }
   ],
   "reviews": {},
@@ -46,32 +73,32 @@
       "sources": [
         {
           "text": {
-            "en": "First found here. safe-deployments, the safe-global organization on GitHub, v1.3.0 gnosis_safe.json: canonical is 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552, same on main. Chain 1 also lists eip155, another address",
-            "zh-TW": "最先在這裡找到。GitHub 的 safe-global 組織，safe-deployments 的 v1.3.0 gnosis_safe.json：canonical 是 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552，main 相同。chain 1 另列 eip155，是別的地址"
+            "en": "safe-deployments (safe-global GitHub), v1.3.0 gnosis_safe.json at commit ca9cb0d: deployments canonical address 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552, contractName GnosisSafe, version 1.3.0",
+            "zh-TW": "safe-deployments（safe-global GitHub）v1.3.0 的 gnosis_safe.json，commit ca9cb0d：deployments canonical 地址為 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552，contractName GnosisSafe，version 1.3.0"
           },
           "url": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/gnosis_safe.json",
           "result": "pass"
         },
         {
           "text": {
-            "en": "safe-cli, also in the safe-global organization and so the same place: 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552 with the comment v1.3.0; the file on main lists the same address",
-            "zh-TW": "safe-cli，同屬 safe-global 組織，算同一個地方：0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552，旁註 v1.3.0；main 上的檔案列的是同一個地址"
+            "en": "safe-cli (same safe-global organization, so the same place): 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552 with the comment v1.3.0",
+            "zh-TW": "safe-cli（同一個 safe-global 組織，算同一個地方）：0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552，旁註 v1.3.0"
           },
           "url": "https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py",
           "result": "pass"
         },
         {
           "text": {
-            "en": "Safe docs, supported networks, v1.3.0: the page as served without scripts shows no address, so it confirms nothing",
-            "zh-TW": "Safe 文件的 supported networks，v1.3.0：不執行 script 時頁面沒有任何地址，所以不能確認什麼"
+            "en": "Safe docs, supported networks page: as served, without scripts, it shows no address, so it counts for nothing",
+            "zh-TW": "Safe 文件的 supported networks 頁面：直接讀取、不跑 script 時看不到地址，不算一個地方"
           },
-          "url": "https://docs.safe.global/advanced/smart-account-supported-networks?version=v1.3.0",
+          "url": "https://docs.safe.global/advanced/smart-account-supported-networks?version=v1.4.1",
           "result": "attention"
         },
         {
           "text": {
-            "en": "Etherscan: name tag Safe: Singleton 1.3.0, contract name GnosisSafe, creator 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26 (labelled Gnosis Safe: Deployer), through 0x4e59b44847b379578588920ca78fbf26c0b4956c (labelled Create2: Factory)",
-            "zh-TW": "Etherscan：名稱標籤 Safe: Singleton 1.3.0，合約名 GnosisSafe，建立者 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26（標籤 Gnosis Safe: Deployer），經由 0x4e59b44847b379578588920ca78fbf26c0b4956c（標籤 Create2: Factory）"
+            "en": "Etherscan: verified as GnosisSafe, created in 0x0b04589bdc11585fb98f270b1bfeff0fb3bbb3c56d35b104f62d8115d6f7c57f by 0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26, the same sender that deployed Safe 1.4.1",
+            "zh-TW": "Etherscan：驗證名稱 GnosisSafe，由 0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26 在 0x0b04589bdc11585fb98f270b1bfeff0fb3bbb3c56d35b104f62d8115d6f7c57f 建立，跟部署 Safe 1.4.1 的是同一個帳號"
           },
           "url": "https://etherscan.io/address/0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552#code",
           "result": "pass"
@@ -86,40 +113,32 @@
       "sources": [
         {
           "text": {
-            "en": "First found here. safe-deployments, the safe-global organization on GitHub, v1.4.1 safe.json: canonical is 0x41675C099F32341bf84BFc5382aF534df5C7461a, the one chain 1 lists; the file on main lists the same",
-            "zh-TW": "最先在這裡找到。GitHub 的 safe-global 組織，safe-deployments 的 v1.4.1 safe.json：canonical 是 0x41675C099F32341bf84BFc5382aF534df5C7461a，chain 1 列的就是它；main 上的檔案相同"
+            "en": "safe-deployments (safe-global GitHub), v1.4.1 safe.json at commit ca9cb0d: deployments canonical address 0x41675C099F32341bf84BFc5382aF534df5C7461a",
+            "zh-TW": "safe-deployments（safe-global GitHub）v1.4.1 的 safe.json，commit ca9cb0d：deployments canonical 地址為 0x41675C099F32341bf84BFc5382aF534df5C7461a"
           },
           "url": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.4.1/safe.json",
           "result": "pass"
         },
         {
           "text": {
-            "en": "safe-cli, also in the safe-global organization and so the same place: 0x41675C099F32341bf84BFc5382aF534df5C7461a with the comment v1.4.1; the file on main lists the same address",
-            "zh-TW": "safe-cli，同屬 safe-global 組織，算同一個地方：0x41675C099F32341bf84BFc5382aF534df5C7461a，旁註 v1.4.1；main 上的檔案列的是同一個地址"
+            "en": "safe-cli (same safe-global organization, so the same place): 0x41675C099F32341bf84BFc5382aF534df5C7461a with the comment v1.4.1",
+            "zh-TW": "safe-cli（同一個 safe-global 組織，算同一個地方）：0x41675C099F32341bf84BFc5382aF534df5C7461a，旁註 v1.4.1"
           },
           "url": "https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py",
           "result": "pass"
         },
         {
           "text": {
-            "en": "Safe docs, ERC-4337 permissionless guide: the page as served shows const SAFE_SINGLETON_ADDRESS = '0x41675C099F32341bf84BFc5382aF534df5C7461a'",
-            "zh-TW": "Safe 文件的 ERC-4337 permissionless 指南：不執行 script 的頁面寫著 const SAFE_SINGLETON_ADDRESS = '0x41675C099F32341bf84BFc5382aF534df5C7461a'"
+            "en": "Safe docs, ERC-4337 permissionless guide, Contracts: as served it shows const SAFE_SINGLETON_ADDRESS = '0x41675C099F32341bf84BFc5382aF534df5C7461a'",
+            "zh-TW": "Safe 文件的 ERC-4337 permissionless 指南 Contracts 段：直接讀取的頁面寫著 const SAFE_SINGLETON_ADDRESS = '0x41675C099F32341bf84BFc5382aF534df5C7461a'"
           },
           "url": "https://docs.safe.global/advanced/erc-4337/guides/permissionless-detailed",
           "result": "pass"
         },
         {
           "text": {
-            "en": "Safe docs, supported networks, v1.4.1: the page as served without scripts shows no address, so it confirms nothing",
-            "zh-TW": "Safe 文件的 supported networks，v1.4.1：不執行 script 時頁面沒有任何地址，所以不能確認什麼"
-          },
-          "url": "https://docs.safe.global/advanced/smart-account-supported-networks?version=v1.4.1",
-          "result": "attention"
-        },
-        {
-          "text": {
-            "en": "Etherscan: name tag Safe 1.4.1, contract name Safe, creator 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26 (labelled Gnosis Safe: Deployer), through 0x914d7fec6aac8cd542e72bca78b30650d45643d7 (no name tag)",
-            "zh-TW": "Etherscan：名稱標籤 Safe 1.4.1，合約名 Safe，建立者 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26（標籤 Gnosis Safe: Deployer），經由 0x914d7fec6aac8cd542e72bca78b30650d45643d7（沒有名稱標籤）"
+            "en": "Etherscan: verified as Safe, created in 0x8a72b65242de000b5fdf004fe8aea138d98e9a8ed9ade82d8fa7f0c0601786cf by 0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26, the same sender that deployed Safe 1.3.0",
+            "zh-TW": "Etherscan：驗證名稱 Safe，由 0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26 在 0x8a72b65242de000b5fdf004fe8aea138d98e9a8ed9ade82d8fa7f0c0601786cf 建立，跟部署 Safe 1.3.0 的是同一個帳號"
           },
           "url": "https://etherscan.io/address/0x41675C099F32341bf84BFc5382aF534df5C7461a#code",
           "result": "pass"
@@ -129,8 +148,8 @@
   },
   "fields": {
     "1.changeThreshold._threshold": {
-      "en": "The new threshold, between 1 and the number of signers.",
-      "zh-TW": "新的門檻，介於 1 和簽署人數之間。"
+      "en": "The number of signatures every later transaction needs. It must be from 1 to the number of signers, or the transaction fails. The signers do not change.",
+      "zh-TW": "之後每筆交易需要的簽名數。必須介於 1 和簽署人數之間，否則交易失敗。簽署人不變。"
     }
   }
 }

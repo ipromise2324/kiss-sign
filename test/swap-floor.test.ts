@@ -651,7 +651,7 @@ for (const [what, params] of [
 
 test('each shipped swap template loads with a floor on it', () => {
   const registry = loadRegistry(ROOT);
-  const tried = ['uniswap/swap', 'uniswap/swap-no-hook', 'cow/swap', 'cow/swap-approve'];
+  const tried = ['uniswap/swap', 'cow/swap'];
   for (const id of tried) {
     const raw = JSON.parse(readFileSync(join(ROOT, 'templates', id, 'template.json'), 'utf8'));
     raw.card['min-buy'].floor = { sells: 'sell-amount' };

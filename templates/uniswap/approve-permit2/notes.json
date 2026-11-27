@@ -1,193 +1,159 @@
 {
   "title": {
-    "en": "Give Uniswap's Permit2 an allowance for one token (unlimited)",
-    "zh-TW": "授權 Uniswap 的 Permit2 使用一個代幣（無上限）"
+    "en": "Let Permit2 use the Safe's USDT: the approval Uniswap's app asks before a first swap",
+    "zh-TW": "讓 Permit2 動用 Safe 的 USDT：Uniswap app 第一次兌換前要求的授權"
   },
   "summary": {
-    "en": "The Safe calls `approve` on the token you pick, giving Permit2 an unlimited allowance. Uniswap's documented swap flow asks for this approval once per token. Permit2 moves the token only through a separate allowance the Safe gives a contract in Permit2, or through a Permit2 message the Safe has signed.",
-    "zh-TW": "Safe 對你選的代幣呼叫 `approve`，把無上限的額度給 Permit2。Uniswap 文件寫的 swap 流程，每個代幣要先做一次這個授權。Permit2 只依兩種東西轉代幣：Safe 在 Permit2 另外給某個合約的授權，或 Safe 簽過的 Permit2 訊息。"
+    "en": "The Safe calls USDT's `approve` to give Uniswap's Permit2 an unlimited allowance, the first of the steps the Uniswap app asks before a swap. No token moves. verify refuses any other spender or amount, and any other change to the Safe's balances or allowances.",
+    "zh-TW": "Safe 呼叫 USDT 的 `approve`，給 Uniswap 的 Permit2 無上限的授權，這是 Uniswap app 兌換前要求的第一步。沒有代幣移動。verify 拒絕其他的 spender 或數量，也拒絕 Safe 餘額或授權的任何其他變化。"
   },
   "verdict": {
     "status": "caution",
     "text": {
-      "en": "The unlimited allowance stays; it is used through a separate Permit2 allowance or a Permit2 message the Safe signed.",
-      "zh-TW": "無上限授權會留著；要 Safe 另外在 Permit2 授權，或簽過 Permit2 訊息，才會被動用。"
+      "en": "The unlimited allowance stays open: Permit2 can then move USDT on any Permit2 approval or message the Safe signs.",
+      "zh-TW": "無上限的授權會一直留著：之後 Safe 簽的任何 Permit2 授權或訊息，Permit2 都能據以轉走 USDT。"
     }
   },
   "pastTxsConclusion": {
-    "en": "Neither search covers the year: each stopped at its 50-page cap, at 13.8 hours (usdc) and 45.8 days (morpho). No Safe approval to Permit2 holds for this sample only. 182 of the 183 Safes on morpho are one identical batch approving another spender. All 4 fits are EOAs.",
-    "zh-TW": "兩次搜尋都沒涵蓋一整年：都停在 50 頁上限，usdc 只到 13.8 小時，morpho 只到 45.8 天。「沒有 Safe 授權 Permit2」只對這次樣本成立。morpho 的 183 個 Safe 有 182 個是同一種批次，授權的是別的 spender。符合的 4 筆都是 EOA。"
+    "en": "Other Safes also sent this approval inside a MultiSend with the Permit2 allowance and the router's swap, which a card of the three operations covers. EOAs often reset USDT to 0 or approved an exact amount; this template refuses both.",
+    "zh-TW": "其他 Safe 也把這筆授權和 Permit2 授權、router 兌換放在同一個 MultiSend，這要用三個操作的卡片。EOA 常把 USDT 授權歸零或只授權剛好的數量；這個模板兩者都拒絕。"
   },
-  "flow": [],
-  "protocols": {},
   "judgments": [
     {
       "text": {
-        "en": "Once Permit2 has the allowance, a Permit2 message the Safe signs for this token can move it, and Safe messages (EIP-1271) do not go through kiss-sign.",
-        "zh-TW": "授權給 Permit2 之後，Safe 對這個代幣簽的 Permit2 訊息就能動用它，而 Safe 訊息（EIP-1271）不經過 kiss-sign。"
+        "en": "After this approval, a Permit2 message the Safe signs (an off-chain signature checked through the Safe's isValidSignature) can move the Safe's USDT to anyone it names, with no further transaction of the Safe.",
+        "zh-TW": "授權之後，Safe 簽的 Permit2 訊息（鏈下簽名，經 Safe 的 isValidSignature 驗證）就能把 Safe 的 USDT 轉給訊息指定的任何人，不需要 Safe 再發交易。"
+      },
+      "sources": [
+        "https://github.com/Uniswap/permit2/blob/cc56ad0f3439c502c246fc5cfcc3db92bb8b7219/src/SignatureTransfer.sol",
+        "https://github.com/Uniswap/permit2/blob/cc56ad0f3439c502c246fc5cfcc3db92bb8b7219/src/libraries/SignatureVerification.sol"
+      ],
+      "recommendation": {
+        "en": "Never sign a Permit2 message with the Safe. Swap through transactions that verify checks, and revoke the allowance when you stop using Uniswap.",
+        "zh-TW": "不要用 Safe 簽 Permit2 訊息。用 verify 檢查得到的交易來兌換，不再用 Uniswap 時撤銷授權。"
+      }
+    },
+    {
+      "text": {
+        "en": "USDT refuses to change a nonzero allowance to another nonzero one. When the Safe already has a smaller allowance to Permit2, the app first sends a reset to 0, which this template gives MISMATCH.",
+        "zh-TW": "USDT 不讓非零的授權直接改成另一個非零值。Safe 已經給 Permit2 較小的授權時，app 會先送一筆歸零的交易，這個模板對它的結果是 MISMATCH。"
+      },
+      "sources": [
+        "https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code",
+        "https://github.com/Uniswap/interface/blob/675b2c959406a7b92ba025888fe19bd09c9b7dfe/packages/uniswap/src/features/transactions/swap/review/hooks/useTokenApprovalInfo.ts"
+      ],
+      "recommendation": {
+        "en": "If the app asks for a reset first, do not sign it on this template's MISMATCH; ask for a template for the reset.",
+        "zh-TW": "app 要先歸零時，不要在這個模板給 MISMATCH 的情況下簽；請另外要一個歸零用的模板。"
+      }
+    },
+    {
+      "text": {
+        "en": "Tether's owner can pause USDT, blacklist an address, or deprecate the contract so `approve` forwards to a new contract it names. Read on chain on 2026-11-27: not paused, not deprecated.",
+        "zh-TW": "Tether 的 owner 可以暫停 USDT、把地址列入黑名單，或宣告合約停用，讓 `approve` 轉給它指定的新合約。2026-11-27 鏈上讀到：沒有暫停，沒有停用。"
+      },
+      "sources": [
+        "https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code"
+      ],
+      "recommendation": {
+        "en": "If Tether announces a move of USDT to a new contract, ask for this report to be made again before you sign.",
+        "zh-TW": "Tether 宣布 USDT 換新合約時，簽之前請重做這份報告。"
+      }
+    },
+    {
+      "text": {
+        "en": "The app sends this approval alone, or in one MultiSend with the Permit2 allowance to the router and the swap. This template covers it alone; the MultiSend needs a card of uniswap/approve-permit2, uniswap/allow-router and uniswap/swap.",
+        "zh-TW": "app 會單獨送這筆授權，或把它和給 router 的 Permit2 授權、兌換放在同一個 MultiSend。這個模板只管單獨那筆；MultiSend 要用 uniswap/approve-permit2、uniswap/allow-router、uniswap/swap 三個操作的卡片。"
       },
       "recommendation": {
-        "en": "Before signing any Permit2 message, check the spender. When you stop using Uniswap, set the allowance back to 0.",
-        "zh-TW": "簽任何 Permit2 訊息前確認 spender；不再用 Uniswap 時把授權改回 0。"
+        "en": "Build the card from what the app proposes: this template alone, or all three in one card. A MISMATCH because of another shape means asking for its template.",
+        "zh-TW": "照 app 提出的交易做卡片：單獨用這個模板，或三個一起放一張卡。因為形狀不同而 MISMATCH 時，請要那個形狀的模板。"
       }
     }
   ],
-  "reviews": {},
   "entries": {
-    "usdc": {
-      "role": {
-        "en": "A token you can pick: USDC, issued by Circle",
-        "zh-TW": "可選的代幣：Circle 發行的 USDC"
-      },
-      "sources": [
-        {
-          "text": {
-            "en": "Circle's contract address page lists this address next to Ethereum",
-            "zh-TW": "Circle 的合約地址頁在 Ethereum 旁列出這個地址"
-          },
-          "url": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "CoinGecko's contract lookup answers the coin usd-coin at this address",
-            "zh-TW": "CoinGecko 用這個地址查到的幣是 usd-coin"
-          },
-          "url": "https://api.coingecko.com/api/v3/coins/ethereum/contract/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "Coinbase's agentkit file names it USDC under ethereum-mainnet (another issuer's file, so only a lead)",
-            "zh-TW": "Coinbase agentkit 的檔案在 ethereum-mainnet 下以 USDC 列出它（不是發行方的檔案，只當線索）"
-          },
-          "url": "https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts",
-          "result": "attention"
-        },
-        {
-          "text": {
-            "en": "Etherscan: contract name FiatTokenProxy, creator 0x95ba4cf87d6723ad9c0db21737d862be80e93911, labelled Circle: Deployer",
-            "zh-TW": "Etherscan：合約名 FiatTokenProxy，創建者 0x95ba4cf87d6723ad9c0db21737d862be80e93911，標籤 Circle: Deployer"
-          },
-          "url": "https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code",
-          "result": "pass"
-        }
-      ]
-    },
     "usdt": {
       "role": {
-        "en": "A token you can pick: USDT, issued by Tether",
-        "zh-TW": "可選的代幣：Tether 發行的 USDT"
+        "en": "The token whose allowance the Safe gives: USDT, issued by Tether",
+        "zh-TW": "Safe 給出授權的代幣：Tether 發行的 USDT"
       },
       "sources": [
         {
           "text": {
-            "en": "Tether's supported protocols page lists this address as its Ethereum contract",
-            "zh-TW": "Tether 的支援協議頁列出這個地址為它在 Ethereum 的合約"
+            "en": "Tether's page lists the address next to \"USD₮ contract address\", read again on 2026-11-27",
+            "zh-TW": "Tether 的頁面在「USD₮ contract address」旁列出這個地址，2026-11-27 再讀一次"
           },
           "url": "https://tether.to/en/supported-protocols/",
           "result": "pass"
         },
         {
           "text": {
-            "en": "CoinGecko's contract lookup answers the coin tether at this address",
-            "zh-TW": "CoinGecko 用這個地址查到的幣是 tether"
+            "en": "CoinGecko lists the coin tether at this address",
+            "zh-TW": "CoinGecko 在這個地址列的代幣是 tether"
           },
-          "url": "https://api.coingecko.com/api/v3/coins/ethereum/contract/0xdac17f958d2ee523a2206206994597c13d831ec7",
+          "url": "https://www.coingecko.com/en/coins/tether",
           "result": "pass"
         },
         {
           "text": {
-            "en": "Etherscan: contract name TetherToken, creator 0x36928500bc1dcd7af6a2b4008875cc336b927d57, labelled Bitfinex: Deployer 5",
-            "zh-TW": "Etherscan：合約名 TetherToken，創建者 0x36928500bc1dcd7af6a2b4008875cc336b927d57，標籤 Bitfinex: Deployer 5"
+            "en": "Uniswap's StablePair hook deployments page lists it as USDT of the USDC / USDT pool on Ethereum",
+            "zh-TW": "Uniswap 的 StablePair hook 部署頁在 Ethereum 的 USDC / USDT 池子把它列為 USDT"
+          },
+          "url": "https://developers.uniswap.org/llms.mdx/docs/protocols/uniswap-labs-hooks/stable-pair/deployments",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: verified as TetherToken, solc 0.4.18; creation transaction 0x2f1c5c2b44f771e942a8506148e256f94f1a464babc938ae0690c6e34cd79190, sent by 0x36928500Bc1dCd7af6a2B4008875CC336b927D57",
+            "zh-TW": "Etherscan：驗證為 TetherToken，solc 0.4.18；創建交易 0x2f1c5c2b44f771e942a8506148e256f94f1a464babc938ae0690c6e34cd79190，由 0x36928500Bc1dCd7af6a2B4008875CC336b927D57 送出"
           },
           "url": "https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code",
           "result": "pass"
         }
       ]
     },
-    "morpho": {
-      "role": {
-        "en": "A token you can pick: Morpho's governance token",
-        "zh-TW": "可選的代幣：Morpho 的治理代幣"
-      },
-      "sources": [
-        {
-          "text": {
-            "en": "Morpho's addresses page lists MORPHO at this address",
-            "zh-TW": "Morpho 的地址頁列出 MORPHO 為這個地址"
-          },
-          "url": "https://docs.morpho.org/developers/contracts/addresses/",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "CoinGecko's contract lookup answers the coin morpho at this address",
-            "zh-TW": "CoinGecko 用這個地址查到的幣是 morpho"
-          },
-          "url": "https://api.coingecko.com/api/v3/coins/ethereum/contract/0x58d97b57bb95320f9a05dc918aef65434969c2b2",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "Etherscan: contract name ERC1967Proxy, creator 0x937ce2d6c488b361825d2db5e8a70e26d48afed5, labelled Morpho: Deployer 2",
-            "zh-TW": "Etherscan：合約名 ERC1967Proxy，創建者 0x937ce2d6c488b361825d2db5e8a70e26d48afed5，標籤 Morpho: Deployer 2"
-          },
-          "url": "https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code",
-          "result": "pass"
-        }
-      ]
-    },
     "permit2": {
       "role": {
-        "en": "Uniswap's Permit2: it keeps token allowances for users, and moves tokens by those allowances or by a user's signed Permit2 message",
-        "zh-TW": "Uniswap 的 Permit2：替使用者保管代幣授權，依這些授權或使用者簽的 Permit2 訊息轉代幣"
+        "en": "Uniswap's Permit2, the spender: it keeps token allowances for users and moves tokens by them or by a user's signed Permit2 message",
+        "zh-TW": "Uniswap 的 Permit2，即 spender：替使用者保管代幣授權，依這些授權或使用者簽的 Permit2 訊息轉代幣"
       },
       "sources": [
         {
           "text": {
-            "en": "Uniswap's v4 deployments page lists Permit2 at this address under Ethereum",
-            "zh-TW": "Uniswap 的 v4 部署頁在 Ethereum 下列出 Permit2 為這個地址"
+            "en": "Uniswap's v4 deployments page lists the address in the Permit2 row under Ethereum, read again on 2026-11-27",
+            "zh-TW": "Uniswap v4 部署頁在 Ethereum 的 Permit2 列出這個地址，2026-11-27 再讀一次"
           },
           "url": "https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments",
           "result": "pass"
         },
         {
           "text": {
-            "en": "Uniswap's permit2-sdk constants file sets PERMIT2_ADDRESS to this address; the tip of main too",
-            "zh-TW": "Uniswap 的 permit2-sdk 常數檔把 PERMIT2_ADDRESS 設為這個地址，main 最新版也相同"
+            "en": "Uniswap/sdks: PERMIT2_ADDRESS is this address at the pinned commit and at main's tip",
+            "zh-TW": "Uniswap/sdks：PERMIT2_ADDRESS 是這個地址，釘住的 commit 和 main 最新版都一樣"
           },
           "url": "https://github.com/Uniswap/sdks/blob/8ae0425c57e1699b0ae48ebb3077a2f526ae3818/sdks/permit2-sdk/src/constants.ts",
           "result": "pass"
         },
         {
           "text": {
-            "en": "Uniswap's Permit2 docs: the same address on every chain Uniswap supports except zkSync",
-            "zh-TW": "Uniswap 的 Permit2 文件：除了 zkSync，每條鏈都是這個地址"
+            "en": "Uniswap/contracts deployments file for chain 1 lists it under Permit2",
+            "zh-TW": "Uniswap/contracts 的 chain 1 部署檔把它列在 Permit2 下"
           },
-          "url": "https://developers.uniswap.org/docs/protocols/permit2/overview",
+          "url": "https://github.com/Uniswap/contracts/blob/064a8db9b34117c3abb9d7ca90ff51f91430e83d/deployments/1.md",
           "result": "pass"
         },
         {
           "text": {
-            "en": "Etherscan: contract name Permit2, creator 0xd32ff78579352ca78f416120a9f68b65c410871b, labelled Uniswap: Permit2 Deployer",
-            "zh-TW": "Etherscan：合約名 Permit2，創建者 0xd32ff78579352ca78f416120a9f68b65c410871b，標籤 Uniswap: Permit2 Deployer"
+            "en": "Etherscan: verified as Permit2, solc 0.8.17; creation transaction 0xf2f1fe96c16ee674bb7fcee166be52465a418927d124f5f1d231b36eae65d377, sent by 0xD32Ff78579352cA78f416120A9f68b65c410871b through the public CREATE2 deployer",
+            "zh-TW": "Etherscan：驗證為 Permit2，solc 0.8.17；創建交易 0xf2f1fe96c16ee674bb7fcee166be52465a418927d124f5f1d231b36eae65d377，由 0xD32Ff78579352cA78f416120A9f68b65c410871b 經公開的 CREATE2 deployer 送出"
           },
           "url": "https://etherscan.io/address/0x000000000022D473030F116dDEE9F6B43aC78BA3#code",
           "result": "pass"
         },
         {
           "text": {
-            "en": "AllowanceTransfer source at main's tip: transferFrom spends only allowance[from][token][msg.sender]. No owner or upgrade found by grep in Permit2's main files (its libraries not searched)",
-            "zh-TW": "AllowanceTransfer 原始碼（main 最新版）：transferFrom 只動用 allowance[from][token][msg.sender]。在 Permit2 的主要檔案用 grep 沒找到 owner 或升級功能（libraries 沒搜）"
-          },
-          "url": "https://github.com/Uniswap/permit2/blob/cc56ad0f3439c502c246fc5cfcc3db92bb8b7219/src/AllowanceTransfer.sol",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "SignatureTransfer source: a transfer needs the owner's signature over a message; the caller is hashed in as its spender",
-            "zh-TW": "SignatureTransfer 原始碼：轉帳要 owner 對訊息的簽名，呼叫者會當成 spender 算進訊息 hash"
+            "en": "Permit2 source (SignatureTransfer): a transfer spends the owner's token allowance to Permit2 on the owner's signature alone, checked by isValidSignature for a contract such as a Safe",
+            "zh-TW": "Permit2 原始碼（SignatureTransfer）：只要有 owner 的簽名就能動用 owner 給 Permit2 的代幣授權，合約（例如 Safe）的簽名用 isValidSignature 驗證"
           },
           "url": "https://github.com/Uniswap/permit2/blob/cc56ad0f3439c502c246fc5cfcc3db92bb8b7219/src/SignatureTransfer.sol",
           "result": "pass"
@@ -197,12 +163,12 @@
   },
   "fields": {
     "1.approve.spender": {
-      "en": "The spender address: Permit2 0x000000000022D473030F116dDEE9F6B43aC78BA3.",
-      "zh-TW": "被授權的地址：Permit2 0x000000000022D473030F116dDEE9F6B43aC78BA3。"
+      "en": "Who may spend the Safe's USDT: Permit2. Permit2 moves it only for a spender the Safe approved on Permit2 itself, or on a Permit2 message the Safe signed.",
+      "zh-TW": "誰可以動用 Safe 的 USDT：Permit2。Permit2 只替 Safe 在 Permit2 上授權過的 spender，或依 Safe 簽的 Permit2 訊息轉它。"
     },
     "1.approve.value": {
-      "en": "The allowance, 2^256-1, unlimited; the approve hook in Uniswap's interface code passes this value.",
-      "zh-TW": "授權額度 2^256-1，無上限；Uniswap interface 原始碼的 approve hook 傳的就是這個值。"
+      "en": "The allowance: 2^256-1, the largest number, which the app sends. USDT never lowers an allowance of this size when it is spent, so the app asks once per token.",
+      "zh-TW": "授權數量：2^256-1，最大的數，app 送的就是它。這麼大的授權 USDT 用掉時不會減少，所以 app 每個代幣只要一次。"
     }
   }
 }

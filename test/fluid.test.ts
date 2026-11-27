@@ -54,9 +54,9 @@ const firstArg = (tx: SafeTx): bigint => BigInt(`0x${bytesToHex(hexToBytes(tx.da
 type Case = { readonly name: string; readonly template: string; readonly vault: string; readonly bound: number };
 
 const CASES: readonly Case[] = [
-  { name: 'fluid-deposit-usdt', template: 'fluid/vault-deposit', vault: 'fluid-fusdt', bound: 8 },
-  { name: 'fluid-deposit-usdt-other-safe', template: 'fluid/vault-deposit', vault: 'fluid-fusdt', bound: 8 },
-  { name: 'fluid-deposit-usdc', template: 'fluid/vault-deposit', vault: 'fluid-fusdc', bound: 8 },
+  { name: 'fluid-deposit-usdt-base', template: 'fluid/vault-deposit', vault: 'fluid-fusdt', bound: 8 },
+  { name: 'fluid-deposit-usdt-other-safe-base', template: 'fluid/vault-deposit', vault: 'fluid-fusdt', bound: 8 },
+  { name: 'fluid-deposit-usdc-base', template: 'fluid/vault-deposit', vault: 'fluid-fusdc', bound: 8 },
   { name: 'fluid-withdraw-usdc', template: 'fluid/vault-withdraw', vault: 'fluid-fusdc', bound: 5 },
   { name: 'fluid-withdraw-usdt-other-safe', template: 'fluid/vault-withdraw', vault: 'fluid-fusdt', bound: 5 },
   { name: 'fluid-redeem-usdt', template: 'fluid/vault-redeem', vault: 'fluid-fusdt', bound: 5 },
@@ -109,20 +109,20 @@ for (const c of CASES) {
 }
 
 test('a deposit whose card names another vault is a mismatch at every call target and at the spender', () => {
-  const c = caseNamed('fluid-deposit-usdt');
+  const c = caseNamed('fluid-deposit-usdt-base');
   const tx = safeTx(c.name);
   const card = impliedCard({ ...c, vault: 'fluid-fusdc' }, tx);
   assert.deepEqual(mismatchAt(check(tx, card)), ['multiSend[0].to', 'multiSend[0].approve.spender', 'multiSend[1].to']);
 });
 
 test('a deposit whose card amount differs from the approval and the deposit mismatches at both', () => {
-  const c = caseNamed('fluid-deposit-usdc');
+  const c = caseNamed('fluid-deposit-usdc-base');
   const tx = safeTx(c.name);
   assert.deepEqual(mismatchAt(check(tx, impliedCard(c, tx, firstArg(tx) - 1n))), ['multiSend[0].approve.value', 'multiSend[1].deposit.assets']);
 });
 
 test('a deposit card naming a Morpho vault is refused before any check', () => {
-  const tx = safeTx('fluid-deposit-usdc');
+  const tx = safeTx('fluid-deposit-usdc-base');
   const result = resolveCard({ operations: [{ template: 'fluid/vault-deposit', values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount: '1' } }] }, { templates, registry, addressBook: new Map(), safe: tx.safe });
   assert.deepEqual(result.kind === 'refused' ? [result.reason, result.detail] : result.kind, ['wrong-protocol', 'steakhouse-prime-usdc-v2-0f51 is a vault of morpho-blue (its factory vault-v2-factory), not of fluid-lending']);
 });
@@ -165,8 +165,8 @@ const executedOf = (observed: Observed) => observed as Extract<Observed, { kind:
 const judge = (tx: SafeTx, observed: Observed, card: Card): EffectVerdict => judgeEffects(observed, resolved(tx, card), templates, registry);
 
 test('a USDT deposit gives exactly the card amount for fUSDT, and its exact approval, which returns no value, is spent', async () => {
-  const c = caseNamed('fluid-deposit-usdt');
-  const { tx, simulated, receipt } = await observations('fluid-deposit-usdt');
+  const c = caseNamed('fluid-deposit-usdt-base');
+  const { tx, simulated, receipt } = await observations('fluid-deposit-usdt-base');
   for (const observed of [simulated, receipt]) {
     const { tokens, allowances } = executedOf(observed);
     assert.equal(tokens.get(addressOf('usdt')), -firstArg(tx));
@@ -182,8 +182,8 @@ test('a USDT deposit gives exactly the card amount for fUSDT, and its exact appr
 });
 
 test('an approval the deposit leaves open is a mismatch', async () => {
-  const c = caseNamed('fluid-deposit-usdt');
-  const { tx, receipt } = await observations('fluid-deposit-usdt');
+  const c = caseNamed('fluid-deposit-usdt-base');
+  const { tx, receipt } = await observations('fluid-deposit-usdt-base');
   const open = { token: addressOf('usdt'), spender: addressOf('fluid-fusdt'), before: 0n, after: 1n };
   assert.deepEqual(judge(tx, { ...executedOf(receipt), allowances: [open] }, impliedCard(c, tx)), { kind: 'mismatch', findings: [{ kind: 'open-allowance', ...open }] });
 });

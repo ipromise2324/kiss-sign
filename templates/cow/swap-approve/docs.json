@@ -1,4 +1,0 @@
-{
-  "approve(address,uint256)": { "contract": "usdc", "standard": "erc-20" },
-  "setPreSignature(bytes,bool)": { "contract": "gpv2-settlement", "url": "https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/src/contracts/mixins/GPv2Signing.sol" }
-}

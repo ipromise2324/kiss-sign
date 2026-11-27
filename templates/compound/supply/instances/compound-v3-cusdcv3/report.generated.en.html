@@ -333,10 +333,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <div class="main">
 
 <header>
-  <h1><span class="aiw" data-ai><span>Supply USDC to a Compound III market (Comet)</span><span class="byai">AI research</span></span></h1>
+  <figure class="request"><figcaption>Your request, as you wrote it, when this template was built</figcaption><blockquote>I want to supply USDC to Compound&#39;s cUSDCv3. build me the template and its report</blockquote></figure>
+  <h1><span class="aiw" data-ai><span>Supply the base asset to a Compound III market (Comet)</span><span class="byai">AI research</span></span></h1>
   <span class="opid">compound/supply · compound-v3-cusdcv3</span>
-  <p class="sub"><span class="aiw" data-ai><span>The Safe first approves the market you pick for exactly the amount you type, then calls <code>supply</code> on that market with its base token and the same amount. The market pulls the tokens with <code>transferFrom</code> and raises the Safe&#39;s supply balance, which earns interest. Compound&#39;s app asks only for the market and the amount, so the card asks only those. Both calls go in one Safe transaction, so no allowance stays open.</span><span class="byai">AI research</span></span></p>
-  <p class="srcline">This report exists only in English.</p>
+  <p class="sub"><span class="aiw" data-ai><span>The Safe gives the market you pick an allowance of exactly the amount you type, then calls <code>supply</code> on it with its base asset, in one MultiSend. The Safe&#39;s supply balance must grow by that amount, at most 2 units less. A <code>supply</code> sent alone is refused.</span><span class="byai">AI research</span></span></p>
   <ul class="checks">
     <li data-state="bad" data-line="sources"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>Transaction addresses <span class="n num">1 / 2</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">1 address has results for you to review; see &#34;To review&#34;. The other address is confirmed in at least 2 places.</span></span></li>
@@ -351,7 +351,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Two providers
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Every chain read asks two providers; when they disagree, there is no result. Three research reads have one source, and none of them reaches a verdict: past transactions&#39; call traces (drpc), the search for past transactions (a transaction either Alchemy or Etherscan finds counts; only Etherscan searches for an event), and the addresses that ever received a vault&#39;s shares (Alchemy; each one&#39;s balance is still read through both).</span></span></li>
   </ul>
-  <div class="verdict" data-state="bad"><span class="lbl">Advice</span><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg><span class="aiw" data-ai><span>Supplied USDC bears this market&#39;s collateral risk; verify stops after each upgrade until re-pinned.</span><span class="byai">AI research: be careful</span></span></div>
+  <div class="verdict" data-state="bad"><span class="lbl">Advice</span><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg><span class="aiw" data-ai><span>A large, long-running market; governance upgrades it often, and each upgrade gives MISMATCH until a new code pin is merged.</span><span class="byai">AI research: be careful</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
     <ol><li><a href="#review">To review <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>key 1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#flow">Flow <span class="cnt">2 calls</span></a></li><li><a href="#protocol-compound-v3">compound-v3</a></li><li><a href="#vault-compound-v3-cusdcv3">Instance</a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">2</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li><li><a href="#usage">AI usage</a></li></ol>
   </details>
@@ -364,36 +364,36 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="row" data-state="bad" data-grade="key" data-result="compound-v3-cusdcv3/source.bounty">
       <svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>
       <div><div class="t"><span class="grade"><span class="vh">Grade: </span>key</span>Site differs from the one DefiLlama lists · compound-v3-cusdcv3</div>
-        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>Fetched Immunefi&#39;s compoundfinance scope page on 2026-11-22: it lists 0xc3d688B66703497DAA19211EEdff47f25384cdc3 and names compound.finance as the site.</span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>Opened Immunefi&#39;s compoundfinance page: it says the Compound DAO pays the bounties and links https://compound.finance/, while DefiLlama lists compound.xyz.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
           <div class="meta">Immunefi bug bounty scope</div>
           <div class="meta">This page&#39;s domain or GitHub organization is not one DefiLlama lists for this protocol.<a href="#a-compound-v3-cusdcv3">see source</a></div>
-          <div class="rec"><span class="aiw" data-ai><span>DefiLlama lists compound.xyz; compound.finance redirects to www.compound.xyz. No Compound page I read links the Immunefi program.</span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Open the Immunefi scope and the docs page yourself and compare the address.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>I did not open the scope list itself; check-sources found 0xc3d688B66703497DAA19211EEdff47f25384cdc3 in it.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Open the Immunefi page and check it is Compound&#39;s own program; the address is also confirmed on Compound&#39;s docs and GitHub.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>Your USDC is lent to borrowers, so a collateral that fails can cost suppliers.</span><span class="byai">AI research</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>Only 2 Safes in a year sent the exact approval and <code>supply</code> in one MultiSend; 25 Safes sent <code>supply</code> alone.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>In November 2025 deUSD and sdeUSD, collateral in this market, lost their liquidity, and Compound paused withdrawals and borrows here from November 4 until November 6. In April 2026, after the KelpDAO rsETH exploit, governance set rsETH&#39;s supply cap in this market from 750 to 0 (proposal 568). In November 2026 governance set tBTC&#39;s borrow factor in this market to 0 after Threshold paused tBTC redemptions. <a class="aisrc" href="https://www.comp.xyz/t/gauntlet-pausing-ethereum-usdc-usds-and-usdt-comets/7326">source 1</a> <a class="aisrc" href="https://www.tally.xyz/gov/compound/proposal/568">source 2</a> <a class="aisrc" href="https://etherscan.io/tx/0xb389fde297c1dfe69d8a4b642e608767842d8d0b0b2b2a5e796874857c527f9b#eventlog">source 3</a> <a class="aisrc" href="https://www.tally.xyz/gov/compound/proposal/622">source 4</a> <a class="aisrc" href="https://etherscan.io/tx/0xaaaf346a5a06619834d66cfee9fdaabc82686dba6a758e9a336ff99742499219">source 5</a></span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Supply only what you can leave in the market through a pause, and check the market&#39;s collateral list in Compound&#39;s app first.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>Both test transactions are those 2 Safes&#39;.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Build the transaction as one batch of the approval and <code>supply</code>; a <code>supply</code> sent alone gets MISMATCH.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>Compound governance deploys a new implementation for each change to the market&#39;s settings: 62 implementations since 2022, 10 of them new in the last year, the latest at block 26,364,909 on 2026-11-07.</span><span class="byai">AI research</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>Governance replaced cUSDCv3&#39;s implementation over 60 times; the last at block 26,364,909.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>After each one, verify gives MISMATCH until a pull request pins the new code. <a class="aisrc" href="https://etherscan.io/address/0xc3d688B66703497DAA19211EEdff47f25384cdc3#events">source</a></span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>If verify gives MISMATCH for the code pin, do not sign; wait until the new pin is merged.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>A Safe that already borrows USDC repays debt first, so its supply balance does not grow by the amount: MISMATCH. <a class="aisrc" href="https://docs.compound.xyz/collateral-and-borrowing/">source 1</a> <a class="aisrc" href="https://docs.compound.xyz/governance/">source 2</a></span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>After an upgrade, wait for the new code pin before signing; supply only from a Safe with no open USDC borrow here.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>The market held 343.9 million USDC of supply at block 26,470,986 on 2026-11-22, and between 327 and 426 million at every monthly reading over the year.</span><span class="byai">AI research</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>The market held 326 to 427 million USDC every month of the last year; it grew or shrank gradually, never suddenly.</span><span class="byai">AI research</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Details</summary>
-          <div class="rec"><span class="aiw" data-ai><span>It is old and large, not sudden; supply is about 19% below its December 2025 peak. <a class="aisrc" href="https://etherscan.io/token/0xc3d688B66703497DAA19211EEdff47f25384cdc3">source</a></span><span class="byai">AI research</span></span></div>
-          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable; check the market&#39;s size and utilization in Compound&#39;s app before a large supply.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>The holder count could not be completed, since balances need no Transfer event to change.</span><span class="byai">AI research</span></span></div>
+          <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Read the instance&#39;s size history in the report; no young or sudden growth was seen.</span><span class="byai">AI research</span></span></div>
         </details></div>
     </div>
   </div>
@@ -412,12 +412,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <line class="life" x1="280" y1="58" x2="280" y2="276"/>
     <rect class="node" x="214" y="14" width="132" height="44" rx="6"/><text class="nodet" x="280" y="34" text-anchor="middle">usdc</text><text class="nodes" x="280" y="50" text-anchor="middle">token</text>
     <line class="life" x1="477" y1="58" x2="477" y2="276"/>
-    <rect class="node" x="383" y="14" width="188" height="44" rx="6"/><text class="nodet" x="477" y="34" text-anchor="middle">compound-v3-cusdcv3</text><text class="nodes" x="477" y="50" text-anchor="middle">vault</text>
+    <rect class="node" x="383" y="14" width="188" height="44" rx="6"/><text class="nodet" x="477" y="34" text-anchor="middle">compound-v3-cusdcv3</text><text class="nodes" x="477" y="50" text-anchor="middle">lending contract</text>
     <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">approve</text>
     <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#head)"/>
     <text class="no" x="102" y="142">2</text><text class="fn" x="120" y="142">supply</text>
     <line class="call" x1="90" y1="156" x2="474" y2="156" marker-end="url(#head)"/>
-    <foreignObject x="102" y="177" width="558" height="44"><div class="cap" data-ai><span class="mark ok">①</span><span><code>supply</code> pulls exactly the amount of USDC from the Safe into the market with <code>transferFrom</code>.</span></div></foreignObject>
+    <foreignObject x="102" y="177" width="558" height="44"><div class="cap" data-ai><span class="mark ok">①</span><span>The market pulls the USDC from the Safe with <code>transferFrom</code>, spending the allowance of call 1</span></div></foreignObject>
     <line class="inner seen" x1="477" y1="224" x2="283" y2="224" marker-end="url(#head)"/>
     <text class="capg" x="104" y="250">you get compound-v3-cusdcv3</text>
     <line class="gain" x1="477" y1="260" x2="93" y2="260" marker-end="url(#head)"/>
@@ -425,7 +425,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
   <div class="scrollhint">Scroll the diagram sideways; compound-v3-cusdcv3 is at the far right</div>
   <ul class="legend">
-    <li data-state="ok">Confirmed two ways: the program saw the line in the call traces of past transactions (<a href="https://github.com/compound-finance/comet/blob/f766f51583c23acc33b2a7824654ef2029a96804/contracts/CometWithExtendedAssetList.sol#L754-L778">①</a> 85 of 85), and the AI read the contract&#39;s source; the words beside each line are the AI&#39;s.</li>
+    <li data-state="ok">Confirmed two ways: the program saw the line in the call traces of past transactions (<a href="https://github.com/compound-finance/comet/blob/f766f51583c23acc33b2a7824654ef2029a96804/contracts/CometWithExtendedAssetList.sol#L661">①</a> 22 of 22), and the AI read the contract&#39;s source; the words beside each line are the AI&#39;s.</li>
   </ul>
   <p class="lead">A call trace shows only the path past transactions took; a contract may take another path on other state, and what protects you at signing is the effects check.</p>
   <div class="deciders">
@@ -439,50 +439,50 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <p class="lead keylead">The transaction&#39;s calls, one by one. Each argument shows who decides it, its value or the rule it must follow, and what it does.</p>
   
   <div class="cb">
-    <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">usdc.</span>approve</span><span class="sel">0x095ea7b3</span></div><div class="cdoc"><div class="doc" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><span class="f3">Docs: </span><a href="https://github.com/ethereum/ERCs/blob/ae65e89408f387ffb47d220879925c4ab384dfc2/ERCS/erc-20.md">ERC-20 standard&#39;s page</a> <span class="f3">the standard defines this function; that does not mean the contract follows the standard</span></span></div></div>
+    <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">usdc.</span>approve</span><span class="sel">0x095ea7b3</span></div><div class="cdoc"><div class="doc" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><span class="f3">Docs: </span><a href="https://github.com/circlefin/stablecoin-evm/blob/fc85788bc7c23cefe3df1a757133048bfddadeaa/contracts/v1/FiatTokenV1.sol">github.com/circlefin/stablecoin-evm</a></span></div></div>
     <div class="arg" data-field="1.approve.spender">
-      <div class="nm"><span class="pn">spender</span><span class="who you">you pick: vault</span></div>
-      <div class="val"><div class="raw">0xc3d688B66703497DAA19211EEdff47f25384cdc3</div><div class="is"><a href="#a-compound-v3-cusdcv3">compound-v3-cusdcv3</a> <span class="f3">the vault you pick</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The contract allowed to pull USDC from the Safe, fixed as the market you pick. In call 2 the market pulls exactly this amount with <code>transferFrom</code>.</span></span></div></div>
+      <div class="nm"><span class="pn">spender</span><span class="who you">you pick: lending contract</span></div>
+      <div class="val"><div class="raw">0xc3d688B66703497DAA19211EEdff47f25384cdc3</div><div class="is"><a href="#a-compound-v3-cusdcv3">compound-v3-cusdcv3</a> <span class="f3">the lending contract you pick</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The market itself, the contract that pulls the tokens in <code>supply</code>. Any other spender is refused.</span></span></div></div>
     </div>
     <div class="arg" data-field="1.approve.value">
       <div class="nm"><span class="pn">value</span><span class="who you">you type: amount</span></div>
       <div class="val"><div class="is">the amount you type <span class="f3">the card holds it; another value in the transaction is a MISMATCH</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The allowance&#39;s cap, equal to the amount you supply. Call 2 uses all of it, so the allowance is back to 0 after the transaction.</span></span></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Exactly the amount on the card, so <code>supply</code> uses the whole allowance and none is left open after the transaction.</span></span></div></div>
     </div>
   </div>
   <div class="cb">
     <div class="callh"><span class="no">2</span><span class="fnn"><span class="ct">compound-v3-cusdcv3.</span>supply</span><span class="sel">0xf2b9fdb8</span></div><div class="cdoc"><div class="doc" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><span class="f3">Docs: </span><a href="https://docs.compound.xyz/collateral-and-borrowing/">docs.compound.xyz/collateral-and-borrowing</a></span></div></div>
     <div class="arg" data-field="2.supply.asset">
-      <div class="nm"><span class="pn">asset</span><span class="who you">you pick: vault</span></div>
-      <div class="val"><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</div><div class="is"><a href="#a-usdc">usdc</a> <span class="f3">the baseToken of the vault you pick</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The token supplied, fixed as the market&#39;s base token, USDC for cUSDCv3. Supplying another token the market takes would add collateral instead, which earns no interest.</span></span></div></div>
+      <div class="nm"><span class="pn">asset</span><span class="who you">you pick: lending contract</span></div>
+      <div class="val"><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</div><div class="is"><a href="#a-usdc">usdc</a> <span class="f3">the baseToken of the lending contract you pick</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The market&#39;s base asset as the registry records it. Supplying another listed asset would add collateral instead, which earns no interest.</span></span></div></div>
     </div>
     <div class="arg" data-field="2.supply.amount">
       <div class="nm"><span class="pn">amount</span><span class="who you">you type: amount</span></div>
       <div class="val"><div class="is">the amount you type <span class="f3">the card holds it; another value in the transaction is a MISMATCH</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The amount supplied, equal to the card&#39;s amount. If the Safe has a USDC borrow in this market, the supply first repays it, and the Safe&#39;s supply balance rises by less.</span></span></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Exactly the card amount. The maximum uint256 would instead repay the Safe&#39;s whole borrow, so it can never come from a typed amount.</span></span></div></div>
     </div>
   </div>
   <h3>After the transaction</h3>
   <dl class="props">
     <div><dt>Safe&#39;s usdc</dt><dd class="">the amount you type</dd><dd class="src">exactly the amount you type</dd></div>
-    <div><dt>Safe&#39;s compound-v3-cusdcv3</dt><dd class="pos">the amount you type</dd><dd class="src">exactly the amount you type; the Safe&#39;s balance may end up to 2 base units lower, for rounding</dd><div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The AI chose this tolerance, not the protocol or its app. Why: Comet rounds the supply down twice, to principal and back. In 85 USDC supplies studied, the balance rose 1 unit less than the amount in 70 and 2 less in 15.</span></span></div></div>
+    <div><dt>Safe&#39;s compound-v3-cusdcv3</dt><dd class="pos">the amount you type</dd><dd class="src">exactly the amount you type; the Safe&#39;s balance may end up to 2 base units lower, for rounding</dd><div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The AI chose this tolerance, not the protocol or its app. Why: In 22 supplies studied (2 Safes, 20 EOAs), the sender&#39;s cUSDCv3 balance rose by the amount less 1 unit in 17 and less 2 units in 5, never more: Comet rounds the supply down.</span></span></div></div>
     <div><dt>usdc allowance for <a href="#a-compound-v3-cusdcv3">compound-v3-cusdcv3</a></dt><dd class=""><span class="num">0</span></dd><dd class="src">used up within the transaction; may not end higher than before</dd></div>
   </dl>
 </section>
 
 <section id="protocol-compound-v3">
   <h2>compound-v3</h2>
-  <p class="intro"><span class="aiw" data-ai><span>Compound III (Comet): one lending market per base token. Suppliers of the base token earn interest from borrowers, who post other tokens as collateral.</span><span class="byai">AI research</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>Compound III (Comet): each market lends one base asset, such as USDC, against collateral. Suppliers of the base asset earn interest; Compound&#39;s governance Timelock controls every market.</span><span class="byai">AI research</span></span></p>
   <dl class="props two">
-    <div><dt>TVL</dt><dd><span><span class="num">$1.05 B</span></span><span class="sub2">on Ethereum <span class="num">$971.32 M</span></span></dd></div>
+    <div><dt>TVL</dt><dd><span><span class="num">$1.06 B</span></span><span class="sub2">on Ethereum <span class="num">$982.27 M</span></span></dd></div>
     <div><dt>Listed</dt><dd><span><span class="num">2022-09-14</span></span><span class="sub2">the date DefiLlama first listed it</span></dd></div>
     <div><dt>proxy</dt><dd><span>a proxy; its implementation can change</span><span class="sub2"><a href="#a-compound-v3-cusdcv3">compound-v3-cusdcv3</a>, read from the code pin</span></dd></div>
-    <div><dt>Audits</dt><dd><span class="aiw" data-ai><span>OpenZeppelin audited Comet from May 13 to June 14, 2022, and ChainSecurity also audited Comet. Certora audited the 2026 service patch, which governance deployed on Linea and Scroll; the AI found no audit report that names the exact CometWithExtendedAssetList build this market runs now. <a class="aisrc" href="https://www.openzeppelin.com/news/compound-iii-audit">source 1</a> <a class="aisrc" href="https://reports.chainsecurity.com/Compound/ChainSecurity_Compound_Comet_Audit.pdf">source 2</a> <a class="aisrc" href="https://www.comp.xyz/t/comet-v3-service-patch-v1-2-1/7865">source 3</a></span><span class="byai">AI research</span></span></dd></div>
+    <div><dt>Audits</dt><dd><span class="aiw" data-ai><span>Compound&#39;s docs name two audits of Compound III, by OpenZeppelin and by ChainSecurity, both of the 2022 launch code. The market has been upgraded by governance many times since; the AI found no audit report that names the implementation it runs now. <a class="aisrc" href="https://docs.compound.xyz/#security">source 1</a> <a class="aisrc" href="https://blog.openzeppelin.com/compound-iii-audit/">source 2</a> <a class="aisrc" href="https://chainsecurity.com/security-audit/compound-iii/">source 3</a></span><span class="byai">AI research</span></span></dd></div>
     <div><dt>Incidents</dt><dd><span>0</span><span class="sub2">DefiLlama hacks listed under this protocol or its parent</span></dd></div>
   </dl>
-  <p class="srcline">On 2026-11-22 the program read <a href="https://defillama.com/protocol/compound-v3">DefiLlama</a>, <a href="https://defillama.com/hacks">DefiLlama hacks</a> and the chain. What is tagged AI research, the AI looked up.</p>
+  <p class="srcline">On 2026-11-26 the program read <a href="https://defillama.com/protocol/compound-v3">DefiLlama</a>, <a href="https://defillama.com/hacks">DefiLlama hacks</a> and the chain. What is tagged AI research, the AI looked up.</p>
 </section>
 
 <section id="vault-compound-v3-cusdcv3">
@@ -490,47 +490,47 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <p class="lead"><a href="#a-compound-v3-cusdcv3">compound-v3-cusdcv3</a>: the recorded output of <code>pnpm instance-evidence</code>. Every number was asked of two providers; only the list of addresses that ever received shares comes from Alchemy alone. No conversion to US dollars here.</p>
   <dl class="props">
     <div><dt>Factory</dt><dd>no registered factory; no factory vouches for its code</dd><dd class="src"></dd></div>
-    <div><dt>totalSupply now</dt><dd><span class="num">343,926,228.21 usdc</span></dd><dd class="src">2026-11-22, block 26471041</dd></div>
+    <div><dt>totalSupply now</dt><dd><span class="num">357,444,338.63 usdc</span></dd><dd class="src">2026-11-26, block 26502327</dd></div>
     <div><dt>Holders</dt><dd>could not be read</dd><dd class="src"></dd></div>
   </dl>
   <h3>Monthly totalAssets</h3>
   <div class="diagram chart">
   <svg viewBox="0 0 660 198" role="img" aria-labelledby="vt vd">
     <title id="vt">Monthly totalAssets</title>
-    <desc id="vd">13 months, 2025-11-25 to 2026-11-22, highest 425,921,579.23 usdc</desc>
-    <text class="tick" x="16" y="18">highest 425,921,579.23 usdc</text>
+    <desc id="vd">13 months, 2025-11-30 to 2026-11-26, highest 426,916,665.47 usdc</desc>
+    <text class="tick" x="16" y="18">highest 426,916,665.47 usdc</text>
     <line class="axis" x1="16" y1="150" x2="644" y2="150"/>
-    <rect class="bar" x="25.7" y="37" width="29.0" height="113"><title>2025-11-25: 414,350,519.93 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">Nov</text><text class="tick" x="40.2" y="188" text-anchor="middle">2025</text>
-    <rect class="bar" x="74.0" y="34" width="29.0" height="116"><title>2025-12-26: 425,921,579.23 usdc</title></rect><text class="tick thin" x="88.5" y="168" text-anchor="middle">Dec</text>
-    <rect class="bar" x="122.3" y="38" width="29.0" height="112"><title>2026-01-25: 412,829,302.98 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">Jan</text><text class="tick" x="136.8" y="188" text-anchor="middle">2026</text>
-    <rect class="bar" x="170.6" y="46" width="29.0" height="104"><title>2026-02-24: 382,604,848.23 usdc</title></rect><text class="tick thin" x="185.1" y="168" text-anchor="middle">Feb</text>
-    <rect class="bar" x="218.9" y="48" width="29.0" height="102"><title>2026-03-26: 375,226,071.72 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">Mar</text>
-    <rect class="bar" x="267.2" y="47" width="29.0" height="103"><title>2026-04-25: 379,735,178.67 usdc</title></rect><text class="tick thin" x="281.7" y="168" text-anchor="middle">Apr</text>
-    <rect class="bar" x="315.5" y="59" width="29.0" height="91"><title>2026-05-25: 333,006,661.73 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">May</text>
-    <rect class="bar" x="363.8" y="61" width="29.0" height="89"><title>2026-06-25: 326,800,830.53 usdc</title></rect><text class="tick thin" x="378.3" y="168" text-anchor="middle">Jun</text>
-    <rect class="bar" x="412.1" y="56" width="29.0" height="94"><title>2026-07-25: 345,766,674.03 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">Jul</text>
-    <rect class="bar" x="460.4" y="53" width="29.0" height="97"><title>2026-08-24: 354,921,691.02 usdc</title></rect><text class="tick thin" x="474.9" y="168" text-anchor="middle">Aug</text>
-    <rect class="bar" x="508.7" y="48" width="29.0" height="102"><title>2026-09-23: 376,197,046.41 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">Sep</text>
-    <rect class="bar" x="557.0" y="44" width="29.0" height="106"><title>2026-10-23: 387,874,726.78 usdc</title></rect><text class="tick thin" x="571.5" y="168" text-anchor="middle">Oct</text>
-    <rect class="bar last" x="605.4" y="56" width="29.0" height="94"><title>2026-11-22: 343,926,228.21 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">Nov</text>
+    <rect class="bar" x="25.7" y="39" width="29.0" height="111"><title>2025-11-30: 407,573,791.28 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">Nov</text><text class="tick" x="40.2" y="188" text-anchor="middle">2025</text>
+    <rect class="bar" x="74.0" y="34" width="29.0" height="116"><title>2025-12-30: 426,916,665.47 usdc</title></rect><text class="tick thin" x="88.5" y="168" text-anchor="middle">Dec</text>
+    <rect class="bar" x="122.3" y="35" width="29.0" height="115"><title>2026-01-29: 424,208,705.97 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">Jan</text><text class="tick" x="136.8" y="188" text-anchor="middle">2026</text>
+    <rect class="bar" x="170.6" y="45" width="29.0" height="105"><title>2026-02-28: 385,861,637.02 usdc</title></rect><text class="tick thin" x="185.1" y="168" text-anchor="middle">Feb</text>
+    <rect class="bar" x="218.9" y="48" width="29.0" height="102"><title>2026-03-31: 375,104,346.58 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">Mar</text>
+    <rect class="bar" x="267.2" y="55" width="29.0" height="95"><title>2026-04-30: 351,276,595.01 usdc</title></rect><text class="tick thin" x="281.7" y="168" text-anchor="middle">Apr</text>
+    <rect class="bar" x="315.5" y="58" width="29.0" height="92"><title>2026-05-30: 336,924,476.36 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">May</text>
+    <rect class="bar" x="363.8" y="61" width="29.0" height="89"><title>2026-06-29: 326,210,523.28 usdc</title></rect><text class="tick thin" x="378.3" y="168" text-anchor="middle">Jun</text>
+    <rect class="bar" x="412.1" y="57" width="29.0" height="93"><title>2026-07-29: 343,080,743.58 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">Jul</text>
+    <rect class="bar" x="460.4" y="51" width="29.0" height="99"><title>2026-08-28: 365,700,054.33 usdc</title></rect><text class="tick thin" x="474.9" y="168" text-anchor="middle">Aug</text>
+    <rect class="bar" x="508.7" y="46" width="29.0" height="104"><title>2026-09-27: 381,073,884.27 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">Sep</text>
+    <rect class="bar" x="557.0" y="48" width="29.0" height="102"><title>2026-10-27: 376,183,338.62 usdc</title></rect><text class="tick thin" x="571.5" y="168" text-anchor="middle">Oct</text>
+    <rect class="bar last" x="605.4" y="53" width="29.0" height="97"><title>2026-11-26: 357,444,338.63 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">Nov</text>
   </svg>
   </div>
   <details class="fold">
     <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Figures for 13 months</summary>
     <dl class="props">
-      <div><dt class="num">2025-11-25</dt><dd class="num">414,350,519.93 usdc</dd></div>
-      <div><dt class="num">2025-12-26</dt><dd class="num">425,921,579.23 usdc</dd></div>
-      <div><dt class="num">2026-01-25</dt><dd class="num">412,829,302.98 usdc</dd></div>
-      <div><dt class="num">2026-02-24</dt><dd class="num">382,604,848.23 usdc</dd></div>
-      <div><dt class="num">2026-03-26</dt><dd class="num">375,226,071.72 usdc</dd></div>
-      <div><dt class="num">2026-04-25</dt><dd class="num">379,735,178.67 usdc</dd></div>
-      <div><dt class="num">2026-05-25</dt><dd class="num">333,006,661.73 usdc</dd></div>
-      <div><dt class="num">2026-06-25</dt><dd class="num">326,800,830.53 usdc</dd></div>
-      <div><dt class="num">2026-07-25</dt><dd class="num">345,766,674.03 usdc</dd></div>
-      <div><dt class="num">2026-08-24</dt><dd class="num">354,921,691.02 usdc</dd></div>
-      <div><dt class="num">2026-09-23</dt><dd class="num">376,197,046.41 usdc</dd></div>
-      <div><dt class="num">2026-10-23</dt><dd class="num">387,874,726.78 usdc</dd></div>
-      <div><dt class="num">2026-11-22</dt><dd class="num">343,926,228.21 usdc</dd></div>
+      <div><dt class="num">2025-11-30</dt><dd class="num">407,573,791.28 usdc</dd></div>
+      <div><dt class="num">2025-12-30</dt><dd class="num">426,916,665.47 usdc</dd></div>
+      <div><dt class="num">2026-01-29</dt><dd class="num">424,208,705.97 usdc</dd></div>
+      <div><dt class="num">2026-02-28</dt><dd class="num">385,861,637.02 usdc</dd></div>
+      <div><dt class="num">2026-03-31</dt><dd class="num">375,104,346.58 usdc</dd></div>
+      <div><dt class="num">2026-04-30</dt><dd class="num">351,276,595.01 usdc</dd></div>
+      <div><dt class="num">2026-05-30</dt><dd class="num">336,924,476.36 usdc</dd></div>
+      <div><dt class="num">2026-06-29</dt><dd class="num">326,210,523.28 usdc</dd></div>
+      <div><dt class="num">2026-07-29</dt><dd class="num">343,080,743.58 usdc</dd></div>
+      <div><dt class="num">2026-08-28</dt><dd class="num">365,700,054.33 usdc</dd></div>
+      <div><dt class="num">2026-09-27</dt><dd class="num">381,073,884.27 usdc</dd></div>
+      <div><dt class="num">2026-10-27</dt><dd class="num">376,183,338.62 usdc</dd></div>
+      <div><dt class="num">2026-11-26</dt><dd class="num">357,444,338.63 usdc</dd></div>
     </dl>
   </details>
 </section>
@@ -562,29 +562,29 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="rows">
     <div class="ad" id="a-compound-v3-cusdcv3" data-state="bad">
       <svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>
-      <div><span class="nm">compound-v3-cusdcv3</span><span class="role"><span class="aiw" data-ai><span>Compound III&#39;s USDC market on Ethereum (cUSDCv3, Comet): it takes the USDC and keeps the Safe&#39;s supply balance</span><span class="byai">AI research</span></span><span class="conf">low confidence</span><span class="reviewed">AI has concerns</span></span></div>
+      <div><span class="nm">compound-v3-cusdcv3</span><span class="role"><span class="aiw" data-ai><span>Compound III&#39;s USDC market (cUSDCv3, Comet): takes USDC and credits the Safe&#39;s supply balance</span><span class="byai">AI research</span></span><span class="conf">low confidence</span><span class="reviewed">AI has concerns</span></span></div>
       <div class="body"><span class="addr">0xc3d688B66703497DAA19211EEdff47f25384cdc3</span>
-        <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://github.com/compound-finance/comet/blob/f766f51583c23acc33b2a7824654ef2029a96804/deployments/mainnet/usdc/roots.json">github.com/compound-finance/comet</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to compound-v3 (compared with <a href="https://defillama.com/protocol/compound-v3">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/compound-governance-token">CoinGecko</a>)</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>newest version (main) lists it too</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://docs.compound.xyz/erc4626-wrapper/">docs.compound.xyz/erc4626-wrapper</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to compound-v3 (compared with <a href="https://defillama.com/protocol/compound-v3">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/compound-governance-token">CoinGecko</a>)</span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>CoinGecko<span class="res">nothing to compare</span></span></span></div><div class="src"><span class="srcrow" data-state="bad"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg><span><a href="https://immunefi.com/bug-bounty/compoundfinance/">Immunefi bug bounty scope</a><span class="res">another site</span></span></span><span class="why">Immunefi gives this program no website or GitHub organization to match compound.xyz, github.com/compound-finance, which DefiLlama lists. See &#34;<a href="#review">To review</a>&#34;.</span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x343715fa797b8e9fe48b9efab4b54f01ca860e78">deployer 0x343715FA797B8e9fe48b9eFaB4b54f01CA860e78</a><span class="res">no confirmed contract shares it</span></span></span></div></div>
+        <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://github.com/compound-finance/comet/blob/f766f51583c23acc33b2a7824654ef2029a96804/deployments/mainnet/usdc/roots.json">github.com/compound-finance/comet</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to compound-v3 (compared with <a href="https://defillama.com/protocol/compound-v3">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/compound-governance-token">CoinGecko</a>)</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>newest version (main) lists it too</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://docs.compound.xyz/erc4626-wrapper/">docs.compound.xyz/erc4626-wrapper</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to compound-v3 (compared with <a href="https://defillama.com/protocol/compound-v3">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/compound-governance-token">CoinGecko</a>)</span></span></div><div class="src"><span class="srcrow" data-state="bad"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg><span><a href="https://immunefi.com/bug-bounty/compoundfinance/">Immunefi bug bounty scope</a><span class="res">another site</span></span></span><span class="why">Immunefi gives this program no website or GitHub organization to match compound.xyz, github.com/compound-finance, which DefiLlama lists. See &#34;<a href="#review">To review</a>&#34;.</span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x343715fa797b8e9fe48b9efab4b54f01ca860e78">deployer 0x343715FA797B8e9fe48b9eFaB4b54f01CA860e78</a><span class="res">no confirmed contract shares it</span></span></span></div></div>
         <div class="confirmed">Confirmed in 2 places: official page, docs.compound.xyz/erc4626-wrapper</div>
-        <details class="aisrcs" open><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 6 places · AI judgment: needs attention</summary>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Compound&#39;s comet repository (compound-finance, default branch main, commit f766f51583c23acc33b2a7824654ef2029a96804), deployments/mainnet/usdc/roots.json: &#34;comet&#34;: 0xc3d688B66703497DAA19211EEdff47f25384cdc3. Seen first here <a class="aisrc" href="https://github.com/compound-finance/comet/blob/f766f51583c23acc33b2a7824654ef2029a96804/deployments/mainnet/usdc/roots.json">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Immunefi program compoundfinance, assets in scope: 0xc3d688B66703497DAA19211EEdff47f25384cdc3 labeled &#34;cUSDCv3 (Mainnet USDC)&#34;, added 27 November 2024 <a class="aisrc" href="https://immunefi.com/bug-bounty/compoundfinance/scope/">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>docs.compound.xyz home page: its Mainnet USDC network data maps &#34;cUSDCv3&#34; to 0xc3d688B66703497DAA19211EEdff47f25384cdc3, but only inside a script, so a reader without scripts does not see it. That data still names an older implementation, 0x63e749153BaF1838f63cA22c275370BD2B1cEB15, not the one in use since block 26,364,909 <a class="aisrc" href="https://docs.compound.xyz/">source</a></span></span><span class="aires">AI judgment: needs attention</span></div>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>docs.compound.xyz ERC-4626 Wrapper page, as served without scripts: the Ethereum mainnet table lists Wrapped Compound USDC (wcUSDCv3) with asset &#34;cUSDCv3 0xc3d688B66703497DAA19211EEdff47f25384cdc3&#34; <a class="aisrc" href="https://docs.compound.xyz/erc4626-wrapper/">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: verified contract TransparentUpgradeableProxy (token tracker Compound USDC, cUSDCv3), EIP-1967 implementation 0x0B07565A8ef48170e15918b251EbD95109B23255. Created at block 15,331,586 on 2022-08-13 by transaction 0xfe8e6819f1b43dedacf864d96beaf6b924b69796a28e8c4a5622f21b3cc83cc0 from 0x343715FA797B8e9fe48b9eFaB4b54f01CA860e78, which Etherscan labels Compound: Deployer 5; no file in Compound&#39;s GitHub organization names that deployer <a class="aisrc" href="https://etherscan.io/address/0xc3d688B66703497DAA19211EEdff47f25384cdc3#code">source</a></span></span><span class="aires">AI judgment: needs attention</span></div>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Read on chain at block 26,464,649: baseToken() is USDC 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, symbol cUSDCv3, 6 decimals, isSupplyPaused() false, extensionDelegate() 0xA70a0227028aD005F4Fc9376a82cd1462e3AAedC, governor() and the ProxyAdmin 0x1ec63b5883c3481134fd50d5daebc83ecd2e8779&#39;s owner() both the Compound Timelock 0x6d903f6003cca6255d85cca4d3b5e5146dc33925 <a class="aisrc" href="https://etherscan.io/address/0xc3d688B66703497DAA19211EEdff47f25384cdc3#readProxyContract">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+        <details class="aisrcs" open><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 4 places · AI judgment: needs attention</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Compound&#39;s comet repository, deployments/mainnet/usdc/roots.json, binds &#34;comet&#34; to this address at a commit on main <a class="aisrc" href="https://github.com/compound-finance/comet/blob/f766f51583c23acc33b2a7824654ef2029a96804/deployments/mainnet/usdc/roots.json">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Compound&#39;s docs, ERC-4626 wrapper page, Deployed Contracts table: the cUSDCv3 row shows this address <a class="aisrc" href="https://docs.compound.xyz/erc4626-wrapper/">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Immunefi&#39;s Compound Finance program, paid by the Compound DAO, has this address in scope; the program links compound.finance, not compound.xyz <a class="aisrc" href="https://immunefi.com/bug-bounty/compoundfinance/">source</a></span></span><span class="aires">AI judgment: needs attention</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: verified TransparentUpgradeableProxy, created in 0xfe8e6819f1b43dedacf864d96beaf6b924b69796a28e8c4a5622f21b3cc83cc0 by 0x343715FA797B8e9fe48b9eFaB4b54f01CA860e78; no official page names that deployer <a class="aisrc" href="https://etherscan.io/address/0xc3d688B66703497DAA19211EEdff47f25384cdc3#code">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
         </details></div>
     </div>
     <details class="fold">
       <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>1 more address has no result for you to review</summary>
     <div class="ad" id="a-usdc" data-state="ok">
       <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
-      <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>The token supplied: USDC, issued by Circle, the market&#39;s base token</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>The base asset of cUSDCv3, supplied by the Safe</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
       <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
         <div class="srcs"><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to circle-usdc (compared with <a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a>)</span></span></div><div class="src"><span class="srcrow" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>Immunefi bug bounty scope<span class="res">address not listed</span></span></span></div><div class="src"><span class="srcrow" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span><a href="https://etherscan.io/address/0x95ba4cf87d6723ad9c0db21737d862be80e93911">deployer 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911</a><span class="res">no confirmed contract shares it</span></span></span></div></div>
         <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div>
-        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 1 place · AI judgment: no problem</summary>
-          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Circle&#39;s USDC contract addresses page lists Ethereum mainnet USDC as 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 <a class="aisrc" href="https://developers.circle.com/stablecoins/usdc-contract-addresses">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+        <details class="aisrcs"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>AI also checked 3 places · AI judgment: no problem</summary>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Circle&#39;s USDC contract addresses page lists this address on the Ethereum row under Mainnet <a class="aisrc" href="https://developers.circle.com/stablecoins/usdc-contract-addresses">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>CoinGecko&#39;s usd-coin coin lists this address for Ethereum <a class="aisrc" href="https://www.coingecko.com/en/coins/usd-coin">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
+          <div><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: contract name FiatTokenProxy, created by 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911 in 0xe7e0fe390354509cd08c9a0168536938600ddc552b3f7cb96030ebef62e75895 <a class="aisrc" href="https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code">source</a></span></span><span class="aires">AI judgment: no problem</span></div>
         </details></div>
     </div>
     </details>
@@ -594,14 +594,14 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>Past transactions</h2>
   <h3>1. Has this template&#39;s transaction worked before?</h3>
-  <p class="ans"><b>Yes, 2 times, by 2 Safes.</b> EOA: 83 times, from 82 addresses, each sending one of the template&#39;s calls. The newest: 2026-11-18. All of them succeeded. The newest 3: <a href="https://etherscan.io/tx/0x0ed042ba6bf0237fe6ff3b6aeb692725f98fee91066a51eeae0ed96e24c8f629">0x0ed042ba…</a> <a href="https://etherscan.io/tx/0x68e8d982a71005c1cb65188752bee3e9b2b14a573687d8e02fc6d176d83da97a">0x68e8d982…</a> <a href="https://etherscan.io/tx/0xcaffc59c958f94826a064ef9e07265b6c20a14c10f8ac76bbf2b1b894c217740">0xcaffc59c…</a></p>
+  <p class="ans"><b>Yes, 2 times, by 2 Safes.</b> EOA: 20 times, from 20 addresses, each sending one of the template&#39;s calls. The newest: 2026-10-10. All of them succeeded. The newest 3: <a href="https://etherscan.io/tx/0x69b643ae3076b4eb4d52f918defdba68022f8ef4cd31102e75966ee73de42f26">0x69b643ae…</a> <a href="https://etherscan.io/tx/0x2c31ba00d049b370032761d267693e6957aef3b84aed2d8b5edae7e4fb742183">0x2c31ba00…</a> <a href="https://etherscan.io/tx/0x567a743ac4d6547b8fd747eed63b74d1c715f6fefb1554fd9bb7183cdff92f55">0x567a743a…</a></p>
   <h3>2. What values are normal in what the app fills?</h3>
   <p class="ans">This template leaves no value for the app to fill.</p>
   <h3>3. How did the others differ?</h3>
-  <p class="ans">77 transactions did something this template refuses.</p>
-  <p class="ans"><span class="aiw" data-ai><span>Most Safes sent <code>supply</code> alone, spending an allowance given earlier, and some went through DeFi Saver&#39;s contract by delegatecall; verify gives MISMATCH for both. Propose the exact approval and the supply together as one batch.</span><span class="byai">AI research</span></span></p>
+  <p class="ans">75 transactions did something this template refuses.</p>
+  <p class="ans"><span class="aiw" data-ai><span>Most Safes call <code>supply</code> alone after an earlier approval; this template refuses that shape and accepts only the exact approval and <code>supply</code> together in one MultiSend.</span><span class="byai">AI research</span></span></p>
   <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>Show the 5 kinds of difference</span></summary><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">What was different</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">Newest</th><th scope="col" class="tx">Examples (up to 3)</th></tr></thead><tbody>
-    <tr><td class="what" data-label="What was different"><span>No <code>approve</code> in it: only <code>compound-v3-cusdcv3.supply</code></span></td><td class="n" data-label="Safe"><span><span class="num">60</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>2026-11-09</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x099c0d2dae1ae1fc15fef1883a67d4a649a59c209af5d5f79c71036177f27670">0x099c0d2d…</a> <a href="https://etherscan.io/tx/0x80e4e2704ce22e2ecbad92690fcac6e003f8d664b1fe65f348687c4627abd939">0x80e4e270…</a> <a href="https://etherscan.io/tx/0x4ffaef50a7ad730b04edff22d392f016882fb0a5f12acc7e4553f90330fd5361">0x4ffaef50…</a></span></td></tr>
+    <tr><td class="what" data-label="What was different"><span>No <code>approve</code> in it: only <code>compound-v3-cusdcv3.supply</code></span></td><td class="n" data-label="Safe"><span><span class="num">58</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>2026-11-09</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x099c0d2dae1ae1fc15fef1883a67d4a649a59c209af5d5f79c71036177f27670">0x099c0d2d…</a> <a href="https://etherscan.io/tx/0x80e4e2704ce22e2ecbad92690fcac6e003f8d664b1fe65f348687c4627abd939">0x80e4e270…</a> <a href="https://etherscan.io/tx/0x4ffaef50a7ad730b04edff22d392f016882fb0a5f12acc7e4553f90330fd5361">0x4ffaef50…</a></span></td></tr>
     <tr><td class="what" data-label="What was different"><span>A delegatecall to a contract that is not the official MultiSend</span></td><td class="n" data-label="Safe"><span><span class="num">12</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>2026-10-12</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x6d186ea987391f9607ae5b1f1c8493475e3f342fcd5a9c70470be00622ab3d90">0x6d186ea9…</a> <a href="https://etherscan.io/tx/0xa5dec9c6307ccac74e4e2e5e76501aeb8893b179e00eb30d577e6b731c1d64b0">0xa5dec9c6…</a> <a href="https://etherscan.io/tx/0xc5bdc26f0e5f6770c8dfc883eef98152efa20d2b437d551ae9958d2c55275657">0xc5bdc26f…</a></span></td></tr>
     <tr><td class="what" data-label="What was different"><span>The template&#39;s calls and others: <code>0x8E5ce3c78D099667499aceD49B4D5E3D21c81510.0x6a761202 → usdc.approve → compound-v3-cusdcv3.supply</code></span></td><td class="n" data-label="Safe"><span><span class="num">3</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>2026-10-26</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0xa856766fbe8dbbc40ca1b97eeabf3f9fff3683f40df0b7c7c4ca5d611ed6e679">0xa856766f…</a> <a href="https://etherscan.io/tx/0x421d37f137a65b098a08ccba382618b32158d840366c3632e04750ca11877197">0x421d37f1…</a> <a href="https://etherscan.io/tx/0x7ab2382f83b2f6d0df204d0ddd0a131e74a362d0274dcc5593184168e45193aa">0x7ab2382f…</a></span></td></tr>
     <tr><td class="what" data-label="What was different"><span>A batch of more than 4 calls</span></td><td class="n" data-label="Safe"><span><span class="num">1</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="Newest"><span>2026-01-01</span></td><td class="tx" data-label="Examples (up to 3)"><span><a href="https://etherscan.io/tx/0x79cd605220e51649c8055fccf8afcd22044bfc5f42e2010f662ff5a3c61f6555">0x79cd6052…</a></span></td></tr>
@@ -610,14 +610,14 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h3>Did the balances move by exactly the stated amount?</h3>
   <p class="cap">Each matching transaction was run again alone on its parent block, and the balances before and after it were compared with the amount it states.</p>
   <div class="sh"><code>gets card.amount of card.market</code><span>The template&#39;s tolerance: up to 2 base units lower, 0 higher</span></div>
-    <p class="cap">compound-v3-cusdcv3: 85 transactions (2 from Safes, 83 from EOAs)</p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">The balance ended</th><th scope="col" class="n">Sender</th></tr></thead><tbody>
-    <tr><td class="what" data-label="The balance ended"><span>2 base units lower</span></td><td class="n" data-label="Sender"><span><span class="num">15</span></span></td></tr>
-    <tr><td class="what" data-label="The balance ended"><span>1 base unit lower</span></td><td class="n" data-label="Sender"><span><span class="num">70</span></span></td></tr></tbody></table></div>
+    <p class="cap">compound-v3-cusdcv3: 22 transactions (2 from Safes, 20 from EOAs)</p><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">The balance ended</th><th scope="col" class="n">Sender</th></tr></thead><tbody>
+    <tr><td class="what" data-label="The balance ended"><span>2 base units lower</span></td><td class="n" data-label="Sender"><span><span class="num">5</span></span></td></tr>
+    <tr><td class="what" data-label="The balance ended"><span>1 base unit lower</span></td><td class="n" data-label="Sender"><span><span class="num">17</span></span></td></tr></tbody></table></div>
   <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>How the program searched</span></summary>
-  <h3>Search of compound-v3-cusdcv3 mint (deposit): 9261 found, 480 studied, all 218 with a proven Safe party</h3>
-  <p class="cap">Every transaction of the last year was searched, from block 23842922 (2025-11-20) to block 26470921 (2026-11-22), with no gap. Alchemy and Etherscan found exactly the same (<span class="num">9261 = 9261</span>).</p>
+  <h3>Search of compound-v3-cusdcv3 mint: 9283 found, 290 studied, all 213 with a proven Safe party</h3>
+  <p class="cap">Every transaction of the last year was searched, from block 23874180 (2025-11-25) to block 26502179 (2026-11-26), with no gap. Alchemy and Etherscan found exactly the same (<span class="num">9283 = 9283</span>).</p>
   <p class="cap">These transactions were found through event logs, and a failed transaction leaves none.</p>
-  <p class="cap">318 more are other operations, not counted: <code>0xB9E62Cb9b4cE8ec13c886FaE67369Da417EE2714.0x6e553f65</code> 73, <code>0xc2d0D6C49979703C524Be2D21776C4874C92180e.0x3a3b18e0</code> 27, <code>compound-v3-cusdcv3.transfer</code> 26, <code>0x00000000005aD9ce1f5035FD62CA96CEf16AdAAF.0x8f5c3522</code> 21, and others.</p>
+  <p class="cap">193 more are other operations, not counted: <code>0xB9E62Cb9b4cE8ec13c886FaE67369Da417EE2714.0x6e553f65</code> 27, <code>0x00000000005aD9ce1f5035FD62CA96CEf16AdAAF.0x8f5c3522</code> 21, <code>compound-v3-cusdcv3.transfer</code> 19, <code>0xF15c683FfBa50254BAb340eFE49FA2038EE9354c.0x087ad9a3</code> 18, and others.</p>
   </details>
 </section>
 
@@ -629,7 +629,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <p class="then">It prints the template, the commit of main on GitHub and the template&#39;s keccak256. Answer <code>y</code> only if it is the one you reviewed.</p></div></li>
     <li><div>Make the card<pre class="cmd"><code>pnpm kiss-sign card new compound/supply</code></pre>
       <p class="then">When <code>templates/</code> or <code>registry/</code> in your clone differs from main on GitHub, it stops before asking anything and tells you to run <code>git pull</code> first.</p></div></li>
-    <li id="next-market"><div>vault (<code>market</code>): it lists the contracts you can pick, each with its full address. Pick <a href="#a-compound-v3-cusdcv3">compound-v3-cusdcv3</a>, address <span class="addr">0xc3d688B66703497DAA19211EEdff47f25384cdc3</span>
+    <li id="next-market"><div>lending contract (<code>market</code>): it lists the contracts you can pick, each with its full address. Pick <a href="#a-compound-v3-cusdcv3">compound-v3-cusdcv3</a>, address <span class="addr">0xc3d688B66703497DAA19211EEdff47f25384cdc3</span>
       <p class="then">The numbers in the list may differ from someone else&#39;s, so pick by name; you can also type the name <code>compound-v3-cusdcv3</code>.</p></div></li>
     <li id="next-amount"><div><code>amount</code>: type the amount of usdc in whole tokens, such as <code>1250.5</code>; thousands commas are allowed, such as <code>1,000,611.448606</code>.
       <p class="then">The card it shows before asking [y/N] gives it both in whole tokens and in base units; check that the number is what you want.</p></div></li>
@@ -659,12 +659,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="usage">
   <h2>AI usage</h2>
-  <p class="lead">Opus 5.5 made this report in 79 calls over 26 minutes.</p>
-  <table class="ut"><thead><tr><th scope="col">Item</th><th scope="col">Tokens</th></tr></thead><tbody><tr><th scope="row">Re-read (cache reads)</th><td class="num">6.4M</td></tr><tr><th scope="row">Newly read (input and cache writes)</th><td class="num">0.23M</td></tr><tr><th scope="row">Output</th><td class="num">0.04M</td></tr></tbody><tfoot><tr><th scope="row">Total</th><td class="num">6.7M</td></tr></tfoot></table>
+  <p class="lead">Opus 5.5 made this report in 129 calls over 46 minutes.</p>
+  <table class="ut"><thead><tr><th scope="col">Item</th><th scope="col">Tokens</th></tr></thead><tbody><tr><th scope="row">Re-read (cache reads)</th><td class="num">20.5M</td></tr><tr><th scope="row">Newly read (input and cache writes)</th><td class="num">0.21M</td></tr><tr><th scope="row">Output</th><td class="num">0.06M</td></tr></tbody><tfoot><tr><th scope="row">Total</th><td class="num">20.8M</td></tr></tfoot></table>
   <p class="cap">Source: the usage the API reported, in Claude Code&#39;s transcripts, without the coordinator. No program checks these numbers.</p>
 </section>
 
-<footer class="foot">Written by <code>pnpm report compound/supply --instance-of compound-v3-cusdcv3 --record</code> from <code>templates/compound/supply/template.json</code>, <code>templates/compound/supply/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/compound-supply/compound-v3-cusdcv3.json</code>, <code>testdata/abi</code>, <code>testdata/research/compound-supply.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/compound/supply/notes.json</code>, <code>templates/compound/supply/instances/compound-v3-cusdcv3/notes.json</code>, <code>testdata/usage/compound-supply/compound-v3-cusdcv3.json</code>; the data was read on 2026-11-22. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI or the usage numbers.</footer>
+<footer class="foot">Written by <code>pnpm report compound/supply --instance-of compound-v3-cusdcv3 --record</code> from <code>templates/compound/supply/template.json</code>, <code>templates/compound/supply/docs.json</code>, <code>templates/compound/supply/instances/compound-v3-cusdcv3/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/compound-supply/compound-v3-cusdcv3.json</code>, <code>testdata/abi</code>, <code>testdata/research/compound-supply.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/compound/supply/notes.json</code>, <code>templates/compound/supply/instances/compound-v3-cusdcv3/notes.json</code>, <code>testdata/usage/compound-supply/compound-v3-cusdcv3.json</code>; the data was read on 2026-11-26. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI or the usage numbers.</footer>
 
 </div>
 </div>

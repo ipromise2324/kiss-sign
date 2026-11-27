@@ -1,68 +1,49 @@
 {
+  "request": "I want to supply USDC to Compound's cUSDCv3. build me the template and its report",
   "title": {
-    "en": "Supply USDC to a Compound III market (Comet)"
+    "en": "Supply the base asset to a Compound III market (Comet)",
+    "zh-TW": "把基礎資產存入 Compound III 市場（Comet）"
   },
   "summary": {
-    "en": "The Safe first approves the market you pick for exactly the amount you type, then calls `supply` on that market with its base token and the same amount. The market pulls the tokens with `transferFrom` and raises the Safe's supply balance, which earns interest. Compound's app asks only for the market and the amount, so the card asks only those. Both calls go in one Safe transaction, so no allowance stays open."
+    "en": "The Safe gives the market you pick an allowance of exactly the amount you type, then calls `supply` on it with its base asset, in one MultiSend. The Safe's supply balance must grow by that amount, at most 2 units less. A `supply` sent alone is refused.",
+    "zh-TW": "Safe 在同一個 MultiSend 裡先授權你選的市場剛好你填的金額，再呼叫它的 `supply` 存入基礎資產；Safe 的存款餘額必須增加這個金額，最多少 2 單位。單獨送出的 `supply` 會被拒絕。"
   },
   "protocols": {
     "compound-v3": {
       "intro": {
-        "en": "Compound III (Comet): one lending market per base token. Suppliers of the base token earn interest from borrowers, who post other tokens as collateral."
+        "en": "Compound III (Comet): each market lends one base asset, such as USDC, against collateral. Suppliers of the base asset earn interest; Compound's governance Timelock controls every market.",
+        "zh-TW": "Compound III（Comet）：每個市場只借出一種基礎資產（如 USDC），借款人押抵押品；存入基礎資產的人賺利息，所有市場由 Compound 治理的 Timelock 控制。"
       },
       "audits": {
         "text": {
-          "en": "OpenZeppelin audited Comet from May 13 to June 14, 2022, and ChainSecurity also audited Comet. Certora audited the 2026 service patch, which governance deployed on Linea and Scroll; the AI found no audit report that names the exact CometWithExtendedAssetList build this market runs now."
+          "en": "Compound's docs name two audits of Compound III, by OpenZeppelin and by ChainSecurity, both of the 2022 launch code. The market has been upgraded by governance many times since; the AI found no audit report that names the implementation it runs now.",
+          "zh-TW": "Compound 文件列出 Compound III 的兩份稽核：OpenZeppelin 與 ChainSecurity，都是 2022 年上線時的程式碼。之後市場經治理升級多次，AI 沒有找到標明現在所跑實作的稽核報告。"
         },
         "sources": [
-          "https://www.openzeppelin.com/news/compound-iii-audit",
-          "https://reports.chainsecurity.com/Compound/ChainSecurity_Compound_Comet_Audit.pdf",
-          "https://www.comp.xyz/t/comet-v3-service-patch-v1-2-1/7865"
+          "https://docs.compound.xyz/#security",
+          "https://blog.openzeppelin.com/compound-iii-audit/",
+          "https://chainsecurity.com/security-audit/compound-iii/"
         ]
       },
       "incidents": []
     }
   },
-  "judgments": [
-    {
-      "text": {
-        "en": "Your USDC is lent to borrowers, so a collateral that fails can cost suppliers. In November 2025 deUSD and sdeUSD, collateral in this market, lost their liquidity, and Compound paused withdrawals and borrows here from November 4 until November 6. In April 2026, after the KelpDAO rsETH exploit, governance set rsETH's supply cap in this market from 750 to 0 (proposal 568). In November 2026 governance set tBTC's borrow factor in this market to 0 after Threshold paused tBTC redemptions."
-      },
-      "sources": [
-        "https://www.comp.xyz/t/gauntlet-pausing-ethereum-usdc-usds-and-usdt-comets/7326",
-        "https://www.tally.xyz/gov/compound/proposal/568",
-        "https://etherscan.io/tx/0xb389fde297c1dfe69d8a4b642e608767842d8d0b0b2b2a5e796874857c527f9b#eventlog",
-        "https://www.tally.xyz/gov/compound/proposal/622",
-        "https://etherscan.io/tx/0xaaaf346a5a06619834d66cfee9fdaabc82686dba6a758e9a336ff99742499219"
-      ],
-      "recommendation": {
-        "en": "Supply only what you can leave in the market through a pause, and check the market's collateral list in Compound's app first."
-      }
-    },
-    {
-      "text": {
-        "en": "Compound governance deploys a new implementation for each change to the market's settings: 62 implementations since 2022, 10 of them new in the last year, the latest at block 26,364,909 on 2026-11-07. After each one, verify gives MISMATCH until a pull request pins the new code."
-      },
-      "sources": [
-        "https://etherscan.io/address/0xc3d688B66703497DAA19211EEdff47f25384cdc3#events"
-      ],
-      "recommendation": {
-        "en": "If verify gives MISMATCH for the code pin, do not sign; wait until the new pin is merged."
-      }
-    }
-  ],
   "fields": {
     "1.approve.spender": {
-      "en": "The contract allowed to pull USDC from the Safe, fixed as the market you pick. In call 2 the market pulls exactly this amount with `transferFrom`."
+      "en": "The market itself, the contract that pulls the tokens in `supply`. Any other spender is refused.",
+      "zh-TW": "就是市場本身，也就是 `supply` 時拉走代幣的合約；其他對象一律拒絕。"
     },
     "1.approve.value": {
-      "en": "The allowance's cap, equal to the amount you supply. Call 2 uses all of it, so the allowance is back to 0 after the transaction."
+      "en": "Exactly the amount on the card, so `supply` uses the whole allowance and none is left open after the transaction.",
+      "zh-TW": "剛好是卡片上的金額，`supply` 會用完整個授權，交易後不留任何授權。"
     },
     "2.supply.asset": {
-      "en": "The token supplied, fixed as the market's base token, USDC for cUSDCv3. Supplying another token the market takes would add collateral instead, which earns no interest."
+      "en": "The market's base asset as the registry records it. Supplying another listed asset would add collateral instead, which earns no interest.",
+      "zh-TW": "registry 記錄的市場基礎資產。若換成其他資產就變成存抵押品，不會賺利息。"
     },
     "2.supply.amount": {
-      "en": "The amount supplied, equal to the card's amount. If the Safe has a USDC borrow in this market, the supply first repays it, and the Safe's supply balance rises by less."
+      "en": "Exactly the card amount. The maximum uint256 would instead repay the Safe's whole borrow, so it can never come from a typed amount.",
+      "zh-TW": "剛好是卡片金額。若是 uint256 最大值，會改成還清 Safe 的全部借款，打字輸入的金額不會變成它。"
     }
   }
 }

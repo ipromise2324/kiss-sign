@@ -2,5 +2,7 @@
   "asset": "token",
   "factory": "factory",
   "adapter": "adapter",
-  "baseToken": "token"
+  "baseToken": "token",
+  "token0": "token",
+  "token1": "token"
 }

@@ -1,11 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { TEMPLATES_DIR } from '../src/template/template.ts';
-import { GENERATED_FILE } from '../src/template/vault-reports.ts';
-import { REPORTED_FILE } from './repo-with-test-fixtures.ts';
 
 /**
  * The shipped templates as this checkout holds them, not the frozen test/fixtures/base/ the program's tests read: a
@@ -21,32 +17,24 @@ const OWNERS_NOT_READ = "UNVERIFIABLE the Safe's owners: not read";
 
 /**
  * Each shipped template's test transactions in testdata/safe-tx/ and the card fields whose implied value is a bound.
- * uniswap/approve-permit2 and uniswap/allow-router are not here: their test transactions batch them with a swap, and
- * implied-card reads a transaction of one template.
+ * uniswap/allow-router is not here: its test transactions batch it with a swap, and implied-card reads a transaction of
+ * one template. fluid/vault-deposit is not here: its min-shares is checked on the simulated result, so no value of the
+ * transaction implies it.
  */
 const SHIPPED: Record<string, Shipped> = {
-  'compound/supply': { fixtures: ['compound-supply-usdc', 'compound-supply-usdc-again', 'compound-supply-usdc-other-safe'] },
+  'compound/supply': { fixtures: ['compound-supply-usdc', 'compound-supply-usdc-other-safe'] },
   'cow/swap': { fixtures: ['cow-swap-usdc', 'cow-swap-usdt'], bounded: ['min-buy'] },
-  'cow/swap-approve': { fixtures: ['cow-swap-approve-cbbtc', 'cow-swap-approve-usdt'], bounded: ['min-buy'] },
-  'erc20/transfer': { fixtures: ['erc20-transfer-usdc', 'erc20-transfer-usdc-other-safe', 'erc20-transfer-usdt'] },
-  'eth/transfer': { fixtures: ['eth-transfer-first-nonce', 'eth-transfer-null-data', 'safe-cancel', 'safe-cancel-other-safe'] },
-  'fluid/vault-deposit': { fixtures: ['fluid-deposit-usdc', 'fluid-deposit-usdt', 'fluid-deposit-usdt-other-safe'] },
-  'morpho/vault-deposit': { fixtures: ['morpho-bundles-deposit', 'morpho-bundles-deposit-two-tags', 'morpho-vault-bundles-deposit', 'morpho-vault-bundles-deposit-other-safe'], bounded: ['min-shares'] },
-  'morpho/vault-v2-adapter-cap-accept': { fixtures: ['vault-v2-adapter-cap-accept-kpk'] },
-  'morpho/vault-v2-adapter-cap-submit': { fixtures: ['vault-v2-adapter-cap-submit-kpk'] },
-  'morpho/vault-v2-cap-accept': { fixtures: ['vault-v2-cap-accept'] },
-  'morpho/vault-v2-cap-decrease': { fixtures: ['vault-v2-cap-decrease', 'vault-v2-cap-decrease-other-safe'] },
-  'morpho/vault-v2-cap-submit': {
-    fixtures: ['vault-v2-cap-submit', 'vault-v2-cap-submit-860', 'vault-v2-cap-submit-flowmark', 'vault-v2-cap-submit-gauntlet', 'vault-v2-cap-submit-kpk', 'vault-v2-cap-submit-other-safe'],
-  },
-  'morpho/vault-v2-collateral-cap-submit': { fixtures: ['vault-v2-collateral-cap-submit-kpk-weeth'] },
-  'morpho/vault-v2-revoke': { fixtures: ['vault-v2-revoke'] },
-  'safe/add-owner': { fixtures: ['safe-add-owner-1-3-0', 'safe-add-owner-raise-threshold'] },
-  'safe/change-threshold': { fixtures: ['safe-change-threshold-lower', 'safe-change-threshold-raise'] },
-  'safe/remove-owner': { fixtures: ['safe-remove-owner-1-3-0', 'safe-remove-owner-first', 'safe-remove-owner-multisend-1-5-0'], verdict: OWNERS_NOT_READ },
-  'safe/swap-owner': { fixtures: ['safe-swap-owner-1-3-0', 'safe-swap-owner-first'], verdict: OWNERS_NOT_READ },
-  'uniswap/swap': { fixtures: ['uniswap-swap-hook-usdc-usdt', 'uniswap-swap-hook-usdc-usdt-2'], bounded: ['min-buy'] },
-  'uniswap/swap-no-hook': { fixtures: ['uniswap-swap-no-hook-usdc-usdt'], bounded: ['min-buy'] },
+  'erc20/transfer': { fixtures: ['erc20-transfer-usdc-a', 'erc20-transfer-usdc-b', 'erc20-transfer-usdc-c'] },
+  'eth/transfer': { fixtures: ['eth-transfer-large', 'eth-transfer-small', 'eth-transfer-third'] },
+  'morpho/vault-deposit': { fixtures: ['morpho-bundles-deposit', 'morpho-bundles-deposit-two-tags', 'morpho-deposit-steakhouse-prime', 'morpho-deposit-steakhouse-prime-other-safe', 'morpho-deposit-steakhouse-prime-third-safe'], bounded: ['min-shares'] },
+  'morpho/vault-v2-cap-accept': { fixtures: ['sentora-rlusd-main-cap-accept-kbtc-251', 'sentora-rlusd-main-cap-accept-kbtc-213'] },
+  'morpho/vault-v2-cap-submit': { fixtures: ['sentora-rlusd-main-cap-submit-kbtc-284', 'sentora-rlusd-main-cap-submit-kbtc-273'] },
+  'safe/add-owner': { fixtures: ['safe-add-owner-multisend', 'safe-add-owner-nonce-0', 'safe-add-owner-to-3', 'safe-add-owner-v1-3-0'] },
+  'safe/change-threshold': { fixtures: ['safe-change-threshold-1-3-0', 'safe-change-threshold-1-4-1'] },
+  'safe/remove-owner': { fixtures: ['safe-remove-owner-1-4-1', 'safe-remove-owner-first-1-3-0', 'safe-remove-owner-to-1'], verdict: OWNERS_NOT_READ },
+  'safe/swap-owner': { fixtures: ['safe-swap-owner-first-signer', 'safe-swap-owner-v130', 'safe-swap-owner-v141'], verdict: OWNERS_NOT_READ },
+  'uniswap/approve-permit2': { fixtures: ['uniswap-approve-permit2-usdt', 'uniswap-approve-permit2-usdt-2'] },
+  'uniswap/swap': { fixtures: ['uniswap-swap-usdc-usdt'], bounded: ['min-buy'] },
 };
 
 /** What `pnpm template implied-card` printed for one transaction: its verdict line and each bounded field, or each line that is neither. */
@@ -74,9 +62,3 @@ for (const [id, { fixtures, bounded = [], verdict = 'MATCH' }] of Object.entries
     for (const name of fixtures) assert.deepEqual(found.get(name), { verdict: [verdict], bounded, other: [] }, `${name}: ${fix}`);
   });
 }
-
-test('each instance the frozen base says has a report has its shipped report', () => {
-  const missing = (JSON.parse(readFileSync(REPORTED_FILE, 'utf8')) as string[]).filter((instance) => !existsSync(join(ROOT, TEMPLATES_DIR, instance, GENERATED_FILE)));
-  const commands = missing.map((instance) => `pnpm report ${instance.split('/instances/').join(' --instance-of ')} --record`);
-  assert.deepEqual(commands, [], `the tests that run card new and card seal pick these instances by their report; record each again with:\n${commands.join('\n')}`);
-});

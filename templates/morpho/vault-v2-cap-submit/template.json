@@ -15,13 +15,10 @@
       "max": {
         "value": "340282366920938463463374607431768211455",
         "why": {
-          "en": "2^128-1 is the largest absolute cap Vault V2 can store; curators set it when they limit a market only by its relative cap, as most submissions of the last year did.",
-          "zh-TW": "2^128-1 是 Vault V2 能存的最大絕對上限；curator 只想用相對上限限制某個市場時就設這個值，過去一年大多數的提交都是這樣。"
+          "en": "2^128-1 is the largest absolute cap Vault V2 can store; a larger value reverts, so the card refuses it.",
+          "zh-TW": "2^128-1 是 Vault V2 能存的最大絕對上限；更大的值會 revert，所以卡片不收。"
         }
       }
-    },
-    "relative-cap": {
-      "kind": "percent"
     }
   },
   "same": [
@@ -72,39 +69,6 @@
                   }
                 }
               }
-            },
-            {
-              "call": {
-                "function": "submit(bytes data)",
-                "args": {
-                  "data": {
-                    "call": {
-                      "function": "increaseRelativeCap(bytes idData, uint256 newRelativeCap)",
-                      "args": {
-                        "idData": {
-                          "encoded": {
-                            "as": "capId(string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams)",
-                            "args": {
-                              "kind": {
-                                "const": "this/marketParams"
-                              },
-                              "adapter": {
-                                "card": "vault.adapter"
-                              },
-                              "marketParams": {
-                                "card": "market"
-                              }
-                            }
-                          }
-                        },
-                        "newRelativeCap": {
-                          "card": "relative-cap"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
             }
           ]
         }
@@ -143,43 +107,6 @@
                 },
                 "newAbsoluteCap": {
                   "card": "absolute-cap"
-                }
-              }
-            }
-          }
-        },
-        "change": {
-          "executableAt": "increases"
-        }
-      },
-      {
-        "to": {
-          "card": "vault"
-        },
-        "function": "executableAt(bytes data) returns (uint256 executableAt)",
-        "args": {
-          "data": {
-            "call": {
-              "function": "increaseRelativeCap(bytes idData, uint256 newRelativeCap)",
-              "args": {
-                "idData": {
-                  "encoded": {
-                    "as": "capId(string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams)",
-                    "args": {
-                      "kind": {
-                        "const": "this/marketParams"
-                      },
-                      "adapter": {
-                        "card": "vault.adapter"
-                      },
-                      "marketParams": {
-                        "card": "market"
-                      }
-                    }
-                  }
-                },
-                "newRelativeCap": {
-                  "card": "relative-cap"
                 }
               }
             }

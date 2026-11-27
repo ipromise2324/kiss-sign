@@ -10,8 +10,8 @@
  },
  "head": "26484965",
  "studiedWith": {
-  "template": "0x0b886ff2efe4eff8c89f9efe9966c29bfbeb83ec18c006ce22509c906d8f5575",
-  "registry": "0xe44b7c0876182ff4e9920f38d1873d1ec011a4f3ddebaff26e92dc442758f78b",
+  "template": "0xbe5cc1e21beda8694bb5fb97b081766e4cc3f4a86f1c510afe1332c3a2fc90e8",
+  "registry": "0xa35f836859cb9d43f6d97c9143b5202e3c8b2c8fa35a8d83a2fb50f83940da1e",
   "study": "0x61f1ce5f5cd4adf417d5dffd036bcb1056828b2e57170ba4bcd0ef03b994e01d"
  },
  "search": {
@@ -558,11 +558,11 @@
    },
    "reason": {
     "kind": "entry",
-    "at": "call.approve.spender",
+    "at": "call.approve.token",
     "expected": [
-     "universal-router-2.1.2"
+     "usdt"
     ],
-    "actual": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"
+    "actual": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
    },
    "free": [
     {

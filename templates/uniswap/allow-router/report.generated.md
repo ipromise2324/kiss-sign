@@ -4,15 +4,20 @@ Written by `pnpm report uniswap/allow-router --record` from `templates/uniswap/a
 
 ## Findings
 
-0 key and 3 reference findings.
+4 key and 4 reference findings.
 
 Key: it bears on whether an address or its code is the protocol's real one and does what the template assumes. Reference: context to weigh that undermines neither. A place with nothing to compare, such as one that does not list the address, prints as NOT LISTED or n/a in its table and is no finding.
 
 | Result | Grade | Finding |
 | --- | --- | --- |
-| `usdc/abi` | reference | the source is not the deployed text |
+| `uniswap-v4-pool-manager/address` | key | address confirmed in 0 places; it needs 2 |
+| `uniswap-v4-pool-manager/source.more.1.commit` | key | GitHub commit not confirmed |
+| `uniswap-v4-pool-manager/code.1` | key | a read got no answer |
+| `uniswap-v4-pool-manager/code.today` | key | a read got no answer |
 | `usdt/abi` | reference | the source is not the deployed text |
-| `cbbtc/source.deployer` | reference | who deployed it is not proven |
+| `uniswap-v4-pool-manager/source.page` | reference | the address was not read on the page |
+| `uniswap-v4-pool-manager/source.deployer` | reference | a source got no answer (UNVERIFIABLE) |
+| `uniswap-v4-pool-manager/source.more.1.page` | reference | the address was not read on the page |
 
 ## Card
 
@@ -24,12 +29,7 @@ Key: it bears on whether an address or its code is the protocol's real one and d
 
 | Name | Address | Attributes |
 | --- | --- | --- |
-| `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` |  |
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` |  |
-| `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` |  |
-| `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |  |
-| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` |  |
-| `weeth` | `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` |  |
 
 ## Calls and field rules
 
@@ -40,7 +40,7 @@ Key: it bears on whether an address or its code is the protocol's real one and d
 | `to` | registry `permit2` `0x000000000022D473030F116dDEE9F6B43aC78BA3` |
 | `value` | constant `0` |
 | `approve` | calls `approve(address,address,uint160,uint48)`, selector `0x87517c45`; no bytes after the arguments |
-| `approve.token` | the card's `token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6`, `weeth` `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` |
+| `approve.token` | the card's `token`: one of `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7` |
 | `approve.spender` | registry `universal-router-2.1.2` `0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85` |
 | `approve.amount` | constant `1461501637330902918203684832716283019655932542975` |
 | `approve.expiration` | free; written by the AI in the template: When Permit2 stops honouring the router's allowance, which the app sets 30 days ahead. The router pulls only from the address that called it (its registry entry's standingAllowance), so how long the allowance lasts does not change who can use it; verify's page shows the expiration the transaction leaves.; in Traditional Chinese: Permit2 停止承認給 router 的授權額度的時間，app 設在 30 天後。router 只從呼叫它的地址拉款（見它登記項目的 standingAllowance），所以授權維持多久不會改變誰能用它；verify 的頁面會顯示交易留下的到期時間。 |
@@ -49,7 +49,7 @@ Key: it bears on whether an address or its code is the protocol's real one and d
 
 The Safe gives and gets nothing: any change to its balances is a `MISMATCH`.
 
-The Safe's allowance of the card's `token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6`, `weeth` `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee`, inside Permit2, to registry `universal-router-2.1.2` `0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85` may end higher than it started, at any amount, unlimited included, as the registry entry declares a standing allowance: written by the AI in the template: The router pulls tokens through Permit2 only from the address that called execute, its locker (msgSender() in Dispatcher.sol, set by Lock.sol): Permit2Payments.permit2TransferFrom takes msgSender() as the owner for V2, V3 and V4 swaps with payerIsUser and for PERMIT2\_TRANSFER\_FROM, and PERMIT2\_TRANSFER\_FROM\_BATCH reverts when a transfer's from is not the locker. It has no owner and no proxy. So a Permit2 allowance to it can be spent only by a later execute the Safe itself makes.; every other allowance may not rise.
+The Safe's allowance of the card's `token`: one of `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, inside Permit2, to registry `universal-router-2.1.2` `0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85` may end higher than it started, at any amount, unlimited included, as the registry entry declares a standing allowance: written by the AI in the template: The router pulls tokens through Permit2 only from the address that called execute, its locker (msgSender() in Dispatcher.sol, set by Lock.sol): Permit2Payments.permit2TransferFrom takes msgSender() as the owner for V2, V3 and V4 swaps with payerIsUser and for PERMIT2\_TRANSFER\_FROM, and PERMIT2\_TRANSFER\_FROM\_BATCH reverts when a transfer's from is not the locker. It has no owner and no proxy. So a Permit2 allowance to it can be spent only by a later execute the Safe itself makes.; every other allowance may not rise.
 
 ## Official documentation
 
@@ -61,20 +61,16 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 
 ## Registry entries
 
-`pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc usdt morpho cbbtc permit2 universal-router-2.1.2 usp weeth` prints what each check compared.
+`pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdt permit2 universal-router-2.1.2 uniswap-v4-pool-manager` prints what each check compared.
 
 Newest version: for a source pinned to a GitHub commit on the default branch, which addresses the same file at the tip of that branch binds to the same label; it is the same place, so it never counts as one.
 
 | Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Newest version | Address on page |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | token | <https://developers.circle.com/stablecoins/usdc-contract-addresses> | PASS | PASS | n/a | n/a | PASS |
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | token | <https://tether.to/en/supported-protocols/> | PASS | PASS | n/a | n/a | PASS |
-| `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | token | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | PASS | n/a | n/a | PASS |
-| `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | token | <https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts> | n/a: nothing to compare | PASS | PASS | PASS | PASS |
 | `permit2` | `0x000000000022D473030F116dDEE9F6B43aC78BA3` | allowance | <https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments> | PASS | n/a | n/a | n/a | PASS |
 | `universal-router-2.1.2` | `0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85` | router | <https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments> | PASS | n/a | n/a | n/a | PASS |
-| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | token | <https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts> | PASS | PASS | n/a | n/a | PASS |
-| `weeth` | `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` | token | <https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol> | PASS | PASS | PASS | PASS | PASS |
+| `uniswap-v4-pool-manager` | `0x000000000004444c5dc75cB358380D2e3dE08A90` | pool | <https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments> | PASS | n/a | n/a | n/a | FINDING |
 
 Each entry's `moreSources`: more official pages that list its address, each checked as the source is.
 
@@ -82,21 +78,18 @@ Each entry's `moreSources`: more official pages that list its address, each chec
 | --- | --- | --- | --- | --- | --- |
 | `permit2` | <https://github.com/Uniswap/sdks/blob/8ae0425c57e1699b0ae48ebb3077a2f526ae3818/sdks/permit2-sdk/src/constants.ts> | PASS | PASS | PASS | PASS |
 | `universal-router-2.1.2` | <https://github.com/Uniswap/universal-router/blob/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json> | PASS | PASS | PASS | PASS |
+| `uniswap-v4-pool-manager` | <https://github.com/Uniswap/sdks/blob/74827a8ad193277ffe42a31635fd77a53f48ae71/sdks/sdk-core/src/addresses.ts> | PASS | FINDING | n/a | FINDING |
 
 More places that may name the address: the scope of every Immunefi program tied to the entry's protocol, which the program finds, and of the one the entry names; its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and which addresses npm's latest version binds to the same label; and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places; a program not tied to the protocol and the SDK's latest version never count.
 
 | Entry | Bounty scope | SDK file | SDK publisher | SDK latest | Deployer |
 | --- | --- | --- | --- | --- | --- |
-| `usdc` | NOT LISTED | n/a | n/a | n/a | n/a: no confirmed entry shares `0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911` |
 | `usdt` | NOT LISTED | n/a | n/a | n/a | n/a: no confirmed entry shares `0x36928500Bc1dCd7af6a2B4008875CC336b927D57` |
-| `morpho` | NOT LISTED | n/a | n/a | n/a | n/a: no confirmed entry shares `0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5` |
-| `cbbtc` | NOT LISTED | n/a | n/a | n/a | FINDING |
 | `permit2` | NOT LISTED | PASS | PASS | PASS | n/a: no confirmed entry shares `0xD32Ff78579352cA78f416120A9f68b65c410871b` |
 | `universal-router-2.1.2` | NOT LISTED | PASS | PASS | PASS | n/a: no confirmed entry shares `0x2179a60856E37dfeAacA0ab043B931fE224b27B6` |
-| `usp` | NOT LISTED | n/a | n/a | n/a | n/a: no confirmed entry shares `0xB8eaa4f956C6324435f4088cAe9cDa974C358508` |
-| `weeth` | PASS | n/a | n/a | n/a | n/a: no confirmed entry shares `0xf8a86ea1Ac39EC529814c377Bd484387D395421e` |
+| `uniswap-v4-pool-manager` | NOT LISTED | n/a | n/a | n/a | UNVERIFIABLE |
 
-8 entries; each finding is graded and listed under Findings at the top.
+4 entries; each finding is graded and listed under Findings at the top.
 
 ## Code pins
 
@@ -104,21 +97,10 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 
 | Entry | From block | Code hash | Implementation | Chain |
 | --- | --- | --- | --- | --- |
-| `usdc` | 6082465 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0x0882477e7895bdC5cea7cB1552ed914aB157Fe56` `0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa` | PASS |
-| `usdc` | 10743414 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0xB7277a6e95992041568D9391D09d0122023778A2` `0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3` | PASS |
-| `usdc` | 12317814 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF` `0x10d68f9bb2ba9f5e9163cadc4a3446be0c6b2ab8b1b65079e79dcd94a6dc329c` | PASS |
-| `usdc` | 18963716 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | PASS |
 | `usdt` | 4634748 | `0xb44fb4e949d0f78f87f79ee46428f23a2a5713ce6fc6e0beb3dda78c2ac1ea55` | none | PASS |
-| `morpho` | 21157386 | `0x9d47be5e1fade278a449fcd67e4fc7b69ce5c451c36ad7c4f380280d127f5532` | `0x4364fd2371b6318159366abFA51f190df5C24852` `0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9` | PASS |
-| `cbbtc` | 20570548 | `0x91149353e08445ba77a52bf7e4cef919054027f4ad42812b4314bbaf2abd8b71` | `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72` `0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547` | PASS |
 | `permit2` | 15986406 | `0xc67d1657868aa5146eaf24fb879fb1fdec3d2d493b3683a61c9c2f4fb2851131` | none | PASS |
 | `universal-router-2.1.2` | 25999984 | `0x55e6b334152096d60367d7ab24241948b31e8d0e66adc8b81cba049a19f9d2ac` | none | PASS |
-| `usp` | 23195672 | `0x4c64cb2303edec6193910f660f82375d5bff982c070f14e1944c7a568ed5bb2e` | `0x9E40B6be5aFFC984F36cf118C778f0A83be20370` `0x54c3c512b546d3b2daedf369c9de88d722a0ce1d9ee444bd0ec4e5d4b9221da7` | PASS |
-| `weeth` | 17664336 | `0x0b58ec11caee361ca0c1e484c12f6e7177634222186f7639bd9183dfee9d2278` | `0xDd78355BcF9a9435BFcDd9C1482C0e72E7b08F79` `0xb43b3e05d90da5c1b662af7a56ee3532d52d6e80f6208693f568e12816099145` | PASS |
-| `weeth` | 18537431 | `0x0b58ec11caee361ca0c1e484c12f6e7177634222186f7639bd9183dfee9d2278` | `0xe629ee84C1Bd9Ea9c677d2D5391919fCf5E7d5D9` `0x772dd1f6fee4934a63703e7e8adfdb8f4588e1eaa5442aa63d336e92c72cc52a` | PASS |
-| `weeth` | 22131382 | `0x0b58ec11caee361ca0c1e484c12f6e7177634222186f7639bd9183dfee9d2278` | `0x353E98F34b6E5a8D9d1876Bf6dF01284d05837cB` `0xaf80b4e5c85a0e16d8f3fdbe108c24ef3d85f780a05cd926d255b0d97bf4bba1` | PASS |
-| `weeth` | 23089686 | `0x0b58ec11caee361ca0c1e484c12f6e7177634222186f7639bd9183dfee9d2278` | `0x2d10683E941275D502173053927AD6066e6aFd6B` `0xb703f3fafa59bfdfe0e3b934ecc03fa59a5c2967afa0d60446971c86d20f46c7` | PASS |
-| `weeth` | 25533308 | `0x0b58ec11caee361ca0c1e484c12f6e7177634222186f7639bd9183dfee9d2278` | `0xA6Ca0607190d03CF16fe6F2865Cf40c3D160ccf3` `0xd43182be0eba15468f2e3f33cfe55685c9fcdda6c306156c046b6c4b076f52e7` | PASS |
+| `uniswap-v4-pool-manager` | 21688329 | `0x785f1014552b7ce7d5fb7d0c970ca60edee94fd00425d7ca21609acac7ce1293` | none | UNVERIFIABLE at block 21688329 |
 
 ### Today's code
 
@@ -127,6 +109,7 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 | Entry | Today | Block |
 | --- | --- | --- |
 | `universal-router-2.1.2` | PASS | 26484994 |
+| `uniswap-v4-pool-manager` | UNVERIFIABLE | 26484994 |
 
 ## ABI proofs
 
@@ -134,14 +117,10 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Address | Result | Proxy | Contract and compiler | Code hash | Equals pin | Template functions | Masked | Block |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | PROVEN | zeppelinos, implementation `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` | `FiatTokenV2_2`, solc `0.6.12+commit.27d51765` | `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | PASS | none | 0 immutable, 0 library spans masked; FINDING: the metadata hash differs, so the verified source is not the deployed text and its parameter names are not proven | 26433609 |
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | PROVEN | none | `TetherToken`, solc `0.4.18+commit.9cf6e910` | `0xb44fb4e949d0f78f87f79ee46428f23a2a5713ce6fc6e0beb3dda78c2ac1ea55` | PASS | none | 0 immutable, 0 library spans masked; FINDING: the metadata hash differs, so the verified source is not the deployed text and its parameter names are not proven | 26433610 |
-| `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | PROVEN | eip1967, implementation `0x4364fd2371b6318159366abFA51f190df5C24852` | `MorphoTokenEthereum`, solc `0.8.27+commit.40a35a09` | `0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9` | PASS | none | 2 immutable, 0 library spans masked | 26433590 |
-| `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | PROVEN | zeppelinos, implementation `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72` | `FiatTokenV2_1`, solc `0.6.12+commit.27d51765` | `0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547` | PASS | none | 0 immutable, 0 library spans masked | 26433557 |
 | `permit2` | `0x000000000022D473030F116dDEE9F6B43aC78BA3` | PROVEN | none | `Permit2`, solc `0.8.17+commit.8df45f5f` | `0xc67d1657868aa5146eaf24fb879fb1fdec3d2d493b3683a61c9c2f4fb2851131` | PASS | PASS, all 1 | 2 immutable, 0 library spans masked | 26433592 |
 | `universal-router-2.1.2` | `0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | | |
-| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | PROVEN | eip1967, implementation `0x9E40B6be5aFFC984F36cf118C778f0A83be20370` | `ERC20IssuanceUpgradeable_Blacklist_v1`, solc `0.8.23+commit.f704f362` | `0x54c3c512b546d3b2daedf369c9de88d722a0ce1d9ee444bd0ec4e5d4b9221da7` | PASS | none | 0 immutable, 0 library spans masked | 26433610 |
-| `weeth` | `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` | PROVEN | eip1967, implementation `0xA6Ca0607190d03CF16fe6F2865Cf40c3D160ccf3` | `WeETH`, solc `0.8.27+commit.40a35a09` | `0xd43182be0eba15468f2e3f33cfe55685c9fcdda6c306156c046b6c4b076f52e7` | PASS | none | 30 immutable, 0 library spans masked | 26433614 |
+| `uniswap-v4-pool-manager` | `0x000000000004444c5dc75cB358380D2e3dE08A90` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | | |
 
 ## Protocol facts
 
@@ -163,12 +142,7 @@ What DefiLlama and the chain say about the protocols this template's calls go to
 
 | Token | Address | decimals() |
 | --- | --- | --- |
-| `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | 6 |
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | 6 |
-| `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | 18 |
-| `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | 8 |
-| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | 18 |
-| `weeth` | `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` | 18 |
 
 ## Past transactions
 
@@ -214,7 +188,7 @@ fields, over the 2 fitting transactions:
   call.approve.expiration  [free]
     values: 2 transactions, min 1797681644, p50 1797681644, p90 1797850913, p99 1797850913, max 1797850913
 misfits, by reason:
-  27 from 27 EOAs: call.approve.spender: expected universal-router-2.1.2, got 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af
+  26 from 26 EOAs: call.approve.spender: expected universal-router-2.1.2, got 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af
     e.g. 0xd815c5cb3699b850c9097244b88dbe4a159f1f73f748d8ed9096e97b82ff0c7a, 0xf1a136e2c13a12612a35e32c28ae89952e5c2d1fa674e3b6cee0e7756c860398, 0xe2c69a38aa3bbd6e0bacad7ec1d7e5185eb2f16a807ee0dfbcd0aefaa27e8e02
   6 from 3 EOAs: call.approve.spender: expected universal-router-2.1.2, got 0xbD216513d74C8cf14cf4747E6AaA6420FF64ee9e
     e.g. 0x3a9103c2074f9653ae932e57675fead1d158bb7ca88fb1f54b2810cfdbae4932, 0x02da269e362f3cbab83ca6e49d23bfc2f932ff7350f49ba163c00ec01f76937b, 0xb8f3aa2eb9548d1c78e35acb3c8e003f87efddf491a235996b6bb9995049d370
@@ -224,6 +198,8 @@ misfits, by reason:
     e.g. 0x5abf5f87c7f89f88f4a195bbeaa465272117b6f008e401d56f588093b2b7a9a6
   1 from 1 EOA: call.approve.amount: expected 1461501637330902918203684832716283019655932542975, got 100340204
     e.g. 0x1513f66501b7f31a960886a6cd88ec8428fd9705ed6344e6024d0c93879a0335
+  1 from 1 EOA: call.approve.token: expected usdt, got 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+    e.g. 0x75e06ee61b13f3ac9cf48b178bdad463ee2d7c5e3c4e0dffdd65e47c15a4b291
   1 from 1 EOA: call.approve.amount: expected 1461501637330902918203684832716283019655932542975, got 1000000
     e.g. 0xcfb690a236115da996de212a7473411eed24b9eb55eef338938f3fad30221038
   1 from 1 EOA: call.approve.amount: expected 1461501637330902918203684832716283019655932542975, got 170213853653928070459040
@@ -239,15 +215,11 @@ examples that fit: 0x0b6cbcd7944599142b8560bf83ec58102c4e4a9b36a36c153a714e67bbe
 
 ## ERC-7730
 
-`pnpm erc7730 usdc usdt morpho cbbtc safe-1.3.0 safe-1.4.1 permit2 universal-router-2.1.2 usp weeth`: each entry's calldata and EIP-712 descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked, for the entries the operation touches and every registry singleton, whose EIP-712 descriptor a wallet applies to the Safe transaction itself. A second opinion on field meanings, never a rule.
+`pnpm erc7730 usdt safe-1.3.0 safe-1.4.1 permit2 universal-router-2.1.2 uniswap-v4-pool-manager`: each entry's calldata and EIP-712 descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked, for the entries the operation touches and every registry singleton, whose EIP-712 descriptor a wallet applies to the Safe transaction itself. A second opinion on field meanings, never a rule.
 
 ```text
 ERC-7730 registry github.com/ethereum/clear-signing-erc7730-registry at commit 3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4
 no descriptor is scoped by the registry factory of an entry below
-
-usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 (token)
-  descriptor   none: no calldata descriptor lists this address on chain 1
-  index        index.calldata.json has no entry for this address
 
 usdt 0xdAC17F958D2ee523a2206206994597C13D831ec7 (token)
   descriptor   registry/tether/calldata-usdt.json
@@ -262,14 +234,6 @@ usdt 0xdAC17F958D2ee523a2206206994597C13D831ec7 (token)
     field      #._spender addressName
     field      #._value tokenAmount
   attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash
-
-morpho 0x58D97B57BB95320F9a05dC918Aef65434969c2B2 (token)
-  descriptor   none: no calldata descriptor lists this address on chain 1
-  index        index.calldata.json has no entry for this address
-
-cbbtc 0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf (token)
-  descriptor   none: no calldata descriptor lists this address on chain 1
-  index        index.calldata.json has no entry for this address
 
 safe-1.3.0 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552 (singleton)
   descriptor   registry/safe/calldata-Safe-1.3.0.json
@@ -409,11 +373,7 @@ universal-router-2.1.2 0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85 (router)
   descriptor   none: no calldata descriptor lists this address on chain 1
   index        index.calldata.json has no entry for this address
 
-usp 0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6 (token)
-  descriptor   none: no calldata descriptor lists this address on chain 1
-  index        index.calldata.json has no entry for this address
-
-weeth 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee (token)
+uniswap-v4-pool-manager 0x000000000004444c5dc75cB358380D2e3dE08A90 (pool)
   descriptor   none: no calldata descriptor lists this address on chain 1
   index        index.calldata.json has no entry for this address
 ```

@@ -333,16 +333,17 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <div class="main">
 
 <header>
+  <figure class="request"><figcaption>你的要求（建立這個模板時，原文）</figcaption><blockquote>I want to send ETH from my Safe. build me the template and its report</blockquote></figure>
   <h1><span class="aiw" data-ai><span>從 Safe 轉出 ETH</span><span class="byai">AI 研究</span></span></h1>
   <span class="opid">eth/transfer</span>
-  <p class="sub"><span class="aiw" data-ai><span>Safe 把你填的 ETH 數量直接送到你選的收款人，不呼叫任何合約。卡片只問收款人和金額，跟 Safe web app 送 ETH 時要填的一樣。</span><span class="byai">AI 研究</span></span></p>
+  <p class="sub"><span class="aiw" data-ai><span>Safe 把你填的 ETH 數量，以不帶資料的單純轉帳，送給你從地址簿選的收款人。不呼叫任何合約，也不留下授權；帶資料、delegatecall 或金額不同的交易都會被拒絕。</span><span class="byai">AI 研究</span></span></p>
   <ul class="checks">
     <li data-state="na" data-line="params"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>參數保護 <span class="n num">沒有測試</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">模板沒有不限的參數：每個參數都綁定卡片或固定值，沒有參數要換值測試，所以沒有換值測試的記錄。每次簽名，verify 都把每個綁定的參數逐一改掉，確認都變成 MISMATCH。</span></span></li>
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">鏈上資料都同時問兩家節點，答案不一樣就不給結果。研究時有三種資料只有一個來源，都不會影響判定：過去交易的呼叫追蹤（drpc）、搜尋過去交易（Alchemy 或 Etherscan 找到的都算，找事件只用 Etherscan），和金庫曾經收過份額的地址名單（Alchemy，每個地址的餘額仍問兩家）。</span></span></li>
   </ul>
-  <div class="verdict" data-state="na"><span class="lbl">建議</span><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span class="aiw" data-ai><span>最單純的操作，不呼叫任何協議合約；風險只在收款地址，加進地址簿時要從聊天以外的來源核對。</span><span class="byai">AI 研究：可以用</span></span></div>
+  <div class="verdict" data-state="na"><span class="lbl">建議</span><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span class="aiw" data-ai><span>單純的 ETH 轉帳：一個不帶資料的呼叫，送到你地址簿的收款人，不經合約、不留授權。</span><span class="byai">AI 研究：可以用</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
     <ol><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></a></li><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li><li><a href="#usage">AI 用量</a></li></ol>
   </details>
@@ -354,10 +355,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="rows">
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>收款人如果是合約（例如另一個 Safe），收到 ETH 時會執行它自己的程式。</span><span class="byai">AI 研究</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>收款人若是合約，轉入 ETH 會執行它的程式碼，它可以把 ETH 再轉走。</span><span class="byai">AI 研究</span></span></div>
         <details class="more"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>細節</summary>
-          <div class="rec"><span class="aiw" data-ai><span>verify 檢查你的 Safe 的每一項餘額和授權變化，多動一點點（哪怕 1 wei）就 MISMATCH；但對方合約內部記了什麼、之後怎麼處理這筆 ETH，它看不到。</span><span class="byai">AI 研究</span></span></div>
-          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>收款人是合約時，先確認它能收 ETH；第一次轉給新地址先送小額。</span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="aiw" data-ai><span>verify 只檢查 Safe 剛好把這個數量給了那個地址。 <a class="aisrc" href="https://docs.soliditylang.org/en/v0.8.28/contracts.html#receive-ether-function">來源</a></span><span class="byai">AI 研究</span></span></div>
+          <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>地址簿只放你掌控或認識的地址；要轉入協議的合約，請要求該協議自己的模板。</span><span class="byai">AI 研究</span></span></div>
         </details></div>
     </div>
   </div>
@@ -438,7 +439,24 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="past">
-  <h2>過去交易</h2><p class="lead">這個操作沒有研究過去交易。</p>
+  <h2>過去交易</h2>
+  <h3>1. 這個模板的交易以前成功過嗎？</h3>
+  <p class="ans"><b>成功過，12 個 Safe 一共做過 12 次。</b> EOA：0 次。最近一次是 2026-11-26。全部成功執行。最近 3 筆：<a href="https://etherscan.io/tx/0xd5512a95859a92752ec7679bc060a6145cdcf2901c42e08fd1a57943fb9b299e">0xd5512a95…</a> <a href="https://etherscan.io/tx/0x0eb3193ab358c774546c11798c34f8c89276712c1989c67caf31ca26526c6181">0x0eb3193a…</a> <a href="https://etherscan.io/tx/0xea61562ae5d42038a25c504c2868b843be9a3b01192a922458b929b8cf48407b">0xea61562a…</a></p>
+  <h3>2. app 填的值，一般是多少？</h3>
+  <p class="ans">這個模板沒有留任何值給 app 填。</p>
+  <h3>3. 其他交易哪裡不同？</h3>
+  <p class="ans">4 筆交易做了這個模板不允許的事。</p>
+  <p class="ans"><span class="aiw" data-ai><span>符合的 12 筆中，5 筆把 ETH 轉給別的地址，6 筆轉 0 ETH 給 Safe 自己（取消排隊中的交易），1 筆轉 0 ETH 給零地址。ETH 轉帳沒有事件可找，所以搜尋讀每個 Safe 的執行紀錄，只回溯 5 天。一個 MultiSend 付給多個地址的批次，以及 4 筆 delegatecall 到非 MultiSend 合約的交易，都不符合這個單一呼叫的模板。</span><span class="byai">AI 研究</span></span></p>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>顯示這 1 種不同</span></summary><div class="sc"><table class="pt2"><thead><tr><th scope="col" class="what">哪裡不同</th><th scope="col" class="n">Safe</th><th scope="col" class="n">EOA</th><th scope="col" class="nw">最近</th><th scope="col" class="tx">例子（最多 3 筆）</th></tr></thead><tbody>
+    <tr><td class="what" data-label="哪裡不同"><span>delegatecall 到不是官方 MultiSend 的合約</span></td><td class="n" data-label="Safe"><span><span class="num">4</span></span></td><td class="n" data-label="EOA"><span><span class="num">0</span></span></td><td class="nw" data-label="最近"><span>2026-11-25</span></td><td class="tx" data-label="例子（最多 3 筆）"><span><a href="https://etherscan.io/tx/0x9db636dec1cc2b104f5e7d1306ca0b7dda3cff8d2fdcbd729ff9303e5da86340">0x9db636de…</a> <a href="https://etherscan.io/tx/0x2747f2db3c62d4dbe98e0121f25b918bfd2976ce2602b5197411dba1db73bda5">0x2747f2db…</a> <a href="https://etherscan.io/tx/0x3efa7a69f160cde99fe8be264d1963d7698ef6e7bd4f7bbb8408a37a9f84e134">0x3efa7a69…</a></span></td></tr></tbody></table></div>
+  </details>
+  <details class="fold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><span>程式怎麼搜尋</span></summary>
+  <h3>搜尋 Safe 的ExecutionSuccess，找到 28677 筆，研究 240 筆，含證實為 Safe 的參與方的 28573 筆中研究 180 筆</h3>
+  <p class="cap">從最新的區塊往回，搜尋了區塊 26465928（2026-11-21）到區塊 26501636（2026-11-26）的每一筆交易，共 35709 個區塊，約 4 天 23 小時，沒有遺漏；搜尋到 50 頁（每頁 1,000 筆）的上限就停止，所以最近一年裡更早的交易沒有搜尋。只有 Etherscan 搜尋事件，找到 <span class="num">28677</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
+  <p class="cap">這些交易是從事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。</p>
+  <p class="cap">另外 191 筆是別的操作，不列入：<code>usdt.0xa9059cbb</code> 13 筆、<code>0x388C818CA8B9251b393131C08a736A67ccB19297（沒有資料）</code> 12 筆、<code>0xBEeF007ECFBfdF9B919d0050821A9B6DbD634fF0.0x095ea7b3</code> 11 筆、<code>usdc.0xa9059cbb</code> 10 筆，還有別的。</p>
+  <p class="cap">另外 33 筆來自不是 Safe 的合約、執行失敗或讀不到，不列入。</p>
+  </details>
 </section>
 
 <section id="next">
@@ -476,10 +494,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="usage">
   <h2>AI 用量</h2>
-  <p class="lead">這份報告的 AI 用量未量測。</p>
+  <p class="lead">Opus 5.5 用 74 次呼叫、12 分鐘做出這份報告。</p>
+  <table class="ut"><thead><tr><th scope="col">項目</th><th scope="col">token</th></tr></thead><tbody><tr><th scope="row">重複讀取（cache 讀取）</th><td class="num">9.2M</td></tr><tr><th scope="row">新讀入（input 與 cache 寫入）</th><td class="num">0.16M</td></tr><tr><th scope="row">output</th><td class="num">0.03M</td></tr></tbody><tfoot><tr><th scope="row">總共</th><td class="num">9.4M</td></tr></tfoot></table>
+  <p class="cap">來源：Claude Code 對話紀錄裡 API 回報的用量，不含協調者。這些數字程式不檢查。</p>
 </section>
 
-<footer class="foot">由 <code>pnpm report eth/transfer --record</code> 從 <code>templates/eth/transfer/template.json</code>、<code>templates/eth/transfer/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/eth-transfer.json</code>、<code>testdata/abi</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/eth/transfer/notes.json</code> 寫出，資料在 2026-11-17 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
+<footer class="foot">由 <code>pnpm report eth/transfer --record</code> 從 <code>templates/eth/transfer/template.json</code>、<code>templates/eth/transfer/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/eth-transfer.json</code>、<code>testdata/abi</code>、<code>testdata/research/eth-transfer.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/eth/transfer/notes.json</code>、<code>testdata/usage/eth-transfer.json</code> 寫出，資料在 2026-11-26 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。用量的數字程式也不檢查。</footer>
 
 </div>
 </div>

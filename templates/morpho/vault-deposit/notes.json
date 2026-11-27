@@ -1,110 +1,67 @@
 {
-  "title": {
-    "en": "Deposit into a Morpho vault",
-    "zh-TW": "存入 Morpho vault"
-  },
-  "summary": {
-    "en": "The Safe first approves VaultBundlesV1 for exactly the amount you type, then calls `vaultBundlesV1Deposit` on it: VaultBundlesV1 pulls the tokens from the Safe and deposits them into the vault you pick, and the vault mints the shares straight to the Safe. You do not type the minimum shares: the program computes them from the vault's own preview when you build the card, less a small slippage; a higher price per share makes the transaction fail. The old route through Bundler3 is refused: verify returns MISMATCH.",
-    "zh-TW": "Safe 先授權 VaultBundlesV1 剛好你填的金額，再呼叫它的 `vaultBundlesV1Deposit`：VaultBundlesV1 從 Safe 拉走這筆代幣，存進你選的 vault，vault 把份額直接鑄給 Safe。最少份額不用你填：建卡片時，程式依 vault 自己的預覽算出，再扣一點滑價；每股價格更高時，交易會失敗。走 Bundler3 的舊路線不接受，verify 判 MISMATCH。"
-  },
-  "protocols": {
-    "morpho-blue": {
-      "intro": {
-        "en": "A Morpho vault spreads deposits across several Morpho Blue markets to lend them out. Vaults are managed by curators, and Morpho's factory contracts create them.",
-        "zh-TW": "Morpho 的 vault 把存款分配到多個 Morpho Blue market 放貸。vault 由策展人管理，Morpho 的工廠合約負責建立它們。"
-      },
-      "audits": {
-        "text": {
-          "en": "VaultBundlesV1 has one audit, which AI read: Blackthorn, 14 to 21 July 2026, 0 high, 0 medium, 7 low or info. The two about this contract are marked resolved: one on deposit-gated vaults, one saying anyone could take tokens left in the contract, which it does not hold between transactions (resolved only by documenting it). AI compared the audit's final commit with the source on GitHub main: in VaultBundlesV1.sol and TokenLib.sol only comments, the licence and the compiler line differ. Vault V2's and MetaMorpho's own audits are in their repositories; AI did not read those.",
-          "zh-TW": "VaultBundlesV1 有一份稽核，AI 讀過：Blackthorn，2026-07-14 到 07-21，高 0、中 0、低或資訊 7。與這個合約有關的兩項都標為已解決：一項關於限制存款人的 vault，一項說留在合約裡的代幣誰都能拿走，而合約在交易之間不留代幣（只用文件說明解決，沒改程式邏輯）。AI 把稽核的最終 commit 和 GitHub main 的原始碼比對，VaultBundlesV1.sol 和 TokenLib.sol 只差註解、授權條款和編譯器版本行。Vault V2 和 MetaMorpho 各自的稽核在它們的 repo，AI 沒有讀。"
-        },
-        "sources": [
-          "https://github.com/morpho-org/bundles/blob/main/audits/2026-08-07-blue-vaults-bundles-blackthorn.pdf",
-          "https://github.com/morpho-org/vault-v2/tree/main/audits",
-          "https://github.com/morpho-org/metamorpho/tree/main/audits"
-        ]
-      },
-      "incidents": []
-    }
-  },
-  "judgments": [
-    {
-      "text": {
-        "en": "The Morpho app now asks for an unlimited approval by default, and this template accepts only an approval equal to the deposit. Example: you deposit 10,000 USDC; the app builds an approval of 2^256-1 (unlimited), the card wants exactly 10,000 USDC, so an unedited app transaction gets MISMATCH. The newest app transactions AI read (2026-11-20 and 11-21) were all unlimited; some older ones were exact, and how they came to be is unknown.",
-        "zh-TW": "Morpho app 現在預設要求無限授權，這個模板只接受授權額等於存款額。例：存 10,000 USDC，app 組的授權是 2^256−1（無限），卡片要的是剛好 10,000 USDC，沒改就判 MISMATCH。AI 看到最新的 app 交易（2026-11-20、11-21）都是無限；較早有幾筆剛好等額，怎麼來的不知道。"
-      },
-      "sources": [
-        "https://github.com/morpho-org/sdks/blob/166277bc26a12235256bdf9162da012b80781a1e/packages/morpho-sdk/src/helpers/tokenApproval.ts",
-        "https://github.com/morpho-org/sdks/commit/804fb8f2",
-        "https://github.com/safe-global/safe-wallet-monorepo/blob/9141f5da93d31470004bbb5464d026e9c1078626/apps/web/src/components/tx/ApprovalEditor/index.tsx",
-        "https://github.com/safe-global/safe-wallet-monorepo/blob/9141f5da93d31470004bbb5464d026e9c1078626/packages/utils/src/components/tx/ApprovalEditor/utils/approvals.ts#L55-L92"
-      ],
-      "recommendation": {
-        "en": "Before proposing, while nobody has signed, set the approval to the deposit amount (here 10,000) in Safe{Wallet} and press Save. AI read the web wallet's source: the review screen has this editor, also for an approval in a batch; AI did not try it live. If it does not appear, do not sign.",
-        "zh-TW": "送出提案前、還沒人簽名時，在 Safe{Wallet} 把授權額改成存款額（這裡是 10,000）再按 Save。AI 讀過網頁版原始碼：確認畫面有這個編輯欄，批次裡的授權也能改；沒有實際操作過。看不到編輯欄就不要簽。"
-      }
-    },
-    {
-      "text": {
-        "en": "If the Safe already gave VaultBundlesV1 a large enough allowance, the app sends a deposit with no approval: MISMATCH. Others cannot spend that leftover: the contract pulls only from its own caller (AI read the source). But any later VaultBundlesV1 deposit the Safe signs can use it with no new approval, even into a fake vault or with a referral fee to someone else.",
-        "zh-TW": "Safe 若已給 VaultBundlesV1 夠大的授權，app 只組存款、不再授權，判 MISMATCH。剩下的授權別人用不了：合約只從呼叫者自己拉代幣（AI 讀原始碼）。但 Safe 之後簽的任何一筆 VaultBundlesV1 存款都能直接動用，不用再授權，包括存進假 vault，或付推薦費給別人。"
-      },
-      "sources": [
-        "https://github.com/morpho-org/bundles/blob/9726ac4250303893451664ba75f393360e17d6ca/src/vault/VaultBundlesV1.sol#L31-L56",
-        "https://github.com/morpho-org/bundles/blob/9726ac4250303893451664ba75f393360e17d6ca/src/libraries/TokenLib.sol#L60-L83",
-        "https://github.com/morpho-org/sdks/blob/166277bc26a12235256bdf9162da012b80781a1e/packages/morpho-sdk/src/helpers/tokenApproval.ts"
-      ],
-      "recommendation": {
-        "en": "First set the allowance back to 0 in a separate transaction, which this template does not cover; the app then builds approval and deposit again. Until then, check the vault, amount and referral fee of every VaultBundlesV1 transaction.",
-        "zh-TW": "先用另一筆交易把授權改回 0（這個模板不管那筆），app 才會重新組出授權加存款。改回之前，每筆 VaultBundlesV1 交易都要看清楚 vault、金額和推薦費。"
-      }
-    }
-  ],
-  "reviews": {},
+  "request": "I want to deposit USDC into Morpho's Steakhouse Prime USDC vault. build me the template and its report",
   "entries": {
-    "usdc": {
-      "role": {
-        "en": "The token deposited into a USDC vault",
-        "zh-TW": "存進 USDC vault 的代幣"
-      }
-    },
     "vault-bundles-v1": {
       "role": {
-        "en": "Morpho's vault bundle contract. It receives the allowance, pulls the tokens from the Safe, deposits them into the vault and has the vault mint the shares to the Safe, its caller",
-        "zh-TW": "Morpho 的 vault bundle 合約：收下授權、從 Safe 拉代幣、存進 vault，並讓 vault 把份額直接發給呼叫它的 Safe"
+        "en": "Morpho's VaultBundlesV1: pulls the approved USDC from the Safe and deposits it into the vault for the Safe, with a share-price bound",
+        "zh-TW": "Morpho 的 VaultBundlesV1：從 Safe 拉走已授權的 USDC，替 Safe 存進 vault，並檢查份額價格上限"
       },
       "sources": [
         {
           "text": {
-            "en": "Morpho's contract address page lists VaultBundlesV1 at 0x02912516d49dE997db75B9D7858faAE59209650B for Ethereum",
-            "zh-TW": "Morpho 的合約地址頁在 Ethereum 列 VaultBundlesV1 為 0x02912516d49dE997db75B9D7858faAE59209650B"
+            "en": "Morpho's contract addresses page lists this address next to VaultBundlesV1 under Bundles",
+            "zh-TW": "Morpho 合約地址頁在 Bundles 下的 VaultBundlesV1 旁列出這個地址"
           },
           "url": "https://docs.morpho.org/developers/contracts/addresses/",
           "result": "pass"
         },
         {
           "text": {
-            "en": "The SDK's address file in Morpho's GitHub organization, main at 2026-11-23, sets bundles.vaultBundlesV1 for Ethereum mainnet to this address",
-            "zh-TW": "Morpho GitHub 組織的 SDK 地址檔（main，2026-11-23）把 Ethereum 主網的 bundles.vaultBundlesV1 設為這個地址"
+            "en": "Morpho's SDK file addresses.ts lists it as vaultBundlesV1 for Ethereum, at commit 56f1ed6",
+            "zh-TW": "Morpho SDK 的 addresses.ts 在 Ethereum 下以 vaultBundlesV1 列出它（commit 56f1ed6）"
           },
-          "url": "https://github.com/morpho-org/sdks/blob/166277bc26a12235256bdf9162da012b80781a1e/packages/morpho-ts/src/addresses.ts",
+          "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
           "result": "pass"
         },
         {
           "text": {
-            "en": "Etherscan: verified source VaultBundlesV1, created by contract 0x19f57e4080fc40812f806054fa79052e6050b9b6, deployed in the same transaction 0xf026c771c62ada6173df2a20cc46bcfa86b60a4b7a75dc9174dfed59c67188fd; no Morpho page read names that creator",
-            "zh-TW": "Etherscan：原始碼 VaultBundlesV1，由合約 0x19f57e4080fc40812f806054fa79052e6050b9b6 建立，交易 0xf026c771c62ada6173df2a20cc46bcfa86b60a4b7a75dc9174dfed59c67188fd；Morpho 頁面沒列這個建立者"
+            "en": "Etherscan: verified contract VaultBundlesV1 (solc 0.8.34); creation transaction 0xf026c771c62ada6173df2a20cc46bcfa86b60a4b7a75dc9174dfed59c67188fd, which the providers could not tie to the deployment",
+            "zh-TW": "Etherscan：已驗證合約 VaultBundlesV1（solc 0.8.34）；建立交易 0xf026c771c62ada6173df2a20cc46bcfa86b60a4b7a75dc9174dfed59c67188fd，providers 無法證明它就是部署交易"
           },
-          "url": "https://etherscan.io/address/0x02912516d49dE997db75B9D7858faAE59209650B",
+          "url": "https://etherscan.io/address/0x02912516d49dE997db75B9D7858faAE59209650B#code",
           "result": "attention"
+        }
+      ]
+    },
+    "usdc": {
+      "role": {
+        "en": "The vault's asset: the token you deposit, USDC issued by Circle",
+        "zh-TW": "vault 的資產：你存入的代幣，Circle 發行的 USDC"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Circle's USDC contract addresses page lists this address on the Ethereum row under Mainnet",
+            "zh-TW": "Circle 的 USDC 合約地址頁在 Mainnet 的 Ethereum 那一列列出這個地址"
+          },
+          "url": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
+          "result": "pass"
         },
         {
           "text": {
-            "en": "No Immunefi program's public data holds this address on 2026-11-25",
-            "zh-TW": "2026-11-25 的 Immunefi 公開資料沒有任何計畫列出這個地址"
+            "en": "CoinGecko's usd-coin coin lists this address for Ethereum",
+            "zh-TW": "CoinGecko 的 usd-coin 在 Ethereum 下列出這個地址"
           },
-          "url": "https://immunefi.com/public-api/bounties.json",
-          "result": "attention"
+          "url": "https://www.coingecko.com/en/coins/usd-coin",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: contract name FiatTokenProxy, creator 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911, creation transaction 0xe7e0fe390354509cd08c9a0168536938600ddc552b3f7cb96030ebef62e75895",
+            "zh-TW": "Etherscan：合約名 FiatTokenProxy，建立者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911，建立交易 0xe7e0fe390354509cd08c9a0168536938600ddc552b3f7cb96030ebef62e75895"
+          },
+          "url": "https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code",
+          "result": "pass"
         }
       ]
     },
@@ -112,53 +69,143 @@
       "role": {
         "en": "The Morpho Vault V2 factory. It answers `isVaultV2` = true: it created this vault",
         "zh-TW": "Morpho Vault V2 工廠，它回答 `isVaultV2` = true，這個 vault 是它建立的"
-      }
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Morpho's contract addresses page lists this address next to VaultV2Factory under Morpho Vault V2",
+            "zh-TW": "Morpho 合約地址頁在 Morpho Vault V2 下的 VaultV2Factory 旁列出這個地址"
+          },
+          "url": "https://docs.morpho.org/developers/contracts/addresses/",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Morpho's SDK addresses.ts lists it as vaultV2Factory, at commit 56f1ed6",
+            "zh-TW": "Morpho SDK 的 addresses.ts 以 vaultV2Factory 列出它（commit 56f1ed6）"
+          },
+          "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+          "result": "pass"
+        }
+      ]
+    },
+    "morpho-market-v1-adapter-v2-factory": {
+      "role": {
+        "en": "The factory that creates Vault V2 market adapters. It answers `isMorphoMarketV1AdapterV2` = true: it created the adapter",
+        "zh-TW": "建立 Vault V2 市場轉接合約的工廠，它回答 `isMorphoMarketV1AdapterV2` = true，轉接合約是它建立的"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Morpho's contract addresses page lists this address next to MorphoMarketV1AdapterV2Factory",
+            "zh-TW": "Morpho 合約地址頁在 MorphoMarketV1AdapterV2Factory 旁列出這個地址"
+          },
+          "url": "https://docs.morpho.org/developers/contracts/addresses/",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Morpho's SDK addresses.ts lists it under morphoMarketV1AdapterV2Factory, at commit 56f1ed6",
+            "zh-TW": "Morpho SDK 的 addresses.ts 在 morphoMarketV1AdapterV2Factory 下列出它（commit 56f1ed6）"
+          },
+          "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+          "result": "pass"
+        }
+      ]
+    }
+  },
+  "title": {
+    "en": "Deposit USDC into a Morpho vault through VaultBundlesV1",
+    "zh-TW": "經由 VaultBundlesV1 把 USDC 存進 Morpho vault"
+  },
+  "summary": {
+    "en": "Approves exactly the amount of the vault's asset to Morpho's VaultBundlesV1, which pulls it and deposits it into the vault for your Safe, reverting if the share price is above the bound the card's fewest shares give. Refuses a referral fee, a permit, an approval larger than the amount, and a deadline more than 2 hours ahead.",
+    "zh-TW": "把剛好等於金額的 vault 資產授權給 Morpho 的 VaultBundlesV1，由它拉走並替你的 Safe 存進 vault；份額價格高於卡片最少份額換算的上限就 revert。拒絕推薦費、permit、超過金額的授權，以及超過 2 小時後的期限。"
+  },
+  "protocols": {
+    "morpho-blue": {
+      "intro": {
+        "en": "Morpho Vault V2 is an ERC-4626 vault: you deposit an asset and get shares. A curator chooses where the vault lends through adapters and caps; Morpho's bundles are fixed entry points its app calls to deposit with a price bound.",
+        "zh-TW": "Morpho Vault V2 是 ERC-4626 vault：存入資產、拿到份額。curator 透過轉接合約和上限決定 vault 借給哪裡；Morpho 的 bundles 是 app 呼叫的固定入口，存款時帶價格上限。"
+      },
+      "audits": {
+        "text": {
+          "en": "Vault V2's GitHub lists 18 audit reports, among them Spearbit, Zellic, Blackthorn, ChainSecurity, Certora and a contest, and three of the MorphoMarketV1AdapterV2 (Blackthorn, Certora, Spearbit) dated 2025-12-04. The bundles repository lists a Blackthorn audit of the Blue and vault bundles dated 2026-08-07. DefiLlama lists no hack of Morpho Blue. Steakhouse reports that its vault users took no bad debt in the 2026 drawdowns, a claim from the curator itself.",
+          "zh-TW": "Vault V2 的 GitHub 列了 18 份稽核報告，包括 Spearbit、Zellic、Blackthorn、ChainSecurity、Certora 和一場競賽，其中 MorphoMarketV1AdapterV2 有三份（Blackthorn、Certora、Spearbit，2025-12-04）。bundles repo 列有 Blackthorn 對 Blue 與 vault bundles 的稽核（2026-08-07）。DefiLlama 沒有列出 Morpho Blue 的駭客事件。Steakhouse 說 2026 年的下跌中它的 vault 使用者沒有承擔壞帳，這是 curator 自己的說法。"
+        },
+        "sources": [
+          "https://github.com/morpho-org/vault-v2/tree/0c853532094ce8b0671436ccdc85a3005f16ef28/audits",
+          "https://github.com/morpho-org/bundles/tree/eb4f7d65efc5b51c17fb6a70377c56b5ea49255e/audits",
+          "https://kitchen.steakhouse.financial/p/238m-liquidations-of-onchain-lending"
+        ]
+      },
+      "incidents": []
     }
   },
   "fields": {
     "1.approve.spender": {
-      "en": "The contract allowed to pull tokens from the Safe: VaultBundlesV1, which pulls this amount with `transferFrom` in call 2.",
-      "zh-TW": "被授權從 Safe 拉代幣的合約：VaultBundlesV1，呼叫 2 裡它用 `transferFrom` 拉走這筆錢。"
+      "en": "VaultBundlesV1, the only contract allowed to pull the USDC. It pulls from the caller alone, the Safe, and spends the whole amount in the same transaction.",
+      "zh-TW": "VaultBundlesV1，唯一能拉走 USDC 的合約。它只從呼叫者（Safe）拉，並在同一筆交易用完整個金額。"
     },
     "1.approve.value": {
-      "en": "The allowance, exactly the deposit amount, so call 2 uses all of it and none is left. The app asks for unlimited by default; that is MISMATCH.",
-      "zh-TW": "授權額，剛好等於存款金額，呼叫 2 會全部用完、不留剩餘。app 預設要求無限，那會判 MISMATCH。"
+      "en": "Exactly the deposit amount, so no allowance is left open after the deposit.",
+      "zh-TW": "剛好等於存款金額，存完後不留任何授權。"
     },
     "2.vaultBundlesV1Deposit.vault": {
-      "en": "The vault that receives the deposit.",
-      "zh-TW": "收下存款的 vault。"
+      "en": "The vault to deposit into; the bundle reads its asset from it and mints the shares to the caller, the Safe.",
+      "zh-TW": "要存入的 vault；bundle 從它讀資產，並把份額鑄給呼叫者，也就是 Safe。"
     },
     "2.vaultBundlesV1Deposit.assets": {
-      "en": "The amount pulled from the Safe. A referral fee would come out of it; the fee is bound to 0, so all of it is deposited.",
-      "zh-TW": "從 Safe 拉走的金額。推薦費會從裡面扣；推薦費綁定為 0，所以全部存入。"
+      "en": "The amount of USDC pulled from the Safe; with no referral fee all of it is deposited.",
+      "zh-TW": "從 Safe 拉走的 USDC 數量；沒有推薦費時全部存入。"
     },
     "2.vaultBundlesV1Deposit.maxSharePriceE27": {
-      "en": "The highest price per share (assets ÷ shares, times 1e27). If the actual price is higher, the whole transaction fails. The program requires it to be no higher than \"amount ÷ minimum shares\", so you get at least the minimum shares by the count the vault itself reports.",
-      "zh-TW": "每股最高價格（資產 ÷ 份額，乘以 1e27）。實際價格更高，整筆失敗。程式要求它不高於「金額 ÷ 最少份額」，所以依 vault 自己回報的份額數，你至少拿到最少份額。"
+      "en": "The most assets per share, scaled by 1e27, the deposit may pay; the bundle reverts above it, so you get at least the card's fewest shares.",
+      "zh-TW": "每份額最多付多少資產（乘 1e27）；超過時 bundle 會 revert，所以你至少拿到卡片上的最少份額。"
     },
     "2.vaultBundlesV1Deposit.assetPermit": {
-      "en": "A signature that would replace the approval. A Safe uses the approval in call 1 instead, so this is empty.",
-      "zh-TW": "用簽名代替授權的資料。Safe 用呼叫 1 的授權，所以這裡是空的。"
+      "en": "A signed permit the bundle could use instead of the approval; the template allows none.",
+      "zh-TW": "bundle 可用來代替授權的簽名 permit；模板不允許。"
     },
     "2.vaultBundlesV1Deposit.assetPermit.kind": {
-      "en": "0 means no permit: the tokens are pulled with the approval. 1 is ERC-2612 and 2 is Permit2, both refused.",
-      "zh-TW": "0 表示不用 permit，靠授權拉代幣。1 是 ERC-2612、2 是 Permit2，都不接受。"
+      "en": "0 means no permit: the bundle pulls with the plain approval of call 1.",
+      "zh-TW": "0 代表不用 permit：bundle 用第 1 個呼叫的一般授權拉款。"
     },
     "2.vaultBundlesV1Deposit.assetPermit.data": {
-      "en": "The permit's data. With kind 0 the contract does not read it. It was empty in all 31 past transactions that fit the template.",
-      "zh-TW": "permit 的資料。kind 是 0 時合約不讀它。過去符合模板的 31 筆都是空的。"
+      "en": "Empty, since a permit of kind 0 carries no data and the bundle does not read it.",
+      "zh-TW": "空的，因為種類 0 的 permit 不帶資料，bundle 也不讀。"
     },
     "2.vaultBundlesV1Deposit.referralFeePct": {
-      "en": "The share of the deposit paid to a referrer. Bound to 0: nothing is taken.",
-      "zh-TW": "從存款抽給推薦人的比例。綁定為 0，不抽。"
+      "en": "0: no share of the deposit is paid away as a referral fee.",
+      "zh-TW": "0：存款不會被抽一部分當推薦費。"
     },
     "2.vaultBundlesV1Deposit.referralFeeRecipient": {
-      "en": "Who would receive the referral fee. Bound to the zero address.",
-      "zh-TW": "收推薦費的人。綁定為零地址。"
+      "en": "The zero address, since no fee is paid.",
+      "zh-TW": "零地址，因為不付推薦費。"
     },
     "2.vaultBundlesV1Deposit.deadline": {
-      "en": "After this time the transaction fails. The app sets two hours from when it builds it, so a Safe that executes later must rebuild it. Of the 31 past transactions that fit, one ran 496,672 seconds (about 5.7 days) before its deadline, so the limit is 7 days; half ran less than 7,051 seconds before.",
-      "zh-TW": "過了這個時間交易就失敗。app 設在組交易後兩小時，Safe 較晚執行就要重新組。過去符合的 31 筆裡，最久的一筆在期限前 496,672 秒（約 5.7 天）執行，所以上限是 7 天；一半在期限前 7,051 秒以內執行。"
+      "en": "After this time the bundle reverts. Morpho's SDK sets bundle deadlines two hours ahead by default, so the template allows at most 7,200 seconds after the block; the share price bound holds either way.",
+      "zh-TW": "超過這個時間 bundle 會 revert。Morpho SDK 預設把 bundle 期限設在兩小時後，所以模板最多允許區塊時間後 7,200 秒；份額價格上限一樣有效。"
     }
+  },
+  "judgments": [
+    {
+      "text": {
+        "en": "The Morpho app reaches this vault by two routes: Bundler3 multicall until block 26046109, and VaultBundlesV1 since block 26050001. The template covers VaultBundlesV1, which Morpho's docs name and mark Bundler3 deprecated.",
+        "zh-TW": "Morpho app 走過兩條路線：區塊 26046109 以前是 Bundler3 multicall，26050001 以後是 VaultBundlesV1。模板涵蓋 VaultBundlesV1，Morpho 文件已標 Bundler3 為 deprecated。"
+      },
+      "recommendation": {
+        "en": "A deposit sent through Bundler3 or another route gets MISMATCH; ask for that route's template then.",
+        "zh-TW": "經由 Bundler3 或其他路線的存款會 MISMATCH；遇到時再要求該路線的模板。"
+      },
+      "sources": [
+        "https://docs.morpho.org/developers/contracts/bundles/",
+        "https://docs.morpho.org/developers/sdks/morpho-sdk/vault/"
+      ]
+    }
+  ],
+  "pastTxsConclusion": {
+    "en": "Most misfits are the older Bundler3 route; others are deposits with an allowance already open or larger than the amount, which the template refuses on purpose.",
+    "zh-TW": "多數不符的是舊的 Bundler3 路線；其他是已經有授權、或授權大於金額的存款，模板刻意拒絕。"
   }
 }

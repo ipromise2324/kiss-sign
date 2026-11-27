@@ -1,53 +1,53 @@
 {
   "chainId": 1,
-  "safe": "0xb228a0fa1118b6f4fc4c8999fef2189e5da2fdfd",
-  "block": 26314348,
+  "safe": "0x4504db1ca6659fa04b5bc9c96deee4691c58f034",
+  "block": 26415856,
   "providers": [
     "alchemy",
     "drpc"
   ],
   "chain": {
-    "version": "1.4.1",
-    "domainSeparator": "0xcd15d9e6e52f31f09e55e508f66f2a4fda9f6a193390b045a60c2d63e79de21c",
-    "transactionHash": "0x5385b8edd6a5eb2a19e441983a7a653b4ee950833a14c22a6f35c39042998250"
+    "version": "1.5.0",
+    "domainSeparator": "0x31ecb210396013b1150a15edaf238f8db5a8a7fd9737716741132cdd353f44a9",
+    "transactionHash": "0x2e4ef9c37ff7ff9f97bb64a89a75069d8192e4de17c0698a0e92c6d778510cff"
   },
   "service": {
-    "safe": "0xb228a0fA1118B6F4fc4c8999feF2189e5DA2FdfD",
+    "safe": "0x4504dB1ca6659fa04b5BC9C96deEe4691c58f034",
     "to": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
     "value": "0",
-    "data": "0xec6cb13f000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000038b41b8e8fa3c9f99bab4f1b7c84d83e20aa6cb454776e3e6c3fcd1126e12541f6b228a0fa1118b6f4fc4c8999fef2189e5da2fdfd6ae631330000000000000000",
+    "data": "0xec6cb13f00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000003857ccb158f838d74012bfd98d4f1ebca6c76740d259b1cc40abd72ff06f22a0244504db1ca6659fa04b5bc9c96deee4691c58f0346af8d6aa0000000000000000",
     "operation": 0,
     "gasToken": "0x0000000000000000000000000000000000000000",
     "safeTxGas": "0",
     "baseGas": "0",
     "gasPrice": "0",
     "refundReceiver": "0x0000000000000000000000000000000000000000",
-    "nonce": "705",
-    "executionDate": "2026-10-31T17:50:47Z",
-    "submissionDate": "2026-10-31T17:49:54.361439Z",
-    "modified": "2026-10-31T17:50:47Z",
-    "blockNumber": 26314348,
-    "transactionHash": "0x37c731b31c31c1cd26a2438938b153f14c65edc8250672a2cc17774f102ff478",
-    "safeTxHash": "0x5385b8edd6a5eb2a19e441983a7a653b4ee950833a14c22a6f35c39042998250",
-    "proposer": "0xf44B95991CaDD73ed769454A03b3820997f00873",
+    "nonce": "393",
+    "executionDate": "2026-11-14T21:17:11Z",
+    "submissionDate": "2026-11-14T21:16:46.494504Z",
+    "modified": "2026-11-14T21:17:19.616213Z",
+    "blockNumber": 26415856,
+    "transactionHash": "0x9a3d62f529e52147321ea9f32e3b3af6b95aa9f9a5670cd95fa4294c03f2362d",
+    "safeTxHash": "0x2e4ef9c37ff7ff9f97bb64a89a75069d8192e4de17c0698a0e92c6d778510cff",
+    "proposer": "0x5408bF6F7ddf38Ace831938325170B785455A600",
     "proposedByDelegate": null,
-    "executor": "0xfd6e62a25F19b1AA0d9430Cca9e600934D0eF008",
+    "executor": "0x5408bF6F7ddf38Ace831938325170B785455A600",
     "isExecuted": true,
     "isSuccessful": true,
-    "ethGasPrice": "246503741",
-    "maxFeePerGas": "273100000",
-    "maxPriorityFeePerGas": "150000000",
-    "gasUsed": 83085,
-    "fee": "20480763320985",
+    "ethGasPrice": "4198937264",
+    "maxFeePerGas": "4198937264",
+    "maxPriorityFeePerGas": "705665560",
+    "gasUsed": 78853,
+    "fee": "331098800078192",
     "payment": "0",
-    "origin": "{\"url\": \"https://apps-portal.safe.global/wallet-connect\", \"name\": \"CoW Swap | The smartest way to trade cryptocurrencies\"}",
+    "origin": "{\"url\": \"https://swap.cow.fi\", \"name\": \"CoW Swap\"}",
     "dataDecoded": {
       "method": "setPreSignature",
       "parameters": [
         {
           "name": "orderUid",
           "type": "bytes",
-          "value": "0xb41b8e8fa3c9f99bab4f1b7c84d83e20aa6cb454776e3e6c3fcd1126e12541f6b228a0fa1118b6f4fc4c8999fef2189e5da2fdfd6ae63133"
+          "value": "0x57ccb158f838d74012bfd98d4f1ebca6c76740d259b1cc40abd72ff06f22a0244504db1ca6659fa04b5bc9c96deee4691c58f0346af8d6aa"
         },
         {
           "name": "signed",
@@ -56,24 +56,17 @@
         }
       ]
     },
-    "confirmationsRequired": 2,
+    "confirmationsRequired": 1,
     "confirmations": [
       {
-        "owner": "0xf44B95991CaDD73ed769454A03b3820997f00873",
-        "submissionDate": "2026-10-31T17:49:54.361439Z",
+        "owner": "0x5408bF6F7ddf38Ace831938325170B785455A600",
+        "submissionDate": "2026-11-14T21:16:46.494504Z",
         "transactionHash": null,
-        "signature": "0xffcb9a1390b456698f23fbc5bb39520dcaaadaedb8157124b2d756bdba9f580c78cafbb99c5f54b40be1690b006179b65253b337fb62c49efa663ae2c39f99071c",
+        "signature": "0x3f7b8e2e2525de070cadbb6ec7cc315e5cc24c6961d3f41462870272b1e3acf20f100dd36d79d0136dd50463a764272642349fef15daff515e5c8cc4345fda091b",
         "signatureType": "EOA"
-      },
-      {
-        "owner": "0xfd6e62a25F19b1AA0d9430Cca9e600934D0eF008",
-        "submissionDate": "2026-10-31T17:50:47Z",
-        "transactionHash": null,
-        "signature": "0x000000000000000000000000fd6e62a25f19b1aa0d9430cca9e600934d0ef008000000000000000000000000000000000000000000000000000000000000000001",
-        "signatureType": "APPROVED_HASH"
       }
     ],
     "trusted": true,
-    "signatures": "0xffcb9a1390b456698f23fbc5bb39520dcaaadaedb8157124b2d756bdba9f580c78cafbb99c5f54b40be1690b006179b65253b337fb62c49efa663ae2c39f99071c000000000000000000000000fd6e62a25f19b1aa0d9430cca9e600934d0ef008000000000000000000000000000000000000000000000000000000000000000001"
+    "signatures": "0x3f7b8e2e2525de070cadbb6ec7cc315e5cc24c6961d3f41462870272b1e3acf20f100dd36d79d0136dd50463a764272642349fef15daff515e5c8cc4345fda091b"
   }
 }

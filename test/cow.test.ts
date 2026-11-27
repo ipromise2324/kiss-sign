@@ -34,8 +34,8 @@ type Case = { readonly name: string; readonly template: string; readonly bound: 
 const CASES: readonly Case[] = [
   { name: 'cow-swap-approve-usdt', template: 'cow/swap-approve', bound: 20 },
   { name: 'cow-swap-approve-cbbtc', template: 'cow/swap-approve', bound: 20 },
-  { name: 'cow-swap-usdt', template: 'cow/swap', bound: 16 },
-  { name: 'cow-swap-usdc', template: 'cow/swap', bound: 16 },
+  { name: 'cow-swap-usdt-base', template: 'cow/swap', bound: 16 },
+  { name: 'cow-swap-usdc-base', template: 'cow/swap', bound: 16 },
 ];
 
 function safeTx(name: string): SafeTx {
@@ -349,7 +349,7 @@ test('an answer that holds a member elsewhere than the template says is not read
 });
 
 test('an answer path that leads to another order still has to hash to the digest', async () => {
-  const other = JSON.parse(load('messages', 'cow-swap-usdc'));
+  const other = JSON.parse(load('messages', 'cow-swap-usdc-base'));
   const { evaluation, unread } = await evaluateTx(withAnswer({ path: ['orders', 1] }), replayReader(VERDICT.exchanges), async () => ({
     text: JSON.stringify({ orders: [JSON.parse(VERDICT.inputs.messages![0]!), other] }),
   }), true);

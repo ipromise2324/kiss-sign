@@ -1,33 +1,37 @@
 {
+  "request": "I want to send ETH from my Safe. build me the template and its report",
   "title": {
     "en": "Send ETH from the Safe",
     "zh-TW": "從 Safe 轉出 ETH"
   },
   "summary": {
-    "en": "The Safe sends the amount of ETH you type straight to the recipient you pick, calling no contract. The card asks only for the recipient and the amount, the same as the Safe web app asks when it sends ETH.",
-    "zh-TW": "Safe 把你填的 ETH 數量直接送到你選的收款人，不呼叫任何合約。卡片只問收款人和金額，跟 Safe web app 送 ETH 時要填的一樣。"
+    "en": "The Safe sends the amount of ETH you type to the recipient you pick from your address book, as a plain transfer with no data. It calls no contract and leaves no allowance; a transaction with data, a delegatecall or another amount is refused.",
+    "zh-TW": "Safe 把你填的 ETH 數量，以不帶資料的單純轉帳，送給你從地址簿選的收款人。不呼叫任何合約，也不留下授權；帶資料、delegatecall 或金額不同的交易都會被拒絕。"
   },
   "verdict": {
     "status": "safe",
     "text": {
-      "en": "The simplest operation, calling no protocol contract. The only risk is the recipient address: when you add it to the address book, check it against a source outside the chat.",
-      "zh-TW": "最單純的操作，不呼叫任何協議合約；風險只在收款地址，加進地址簿時要從聊天以外的來源核對。"
+      "en": "A plain ETH transfer: one call with no data to your address-book recipient, no contract and no allowance.",
+      "zh-TW": "單純的 ETH 轉帳：一個不帶資料的呼叫，送到你地址簿的收款人，不經合約、不留授權。"
     }
   },
-  "flow": [],
-  "protocols": {},
   "judgments": [
     {
       "text": {
-        "en": "If the recipient is a contract (another Safe, for example), it runs its own code when it receives ETH. verify checks every balance and allowance change of your Safe, and any extra movement (even 1 wei) is a MISMATCH. But it cannot see what the other contract records inside it, or what it later does with this ETH.",
-        "zh-TW": "收款人如果是合約（例如另一個 Safe），收到 ETH 時會執行它自己的程式。verify 檢查你的 Safe 的每一項餘額和授權變化，多動一點點（哪怕 1 wei）就 MISMATCH；但對方合約內部記了什麼、之後怎麼處理這筆 ETH，它看不到。"
+        "en": "When the recipient is a contract, sending ETH runs its code, which can pass the ETH on. verify checks only that the Safe gave exactly the amount to that address.",
+        "zh-TW": "收款人若是合約，轉入 ETH 會執行它的程式碼，它可以把 ETH 再轉走。verify 只檢查 Safe 剛好把這個數量給了那個地址。"
       },
+      "sources": [
+        "https://docs.soliditylang.org/en/v0.8.28/contracts.html#receive-ether-function"
+      ],
       "recommendation": {
-        "en": "When the recipient is a contract, first confirm it can receive ETH. The first time you send to a new address, send a small amount first.",
-        "zh-TW": "收款人是合約時，先確認它能收 ETH；第一次轉給新地址先送小額。"
+        "en": "Put in your address book only addresses you control or know; to pay into a protocol's contract, ask for that protocol's own template.",
+        "zh-TW": "地址簿只放你掌控或認識的地址；要轉入協議的合約，請要求該協議自己的模板。"
       }
     }
   ],
-  "reviews": {},
-  "fields": {}
+  "pastTxsConclusion": {
+    "en": "Of the 12 that fit, 5 sent ETH to another address, 6 sent 0 ETH to the Safe itself, which cancels a queued transaction, and 1 sent 0 ETH to the zero address. No event marks an ETH transfer, so the search read every Safe's executions and reaches back only 5 days. Batches paying several addresses in one MultiSend, and 4 delegatecalls to contracts that are not MultiSend, do not fit this one-call template.",
+    "zh-TW": "符合的 12 筆中，5 筆把 ETH 轉給別的地址，6 筆轉 0 ETH 給 Safe 自己（取消排隊中的交易），1 筆轉 0 ETH 給零地址。ETH 轉帳沒有事件可找，所以搜尋讀每個 Safe 的執行紀錄，只回溯 5 天。一個 MultiSend 付給多個地址的批次，以及 4 筆 delegatecall 到非 MultiSend 合約的交易，都不符合這個單一呼叫的模板。"
+  }
 }

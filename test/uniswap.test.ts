@@ -111,7 +111,7 @@ const CASES: readonly Case[] = [
 /** Executed swaps of the app's unhooked shape (V4_SWAP alone, SWAP_EXACT_IN then SETTLE and TAKE), which uniswap/swap and uniswap/swap-no-hook refuse. */
 const UNHOOKED: readonly { readonly name: string; readonly card: Card }[] = [
   { name: 'uniswap-swap-approve-usdt-usdc', card: batchedCard(4342485506n, 4334865289n) },
-  { name: 'uniswap-swap-usdc-usdt', card: { operations: [swapOp('usdc', 'usdt', 130000000n, 129893802n)] } },
+  { name: 'uniswap-swap-usdc-usdt-base', card: { operations: [swapOp('usdc', 'usdt', 130000000n, 129893802n)] } },
 ];
 
 function resolved(tx: SafeTx, card: Card): ResolvedCard {
@@ -277,7 +277,7 @@ test('uniswap/swap-no-hook matches the fields of a USDT to USDC swap, the record
 });
 
 test('uniswap/swap-no-hook refuses the multi-hop SWAP_EXACT_IN shape at its action list', () => {
-  const at = mismatchAt(check(safeTx('uniswap-swap-usdc-usdt'), { operations: [swapOp('usdc', 'usdt', 130000000n, 129893802n, 'uniswap/swap-no-hook')] }));
+  const at = mismatchAt(check(safeTx('uniswap-swap-usdc-usdt-base'), { operations: [swapOp('usdc', 'usdt', 130000000n, 129893802n, 'uniswap/swap-no-hook')] }));
   assert.ok(at.includes('call.execute.inputs[0].V4_SWAP.actions'), at.join(', '));
 });
 

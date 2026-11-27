@@ -34,5 +34,14 @@
     "irm": "adaptive-curve-irm",
     "lltv": "860000000000000000",
     "id": "0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e"
+  },
+  "rlusd-kbtc-86": {
+    "lending": "morpho-blue",
+    "loanToken": "rlusd",
+    "collateralToken": "kbtc",
+    "oracle": "morpho-oracle-kbtc-rlusd-86",
+    "irm": "adaptive-curve-irm",
+    "lltv": "860000000000000000",
+    "id": "0x15bb2a6af0c909eed19fb1f2ceeead34ecbdcba626de752c6b09389ee14eec32"
   }
 }

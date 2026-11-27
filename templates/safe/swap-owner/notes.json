@@ -1,35 +1,40 @@
 {
+  "request": "I want to replace an owner of my Safe. build me the template and its report",
   "title": {
     "en": "Replace a Safe signer",
-    "zh-TW": "更換 Safe 的簽署人"
+    "zh-TW": "替換 Safe 的簽署人"
   },
   "summary": {
-    "en": "The Safe calls its own `swapOwner`, replacing the old signer with the new signer. The threshold does not change. The program computes `prevOwner` by reading `getOwners` on chain, so you do not type it.",
-    "zh-TW": "Safe 呼叫自己的 `swapOwner`，把舊簽署人換成新簽署人，門檻不變。`prevOwner` 由程式在鏈上讀 `getOwners` 算出，不用你填。"
+    "en": "The Safe calls its own `swapOwner`, putting the new signer in the old signer's place; the threshold does not change. The card asks only for the old and the new signer, both from your address book. `prevOwner` is read on chain from `getOwners`.",
+    "zh-TW": "Safe 呼叫自己的 `swapOwner`，把新簽署人放到舊簽署人的位置，門檻不變。卡片只問舊的和新的簽署人，兩個都從你的地址簿選。`prevOwner` 由程式在鏈上讀 `getOwners` 算出。"
   },
   "verdict": {
     "status": "caution",
     "text": {
-      "en": "Moves no asset, but changes who controls this Safe: check the new signer's address against a source outside the chat.",
-      "zh-TW": "不動任何資產，但改的是誰能動這個 Safe：新簽署人的地址要從聊天以外的來源核對。"
+      "en": "Moves no asset, but changes who controls this Safe: check the new signer's full address outside the chat.",
+      "zh-TW": "不動任何資產，但改的是誰能動這個 Safe：新簽署人的完整地址要在聊天以外核對。"
     }
   },
   "pastTxsConclusion": {
-    "en": "Every misfit batches `swapOwner` with more calls in one MultiSend: more `swapOwner`, `addOwnerWithThreshold` or `removeOwner` calls; five also call `enableModule`, four of them on another contract as well and with `changeThreshold`. A card holds one change, so verify refuses such a batch; make each change its own transaction.",
-    "zh-TW": "不合的都在一個 MultiSend 裡把 `swapOwner` 和別的呼叫綁在一起：更多 `swapOwner`、`addOwnerWithThreshold` 或 `removeOwner`；五筆還呼叫 `enableModule`，其中四筆也對另一個合約呼叫，並改 `changeThreshold`。一張卡片只放一項變更，verify 會拒絕這種批次，每項變更要各自一筆交易。"
+    "en": "Every misfit batches `swapOwner` with more owner changes in one MultiSend: more swaps, `addOwnerWithThreshold`, `removeOwner` or `changeThreshold`, a few with `enableModule`. A card holds one change, so make each its own transaction.",
+    "zh-TW": "不合的全是在一個 MultiSend 裡把 `swapOwner` 和更多 owner 變更綁在一起：更多 swap、`addOwnerWithThreshold`、`removeOwner` 或 `changeThreshold`，少數加 `enableModule`。一張卡片只放一項變更，每項要各自一筆交易。"
   },
   "flow": [],
   "protocols": {},
   "judgments": [
     {
       "text": {
-        "en": "When you replace a lost or leaked key, the old key stays valid until the transaction runs. Once the new address is in, it can sign like any other signer.",
-        "zh-TW": "換掉一把遺失或外洩的鑰匙時，舊鑰匙在交易執行前仍然有效。新地址一旦換上，就和其他簽署人一樣能簽。"
+        "en": "The new signer takes the old one's place at once and the threshold stays, so the new key counts as much as the old one. The old signer can no longer sign. verify checks only that the change is the one on the card.",
+        "zh-TW": "新簽署人立刻取代舊的位置，門檻不變，新鑰匙的份量跟舊的一樣；舊簽署人從此不能再簽。verify 只檢查變更跟卡片一樣，不判斷這個人該不該當簽署人。"
       },
       "recommendation": {
-        "en": "Confirm the new address with the person first. If a key has leaked, run the transaction as soon as possible.",
-        "zh-TW": "新地址先跟本人確認；鑰匙外洩時盡快執行。"
-      }
+        "en": "Before you add the new signer to the address book, confirm the full address with that person through a channel outside the chat.",
+        "zh-TW": "把新簽署人加進地址簿前，用聊天以外的管道跟本人確認完整地址。"
+      },
+      "sources": [
+        "https://github.com/safe-global/safe-smart-account/blob/bf943f80fec5ac647159d26161446ac5d716a294/contracts/base/OwnerManager.sol#L92-L112",
+        "https://docs.safe.global/reference-smart-account/owners/swapOwner"
+      ]
     }
   ],
   "reviews": {},
@@ -58,16 +63,16 @@
         },
         {
           "text": {
-            "en": "Safe docs, supported networks v1.3.0: the page lists addresses only with JavaScript; fetched as served it shows no address, so it counts for nothing",
-            "zh-TW": "Safe 文件的 supported networks v1.3.0：頁面靠 JavaScript 才顯示地址；直接讀取看不到地址，不算一個地方"
+            "en": "Safe docs, supported networks v1.3.0: it now redirects to ?version=v1.3.0 and, as served without scripts, shows no address, so it counts for nothing",
+            "zh-TW": "Safe 文件的 supported networks v1.3.0：現在轉到 ?version=v1.3.0，不跑 JavaScript 直接讀取看不到地址，不算一個地方"
           },
           "url": "https://docs.safe.global/advanced/smart-account-supported-networks/v1.3.0",
           "result": "attention"
         },
         {
           "text": {
-            "en": "Etherscan: contract name GnosisSafe, creator 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26 (labelled Gnosis Safe: Deployer), through 0x4e59b44847b379578588920cA78FbF26c0B4956C (labelled Create2: Factory)",
-            "zh-TW": "Etherscan：合約名 GnosisSafe，建立者 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26（標籤 Gnosis Safe: Deployer），透過 0x4e59b44847b379578588920cA78FbF26c0B4956C（標籤 Create2: Factory）建立"
+            "en": "Etherscan: verified as GnosisSafe (solc 0.7.6); creation transaction 0x0b04589bdc11585fb98f270b1bfeff0fb3bbb3c56d35b104f62d8115d6f7c57f at block 12504268, sent by 0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26 (Safe deployer)",
+            "zh-TW": "Etherscan：驗證名 GnosisSafe（solc 0.7.6）；建立交易 0x0b04589bdc11585fb98f270b1bfeff0fb3bbb3c56d35b104f62d8115d6f7c57f，區塊 12504268，由 0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26（Safe deployer）送出"
           },
           "url": "https://etherscan.io/address/0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552#code",
           "result": "pass"
@@ -106,8 +111,8 @@
         },
         {
           "text": {
-            "en": "Etherscan: contract name Safe, creator 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26 (labelled Gnosis Safe: Deployer), through the contract 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7 (no name label)",
-            "zh-TW": "Etherscan：合約名 Safe，建立者 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26（標籤 Gnosis Safe: Deployer），透過合約 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7（沒有名稱標籤）建立"
+            "en": "Etherscan: verified as Safe (solc 0.7.6); creation transaction 0x8a72b65242de000b5fdf004fe8aea138d98e9a8ed9ade82d8fa7f0c0601786cf at block 17487000, sent by 0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26 (Safe deployer)",
+            "zh-TW": "Etherscan：驗證名 Safe（solc 0.7.6）；建立交易 0x8a72b65242de000b5fdf004fe8aea138d98e9a8ed9ade82d8fa7f0c0601786cf，區塊 17487000，由 0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26（Safe deployer）送出"
           },
           "url": "https://etherscan.io/address/0x41675C099F32341bf84BFc5382aF534df5C7461a#code",
           "result": "pass"
@@ -117,16 +122,16 @@
   },
   "fields": {
     "1.swapOwner.prevOwner": {
-      "en": "The signer just before the old signer in the Safe's linked list of signers; the one before the first signer is 0x0000000000000000000000000000000000000001. If it is wrong, the transaction fails (GS205).",
-      "zh-TW": "Safe 簽署人鏈上排在舊簽署人前面的人；第一個人的前面是 0x0000000000000000000000000000000000000001。填錯時交易失敗（GS205）。"
+      "en": "The Safe keeps its signers as a linked list; this is the signer just before the old one, or 0x0000000000000000000000000000000000000001 when the old one is first. If wrong, it fails (GS205).",
+      "zh-TW": "Safe 把簽署人存成一條鏈；這是排在舊簽署人前面的人，舊簽署人排第一時是 0x0000000000000000000000000000000000000001。填錯時交易失敗（GS205）。"
     },
     "1.swapOwner.oldOwner": {
-      "en": "The signer being replaced.",
-      "zh-TW": "被換掉的簽署人。"
+      "en": "The signer to replace. It must be a signer now; the zero address and 0x…01 are refused (GS203).",
+      "zh-TW": "要被換掉的簽署人，必須目前是簽署人；零地址和 0x…01 會被拒絕（GS203）。"
     },
     "1.swapOwner.newOwner": {
-      "en": "The signer put in. It cannot already be a signer, and cannot be the zero address, 0x…01 or the Safe itself.",
-      "zh-TW": "換上的簽署人。不能已經是簽署人，也不能是零地址、0x…01 或 Safe 自己。"
+      "en": "The new signer. It cannot be the zero address, 0x…01, the Safe itself (GS203) or an existing signer (GS204), or the transaction fails.",
+      "zh-TW": "新的簽署人。不能是零地址、0x…01、Safe 自己（GS203）或已經是簽署人（GS204），否則交易失敗。"
     }
   }
 }

@@ -1,7 +1,7 @@
 {
   "id": "erc20/transfer",
   "card": {
-    "token": { "kind": "contract", "registryKind": "token" },
+    "token": { "kind": "contract", "registryKind": "token", "names": ["usdc"] },
     "amount": { "kind": "amount", "of": "token" },
     "recipient": { "kind": "recipient" }
   },

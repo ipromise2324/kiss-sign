@@ -3,11 +3,19 @@
   "card": {
     "sell-token": {
       "kind": "contract",
-      "registryKind": "token"
+      "registryKind": "token",
+      "names": [
+        "usdc",
+        "usdt"
+      ]
     },
     "buy-token": {
       "kind": "contract",
-      "registryKind": "token"
+      "registryKind": "token",
+      "names": [
+        "usdc",
+        "usdt"
+      ]
     },
     "sell-amount": {
       "kind": "amount",
@@ -15,7 +23,10 @@
     },
     "min-buy": {
       "kind": "amount",
-      "of": "buy-token"
+      "of": "buy-token",
+      "floor": {
+        "sells": "sell-amount"
+      }
     }
   },
   "calls": [
@@ -85,8 +96,8 @@
                                 },
                                 "zeroForOne": {
                                   "free": {
-                                    "en": "The direction inside the pool: true sells USDC, false sells USDT. The pool lists the two tokens by address, so the app sets it from the token being sold. SETTLE pays in the card's sell token and TAKE takes out the card's buy token whatever this says, so the other direction leaves the payment unspent and a debt in the buy token, and the swap reverts; the perturbation test shows it.",
-                                    "zh-TW": "在池子裡的方向：true 是賣 USDC，false 是賣 USDT。池子按地址排列這兩個代幣，所以 app 依賣出的代幣設定它。不管它寫什麼，SETTLE 付進去的都是卡片上的賣出代幣，TAKE 取出的都是卡片上的買入代幣；方向相反時，付進去的錢沒被用掉、又欠了買入代幣，swap 會 revert；擾動測試有證明。"
+                                    "en": "Which way the swap runs in the pool: true sells USDC (currency0) for USDT, false sells USDT. The wrong direction leaves the Safe's settled sell token unspent and the bought token unpaid, so the router reverts or the effects check fails; it moves nothing else.",
+                                    "zh-TW": "交換在池子裡的方向：true 是賣 USDC（currency0）換 USDT，false 是賣 USDT。方向錯了，Safe 已付的賣出代幣不會被用掉、買入代幣也付不出來，所以 router 會 revert，或交易後的效果檢查不通過；它不會動到別的東西。"
                                   }
                                 },
                                 "amountIn": {
@@ -96,7 +107,10 @@
                                   "atLeast": "card.min-buy"
                                 },
                                 "minHopPriceX36": {
-                                  "const": "0"
+                                  "free": {
+                                    "en": "An optional price floor for this one pool, scaled by 10^36; the app sends 0, which checks nothing. Any other value can only make the swap revert, never pay less: the minimum to receive is bound separately.",
+                                    "zh-TW": "這個池子單獨的可選價格下限，以 10^36 縮放；app 送出 0，也就是不檢查。任何其他值只會讓交換 revert，不會讓你收到更少：最少收到的數量另外綁定。"
+                                  }
                                 },
                                 "hookData": {
                                   "const": "0x"
@@ -129,7 +143,7 @@
             },
             {
               "encoded": {
-                "as": "SWEEP(address token, address recipient, uint256 amountMin)",
+                "as": "SWEEP(address token, address recipient, uint160 amountMin)",
                 "args": {
                   "token": {
                     "card": "buy-token"
@@ -146,17 +160,14 @@
           ]
         },
         "deadline": {
-          "free": {
-            "en": "The time after which the router refuses the swap, which the app sets when it builds the transaction. A later deadline only lets the transaction run later; the Safe still gives exactly the card's amount and gets at least the card's minimum.",
-            "zh-TW": "超過這個時間 router 就拒絕這筆 swap，app 在組交易時設定。較晚的期限只會讓交易可以晚一點執行；Safe 給出的仍然剛好是卡片上的數量，拿到的也至少是卡片上的最低值。"
-          }
+          "withinSeconds": 1800
         }
       },
       "trailer": {
-        "maxBytes": 22,
+        "maxBytes": 46,
         "why": {
-          "en": "The Uniswap app appends a 22-byte tag that starts with the ASCII bytes unix and holds a timestamp, on a call of its own and inside a MultiSend alike, in each of the five Safe transactions of this shape read. execute reads only its three arguments, as the router's registry entry says (ignoresTrailer).",
-          "zh-TW": "Uniswap app 會在後面附上一個 22 bytes、以 ASCII bytes unix 開頭、帶有時間戳記的標記：讀過的五筆這種形狀的 Safe 交易，不管是單獨呼叫還是在 MultiSend 裡都是這樣。execute 只讀它的三個引數，和 router 的登記項目寫的一樣（ignoresTrailer）。"
+          "en": "The Uniswap app appends a short tag (starting 0x756e6978, 'unix') after execute's arguments; the Universal Router never reads calldata past its arguments (its registry entry's ignoresTrailer).",
+          "zh-TW": "Uniswap app 會在 execute 的引數後面附上一段短標記（開頭是 0x756e6978，即 'unix'）；Universal Router 從不讀引數之後的 calldata（見它登記項目的 ignoresTrailer）。"
         }
       }
     }

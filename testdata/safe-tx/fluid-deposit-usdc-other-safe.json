@@ -1,0 +1,118 @@
+{
+  "chainId": 1,
+  "safe": "0x3bce8ed1012f62d7f55fe0060c90d02b0da9923e",
+  "block": 23997884,
+  "providers": [
+    "alchemy",
+    "drpc"
+  ],
+  "chain": {
+    "version": "1.4.1",
+    "domainSeparator": "0x4eb67515a1958e9dff0b9e97139dfffc216a944206e211e620bef51f92b62ad5",
+    "transactionHash": "0x4908ad808d7043606f4ec63877c93275acf38a6a0f8f4dfbbd718ccd962a1e9d"
+  },
+  "service": {
+    "safe": "0x3BCe8Ed1012f62D7f55fe0060C90D02B0dA9923E",
+    "to": "0x9641d764fc13c8B624c04430C7356C1C7C8102e2",
+    "value": "0",
+    "data": "0x8d80ff0a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000013200a0b86991c6218b36c1d19d4a2e9eb0ce3606eb4800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000044095ea7b30000000000000000000000009fb7b4477576fe5b32be4c1843afb1e55f251b330000000000000000000000000000000000000000000000000000000421cb8d25009fb7b4477576fe5b32be4c1843afb1e55f251b33000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000446e553f650000000000000000000000000000000000000000000000000000000421cb8d250000000000000000000000003bce8ed1012f62d7f55fe0060c90d02b0da9923e0000000000000000000000000000",
+    "operation": 1,
+    "gasToken": "0x0000000000000000000000000000000000000000",
+    "safeTxGas": "0",
+    "baseGas": "0",
+    "gasPrice": "0",
+    "refundReceiver": "0x0000000000000000000000000000000000000000",
+    "nonce": "53",
+    "executionDate": "2025-12-12T16:58:59Z",
+    "submissionDate": "2025-12-12T16:33:22.351715Z",
+    "modified": "2025-12-12T16:58:59Z",
+    "blockNumber": 23997884,
+    "transactionHash": "0x817ded53f99cfd99a96bcdfca933b75d29445383f7daed3a7c523a5678dc6584",
+    "safeTxHash": "0x4908ad808d7043606f4ec63877c93275acf38a6a0f8f4dfbbd718ccd962a1e9d",
+    "proposer": "0x5247c6851aA2D1c14585968A41982993B6Be180a",
+    "proposedByDelegate": "0x9e7aAA2Fb0ec41602e0946f2DFEF1D1D315e1d20",
+    "executor": "0x286835eE67E2d5093a514C48D06Ae9FfE266B572",
+    "isExecuted": true,
+    "isSuccessful": true,
+    "ethGasPrice": "122459990",
+    "maxFeePerGas": "269268920",
+    "maxPriorityFeePerGas": "41431440",
+    "gasUsed": 169056,
+    "fee": "20702596069440",
+    "payment": null,
+    "origin": "{\"url\": \"https://fluid.io\", \"name\": \"Fluid\", \"note\": null}",
+    "dataDecoded": {
+      "method": "multiSend",
+      "parameters": [
+        {
+          "name": "transactions",
+          "type": "bytes",
+          "value": "0x00a0b86991c6218b36c1d19d4a2e9eb0ce3606eb4800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000044095ea7b30000000000000000000000009fb7b4477576fe5b32be4c1843afb1e55f251b330000000000000000000000000000000000000000000000000000000421cb8d25009fb7b4477576fe5b32be4c1843afb1e55f251b33000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000446e553f650000000000000000000000000000000000000000000000000000000421cb8d250000000000000000000000003bce8ed1012f62d7f55fe0060c90d02b0da9923e",
+          "valueDecoded": [
+            {
+              "operation": 0,
+              "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+              "value": "0",
+              "data": "0x095ea7b30000000000000000000000009fb7b4477576fe5b32be4c1843afb1e55f251b330000000000000000000000000000000000000000000000000000000421cb8d25",
+              "dataDecoded": {
+                "method": "approve",
+                "parameters": [
+                  {
+                    "name": "spender",
+                    "type": "address",
+                    "value": "0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33"
+                  },
+                  {
+                    "name": "value",
+                    "type": "uint256",
+                    "value": "17746857253"
+                  }
+                ]
+              }
+            },
+            {
+              "operation": 0,
+              "to": "0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33",
+              "value": "0",
+              "data": "0x6e553f650000000000000000000000000000000000000000000000000000000421cb8d250000000000000000000000003bce8ed1012f62d7f55fe0060c90d02b0da9923e",
+              "dataDecoded": {
+                "method": "deposit",
+                "parameters": [
+                  {
+                    "name": "assets_",
+                    "type": "uint256",
+                    "value": "17746857253"
+                  },
+                  {
+                    "name": "receiver_",
+                    "type": "address",
+                    "value": "0x3BCe8Ed1012f62D7f55fe0060C90D02B0dA9923E"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "confirmationsRequired": 2,
+    "confirmations": [
+      {
+        "owner": "0xADDB7b027C7ABa393f3d97d383f1d8aC293a4b29",
+        "submissionDate": "2025-12-12T16:34:30.021491Z",
+        "transactionHash": null,
+        "signature": "0xdab08a084bfe81d8cd1db79687d906d14defa520bc1881be4eca9161c463800f49c8177670935bc863862ddcd5a6bbe53c68ff23d5bdab64be645a5044d3599f1b",
+        "signatureType": "EOA"
+      },
+      {
+        "owner": "0x286835eE67E2d5093a514C48D06Ae9FfE266B572",
+        "submissionDate": "2025-12-12T16:58:59Z",
+        "transactionHash": null,
+        "signature": "0x000000000000000000000000286835ee67e2d5093a514c48d06ae9ffe266b572000000000000000000000000000000000000000000000000000000000000000001",
+        "signatureType": "APPROVED_HASH"
+      }
+    ],
+    "trusted": true,
+    "signatures": "0x000000000000000000000000286835ee67e2d5093a514c48d06ae9ffe266b572000000000000000000000000000000000000000000000000000000000000000001dab08a084bfe81d8cd1db79687d906d14defa520bc1881be4eca9161c463800f49c8177670935bc863862ddcd5a6bbe53c68ff23d5bdab64be645a5044d3599f1b"
+  }
+}

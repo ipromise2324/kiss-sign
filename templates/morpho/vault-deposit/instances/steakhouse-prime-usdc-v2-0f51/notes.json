@@ -1,11 +1,109 @@
 {
-  "verdict": {
-    "status": "safe",
-    "text": {
-      "en": "OK to use after setting the app's unlimited approval to the deposit amount. Steakhouse's page, CoinGecko and the factory confirm the vault.",
-      "zh-TW": "可以用，但要先把 app 的無限授權改成存款額。Steakhouse 頁面、CoinGecko 和工廠都確認這個 vault。第一次先送小額。"
+  "instanceRequest": "I want to deposit USDC into Morpho's Steakhouse Prime USDC vault. build me the template and its report",
+  "entries": {
+    "steakhouse-prime-usdc-v2-0f51": {
+      "role": {
+        "en": "The vault you deposit into: Steakhouse Prime USDC (steakUSDC), a Morpho Vault V2 curated by Steakhouse Financial",
+        "zh-TW": "你存入的 vault：Steakhouse Prime USDC（steakUSDC），Steakhouse Financial 管理的 Morpho Vault V2"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Steakhouse's Prime Instant page lists Steakhouse Prime Instant USDC, Ethereum, Morpho v2, with this address",
+            "zh-TW": "Steakhouse 的 Prime Instant 頁列出 Steakhouse Prime Instant USDC、Ethereum、Morpho v2 和這個地址"
+          },
+          "url": "https://www.steakhouse.financial/docs/products/vault-products/current/prime-instant",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "CoinGecko's coin steakhouse-usdc (Steakhouse USDC V2) is at this address",
+            "zh-TW": "CoinGecko 的 steakhouse-usdc（Steakhouse USDC V2）就是這個地址"
+          },
+          "url": "https://www.coingecko.com/en/coins/steakhouse-usdc",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Morpho's API vaultV2ByAddress answers name Steakhouse Prime USDC, symbol steakUSDC, asset USDC, created at block 23671611",
+            "zh-TW": "Morpho API 的 vaultV2ByAddress 回答名稱 Steakhouse Prime USDC、代號 steakUSDC、資產 USDC、建立於區塊 23671611"
+          },
+          "url": "https://api.morpho.org/graphql",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Etherscan: verified contract VaultV2 (solc 0.8.28); creation transaction 0x2ef63f2d9490f3c264cf5c4b0f0040a6a4c56866e026ac45f9fef835298a70cf, which the providers could not tie to the deployment; the factory answers isVaultV2 = true",
+            "zh-TW": "Etherscan：已驗證合約 VaultV2（solc 0.8.28）；建立交易 0x2ef63f2d9490f3c264cf5c4b0f0040a6a4c56866e026ac45f9fef835298a70cf，providers 無法證明它是部署交易；工廠回答 isVaultV2 = true"
+          },
+          "url": "https://etherscan.io/address/0xbeef088055857739C12CD3765F20b7679Def0f51#code",
+          "result": "attention"
+        }
+      ]
+    },
+    "steakhouse-prime-usdc-v2-0f51-market-adapter": {
+      "role": {
+        "en": "The vault's only adapter and its liquidity adapter: a deposit is supplied through it into Morpho Blue markets",
+        "zh-TW": "vault 唯一的轉接合約，也是流動性轉接合約：存款經由它供應到 Morpho Blue 市場"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "Morpho's API GET /v0/vaults-v2/1:<vault>/allocations answers adapter_address 0x2b9681015A1FA2225D1FC8ae40538d3D64C58290, kind morpho_market_v1_v2, the only adapter",
+            "zh-TW": "Morpho API GET /v0/vaults-v2/1:<vault>/allocations 回答 adapter_address 0x2b9681015A1FA2225D1FC8ae40538d3D64C58290、種類 morpho_market_v1_v2，是唯一的轉接合約"
+          },
+          "url": "https://api.morpho.org/v0/vaults-v2/1:0xbeef088055857739C12CD3765F20b7679Def0f51/allocations",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "Morpho's GraphQL API names it the vault's liquidityAdapter, type MorphoMarketV1",
+            "zh-TW": "Morpho GraphQL API 說它是 vault 的 liquidityAdapter，類型 MorphoMarketV1"
+          },
+          "url": "https://api.morpho.org/graphql",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "The Morpho app's vault page shows it only through scripts, so no program reads it there",
+            "zh-TW": "Morpho app 的 vault 頁只用 script 顯示它，程式讀不到"
+          },
+          "url": "https://app.morpho.org/ethereum/vault/0xbeef088055857739C12CD3765F20b7679Def0f51/steakhouse-prime-usdc",
+          "result": "attention"
+        },
+        {
+          "text": {
+            "en": "Etherscan: verified contract MorphoMarketV1AdapterV2 (solc 0.8.28), created in block 24887994; the factory answers isMorphoMarketV1AdapterV2 = true and the vault isAdapter = true",
+            "zh-TW": "Etherscan：已驗證合約 MorphoMarketV1AdapterV2（solc 0.8.28），建立於區塊 24887994；工廠回答 isMorphoMarketV1AdapterV2 = true，vault 回答 isAdapter = true"
+          },
+          "url": "https://etherscan.io/address/0x2b9681015A1FA2225D1FC8ae40538d3D64C58290#code",
+          "result": "pass"
+        }
+      ]
     }
   },
+  "verdict": {
+    "status": "caution",
+    "text": {
+      "en": "A large curated vault, but it grew from about 7 million to 61 million USDC in April 2026 and one holder has 22%.",
+      "zh-TW": "規模大的 curated vault，但 2026 年 4 月從約 700 萬暴增到 6,100 萬 USDC，最大持有者占 22%。"
+    }
+  },
+  "judgments": [
+    {
+      "text": {
+        "en": "The vault held about 7.4 million USDC on 2026-03-31 and 61 million on 2026-04-30, about 116 million now. 745 addresses hold shares; the top 10 hold 54.07%, the largest 21.64%.",
+        "zh-TW": "vault 在 2026-03-31 約 740 萬 USDC，2026-04-30 約 6,100 萬，現在約 1.16 億。745 個地址持有份額，前 10 名占 54.07%，最大一個 21.64%。"
+      },
+      "recommendation": {
+        "en": "Its size has been held for seven months; a large holder leaving can lower its idle liquidity, so plan your withdrawal.",
+        "zh-TW": "這個規模已維持七個月；大戶撤出可能減少可提領的流動性，存入前想好何時提領。"
+      },
+      "sources": [
+        "https://www.steakhouse.financial/docs/products/vault-products/current/prime-instant"
+      ]
+    }
+  ],
   "flow": [
     {
       "after": 2,
@@ -13,11 +111,11 @@
       "to": "usdc",
       "function": "transferFrom(address,address,uint256)",
       "text": {
-        "en": "Pulls the amount you type of USDC from the Safe with `transferFrom`",
-        "zh-TW": "用 `transferFrom` 從 Safe 拉走你填的金額的 USDC"
+        "en": "The bundle pulls the approved USDC from the Safe",
+        "zh-TW": "bundle 從 Safe 拉走已授權的 USDC"
       },
       "sources": [
-        "https://github.com/morpho-org/bundles/blob/9726ac4250303893451664ba75f393360e17d6ca/src/libraries/TokenLib.sol#L81",
+        "https://github.com/morpho-org/bundles/blob/eb4f7d65efc5b51c17fb6a70377c56b5ea49255e/src/libraries/TokenLib.sol",
         "https://etherscan.io/tx/0x684047aa7a593aa1f9b6233df5dcd2e3e74539d71d7b66bfc440707cf39c00a4"
       ]
     },
@@ -27,150 +125,13 @@
       "to": "steakhouse-prime-usdc-v2-0f51",
       "function": "deposit(uint256,address)",
       "text": {
-        "en": "Deposits the pulled USDC into this vault with `deposit`, which mints the shares to the Safe",
-        "zh-TW": "用 `deposit` 把拉來的 USDC 存進這個 vault，vault 把份額鑄給 Safe"
+        "en": "The bundle deposits it into the vault, shares minted to the Safe",
+        "zh-TW": "bundle 存進 vault，份額鑄給 Safe"
       },
       "sources": [
-        "https://github.com/morpho-org/bundles/blob/9726ac4250303893451664ba75f393360e17d6ca/src/vault/VaultBundlesV1.sol#L52",
-        "https://etherscan.io/tx/0x684047aa7a593aa1f9b6233df5dcd2e3e74539d71d7b66bfc440707cf39c00a4"
-      ]
-    },
-    {
-      "after": 2,
-      "from": "steakhouse-prime-usdc-v2-0f51",
-      "to": "usdc",
-      "function": "transfer(address,uint256)",
-      "text": {
-        "en": "The vault sends the USDC on to its liquidity adapter with `transfer`, which lends it on Morpho Blue",
-        "zh-TW": "vault 用 `transfer` 把 USDC 轉給它的流動性 adapter，由 adapter 借到 Morpho Blue"
-      },
-      "sources": [
-        "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L569-L575",
+        "https://github.com/morpho-org/bundles/blob/eb4f7d65efc5b51c17fb6a70377c56b5ea49255e/src/vault/VaultBundlesV1.sol",
         "https://etherscan.io/tx/0x684047aa7a593aa1f9b6233df5dcd2e3e74539d71d7b66bfc440707cf39c00a4"
       ]
     }
-  ],
-  "pastTxsConclusion": {
-    "en": "Most misfits are the old Bundler3 route. Others deposited with an allowance given earlier, or approved another amount than they deposited, the newest of them unlimited. All are refused.",
-    "zh-TW": "不符的多半是 Bundler3 舊路線；其餘用先前給的授權直接存，或授權額不等於存款額（最新幾筆是無限）。這些都不接受。"
-  },
-  "judgments": [
-    {
-      "text": {
-        "en": "This vault is young and grew fast: it held almost nothing a year ago, rose several-fold in spring 2026, and has stayed large since. One holder owns about a fifth of the shares. The program's figures are in the Instance section.",
-        "zh-TW": "這個 vault 很年輕、長得很快：一年前幾乎是空的，2026 年春天翻了好幾倍，之後一直維持大規模。有一個持有人占約五分之一的份額。程式量到的數字在「實例」區。"
-      },
-      "recommendation": {
-        "en": "Send a small amount first. If one large holder leaves, a large withdrawal may have to wait.",
-        "zh-TW": "先送小額。大戶離開時，大筆提款可能要等。"
-      }
-    }
-  ],
-  "context": [
-    {
-      "title": {
-        "en": "Where deposits go",
-        "zh-TW": "存款去哪裡"
-      },
-      "text": {
-        "en": "Your USDC does not stay in the vault: in the same transaction the vault hands it to its liquidity adapter, which supplies it to one Morpho Blue market, USDC lent against WBTC at 86% LLTV (block 26,490,392). An allocator can point it at another market at any time.",
-        "zh-TW": "USDC 不會留在 vault 裡：同一筆交易中 vault 就把它交給流動性 adapter，adapter 再供應到一個 Morpho Blue 市場：以 WBTC 為抵押、LLTV 86% 的 USDC 市場（區塊 26,490,392）。allocator 隨時可以改成別的市場。"
-      },
-      "sources": [
-        "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L764-L774",
-        "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L569-L575",
-        "https://etherscan.io/address/0x2b9681015A1FA2225D1FC8ae40538d3D64C58290#code",
-        "https://etherscan.io/address/0xbeef088055857739C12CD3765F20b7679Def0f51#readContract"
-      ]
-    },
-    {
-      "title": {
-        "en": "Which markets it lends to",
-        "zh-TW": "借給哪些市場"
-      },
-      "text": {
-        "en": "Through its one adapter the vault lends to 9 Morpho Blue USDC markets. Allocators move USDC between them within caps the curator sets per adapter, collateral and market, so the mix changes whenever they reallocate.",
-        "zh-TW": "vault 透過唯一的 adapter 借給 9 個 Morpho Blue 的 USDC 市場。allocator 在策展人對 adapter、抵押品和市場設的上限內搬動 USDC，所以每次重新分配，組合就會變。"
-      },
-      "sources": [
-        "https://github.com/morpho-org/vault-v2/blob/3aedc886637fe6edee27dbe2042baf12d8117be3/src/adapters/MorphoMarketV1AdapterV2.sol#L176-L199",
-        "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L569-L589",
-        "https://api.morpho.org/graphql"
-      ]
-    },
-    {
-      "title": {
-        "en": "Who can change it",
-        "zh-TW": "誰能改"
-      },
-      "text": {
-        "en": "Three allocators can move funds between markets at any time, within the caps. The curator must wait 7 days to add an adapter or raise a cap, but can add an allocator, change the fees or set the withdrawal penalty at once.",
-        "zh-TW": "三個 allocator 隨時可以在上限內把資金搬到別的市場。策展人加 adapter 或調高上限要等 7 天，但新增 allocator、改手續費、設提款罰金可以立刻做。"
-      },
-      "sources": [
-        "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L340-L357",
-        "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L524-L532",
-        "https://api.morpho.org/graphql"
-      ]
-    },
-    {
-      "title": {
-        "en": "Getting the USDC back",
-        "zh-TW": "怎麼把 USDC 拿回來"
-      },
-      "text": {
-        "en": "Nothing sits idle, so a withdrawal is paid from the WBTC market the adapter supplies: about 47.6 million of the vault's 114.7 million USDC could leave that way (Morpho's API, 2026-11-25). Beyond that, wait for an allocator to move USDC back, or call `forceDeallocate` and pay its penalty (0.001% now; the curator can raise it to 2% at once).",
-        "zh-TW": "vault 裡沒有閒置的 USDC，提款由 adapter 供應的 WBTC 市場支付：vault 的 1.147 億 USDC 中約 4,760 萬能這樣提出（Morpho 的 API，2026-11-25）。超過的部分要等 allocator 把 USDC 撤回，或呼叫 `forceDeallocate` 並付罰金（目前 0.001%，策展人可以立刻調高到 2%）。"
-      },
-      "sources": [
-        "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L793-L811",
-        "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol#L813-L833",
-        "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/libraries/ConstantsLib.sol#L12",
-        "https://api.morpho.org/graphql"
-      ]
-    }
-  ],
-  "reviews": {},
-  "entries": {
-    "steakhouse-prime-usdc-v2-0f51": {
-      "role": {
-        "en": "USDC vault (V2, Prime Instant) managed by Steakhouse",
-        "zh-TW": "Steakhouse 管理的 USDC vault（V2，Prime Instant）"
-      },
-      "sources": [
-        {
-          "text": {
-            "en": "Steakhouse's docs page for Prime Instant lists this address next to Steakhouse Prime Instant USDC, Ethereum, Morpho v2",
-            "zh-TW": "Steakhouse 的 Prime Instant 文件頁在 Steakhouse Prime Instant USDC、Ethereum、Morpho v2 旁列出這個地址"
-          },
-          "url": "https://www.steakhouse.financial/docs/products/vault-products/current/prime-instant",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "Morpho's API (api.morpho.org/graphql), `vaultV2ByAddress` on chain 1, answers Steakhouse Prime USDC (steakUSDC), USDC asset, listed. The query names the address itself, so it does not count",
-            "zh-TW": "Morpho 的 API（api.morpho.org/graphql）以 `vaultV2ByAddress` 查鏈 1，回答 Steakhouse Prime USDC（steakUSDC），資產 USDC，已上架。查詢本身帶了地址，所以不算一個來源"
-          },
-          "url": "https://api.morpho.org/graphql",
-          "result": "attention"
-        },
-        {
-          "text": {
-            "en": "CoinGecko's coin steakhouse-usdc (Steakhouse USDC V2) lists this address",
-            "zh-TW": "CoinGecko 的 steakhouse-usdc（Steakhouse USDC V2）列出這個地址"
-          },
-          "url": "https://www.coingecko.com/en/coins/steakhouse-usdc",
-          "result": "pass"
-        },
-        {
-          "text": {
-            "en": "Etherscan: verified contract VaultV2, creator Steakhouse: Deployer 0xfeed46c11F57B7126a773EeC6ae9cA7aE1C03C9a, creation transaction 0x2ef63f2d9490f3c264cf5c4b0f0040a6a4c56866e026ac45f9fef835298a70cf, which reached the factory through another contract",
-            "zh-TW": "Etherscan：已驗證合約 VaultV2，建立者 Steakhouse: Deployer 0xfeed46c11F57B7126a773EeC6ae9cA7aE1C03C9a，建立交易 0x2ef63f2d9490f3c264cf5c4b0f0040a6a4c56866e026ac45f9fef835298a70cf 經另一個合約呼叫工廠"
-          },
-          "url": "https://etherscan.io/address/0xbeef088055857739C12CD3765F20b7679Def0f51#code",
-          "result": "pass"
-        }
-      ]
-    }
-  }
+  ]
 }

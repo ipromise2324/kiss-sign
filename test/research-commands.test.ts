@@ -122,13 +122,13 @@ test('pnpm template implied-card names a recipient outside the registry in a boo
   const transfer = run('template', ['implied-card', 'erc20/transfer', 'erc20-transfer-usdc'], BASE);
   assert.equal(transfer.status, 0, transfer.stdout);
   assert.match(transfer.stdout, /^ {2}card \{"operations":\[\{"template":"erc20\/transfer","values":\{"token":"usdc","amount":"4000000001000","recipient":"recipient"\}\}\]\}\n {2}book \{"recipient":"0x[0-9a-f]{40}"\}\n {2}MATCH /m);
-  const swap = run('template', ['implied-card', 'cow/swap', 'cow-swap-usdc'], BASE);
+  const swap = run('template', ['implied-card', 'cow/swap', 'cow-swap-usdc-base'], BASE);
   assert.equal(swap.status, 0, swap.stdout);
   assert.match(swap.stdout, /"sell-amount":"100000000000","min-buy":"99084887371"/);
 });
 
 test('pnpm template implied-card exits 1 for a transaction of another shape and for a check it cannot make offline', () => {
-  const other = run('template', ['implied-card', 'erc20/transfer', 'cow-swap-usdc'], BASE);
+  const other = run('template', ['implied-card', 'erc20/transfer', 'cow-swap-usdc-base'], BASE);
   assert.equal(other.status, 1);
   assert.match(other.stdout, /^ {2}NOT THE SHAPE {2}the transaction does not make erc20\/transfer's calls: /m);
   const owners = run('template', ['implied-card', 'safe/remove-owner', 'safe-remove-owner-first'], BASE);
@@ -137,7 +137,7 @@ test('pnpm template implied-card exits 1 for a transaction of another shape and 
 });
 
 test('past-txs --show --tx prints the card a fit implies, and with a template changed since the study the transaction alone, saying to restudy', () => {
-  const tx = '0xfe03d16d39107c549ff7729ccf535647a71b080ac2254ee6d009477ef63f753d';
+  const tx = '0x8615e98b9f927f0cb88e7c0cf162591b787d755ed02237158f1dbc53bdabc377';
   const fresh = run('past-txs', ['--show', 'safe-add-owner', '--tx', tx]);
   assert.equal(fresh.status, 0, fresh.stderr);
   assert.match(fresh.stdout, /^ {2}implied card \{"operations":\[\{"template":"safe\/add-owner"/m);
@@ -171,15 +171,15 @@ test('past-txs refuses --tx without --show, --restudy beside --show, and the --i
 test('pnpm report --text prints the rendered page as text, with no markup, in the language asked', () => {
   const en = run('report', ['erc20/transfer', '--text', 'en']);
   assert.equal(en.status, 0, en.stderr);
-  assert.match(en.stdout, /^To review \[pass\] 0$/m);
-  assert.match(en.stdout, /^\[pass\] Source verified 6 \/ 6$/m, 'an ABI proven but for its metadata hash counts as passed');
-  assert.match(en.stdout, / usdc, usdt: compiled again, only the metadata hash differs from the code on chain, so their function selectors and parameter types are proven and they count as passed; their parameter names are not proven\.$/m);
+  assert.match(en.stdout, /^To review \[AI judgment\] 2$/m);
+  assert.match(en.stdout, /^\[pass\] Source verified 1 \/ 1$/m, 'an ABI proven but for its metadata hash counts as passed');
+  assert.match(en.stdout, / usdc: compiled again, only the metadata hash differs from the code on chain, so its function selectors and parameter types are proven and it counts as passed; its parameter names are not proven\.$/m);
   assert.match(en.stdout, /\(https:\/\/github\.com\/ethereum\/ERCs\/blob\/[0-9a-f]{40}\/ERCS\/erc-20\.md\)/);
   assert.doesNotMatch(en.stdout, /<\/?(span|div|a|p|h\d|svg|td|li)\b|&#\d+;/);
   const zh = run('report', ['erc20/transfer', '--text', 'zh-TW']).stdout;
-  assert.match(zh, /^待確認 \[通過\] 0$/m);
-  assert.match(zh, /^\[通過\] 原始碼驗證 6 \/ 6$/m);
-  assert.match(zh, /usdc、usdt 重新編譯後只有 metadata hash 跟鏈上不同，所以函式選擇器和參數型別有證明，算通過；參數名稱沒有證明。$/m);
+  assert.match(zh, /^待確認 \[AI 判斷\] 2$/m);
+  assert.match(zh, /^\[通過\] 原始碼驗證 1 \/ 1$/m);
+  assert.match(zh, /usdc 重新編譯後只有 metadata hash 跟鏈上不同，所以函式選擇器和參數型別有證明，算通過；參數名稱沒有證明。$/m);
   for (const args of [['--text', 'fr'], ['--text', 'en', '--render']]) assert.equal(run('report', ['erc20/transfer', ...args]).status, 2, args.join(' '));
   const supply = run('report', ['compound/supply', '--instance-of', 'compound-v3-cusdcv3', '--text', 'en']);
   assert.equal(supply.status, 0, supply.stderr);

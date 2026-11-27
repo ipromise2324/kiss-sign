@@ -40,6 +40,10 @@
           }
         }
       ]
+    },
+    "price": {
+      "feed": "chainlink-usdc-usd",
+      "peg": "usd"
     }
   },
   "usdt": {
@@ -52,6 +56,10 @@
     "code": {
       "hash": "0xb44fb4e949d0f78f87f79ee46428f23a2a5713ce6fc6e0beb3dda78c2ac1ea55",
       "from": 4634748
+    },
+    "price": {
+      "feed": "chainlink-usdt-usd",
+      "peg": "usd"
     }
   },
   "multisend-1.3.0": {
@@ -168,11 +176,35 @@
     "coingecko": "steakhouse-usdc",
     "attributes": {
       "asset": "usdc",
-      "factory": "vault-v2-factory"
+      "factory": "vault-v2-factory",
+      "adapter": "steakhouse-prime-usdc-v2-0f51-market-adapter"
     },
     "code": {
       "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
       "from": 23671611
+    }
+  },
+  "steakhouse-prime-usdc-v2-0f51-market-adapter": {
+    "address": "0x2b9681015A1FA2225D1FC8ae40538d3D64C58290",
+    "kind": "adapter",
+    "source": "https://app.morpho.org/ethereum/vault/0xbeef088055857739C12CD3765F20b7679Def0f51/steakhouse-prime-usdc",
+    "apiSource": {
+      "url": "https://api.morpho.org/v0/vaults-v2/1:0xbeef088055857739C12CD3765F20b7679Def0f51/allocations",
+      "method": "GET",
+      "path": [
+        "data",
+        "allocations",
+        0,
+        "adapter_address"
+      ]
+    },
+    "defillama": "morpho-blue",
+    "attributes": {
+      "factory": "morpho-market-v1-adapter-v2-factory"
+    },
+    "code": {
+      "hash": "0xb5118ce947468e2b9ca8acede1a49bc1ac1338324106903ab88236e30f5330b6",
+      "from": 24887994
     }
   },
   "vault-v2-factory": {
@@ -223,7 +255,7 @@
     "sourceLabel": "VaultBundlesV1",
     "moreSources": [
       {
-        "url": "https://github.com/morpho-org/sdks/blob/166277bc26a12235256bdf9162da012b80781a1e/packages/morpho-ts/src/addresses.ts",
+        "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
         "label": "vaultBundlesV1"
       }
     ],
@@ -241,12 +273,9 @@
     "sourceHeading": "fToken_fUSDC",
     "moreSources": [
       {
-        "url": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/fToken_fUSDC.json",
-        "label": "address"
-      },
-      {
         "url": "https://docs.fluid.io/fluid-integration/lending/read/lending-tokens.html",
-        "label": "address"
+        "label": "address",
+        "heading": "Example Response"
       }
     ],
     "defillama": "fluid-lending",
@@ -254,13 +283,13 @@
       "asset": "usdc",
       "factory": "fluid-lending-factory"
     },
+    "dependsOn": [
+      "fluid-liquidity"
+    ],
     "code": {
       "hash": "0x131b2014b67d86e5a1fcd6be7b6817b76ae9ac1663266f88366e526666297828",
       "from": 19247609
-    },
-    "dependsOn": [
-      "fluid-liquidity"
-    ]
+    }
   },
   "fluid-fusdt": {
     "address": "0x5C20B550819128074FD538Edf79791733ccEdd18",
@@ -270,12 +299,9 @@
     "sourceHeading": "fToken_fUSDT",
     "moreSources": [
       {
-        "url": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/fToken_fUSDT.json",
-        "label": "address"
-      },
-      {
         "url": "https://docs.fluid.io/fluid-integration/lending/read/lending-tokens.html",
-        "label": "address"
+        "label": "address",
+        "heading": "Example Response"
       }
     ],
     "defillama": "fluid-lending",
@@ -283,13 +309,13 @@
       "asset": "usdt",
       "factory": "fluid-lending-factory"
     },
+    "dependsOn": [
+      "fluid-liquidity"
+    ],
     "code": {
       "hash": "0x662b760b02d5258965404cd8daca2c1ce5ef5567417cedec5a0acf895b775195",
       "from": 19247666
-    },
-    "dependsOn": [
-      "fluid-liquidity"
-    ]
+    }
   },
   "fluid-lending-factory": {
     "address": "0x54B91A0D94cb471F37f949c60F7Fa7935b551D03",
@@ -297,12 +323,6 @@
     "source": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md",
     "sourceLabel": "mainnet",
     "sourceHeading": "LendingFactory",
-    "moreSources": [
-      {
-        "url": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/LendingFactory.json",
-        "label": "address"
-      }
-    ],
     "defillama": "fluid-lending",
     "instanceCheck": {
       "function": "computeToken(address,string)",
@@ -336,12 +356,9 @@
     "sourceHeading": "Liquidity",
     "moreSources": [
       {
-        "url": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/Liquidity.json",
-        "label": "address"
-      },
-      {
-        "url": "https://docs.fluid.io/integrate/dex-swaps.html",
-        "label": "Liquidity Layer"
+        "url": "https://docs.fluid.io/integrate/dex-v2-swaps.html",
+        "label": "Fluid Liquidity",
+        "heading": "Addresses"
       }
     ],
     "defillama": "fluid-lending",
@@ -1080,15 +1097,39 @@
   "hyperithm-usdc-apex-v2-9e2f": {
     "address": "0x093272C07700d3cA5301C3Bf9B3A392624179E2F",
     "kind": "vault",
-    "source": "https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex",
+    "source": "https://app.morpho.org/curator/hyperithm",
     "defillama": "morpho-blue",
     "attributes": {
       "asset": "usdc",
-      "factory": "vault-v2-factory"
+      "factory": "vault-v2-factory",
+      "adapter": "hyperithm-usdc-apex-v2-9e2f-market-adapter"
     },
     "code": {
       "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
       "from": 23666454
+    }
+  },
+  "hyperithm-usdc-apex-v2-9e2f-market-adapter": {
+    "address": "0x92872B97d89B54646D036E3aFd2BcCb84d8e3CA1",
+    "kind": "adapter",
+    "source": "https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex",
+    "apiSource": {
+      "url": "https://api.morpho.org/v0/vaults-v2/1:0x093272C07700d3cA5301C3Bf9B3A392624179E2F/allocations",
+      "method": "GET",
+      "path": [
+        "data",
+        "allocations",
+        0,
+        "adapter_address"
+      ]
+    },
+    "defillama": "morpho-blue",
+    "attributes": {
+      "factory": "morpho-market-v1-adapter-v2-factory"
+    },
+    "code": {
+      "hash": "0x7454769d09938efff1b48ff18a5b297252d02f9cb4d9c5ce9a8e41e3b894c0ea",
+      "from": 24927267
     }
   },
   "safe-1.3.0": {
@@ -1132,23 +1173,24 @@
   "gpv2-settlement": {
     "address": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
     "kind": "router",
-    "source": "https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json",
-    "sourceLabel": "GPv2Settlement",
+    "source": "https://docs.cow.fi/cow-protocol/reference/contracts/core",
+    "sourceLabel": "GitHub",
+    "sourceHeading": "Deployments",
     "moreSources": [
       {
-        "url": "https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts",
-        "label": "SETTLEMENT_CONTRACT"
+        "url": "https://github.com/cowprotocol/contracts/blob/53cc6b74d455d09d73dd8ae57e06d2a557d8000b/networks.json",
+        "label": "GPv2Settlement"
+      },
+      {
+        "url": "https://github.com/cowprotocol/cow-sdk/blob/97cf803c2f3cf337688ab60f9ccf9257b3d44b9c/packages/config/src/chains/const/contracts.ts",
+        "label": "const SETTLEMENT_CONTRACT"
       }
     ],
     "defillama": "cowswap",
     "immunefi": "cowprotocol",
-    "sdk": {
-      "package": "@cowprotocol/sdk-config",
-      "version": "2.11.2",
-      "sha256": "0xcefb8b4829e651dc333dd2e4309b17c98e152605ea46ae7dd6b962189713ea99",
-      "file": "dist/index.js",
-      "label": "SETTLEMENT_CONTRACT"
-    },
+    "dependsOn": [
+      "gpv2-vault-relayer"
+    ],
     "code": {
       "hash": "0x744d58584e38d214eb190629f131d5cf8b8703bd68e04452f9692177c37c4bc9",
       "from": 12593265
@@ -1156,27 +1198,118 @@
   },
   "gpv2-vault-relayer": {
     "address": "0xC92E8bdf79f0507f65a392b0ab4667716BFE0110",
-    "kind": "adapter",
-    "source": "https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json",
-    "sourceLabel": "GPv2VaultRelayer",
+    "kind": "allowance",
+    "source": "https://docs.cow.fi/cow-protocol/reference/contracts/core",
+    "sourceLabel": "GitHub",
+    "sourceHeading": "Deployments",
     "moreSources": [
       {
-        "url": "https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts",
+        "url": "https://github.com/cowprotocol/contracts/blob/53cc6b74d455d09d73dd8ae57e06d2a557d8000b/networks.json",
+        "label": "GPv2VaultRelayer"
+      },
+      {
+        "url": "https://github.com/cowprotocol/cow-sdk/blob/97cf803c2f3cf337688ab60f9ccf9257b3d44b9c/packages/config/src/chains/const/contracts.ts",
         "label": "VAULT_RELAYER"
       }
     ],
     "defillama": "cowswap",
     "immunefi": "cowprotocol",
-    "sdk": {
-      "package": "@cowprotocol/sdk-config",
-      "version": "2.11.2",
-      "sha256": "0xcefb8b4829e651dc333dd2e4309b17c98e152605ea46ae7dd6b962189713ea99",
-      "file": "dist/index.js",
-      "label": "VAULT_RELAYER"
-    },
     "code": {
       "hash": "0x500097799c1379a3728ed70b17de4132de2c07f6937b041c361deaade22b6a5e",
       "from": 12593265
+    }
+  },
+  "chainlink-usdc-usd": {
+    "address": "0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6",
+    "kind": "oracle",
+    "source": "https://github.com/smartcontractkit/hardhat-chainlink/blob/f181816637778064fc2bde3c373a5ffc9a4a0790/src/registries/json/DataFeeds.json",
+    "sourceLabel": "proxyAddress",
+    "defillama": "chainlink-requests",
+    "feed": {
+      "description": "USDC / USD",
+      "decimals": 8,
+      "heartbeat": 82800,
+      "deviationBps": 25,
+      "sourceClass": "cex_price",
+      "quote": "usd"
+    },
+    "code": {
+      "hash": "0xbd6f524cdc4268b6bd1bb6f77a8821faeea9c52ee9e0afa0b6d948ce82c966c2",
+      "from": 11869355
+    }
+  },
+  "chainlink-usdt-usd": {
+    "address": "0x3E7d1eAB13ad0104d2750B8863b489D65364e32D",
+    "kind": "oracle",
+    "source": "https://github.com/smartcontractkit/hardhat-chainlink/blob/f181816637778064fc2bde3c373a5ffc9a4a0790/src/registries/json/DataFeeds.json",
+    "sourceLabel": "proxyAddress",
+    "defillama": "chainlink-requests",
+    "feed": {
+      "description": "USDT / USD",
+      "decimals": 8,
+      "heartbeat": 86400,
+      "deviationBps": 25,
+      "sourceClass": "cex_price",
+      "quote": "usd"
+    },
+    "code": {
+      "hash": "0xbd6f524cdc4268b6bd1bb6f77a8821faeea9c52ee9e0afa0b6d948ce82c966c2",
+      "from": 11870289
+    }
+  },
+  "uniswap-v3-factory": {
+    "address": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+    "kind": "factory",
+    "source": "https://github.com/Uniswap/contracts/blob/064a8db9b34117c3abb9d7ca90ff51f91430e83d/deployments/1.md",
+    "sourceLabel": "Uniswap V3 Factory",
+    "sourceHeading": "Uniswap V3 Factory",
+    "moreSources": [
+      {
+        "url": "https://developers.uniswap.org/deployments",
+        "label": "Ethereum",
+        "heading": "Deployments"
+      }
+    ],
+    "defillama": "uniswap-v3",
+    "instanceCheck": {
+      "function": "getPool(address,address,uint24)",
+      "args": [
+        {
+          "attribute": "token0"
+        },
+        {
+          "attribute": "token1"
+        },
+        {
+          "number": "fee"
+        }
+      ]
+    },
+    "code": {
+      "hash": "0x4d7b8525cd5d14343fa67a732fba5b24cddba11620ca88392f4ec6c52f91fd69",
+      "from": 12369621
+    }
+  },
+  "uniswap-v3-usdc-usdt-100": {
+    "address": "0x3416cF6C708Da44DB2624D63ea0AAef7113527C6",
+    "kind": "pool",
+    "source": "https://github.com/Uniswap/v3-core/blob/5ea68a77cb541c6b3812df783be71ba8c081e25f/contracts/UniswapV3Factory.sol",
+    "sourceLabel": "getPool",
+    "defillama": "uniswap-v3",
+    "attributes": {
+      "factory": "uniswap-v3-factory",
+      "token0": "usdc",
+      "token1": "usdt"
+    },
+    "numbers": {
+      "fee": "100"
+    },
+    "code": {
+      "hash": "0x2ff673bacc60a73fc85c678888296c6bce3de2a9d7475c032fe7aa6e0eacba86",
+      "from": 13609065
+    },
+    "twap": {
+      "minLiquidity": "6660000000000"
     }
   },
   "permit2": {
@@ -1236,7 +1369,11 @@
     "code": {
       "hash": "0x55e6b334152096d60367d7ab24241948b31e8d0e66adc8b81cba049a19f9d2ac",
       "from": 25999984
-    }
+    },
+    "dependsOn": [
+      "permit2",
+      "uniswap-v4-pool-manager"
+    ]
   },
   "morpho-blue": {
     "address": "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb",
@@ -1338,101 +1475,6 @@
       "from": 20678797
     }
   },
-  "gauntlet-usdc-prime-v2-a3d0": {
-    "address": "0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0",
-    "kind": "vault",
-    "source": "https://app.morpho.org/ethereum/vault/0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0/gauntlet-usdc-prime",
-    "defillama": "morpho-blue",
-    "coingecko": "gauntlet-usdc-prime",
-    "attributes": {
-      "asset": "usdc",
-      "factory": "vault-v2-factory",
-      "adapter": "gauntlet-usdc-prime-v2-a3d0-market-adapter"
-    },
-    "code": {
-      "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
-      "from": 23479188
-    }
-  },
-  "gauntlet-usdc-prime-v2-a3d0-market-adapter": {
-    "address": "0xDF62f57Ea333a842Db200d4892c90F98204fa22F",
-    "kind": "adapter",
-    "source": "https://app.morpho.org/ethereum/vault/0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0/gauntlet-usdc-prime",
-    "apiSource": {
-      "url": "https://api.morpho.org/graphql",
-      "method": "POST",
-      "body": {
-        "query": "query($vault: String!, $chainId: Int!) { vaultV2ByAddress(address: $vault, chainId: $chainId) { adapters { items { address } } } }",
-        "variables": {
-          "vault": "0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0",
-          "chainId": 1
-        }
-      },
-      "path": [
-        "data",
-        "vaultV2ByAddress",
-        "adapters",
-        "items",
-        0,
-        "address"
-      ]
-    },
-    "defillama": "morpho-blue",
-    "attributes": {
-      "factory": "morpho-market-v1-adapter-v2-factory"
-    },
-    "code": {
-      "hash": "0x4fb6881dcd9eeb017fa714f179ea3f691c98f1511fd0d41045c142b2a49c087a",
-      "from": 24879846
-    }
-  },
-  "flowmark-fgenesis-v2-6439": {
-    "address": "0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439",
-    "kind": "vault",
-    "source": "https://app.morpho.org/ethereum/vault/0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439/flowmark-fgenesis",
-    "defillama": "morpho-blue",
-    "attributes": {
-      "asset": "usdc",
-      "factory": "vault-v2-factory",
-      "adapter": "flowmark-fgenesis-v2-6439-market-adapter"
-    },
-    "code": {
-      "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
-      "from": 25076384
-    }
-  },
-  "flowmark-fgenesis-v2-6439-market-adapter": {
-    "address": "0x79DA02d9C638cC9ae925188AD9DC245337981518",
-    "kind": "adapter",
-    "source": "https://app.morpho.org/ethereum/vault/0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439/flowmark-fgenesis",
-    "apiSource": {
-      "url": "https://api.morpho.org/graphql",
-      "method": "POST",
-      "body": {
-        "query": "query($vault: String!, $chainId: Int!) { vaultV2ByAddress(address: $vault, chainId: $chainId) { adapters { items { address } } } }",
-        "variables": {
-          "vault": "0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439",
-          "chainId": 1
-        }
-      },
-      "path": [
-        "data",
-        "vaultV2ByAddress",
-        "adapters",
-        "items",
-        0,
-        "address"
-      ]
-    },
-    "defillama": "morpho-blue",
-    "attributes": {
-      "factory": "morpho-market-v1-adapter-v2-factory"
-    },
-    "code": {
-      "hash": "0x6e6dee95322ce5509c4fe250f5069dd2ab817dc63e8e209fd954283ebc5734f7",
-      "from": 25079237
-    }
-  },
   "usp": {
     "address": "0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6",
     "kind": "token",
@@ -1475,84 +1517,6 @@
     "code": {
       "hash": "0xf69bd2099fe1c6f91f0ecd55934adc3a9fd8b4cf0443f181086d590b13a131ec",
       "from": 24512804
-    }
-  },
-  "acuto-usdc-v2-4a57": {
-    "address": "0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57",
-    "kind": "vault",
-    "source": "https://app.morpho.org/ethereum/vault/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57/acuto",
-    "defillama": "morpho-blue",
-    "attributes": {
-      "asset": "usdc",
-      "factory": "vault-v2-factory",
-      "adapter": "acuto-usdc-v2-4a57-market-adapter"
-    },
-    "code": {
-      "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
-      "from": 24509998
-    }
-  },
-  "acuto-usdc-v2-4a57-market-adapter": {
-    "address": "0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5",
-    "kind": "adapter",
-    "source": "https://app.morpho.org/ethereum/vault/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57/acuto",
-    "apiSource": {
-      "url": "https://api.morpho.org/graphql",
-      "method": "POST",
-      "body": {
-        "query": "query($vault: String!, $chainId: Int!) { vaultV2ByAddress(address: $vault, chainId: $chainId) { adapters { items { address } } } }",
-        "variables": {
-          "vault": "0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57",
-          "chainId": 1
-        }
-      },
-      "path": [
-        "data",
-        "vaultV2ByAddress",
-        "adapters",
-        "items",
-        0,
-        "address"
-      ]
-    },
-    "defillama": "morpho-blue",
-    "attributes": {
-      "factory": "morpho-market-v1-adapter-v2-factory"
-    },
-    "code": {
-      "hash": "0x0bfb1f9cdc766db966a6c758661a4ce7f015c43965158d606c797aabc2f4c696",
-      "from": 24510137
-    }
-  },
-  "kpk-usdc-prime-v2-9ee6": {
-    "address": "0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6",
-    "kind": "vault",
-    "source": "https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime",
-    "sourceLabel": "Address",
-    "defillama": "kpk",
-    "coingecko": "kpk-usdc-prime",
-    "attributes": {
-      "asset": "usdc",
-      "factory": "vault-v2-factory",
-      "adapter": "kpk-usdc-prime-v2-9ee6-market-adapter"
-    },
-    "code": {
-      "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
-      "from": 23641853
-    }
-  },
-  "kpk-usdc-prime-v2-9ee6-market-adapter": {
-    "address": "0x1d511811ACA9d8817a3e50F29CadFf6243A02902",
-    "kind": "adapter",
-    "source": "https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime",
-    "sourceLabel": "Markets V1 Adapter",
-    "defillama": "kpk",
-    "attributes": {
-      "factory": "morpho-market-v1-adapter-v2-factory"
-    },
-    "code": {
-      "hash": "0x5094349533f13b8aa7bd4a41360a3416f0e27004d5f94c4022d01e0f97cbde63",
-      "from": 24877491
     }
   },
   "weeth": {
@@ -1635,13 +1599,14 @@
   },
   "compound-v3-cusdcv3": {
     "address": "0xc3d688B66703497DAA19211EEdff47f25384cdc3",
-    "kind": "vault",
+    "kind": "lending",
     "source": "https://github.com/compound-finance/comet/blob/f766f51583c23acc33b2a7824654ef2029a96804/deployments/mainnet/usdc/roots.json",
     "sourceLabel": "comet",
     "moreSources": [
       {
         "url": "https://docs.compound.xyz/erc4626-wrapper/",
-        "label": "cUSDCv3"
+        "label": "cUSDCv3",
+        "heading": "Deployed Contracts"
       }
     ],
     "defillama": "compound-v3",
@@ -2400,19 +2365,30 @@
       ]
     }
   },
-  "uniswap-stable-pair-hook": {
-    "address": "0x0000113dCf4ADd69999Fad8F20F2b63F979bfcC0",
+  "uniswap-v4-pool-manager": {
+    "address": "0x000000000004444c5dc75cB358380D2e3dE08A90",
     "kind": "pool",
-    "source": "https://developers.uniswap.org/llms.mdx/docs/protocols/uniswap-labs-hooks/stable-pair/deployments",
-    "sourceLabel": "StablePairHook (hook)",
+    "source": "https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments",
+    "sourceLabel": "PoolManager",
     "sourceHeading": "Ethereum: 1",
     "moreSources": [
       {
-        "url": "https://github.com/Uniswap/v4-hooks-public/blob/e354058156f8f4f1aff1594a932513e7064956c7/README.md",
-        "label": "Ethereum",
-        "heading": "StablePairHook"
+        "url": "https://github.com/Uniswap/sdks/blob/74827a8ad193277ffe42a31635fd77a53f48ae71/sdks/sdk-core/src/addresses.ts",
+        "label": "v4PoolManagerAddress"
       }
     ],
+    "defillama": "uniswap-v4",
+    "code": {
+      "hash": "0x785f1014552b7ce7d5fb7d0c970ca60edee94fd00425d7ca21609acac7ce1293",
+      "from": 21688329
+    }
+  },
+  "uniswap-stable-pair-hook": {
+    "address": "0x0000113dCf4ADd69999Fad8F20F2b63F979bfcC0",
+    "kind": "adapter",
+    "source": "https://developers.uniswap.org/llms.mdx/docs/protocols/uniswap-labs-hooks/stable-pair/deployments",
+    "sourceLabel": "hook",
+    "sourceHeading": "Ethereum: 1",
     "defillama": "uniswap-v4",
     "code": {
       "hash": "0xa5659fa6440c9830926d098ec347a558447bfd8e483643e0d02398dc4cff1685",
@@ -2421,6 +2397,143 @@
         "hash": "0x3d1bc5ca01e9acbf8b04adec8354b9c3a36df23d58f87050767ceff7bf43ae98"
       },
       "from": 25626560
+    }
+  },
+  "rlusd": {
+    "address": "0x8292Bb45bf1Ee4d140127049757C2E0fF06317eD",
+    "kind": "token",
+    "source": "https://docs.ripple.com/products/stablecoin/overview/token-addresses",
+    "sourceLabel": "Proxy address",
+    "sourceHeading": "RLUSD token addresses",
+    "defillama": "ripple-usd",
+    "coingecko": "ripple-usd",
+    "code": {
+      "hash": "0x23fd38dfee1f350e13b663717d03529920d67bb8f2582203b4b29b1e0bfd06b7",
+      "implementation": {
+        "address": "0x9747a0d261c2d56Eb93f542068e5d1E23170fa9e",
+        "hash": "0x77598e1b7a230cd9034edb3e524d6faf036110e996acd9f24c20c872ca7a1807"
+      },
+      "from": 23300630,
+      "earlier": [
+        {
+          "from": 20492031,
+          "hash": "0x23fd38dfee1f350e13b663717d03529920d67bb8f2582203b4b29b1e0bfd06b7",
+          "implementation": {
+            "address": "0xCfd748B9De538c9f5b1805e8db9e1d4671f7F2ec",
+            "hash": "0x5e1e2b7eda7481a4c7f62f27e57c26b7fd3fc63ccce4ea34abf26dd53a23d4df"
+          }
+        }
+      ]
+    }
+  },
+  "sentora-rlusd-main-v2-e6bf": {
+    "address": "0x6dC58a0FdfC8D694e571DC59B9A52EEEa780E6bf",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0x6dC58a0FdfC8D694e571DC59B9A52EEEa780E6bf/sentora-rlusd-main",
+    "defillama": "morpho-blue",
+    "attributes": {
+      "asset": "rlusd",
+      "factory": "vault-v2-factory",
+      "adapter": "sentora-rlusd-main-v2-e6bf-market-adapter"
+    },
+    "code": {
+      "hash": "0x0b10d3ab9979405d0970771ee305d10e8c62ea4afd94a6176a7db3ecd97dfd9a",
+      "from": 24587448
+    }
+  },
+  "sentora-rlusd-main-v2-e6bf-market-adapter": {
+    "address": "0x3C6EAB22cFc03fc32AD1bf836f2F886A5015DFFF",
+    "kind": "adapter",
+    "source": "https://app.morpho.org/ethereum/vault/0x6dC58a0FdfC8D694e571DC59B9A52EEEa780E6bf/sentora-rlusd-main",
+    "apiSource": {
+      "url": "https://api.morpho.org/graphql",
+      "method": "POST",
+      "body": {
+        "query": "query($vault: String!, $chainId: Int!) { vaultV2ByAddress(address: $vault, chainId: $chainId) { adapters { items { address } } } }",
+        "variables": {
+          "vault": "0x6dC58a0FdfC8D694e571DC59B9A52EEEa780E6bf",
+          "chainId": 1
+        }
+      },
+      "path": [
+        "data",
+        "vaultV2ByAddress",
+        "adapters",
+        "items",
+        0,
+        "address"
+      ]
+    },
+    "defillama": "morpho-blue",
+    "attributes": {
+      "factory": "morpho-market-v1-adapter-v2-factory"
+    },
+    "code": {
+      "hash": "0x51700e9cb63fd65821408ebff2468d078e0f9199abf6e14725ebccb1c1143463",
+      "from": 24943159
+    }
+  },
+  "kbtc": {
+    "address": "0x73E0C0d45E048D25Fc26Fa3159b0aA04BfA4Db98",
+    "kind": "token",
+    "source": "https://support.kraken.com/articles/what-is-kbtc",
+    "sourceLabel": "kBTC 以太坊智慧合約",
+    "sourceHeading": "常見問題",
+    "defillama": "kraken",
+    "coingecko": "kraken-wrapped-btc",
+    "code": {
+      "hash": "0x16635108f90afd9cdb297f51523ac789da0b30f15318d89e602bed6bf49bdbe9",
+      "implementation": {
+        "address": "0x35B436cEa882b5A171A1d063f9F3e8b0A7499220",
+        "hash": "0x0ea0ab87bbb45edccf7e9f8dbd8a831c3f1fd94eeb586d5d90eaa65d73187e1a"
+      },
+      "from": 25984828,
+      "earlier": [
+        {
+          "from": 20836204,
+          "hash": "0x16635108f90afd9cdb297f51523ac789da0b30f15318d89e602bed6bf49bdbe9",
+          "implementation": {
+            "address": "0x4bB46FdB7f47524a9441e6C835A032be257f49E1",
+            "hash": "0xb007c1879665aceec9250d0a6f41d5fe072937942453425277360ff47c6e54b1"
+          }
+        },
+        {
+          "from": 23620743,
+          "hash": "0x16635108f90afd9cdb297f51523ac789da0b30f15318d89e602bed6bf49bdbe9",
+          "implementation": {
+            "address": "0x16EBC7f9DB34f049fE6C6D10250f7d597ecA96f1",
+            "hash": "0x9f19dbddc8960b5491234151cc287e04db3469250f8f99d3e0de4725a2df93a4"
+          }
+        }
+      ]
+    }
+  },
+  "morpho-oracle-kbtc-rlusd-86": {
+    "address": "0xBCC3D9834b84B32Cf540DBE948DEd4B47bec5ddb",
+    "kind": "oracle",
+    "source": "https://app.morpho.org/ethereum/variable/0x15bb2a6af0c909eed19fb1f2ceeead34ecbdcba626de752c6b09389ee14eec32/rlusd-kbtc",
+    "apiSource": {
+      "url": "https://api.morpho.org/graphql",
+      "method": "POST",
+      "body": {
+        "query": "query($id: String!, $chainId: Int!) { marketById(marketId: $id, chainId: $chainId) { oracle { address } } }",
+        "variables": {
+          "id": "0x15bb2a6af0c909eed19fb1f2ceeead34ecbdcba626de752c6b09389ee14eec32",
+          "chainId": 1
+        }
+      },
+      "path": [
+        "data",
+        "marketById",
+        "oracle",
+        "address"
+      ]
+    },
+    "sourceLabel": "Oracle",
+    "defillama": "morpho-blue",
+    "code": {
+      "hash": "0xc1df73e7176dc6415db0cdb5d8cab2b32cff972790316766f5319bb4053bd08b",
+      "from": 24902073
     }
   }
 }
