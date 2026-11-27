@@ -190,6 +190,39 @@ test('a share price bound or equals names a card amount or an earlier uint argum
   assert.equal(parseTemplate(earlier, registry, 'committed').id, 'morpho/vault-deposit');
 });
 
+test('a share price scale is a whole power of ten from 1 to 36, or the template fails to load', () => {
+  const at = 'calls[1].args.bundle.items[1].fields.data.call.args.maxSharePriceE27.maxSharePrice';
+  const scaled = (scale: unknown) => {
+    const raw = structuredClone(rawTemplate);
+    raw.calls[1].args.bundle.items[1].fields.data.call.args.maxSharePriceE27.maxSharePrice.scale = scale;
+    return () => parseTemplate(raw, registry, 'committed');
+  };
+  for (const scale of [1, 18, 36]) assert.doesNotThrow(scaled(scale), String(scale));
+  for (const scale of [0, 37, 270, 27.5, '18', '27', -1, null, true, [27], { scale: 27 }]) {
+    assert.throws(scaled(scale), (error: unknown) => error instanceof TemplateError && error.path === `${at}.scale` && /from 1 to 36/.test(error.message), String(scale));
+  }
+});
+
+test("a committed template's share price must state its scale, while a recorded one without it still reads as scaled by 1e27", () => {
+  const at = 'calls[1].args.bundle.items[1].fields.data.call.args.maxSharePriceE27.maxSharePrice';
+  const unscaled = structuredClone(rawTemplate);
+  delete unscaled.calls[1].args.bundle.items[1].fields.data.call.args.maxSharePriceE27.maxSharePrice.scale;
+  assert.throws(
+    () => parseTemplate(unscaled, registry, 'committed'),
+    (error: unknown) => error instanceof TemplateError && error.path === `${at}.scale` && /missing/.test(error.message) && /cite the protocol's source/.test(error.message),
+  );
+  const checked = (raw: unknown, amount: string): FieldCheck => {
+    const recorded = new Map([['morpho/vault-deposit', parseTemplate(raw, registry, 'recorded')]]);
+    const card = resolveCard(depositCard(amount), { ...context(), templates: recorded });
+    assert.equal(card.kind, 'resolved');
+    return checkTemplateFields(deposit, (card as Extract<typeof card, { kind: 'resolved' }>).card, recorded, registry);
+  };
+  assert.deepEqual(checked(unscaled, '1800000000180'), { kind: 'match' });
+  assert.deepEqual(checked(unscaled, '1800000000180'), checked(rawTemplate, '1800000000180'));
+  assert.match(findings(checked(unscaled, '1700000000000')).map((f) => f.expected).join('\n'), /scaled by 1e27/);
+  assert.deepEqual(checked(unscaled, '1700000000000'), checked(rawTemplate, '1700000000000'));
+});
+
 test('the template parses its card fields and effects', () => {
   const [vault, amount, minShares] = [...template.card];
   assert.deepEqual(vault, ['vault', { kind: 'contract', scope: { registryKind: 'vault', protocol: 'morpho-blue', marketPart: undefined, names: undefined } }]);

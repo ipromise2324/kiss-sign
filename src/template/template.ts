@@ -572,7 +572,10 @@ function sharePrice(path: string, raw: unknown, type: AbiType, scope: Scope, bou
   if (type.kind !== 'uint') throw new TemplateError(path, `a share price bound cannot bind a ${canonicalType(type)}`);
   const value = object(path, raw);
   exactKeys(path, value, ['assets', 'shares'], ['scale']);
-  const scale = value.scale ?? SHARE_PRICE_SCALE.recorded;
+  if (!Object.hasOwn(value, 'scale') && scope.origin === 'committed') {
+    throw new TemplateError(`${path}.scale`, "missing: the power of ten the protocol scales the price by, such as 27 for a price in 1e27; cite the protocol's source that scales it in the review");
+  }
+  const scale = scope.origin !== 'committed' ? (value.scale ?? SHARE_PRICE_SCALE.recorded) : value.scale;
   if (typeof scale !== 'number' || !Number.isInteger(scale) || scale < SHARE_PRICE_SCALE.min || scale > SHARE_PRICE_SCALE.max) {
     throw new TemplateError(`${path}.scale`, `the power of ten the price is scaled by, a whole number from ${SHARE_PRICE_SCALE.min} to ${SHARE_PRICE_SCALE.max}`);
   }
@@ -940,6 +943,9 @@ function requireListedNames(fields: CardFields, instanceField: unknown): void {
     const { registryKind, names } = field.scope;
     if (registryKind === instanceKind && names !== undefined) {
       throw new TemplateError(`card.${name}.names`, `a field of the template's instance kind ${instanceKind} lists no names; it names the instances with a report for the template`);
+    }
+    if (registryKind !== instanceKind && names === undefined) {
+      throw new TemplateError(`card.${name}.names`, `missing; a ${registryKind} field lists the registry names it accepts, such as "names": ["usdc"]`);
     }
   }
 }
@@ -1475,7 +1481,7 @@ export function calledProtocols<E extends StudyEntry>(template: Template, regist
  */
 export type TemplateOrigin = 'committed' | 'recorded' | 'replayed';
 
-export function parseTemplate(raw: unknown, registry: RegistryView, origin: TemplateOrigin = 'committed'): Template {
+export function parseTemplate(raw: unknown, registry: RegistryView, origin: TemplateOrigin): Template {
   const value = object('template', raw);
   exactKeys('template', value, ['id', 'card', 'calls', 'effects'], ['nonce', 'same', 'facts', 'instanceField']);
   const id = text('id', value.id);
